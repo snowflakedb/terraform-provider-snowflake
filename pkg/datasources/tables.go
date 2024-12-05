@@ -2,52 +2,86 @@ package datasources
 
 import (
 	"context"
-	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var tablesSchema = map[string]*schema.Schema{
-	"database": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The database from which to return the schemas from.",
+	"with_describe": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: "Runs DESC TABLE for each table returned by SHOW TABLES. The output of describe is saved to the description field. By default this value is set to true.",
 	},
-	"schema": {
+	"in": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "IN clause to filter the list of tables",
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"account": {
+					Type:         schema.TypeBool,
+					Optional:     true,
+					Description:  "Returns records for the entire account.",
+					ExactlyOneOf: []string{"in.0.account", "in.0.database", "in.0.schema"},
+				},
+				"database": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Returns records for the current database in use or for a specified database.",
+					ExactlyOneOf: []string{"in.0.account", "in.0.database", "in.0.schema"},
+				},
+				"schema": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Returns records for the current schema in use or a specified schema. Use fully qualified name.",
+					ExactlyOneOf: []string{"in.0.account", "in.0.database", "in.0.schema"},
+				},
+			},
+		},
+	},
+	"like": {
 		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The schema from which to return the tables from.",
+		Optional:    true,
+		Description: "Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).",
+	},
+	"starts_with": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Filters the output with **case-sensitive** characters indicating the beginning of the object name.",
 	},
 	"tables": {
 		Type:        schema.TypeList,
 		Computed:    true,
-		Description: "The tables in the schema",
+		Description: "Holds the aggregated output of all tables details queries.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"name": {
-					Type:     schema.TypeString,
-					Computed: true,
+				resources.ShowOutputAttributeName: {
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "Holds the output of SHOW TABLES.",
+					Elem: &schema.Resource{
+						Schema: schemas.ShowTableSchema,
+					},
 				},
-				"database": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"schema": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"comment": {
-					Type:     schema.TypeString,
-					Optional: true,
-					Computed: true,
+				resources.DescribeOutputAttributeName: {
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "Holds the output of DESCRIBE TABLES.",
+					Elem: &schema.Resource{
+						Schema: schemas.TableDescribeSchema,
+					},
 				},
 			},
 		},
@@ -58,41 +92,75 @@ func Tables() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.TablesDatasource), TrackingReadWrapper(datasources.Tables, ReadTables)),
 		Schema:      tablesSchema,
+		Description: "Datasource used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW VIEWS](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query (only `like` is supported). The results of SHOW and DESCRIBE are encapsulated in one output collection `tables`.",
 	}
 }
 
 func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	databaseName := d.Get("database").(string)
-	schemaName := d.Get("schema").(string)
+	req := sdk.NewShowTableRequest()
 
-	schemaId := sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)
-	extractedTables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithIn(
-		&sdk.In{Schema: schemaId},
-	))
+	if v, ok := d.GetOk("in"); ok {
+		in := v.([]any)[0].(map[string]any)
+		if v, ok := in["account"]; ok && v.(bool) {
+			req.WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}})
+		}
+		if v, ok := in["database"]; ok {
+			database := v.(string)
+			if database != "" {
+				req.WithIn(sdk.ExtendedIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}})
+			}
+		}
+		if v, ok := in["schema"]; ok {
+			schema := v.(string)
+			if schema != "" {
+				schemaId, err := sdk.ParseDatabaseObjectIdentifier(schema)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				req.WithIn(sdk.ExtendedIn{In: sdk.In{Schema: schemaId}})
+			}
+		}
+	}
+
+	if likePattern, ok := d.GetOk("like"); ok {
+		req.WithLike(sdk.Like{
+			Pattern: sdk.String(likePattern.(string)),
+		})
+	}
+
+	if v, ok := d.GetOk("starts_with"); ok {
+		req.WithStartsWith(v.(string))
+	}
+
+	tables, err := client.Tables.Show(ctx, req)
 	if err != nil {
-		log.Printf("[DEBUG] failed when searching tables in schema (%s), err = %s", schemaId.FullyQualifiedName(), err.Error())
-		d.SetId("")
-		return nil
+		return diag.FromErr(err)
 	}
 
-	tables := make([]map[string]any, 0)
+	d.SetId("tables_read")
 
-	for _, extractedTable := range extractedTables {
-		if extractedTable.IsExternal {
-			continue
+	flattenedTables := make([]map[string]any, len(tables))
+	for i, table := range tables {
+		table := table
+		var tableDescriptions []map[string]any
+		if d.Get("with_describe").(bool) {
+			describeOutput, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(table.ID()))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			tableDescriptions = schemas.TableDescriptionToSchema(describeOutput)
 		}
 
-		table := map[string]any{
-			"name":     extractedTable.Name,
-			"database": extractedTable.DatabaseName,
-			"schema":   extractedTable.SchemaName,
-			"comment":  extractedTable.Comment,
+		flattenedTables[i] = map[string]any{
+			resources.ShowOutputAttributeName:     []map[string]any{schemas.TableToSchema(&table)},
+			resources.DescribeOutputAttributeName: tableDescriptions,
 		}
-
-		tables = append(tables, table)
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(databaseName, schemaName))
-	return diag.FromErr(d.Set("tables", tables))
+	if err := d.Set("tables", flattenedTables); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }

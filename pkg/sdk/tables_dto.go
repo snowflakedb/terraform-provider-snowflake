@@ -209,25 +209,25 @@ func (s *DropTableRequest) toOpts() *dropTableOptions {
 
 func (s *ShowTableRequest) toOpts() *showTableOptions {
 	var like *Like
-	if s.likePattern != "" {
+	if s.Like != nil {
 		like = &Like{
-			Pattern: &s.likePattern,
+			Pattern: s.Like.Pattern,
 		}
 	}
 	var limitFrom *LimitFrom
-	if s.limitFrom != nil {
+	if s.Limit != nil {
 		limitFrom = &LimitFrom{
-			Rows: s.limitFrom.Rows,
-			From: s.limitFrom.From,
+			Rows: s.Limit.Rows,
+			From: s.Limit.From,
 		}
 	}
 	return &showTableOptions{
-		Terse:      s.terse,
+		Terse:      s.Terse,
 		History:    s.history,
 		Like:       like,
-		StartsWith: s.startsWith,
+		StartsWith: s.StartsWith,
 		LimitFrom:  limitFrom,
-		In:         s.in,
+		In:         s.In,
 	}
 }
 
@@ -519,12 +519,12 @@ type TableExternalTableColumnDropActionRequest struct {
 }
 
 type ShowTableRequest struct {
-	terse       *bool
-	history     *bool
-	likePattern string
-	in          *In
-	startsWith  *string
-	limitFrom   *LimitFrom
+	Terse      *bool
+	history    *bool
+	Like       *Like
+	In         *ExtendedIn
+	StartsWith *string
+	Limit      *LimitFrom
 }
 
 type ShowTableInRequest struct {
