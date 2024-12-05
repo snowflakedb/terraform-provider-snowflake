@@ -916,7 +916,9 @@ func TestInt_Table(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
 
-		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithTerse(sdk.Bool(true)).WithLikePattern(table.ID().Name()))
+		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithTerse(*sdk.Bool(true)).WithLike(sdk.Like{
+			Pattern: sdk.String(table.Name),
+		}))
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(tables))
 
@@ -927,7 +929,7 @@ func TestInt_Table(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
 
-		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithStartsWith(sdk.String(table.Name)))
+		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithStartsWith(*sdk.String(table.Name)))
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(tables))
 
@@ -935,7 +937,9 @@ func TestInt_Table(t *testing.T) {
 	})
 
 	t.Run("when searching a non-existent table", func(t *testing.T) {
-		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithLikePattern("non-existent"))
+		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithLike(sdk.Like{
+			Pattern: sdk.String("non-existent"),
+		}))
 		require.NoError(t, err)
 		assert.Equal(t, 0, len(tables))
 	})
