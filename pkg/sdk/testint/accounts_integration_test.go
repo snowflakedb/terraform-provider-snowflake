@@ -336,7 +336,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("drop: without options", func(t *testing.T) {
-		err := client.Accounts.Drop(ctx, sdk.NewAccountObjectIdentifier("non-existing-account"), 3, &sdk.DropAccountOptions{})
+		err := client.Accounts.Drop(ctx, NonExistingAccountObjectIdentifier, 3, &sdk.DropAccountOptions{})
 		require.Error(t, err)
 
 		account, accountCleanup := testClientHelper().Account.Create(t)
@@ -350,7 +350,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("drop: with if exists", func(t *testing.T) {
-		err := client.Accounts.Drop(ctx, sdk.NewAccountObjectIdentifier("non-existing-account"), 3, &sdk.DropAccountOptions{IfExists: sdk.Bool(true)})
+		err := client.Accounts.Drop(ctx, NonExistingAccountObjectIdentifier, 3, &sdk.DropAccountOptions{IfExists: sdk.Bool(true)})
 		require.NoError(t, err)
 
 		account, accountCleanup := testClientHelper().Account.Create(t)
