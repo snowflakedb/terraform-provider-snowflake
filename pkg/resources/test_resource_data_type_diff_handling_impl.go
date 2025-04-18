@@ -11,6 +11,14 @@ import (
 // TODO: extract this file if approved
 // TODO: add documentation comment to each method if approved
 
+func DataTypeStateFunc(dataTypeRaw any) string {
+	dataType, err := datatypes.ParseDataType(dataTypeRaw.(string))
+	if err != nil {
+		return dataTypeRaw.(string)
+	}
+	return dataType.ToSql()
+}
+
 func handleDatatypeCreate(d *schema.ResourceData, key string, createFunc func(dataType datatypes.DataType) error) error {
 	log.Printf("[DEBUG] handling create for datatype field %s", key)
 	dataType, err := readDatatypeCommon(d, key)

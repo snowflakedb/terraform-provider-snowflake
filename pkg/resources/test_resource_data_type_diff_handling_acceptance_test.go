@@ -14,9 +14,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_TestResource_DataTypeDiffHandling(t *testing.T) {
@@ -160,38 +162,40 @@ resource "%[3]s" "%[4]s" {
 	for _, testCase := range testCases {
 		tc := testCase
 		t.Run(fmt.Sprintf("TestAcc_TestResource_DataTypeDiffHandling config value: %s, new config value: %s, external value: %s, expecitng changes: %t", tc.ConfigValue, tc.NewConfigValue, tc.ExternalValue, tc.ExpectChanges), func(t *testing.T) {
+			configValueDataType, err := datatypes.ParseDataType(tc.ConfigValue)
+			require.NoError(t, err)
+
+			newConfigValue := tc.ConfigValue
+			if tc.NewConfigValue != "" {
+				newConfigValue = tc.NewConfigValue
+			}
+
+			expectedStateFirstStep := configValueDataType.ToSql()
+			expectedStateSecondStep := expectedStateFirstStep
+			if tc.ExpectChanges {
+				dt, err := datatypes.ParseDataType(newConfigValue)
+				require.NoError(t, err)
+				expectedStateSecondStep = dt.ToSql()
+			}
+
 			var checks []plancheck.PlanCheck
 			if tc.ExpectChanges {
 				if tc.ExternalValue != "" {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, propertyName, sdk.String(tc.ConfigValue), sdk.String(tc.ExternalValue)),
-						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, sdk.String(tc.ExternalValue), sdk.String(tc.ConfigValue)),
+						planchecks.ExpectDrift(resourceReference, propertyName, sdk.String(expectedStateFirstStep), sdk.String(tc.ExternalValue)),
+						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, sdk.String(tc.ExternalValue), sdk.String(expectedStateFirstStep)),
 					}
 				} else {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, sdk.String(tc.ConfigValue), sdk.String(tc.NewConfigValue)),
+						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, sdk.String(expectedStateFirstStep), sdk.String(expectedStateSecondStep)),
 					}
 				}
 			} else {
 				checks = []plancheck.PlanCheck{
 					plancheck.ExpectEmptyPlan(),
 				}
-			}
-
-			var newConfigValue string
-			if tc.NewConfigValue != "" {
-				newConfigValue = tc.NewConfigValue
-			} else {
-				newConfigValue = tc.ConfigValue
-			}
-
-			var expectedValue string
-			if tc.ExpectChanges {
-				expectedValue = newConfigValue
-			} else {
-				expectedValue = tc.ConfigValue
 			}
 
 			resource.Test(t, resource.TestCase{
@@ -207,7 +211,7 @@ resource "%[3]s" "%[4]s" {
 						},
 						Config: testConfig(tc.ConfigValue),
 						Check: resource.ComposeTestCheckFunc(
-							resource.TestCheckResourceAttr(resourceReference, propertyName, tc.ConfigValue),
+							resource.TestCheckResourceAttr(resourceReference, propertyName, expectedStateFirstStep),
 						),
 					},
 					{
@@ -219,7 +223,7 @@ resource "%[3]s" "%[4]s" {
 						},
 						Config: testConfig(newConfigValue),
 						Check: resource.ComposeTestCheckFunc(
-							resource.TestCheckResourceAttr(resourceReference, propertyName, expectedValue),
+							resource.TestCheckResourceAttr(resourceReference, propertyName, expectedStateSecondStep),
 						),
 					},
 				},

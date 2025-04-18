@@ -23,6 +23,7 @@ var testResourceDataTypeDiffHandlingSchema = map[string]*schema.Schema{
 		Description:      "An example field being a data type.",
 		DiffSuppressFunc: DiffSuppressDataTypes,
 		ValidateDiagFunc: IsDataTypeValid,
+		StateFunc:        DataTypeStateFunc,
 	},
 }
 
