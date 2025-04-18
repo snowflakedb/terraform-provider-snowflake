@@ -52,12 +52,6 @@ func (t *NumberDataType) ToSqlNew() string {
 	}
 }
 
-func (t *NumberDataType) AsFullyKnown() DataType {
-	t.precisionKnown = true
-	t.scaleKnown = true
-	return t
-}
-
 var (
 	NumberDataTypeSynonyms = []string{NumberLegacyDataType, "DECIMAL", "DEC", "NUMERIC"}
 	NumberDataTypeSubTypes = []string{"INTEGER", "INT", "BIGINT", "SMALLINT", "TINYINT", "BYTEINT"}

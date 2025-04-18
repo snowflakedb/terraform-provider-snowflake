@@ -76,19 +76,6 @@ func readChangedDatatypeCommon(d *schema.ResourceData, key string) (datatypes.Da
 	return dataType, nil
 }
 
-// AsFullyKnown is temporary as not all the data types has the temporary method implemented
-// TODO: Add AsFullyKnown to each data type and remove this method if approved
-func AsFullyKnown(dt datatypes.DataType) datatypes.DataType {
-	switch v := dt.(type) {
-	case *datatypes.NumberDataType:
-		return v.AsFullyKnown()
-	case *datatypes.TextDataType:
-		return v.AsFullyKnown()
-	default:
-		return v
-	}
-}
-
 // SqlNew is temporary as not all the data types has the temporary method implemented
 // TODO: Add SqlNew to each data type and remove this method if approved
 // TODO: Pick better name for this function
