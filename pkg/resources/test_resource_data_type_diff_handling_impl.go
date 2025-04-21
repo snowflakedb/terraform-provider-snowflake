@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -87,5 +88,19 @@ func SqlNew(dt datatypes.DataType) string {
 		return v.ToSqlNew()
 	default:
 		return v.ToSql()
+	}
+}
+
+func readNestedDatatypeCommon(v map[string]any, key string) (datatypes.DataType, error) {
+	log.Printf("[DEBUG] reading nested datatype field %s", key)
+	if dataTypeRawConfig, ok := v[key]; !ok {
+		return nil, fmt.Errorf("nested datatype field %s not found", key)
+	} else {
+		dataType, err := datatypes.ParseDataType(dataTypeRawConfig.(string))
+		if err != nil {
+			return nil, err
+		}
+		log.Printf("[DEBUG] correctly parsed nested data type %v", dataType)
+		return dataType, nil
 	}
 }
