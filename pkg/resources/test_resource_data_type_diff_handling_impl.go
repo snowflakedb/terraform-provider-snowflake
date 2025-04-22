@@ -50,7 +50,7 @@ func handleDatatypeSet(d *schema.ResourceData, key string, externalDataType data
 	// current config data type is saved to state with all attributes known
 	// external data type is left without changes as all the unknowns should remain as unknowns
 	if datatypes.AreDefinitelyDifferent(currentConfigDataType, externalDataType) {
-		return d.Set(key, SqlNew(externalDataType))
+		return d.Set(key, externalDataType.ToSqlWithoutUnknowns())
 	}
 	return nil
 }
@@ -64,11 +64,6 @@ func readDatatypeCommon(d *schema.ResourceData, key string) (datatypes.DataType,
 	}
 	log.Printf("[DEBUG] correctly parsed data type %v", dataType)
 	return dataType, nil
-}
-
-// SqlNew is temporary as not all the data types has the temporary method implemented
-func SqlNew(dt datatypes.DataType) string {
-	return dt.ToSqlWithoutUnknowns()
 }
 
 func readNestedDatatypeCommon(v map[string]any, key string) (datatypes.DataType, error) {

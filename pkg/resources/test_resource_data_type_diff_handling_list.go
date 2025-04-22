@@ -105,9 +105,9 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 				}
 				// TODO [next PR]: handle missing data types too
 				if i+1 > len(currentConfigDatatypes) {
-					log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, SqlNew(externalDataType))
+					log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, externalDataType.ToSqlWithoutUnknowns())
 					nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
-						"nested_datatype": SqlNew(externalDataType),
+						"nested_datatype": externalDataType.ToSqlWithoutUnknowns(),
 					})
 				} else {
 					v := currentConfigDatatypes[i].(map[string]any)
@@ -118,12 +118,13 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 					// current config data type is saved to state with all attributes known
 					// external data type is left without changes as all the unknowns should remain as unknowns
 					if datatypes.AreDefinitelyDifferent(currentConfigDataType, externalDataType) {
-						log.Printf("[DEBUG] reading %d: external datatype %s is definitely different from the current config %s, updating", i, SqlNew(externalDataType), SqlNew(currentConfigDataType))
+
+						log.Printf("[DEBUG] reading %d: external datatype %s is definitely different from the current config %s, updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
 						nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
-							"nested_datatype": SqlNew(externalDataType),
+							"nested_datatype": externalDataType.ToSqlWithoutUnknowns(),
 						})
 					} else {
-						log.Printf("[DEBUG] reading %d: external datatype %s is not definitely different from the current config %s, not updating", i, SqlNew(externalDataType), SqlNew(currentConfigDataType))
+						log.Printf("[DEBUG] reading %d: external datatype %s is not definitely different from the current config %s, not updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
 						nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
 							// TODO [SNOW-2054238]: add test for StateFunc behavior with collections.
 							// using toSql() here as StateFunc seems to be not working in this case

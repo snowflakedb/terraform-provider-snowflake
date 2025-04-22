@@ -1349,3 +1349,53 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		})
 	}
 }
+
+func Test_ToSqlWithoutUnknowns(t *testing.T) {
+	type test struct {
+		dt string
+	}
+
+	testCases := []test{
+		{dt: "NUMBER"},
+		{dt: "NUMBER(20)"},
+		{dt: "NUMBER(20, 4)"},
+		{dt: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, DefaultNumberScale)},
+		{dt: "INT"},
+		{dt: "VARCHAR"},
+		{dt: "VARCHAR(15)"},
+		{dt: "CHAR"},
+		{dt: "CHAR(5)"},
+		{dt: fmt.Sprintf("VARCHAR(%d)", DefaultCharLength)},
+		{dt: fmt.Sprintf("CHAR(%d)", DefaultVarcharLength)},
+		{dt: "BINARY"},
+		{dt: "VARBINARY"},
+		{dt: "BINARY(20)"},
+		{dt: "VARBINARY(30)"},
+		{dt: fmt.Sprintf("BINARY(%d)", DefaultBinarySize)},
+		{dt: "FLOAT"},
+		{dt: "FLOAT4"},
+		{dt: "DOUBLE PRECISION"},
+		{dt: "TIME"},
+		{dt: fmt.Sprintf("TIME(%d)", DefaultTimePrecision)},
+		{dt: "TIMESTAMPLTZ"},
+		{dt: fmt.Sprintf("TIMESTAMPLTZ(%d)", DefaultTimestampPrecision)},
+		{dt: "TIMESTAMPNTZ"},
+		{dt: fmt.Sprintf("TIMESTAMPNTZ(%d)", DefaultTimestampPrecision)},
+		{dt: "TIMESTAMPTZ"},
+		{dt: fmt.Sprintf("TIMESTAMPTZ(%d)", DefaultTimestampPrecision)},
+		{dt: "TIMESTAMP WITHOUT TIME ZONE"},
+		{dt: "VECTOR(INT, 20)"},
+		{dt: "VECTOR(FLOAT, 30)"},
+		{dt: "TABLE()"},
+		// TODO [this PR]: test tables while implementing logic for table data type
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(fmt.Sprintf(`check if ToSqlWithoutUnknowns method works correctly for "%s"`, tc.dt), func(t *testing.T) {
+			parsed, err := ParseDataType(tc.dt)
+			require.NoError(t, err)
+			require.Equal(t, tc.dt, parsed.ToSqlWithoutUnknowns())
+		})
+	}
+}
