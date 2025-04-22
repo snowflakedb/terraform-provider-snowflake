@@ -1117,9 +1117,9 @@ func Test_ParseDataType_Table(t *testing.T) {
 		{input: "TABLE(arg_name NUMBER(38), arg_name_2 VARCHAR)", expectedColumns: []column{{"arg_name", "NUMBER(38)"}, {"arg_name_2", "VARCHAR"}}},
 		{input: "TABLE(arg_name number, second float, third GEOGRAPHY)", expectedColumns: []column{{"arg_name", "number"}, {"second", "float"}, {"third", "GEOGRAPHY"}}},
 		{input: "TABLE  (		arg_name 		varchar, 		second 	date, third TIME 			)", expectedColumns: []column{{"arg_name", "varchar"}, {"second", "date"}, {"third", "time"}}},
-		// TODO: Support types with parameters (for now, only legacy types are supported because Snowflake returns only with this output), e.g. TABLE(ARG NUMBER(38, 0))
-		// TODO: Support nested tables, e.g. TABLE(ARG NUMBER, NESTED TABLE(A VARCHAR, B GEOMETRY))
-		// TODO: Support complex argument names (with quotes / spaces / special characters / etc)
+		// TODO [SNOW-2054316]: Support types with parameters (for now, only legacy types are supported because Snowflake returns only with this output), e.g. TABLE(ARG NUMBER(38, 0))
+		// TODO [SNOW-2054316]: Support nested tables, e.g. TABLE(ARG NUMBER, NESTED TABLE(A VARCHAR, B GEOMETRY))
+		// TODO [SNOW-2054316]: Support complex argument names (with quotes / spaces / special characters / etc)
 	}
 
 	negativeTestCases := []test{
@@ -1320,13 +1320,14 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "TIME", d2: "TIME(5)", expectedOutcome: false},
 		{d1: "TIME", d2: fmt.Sprintf("TIME(%d)", DefaultTimePrecision), expectedOutcome: false},
 		{d1: "TABLE()", d2: "TABLE()", expectedOutcome: false},
-		// TODO [this PR]: test while implementing logic for table data type
-		//{d1: "TABLE(A NUMBER)", d2: "TABLE(B NUMBER)", expectedOutcome: false},
-		//{d1: "TABLE(A NUMBER)", d2: "TABLE(a NUMBER)", expectedOutcome: false},
-		//{d1: "TABLE(A NUMBER)", d2: "TABLE(A VARCHAR)", expectedOutcome: false},
-		//{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
-		//{d1: "TABLE(A NUMBER, B NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: false},
-		//{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER)", d2: "TABLE(B NUMBER)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER)", d2: "TABLE(a NUMBER)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER)", d2: "TABLE(A VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER, B NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: true},
+		{d1: "TABLE(B CHAR)", d2: "TABLE()", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
 	}
 
 	for _, tc := range testCases {
@@ -1387,7 +1388,8 @@ func Test_ToSqlWithoutUnknowns(t *testing.T) {
 		{dt: "VECTOR(INT, 20)"},
 		{dt: "VECTOR(FLOAT, 30)"},
 		{dt: "TABLE()"},
-		// TODO [this PR]: test tables while implementing logic for table data type
+		{dt: "TABLE(A NUMBER)"},
+		{dt: "TABLE(A NUMBER, B INT, C VARCHAR)"},
 	}
 
 	for _, tc := range testCases {
