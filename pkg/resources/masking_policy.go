@@ -290,7 +290,7 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err := d.Set("return_data_type", maskingPolicyDescription.ReturnType); err != nil {
+		if err := handleDatatypeSet(d, "return_data_type", maskingPolicyDescription.ReturnType); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -370,6 +370,8 @@ func UpdateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 			return diag.FromErr(err)
 		}
 	}
+
+	// return_data_type is handled by ForceNew
 	// exempt_other_policies is handled by ForceNew
 
 	return ReadMaskingPolicy(false)(ctx, d, meta)

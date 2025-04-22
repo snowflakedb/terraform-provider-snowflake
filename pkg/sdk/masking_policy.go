@@ -357,10 +357,9 @@ func (opts *describeMaskingPolicyOptions) validate() error {
 }
 
 type MaskingPolicyDetails struct {
-	Name      string
-	Signature []TableColumnSignature
-	// TODO [this PR]: use new data type here
-	ReturnType DataType
+	Name       string
+	Signature  []TableColumnSignature
+	ReturnType datatypes.DataType
 	Body       string
 }
 
@@ -379,7 +378,7 @@ func (row maskingPolicyDetailsRow) toMaskingPolicyDetails() *MaskingPolicyDetail
 	v := &MaskingPolicyDetails{
 		Name:       row.Name,
 		Signature:  []TableColumnSignature{},
-		ReturnType: LegacyDataTypeFrom(dataType),
+		ReturnType: dataType,
 		Body:       row.Body,
 	}
 
