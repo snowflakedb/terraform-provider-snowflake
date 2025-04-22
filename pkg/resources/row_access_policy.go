@@ -53,9 +53,10 @@ var rowAccessPolicySchema = map[string]*schema.Schema{
 				"type": {
 					Type:             schema.TypeString,
 					Required:         true,
+					Description:      dataTypeFieldDescription("The argument type. VECTOR data types are not yet supported."),
 					DiffSuppressFunc: DiffSuppressDataTypes,
 					ValidateDiagFunc: IsDataTypeValid,
-					Description:      dataTypeFieldDescription("The argument type. VECTOR data types are not yet supported."),
+					StateFunc:        DataTypeStateFunc,
 					ForceNew:         true,
 				},
 			},
@@ -131,6 +132,12 @@ func RowAccessPolicy() *schema.Resource {
 				Type:    cty.EmptyObject,
 				Upgrade: v0_95_0_RowAccessPolicyStateUpgrader,
 			},
+			{
+				Version: 1,
+				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+				Type:    cty.EmptyObject,
+				Upgrade: v200RowAccessPolicyStateUpgrader,
+			},
 		},
 		Timeouts: defaultTimeouts,
 	}
@@ -167,9 +174,10 @@ func ImportRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 	if err := d.Set("body", policyDescription.Body); err != nil {
 		return nil, err
 	}
-	if err := d.Set("argument", schemas.RowAccessPolicyArgumentsToSchema(policyDescription.Signature)); err != nil {
-		return nil, err
-	}
+	// TODO [this PR]: what do we do with imports?
+	// if err := d.Set("argument", schemas.RowAccessPolicyArgumentsToSchema(policyDescription.Signature)); err != nil {
+	// 	return nil, err
+	// }
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -181,17 +189,14 @@ func CreateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 	name := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	arguments := d.Get("argument").([]any)
 	rowAccessExpression := d.Get("body").(string)
 
 	args := make([]sdk.CreateRowAccessPolicyArgsRequest, 0)
-	for _, arg := range arguments {
-		v := arg.(map[string]any)
-		dataType, err := datatypes.ParseDataType(v["type"].(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		args = append(args, *sdk.NewCreateRowAccessPolicyArgsRequest(v["name"].(string), dataType))
+	var err error
+	if args, err = handleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.CreateRowAccessPolicyArgsRequest, error) {
+		return *sdk.NewCreateRowAccessPolicyArgsRequest(v["name"].(string), dataType), nil
+	}); err != nil {
+		return diag.FromErr(err)
 	}
 
 	createRequest := sdk.NewCreateRowAccessPolicyRequest(id, args, rowAccessExpression)
@@ -201,7 +206,7 @@ func CreateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 		createRequest.WithComment(sdk.String(v.(string)))
 	}
 
-	err := client.RowAccessPolicies.Create(ctx, createRequest)
+	err = client.RowAccessPolicies.Create(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating row access policy %v err = %w", name, err))
 	}
@@ -248,7 +253,11 @@ func ReadRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err := d.Set("body", rowAccessPolicyDescription.Body); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("argument", schemas.RowAccessPolicyArgumentsToSchema(rowAccessPolicyDescription.Signature)); err != nil {
+
+	if err := handleNestedDataTypeSet(d, "argument", "type", rowAccessPolicyDescription.Signature,
+		func(signature sdk.TableColumnSignature) datatypes.DataType { return signature.Type },
+		func(signature sdk.TableColumnSignature, arg map[string]any) { arg["name"] = signature.Name },
+	); err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.RowAccessPolicyToSchema(rowAccessPolicy)}); err != nil {
@@ -302,6 +311,8 @@ func UpdateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 			return diag.FromErr(fmt.Errorf("error updating row access policy expression on %v err = %w", d.Id(), err))
 		}
 	}
+
+	// argument is handled by ForceNew
 
 	return ReadRowAccessPolicy(ctx, d, meta)
 }

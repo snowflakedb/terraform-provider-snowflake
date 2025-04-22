@@ -38,20 +38,19 @@ func v200MaskingPolicyStateUpgrader(_ context.Context, rawState map[string]any, 
 		return rawState, nil
 	}
 
-	signature := rawState["signature"].([]any)
-	if len(signature) != 1 {
-		return nil, fmt.Errorf("updating the snowflake_masking_policy resource state for the v2.0.0 provider version: expected signature to be a list of length 1, got %d", len(signature))
+	arguments := rawState["argument"].([]any)
+	if len(arguments) > 0 {
+		return nil, fmt.Errorf("updating the snowflake_masking_policy resource state for the v2.0.0 provider version: expected at least 1 argument")
 	}
-	maskingPolicyColumns := signature[0].(map[string]any)["column"].([]any)
 	args := make([]map[string]any, 0)
-	for _, v := range maskingPolicyColumns {
-		maskingPolicyColumn := v.(map[string]any)
-		columnDataType, err := datatypes.ParseDataType(maskingPolicyColumn["type"].(string))
+	for _, v := range arguments {
+		argument := v.(map[string]any)
+		columnDataType, err := datatypes.ParseDataType(argument["type"].(string))
 		if err != nil {
 			return nil, fmt.Errorf("updating the snowflake_masking_policy resource state for the v2.0.0 provider version, error: %w", err)
 		}
 		args = append(args, map[string]any{
-			"name": maskingPolicyColumn["name"].(string),
+			"name": argument["name"].(string),
 			"type": columnDataType.ToSql(),
 		})
 	}
