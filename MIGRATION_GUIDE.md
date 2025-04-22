@@ -19,6 +19,7 @@ Some objects in Snowflake are created in hierarchy, for example, tables (databas
 When the user wants to remove the higher-hierarchy object (like a database), the lower-hierarchy objects should be removed beforehand. 
 Otherwise, Terraform would fail to remove the lower-hierarchy objects from the state, 
 and without manual state management it wouldn't be possible to remove this object, ending up in broken state (reference issue: [#1243](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1243)).
+This may only happen in particular cases, for example, if part of the hierarchy is managed outside Terraform or the configuration is missing dependencies between resources.
 This behavior was described more in detail in [our documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_research_summary#renaming-higher-hierarchy-objects).
 
 For improved usability, we adjusted the Read and Delete operation implementations for all resources, 

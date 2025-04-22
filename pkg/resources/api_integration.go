@@ -230,9 +230,14 @@ func ReadAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interf
 	integration, err := client.ApiIntegrations.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
-			log.Printf("[DEBUG] api integration (%s) not found. Marking the resource as removed.", d.Id())
 			d.SetId("")
-			return nil
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query api integration. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Api integration id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
 		}
 		return diag.FromErr(err)
 	}
