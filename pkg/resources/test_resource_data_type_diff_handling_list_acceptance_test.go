@@ -166,7 +166,7 @@ resource "%[3]s" "%[4]s" {
 
 	for _, testCase := range testCases {
 		tc := testCase
-		t.Run(fmt.Sprintf("TestAcc_TestResource_DataTypeDiffHandlingList config value: %s, new config value: %s, external value: %s, expecitng changes: %t", tc.ConfigValue, tc.NewConfigValue, tc.ExternalValue, tc.ExpectChanges), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestAcc_TestResource_DataTypeDiffHandlingList config value: %s, new config value: %s, external value: %s, expecting changes: %t", tc.ConfigValue, tc.NewConfigValue, tc.ExternalValue, tc.ExpectChanges), func(t *testing.T) {
 			configValueDataType, err := datatypes.ParseDataType(tc.ConfigValue)
 			require.NoError(t, err)
 
