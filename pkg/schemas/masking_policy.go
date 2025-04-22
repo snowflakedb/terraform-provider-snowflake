@@ -46,7 +46,6 @@ func MaskingPolicyDescriptionToSchema(details sdk.MaskingPolicyDetails) map[stri
 	}
 }
 
-// TODO [this PR]: address this func (ToSql vs ToSqlWithoutUnknowns for type)
 func MaskingPolicyArgumentsToSchema(args []sdk.TableColumnSignature) []map[string]any {
 	schema := make([]map[string]any, len(args))
 	for i, v := range args {

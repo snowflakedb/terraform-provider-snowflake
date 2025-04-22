@@ -254,7 +254,6 @@ func TestRowAccessPolicies_Describe(t *testing.T) {
 	})
 }
 
-// TODO [this PR]: fix this test
 func TestRowAccessPolicyDescription_Signature(t *testing.T) {
 	tests := []struct {
 		name      string

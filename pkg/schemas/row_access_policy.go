@@ -36,7 +36,6 @@ var RowAccessPolicyDescribeSchema = map[string]*schema.Schema{
 	},
 }
 
-// TODO [this PR]: address this func (ToSql vs ToSqlWithoutUnknowns for type)
 func RowAccessPolicyDescriptionToSchema(description sdk.RowAccessPolicyDescription) map[string]any {
 	signatureElem := make([]map[string]any, len(description.Signature))
 	for i, v := range description.Signature {
