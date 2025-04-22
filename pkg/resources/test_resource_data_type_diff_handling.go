@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// TODO [SNOW-2054208]: extract to the dedicated package
 var testResourceDataTypeDiffHandlingSchema = map[string]*schema.Schema{
 	"env_name": {
 		Type:        schema.TypeString,

@@ -122,6 +122,7 @@ var ObjectRenamingDatabaseInstance = &objectRenamingDatabase{
 	ChangeLog:           ObjectRenamingDatabaseChangelog{},
 }
 
+// TODO [SNOW-2054208]: extract to the dedicated package
 var objectRenamingListsAndSetsSchema = map[string]*schema.Schema{
 	// The list field was tested to be used in places where the order of the items should be ignored.
 	// It was ignored by comparing hashes of the items to see if any changes were made on the items themselves

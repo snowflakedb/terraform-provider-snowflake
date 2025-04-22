@@ -9,8 +9,8 @@ import (
 )
 
 // contents of this file will be used as common functions if approved
-// TODO: extract this file if approved
-// TODO: add documentation comment to each method if approved
+// TODO [next PR]: extract/rename this file if approved
+// TODO [next PR]: add documentation comment to each method if approved
 
 func DataTypeStateFunc(dataTypeRaw any) string {
 	dataType, err := datatypes.ParseDataType(dataTypeRaw.(string))
@@ -32,7 +32,7 @@ func handleDatatypeCreate(d *schema.ResourceData, key string, createFunc func(da
 func handleDatatypeUpdate(d *schema.ResourceData, key string, updateFunc func(dataType datatypes.DataType) error) error {
 	log.Printf("[DEBUG] handling update for datatype field %s", key)
 	if d.HasChange(key) {
-		dataType, err := readChangedDatatypeCommon(d, key)
+		dataType, err := readDatatypeCommon(d, key)
 		if err != nil {
 			return err
 		}
@@ -66,20 +66,9 @@ func readDatatypeCommon(d *schema.ResourceData, key string) (datatypes.DataType,
 	return dataType, nil
 }
 
-func readChangedDatatypeCommon(d *schema.ResourceData, key string) (datatypes.DataType, error) {
-	log.Printf("[DEBUG] reading updated value for datatype field %s", key)
-	_, n := d.GetChange(key)
-	dataType, err := datatypes.ParseDataType(n.(string))
-	if err != nil {
-		return nil, err
-	}
-	log.Printf("[DEBUG] correctly parsed data type %v", dataType)
-	return dataType, nil
-}
-
 // SqlNew is temporary as not all the data types has the temporary method implemented
-// TODO: Add SqlNew to each data type and remove this method if approved
-// TODO: Pick better name for this function
+// TODO [next PR]: Add SqlNew to each data type and remove this method if approved
+// TODO [next PR]: Pick better name for this function
 func SqlNew(dt datatypes.DataType) string {
 	switch v := dt.(type) {
 	case *datatypes.NumberDataType:

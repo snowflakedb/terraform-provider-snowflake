@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [SNOW-2054208]: merge setups/test cases with TestAcc_TestResource_DataTypeDiffHandling during the package cleanup.
 func TestAcc_TestResource_DataTypeDiffHandlingList(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
@@ -222,7 +223,9 @@ resource "%[3]s" "%[4]s" {
 					},
 					{
 						PreConfig: func() {
-							t.Setenv(envName, tc.ExternalValue)
+							if tc.ExternalValue != "" {
+								t.Setenv(envName, tc.ExternalValue)
+							}
 						},
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: checks,

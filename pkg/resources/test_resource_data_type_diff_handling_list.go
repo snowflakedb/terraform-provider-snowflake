@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// TODO [SNOW-2054208]: extract to the dedicated package
 var testResourceDataTypeDiffHandlingListSchema = map[string]*schema.Schema{
 	"env_name": {
 		Type:        schema.TypeString,
@@ -31,14 +32,14 @@ var testResourceDataTypeDiffHandlingListSchema = map[string]*schema.Schema{
 					DiffSuppressFunc: DiffSuppressDataTypes,
 					ValidateDiagFunc: IsDataTypeValid,
 					StateFunc:        DataTypeStateFunc,
-					// TODO [SNOW-XXX]: all current use cases have force new on nested data types; try without the force new
+					// TODO [SNOW-2054235]: all current use cases have force new on nested data types; try without the force new
 					ForceNew: true,
 				},
 			},
 		},
 		Required:    true,
 		Description: "An example list of objects where one of the nested fields is a data type.",
-		// TODO [SNOW-XXX]: all current use cases have force new on nested data types; try without the force new
+		// TODO [SNOW-2054235]: all current use cases have force new on nested data types; try without the force new
 		ForceNew: true,
 	},
 }
@@ -60,7 +61,7 @@ func TestResourceDataTypeDiffHandlingListCreate(ctx context.Context, d *schema.R
 
 	dataTypes := make([]datatypes.DataType, 0)
 	arguments := d.Get("nesting_list").([]any)
-	// TODO [SNOW-XXX]: extract common method to work with collections on the resource side
+	// TODO [next PR or will be extracted]: extract common method to work with collections on the resource side (will be done with the masking policy and row access policy application)
 	for _, arg := range arguments {
 		v := arg.(map[string]any)
 		dataType, err := readNestedDatatypeCommon(v, "nested_datatype")
@@ -93,7 +94,7 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 		value := oswrapper.Getenv(envName)
 		log.Printf("[DEBUG] env %s value is `%s`", envName, value)
 		if value != "" {
-			// TODO: extract splitting
+			// TODO [next PR]: extract splitting
 			dataTypes := strings.Split(value, "|")
 			currentConfigDatatypes := d.Get("nesting_list").([]any)
 			nestedDatatypesSchema := make([]map[string]any, 0)
@@ -102,7 +103,7 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				// TODO: handle missing data types too
+				// TODO [next PR]: handle missing data types too
 				if i+1 > len(currentConfigDatatypes) {
 					log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, SqlNew(externalDataType))
 					nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
@@ -124,6 +125,7 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 					} else {
 						log.Printf("[DEBUG] reading %d: external datatype %s is not definitely different from the current config %s, not updating", i, SqlNew(externalDataType), SqlNew(currentConfigDataType))
 						nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
+							// TODO [SNOW-2054238]: add test for StateFunc behavior with collections.
 							// using toSql() here as StateFunc seems to be not working in this case
 							"nested_datatype": currentConfigDataType.ToSql(),
 						})
@@ -131,6 +133,7 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 				}
 			}
 
+			// TODO [SNOW-2054240]: test saving collections differently than through the whole pre-created map.
 			if err := d.Set("nesting_list", nestedDatatypesSchema); err != nil {
 				return diag.FromErr(err)
 			}

@@ -158,12 +158,20 @@ func noArgsDataTypesAreTheSame[T DataType](_ T, _ T) bool {
 }
 
 // AreDefinitelyDifferent compares any two data types.
-// If both data types are nil it returns false.
-// If only one data type is nil it returns true.
-// It returns true for different underlying types.
-// For the same type it performs type-specific check.
-// TODO: test this function if approved
-// TODO: implement all missing checks if approved
+// The logic for the equality check has 3 values: YES, NO, and MAYBE.
+// MAYBE is a result of Snowflake not always returning the attributes of the complex data type,
+// e.g. NUMBER(20, 4) can be returned as NUMBER and NUMBER(38, 0) (the defaults) can also be returned as NUMBER.
+// Because of that, they are MAYBE equal.
+// This method is meant to be an entry point in cases where we need to be sure, that the data types are different (the NO part).
+// Example could be the handling of the external Snowflake changes where the data type is for sure different.
+//
+// The logic goes like this:
+// - If both data types are nil it returns false.
+// - If only one data type is nil it returns true.
+// - It returns true for different underlying types.
+// - For the same type it performs type-specific check.
+// TODO [next PR]: test this function if approved
+// TODO [next PR]: implement all missing checks if approved
 func AreDefinitelyDifferent(a DataType, b DataType) bool {
 	if a == nil && b == nil {
 		return false

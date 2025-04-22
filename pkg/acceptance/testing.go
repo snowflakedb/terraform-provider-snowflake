@@ -64,6 +64,7 @@ func init() {
 	}
 
 	TestAccProvider = provider.Provider()
+	// TODO [SNOW-2054208]: improve during the package extraction
 	TestAccProvider.ResourcesMap["snowflake_object_renaming"] = resources.ObjectRenamingListsAndSets()
 	TestAccProvider.ResourcesMap["snowflake_test_resource_data_type_diff_handling"] = resources.TestResourceDataTypeDiffHandling()
 	TestAccProvider.ResourcesMap["snowflake_test_resource_data_type_diff_handling_list"] = resources.TestResourceDataTypeDiffHandlingList()
