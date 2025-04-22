@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -141,12 +143,20 @@ var passwordPolicySchema = map[string]*schema.Schema{
 }
 
 func PasswordPolicy() *schema.Resource {
+	// TODO(SNOW-1818849): unassign policies before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.PasswordPolicies.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		Description:   "A password policy specifies the requirements that must be met to create and reset a password to authenticate to Snowflake.",
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingCreateWrapper(resources.PasswordPolicy, CreatePasswordPolicy)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingReadWrapper(resources.PasswordPolicy, ReadPasswordPolicy)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingUpdateWrapper(resources.PasswordPolicy, UpdatePasswordPolicy)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingDeleteWrapper(resources.PasswordPolicy, DeletePasswordPolicy)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingDeleteWrapper(resources.PasswordPolicy, deleteFunc)),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.PasswordPolicy, customdiff.All(
 			ComputedIfAnyAttributeChanged(passwordPolicySchema, FullyQualifiedNameAttributeName, "name"),
@@ -203,8 +213,18 @@ func ReadPasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	passwordPolicy, err := client.PasswordPolicies.ShowByID(ctx, id)
+	passwordPolicy, err := client.PasswordPolicies.ShowByIDSafely(ctx, id)
 	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query password policy. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Password policy id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
@@ -432,19 +452,4 @@ func UpdatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	return ReadPasswordPolicy(ctx, d, meta)
-}
-
-// DeletePasswordPolicy implements schema.DeleteFunc.
-func DeletePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	objectIdentifier := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-
-	// TODO(SNOW-1818849): unassign policies before dropping
-	err := client.PasswordPolicies.Drop(ctx, objectIdentifier, nil)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
 }

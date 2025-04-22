@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ PasswordPolicies = (*passwordPolicies)(nil)
@@ -337,12 +339,9 @@ func (v *passwordPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifi
 		return nil, err
 	}
 
-	for _, passwordPolicy := range passwordPolicies {
-		if passwordPolicy.ID().name == id.Name() {
-			return &passwordPolicy, nil
-		}
-	}
-	return nil, ErrObjectNotExistOrAuthorized
+	return collections.FindFirst(passwordPolicies, func(policy PasswordPolicy) bool {
+		return policy.ID().FullyQualifiedName() == id.FullyQualifiedName()
+	})
 }
 
 func (v *passwordPolicies) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicy, error) {

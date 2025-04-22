@@ -143,7 +143,8 @@ func ReadStreamOnView(withExternalChangesMarking bool) schema.ReadContextFunc {
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		stream, err := client.Streams.ShowByID(ctx, id)
+
+		stream, err := client.Streams.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -151,12 +152,13 @@ func ReadStreamOnView(withExternalChangesMarking bool) schema.ReadContextFunc {
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query stream. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("stream name: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("Stream id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
 			return diag.FromErr(err)
 		}
+
 		viewId, err := sdk.ParseSchemaObjectIdentifier(*stream.TableName)
 		if err != nil {
 			return diag.Diagnostics{

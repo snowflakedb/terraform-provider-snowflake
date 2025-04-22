@@ -122,23 +122,23 @@ func ReadContextSecretWithAuthorizationCodeGrant(withExternalChangesMarking bool
 			return diag.FromErr(err)
 		}
 
-		secret, err := client.Secrets.ShowByID(ctx, id)
+		secret, err := client.Secrets.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
 				return diag.Diagnostics{
 					diag.Diagnostic{
 						Severity: diag.Warning,
-						Summary:  "Failed to retrieve secret with authorization code grant. Target object not found. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Secret with authorization code grant name: %s, Err: %s", id.FullyQualifiedName(), err),
+						Summary:  "Failed to query secret with authorization code grant. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Secret with authorization code grant id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
 			return diag.Diagnostics{
 				diag.Diagnostic{
 					Severity: diag.Error,
-					Summary:  "Failed to retrieve secret with authorization code grant.",
-					Detail:   fmt.Sprintf("Secret with authorization code grant name: %s, Err: %s", id.FullyQualifiedName(), err),
+					Summary:  "Failed to query secret with authorization code grant.",
+					Detail:   fmt.Sprintf("Secret with authorization code grant id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}

@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"regexp"
 	"strconv"
@@ -185,13 +187,21 @@ var externalFunctionSchema = map[string]*schema.Schema{
 }
 
 func ExternalFunction() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseSchemaObjectIdentifierWithArguments,
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifierWithArguments] {
+			// TODO(SNOW-2048276): Replace with dedicated DropSafely for external functions interface
+			return client.Functions.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		SchemaVersion: 2,
 
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalFunctionResource), TrackingCreateWrapper(resources.ExternalFunction, CreateContextExternalFunction)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalFunctionResource), TrackingReadWrapper(resources.ExternalFunction, ReadContextExternalFunction)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalFunctionResource), TrackingUpdateWrapper(resources.ExternalFunction, UpdateContextExternalFunction)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ExternalFunctionResource), TrackingDeleteWrapper(resources.ExternalFunction, DeleteContextExternalFunction)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ExternalFunctionResource), TrackingDeleteWrapper(resources.ExternalFunction, deleteFunc)),
 
 		Schema: externalFunctionSchema,
 		Importer: &schema.ResourceImporter{
@@ -345,10 +355,19 @@ func ReadContextExternalFunction(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	externalFunction, err := client.ExternalFunctions.ShowByID(ctx, id)
+	externalFunction, err := client.ExternalFunctions.ShowByIDSafely(ctx, id)
 	if err != nil {
-		d.SetId("")
-		return nil
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query external function. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("External function id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
 	}
 
 	// Some properties can come from the SHOW EXTERNAL FUNCTION call
@@ -515,21 +534,4 @@ func UpdateContextExternalFunction(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 	return ReadContextExternalFunction(ctx, d, meta)
-}
-
-func DeleteContextExternalFunction(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	req := sdk.NewDropFunctionRequest(id).WithIfExists(true)
-	if err := client.Functions.Drop(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }

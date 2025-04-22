@@ -114,13 +114,21 @@ var maskingPolicySchema = map[string]*schema.Schema{
 
 // MaskingPolicy returns a pointer to the resource representing a masking policy.
 func MaskingPolicy() *schema.Resource {
+	// TODO(SNOW-1818849): unassign policies before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseSchemaObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.MaskingPolicies.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		SchemaVersion: 1,
 
 		CreateContext: TrackingCreateWrapper(resources.MaskingPolicy, CreateMaskingPolicy),
 		ReadContext:   TrackingReadWrapper(resources.MaskingPolicy, ReadMaskingPolicy(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.MaskingPolicy, UpdateMaskingPolicy),
-		DeleteContext: TrackingDeleteWrapper(resources.MaskingPolicy, DeleteMaskingPolicy),
+		DeleteContext: TrackingDeleteWrapper(resources.MaskingPolicy, deleteFunc),
 		Description:   "Resource used to manage masking policies. For more information, check [masking policies documentation](https://docs.snowflake.com/en/sql-reference/sql/create-masking-policy).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.MaskingPolicy, customdiff.All(
@@ -243,7 +251,7 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		maskingPolicy, err := client.MaskingPolicies.ShowByID(ctx, id)
+		maskingPolicy, err := client.MaskingPolicies.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -251,7 +259,7 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query masking policy. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("masking policy name: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("Masking policy id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -357,27 +365,4 @@ func UpdateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	// exempt_other_policies is handled by ForceNew
 
 	return ReadMaskingPolicy(false)(ctx, d, meta)
-}
-
-func DeleteMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// TODO(SNOW-1818849): unassign policies before dropping
-	err = client.MaskingPolicies.Drop(ctx, id, &sdk.DropMaskingPolicyOptions{IfExists: sdk.Pointer(true)})
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting masking policy",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
 }

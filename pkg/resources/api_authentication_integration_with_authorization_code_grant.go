@@ -38,7 +38,7 @@ func ApiAuthenticationIntegrationWithAuthorizationCodeGrant() *schema.Resource {
 		CreateContext: TrackingCreateWrapper(resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant, CreateContextApiAuthenticationIntegrationWithAuthorizationCodeGrant),
 		ReadContext:   TrackingReadWrapper(resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant, ReadContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant, UpdateContextApiAuthenticationIntegrationWithAuthorizationCodeGrant),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant, DeleteContextApiAuthenticationIntegrationWithAuthorizationCodeGrant),
+		DeleteContext: TrackingDeleteWrapper(resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant, DeleteSecurityIntegration),
 		Description:   "Resource used to manage api authentication security integration objects with authorization code grant. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-api-auth).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant, customdiff.All(
@@ -145,7 +145,7 @@ func ReadContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(withExter
 			return diag.FromErr(err)
 		}
 
-		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
+		integration, err := client.SecurityIntegrations.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -153,7 +153,7 @@ func ReadContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(withExter
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query security integration. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Security integration name: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("Security integration id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -245,26 +245,4 @@ func UpdateContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(ctx con
 		}
 	}
 	return ReadContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(false)(ctx, d, meta)
-}
-
-func DeleteContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.SecurityIntegrations.Drop(ctx, sdk.NewDropSecurityIntegrationRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting integration",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
 }

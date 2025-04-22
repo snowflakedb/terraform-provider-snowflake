@@ -187,15 +187,21 @@ func handleWarehouseParameterRead(d *schema.ResourceData, warehouseParameters []
 	return nil
 }
 
-// Warehouse returns a pointer to the resource representing a warehouse.
 func Warehouse() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Warehouses.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		SchemaVersion: 1,
 
 		CreateContext: TrackingCreateWrapper(resources.Warehouse, CreateWarehouse),
 		UpdateContext: TrackingUpdateWrapper(resources.Warehouse, UpdateWarehouse),
 		ReadContext:   TrackingReadWrapper(resources.Warehouse, GetReadWarehouseFunc(true)),
-		DeleteContext: TrackingDeleteWrapper(resources.Warehouse, DeleteWarehouse),
+		DeleteContext: TrackingDeleteWrapper(resources.Warehouse, deleteFunc),
 		Description:   "Resource used to manage warehouse objects. For more information, check [warehouse documentation](https://docs.snowflake.com/en/sql-reference/commands-warehouse).",
 
 		Schema: warehouseSchema,
@@ -369,7 +375,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 		client := meta.(*provider.Context).Client
 		id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
 
-		w, err := client.Warehouses.ShowByID(ctx, id)
+		w, err := client.Warehouses.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -377,7 +383,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query warehouse. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Warehouse: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("Warehouse id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -608,20 +614,4 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 	}
 
 	return GetReadWarehouseFunc(false)(ctx, d, meta)
-}
-
-// DeleteWarehouse implements schema.DeleteFunc.
-func DeleteWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-
-	err := client.Warehouses.Drop(ctx, id, &sdk.DropWarehouseOptions{
-		IfExists: sdk.Bool(true),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }

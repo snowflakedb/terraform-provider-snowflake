@@ -48,11 +48,19 @@ var sharedDatabaseSchema = map[string]*schema.Schema{
 }
 
 func SharedDatabase() *schema.Resource {
+	// TODO(SNOW-1818849): unassign network policies inside the database before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Databases.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.SharedDatabase, CreateSharedDatabase),
 		UpdateContext: TrackingUpdateWrapper(resources.SharedDatabase, UpdateSharedDatabase),
 		ReadContext:   TrackingReadWrapper(resources.SharedDatabase, ReadSharedDatabase),
-		DeleteContext: TrackingDeleteWrapper(resources.SharedDatabase, DeleteSharedDatabase),
+		DeleteContext: TrackingDeleteWrapper(resources.SharedDatabase, deleteFunc),
 		Description:   "A shared database creates a database from a share provided by another Snowflake account. For more information about shares, see [Introduction to Secure Data Sharing](https://docs.snowflake.com/en/user-guide/data-sharing-intro).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SharedDatabase, customdiff.All(
@@ -156,7 +164,7 @@ func ReadSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	database, err := client.Databases.ShowByID(ctx, id)
+	database, err := client.Databases.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -164,7 +172,7 @@ func ReadSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any) d
 				diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to query shared database. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("DatabaseName: %s, Err: %s", id.FullyQualifiedName(), err),
+					Detail:   fmt.Sprintf("Shared database id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
@@ -198,24 +206,5 @@ func ReadSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diags
 	}
 
-	return nil
-}
-
-func DeleteSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// TODO(SNOW-1818849): unassign network policies inside the database before dropping
-	err = client.Databases.Drop(ctx, id, &sdk.DropDatabaseOptions{
-		IfExists: sdk.Bool(true),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
 	return nil
 }

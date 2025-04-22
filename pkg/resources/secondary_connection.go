@@ -53,11 +53,18 @@ var secondaryConnectionSchema = map[string]*schema.Schema{
 }
 
 func SecondaryConnection() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Connections.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.SecondaryConnection, CreateContextSecondaryConnection),
 		ReadContext:   TrackingReadWrapper(resources.SecondaryConnection, ReadContextSecondaryConnection),
 		UpdateContext: TrackingUpdateWrapper(resources.SecondaryConnection, UpdateContextSecondaryConnection),
-		DeleteContext: TrackingDeleteWrapper(resources.SecondaryConnection, DeleteContextSecondaryConnection),
+		DeleteContext: TrackingDeleteWrapper(resources.SecondaryConnection, deleteFunc),
 		Description:   "Resource used to manage secondary (replicated) connections. To manage primary connection check resource [snowflake_primary_connection](./primary_connection). For more information, check [connection documentation](https://docs.snowflake.com/en/sql-reference/sql/create-connection.html).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SecondaryConnection, customdiff.All(
@@ -112,23 +119,23 @@ func ReadContextSecondaryConnection(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	connection, err := client.Connections.ShowByID(ctx, id)
+	connection, err := client.Connections.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return diag.Diagnostics{
 				diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to retrieve connection. Target object not found. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Connection name: %s, Err: %s", id.FullyQualifiedName(), err),
+					Summary:  "Failed to query secondary connection. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Secondary connection id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Error,
-				Summary:  "Failed to retrieve connection.",
-				Detail:   fmt.Sprintf("Connection name: %s, Err: %s", id.FullyQualifiedName(), err),
+				Summary:  "Failed to query secondary connection.",
+				Detail:   fmt.Sprintf("Secondary connection id: %s, Err: %s", id.FullyQualifiedName(), err),
 			},
 		}
 	}
@@ -176,19 +183,4 @@ func UpdateContextSecondaryConnection(ctx context.Context, d *schema.ResourceDat
 	}
 
 	return ReadContextSecondaryConnection(ctx, d, meta)
-}
-
-func DeleteContextSecondaryConnection(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	err = client.Connections.Drop(ctx, sdk.NewDropConnectionRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }

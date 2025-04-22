@@ -114,13 +114,19 @@ var externalVolumeSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// ExternalVolume returns a pointer to the resource representing an external volume.
 func ExternalVolume() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.ExternalVolumes.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingCreateWrapper(resources.ExternalVolume, CreateContextExternalVolume)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingReadWrapper(resources.ExternalVolume, ReadContextExternalVolume(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingUpdateWrapper(resources.ExternalVolume, UpdateContextExternalVolume)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingDeleteWrapper(resources.ExternalVolume, DeleteContextExternalVolume)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingDeleteWrapper(resources.ExternalVolume, deleteFunc)),
 
 		Description: "Resource used to manage external volume objects. For more information, check [external volume documentation](https://docs.snowflake.com/en/sql-reference/commands-data-loading#external-volume).",
 
@@ -230,7 +236,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		externalVolume, err := client.ExternalVolumes.ShowByID(ctx, id)
+		externalVolume, err := client.ExternalVolumes.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -238,7 +244,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query external volume. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("External Volume: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("External Volume id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -418,22 +424,6 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	return ReadContextExternalVolume(false)(ctx, d, meta)
-}
-
-func DeleteContextExternalVolume(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, idErr := sdk.ParseAccountObjectIdentifier(d.Id())
-	if idErr != nil {
-		return diag.FromErr(idErr)
-	}
-
-	err := client.ExternalVolumes.Drop(ctx, sdk.NewDropExternalVolumeRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }
 
 func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error) {

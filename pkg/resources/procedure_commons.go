@@ -387,21 +387,12 @@ func procedureBaseSchema() map[string]schema.Schema {
 	}
 }
 
-func DeleteProcedure(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := client.Procedures.Drop(ctx, sdk.NewDropProcedureRequest(id).WithIfExists(true)); err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
-}
+var DeleteProcedure = ResourceDeleteContextFunc(
+	sdk.ParseSchemaObjectIdentifierWithArguments,
+	func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifierWithArguments] {
+		return client.Procedures.DropSafely
+	},
+)
 
 func UpdateProcedure(language string, readFunc func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics) func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -536,6 +527,21 @@ func ImportProcedure(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 }
 
 func queryAllProcedureDetailsCommon(ctx context.Context, d *schema.ResourceData, client *sdk.Client, id sdk.SchemaObjectIdentifierWithArguments) (*allProcedureDetailsCommon, diag.Diagnostics) {
+	procedure, err := client.Procedures.ShowByIDSafely(ctx, id)
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return nil, diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query procedure. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Procedure: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return nil, diag.FromErr(err)
+	}
+
 	procedureDetails, err := client.Procedures.DescribeDetails(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
@@ -551,20 +557,7 @@ func queryAllProcedureDetailsCommon(ctx context.Context, d *schema.ResourceData,
 		}
 		return nil, diag.FromErr(err)
 	}
-	procedure, err := client.Procedures.ShowByID(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query procedure. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Procedure: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
+
 	procedureParameters, err := client.Procedures.ShowParameters(ctx, id)
 	if err != nil {
 		return nil, diag.FromErr(err)

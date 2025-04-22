@@ -423,6 +423,21 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			return diag.FromErr(err)
 		}
 
+		u, err := client.Users.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query user. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("User id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
+		}
+
 		userDetails, err := client.Users.Describe(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
@@ -432,27 +447,13 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query user. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("User: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("User id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
 			return diag.FromErr(err)
 		}
 
-		u, err := client.Users.ShowByID(ctx, id)
-		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query user. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("User: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
-		}
 		userParameters, err := client.Users.ShowParameters(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
@@ -712,17 +713,7 @@ func handlePasswordUpdate(ctx context.Context, id sdk.AccountObjectIdentifier, u
 	return nil
 }
 
-func DeleteUser(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-
-	err := client.Users.Drop(ctx, id, &sdk.DropUserOptions{
-		IfExists: sdk.Bool(true),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
-}
+var DeleteUser = ResourceDeleteContextFunc(
+	helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+	func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] { return client.Users.DropSafely },
+)

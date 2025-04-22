@@ -94,7 +94,7 @@ func SCIMIntegration() *schema.Resource {
 		CreateContext: TrackingCreateWrapper(resources.ScimSecurityIntegration, CreateContextSCIMIntegration),
 		ReadContext:   TrackingReadWrapper(resources.ScimSecurityIntegration, ReadContextSCIMIntegration(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.ScimSecurityIntegration, UpdateContextSCIMIntegration),
-		DeleteContext: TrackingDeleteWrapper(resources.ScimSecurityIntegration, DeleteContextSCIMIntegration),
+		DeleteContext: TrackingDeleteWrapper(resources.ScimSecurityIntegration, DeleteSecurityIntegration),
 		Description:   "Resource used to manage scim security integration objects. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-scim).",
 
 		Schema: scimIntegrationSchema,
@@ -413,26 +413,4 @@ func UpdateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	return ReadContextSCIMIntegration(false)(ctx, d, meta)
-}
-
-func DeleteContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.SecurityIntegrations.Drop(ctx, sdk.NewDropSecurityIntegrationRequest(sdk.NewAccountObjectIdentifier(id.Name())).WithIfExists(true))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting integration",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
 }

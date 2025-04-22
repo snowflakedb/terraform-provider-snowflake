@@ -169,7 +169,7 @@ func OauthIntegrationForCustomClients() *schema.Resource {
 		CreateContext: TrackingCreateWrapper(resources.OauthIntegrationForCustomClients, CreateContextOauthIntegrationForCustomClients),
 		ReadContext:   TrackingReadWrapper(resources.OauthIntegrationForCustomClients, ReadContextOauthIntegrationForCustomClients(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.OauthIntegrationForCustomClients, UpdateContextOauthIntegrationForCustomClients),
-		DeleteContext: TrackingDeleteWrapper(resources.OauthIntegrationForCustomClients, DeleteContextOauthIntegrationForCustomClients),
+		DeleteContext: TrackingDeleteWrapper(resources.OauthIntegrationForCustomClients, DeleteSecurityIntegration),
 		Description:   "Resource used to manage oauth security integration for custom clients objects. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.OauthIntegrationForCustomClients, customdiff.All(
@@ -387,7 +387,7 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 			return diag.FromErr(err)
 		}
 
-		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
+		integration, err := client.SecurityIntegrations.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -395,7 +395,7 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query security integration. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Security integration name: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("Security integration id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -698,26 +698,4 @@ func UpdateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 	}
 
 	return ReadContextOauthIntegrationForCustomClients(false)(ctx, d, meta)
-}
-
-func DeleteContextOauthIntegrationForCustomClients(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.SecurityIntegrations.Drop(ctx, sdk.NewDropSecurityIntegrationRequest(sdk.NewAccountObjectIdentifier(id.Name())).WithIfExists(true))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting integration",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
 }

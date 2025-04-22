@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -43,13 +44,19 @@ var emailNotificationIntegrationSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// EmailNotificationIntegration returns a pointer to the resource representing a notification integration.
 func EmailNotificationIntegration() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.NotificationIntegrations.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.EmailNotificationIntegrationResource), TrackingCreateWrapper(resources.EmailNotificationIntegration, CreateEmailNotificationIntegration)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.EmailNotificationIntegrationResource), TrackingReadWrapper(resources.EmailNotificationIntegration, ReadEmailNotificationIntegration)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.EmailNotificationIntegrationResource), TrackingUpdateWrapper(resources.EmailNotificationIntegration, UpdateEmailNotificationIntegration)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.EmailNotificationIntegrationResource), TrackingDeleteWrapper(resources.EmailNotificationIntegration, DeleteEmailNotificationIntegration)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.EmailNotificationIntegrationResource), TrackingDeleteWrapper(resources.EmailNotificationIntegration, deleteFunc)),
 
 		Schema: emailNotificationIntegrationSchema,
 		Importer: &schema.ResourceImporter{
@@ -102,10 +109,18 @@ func ReadEmailNotificationIntegration(ctx context.Context, d *schema.ResourceDat
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
 
-	integration, err := client.NotificationIntegrations.ShowByID(ctx, id)
+	integration, err := client.NotificationIntegrations.ShowByIDSafely(ctx, id)
 	if err != nil {
-		log.Printf("[DEBUG] notification integration (%s) not found", d.Id())
-		d.SetId("")
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to email notification integration. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Email notification integration id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 
@@ -204,19 +219,4 @@ func UpdateEmailNotificationIntegration(ctx context.Context, d *schema.ResourceD
 	}
 
 	return ReadEmailNotificationIntegration(ctx, d, meta)
-}
-
-// DeleteEmailNotificationIntegration implements schema.DeleteFunc.
-func DeleteEmailNotificationIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-
-	err := client.NotificationIntegrations.Drop(ctx, sdk.NewDropNotificationIntegrationRequest(id))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-
-	return nil
 }

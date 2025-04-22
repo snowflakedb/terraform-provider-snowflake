@@ -394,22 +394,12 @@ func functionBaseSchema() map[string]schema.Schema {
 	}
 }
 
-func DeleteFunction(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.Functions.Drop(ctx, sdk.NewDropFunctionRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
-}
+var DeleteFunction = ResourceDeleteContextFunc(
+	sdk.ParseSchemaObjectIdentifierWithArguments,
+	func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifierWithArguments] {
+		return client.Functions.DropSafely
+	},
+)
 
 func UpdateFunction(language string, readFunc func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics) func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -652,6 +642,21 @@ func setFunctionTargetPathInBuilder[T any](d *schema.ResourceData, setTargetPath
 }
 
 func queryAllFunctionDetailsCommon(ctx context.Context, d *schema.ResourceData, client *sdk.Client, id sdk.SchemaObjectIdentifierWithArguments) (*allFunctionDetailsCommon, diag.Diagnostics) {
+	function, err := client.Functions.ShowByIDSafely(ctx, id)
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return nil, diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query function. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Function: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return nil, diag.FromErr(err)
+	}
+
 	functionDetails, err := client.Functions.DescribeDetails(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
@@ -667,20 +672,7 @@ func queryAllFunctionDetailsCommon(ctx context.Context, d *schema.ResourceData, 
 		}
 		return nil, diag.FromErr(err)
 	}
-	function, err := client.Functions.ShowByID(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query function. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Function: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
+
 	functionParameters, err := client.Functions.ShowParameters(ctx, id)
 	if err != nil {
 		return nil, diag.FromErr(err)

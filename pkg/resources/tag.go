@@ -105,7 +105,6 @@ var tagReferenceSchema = &schema.Schema{
 	},
 }
 
-// Schema returns a pointer to the resource representing a schema.
 func Tag() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
@@ -176,7 +175,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	tag, err := client.Tags.ShowByID(ctx, id)
+	tag, err := client.Tags.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -184,7 +183,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 				diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to query tag. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Tag: %s, Err: %s", id.FullyQualifiedName(), err),
+					Detail:   fmt.Sprintf("Tag id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
@@ -311,6 +310,7 @@ func DeleteContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	// before dropping the resource, all policies must be unset
 	policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
 	if err != nil {
@@ -323,15 +323,18 @@ func DeleteContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			removedPolicies = append(removedPolicies, policyName)
 		}
 	}
+
 	if len(removedPolicies) > 0 {
 		log.Printf("[DEBUG] unsetting masking policies before dropping tag: %s", id.FullyQualifiedName())
 		if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(sdk.NewTagUnsetRequest().WithMaskingPolicies(removedPolicies))); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if err := client.Tags.Drop(ctx, sdk.NewDropTagRequest(id).WithIfExists(true)); err != nil {
+
+	if err := client.Tags.DropSafely(ctx, id); err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId("")
 	return nil
 }

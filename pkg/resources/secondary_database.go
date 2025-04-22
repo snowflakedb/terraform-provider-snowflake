@@ -47,11 +47,19 @@ var secondaryDatabaseSchema = map[string]*schema.Schema{
 }
 
 func SecondaryDatabase() *schema.Resource {
+	// TODO(SNOW-1818849): unassign network policies inside the database before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Databases.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.SecondaryDatabase, CreateSecondaryDatabase),
 		UpdateContext: TrackingUpdateWrapper(resources.SecondaryDatabase, UpdateSecondaryDatabase),
 		ReadContext:   TrackingReadWrapper(resources.SecondaryDatabase, ReadSecondaryDatabase),
-		DeleteContext: TrackingDeleteWrapper(resources.SecondaryDatabase, DeleteSecondaryDatabase),
+		DeleteContext: TrackingDeleteWrapper(resources.SecondaryDatabase, deleteFunc),
 		Description:   "A secondary database creates a replica of an existing primary database (i.e. a secondary database). For more information about database replication, see [Introduction to database replication across multiple accounts](https://docs.snowflake.com/en/user-guide/db-replication-intro).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SecondaryDatabase, customdiff.All(
@@ -165,7 +173,7 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	secondaryDatabase, err := client.Databases.ShowByID(ctx, secondaryDatabaseId)
+	secondaryDatabase, err := client.Databases.ShowByIDSafely(ctx, secondaryDatabaseId)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -173,7 +181,7 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 				diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to query secondary database. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("DatabaseName: %s, Err: %s", secondaryDatabaseId.FullyQualifiedName(), err),
+					Detail:   fmt.Sprintf("Secondary database id: %s, Err: %s", secondaryDatabaseId.FullyQualifiedName(), err),
 				},
 			}
 		}
@@ -228,24 +236,5 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 		return diags
 	}
 
-	return nil
-}
-
-func DeleteSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// TODO(SNOW-1818849): unassign network policies inside the database before dropping
-	err = client.Databases.Drop(ctx, id, &sdk.DropDatabaseOptions{
-		IfExists: sdk.Bool(true),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
 	return nil
 }

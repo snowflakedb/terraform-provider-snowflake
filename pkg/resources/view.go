@@ -281,15 +281,19 @@ var viewSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// View returns a pointer to the resource representing a view.
 func View() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseSchemaObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Views.DropSafely },
+	)
+
 	return &schema.Resource{
 		SchemaVersion: 1,
 
 		CreateContext: TrackingCreateWrapper(resources.View, CreateView(false)),
 		ReadContext:   TrackingReadWrapper(resources.View, ReadView(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.View, UpdateView),
-		DeleteContext: TrackingDeleteWrapper(resources.View, DeleteView),
+		DeleteContext: TrackingDeleteWrapper(resources.View, deleteFunc),
 		Description:   "Resource used to manage view objects. For more information, check [view documentation](https://docs.snowflake.com/en/sql-reference/sql/create-view).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.View, customdiff.All(
@@ -596,7 +600,7 @@ func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		view, err := client.Views.ShowByID(ctx, id)
+		view, err := client.Views.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -604,7 +608,7 @@ func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query view. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("View: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("View id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -1095,27 +1099,4 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	}
 
 	return ReadView(false)(ctx, d, meta)
-}
-
-func DeleteView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	client := meta.(*provider.Context).Client
-
-	err = client.Views.Drop(ctx, sdk.NewDropViewRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting view",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
 }

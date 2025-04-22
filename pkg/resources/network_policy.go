@@ -84,13 +84,21 @@ var networkPolicySchema = map[string]*schema.Schema{
 }
 
 func NetworkPolicy() *schema.Resource {
+	// TODO(SNOW-1818849): unassign policies before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.NetworkPolicies.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		Schema: networkPolicySchema,
 
 		CreateContext: TrackingCreateWrapper(resources.NetworkPolicy, CreateContextNetworkPolicy),
 		ReadContext:   TrackingReadWrapper(resources.NetworkPolicy, ReadContextNetworkPolicy),
 		UpdateContext: TrackingUpdateWrapper(resources.NetworkPolicy, UpdateContextNetworkPolicy),
-		DeleteContext: TrackingDeleteWrapper(resources.NetworkPolicy, DeleteContextNetworkPolicy),
+		DeleteContext: TrackingDeleteWrapper(resources.NetworkPolicy, deleteFunc),
 		Description:   "Resource used to control network traffic. For more information, check an [official guide](https://docs.snowflake.com/en/user-guide/network-policies) on controlling network traffic with network policies.",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.NetworkPolicy, customdiff.All(
@@ -186,15 +194,15 @@ func ReadContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	networkPolicy, err := client.NetworkPolicies.ShowByID(ctx, id)
+	networkPolicy, err := client.NetworkPolicies.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return diag.Diagnostics{
 				diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to retrieve network policy. Target object not found. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Id: %s", d.Id()),
+					Summary:  "Failed to query network policy. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Network policy id: %s, Err: %s", d.Id(), err),
 				},
 			}
 		}
@@ -367,29 +375,6 @@ func UpdateContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	return ReadContextNetworkPolicy(ctx, d, meta)
-}
-
-func DeleteContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// TODO(SNOW-1818849): unassign policies before dropping
-	err = client.NetworkPolicies.Drop(ctx, sdk.NewDropNetworkPolicyRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting network policy",
-				Detail:   fmt.Sprintf("Error deleting network policy %v, err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
 }
 
 // parseIPList is a helper function to parse a given ip list from ResourceData.

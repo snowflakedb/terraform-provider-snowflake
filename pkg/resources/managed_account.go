@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -87,10 +88,17 @@ var managedAccountSchema = map[string]*schema.Schema{
 
 // ManagedAccount returns a pointer to the resource representing a managed account.
 func ManagedAccount() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.ManagedAccounts.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ManagedAccountResource), TrackingCreateWrapper(resources.ManagedAccount, CreateManagedAccount)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ManagedAccountResource), TrackingReadWrapper(resources.ManagedAccount, ReadManagedAccount)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ManagedAccountResource), TrackingDeleteWrapper(resources.ManagedAccount, DeleteManagedAccount)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ManagedAccountResource), TrackingDeleteWrapper(resources.ManagedAccount, deleteFunc)),
 
 		Schema: managedAccountSchema,
 		Importer: &schema.ResourceImporter{
@@ -139,7 +147,7 @@ func ReadManagedAccount(ctx context.Context, d *schema.ResourceData, meta any) d
 	var managedAccount *sdk.ManagedAccount
 	var err error
 	err = util.Retry(5, 3*time.Second, func() (error, bool) {
-		managedAccount, err = client.ManagedAccounts.ShowByID(ctx, id)
+		managedAccount, err = client.ManagedAccounts.ShowByIDSafely(ctx, id)
 		if err != nil {
 			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
 			return nil, false
@@ -147,6 +155,16 @@ func ReadManagedAccount(ctx context.Context, d *schema.ResourceData, meta any) d
 		return nil, true
 	})
 	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query managed account. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Managed account id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
@@ -188,20 +206,5 @@ func ReadManagedAccount(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	return nil
-}
-
-// DeleteManagedAccount implements schema.DeleteFunc.
-func DeleteManagedAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	objectIdentifier := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-
-	err := client.ManagedAccounts.Drop(ctx, sdk.NewDropManagedAccountRequest(objectIdentifier))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
 	return nil
 }

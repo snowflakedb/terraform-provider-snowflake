@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ FailoverGroups = (*failoverGroups)(nil)
@@ -516,16 +518,15 @@ func (v *failoverGroups) ShowByID(ctx context.Context, id AccountObjectIdentifie
 	if err != nil {
 		return nil, err
 	}
+
 	failoverGroups, err := v.Show(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	for _, failoverGroup := range failoverGroups {
-		if failoverGroup.ID() == id && failoverGroup.AccountLocator == currentAccount {
-			return &failoverGroup, nil
-		}
-	}
-	return nil, ErrObjectNotExistOrAuthorized
+
+	return collections.FindFirst(failoverGroups, func(group FailoverGroup) bool {
+		return group.ID().FullyQualifiedName() == id.FullyQualifiedName() && group.AccountLocator == currentAccount
+	})
 }
 
 func (v *failoverGroups) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*FailoverGroup, error) {

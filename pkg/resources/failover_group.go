@@ -139,13 +139,19 @@ var failoverGroupSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// FailoverGroup returns a pointer to the resource representing a failover group.
 func FailoverGroup() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.FailoverGroups.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FailoverGroupResource), TrackingCreateWrapper(resources.FailoverGroup, CreateFailoverGroup)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FailoverGroupResource), TrackingReadWrapper(resources.FailoverGroup, ReadFailoverGroup)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FailoverGroupResource), TrackingUpdateWrapper(resources.FailoverGroup, UpdateFailoverGroup)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FailoverGroupResource), TrackingDeleteWrapper(resources.FailoverGroup, DeleteFailoverGroup)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FailoverGroupResource), TrackingDeleteWrapper(resources.FailoverGroup, deleteFunc)),
 
 		Schema: failoverGroupSchema,
 		Importer: &schema.ResourceImporter{
@@ -272,8 +278,18 @@ func CreateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-	failoverGroup, err := client.FailoverGroups.ShowByID(ctx, id)
+	failoverGroup, err := client.FailoverGroups.ShowByIDSafely(ctx, id)
 	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query failover group. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Failover group id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 
@@ -639,17 +655,4 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	return ReadFailoverGroup(ctx, d, meta)
-}
-
-// DeleteFailoverGroup implements schema.DeleteFunc.
-func DeleteFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-	err := client.FailoverGroups.Drop(ctx, id, &sdk.DropFailoverGroupOptions{IfExists: sdk.Bool(true)})
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting failover group %v err = %w", id.Name(), err))
-	}
-
-	d.SetId("")
-	return nil
 }

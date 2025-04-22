@@ -102,11 +102,16 @@ var stageSchema = map[string]*schema.Schema{
 
 // TODO (SNOW-1019005): Remove snowflake package that is used in Create and Update operations
 func Stage() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Stages.DropSafely },
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StageResource), TrackingCreateWrapper(resources.Stage, CreateStage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StageResource), TrackingReadWrapper(resources.Stage, ReadStage)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StageResource), TrackingUpdateWrapper(resources.Stage, UpdateStage)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StageResource), TrackingDeleteWrapper(resources.Stage, DeleteStage)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StageResource), TrackingDeleteWrapper(resources.Stage, deleteFunc)),
 
 		Schema: stageSchema,
 		Importer: &schema.ResourceImporter{
@@ -177,32 +182,26 @@ func ReadStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	properties, err := client.Stages.Describe(ctx, id)
+	stage, err := client.Stages.ShowByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return diag.Diagnostics{
 				diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to describe stage. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Stage: %s, Err: %s", id.FullyQualifiedName(), err),
+					Summary:  "Failed to query stage. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Stage id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
 		return diag.FromErr(err)
 	}
 
-	stage, err := client.Stages.ShowByID(ctx, id)
+	properties, err := client.Stages.Describe(ctx, id)
 	if err != nil {
-		d.SetId("")
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Failed to show stage by id",
-				Detail:   fmt.Sprintf("Stage: %s, Err: %s", id.FullyQualifiedName(), err),
-			},
-		}
+		return diag.FromErr(err)
 	}
+
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
 	}
@@ -364,26 +363,6 @@ func UpdateStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 
 	return ReadStage(ctx, d, meta)
-}
-
-func DeleteStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-
-	err := client.Stages.Drop(ctx, sdk.NewDropStageRequest(id))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Failed to drop stage",
-				Detail:   fmt.Sprintf("Id: %s, Err: %s", d.Id(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-
-	return nil
 }
 
 func findStagePropertyValueByName(properties []sdk.StageProperty, name string) string {

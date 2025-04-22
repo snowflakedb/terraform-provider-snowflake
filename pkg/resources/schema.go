@@ -90,13 +90,20 @@ var schemaSchema = map[string]*schema.Schema{
 
 // Schema returns a pointer to the resource representing a schema.
 func Schema() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseDatabaseObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.DatabaseObjectIdentifier] {
+			return client.Schemas.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		SchemaVersion: 2,
 
 		CreateContext: TrackingCreateWrapper(resources.Schema, CreateContextSchema),
 		ReadContext:   TrackingReadWrapper(resources.Schema, ReadContextSchema(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.Schema, UpdateContextSchema),
-		DeleteContext: TrackingDeleteWrapper(resources.Schema, DeleteContextSchema),
+		DeleteContext: TrackingDeleteWrapper(resources.Schema, deleteFunc),
 		Description:   "Resource used to manage schema objects. For more information, check [schema documentation](https://docs.snowflake.com/en/sql-reference/sql/create-schema).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Schema, customdiff.All(
@@ -381,26 +388,4 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	return ReadContextSchema(false)(ctx, d, meta)
-}
-
-func DeleteContextSchema(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.Schemas.Drop(ctx, id, &sdk.DropSchemaOptions{IfExists: sdk.Pointer(true)})
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting schema",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
 }

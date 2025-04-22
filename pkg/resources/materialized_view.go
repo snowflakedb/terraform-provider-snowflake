@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -73,11 +73,18 @@ var materializedViewSchema = map[string]*schema.Schema{
 
 // MaterializedView returns a pointer to the resource representing a view.
 func MaterializedView() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.MaterializedViews.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.MaterializedViewResource), TrackingCreateWrapper(resources.MaterializedView, CreateMaterializedView)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.MaterializedViewResource), TrackingReadWrapper(resources.MaterializedView, ReadMaterializedView)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.MaterializedViewResource), TrackingUpdateWrapper(resources.MaterializedView, UpdateMaterializedView)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.MaterializedViewResource), TrackingDeleteWrapper(resources.MaterializedView, DeleteMaterializedView)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.MaterializedViewResource), TrackingDeleteWrapper(resources.MaterializedView, deleteFunc)),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.MaterializedView, customdiff.All(
 			ComputedIfAnyAttributeChanged(materializedViewSchema, FullyQualifiedNameAttributeName, "name"),
@@ -147,11 +154,19 @@ func ReadMaterializedView(ctx context.Context, d *schema.ResourceData, meta any)
 
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	materializedView, err := client.MaterializedViews.ShowByID(ctx, id)
+	materializedView, err := client.MaterializedViews.ShowByIDSafely(ctx, id)
 	if err != nil {
-		log.Printf("[DEBUG] materialized view (%s) not found", d.Id())
-		d.SetId("")
-		return nil
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query materialized view. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Materialized view id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
 	}
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
@@ -268,20 +283,4 @@ func UpdateMaterializedView(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	return ReadMaterializedView(ctx, d, meta)
-}
-
-// DeleteMaterializedView implements schema.DeleteFunc.
-func DeleteMaterializedView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-
-	err := client.MaterializedViews.Drop(ctx, sdk.NewDropMaterializedViewRequest(id))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-
-	return nil
 }
