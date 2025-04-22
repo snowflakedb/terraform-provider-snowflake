@@ -170,7 +170,6 @@ func noArgsDataTypesAreTheSame[T DataType](_ T, _ T) bool {
 // - If only one data type is nil it returns true.
 // - It returns true for different underlying types.
 // - For the same type it performs type-specific check.
-// TODO [next PR]: test this function if approved
 func AreDefinitelyDifferent(a DataType, b DataType) bool {
 	if a == nil && b == nil {
 		return false

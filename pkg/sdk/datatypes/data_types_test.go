@@ -1268,3 +1268,84 @@ func Test_AreTheSame(t *testing.T) {
 		})
 	}
 }
+
+func Test_AreDefinitelyDifferent(t *testing.T) {
+	// empty d1/d2 means nil DataType input
+	type test struct {
+		d1              string
+		d2              string
+		expectedOutcome bool
+	}
+
+	testCases := []test{
+		{d1: "", d2: "", expectedOutcome: false},
+		{d1: "", d2: "NUMBER", expectedOutcome: true},
+		{d1: "NUMBER", d2: "", expectedOutcome: true},
+
+		{d1: "NUMBER(20)", d2: "NUMBER(20, 2)", expectedOutcome: false},
+		{d1: "NUMBER(20, 1)", d2: "NUMBER(20, 2)", expectedOutcome: true},
+		{d1: "NUMBER", d2: "NUMBER(20, 2)", expectedOutcome: false},
+		{d1: "NUMBER", d2: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, DefaultNumberScale), expectedOutcome: false},
+		{d1: fmt.Sprintf("NUMBER(%d)", DefaultNumberPrecision), d2: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, DefaultNumberScale), expectedOutcome: false},
+		{d1: "NUMBER", d2: "NUMBER", expectedOutcome: false},
+		{d1: "NUMBER(20)", d2: "NUMBER(20)", expectedOutcome: false},
+		{d1: "NUMBER(20, 2)", d2: "NUMBER(20, 2)", expectedOutcome: false},
+		{d1: "INT", d2: "NUMBER", expectedOutcome: false},
+		{d1: "INT", d2: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, DefaultNumberScale), expectedOutcome: false},
+		{d1: "INT", d2: "NUMBER(20)", expectedOutcome: false},
+		{d1: "NUMBER", d2: "VARCHAR", expectedOutcome: true},
+		{d1: "NUMBER(20)", d2: "VARCHAR(20)", expectedOutcome: true},
+		{d1: "CHAR", d2: "VARCHAR", expectedOutcome: false},
+		{d1: "CHAR", d2: fmt.Sprintf("VARCHAR(%d)", DefaultCharLength), expectedOutcome: false},
+		{d1: fmt.Sprintf("CHAR(%d)", DefaultVarcharLength), d2: "VARCHAR", expectedOutcome: false},
+		{d1: "BINARY", d2: "BINARY", expectedOutcome: false},
+		{d1: "BINARY", d2: "VARBINARY", expectedOutcome: false},
+		{d1: "BINARY(20)", d2: "BINARY(20)", expectedOutcome: false},
+		{d1: "BINARY(20)", d2: "BINARY(30)", expectedOutcome: true},
+		{d1: "BINARY", d2: "BINARY(30)", expectedOutcome: false},
+		{d1: fmt.Sprintf("BINARY(%d)", DefaultBinarySize), d2: "BINARY", expectedOutcome: false},
+		{d1: "FLOAT", d2: "FLOAT4", expectedOutcome: false},
+		{d1: "DOUBLE", d2: "FLOAT8", expectedOutcome: false},
+		{d1: "DOUBLE PRECISION", d2: "REAL", expectedOutcome: false},
+		{d1: "TIMESTAMPLTZ", d2: "TIMESTAMPNTZ", expectedOutcome: true},
+		{d1: "TIMESTAMPLTZ", d2: "TIMESTAMPTZ", expectedOutcome: true},
+		{d1: "TIMESTAMPLTZ", d2: fmt.Sprintf("TIMESTAMPLTZ(%d)", DefaultTimestampPrecision), expectedOutcome: false},
+		{d1: "VECTOR(INT, 20)", d2: "VECTOR(INT, 20)", expectedOutcome: false},
+		{d1: "VECTOR(INT, 20)", d2: "VECTOR(INT, 30)", expectedOutcome: true},
+		{d1: "VECTOR(FLOAT, 20)", d2: "VECTOR(INT, 30)", expectedOutcome: true},
+		{d1: "VECTOR(FLOAT, 20)", d2: "VECTOR(INT, 20)", expectedOutcome: true},
+		{d1: "VECTOR(FLOAT, 20)", d2: "VECTOR(FLOAT, 20)", expectedOutcome: false},
+		{d1: "VECTOR(FLOAT, 20)", d2: "FLOAT", expectedOutcome: true},
+		{d1: "TIME", d2: "TIME", expectedOutcome: false},
+		{d1: "TIME", d2: "TIME(5)", expectedOutcome: false},
+		{d1: "TIME", d2: fmt.Sprintf("TIME(%d)", DefaultTimePrecision), expectedOutcome: false},
+		{d1: "TABLE()", d2: "TABLE()", expectedOutcome: false},
+		// TODO [this PR]: test while implementing logic for table data type
+		//{d1: "TABLE(A NUMBER)", d2: "TABLE(B NUMBER)", expectedOutcome: false},
+		//{d1: "TABLE(A NUMBER)", d2: "TABLE(a NUMBER)", expectedOutcome: false},
+		//{d1: "TABLE(A NUMBER)", d2: "TABLE(A VARCHAR)", expectedOutcome: false},
+		//{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
+		//{d1: "TABLE(A NUMBER, B NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: false},
+		//{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: false},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(fmt.Sprintf(`check if "%s" is definitely different than "%s", expecting %t`, tc.d1, tc.d2, tc.expectedOutcome), func(t *testing.T) {
+			var p1, p2 DataType
+			var err error
+
+			if tc.d1 != "" {
+				p1, err = ParseDataType(tc.d1)
+				require.NoError(t, err)
+			}
+
+			if tc.d2 != "" {
+				p2, err = ParseDataType(tc.d2)
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tc.expectedOutcome, AreDefinitelyDifferent(p1, p2))
+		})
+	}
+}
