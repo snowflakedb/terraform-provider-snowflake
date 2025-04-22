@@ -210,18 +210,15 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	expression := d.Get("body").(string)
 
-	arguments := d.Get("argument").([]any)
-	args := make([]sdk.TableColumnSignature, 0)
-	for _, arg := range arguments {
-		v := arg.(map[string]any)
-		dataType, err := datatypes.ParseDataType(v["type"].(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		args = append(args, sdk.TableColumnSignature{
+	columnSignatures := make([]sdk.TableColumnSignature, 0)
+	var err error
+	if columnSignatures, err = handleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.TableColumnSignature, error) {
+		return sdk.TableColumnSignature{
 			Name: v["name"].(string),
 			Type: sdk.LegacyDataTypeFrom(dataType),
-		})
+		}, nil
+	}); err != nil {
+		return diag.FromErr(err)
 	}
 
 	var returns datatypes.DataType
@@ -245,7 +242,7 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 		opts.ExemptOtherPolicies = sdk.Pointer(parsed)
 	}
 
-	err := client.MaskingPolicies.Create(ctx, id, args, returns, expression, opts)
+	err = client.MaskingPolicies.Create(ctx, id, columnSignatures, returns, expression, opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
