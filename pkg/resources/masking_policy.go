@@ -194,9 +194,9 @@ func ImportMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 		return nil, err
 	}
 	// TODO [this PR]: what do we do with imports?
-	if err := d.Set("argument", schemas.MaskingPolicyArgumentsToSchema(policyDescription.Signature)); err != nil {
-		return nil, err
-	}
+	// if err := d.Set("argument", schemas.MaskingPolicyArgumentsToSchema(policyDescription.Signature)); err != nil {
+	//	 return nil, err
+	// }
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -294,7 +294,10 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err := d.Set("argument", schemas.MaskingPolicyArgumentsToSchema(maskingPolicyDescription.Signature)); err != nil {
+		if err := handleNestedDataTypeSet(d, "argument", "type", maskingPolicyDescription.Signature,
+			func(signature sdk.TableColumnSignature) datatypes.DataType { return signature.Type },
+			func(signature sdk.TableColumnSignature, arg map[string]any) { arg["name"] = signature.Name },
+		); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -371,6 +374,7 @@ func UpdateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 	}
 
+	// argument is handled by ForceNew
 	// return_data_type is handled by ForceNew
 	// exempt_other_policies is handled by ForceNew
 
