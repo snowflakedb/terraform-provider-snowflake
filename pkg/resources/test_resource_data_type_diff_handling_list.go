@@ -153,6 +153,11 @@ func TestResourceDataTypeDiffHandlingListDelete(_ context.Context, d *schema.Res
 	return nil
 }
 
+// testResourceDataTypeDiffHandlingListExternalRead returns:
+// - slice of external datatypes or nil;
+// - true if the env variable had any value, false otherwise;
+// - error or nil.
+// On the callers side, it should be first checked for error, then for the bool, and finally the slice.
 func testResourceDataTypeDiffHandlingListExternalRead(envName string) ([]datatypes.DataType, bool, error) {
 	value := oswrapper.Getenv(envName)
 	log.Printf("[DEBUG] env %s value is `%s`", envName, value)

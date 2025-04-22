@@ -20,7 +20,7 @@ type DataType interface {
 	ToLegacyDataTypeSql() string
 	// Canonical formats the data type between ToSql and ToLegacyDataTypeSql: it uses base type but with arguments (e.g. VARCHAR(29) for CHAR(29)).
 	Canonical() string
-	// ToSqlWithoutUnknowns formats data type explicitly specifying all KNOW arguments and using the given type.
+	// ToSqlWithoutUnknowns formats data type explicitly specifying all KNOWN arguments and using the given type.
 	ToSqlWithoutUnknowns() string
 }
 
