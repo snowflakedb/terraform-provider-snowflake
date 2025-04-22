@@ -40,7 +40,8 @@ var rowAccessPolicySchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"argument": {
-		Type: schema.TypeList,
+		Type:     schema.TypeList,
+		MinItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {

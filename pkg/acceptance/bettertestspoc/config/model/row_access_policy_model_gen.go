@@ -21,6 +21,9 @@ type RowAccessPolicyModel struct {
 	Name               tfconfig.Variable `json:"name,omitempty"`
 	Schema             tfconfig.Variable `json:"schema,omitempty"`
 
+	// added manually
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
