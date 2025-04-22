@@ -424,6 +424,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 				),
 			},
 			{
+				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
 				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
 				ConfigVariables:   commonVariables,

@@ -73,9 +73,9 @@ func TestAcc_RowAccessPolicies(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.return_type", "BOOLEAN")),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.0.name", "a")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.1.name", "b")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
 				),
 			},
 			{

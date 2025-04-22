@@ -70,12 +70,12 @@ func TestAcc_MaskingPolicies(t *testing.T) {
 
 					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.body", body)),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.return_type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.return_type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.0.name", "a")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.1.name", "b")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
 				),
 			},
 			{

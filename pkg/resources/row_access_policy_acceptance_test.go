@@ -102,9 +102,9 @@ func TestAcc_RowAccessPolicy(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "describe_output.0.return_type", "BOOLEAN")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "describe_output.0.signature.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "describe_output.0.signature.0.name", "A")),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "describe_output.0.signature.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "describe_output.0.signature.1.name", "B")),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "describe_output.0.signature.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
 				),
 			},
 			// change comment and expression
@@ -247,10 +247,9 @@ func TestAcc_RowAccessPolicy_Issue2053(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_RowAccessPolicy/basic"),
-				ConfigVariables:          accconfig.ConfigVariablesFromModel(t, policyModel),
+				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
+				Config:            accconfig.FromModels(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
@@ -345,14 +344,22 @@ func TestAcc_RowAccessPolicy_InvalidDataType(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
-	policyModel := model.RowAccessPolicy("test", []sdk.TableColumnSignature{
-		{
-			Name: "a",
-			// TODO [this PR]: fix setup of this test; was:
-			// Type: "invalid-type",
-			Type: testdatatypes.DataTypeVarchar,
-		},
-	}, body, id.DatabaseName(), id.Name(), id.SchemaName())
+	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("invalid-type"),
+			}),
+		),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -362,8 +369,9 @@ func TestAcc_RowAccessPolicy_InvalidDataType(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_RowAccessPolicy/basic"),
-				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				PlanOnly:        true,
 				ExpectError:     regexp.MustCompile(`invalid data type: invalid-type`),
 			},
 		},
@@ -398,7 +406,7 @@ func TestAcc_RowAccessPolicy_DataTypeAliases(t *testing.T) {
 					HasArguments([]sdk.TableColumnSignature{
 						{
 							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
+							Type: testdatatypes.DataTypeText,
 						},
 					}),
 				),
@@ -452,10 +460,9 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 				),
 			},
 			{
-				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_RowAccessPolicy/basic"),
-				ConfigVariables:          accconfig.ConfigVariablesFromModel(t, policyModel),
+				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
+				Config:            accconfig.FromModels(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
@@ -469,17 +476,11 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 					HasDatabaseString(id.DatabaseName()).
 					HasSchemaString(id.SchemaName()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasBodyString(body).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-						{
-							Name: "b",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+					HasBodyString(body),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.name", "b")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.type", string(sdk.DataTypeVARCHAR))),
 				),
 			},
 		},
@@ -531,10 +532,9 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 				),
 			},
 			{
-				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_RowAccessPolicy/basic"),
-				ConfigVariables:          accconfig.ConfigVariablesFromModel(t, policyModel),
+				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
+				Config:            accconfig.FromModels(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
@@ -545,17 +545,11 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 					HasDatabaseString(id.DatabaseName()).
 					HasSchemaString(id.SchemaName()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasBodyString(body).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-						{
-							Name: "B",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+					HasBodyString(body),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.name", "B")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.type", string(sdk.DataTypeVARCHAR))),
 				),
 			},
 		},
