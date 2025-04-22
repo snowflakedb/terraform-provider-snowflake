@@ -65,11 +65,20 @@ GitHub issue reference: [#2347](https://github.com/snowflakedb/terraform-provide
 
 GitHub issue reference: [#2432](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2432#issuecomment-1915074774)
 
-**Problem**: Getting `Error: 260000: account is empty` error with non-empty `account` configuration after upgrading to v1, with the same provider configuration which worked up to v0.100.0
+**Problem**: Getting `Error: 260000: account is empty` error with non-empty `account` configuration after upgrading to v1 or v2, with the same provider configuration which worked up to v0.100.0
 
 **Solution**: `account` configuration [has been removed in v1.0.0](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removed-deprecated-objects). Please specify your organization name and account name separately as mentioned in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removed-deprecated-objects):
 * `account_name` (`accountname` if you're sourcing it from `config` TOML)
 * `organization_name` (`organizationname` if you're sourcing it from `config` TOML)
+
+Note that in v1.2.0, we have added a new TOML file format which renames the TOML fields to be consistent with the provider schema (see the [migration guide entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-toml-file-schema) for v1.2.0). In v2, this format is used by default and it is recommended (see the [migration guide entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#breaking-change-changes-in-default-toml-format) for v2.0.0). In this case, the TOML configuration looks like:
+```toml
+[example]
+account_name = 'account_name'
+organization_name = 'organization_name'
+user = 'user'
+...
+```
 
 GitHub issue reference: [#3198](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3198), [#3308](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3308)
 

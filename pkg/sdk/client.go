@@ -110,7 +110,7 @@ func NewClient(cfg *gosnowflake.Config) (*Client, error) {
 	var err error
 	if cfg == nil {
 		log.Printf("[DEBUG] Searching for default config in credentials chain...")
-		cfg = DefaultConfig(WithVerifyPermissions(true))
+		cfg = DefaultConfig()
 	}
 
 	dsn, err := gosnowflake.DSN(cfg)

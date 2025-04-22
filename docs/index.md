@@ -119,7 +119,7 @@ provider "snowflake" {
 - `tmp_directory_path` (String) Sets temporary directory used by the driver for operations like encrypting, compressing etc. Can also be sourced from the `SNOWFLAKE_TMP_DIRECTORY_PATH` environment variable.
 - `token` (String, Sensitive) Token to use for OAuth and other forms of token based auth. Can also be sourced from the `SNOWFLAKE_TOKEN` environment variable.
 - `token_accessor` (Block List, Max: 1) (see [below for nested schema](#nestedblock--token_accessor))
-- `use_legacy_toml_file` (Boolean) True by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#order-precedence) Can also be sourced from the `SNOWFLAKE_USE_LEGACY_TOML_FILE` environment variable.
+- `use_legacy_toml_file` (Boolean) False by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#examples) Can also be sourced from the `SNOWFLAKE_USE_LEGACY_TOML_FILE` environment variable.
 - `user` (String) Username. Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_USER` environment variable.
 - `validate_default_parameters` (String) True by default. If false, disables the validation checks for Database, Schema, Warehouse and Role at the time a connection is established. Can also be sourced from the `SNOWFLAKE_VALIDATE_DEFAULT_PARAMETERS` environment variable.
 - `warehouse` (String) Specifies the virtual warehouse to use by default for queries, loading, etc. in the client session. Can also be sourced from the `SNOWFLAKE_WAREHOUSE` environment variable.
@@ -268,19 +268,19 @@ provider "snowflake" {
 }
 ```
 
-Example content of the TOML file configuration:
+Example content of the TOML file configuration is listed below. Note that this example follows a new TOML format, for the legacy format see [examples](#examples) section.
 
 ```toml
 [default]
-organizationname='organization_name'
-accountname='account_name'
+organization_name='organization_name'
+account_name='account_name'
 user='user'
 password='password'
 role='ACCOUNTADMIN'
 
 [secondary_test_account]
-organizationname='organization_name'
-accountname='account2_name'
+organization_name='organization_name'
+account_name='account2_name'
 user='user'
 password='password'
 role='ACCOUNTADMIN'

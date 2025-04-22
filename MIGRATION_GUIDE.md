@@ -12,7 +12,7 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v1.1.1 ➞ v2.0.0
+## v1.2.0 ➞ v2.0.0
 
 ### *(breaking change)* Changes in sensitive values
 To ensure better security of users' data, we adjusted the fields containing sensitive information to be sensitive in the provider. This means these values will not be printed by Terraform during planning, etc. Note that the users are still responsible for storing the state securely. Read more about sensitive values in the [Terraform documentation](https://developer.hashicorp.com/terraform/tutorials/configuration-language/sensitive-variables).
@@ -79,6 +79,17 @@ Instead, we added notes in the documentation of the related resources. The full 
 - `snowflake_view` resource: `statement` and `show_output.text` fields,
 - `snowflake_views` data source: `show_output.text` field,
 
+### *(breaking change)* Changes in default TOML format
+As we have announced in [an earlier entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-toml-file-schema), now the provider uses the new TOML format by default (`use_legacy_toml_file` is `false` by default). This means that when you try running the v2 provider with the same provider configuration which worked before, you can get a following error: `Error: 260000: account is empty` error with non-empty `account` configuration after upgrading to v2.
+
+Please adjust your TOML format, basing on our [example](https://registry.terraform.io/providers/snowflakedb/snowflake/2.0.0/docs#examples).
+
+This is a breaking change because it requires adjustments on the user's side.
+
+Read more details in the mentioned [migration guide entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-toml-file-schema).
+
+Alternatively, specify `use_legacy_toml_file=true` in your configuration, but this is not recommended. The legacy format is deprecated and will be removed in the next major release (v3).
+
 ### *(breaking change)* Changes in TOML configuration file requirements
 As we have announced in [an earlier entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#changes-in-toml-configuration-file-requirements), now file permissions are verified by default (`skip_toml_file_permission_verification` is `false` by default). This means that on non-Windows systems, when you run the provider, you can get a following error:
 ```
@@ -90,7 +101,7 @@ This is a breaking change because it requires adjustments on the user's side.
 
 Read more details in the mentioned [migration guide entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#changes-in-toml-configuration-file-requirements).
 
-Alternatively, specify `skip_toml_file_permission_verification=false` in your configuration, but this is less secure and not recommended.
+Alternatively, specify `skip_toml_file_permission_verification=false` in your provider configuration and use the unchanged TOML file, but this is less secure and not recommended.
 
 ## v1.1.0 ➞ v1.2.0
 
@@ -101,7 +112,7 @@ The TOML file schema before v1.2.0 was not consistent with the configuration key
 
 These differences caused some confusion for the users. This is why we decided to introduce a new TOML schema addressing these flaws.
 The new schema uses underscore (`_`) as a separator, and changes `tracing` to `driver_tracing` to be consistent with the provider schema.
-You can see an example in [our registry](https://registry.terraform.io/providers/snowflakedb/snowflake/1.2.0/docs#order-precedence).
+You can see an example in [our registry](https://registry.terraform.io/providers/snowflakedb/snowflake/1.2.0/docs#examples).
 
 The default behavior is the same as before v1.2.0. You can enable the new behavior by setting `use_legacy_toml_file = false` in the provider, or by setting `SNOWFLAKE_USE_LEGACY_TOML_FILE=false` environmental variable.
 Please note that we will change the default behavior in v2: the new TOML schema will be read by default, but there will still be a possibility to read the old format. However, we encourage you to use our new schema now and give us feedback.

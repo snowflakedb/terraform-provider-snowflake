@@ -15,8 +15,8 @@ As a testing environment, I chose VSCode with the Snowflake extension for being 
 and the tested one. For testing account, I added this configuration for the tested user:
 
 ```toml
-[connections.Test]          
-accountname = '***'
+[connections.Test]
+account_name = '***'
 username = '***'
 password= '***'
 host = '***'
@@ -64,7 +64,7 @@ CREATE OR REPLACE USER TEST_USER
 ```
 
 2. Log into the user (logs in successfully, but no database and role is selected in the context).
-   
+
 ### 3. Database and role are granted to the user, but the casing is not matched.
 
 1. Replace the user with existing default database and role, but with lowercase names.

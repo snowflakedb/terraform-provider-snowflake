@@ -165,19 +165,19 @@ provider "snowflake" {
 }
 ```
 
-Example content of the TOML file configuration:
+Example content of the TOML file configuration is listed below. Note that this example follows a new TOML format, for the legacy format see [examples](#examples) section.
 
 ```toml
 [default]
-organizationname='organization_name'
-accountname='account_name'
+organization_name='organization_name'
+account_name='account_name'
 user='user'
 password='password'
 role='ACCOUNTADMIN'
 
 [secondary_test_account]
-organizationname='organization_name'
-accountname='account2_name'
+organization_name='organization_name'
+account_name='account2_name'
 user='user'
 password='password'
 role='ACCOUNTADMIN'

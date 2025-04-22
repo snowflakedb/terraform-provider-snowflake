@@ -390,9 +390,9 @@ func Provider() *schema.Provider {
 			},
 			"use_legacy_toml_file": {
 				Type:        schema.TypeBool,
-				Description: envNameFieldDescription("True by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#order-precedence)", snowflakeenvs.UseLegacyTomlFile),
+				Description: envNameFieldDescription("False by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#examples)", snowflakeenvs.UseLegacyTomlFile),
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.UseLegacyTomlFile, true),
+				DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.UseLegacyTomlFile, false),
 			},
 		},
 		ResourcesMap:         getResources(),
