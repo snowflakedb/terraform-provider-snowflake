@@ -638,6 +638,8 @@ func TestAcc_GrantPrivilegesToShare_NoOnOption(t *testing.T) {
 
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2621 doesn't apply to this resource
 func TestAcc_GrantPrivilegesToShare_RemoveShareOutsideTerraform(t *testing.T) {
+	t.Skip("Should be addressed in SNOW-2048471 - without it the test cannot be properly asserted in the terraform testing framework")
+
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
 
@@ -670,8 +672,7 @@ func TestAcc_GrantPrivilegesToShare_RemoveShareOutsideTerraform(t *testing.T) {
 				PreConfig:       func() { shareCleanup() },
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_GrantPrivilegesToShare/OnCustomShare"),
 				ConfigVariables: configVariables,
-				// The error occurs in the Create operation, indicating the Read operation removed the resource from the state in the previous step.
-				ExpectError: regexp.MustCompile("An error occurred when granting privileges to share"),
+				ExpectError:     regexp.MustCompile(sdk.ErrObjectNotExistOrAuthorized.Error()),
 			},
 		},
 	})

@@ -14,6 +14,36 @@ across different versions.
 
 ## v1.1.0 ➞ v1.2.0
 
+### New behavior for Read and Delete operations when removing high-hierarchy objects
+Some objects in Snowflake are created in hierarchy, for example, tables (database → schema → table).
+When the user wants to remove the higher-hierarchy object (like a database), the lower-hierarchy objects should be removed beforehand. 
+Otherwise, Terraform would fail to remove the lower-hierarchy objects from the state, 
+and without manual state management it wouldn't be possible to remove this object, ending up in broken state.
+This behavior was described more in detail in [our documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_research_summary#renaming-higher-hierarchy-objects).
+
+For improved usability, we adjusted the Read and Delete operation implementations for all resources, 
+so that now, they're able to know the higher-hierarchy object is missing, and they can safely remove themselves from the state.
+
+To demonstrate this behavior, let's take the following configuration:
+```terraform
+resource "snowflake_table" "test" {
+  database = "TEST_DATABASE"
+  schema   = "PUBLIC"
+  name     = "TEMP_TABLE"
+  column {
+    name = "ID"
+    type = "NUMBER"
+  }
+}
+```
+> Note: The `TEST_DATABASE` is created manually through Snowflake and the table configuration is already applied through Terraform.
+ 
+When you remove the database by running `DROP DATABASE TEST_DATABASE` in Snowflake, and then run `terraform apply`,
+previously, you would end up in the infinite loop of errors and only manual removal from state (`terraform state rm snowflake_table.test`)
+would help you to remove the table from the state (and then from the configuration). 
+
+In the future, we are planning to do the same with object attachments, like grants, policies, etc. (To address cases like: [#3412](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3412))
+
 ### New TOML file schema
 The TOML file schema before v1.2.0 was not consistent with the configuration keys in the provider. The main differences were:
 - The keys in the provider contain an underscore (`_`) as a separator, but the TOML schema has fields without any separator.
@@ -29,8 +59,6 @@ Please note that we will change the default behavior in v2: the new TOML schema 
 NOTE: With this change, we are not bringing back the `account` field yet. This means that `account_name` and `organization_name` fields must still be used. We will discuss about this field after v2.
 
 References: [#3553](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3553)
-
-[//]: # (// TODO: Document new Read and Delete behavior, and mention grants and attachments that we have plans for those)
 
 ### Fixes in handling references to computed fields in context of `show_output`
 The issue could arise in almost any object using show_output when the following steps happen:
