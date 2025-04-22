@@ -109,8 +109,8 @@ func parseNumberDataTypeWithoutPrecisionAndScale(raw sanitizedDataTypeRaw) (*Num
 		args := strings.TrimPrefix(raw.raw, raw.matchedByType)
 		return nil, fmt.Errorf("number type %s cannot have arguments: %s", raw.matchedByType, args)
 	} else {
-		// TODO [this PR]: these numbers can't have other precision/scale, so maybe should be saved as knowns?
-		return &NumberDataType{DefaultNumberPrecision, DefaultNumberScale, raw.matchedByType, false, false}, nil
+		// subtypes can't have other precision/scale, so the defaults are returned as knowns
+		return &NumberDataType{DefaultNumberPrecision, DefaultNumberScale, raw.matchedByType, true, true}, nil
 	}
 }
 
