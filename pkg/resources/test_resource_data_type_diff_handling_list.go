@@ -93,16 +93,15 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 
 		value := oswrapper.Getenv(envName)
 		log.Printf("[DEBUG] env %s value is `%s`", envName, value)
-		if value != "" {
-			// TODO [next PR]: extract splitting
-			dataTypes := strings.Split(value, "|")
+		externalDataTypes, envExists, err := testResourceDataTypeDiffHandlingListExternalRead(envName)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if envExists {
+			// TODO [next PR or will be extracted]: extract common method to work with collections on the resource side (will be done with the masking policy and row access policy application)
 			currentConfigDatatypes := d.Get("nesting_list").([]any)
 			nestedDatatypesSchema := make([]map[string]any, 0)
-			for i, dt := range dataTypes {
-				externalDataType, err := datatypes.ParseDataType(dt)
-				if err != nil {
-					return diag.FromErr(err)
-				}
+			for i, externalDataType := range externalDataTypes {
 				// TODO [next PR]: handle missing data types too
 				if i+1 > len(currentConfigDatatypes) {
 					log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, externalDataType.ToSqlWithoutUnknowns())
@@ -153,6 +152,25 @@ func TestResourceDataTypeDiffHandlingListDelete(_ context.Context, d *schema.Res
 
 	d.SetId("")
 	return nil
+}
+
+func testResourceDataTypeDiffHandlingListExternalRead(envName string) ([]datatypes.DataType, bool, error) {
+	value := oswrapper.Getenv(envName)
+	log.Printf("[DEBUG] env %s value is `%s`", envName, value)
+	if value != "" {
+		rawDataTypes := strings.Split(value, "|")
+		externalDataTypes := make([]datatypes.DataType, len(rawDataTypes))
+		for i, dt := range rawDataTypes {
+			externalDataType, err := datatypes.ParseDataType(dt)
+			if err != nil {
+				return externalDataTypes, true, err
+			}
+			externalDataTypes[i] = externalDataType
+		}
+		return externalDataTypes, true, nil
+	} else {
+		return nil, false, nil
+	}
 }
 
 func testResourceDataTypeDiffHandlingListSet(envName string, dataTypes []datatypes.DataType) error {
