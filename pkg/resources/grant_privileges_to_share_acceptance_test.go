@@ -638,7 +638,7 @@ func TestAcc_GrantPrivilegesToShare_NoOnOption(t *testing.T) {
 
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2621 doesn't apply to this resource
 func TestAcc_GrantPrivilegesToShare_RemoveShareOutsideTerraform(t *testing.T) {
-	t.Skip("Should be addressed in SNOW-2048471 - without it the test cannot be properly asserted in the terraform testing framework")
+	t.Skip("Should be addressed in SNOW-2048471 - without this task done, the test cannot be properly asserted in the terraform testing framework")
 
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
