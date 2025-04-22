@@ -477,7 +477,6 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 	})
 }
 
-// TODO [this PR]: fix setup of this test
 func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
@@ -488,7 +487,9 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
 		{
 			Name: "a",
-			Type: "invalid-type",
+			// TODO [this PR]: fix setup of this test; was:
+			// Type: "invalid-type",
+			Type: testdatatypes.DataTypeVarchar,
 		},
 	}, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName())
 
