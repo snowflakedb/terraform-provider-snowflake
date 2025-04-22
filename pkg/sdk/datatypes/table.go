@@ -106,3 +106,8 @@ func areTableDataTypesTheSame(a, b *TableDataType) bool {
 
 	return true
 }
+
+func areTableDataTypesDefinitelyDifferent(a, b *TableDataType) bool {
+	// TODO [this PR]: implement!
+	return false
+}

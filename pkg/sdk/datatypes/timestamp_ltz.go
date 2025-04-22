@@ -11,6 +11,8 @@ import (
 type TimestampLtzDataType struct {
 	precision      int
 	underlyingType string
+
+	precisionKnown bool
 }
 
 func (t *TimestampLtzDataType) ToSql() string {
@@ -30,7 +32,7 @@ var TimestampLtzDataTypeSynonyms = []string{TimestampLtzLegacyDataType, "TIMESTA
 func parseTimestampLtzDataTypeRaw(raw sanitizedDataTypeRaw) (*TimestampLtzDataType, error) {
 	r := strings.TrimSpace(strings.TrimPrefix(raw.raw, raw.matchedByType))
 	if r == "" {
-		return &TimestampLtzDataType{DefaultTimestampPrecision, raw.matchedByType}, nil
+		return &TimestampLtzDataType{DefaultTimestampPrecision, raw.matchedByType, false}, nil
 	}
 	if !strings.HasPrefix(r, "(") || !strings.HasSuffix(r, ")") {
 		return nil, fmt.Errorf(`timestamp ltz %s could not be parsed, use "%s(precision)" format`, raw.raw, raw.matchedByType)
@@ -40,9 +42,17 @@ func parseTimestampLtzDataTypeRaw(raw sanitizedDataTypeRaw) (*TimestampLtzDataTy
 	if err != nil {
 		return nil, fmt.Errorf(`could not parse the timestamp's precision: "%s", err: %w`, precisionRaw, err)
 	}
-	return &TimestampLtzDataType{precision, raw.matchedByType}, nil
+	return &TimestampLtzDataType{precision, raw.matchedByType, true}, nil
 }
 
 func areTimestampLtzDataTypesTheSame(a, b *TimestampLtzDataType) bool {
 	return a.precision == b.precision
+}
+
+func areTimestampLtzDataTypesDefinitelyDifferent(a, b *TimestampLtzDataType) bool {
+	var precisionDefinitelyDifferent bool
+	if a.precisionKnown && b.precisionKnown {
+		precisionDefinitelyDifferent = a.precision != b.precision
+	}
+	return precisionDefinitelyDifferent
 }

@@ -13,6 +13,9 @@ type VectorDataType struct {
 	innerType      string
 	dimension      int
 	underlyingType string
+
+	innerTypeKnown bool
+	dimensionKnown bool
 }
 
 func (t *VectorDataType) ToSql() string {
@@ -52,7 +55,7 @@ func parseVectorDataTypeRaw(raw sanitizedDataTypeRaw) (*VectorDataType, error) {
 		if err != nil {
 			return nil, fmt.Errorf(`could not parse the vector's dimension: "%s", err: %w`, parts[1], err)
 		}
-		return &VectorDataType{vectorType, dimension, raw.matchedByType}, nil
+		return &VectorDataType{vectorType, dimension, raw.matchedByType, true, true}, nil
 	default:
 		return nil, fmt.Errorf(`vector cannot have %d arguments: "%s"; use "%s(type, dimension)" format`, l, onlyArgs, raw.matchedByType)
 	}
@@ -60,4 +63,18 @@ func parseVectorDataTypeRaw(raw sanitizedDataTypeRaw) (*VectorDataType, error) {
 
 func areVectorDataTypesTheSame(a, b *VectorDataType) bool {
 	return a.innerType == b.innerType && a.dimension == b.dimension
+}
+
+func areVectorDataTypesDefinitelyDifferent(a, b *VectorDataType) bool {
+	var innerTypeDefinitelyDifferent bool
+	if a.innerTypeKnown && b.innerTypeKnown {
+		innerTypeDefinitelyDifferent = a.innerType != b.innerType
+	}
+
+	var dimensionDefinitelyDifferent bool
+	if a.dimensionKnown && b.dimensionKnown {
+		dimensionDefinitelyDifferent = a.dimension != b.dimension
+	}
+
+	return innerTypeDefinitelyDifferent || dimensionDefinitelyDifferent
 }

@@ -13,6 +13,8 @@ const DefaultTimePrecision = 9
 type TimeDataType struct {
 	precision      int
 	underlyingType string
+
+	precisionKnown bool
 }
 
 func (t *TimeDataType) ToSql() string {
@@ -32,7 +34,7 @@ var TimeDataTypeSynonyms = []string{TimeLegacyDataType}
 func parseTimeDataTypeRaw(raw sanitizedDataTypeRaw) (*TimeDataType, error) {
 	r := strings.TrimSpace(strings.TrimPrefix(raw.raw, raw.matchedByType))
 	if r == "" {
-		return &TimeDataType{DefaultTimePrecision, raw.matchedByType}, nil
+		return &TimeDataType{DefaultTimePrecision, raw.matchedByType, false}, nil
 	}
 	if !strings.HasPrefix(r, "(") || !strings.HasSuffix(r, ")") {
 		return nil, fmt.Errorf(`time %s could not be parsed, use "%s(precision)" format`, raw.raw, raw.matchedByType)
@@ -42,9 +44,17 @@ func parseTimeDataTypeRaw(raw sanitizedDataTypeRaw) (*TimeDataType, error) {
 	if err != nil {
 		return nil, fmt.Errorf(`could not parse the time's precision: "%s", err: %w`, precisionRaw, err)
 	}
-	return &TimeDataType{precision, raw.matchedByType}, nil
+	return &TimeDataType{precision, raw.matchedByType, true}, nil
 }
 
 func areTimeDataTypesTheSame(a, b *TimeDataType) bool {
 	return a.precision == b.precision
+}
+
+func areTimeDataTypesDefinitelyDifferent(a, b *TimeDataType) bool {
+	var precisionDefinitelyDifferent bool
+	if a.precisionKnown && b.precisionKnown {
+		precisionDefinitelyDifferent = a.precision != b.precision
+	}
+	return precisionDefinitelyDifferent
 }

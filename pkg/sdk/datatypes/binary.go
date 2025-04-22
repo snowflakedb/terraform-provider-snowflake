@@ -13,6 +13,8 @@ const DefaultBinarySize = 8388608
 type BinaryDataType struct {
 	size           int
 	underlyingType string
+
+	sizeKnown bool
 }
 
 func (t *BinaryDataType) ToSql() string {
@@ -32,7 +34,7 @@ var BinaryDataTypeSynonyms = []string{BinaryLegacyDataType, "VARBINARY"}
 func parseBinaryDataTypeRaw(raw sanitizedDataTypeRaw) (*BinaryDataType, error) {
 	r := strings.TrimSpace(strings.TrimPrefix(raw.raw, raw.matchedByType))
 	if r == "" {
-		return &BinaryDataType{DefaultBinarySize, raw.matchedByType}, nil
+		return &BinaryDataType{DefaultBinarySize, raw.matchedByType, false}, nil
 	}
 	if !strings.HasPrefix(r, "(") || !strings.HasSuffix(r, ")") {
 		return nil, fmt.Errorf(`binary %s could not be parsed, use "%s(size)" format`, raw.raw, raw.matchedByType)
@@ -42,9 +44,17 @@ func parseBinaryDataTypeRaw(raw sanitizedDataTypeRaw) (*BinaryDataType, error) {
 	if err != nil {
 		return nil, fmt.Errorf(`could not parse the binary's size: "%s", err: %w`, sizeRaw, err)
 	}
-	return &BinaryDataType{size, raw.matchedByType}, nil
+	return &BinaryDataType{size, raw.matchedByType, true}, nil
 }
 
 func areBinaryDataTypesTheSame(a, b *BinaryDataType) bool {
 	return a.size == b.size
+}
+
+func areBinaryDataTypesDefinitelyDifferent(a, b *BinaryDataType) bool {
+	var sizeDefinitelyDifferent bool
+	if a.sizeKnown && b.sizeKnown {
+		sizeDefinitelyDifferent = a.size != b.size
+	}
+	return sizeDefinitelyDifferent
 }
