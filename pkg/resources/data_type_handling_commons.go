@@ -104,17 +104,17 @@ func handleNestedDataTypeCreate[T any](d *schema.ResourceData, collectionKey str
 }
 
 // handleNestedDataTypeSet should be used while handling nested data type attribute read.
-func handleNestedDataTypeSet(d *schema.ResourceData, collectionKey string, dataTypeKey string, externalDataTypes []datatypes.DataType) error {
+func handleNestedDataTypeSet[T any](d *schema.ResourceData, collectionKey string, dataTypeKey string, externalCollection []T, extractDataType func(T) datatypes.DataType, setOtherFields func(T, map[string]any)) error {
 	currentConfigDatatypes := d.Get(collectionKey).([]any)
 	nestedDatatypesSchema := make([]map[string]any, 0)
 
 	// TODO [this PR]: handle missing data types
-	for i, externalDataType := range externalDataTypes {
+	for i, externalItem := range externalCollection {
+		externalDataType := extractDataType(externalItem)
 		item := make(map[string]any)
 		if i+1 > len(currentConfigDatatypes) {
 			log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, externalDataType.ToSqlWithoutUnknowns())
 			item[dataTypeKey] = externalDataType.ToSqlWithoutUnknowns()
-			// TODO [this PR]: set other fields
 		} else {
 			v := currentConfigDatatypes[i].(map[string]any)
 			currentConfigDataType, err := readNestedDatatypeCommon(v, dataTypeKey)
@@ -126,16 +126,15 @@ func handleNestedDataTypeSet(d *schema.ResourceData, collectionKey string, dataT
 			if datatypes.AreDefinitelyDifferent(currentConfigDataType, externalDataType) {
 				log.Printf("[DEBUG] reading %d: external datatype %s is definitely different from the current config %s, updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
 				item[dataTypeKey] = externalDataType.ToSqlWithoutUnknowns()
-				// TODO [this PR]: set other fields
 			} else {
 				log.Printf("[DEBUG] reading %d: external datatype %s is not definitely different from the current config %s, not updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
 
 				// TODO [SNOW-2054238]: add test for StateFunc behavior with collections.
 				// using toSql() here as StateFunc seems to be not working in this case
 				item[dataTypeKey] = currentConfigDataType.ToSql()
-				// TODO [this PR]: set other fields
 			}
 		}
+		setOtherFields(externalItem, item)
 		nestedDatatypesSchema = append(nestedDatatypesSchema, item)
 	}
 
