@@ -176,3 +176,20 @@ func TestAcc_AccountParameter_INITIAL_REPLICATION_SIZE_LIMIT_IN_TB(t *testing.T)
 		},
 	})
 }
+
+func TestAcc_AccountParameter_CSV_TIMESTAMP_FORMAT(t *testing.T) {
+	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterCsvTimestampFormat), "YYYY-MM-DD")
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		CheckDestroy:             acc.CheckAccountParameterUnset(t, sdk.AccountParameterCsvTimestampFormat),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, accountParameterModel),
+				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
+					HasKeyString(string(sdk.AccountParameterCsvTimestampFormat)).
+					HasValueString("YYYY-MM-DD"),
+				),
+			},
+		},
+	})
+}
