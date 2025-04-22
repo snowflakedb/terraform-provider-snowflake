@@ -447,7 +447,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query user. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("User: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("User id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}

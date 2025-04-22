@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 // Compile-time proof of interface implementation.
@@ -305,12 +307,9 @@ func (v *alerts) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Aler
 		return nil, err
 	}
 
-	for _, alert := range alerts {
-		if alert.ID().name == id.Name() {
-			return &alert, nil
-		}
-	}
-	return nil, ErrObjectNotExistOrAuthorized
+	return collections.FindFirst(alerts, func(alert Alert) bool {
+		return alert.ID().FullyQualifiedName() == id.FullyQualifiedName()
+	})
 }
 
 func (v *alerts) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error) {

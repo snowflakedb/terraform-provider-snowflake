@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 )
 
@@ -560,12 +562,9 @@ func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (
 		return nil, err
 	}
 
-	for _, warehouse := range warehouses {
-		if warehouse.ID().name == id.Name() {
-			return &warehouse, nil
-		}
-	}
-	return nil, ErrObjectNotExistOrAuthorized
+	return collections.FindFirst(warehouses, func(warehouse Warehouse) bool {
+		return warehouse.ID().FullyQualifiedName() == id.FullyQualifiedName()
+	})
 }
 
 func (c *warehouses) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {

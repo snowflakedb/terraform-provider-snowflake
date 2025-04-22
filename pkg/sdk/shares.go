@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
@@ -320,12 +322,9 @@ func (s *shares) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Sha
 	if err != nil {
 		return nil, err
 	}
-	for _, share := range shares {
-		if share.Name.Name() == id.Name() {
-			return &share, nil
-		}
-	}
-	return nil, ErrObjectNotExistOrAuthorized
+	return collections.FindFirst(shares, func(share Share) bool {
+		return share.ID().FullyQualifiedName() == id.FullyQualifiedName()
+	})
 }
 
 func (s *shares) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Share, error) {
