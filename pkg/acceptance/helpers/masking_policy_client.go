@@ -4,7 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -38,23 +40,23 @@ func (c *MaskingPolicyClient) CreateMaskingPolicy(t *testing.T) (*sdk.MaskingPol
 		},
 	}
 	expression := "REPLACE('X', 1, 2)"
-	return c.CreateMaskingPolicyWithOptions(t, signature, sdk.DataTypeVARCHAR, expression, &sdk.CreateMaskingPolicyOptions{})
+	return c.CreateMaskingPolicyWithOptions(t, signature, testdatatypes.DataTypeVarchar, expression, &sdk.CreateMaskingPolicyOptions{})
 }
 
-func (c *MaskingPolicyClient) CreateMaskingPolicyIdentity(t *testing.T, columnType sdk.DataType) (*sdk.MaskingPolicy, func()) {
+func (c *MaskingPolicyClient) CreateMaskingPolicyIdentity(t *testing.T, columnType datatypes.DataType) (*sdk.MaskingPolicy, func()) {
 	t.Helper()
 	name := "a"
 	signature := []sdk.TableColumnSignature{
 		{
 			Name: name,
-			Type: columnType,
+			Type: sdk.LegacyDataTypeFrom(columnType),
 		},
 	}
 	expression := "a"
 	return c.CreateMaskingPolicyWithOptions(t, signature, columnType, expression, &sdk.CreateMaskingPolicyOptions{})
 }
 
-func (c *MaskingPolicyClient) CreateMaskingPolicyWithOptions(t *testing.T, signature []sdk.TableColumnSignature, returns sdk.DataType, expression string, options *sdk.CreateMaskingPolicyOptions) (*sdk.MaskingPolicy, func()) {
+func (c *MaskingPolicyClient) CreateMaskingPolicyWithOptions(t *testing.T, signature []sdk.TableColumnSignature, returns datatypes.DataType, expression string, options *sdk.CreateMaskingPolicyOptions) (*sdk.MaskingPolicy, func()) {
 	t.Helper()
 	ctx := context.Background()
 	id := c.ids.RandomSchemaObjectIdentifier()
@@ -68,7 +70,7 @@ func (c *MaskingPolicyClient) CreateMaskingPolicyWithOptions(t *testing.T, signa
 	return maskingPolicy, c.DropMaskingPolicyFunc(t, id)
 }
 
-func (c *MaskingPolicyClient) CreateOrReplaceMaskingPolicyWithOptions(t *testing.T, id sdk.SchemaObjectIdentifier, signature []sdk.TableColumnSignature, returns sdk.DataType, expression string, options *sdk.CreateMaskingPolicyOptions) (*sdk.MaskingPolicy, func()) {
+func (c *MaskingPolicyClient) CreateOrReplaceMaskingPolicyWithOptions(t *testing.T, id sdk.SchemaObjectIdentifier, signature []sdk.TableColumnSignature, returns datatypes.DataType, expression string, options *sdk.CreateMaskingPolicyOptions) (*sdk.MaskingPolicy, func()) {
 	t.Helper()
 	ctx := context.Background()
 

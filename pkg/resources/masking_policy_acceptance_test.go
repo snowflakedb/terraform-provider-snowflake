@@ -16,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -160,7 +161,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
 				PreConfig: func() {
-					acc.TestClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, argument, sdk.DataTypeVARCHAR, body, &sdk.CreateMaskingPolicyOptions{
+					acc.TestClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, argument, testdatatypes.DataTypeVarchar, body, &sdk.CreateMaskingPolicyOptions{
 						ExemptOtherPolicies: sdk.Pointer(false),
 						Comment:             sdk.Pointer("Terraform acceptance test - changed comment"),
 						OrReplace:           sdk.Pointer(true),

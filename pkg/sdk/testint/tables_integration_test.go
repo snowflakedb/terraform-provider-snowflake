@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -164,7 +165,7 @@ func TestInt_Table(t *testing.T) {
 	})
 
 	t.Run("create table as select", func(t *testing.T) {
-		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicyIdentity(t, sdk.DataTypeVARCHAR)
+		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
 		t.Cleanup(maskingPolicyCleanup)
 		columns := []sdk.TableAsSelectColumnRequest{
 			*sdk.NewTableAsSelectColumnRequest("COLUMN_3").
@@ -505,7 +506,7 @@ func TestInt_Table(t *testing.T) {
 	})
 
 	t.Run("alter table: unset masking policy", func(t *testing.T) {
-		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicyIdentity(t, sdk.DataTypeVARCHAR)
+		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
 		t.Cleanup(maskingPolicyCleanup)
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()

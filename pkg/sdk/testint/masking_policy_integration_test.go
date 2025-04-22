@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -109,7 +110,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		expression := "REPLACE('X', 1, 2)"
 		comment := random.Comment()
 		exemptOtherPolicies := random.Bool()
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, &sdk.CreateMaskingPolicyOptions{
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, &sdk.CreateMaskingPolicyOptions{
 			OrReplace:           sdk.Bool(true),
 			IfNotExists:         sdk.Bool(false),
 			Comment:             sdk.String(comment),
@@ -155,7 +156,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		}
 		expression := "REPLACE('X', 1, 2)"
 		comment := random.Comment()
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, &sdk.CreateMaskingPolicyOptions{
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, &sdk.CreateMaskingPolicyOptions{
 			OrReplace:           sdk.Bool(false),
 			IfNotExists:         sdk.Bool(true),
 			Comment:             sdk.String(comment),
@@ -196,7 +197,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, nil)
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, nil)
 		require.NoError(t, err)
 		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, id)
 		require.NoError(t, err)
@@ -241,7 +242,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 				'******'
 		end
 		`
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, nil)
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, nil)
 		require.NoError(t, err)
 		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, id)
 		require.NoError(t, err)
@@ -409,7 +410,7 @@ func TestInt_MaskingPoliciesShowByID(t *testing.T) {
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, &sdk.CreateMaskingPolicyOptions{})
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, &sdk.CreateMaskingPolicyOptions{})
 		require.NoError(t, err)
 		t.Cleanup(cleanupMaskingPolicyHandle(t, id))
 	}

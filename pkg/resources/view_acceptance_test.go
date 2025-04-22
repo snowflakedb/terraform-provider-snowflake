@@ -18,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -506,7 +507,7 @@ func TestAcc_View_complete(t *testing.T) {
 				Type: sdk.DataTypeNumber,
 			},
 		},
-		sdk.DataTypeNumber,
+		testdatatypes.DataTypeNumber,
 		`
 case
 	when One > 0 then One
@@ -658,7 +659,7 @@ func TestAcc_View_columns(t *testing.T) {
 				Type: sdk.DataTypeNumber,
 			},
 		},
-		sdk.DataTypeNumber,
+		testdatatypes.DataTypeNumber,
 		`
 case
 	when One > 0 then One
@@ -806,7 +807,7 @@ func TestAcc_View_columnsWithMaskingPolicyWithoutUsing(t *testing.T) {
 				Type: sdk.DataTypeNumber,
 			},
 		},
-		sdk.DataTypeNumber,
+		testdatatypes.DataTypeNumber,
 		`
 case
 	when One > 0 then One
