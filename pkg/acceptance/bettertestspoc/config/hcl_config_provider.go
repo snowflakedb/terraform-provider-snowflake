@@ -10,7 +10,13 @@ import (
 	hclv1parser "github.com/hashicorp/hcl/json/parser"
 )
 
-var DefaultHclConfigProvider = NewHclV1ConfigProvider(replaceNullPlaceholders, removeSingleAttributeWorkaroundLines, unquoteBlockType, fixBlockArguments, unquotePlaceholders, quotePlaceholders, replaceMultilinePlaceholders, unquoteArguments, removeDoubleNewlines, unquoteDependsOnReferences)
+var (
+	// SafeHclConfigProvider is used to build an HCL configuration that is suitable for logging (where sensitive values are masked).
+	SafeHclConfigProvider = NewHclV1ConfigProvider(replaceNullPlaceholders, removeSingleAttributeWorkaroundLines, unquoteBlockType, fixBlockArguments, unquotePlaceholders, quotePlaceholders, replaceMultilinePlaceholders, unquoteArguments, removeDoubleNewlines, unquoteDependsOnReferences, maskSensitiveArguments)
+
+	// DefaultHclConfigProvider is used to build an HCL configuration that is suitable for passing to Terraform (may contain sensitive values).
+	DefaultHclConfigProvider = NewHclV1ConfigProvider(replaceNullPlaceholders, removeSingleAttributeWorkaroundLines, unquoteBlockType, fixBlockArguments, unquotePlaceholders, quotePlaceholders, replaceMultilinePlaceholders, unquoteArguments, removeDoubleNewlines, unquoteDependsOnReferences, unmaskSensitiveArguments)
+)
 
 // HclConfigProvider defines methods to generate .tf config from .tf.json configs.
 type HclConfigProvider interface {
@@ -147,4 +153,15 @@ func unquoteDependsOnReferences(s string) (string, error) {
 func revertEqualSignForMapTypeAttributes(s string) (string, error) {
 	argumentRegex := regexp.MustCompile(`( +)(params|sessions_params)( +)({\n)`)
 	return argumentRegex.ReplaceAllString(s, `$1$2$3= $4`), nil
+}
+
+func maskSensitiveArguments(s string) (string, error) {
+	// TODO: Replace with:
+	// 	var.sensitive_value
+	return "", nil
+}
+
+func unmaskSensitiveArguments(s string) (string, error) {
+	// TODO: Remove sensitive value markers
+	return "", nil
 }
