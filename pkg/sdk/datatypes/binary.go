@@ -10,6 +10,7 @@ const DefaultBinarySize = 8388608
 
 // BinaryDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-text#data-types-for-binary-strings
 // It does have synonyms that allow specifying size.
+// Size can be known or unknown.
 type BinaryDataType struct {
 	size           int
 	underlyingType string

@@ -10,6 +10,7 @@ const DefaultTimePrecision = 9
 
 // TimeDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-datetime#time
 // It does not have synonyms. It does have optional precision attribute.
+// Precision can be known or unknown.
 type TimeDataType struct {
 	precision      int
 	underlyingType string

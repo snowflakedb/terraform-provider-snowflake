@@ -15,6 +15,7 @@ const (
 // NumberDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-numeric#data-types-for-fixed-point-numbers
 // It does have synonyms that allow specifying precision and scale; here called synonyms.
 // It does have synonyms that does not allow specifying precision and scale; here called subtypes.
+// Precision and scale can be known or unknown.
 type NumberDataType struct {
 	precision      int
 	scale          int

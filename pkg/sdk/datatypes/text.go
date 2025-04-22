@@ -14,6 +14,7 @@ const (
 
 // TextDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-text#data-types-for-text-strings
 // It does have synonyms that allow specifying length.
+// Length can be known or unknown.
 // It does have synonyms that allow specifying length but differ with the default length when length is omitted; here called subtypes.
 type TextDataType struct {
 	length         int
