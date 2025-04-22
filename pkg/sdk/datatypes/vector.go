@@ -9,14 +9,11 @@ import (
 
 // VectorDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-vector#vector
 // It does not have synonyms. It does have type (int or float) and dimension required attributes.
+// Vector attributes has to be always known (can't create a vector like VECTOR or VECTOR(INT)).
 type VectorDataType struct {
 	innerType      string
 	dimension      int
 	underlyingType string
-
-	// TODO [this PR]: should vectors have unknowns at all?
-	innerTypeKnown bool
-	dimensionKnown bool
 }
 
 func (t *VectorDataType) ToSql() string {
@@ -33,7 +30,6 @@ func (t *VectorDataType) Canonical() string {
 }
 
 func (t *VectorDataType) ToSqlWithoutUnknowns() string {
-	// TODO [this PR]: decide with the unknowns decision for vectors
 	return t.ToSql()
 }
 
@@ -61,7 +57,7 @@ func parseVectorDataTypeRaw(raw sanitizedDataTypeRaw) (*VectorDataType, error) {
 		if err != nil {
 			return nil, fmt.Errorf(`could not parse the vector's dimension: "%s", err: %w`, parts[1], err)
 		}
-		return &VectorDataType{vectorType, dimension, raw.matchedByType, true, true}, nil
+		return &VectorDataType{vectorType, dimension, raw.matchedByType}, nil
 	default:
 		return nil, fmt.Errorf(`vector cannot have %d arguments: "%s"; use "%s(type, dimension)" format`, l, onlyArgs, raw.matchedByType)
 	}
@@ -71,16 +67,7 @@ func areVectorDataTypesTheSame(a, b *VectorDataType) bool {
 	return a.innerType == b.innerType && a.dimension == b.dimension
 }
 
+// areVectorDataTypesDefinitelyDifferent behaves differently from other data type functions as vector attributes are always known.
 func areVectorDataTypesDefinitelyDifferent(a, b *VectorDataType) bool {
-	var innerTypeDefinitelyDifferent bool
-	if a.innerTypeKnown && b.innerTypeKnown {
-		innerTypeDefinitelyDifferent = a.innerType != b.innerType
-	}
-
-	var dimensionDefinitelyDifferent bool
-	if a.dimensionKnown && b.dimensionKnown {
-		dimensionDefinitelyDifferent = a.dimension != b.dimension
-	}
-
-	return innerTypeDefinitelyDifferent || dimensionDefinitelyDifferent
+	return !areVectorDataTypesTheSame(a, b)
 }

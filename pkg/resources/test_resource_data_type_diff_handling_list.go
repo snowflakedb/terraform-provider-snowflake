@@ -102,7 +102,7 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 			currentConfigDatatypes := d.Get("nesting_list").([]any)
 			nestedDatatypesSchema := make([]map[string]any, 0)
 			for i, externalDataType := range externalDataTypes {
-				// TODO [next PR]: handle missing data types too
+				// TODO [next PR or will be extracted]: handle missing data types too (will be done with the masking policy and row access policy application)
 				if i+1 > len(currentConfigDatatypes) {
 					log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, externalDataType.ToSqlWithoutUnknowns())
 					nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
