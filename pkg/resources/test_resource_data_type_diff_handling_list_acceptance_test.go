@@ -189,13 +189,13 @@ resource "%[3]s" "%[4]s" {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionDestroyBeforeCreate),
 						planchecks.ExpectDrift(resourceReference, nestedPropertyAddress, sdk.String(expectedStateFirstStep), sdk.String(tc.ExternalValue)),
-						// TODO: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
+						// TODO [SNOW-1473409]: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
 						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, sdk.String(tc.ExternalValue), sdk.String(expectedStateFirstStep)),
 					}
 				} else {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionDestroyBeforeCreate),
-						// TODO: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
+						// TODO [SNOW-1473409]: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
 						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, sdk.String(expectedStateFirstStep), sdk.String(expectedStateSecondStep)),
 					}
 				}
