@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -33,13 +34,13 @@ func TestAcc_MaskingPolicies(t *testing.T) {
 	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
 		{
 			Name: "a",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 		{
 			Name: "b",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName()).WithComment("foo")
+	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName()).WithComment("foo")
 
 	dsName := "data.snowflake_masking_policies.test"
 	resource.Test(t, resource.TestCase{

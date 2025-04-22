@@ -215,7 +215,7 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	if columnSignatures, err = handleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.TableColumnSignature, error) {
 		return sdk.TableColumnSignature{
 			Name: v["name"].(string),
-			Type: sdk.LegacyDataTypeFrom(dataType),
+			Type: dataType,
 		}, nil
 	}); err != nil {
 		return diag.FromErr(err)

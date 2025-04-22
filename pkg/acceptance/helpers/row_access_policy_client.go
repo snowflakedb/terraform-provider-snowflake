@@ -4,7 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,10 +28,10 @@ func (c *RowAccessPolicyClient) client() sdk.RowAccessPolicies {
 
 func (c *RowAccessPolicyClient) CreateRowAccessPolicy(t *testing.T) (*sdk.RowAccessPolicy, func()) {
 	t.Helper()
-	return c.CreateRowAccessPolicyWithDataType(t, sdk.DataTypeNumber)
+	return c.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
 }
 
-func (c *RowAccessPolicyClient) CreateRowAccessPolicyWithDataType(t *testing.T, datatype sdk.DataType) (*sdk.RowAccessPolicy, func()) {
+func (c *RowAccessPolicyClient) CreateRowAccessPolicyWithDataType(t *testing.T, datatype datatypes.DataType) (*sdk.RowAccessPolicy, func()) {
 	t.Helper()
 
 	arg := sdk.NewCreateRowAccessPolicyArgsRequest("A", datatype)

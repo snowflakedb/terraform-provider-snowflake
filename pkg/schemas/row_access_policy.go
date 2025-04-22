@@ -41,7 +41,7 @@ func RowAccessPolicyDescriptionToSchema(description sdk.RowAccessPolicyDescripti
 	for i, v := range description.Signature {
 		signatureElem[i] = map[string]any{
 			"name": v.Name,
-			"type": string(v.Type),
+			"type": v.Type.ToSql(),
 		}
 	}
 	return map[string]any{
@@ -52,12 +52,13 @@ func RowAccessPolicyDescriptionToSchema(description sdk.RowAccessPolicyDescripti
 	}
 }
 
+// TODO [this PR]: address this func (ToSql vs ToSqlWithoutUnknowns for type)
 func RowAccessPolicyArgumentsToSchema(args []sdk.TableColumnSignature) []map[string]any {
 	schema := make([]map[string]any, len(args))
 	for i, v := range args {
 		schema[i] = map[string]any{
 			"name": v.Name,
-			"type": v.Type,
+			"type": v.Type.ToSql(),
 		}
 	}
 	return schema

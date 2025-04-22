@@ -1,5 +1,7 @@
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 //go:generate go run ./dto-builder-generator/main.go
 
 var (
@@ -20,8 +22,9 @@ type CreateRowAccessPolicyRequest struct {
 }
 
 type CreateRowAccessPolicyArgsRequest struct {
-	Name string   // required
-	Type DataType // required
+	Name string // required
+	// modified manually
+	Type datatypes.DataType // required
 }
 
 type AlterRowAccessPolicyRequest struct {

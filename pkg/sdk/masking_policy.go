@@ -357,8 +357,9 @@ func (opts *describeMaskingPolicyOptions) validate() error {
 }
 
 type MaskingPolicyDetails struct {
-	Name       string
-	Signature  []TableColumnSignature
+	Name      string
+	Signature []TableColumnSignature
+	// TODO [this PR]: use new data type here
 	ReturnType DataType
 	Body       string
 }

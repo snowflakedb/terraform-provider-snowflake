@@ -15,7 +15,7 @@ func TestRowAccessPolicies_Create(t *testing.T) {
 			name: id,
 			args: []CreateRowAccessPolicyArgs{{
 				Name: "n",
-				Type: DataTypeVARCHAR,
+				Type: dataTypeVarchar,
 			}},
 			body: "true",
 		}
@@ -53,26 +53,26 @@ func TestRowAccessPolicies_Create(t *testing.T) {
 
 	t.Run("one parameter", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE ROW ACCESS POLICY %s AS ("n" VARCHAR) RETURNS BOOLEAN -> true`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true`, id.FullyQualifiedName())
 	})
 
 	t.Run("two parameters", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.args = []CreateRowAccessPolicyArgs{{
 			Name: "n",
-			Type: DataTypeVARCHAR,
+			Type: dataTypeVarchar,
 		}, {
 			Name: "h",
-			Type: DataTypeVARCHAR,
+			Type: dataTypeVarchar,
 		}}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE ROW ACCESS POLICY %s AS ("n" VARCHAR, "h" VARCHAR) RETURNS BOOLEAN -> true`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216), "h" VARCHAR(16777216)) RETURNS BOOLEAN -> true`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE ROW ACCESS POLICY %s AS ("n" VARCHAR) RETURNS BOOLEAN -> true COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -254,6 +254,7 @@ func TestRowAccessPolicies_Describe(t *testing.T) {
 	})
 }
 
+// TODO [this PR]: fix this test
 func TestRowAccessPolicyDescription_Signature(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -266,7 +267,7 @@ func TestRowAccessPolicyDescription_Signature(t *testing.T) {
 			want: []TableColumnSignature{
 				{
 					Name: "A",
-					Type: "VARCHAR",
+					Type: dataTypeVarchar,
 				},
 			},
 		},
@@ -276,11 +277,11 @@ func TestRowAccessPolicyDescription_Signature(t *testing.T) {
 			want: []TableColumnSignature{
 				{
 					Name: "A",
-					Type: "VARCHAR",
+					Type: dataTypeVarchar,
 				},
 				{
 					Name: "B",
-					Type: "BOOLEAN",
+					Type: dataTypeBoolean,
 				},
 			},
 		},
@@ -290,7 +291,7 @@ func TestRowAccessPolicyDescription_Signature(t *testing.T) {
 			want: []TableColumnSignature{
 				{
 					Name: "a B",
-					Type: "VARCHAR",
+					Type: dataTypeVarchar,
 				},
 			},
 		},

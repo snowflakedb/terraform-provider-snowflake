@@ -191,7 +191,7 @@ func CreateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		args = append(args, *sdk.NewCreateRowAccessPolicyArgsRequest(v["name"].(string), sdk.LegacyDataTypeFrom(dataType)))
+		args = append(args, *sdk.NewCreateRowAccessPolicyArgsRequest(v["name"].(string), dataType))
 	}
 
 	createRequest := sdk.NewCreateRowAccessPolicyRequest(id, args, rowAccessExpression)

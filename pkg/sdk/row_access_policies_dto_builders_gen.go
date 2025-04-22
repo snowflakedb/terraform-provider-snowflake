@@ -2,7 +2,9 @@
 
 package sdk
 
-import ()
+import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+)
 
 func NewCreateRowAccessPolicyRequest(
 	name SchemaObjectIdentifier,
@@ -37,7 +39,8 @@ func (s *CreateRowAccessPolicyRequest) WithComment(Comment *string) *CreateRowAc
 
 func NewCreateRowAccessPolicyArgsRequest(
 	Name string,
-	Type DataType,
+	// modified manually
+	Type datatypes.DataType,
 ) *CreateRowAccessPolicyArgsRequest {
 	s := CreateRowAccessPolicyArgsRequest{}
 	s.Name = Name

@@ -17,8 +17,11 @@ var (
 	emptySchemaObjectIdentifierWithArguments = NewSchemaObjectIdentifierWithArguments("", "", "")
 
 	// TODO [SNOW-1843440]: create using constructors (when we add them)?
-	dataTypeNumber, _                     = datatypes.ParseDataType("NUMBER(36, 2)")
-	dataTypeVarchar, _                    = datatypes.ParseDataType("VARCHAR(100)")
+	dataTypeNumber_36_2, _                = datatypes.ParseDataType("NUMBER(36, 2)")
+	dataTypeNumber, _                     = datatypes.ParseDataType("NUMBER")
+	dataTypeVarchar_100, _                = datatypes.ParseDataType("VARCHAR(100)")
+	dataTypeVarchar, _                    = datatypes.ParseDataType("VARCHAR")
+	dataTypeBoolean, _                    = datatypes.ParseDataType("BOOLEAN")
 	dataTypeFloat, _                      = datatypes.ParseDataType("FLOAT")
 	dataTypeVariant, _                    = datatypes.ParseDataType("VARIANT")
 	dataTypeChar, _                       = datatypes.ParseDataType("CHAR")

@@ -39,34 +39,34 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 	argument := []sdk.TableColumnSignature{
 		{
 			Name: "A",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 		{
 			Name: "B",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 	}
 	argumentWithChangedFirstArgumentType := []sdk.TableColumnSignature{
 		{
 			Name: "A",
-			Type: sdk.DataTypeBoolean,
+			Type: testdatatypes.DataTypeBoolean,
 		},
 		{
 			Name: "B",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 	}
 	changedArgument := []sdk.TableColumnSignature{
 		{
 			Name: "C",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 		{
 			Name: "D",
-			Type: sdk.DataTypeTimestampNTZ,
+			Type: testdatatypes.DataTypeTimestampNTZ,
 		},
 	}
-	policyModel := model.MaskingPolicy("test", argument, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName())
+	policyModel := model.MaskingPolicy("test", argument, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -251,14 +251,14 @@ func TestAcc_MaskingPolicy_complete(t *testing.T) {
 	argument := []sdk.TableColumnSignature{
 		{
 			Name: "A",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 		{
 			Name: "B",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 	}
-	policyModel := model.MaskingPolicy("test", argument, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName()).WithComment("foo").WithExemptOtherPolicies(r.BooleanTrue)
+	policyModel := model.MaskingPolicy("test", argument, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName()).WithComment("foo").WithExemptOtherPolicies(r.BooleanTrue)
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -391,9 +391,9 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
 		{
 			Name: "val",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName())
+	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -438,9 +438,9 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
 		{
 			Name: "a",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName())
+	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -477,6 +477,7 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 	})
 }
 
+// TODO [this PR]: fix setup of this test
 func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
@@ -517,9 +518,9 @@ func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
 	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
 		{
 			Name: "a",
-			Type: "TEXT",
+			Type: testdatatypes.DataTypeText,
 		},
-	}, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName())
+	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -538,7 +539,7 @@ func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
 					HasArguments([]sdk.TableColumnSignature{
 						{
 							Name: "a",
-							Type: sdk.DataTypeVARCHAR,
+							Type: testdatatypes.DataTypeVarchar,
 						},
 					}),
 				),
@@ -558,13 +559,13 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
 		{
 			Name: "A",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 		{
 			Name: "b",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName()).WithComment(comment).WithExemptOtherPolicies(r.BooleanTrue)
+	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName()).WithComment(comment).WithExemptOtherPolicies(r.BooleanTrue)
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -613,11 +614,11 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 					HasArguments([]sdk.TableColumnSignature{
 						{
 							Name: "A",
-							Type: sdk.DataTypeVARCHAR,
+							Type: testdatatypes.DataTypeVarchar,
 						},
 						{
 							Name: "b",
-							Type: sdk.DataTypeVARCHAR,
+							Type: testdatatypes.DataTypeVarchar,
 						},
 					}),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "id", id.FullyQualifiedName())),

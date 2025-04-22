@@ -32,11 +32,11 @@ func (c *MaskingPolicyClient) CreateMaskingPolicy(t *testing.T) (*sdk.MaskingPol
 	signature := []sdk.TableColumnSignature{
 		{
 			Name: c.ids.Alpha(),
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 		{
 			Name: c.ids.Alpha(),
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 	}
 	expression := "REPLACE('X', 1, 2)"
@@ -49,7 +49,7 @@ func (c *MaskingPolicyClient) CreateMaskingPolicyIdentity(t *testing.T, columnTy
 	signature := []sdk.TableColumnSignature{
 		{
 			Name: name,
-			Type: sdk.LegacyDataTypeFrom(columnType),
+			Type: columnType,
 		},
 	}
 	expression := "a"

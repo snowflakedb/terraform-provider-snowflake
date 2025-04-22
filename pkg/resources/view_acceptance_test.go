@@ -39,13 +39,13 @@ func TestAcc_View_basic(t *testing.T) {
 
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	rowAccessPolicy, rowAccessPolicyCleanup := acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, sdk.DataTypeNumber)
+	rowAccessPolicy, rowAccessPolicyCleanup := acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(rowAccessPolicyCleanup)
 
 	aggregationPolicy, aggregationPolicyCleanup := acc.TestClient().AggregationPolicy.CreateAggregationPolicy(t)
 	t.Cleanup(aggregationPolicyCleanup)
 
-	rowAccessPolicy2, rowAccessPolicy2Cleanup := acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, sdk.DataTypeNumber)
+	rowAccessPolicy2, rowAccessPolicy2Cleanup := acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(rowAccessPolicy2Cleanup)
 
 	aggregationPolicy2, aggregationPolicy2Cleanup := acc.TestClient().AggregationPolicy.CreateAggregationPolicy(t)
@@ -487,7 +487,7 @@ func TestAcc_View_complete(t *testing.T) {
 	})
 	t.Cleanup(tableCleanup)
 
-	rowAccessPolicy, rowAccessPolicyCleanup := acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, sdk.DataTypeNumber)
+	rowAccessPolicy, rowAccessPolicyCleanup := acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(rowAccessPolicyCleanup)
 
 	aggregationPolicy, aggregationPolicyCleanup := acc.TestClient().AggregationPolicy.CreateAggregationPolicy(t)
@@ -500,11 +500,11 @@ func TestAcc_View_complete(t *testing.T) {
 		[]sdk.TableColumnSignature{
 			{
 				Name: "One",
-				Type: sdk.DataTypeNumber,
+				Type: testdatatypes.DataTypeNumber,
 			},
 			{
 				Name: "Two",
-				Type: sdk.DataTypeNumber,
+				Type: testdatatypes.DataTypeNumber,
 			},
 		},
 		testdatatypes.DataTypeNumber,
@@ -656,7 +656,7 @@ func TestAcc_View_columns(t *testing.T) {
 		[]sdk.TableColumnSignature{
 			{
 				Name: "One",
-				Type: sdk.DataTypeNumber,
+				Type: testdatatypes.DataTypeNumber,
 			},
 		},
 		testdatatypes.DataTypeNumber,
@@ -804,7 +804,7 @@ func TestAcc_View_columnsWithMaskingPolicyWithoutUsing(t *testing.T) {
 		[]sdk.TableColumnSignature{
 			{
 				Name: "One",
-				Type: sdk.DataTypeNumber,
+				Type: testdatatypes.DataTypeNumber,
 			},
 		},
 		testdatatypes.DataTypeNumber,

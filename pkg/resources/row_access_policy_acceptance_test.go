@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -138,7 +139,7 @@ func TestAcc_RowAccessPolicy(t *testing.T) {
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_RowAccessPolicy/complete"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, changedArgumentPolicyModel),
 				PreConfig: func() {
-					arg := sdk.NewCreateRowAccessPolicyArgsRequest("A", sdk.DataTypeBoolean)
+					arg := sdk.NewCreateRowAccessPolicyArgsRequest("A", testdatatypes.DataTypeBoolean)
 					createRequest := sdk.NewCreateRowAccessPolicyRequest(id, []sdk.CreateRowAccessPolicyArgsRequest{*arg}, "case when current_role() in ('ANALYST') then false else true end")
 					acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithRequest(t, *createRequest.WithOrReplace(sdk.Pointer(true)))
 				},

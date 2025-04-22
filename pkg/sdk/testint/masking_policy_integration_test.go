@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PR]: merge these tests
 func TestInt_MaskingPoliciesShow(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -100,11 +101,11 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "col1",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 			{
 				Name: "col2",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
@@ -147,11 +148,11 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "col1",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 			{
 				Name: "col2",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
@@ -193,7 +194,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "col1",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
@@ -229,7 +230,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "val",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := `
@@ -406,7 +407,7 @@ func TestInt_MaskingPoliciesShowByID(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: testClientHelper().Ids.Alpha(),
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
