@@ -81,3 +81,24 @@ func readNestedDatatypeCommon(v map[string]any, key string) (datatypes.DataType,
 		return dataType, nil
 	}
 }
+
+// handleNestedDataTypeCreate should be used while handling nested data type attribute creation.
+func handleNestedDataTypeCreate[T any](d *schema.ResourceData, collectionKey string, dataTypeKey string, createItemFunc func(v map[string]any, dataType datatypes.DataType) (T, error)) ([]T, error) {
+	items := make([]T, 0)
+	arguments := d.Get(collectionKey).([]any)
+	for _, arg := range arguments {
+		v := arg.(map[string]any)
+		dataType, err := readNestedDatatypeCommon(v, dataTypeKey)
+		if err != nil {
+			return nil, err
+		}
+
+		item, err := createItemFunc(v, dataType)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+	return items, nil
+}

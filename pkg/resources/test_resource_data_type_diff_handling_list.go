@@ -59,18 +59,14 @@ func TestResourceDataTypeDiffHandlingListCreate(ctx context.Context, d *schema.R
 	envName := d.Get("env_name").(string)
 	log.Printf("[DEBUG] handling create for %s", envName)
 
-	dataTypes := make([]datatypes.DataType, 0)
-	arguments := d.Get("nesting_list").([]any)
-	// TODO [next PR or will be extracted]: extract common method to work with collections on the resource side (will be done with the masking policy and row access policy application)
-	for _, arg := range arguments {
-		v := arg.(map[string]any)
-		dataType, err := readNestedDatatypeCommon(v, "nested_datatype")
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		dataTypes = append(dataTypes, dataType)
+	var dataTypes []datatypes.DataType
+	var err error
+	if dataTypes, err = handleNestedDataTypeCreate(d, "nesting_list", "nested_datatype", func(v map[string]any, dataType datatypes.DataType) (datatypes.DataType, error) {
+		return dataType, nil
+	}); err != nil {
+		return diag.FromErr(err)
 	}
-	err := testResourceDataTypeDiffHandlingListSet(envName, dataTypes)
+	err = testResourceDataTypeDiffHandlingListSet(envName, dataTypes)
 	if err != nil {
 		return diag.FromErr(err)
 	}
