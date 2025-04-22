@@ -191,7 +191,7 @@ func CreateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 
 	rowAccessExpression := d.Get("body").(string)
 
-	args := make([]sdk.CreateRowAccessPolicyArgsRequest, 0)
+	var args []sdk.CreateRowAccessPolicyArgsRequest
 	var err error
 	if args, err = handleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.CreateRowAccessPolicyArgsRequest, error) {
 		return *sdk.NewCreateRowAccessPolicyArgsRequest(v["name"].(string), dataType), nil

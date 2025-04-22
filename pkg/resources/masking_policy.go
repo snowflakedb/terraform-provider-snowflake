@@ -212,7 +212,7 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	expression := d.Get("body").(string)
 
-	columnSignatures := make([]sdk.TableColumnSignature, 0)
+	var columnSignatures []sdk.TableColumnSignature
 	var err error
 	if columnSignatures, err = handleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.TableColumnSignature, error) {
 		return sdk.TableColumnSignature{

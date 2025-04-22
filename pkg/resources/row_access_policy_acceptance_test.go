@@ -699,3 +699,8 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 		},
 	})
 }
+
+// TODO [this PR]:
+// handle change in config (default -> specific)
+// handle external change (NUMBER -> VARCHAR)
+// suppress external change after replacing the policy (data type change for nested)
