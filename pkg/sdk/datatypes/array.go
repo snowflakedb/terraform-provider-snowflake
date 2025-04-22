@@ -18,6 +18,10 @@ func (t *ArrayDataType) Canonical() string {
 	return ArrayLegacyDataType
 }
 
+func (t *ArrayDataType) ToSqlWithoutUnknowns() string {
+	return t.ToSql()
+}
+
 var ArrayDataTypeSynonyms = []string{ArrayLegacyDataType}
 
 func parseArrayDataTypeRaw(raw sanitizedDataTypeRaw) (*ArrayDataType, error) {

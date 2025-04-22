@@ -39,7 +39,7 @@ func (t *NumberDataType) Canonical() string {
 	return fmt.Sprintf("%s(%d,%d)", NumberLegacyDataType, t.precision, t.scale)
 }
 
-func (t *NumberDataType) ToSqlNew() string {
+func (t *NumberDataType) ToSqlWithoutUnknowns() string {
 	switch {
 	case slices.Contains(NumberDataTypeSubTypes, t.underlyingType):
 		return t.underlyingType

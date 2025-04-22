@@ -67,17 +67,8 @@ func readDatatypeCommon(d *schema.ResourceData, key string) (datatypes.DataType,
 }
 
 // SqlNew is temporary as not all the data types has the temporary method implemented
-// TODO [next PR]: Add SqlNew to each data type and remove this method if approved
-// TODO [next PR]: Pick better name for this function
 func SqlNew(dt datatypes.DataType) string {
-	switch v := dt.(type) {
-	case *datatypes.NumberDataType:
-		return v.ToSqlNew()
-	case *datatypes.TextDataType:
-		return v.ToSqlNew()
-	default:
-		return v.ToSql()
-	}
+	return dt.ToSqlWithoutUnknowns()
 }
 
 func readNestedDatatypeCommon(v map[string]any, key string) (datatypes.DataType, error) {

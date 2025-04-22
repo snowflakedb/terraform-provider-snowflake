@@ -29,6 +29,15 @@ func (t *BinaryDataType) Canonical() string {
 	return fmt.Sprintf("%s(%d)", BinaryLegacyDataType, t.size)
 }
 
+func (t *BinaryDataType) ToSqlWithoutUnknowns() string {
+	switch {
+	case t.sizeKnown:
+		return fmt.Sprintf("%s(%d)", t.underlyingType, t.size)
+	default:
+		return fmt.Sprintf("%s", t.underlyingType)
+	}
+}
+
 var BinaryDataTypeSynonyms = []string{BinaryLegacyDataType, "VARBINARY"}
 
 func parseBinaryDataTypeRaw(raw sanitizedDataTypeRaw) (*BinaryDataType, error) {

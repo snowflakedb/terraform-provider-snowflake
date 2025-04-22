@@ -29,6 +29,15 @@ func (t *TimeDataType) Canonical() string {
 	return fmt.Sprintf("%s(%d)", TimeLegacyDataType, t.precision)
 }
 
+func (t *TimeDataType) ToSqlWithoutUnknowns() string {
+	switch {
+	case t.precisionKnown:
+		return fmt.Sprintf("%s(%d)", t.underlyingType, t.precision)
+	default:
+		return fmt.Sprintf("%s", t.underlyingType)
+	}
+}
+
 var TimeDataTypeSynonyms = []string{TimeLegacyDataType}
 
 func parseTimeDataTypeRaw(raw sanitizedDataTypeRaw) (*TimeDataType, error) {

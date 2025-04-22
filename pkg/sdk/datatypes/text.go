@@ -34,7 +34,7 @@ func (t *TextDataType) Canonical() string {
 	return fmt.Sprintf("%s(%d)", VarcharLegacyDataType, t.length)
 }
 
-func (t *TextDataType) ToSqlNew() string {
+func (t *TextDataType) ToSqlWithoutUnknowns() string {
 	switch {
 	case t.lengthKnown:
 		return fmt.Sprintf("%s(%d)", t.underlyingType, t.length)

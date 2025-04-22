@@ -27,6 +27,15 @@ func (t *TimestampNtzDataType) Canonical() string {
 	return fmt.Sprintf("%s(%d)", TimestampNtzLegacyDataType, t.precision)
 }
 
+func (t *TimestampNtzDataType) ToSqlWithoutUnknowns() string {
+	switch {
+	case t.precisionKnown:
+		return fmt.Sprintf("%s(%d)", t.underlyingType, t.precision)
+	default:
+		return fmt.Sprintf("%s", t.underlyingType)
+	}
+}
+
 var TimestampNtzDataTypeSynonyms = []string{TimestampNtzLegacyDataType, "TIMESTAMPNTZ", "TIMESTAMP WITHOUT TIME ZONE", "DATETIME"}
 
 func parseTimestampNtzDataTypeRaw(raw sanitizedDataTypeRaw) (*TimestampNtzDataType, error) {

@@ -51,6 +51,11 @@ func (t *TableDataType) Canonical() string {
 	return fmt.Sprintf("%s(%s)", TableLegacyDataType, columns)
 }
 
+func (t *TableDataType) ToSqlWithoutUnknowns() string {
+	// TODO [this PR]: implement while adding unknown logic to tables
+	return t.ToSql()
+}
+
 func (t *TableDataType) Columns() []TableDataTypeColumn {
 	return t.columns
 }

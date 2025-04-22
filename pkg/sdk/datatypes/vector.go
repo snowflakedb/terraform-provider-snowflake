@@ -14,6 +14,7 @@ type VectorDataType struct {
 	dimension      int
 	underlyingType string
 
+	// TODO [this PR]: should vectors have unknowns at all?
 	innerTypeKnown bool
 	dimensionKnown bool
 }
@@ -28,6 +29,11 @@ func (t *VectorDataType) ToLegacyDataTypeSql() string {
 }
 
 func (t *VectorDataType) Canonical() string {
+	return t.ToSql()
+}
+
+func (t *VectorDataType) ToSqlWithoutUnknowns() string {
+	// TODO [this PR]: decide with the unknowns decision for vectors
 	return t.ToSql()
 }
 
