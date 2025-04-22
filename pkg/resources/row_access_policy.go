@@ -106,7 +106,7 @@ func RowAccessPolicy() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 
 		CreateContext: TrackingCreateWrapper(resources.RowAccessPolicy, CreateRowAccessPolicy),
 		ReadContext:   TrackingReadWrapper(resources.RowAccessPolicy, ReadRowAccessPolicy),

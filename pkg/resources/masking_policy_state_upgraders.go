@@ -39,7 +39,7 @@ func v200MaskingPolicyStateUpgrader(_ context.Context, rawState map[string]any, 
 	}
 
 	arguments := rawState["argument"].([]any)
-	if len(arguments) > 0 {
+	if len(arguments) < 1 {
 		return nil, fmt.Errorf("updating the snowflake_masking_policy resource state for the v2.0.0 provider version: expected at least 1 argument")
 	}
 	args := make([]map[string]any, 0)

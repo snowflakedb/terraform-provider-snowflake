@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
-	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -22,6 +22,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -79,7 +81,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).
@@ -94,7 +96,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			// set all fields
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel.WithBody(body).WithComment("Terraform acceptance test").WithExemptOtherPolicies(r.BooleanTrue)),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(body).WithComment("Terraform acceptance test").WithExemptOtherPolicies(r.BooleanTrue)),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).
@@ -127,7 +129,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			// change fields
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel.WithBody(bodyWithBooleanReturnType).WithReturnDataType(string(sdk.DataTypeBoolean)).WithArgument(argumentWithChangedFirstArgumentType).WithComment("Terraform acceptance test - changed comment").WithExemptOtherPolicies(r.BooleanFalse)),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(bodyWithBooleanReturnType).WithReturnDataType(string(sdk.DataTypeBoolean)).WithArgument(argumentWithChangedFirstArgumentType).WithComment("Terraform acceptance test - changed comment").WithExemptOtherPolicies(r.BooleanFalse)),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).
@@ -143,7 +145,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			// restore previous types - first argument type, return_type, and returned value in `body` must be the same type
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel.WithBody(body).WithReturnDataType(string(sdk.DataTypeVARCHAR)).WithArgument(changedArgument).WithExemptOtherPolicies(r.BooleanTrue)),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(body).WithReturnDataType(string(sdk.DataTypeVARCHAR)).WithArgument(changedArgument).WithExemptOtherPolicies(r.BooleanTrue)),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).
@@ -159,7 +161,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			// external change on signature
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				PreConfig: func() {
 					acc.TestClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, argument, testdatatypes.DataTypeVarchar, body, &sdk.CreateMaskingPolicyOptions{
 						ExemptOtherPolicies: sdk.Pointer(false),
@@ -185,7 +187,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			// external change on body and exempt other policies
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				PreConfig: func() {
 					acc.TestClient().MaskingPolicy.Alter(t, id, &sdk.AlterMaskingPolicyOptions{
 						Set: &sdk.MaskingPolicySet{
@@ -204,7 +206,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				),
 			},
 			{
-				ConfigVariables:   tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables:   accconfig.ConfigVariablesFromModel(t, policyModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -212,7 +214,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			// unset comment
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel.WithComment("")),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithComment("")),
 				PreConfig: func() {
 					acc.TestClient().MaskingPolicy.Alter(t, id, &sdk.AlterMaskingPolicyOptions{
 						Unset: &sdk.MaskingPolicyUnset{
@@ -232,7 +234,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ConfigVariables:   tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables:   accconfig.ConfigVariablesFromModel(t, policyModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -271,7 +273,7 @@ func TestAcc_MaskingPolicy_complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).
@@ -416,7 +418,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
-				ConfigVariables:          tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables:          accconfig.ConfigVariablesFromModel(t, policyModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", id.FullyQualifiedName()),
@@ -453,7 +455,7 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -462,7 +464,7 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 			// rename
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel.WithName(newId.Name())),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithName(newId.Name())),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -502,7 +504,7 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				ExpectError:     regexp.MustCompile(`invalid data type: invalid-type`),
 			},
 		},
@@ -533,7 +535,7 @@ func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasReturnDataTypeString(string(sdk.DataTypeVARCHAR)).
@@ -599,7 +601,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables:          tfconfig.ConfigVariablesFromModel(t, policyModel),
+				ConfigVariables:          accconfig.ConfigVariablesFromModel(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -651,4 +653,136 @@ resource "snowflake_masking_policy" "test" {
   exempt_other_policies = true
   comment = "%[5]s"
 }`, id.DatabaseName(), id.SchemaName(), id.Name(), expr, comment)
+}
+
+func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck: func() { acc.TestAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: acc.ExternalProviderWithExactVersion("1.2.1"),
+				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables:   commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", "VARCHAR")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "return_data_type", "VARCHAR")),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables:          commonVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}).HasReturnDataTypeString(fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataType("VARCHAR(100)"))
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR(100)"),
+			}),
+		),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck: func() { acc.TestAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: acc.ExternalProviderWithExactVersion("1.2.1"),
+				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables:   commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", "VARCHAR")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "return_data_type", "VARCHAR")),
+				),
+				// this shows the incorrect behavior in the 1.2.1 version (permadiff); in the next step, after apply, the plan will be empty
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables:          commonVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar_100,
+						},
+					}).HasReturnDataTypeString("VARCHAR(100)"),
+				),
+			},
+		},
+	})
 }
