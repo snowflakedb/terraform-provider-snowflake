@@ -31,7 +31,7 @@ func (c *TableDataTypeColumn) ColumnType() DataType {
 	return c.dataType
 }
 
-// TODO [SNOW-2054316]: this method can currently print somethign that won't be parsed correctly because column data types are not currently parsed (e.g. `TABLE(A NUMBER(38, 0))`)
+// TODO [SNOW-2054316]: this method can currently print something that won't be parsed correctly because column data types are not currently parsed (e.g. `TABLE(A NUMBER(38, 0))`)
 func (t *TableDataType) ToSql() string {
 	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
 		return fmt.Sprintf("%s %s", col.name, col.dataType.ToSql())
