@@ -22,7 +22,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -86,7 +85,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).
 					HasSchemaString(id.SchemaName()).
-					HasReturnDataTypeString(string(sdk.DataTypeVARCHAR)).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
 					HasBodyString(body).
 					HasExemptOtherPoliciesString(r.BooleanDefault).
@@ -102,7 +101,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 					HasDatabaseString(id.DatabaseName()).
 					HasSchemaString(id.SchemaName()).
 					HasExemptOtherPoliciesString(r.BooleanTrue).
-					HasReturnDataTypeString(string(sdk.DataTypeVARCHAR)).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
 					HasCommentString("Terraform acceptance test").
 					HasBodyString(body).
@@ -118,12 +117,12 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 						HasSchemaName(id.SchemaName()),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.body", body)),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.return_type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.return_type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.0.name", "A")),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.1.name", "B")),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
 				),
 			},
 			// change fields
@@ -150,7 +149,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).
 					HasSchemaString(id.SchemaName()).
-					HasReturnDataTypeString(string(sdk.DataTypeVARCHAR)).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
 					HasExemptOtherPoliciesString(r.BooleanTrue).
 					HasCommentString("Terraform acceptance test - changed comment").
@@ -279,7 +278,7 @@ func TestAcc_MaskingPolicy_complete(t *testing.T) {
 					HasDatabaseString(id.DatabaseName()).
 					HasSchemaString(id.SchemaName()).
 					HasExemptOtherPoliciesString(r.BooleanTrue).
-					HasReturnDataTypeString(string(sdk.DataTypeVARCHAR)).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
 					HasCommentString("foo").
 					HasBodyString(body).
@@ -295,12 +294,12 @@ func TestAcc_MaskingPolicy_complete(t *testing.T) {
 						HasSchemaName(id.SchemaName()),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.body", body)),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.return_type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.return_type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.0.name", "A")),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.1.name", "B")),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
 				),
 			},
 		},
@@ -351,12 +350,12 @@ func TestAcc_MaskingPolicyMultiColumns(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "database", acc.TestDatabaseName),
 					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "schema", acc.TestSchemaName),
 					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "body", "case when current_role() in ('ANALYST') then val else sha2(val, 512) end"),
-					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "return_data_type", string(sdk.DataTypeVARCHAR)),
+					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "return_data_type", testdatatypes.DefaultVarcharAsString),
 					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "argument.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "argument.0.name", "val"),
-					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "argument.0.type", string(sdk.DataTypeVARCHAR)),
+					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "argument.0.type", testdatatypes.DefaultVarcharAsString),
 					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "argument.1.name", "val2"),
-					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "argument.1.type", string(sdk.DataTypeVARCHAR)),
+					resource.TestCheckResourceAttr("snowflake_masking_policy.test", "argument.1.type", testdatatypes.DefaultVarcharAsString),
 				),
 			},
 		},
@@ -390,12 +389,22 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	body := "case when current_role() in ('ANALYST') then val else sha2(val, 512) end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
-		{
-			Name: "val",
-			Type: testdatatypes.DataTypeVarchar,
-		},
-	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("val"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -415,10 +424,9 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 				),
 			},
 			{
-				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
-				ConfigVariables:          accconfig.ConfigVariablesFromModel(t, policyModel),
+				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
+				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables:   commonVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", id.FullyQualifiedName()),
@@ -486,14 +494,22 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
-		{
-			Name: "a",
-			// TODO [this PR]: fix setup of this test; was:
-			// Type: "invalid-type",
-			Type: testdatatypes.DataTypeVarchar,
-		},
-	}, body, id.DatabaseName(), id.Name(), string(sdk.DataTypeVARCHAR), id.SchemaName())
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("invalid-type"),
+			}),
+		),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -503,8 +519,9 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
-				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				PlanOnly:        true,
 				ExpectError:     regexp.MustCompile(`invalid data type: invalid-type`),
 			},
 		},
@@ -538,11 +555,11 @@ func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
-					HasReturnDataTypeString(string(sdk.DataTypeVARCHAR)).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
 					HasArguments([]sdk.TableColumnSignature{
 						{
 							Name: "a",
-							Type: testdatatypes.DataTypeVarchar,
+							Type: testdatatypes.DataTypeText,
 						},
 					}),
 				),
@@ -713,7 +730,7 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 							Name: "A",
 							Type: testdatatypes.DataTypeVarchar,
 						},
-					}).HasReturnDataTypeString(fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)),
+					}).HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 		},

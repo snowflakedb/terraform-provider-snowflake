@@ -1,6 +1,10 @@
 package testdatatypes
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+import (
+	"fmt"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+)
 
 // TODO [SNOW-1843440]: create using constructors (when we add them)?
 var (
@@ -32,3 +36,5 @@ var (
 	DataTypeTimestampLTZ, _ = datatypes.ParseDataType("TIMESTAMP_LTZ")
 	DataTypeTimestampTZ, _  = datatypes.ParseDataType("TIMESTAMP_TZ")
 )
+
+var DefaultVarcharAsString = fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)

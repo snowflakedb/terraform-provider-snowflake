@@ -175,10 +175,9 @@ func ImportRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 	if err := d.Set("body", policyDescription.Body); err != nil {
 		return nil, err
 	}
-	// TODO [this PR]: what do we do with imports?
-	// if err := d.Set("argument", schemas.RowAccessPolicyArgumentsToSchema(policyDescription.Signature)); err != nil {
-	// 	return nil, err
-	// }
+	if err := d.Set("argument", schemas.RowAccessPolicyArgumentsToSchema(policyDescription.Signature)); err != nil {
+		return nil, err
+	}
 	return []*schema.ResourceData{d}, nil
 }
 
