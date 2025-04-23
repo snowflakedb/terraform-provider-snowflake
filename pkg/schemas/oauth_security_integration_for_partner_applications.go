@@ -11,7 +11,6 @@ import (
 
 var DescribeOauthIntegrationForPartnerApplications = map[string]*schema.Schema{
 	"oauth_client_type":                     DescribePropertyListSchema,
-	"oauth_redirect_uri":                    DescribePropertyListSchema,
 	"enabled":                               DescribePropertyListSchema,
 	"oauth_allow_non_tls_redirect_uri":      DescribePropertyListSchema,
 	"oauth_enforce_pkce":                    DescribePropertyListSchema,
@@ -24,7 +23,6 @@ var DescribeOauthIntegrationForPartnerApplications = map[string]*schema.Schema{
 	"oauth_client_rsa_public_key_fp":        DescribePropertyListSchema,
 	"oauth_client_rsa_public_key_2_fp":      DescribePropertyListSchema,
 	"comment":                               DescribePropertyListSchema,
-	"oauth_client_id":                       DescribePropertyListSchema,
 	"oauth_authorization_endpoint":          DescribePropertyListSchema,
 	"oauth_token_endpoint":                  DescribePropertyListSchema,
 	"oauth_allowed_authorization_endpoints": DescribePropertyListSchema,
@@ -33,7 +31,6 @@ var DescribeOauthIntegrationForPartnerApplications = map[string]*schema.Schema{
 
 var OauthIntegrationForPartnerApplicationsPropertiesNames = []string{
 	"OAUTH_CLIENT_TYPE",
-	"OAUTH_REDIRECT_URI",
 	"ENABLED",
 	"OAUTH_ALLOW_NON_TLS_REDIRECT_URI",
 	"OAUTH_ENFORCE_PKCE",
@@ -46,7 +43,6 @@ var OauthIntegrationForPartnerApplicationsPropertiesNames = []string{
 	"OAUTH_CLIENT_RSA_PUBLIC_KEY_FP",
 	"OAUTH_CLIENT_RSA_PUBLIC_KEY_2_FP",
 	"COMMENT",
-	"OAUTH_CLIENT_ID",
 	"OAUTH_AUTHORIZATION_ENDPOINT",
 	"OAUTH_TOKEN_ENDPOINT",
 	"OAUTH_ALLOWED_AUTHORIZATION_ENDPOINTS",

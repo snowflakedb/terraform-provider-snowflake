@@ -92,6 +92,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 	"azure_consent_url": {
 		Type:        schema.TypeString,
 		Computed:    true,
+		Sensitive:   true,
 		Description: "The consent URL that is used to create an Azure Snowflake service principle inside your tenant.",
 	},
 	"azure_multi_tenant_app_name": {

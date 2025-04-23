@@ -39,6 +39,7 @@ var oauthIntegrationForCustomClientsSchema = map[string]*schema.Schema{
 	"oauth_redirect_uri": {
 		Type:        schema.TypeString,
 		Required:    true,
+		Sensitive:   true,
 		Description: "Specifies the client URI. After a user is authenticated, the web browser is redirected to this URI.",
 	},
 	"enabled": {
@@ -183,7 +184,6 @@ func OauthIntegrationForCustomClients() *schema.Resource {
 				oauthIntegrationForCustomClientsSchema,
 				DescribeOutputAttributeName,
 				"oauth_client_type",
-				"oauth_redirect_uri",
 				"enabled",
 				"oauth_allow_non_tls_redirect_uri",
 				"oauth_enforce_pkce",

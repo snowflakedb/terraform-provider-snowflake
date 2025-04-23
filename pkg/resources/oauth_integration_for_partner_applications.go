@@ -38,6 +38,7 @@ var oauthIntegrationForPartnerApplicationsSchema = map[string]*schema.Schema{
 	"oauth_redirect_uri": {
 		Type:        schema.TypeString,
 		Optional:    true,
+		Sensitive:   true,
 		Description: "Specifies the client URI. After a user is authenticated, the web browser is redirected to this URI. The field should be only set when OAUTH_CLIENT = LOOKER. In any other case the field should be left out empty.",
 	},
 	"enabled": {
@@ -140,7 +141,6 @@ func OauthIntegrationForPartnerApplications() *schema.Resource {
 				oauthIntegrationForPartnerApplicationsSchema,
 				DescribeOutputAttributeName,
 				"oauth_client",
-				"oauth_redirect_uri",
 				"enabled",
 				"oauth_issue_refresh_tokens",
 				"oauth_refresh_token_validity",

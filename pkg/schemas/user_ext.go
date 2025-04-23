@@ -13,5 +13,4 @@ func init() {
 	UserDescribeSchema["middle_name"].Sensitive = true
 	UserDescribeSchema["last_name"].Sensitive = true
 	UserDescribeSchema["email"].Sensitive = true
-	UserDescribeSchema["password"].Sensitive = true
 }

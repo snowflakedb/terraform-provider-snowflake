@@ -46,8 +46,7 @@ func ApiAuthenticationIntegrationWithJwtBearer() *schema.Resource {
 			ForceNewIfChangeToEmptyString("oauth_client_auth_method"),
 			ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, DescribeOutputAttributeName, "enabled", "comment", "oauth_access_token_validity", "oauth_refresh_token_validity",
-				"oauth_client_id", "oauth_client_auth_method", "oauth_authorization_endpoint",
-				"oauth_token_endpoint", "oauth_assertion_issuer")),
+				"oauth_client_auth_method", "oauth_authorization_endpoint", "oauth_token_endpoint", "oauth_assertion_issuer")),
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.ApiAuthenticationIntegrationWithJwtBearer, ImportApiAuthenticationWithJwtBearer),

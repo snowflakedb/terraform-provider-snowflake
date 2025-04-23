@@ -12,6 +12,39 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v1.2.1 ➞ v2.0.0
+
+### Supported architectures
+
+[//]: # (TODO: )
+
+### Sensitive values
+
+| Resource name                                                            | Fields marked as sensitive |
+|--------------------------------------------------------------------------|----------------------------|
+| `storage_integration`                                                    | `azure_consent_url`        |
+| `snowflake_api_authentication_integration_with_authorization_code_grant` | `oauth_client_id`          |
+| `snowflake_api_authentication_integration_with_client_credentials`       | `oauth_client_id`          |
+| `snowflake_api_authentication_integration_with_jwt_bearer`               | `oauth_client_id`          |
+| `snowflake_oauth_integration_for_custom_clients`                         | `oauth_redirect_uri`       |
+| `snowflake_oauth_integration_for_partner_applications`                   | `oauth_redirect_uri`       |
+
+The following table represents fields removed from resources. They were removed because of the Terraform SDK limitations 
+on marking data as sensitive in computed collections (TODO: link to issue). Removal of computed output fields may have an impact on detecting
+external changes (on the Snowflake side) for (usually) top-level fields they were referring to (e.g. `describe_output.oauth_client_id` -> `oauth_client_id`).
+
+| Resource name                                                            | Removed fields                                                                                                             |
+|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `snowflake_api_authentication_integration_with_authorization_code_grant` | `describe_output.oauth_client_id`                                                                                          |
+| `snowflake_api_authentication_integration_with_client_credentials`       | `describe_output.oauth_client_id`                                                                                          |
+| `snowflake_api_authentication_integration_with_jwt_bearer`               | `describe_output.oauth_client_id`                                                                                          |
+| `snowflake_oauth_integration_for_partner_applications`                   | `describe_output.oauth_client_id`, `describe_output.oauth_redirect_uri`                                                    |
+| `snowflake_oauth_integration_for_custom_clients`                         | `describe_output.oauth_redirect_uri`, `describe_output.oauth_redirect_uri`                                                 |
+| `snowflake_saml2_integration`                                            | `describe_output.saml2_snowflake_x509_cert`, `describe_output.saml2_x509_cert`                                             |
+| `snowflake_security_integrations` (data source)                          | `security_integrations.describe_output.saml2_snowflake_x509_cert`, `security_integrations.describe_output.saml2_x509_cert` |
+| `snowflake_users` (data source)                                          | `users.describe_output.password`                                                                                           |
+
+
 ## v1.1.0 ➞ v1.2.0
 
 ### New behavior for Read and Delete operations when removing high-hierarchy objects

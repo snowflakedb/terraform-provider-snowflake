@@ -43,10 +43,6 @@ var UserDescribeSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"password": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
 	"must_change_password": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -167,9 +163,6 @@ func UserDescriptionToSchema(userDetails sdk.UserDetails) []map[string]any {
 	}
 	if userDetails.Email != nil {
 		userDetailsSchema["email"] = userDetails.Email.Value
-	}
-	if userDetails.Password != nil {
-		userDetailsSchema["password"] = userDetails.Password.Value
 	}
 	if userDetails.MustChangePassword != nil {
 		userDetailsSchema["must_change_password"] = userDetails.MustChangePassword.Value
