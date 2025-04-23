@@ -1,5 +1,19 @@
 # Our roadmap
 
+## (23.04.2025) v2.0.0 release - GA
+
+As announced previously, we have released today the v2.0.0 version of the provider, which is an officially supported Snowflake product!
+
+Some essential information:
+- We updated the project state in the registry docs and the project's README.
+- The [official docs](https://docs.snowflake.com/en/user-guide/terraform) will be refreshed soon.
+- Before upgrading, please read the [migration guide](MIGRATION_GUIDE.md#v121--v200) carefully, as there are some breaking changes. We wanted to make them as smooth as possible, so for some of them, there is the "opt-out" option, which will be removed in future major releases. 
+- For more details on "what is GA?" check the [previous entry](#10042025-ga-announcement). 
+- In case of any migration issues, please contact us.
+- We will share our next milestones in early May (as the next roadmap entry). One of our main priorities is to help with migrations, so that everyone can benefit from the official support.
+
+As always, we encourage you to contact us with any questions or issues. Happy Terraforming!
+
 ## (10.04.2025) GA announcement
 
 ### GA release
