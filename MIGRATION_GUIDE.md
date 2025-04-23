@@ -109,6 +109,25 @@ Read more details in the mentioned [migration guide entry](https://github.com/sn
 
 Alternatively, specify `skip_toml_file_permission_verification=false` in your provider configuration and use the unchanged TOML file, but this is less secure and not recommended.
 
+### *(breaking change)* Improved data type handling for snowflake_masking_policy and snowflake_row_access_policy
+
+The provider bases its logic on data returned from Snowflake. For data types, the responses are not always full, e.g.:
+- `NUMBER(20, 4)` can be returned as `NUMBER`
+- `NUMBER` can be returned as `NUMBER`
+
+When you create an object with data type without specifying its arguments (like `NUMBER` without specified scale and precision), Snowflake fill in the defaults based on [SQL data types reference](https://docs.snowflake.com/en/sql-reference-data-types).
+To be able to detect changes in config properly and to react to some external changes, we updated the way how we handle the data types:
+- We use the Snowflake defaults for data types on the provider side; this is the exception to our [common approach of not hardcoding the Snowflake defaults](v1-preparations/CHANGES_BEFORE_V1.md#default-values) in the provider; we decided that the data type default are far less likely to change.
+- We save the full data type in the state; specifying `NUMBER` will result in storing `NUMBER(38,0)` in state; the same value will be sent to Snowflake.
+- We react to changes in Snowflake only in certain changes; e.g. `NUMBER` -> `VARCHAR`, we can't react on the external change if Snowflake does not return the full data type definition (as above).
+- We will gradually add this logic to all the resources. For now, it was only added to the stable resources: [`snowflake_masking_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.0.0/docs/resources/masking_policy) and [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.0.0/docs/resources/row_access_policy). We added state upgraders that should handle the state saving changes. There are no changes required, however, you may encounter non-empty plans in these two resources after bumping. Be careful and verify the plan thoroughly as these resources can handle updates only in a destructive manner (this is the limitation of Snowflake SQL syntax for [`ALTER MASKING POLICY`](https://docs.snowflake.com/en/sql-reference/sql/alter-masking-policy) and [`ALTER ROW ACCESS POLICY`](https://docs.snowflake.com/en/sql-reference/sql/alter-row-access-policy)).
+
+### *(bugfix)* Fix CSV_TIMESTAMP_FORMAT handling in snowflake_account_parameters
+
+[`CSV_TIMESTAMP_FORMAT`](https://docs.snowflake.com/en/sql-reference/parameters#csv-timestamp-format) lacked the single quotes in the constructed SQL query. No changes are required.
+
+References: [#3580](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3580)
+
 ## v1.2.0 ➞ v1.2.1
 No migration needed.
 
