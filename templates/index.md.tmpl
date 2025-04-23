@@ -24,6 +24,22 @@ Please follow [creating issues guidelines](https://github.com/snowflakedb/terraf
 This is a terraform provider plugin for managing [Snowflake](https://www.snowflake.com/) accounts.
 Coverage is focused on part of Snowflake related to access control.
 
+## Supported architectures
+
+We have compiled a list to clarify which binaries are officially supported and which are provided additionally but not officially supported.
+The lists are based on what the underlying [gosnowflake driver](https://github.com/snowflakedb/gosnowflake) supports and what [HashiCorp recommends for Terraform providers](https://developer.hashicorp.com/terraform/registry/providers/os-arch).
+
+The provider officially supports the binaries built for the following OSes and architectures:
+- Windows: amd64
+- Linux: amd64 and arm64
+- Darwin: amd64 and arm64
+
+Currently, we also provide the binaries for the following OSes and architectures, but they are not officially supported, and we do not prioritize fixes for them:
+- Windows: arm64 and 386
+- Linux: 386
+- Darwin: 386
+- Freebsd: any architecture
+
 ## Example Provider Configuration
 
 This is an example configuration of the provider in `main.tf` in a configuration directory. More examples are provided [below](#order-precedence).
