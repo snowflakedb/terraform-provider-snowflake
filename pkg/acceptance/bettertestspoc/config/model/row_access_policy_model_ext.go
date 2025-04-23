@@ -40,7 +40,6 @@ func RowAccessPolicyFromId(
 	return m
 }
 
-// TODO [this PR]: check usages
 func (r *RowAccessPolicyModel) WithArgument(argument []sdk.TableColumnSignature) *RowAccessPolicyModel {
 	maps := make([]tfconfig.Variable, len(argument))
 	for i, v := range argument {

@@ -798,7 +798,378 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 	})
 }
 
-// TODO [this PR]:
-// handle change in config (default -> specific)
-// handle external change (NUMBER -> VARCHAR)
-// suppress external change after replacing the policy (data type change for top-level and for nested)
+func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	updatedDataType := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR(100)"),
+			}),
+		),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: updatedDataType,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar_100,
+						},
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	updatedPolicyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataType("VARCHAR(100)"))
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config:          accconfig.FromModels(t, updatedPolicyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasReturnDataTypeString("VARCHAR(100)"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
+	updatedBody := "case when current_role() in ('ANALYST') then 1 else 2 end"
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	externalSignature := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeNumber,
+		},
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				),
+			},
+			{
+				PreConfig: func() {
+					// had to update the body too, as otherwise error is returned
+					// 090207 (42601): Declared return type 'NUMBER(38,0)' is incompatible with actual return type 'VARCHAR(5)'
+					// we could later suppress the body changes to be sure what triggers the changes
+					// TODO [next PR]: suppress the changes
+					acc.TestClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeNumber, updatedBody, &sdk.CreateMaskingPolicyOptions{})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	externalSignature := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeVarchar_100,
+		},
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				),
+			},
+			{
+				PreConfig: func() {
+					acc.TestClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeVarchar, body, &sdk.CreateMaskingPolicyOptions{})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	externalSignature := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				),
+			},
+			{
+				PreConfig: func() {
+					acc.TestClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeVarchar_100, body, &sdk.CreateMaskingPolicyOptions{})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}).
+					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				),
+			},
+		},
+	})
+}

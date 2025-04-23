@@ -110,9 +110,8 @@ type describeRowAccessPolicyDBRow struct {
 }
 
 type RowAccessPolicyDescription struct {
-	Name      string
-	Signature []TableColumnSignature
-	// TODO [this PR]: fix data type
+	Name       string
+	Signature  []TableColumnSignature
 	ReturnType string
 	Body       string
 }
