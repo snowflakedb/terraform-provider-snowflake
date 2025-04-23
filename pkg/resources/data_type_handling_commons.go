@@ -108,7 +108,6 @@ func handleNestedDataTypeSet[T any](d *schema.ResourceData, collectionKey string
 	currentConfigDatatypes := d.Get(collectionKey).([]any)
 	nestedDatatypesSchema := make([]map[string]any, 0)
 
-	// TODO [this PR]: handle missing data types
 	for i, externalItem := range externalCollection {
 		externalDataType := extractDataType(externalItem)
 		item := make(map[string]any)

@@ -926,3 +926,168 @@ func TestAcc_RowAccessPolicy_dataType_argumentExternalChangeSuppressed(t *testin
 		},
 	})
 }
+
+func TestAcc_RowAccessPolicy_dataType_externalChangeMoreArguments(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then true else false end"
+	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	externalArgs := []sdk.CreateRowAccessPolicyArgsRequest{
+		*sdk.NewCreateRowAccessPolicyArgsRequest("A", testdatatypes.DataTypeVarchar),
+		*sdk.NewCreateRowAccessPolicyArgsRequest("B", testdatatypes.DataTypeVarchar),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: acc.CheckDestroy(t, resources.RowAccessPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}),
+				),
+			},
+			{
+				PreConfig: func() {
+					acc.TestClient().RowAccessPolicy.DropRowAccessPolicyFunc(t, id)()
+					req := sdk.NewCreateRowAccessPolicyRequest(id, externalArgs, body)
+					acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithRequest(t, *req)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_RowAccessPolicy_dataType_externalChangeFewerArguments(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "case when current_role() in ('ANALYST') then true else false end"
+	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("B"),
+				"type": config.StringVariable("VARCHAR"),
+			}),
+		),
+	}
+
+	externalArgs := []sdk.CreateRowAccessPolicyArgsRequest{
+		*sdk.NewCreateRowAccessPolicyArgsRequest("A", testdatatypes.DataTypeVarchar),
+	}
+
+	temporaryVariableDefinition := `
+	variable "arguments" {
+		type = set(map(string))
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: acc.CheckDestroy(t, resources.RowAccessPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+						{
+							Name: "B",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}),
+				),
+			},
+			{
+				PreConfig: func() {
+					acc.TestClient().RowAccessPolicy.DropRowAccessPolicyFunc(t, id)()
+					req := sdk.NewCreateRowAccessPolicyRequest(id, externalArgs, body)
+					acc.TestClient().RowAccessPolicy.CreateRowAccessPolicyWithRequest(t, *req)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+						{
+							Name: "B",
+							Type: testdatatypes.DataTypeVarchar,
+						},
+					}),
+				),
+			},
+		},
+	})
+}
