@@ -149,10 +149,8 @@ Read-Only:
 - `saml2_snowflake_acs_url` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--saml2_snowflake_acs_url))
 - `saml2_snowflake_issuer_url` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--saml2_snowflake_issuer_url))
 - `saml2_snowflake_metadata` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--saml2_snowflake_metadata))
-- `saml2_snowflake_x509_cert` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--saml2_snowflake_x509_cert))
 - `saml2_sp_initiated_login_page_label` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--saml2_sp_initiated_login_page_label))
 - `saml2_sso_url` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--saml2_sso_url))
-- `saml2_x509_cert` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--saml2_x509_cert))
 - `sync_password` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--sync_password))
 
 <a id="nestedobjatt--security_integrations--describe_output--allowed_email_patterns"></a>
@@ -694,17 +692,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--security_integrations--describe_output--saml2_snowflake_x509_cert"></a>
-### Nested Schema for `security_integrations.describe_output.saml2_snowflake_x509_cert`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--security_integrations--describe_output--saml2_sp_initiated_login_page_label"></a>
 ### Nested Schema for `security_integrations.describe_output.saml2_sp_initiated_login_page_label`
 
@@ -718,17 +705,6 @@ Read-Only:
 
 <a id="nestedobjatt--security_integrations--describe_output--saml2_sso_url"></a>
 ### Nested Schema for `security_integrations.describe_output.saml2_sso_url`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--security_integrations--describe_output--saml2_x509_cert"></a>
-### Nested Schema for `security_integrations.describe_output.saml2_x509_cert`
 
 Read-Only:
 

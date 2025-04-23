@@ -59,7 +59,7 @@ variable "oauth_client_secret" {
 - `enabled` (Boolean) Specifies whether this security integration is enabled or disabled.
 - `name` (String) Specifies the identifier (i.e. name) for the integration. This value must be unique in your account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `oauth_client_id` (String, Sensitive) Specifies the client ID for the OAuth application in the external service.
-- `oauth_client_secret` (String) Specifies the client secret for the OAuth application in the ServiceNow instance from the previous step. The connector uses this to request an access token from the ServiceNow instance. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
+- `oauth_client_secret` (String, Sensitive) Specifies the client secret for the OAuth application in the ServiceNow instance from the previous step. The connector uses this to request an access token from the ServiceNow instance. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 
 ### Optional
 

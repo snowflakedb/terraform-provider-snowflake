@@ -17,6 +17,7 @@ This is a terraform provider for managing [Snowflake](https://www.snowflake.com/
 * [Snowflake Terraform Provider](#snowflake-terraform-provider)
   * [Table of contents](#table-of-contents)
   * [Getting started](#getting-started)
+  * [Supported Architectures](#supported-architectures)
   * [Migration guide](#migration-guide)
   * [Roadmap](#roadmap)
   * [Getting Help](#getting-help)
@@ -65,6 +66,22 @@ For more information on provider configuration see the [provider docs on the Ter
 Don't forget to run `terraform init` and you're ready to go! 🚀
 
 Start browsing the [registry docs](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs) to find resources and data sources to use.
+
+## Supported Architectures
+
+We have compiled a list to clarify which binaries are officially supported and which are provided additionally but not officially supported.
+The lists are based on what the underlying [gosnowflake driver](https://github.com/snowflakedb/gosnowflake) supports and what [HashiCorp recommends for Terraform providers](https://developer.hashicorp.com/terraform/registry/providers/os-arch).
+
+The Snowflake Terraform provider supports the following architectures:
+- Windows: amd64
+- Linux: amd64 and arm64
+- Darwin: amd64 and arm64
+
+We also provide additional configurations, but they are not officially supported, and we do not prioritize fixes for them:
+- Windows: arm64 and 386
+- Linux: 386
+- Darwin: 386
+- Freebsd: any architecture
 
 ## Migration guide
 

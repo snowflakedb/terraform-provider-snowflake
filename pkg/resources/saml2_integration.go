@@ -54,6 +54,7 @@ var saml2IntegrationSchema = map[string]*schema.Schema{
 	"saml2_x509_cert": {
 		Type:        schema.TypeString,
 		Required:    true,
+		Sensitive:   true,
 		Description: "The Base64 encoded IdP signing certificate on a single line without the leading -----BEGIN CERTIFICATE----- and ending -----END CERTIFICATE----- markers.",
 	},
 	"saml2_sp_initiated_login_page_label": {
@@ -171,7 +172,7 @@ func SAML2Integration() *schema.Resource {
 			ForceNewIfChangeToEmptyString("saml2_snowflake_acs_url"),
 			ForceNewIfChangeToEmptyString("saml2_sp_initiated_login_page_label"),
 			ComputedIfAnyAttributeChanged(saml2IntegrationSchema, ShowOutputAttributeName, "enabled", "comment"),
-			ComputedIfAnyAttributeChanged(saml2IntegrationSchema, DescribeOutputAttributeName, "saml2_issuer", "saml2_sso_url", "saml2_provider", "saml2_x509_cert",
+			ComputedIfAnyAttributeChanged(saml2IntegrationSchema, DescribeOutputAttributeName, "saml2_issuer", "saml2_sso_url", "saml2_provider",
 				"saml2_sp_initiated_login_page_label", "saml2_enable_sp_initiated", "saml2_sign_request", "saml2_requtedted_nameid_format",
 				"saml2_post_logout_redirect_url", "saml2_force_authn", "saml2_snowflake_issuer_url", "saml2_snowflake_acs_url", "allowed_user_domains",
 				"allowed_email_patterns"),

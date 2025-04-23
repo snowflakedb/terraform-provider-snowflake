@@ -61,7 +61,7 @@ resource "snowflake_saml2_integration" "test" {
 - `saml2_issuer` (String) The string containing the IdP EntityID / Issuer.
 - `saml2_provider` (String) The string describing the IdP. Valid options are: `OKTA` | `ADFS` | `CUSTOM`.
 - `saml2_sso_url` (String) The string containing the IdP SSO URL, where the user should be redirected by Snowflake (the Service Provider) with a SAML AuthnRequest message.
-- `saml2_x509_cert` (String) The Base64 encoded IdP signing certificate on a single line without the leading -----BEGIN CERTIFICATE----- and ending -----END CERTIFICATE----- markers.
+- `saml2_x509_cert` (String, Sensitive) The Base64 encoded IdP signing certificate on a single line without the leading -----BEGIN CERTIFICATE----- and ending -----END CERTIFICATE----- markers.
 
 ### Optional
 
@@ -117,10 +117,8 @@ Read-Only:
 - `saml2_snowflake_acs_url` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--saml2_snowflake_acs_url))
 - `saml2_snowflake_issuer_url` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--saml2_snowflake_issuer_url))
 - `saml2_snowflake_metadata` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--saml2_snowflake_metadata))
-- `saml2_snowflake_x509_cert` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--saml2_snowflake_x509_cert))
 - `saml2_sp_initiated_login_page_label` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--saml2_sp_initiated_login_page_label))
 - `saml2_sso_url` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--saml2_sso_url))
-- `saml2_x509_cert` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--saml2_x509_cert))
 
 <a id="nestedobjatt--describe_output--allowed_email_patterns"></a>
 ### Nested Schema for `describe_output.allowed_email_patterns`
@@ -287,17 +285,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--describe_output--saml2_snowflake_x509_cert"></a>
-### Nested Schema for `describe_output.saml2_snowflake_x509_cert`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--describe_output--saml2_sp_initiated_login_page_label"></a>
 ### Nested Schema for `describe_output.saml2_sp_initiated_login_page_label`
 
@@ -311,17 +298,6 @@ Read-Only:
 
 <a id="nestedobjatt--describe_output--saml2_sso_url"></a>
 ### Nested Schema for `describe_output.saml2_sso_url`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--saml2_x509_cert"></a>
-### Nested Schema for `describe_output.saml2_x509_cert`
 
 Read-Only:
 

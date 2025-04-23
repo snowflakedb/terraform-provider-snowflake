@@ -16,25 +16,46 @@ across different versions.
 
 ### Supported architectures
 
-[//]: # (TODO: )
+We have compiled a list to clarify which binaries are officially supported and which are provided additionally but not officially supported.
+The lists are based on what the underlying [gosnowflake driver](https://github.com/snowflakedb/gosnowflake) supports and what [HashiCorp recommends for Terraform providers](https://developer.hashicorp.com/terraform/registry/providers/os-arch).
 
-### Sensitive values
+The provider officially supports the binaries built for the following OSes and architectures:
+- Windows: amd64 
+- Linux: amd64 and arm64
+- Darwin: amd64 and arm64
 
-| Resource name                                                            | Fields marked as sensitive |
-|--------------------------------------------------------------------------|----------------------------|
-| `storage_integration`                                                    | `azure_consent_url`        |
-| `snowflake_api_authentication_integration_with_authorization_code_grant` | `oauth_client_id`          |
-| `snowflake_api_authentication_integration_with_client_credentials`       | `oauth_client_id`          |
-| `snowflake_api_authentication_integration_with_jwt_bearer`               | `oauth_client_id`          |
-| `snowflake_oauth_integration_for_custom_clients`                         | `oauth_redirect_uri`       |
-| `snowflake_oauth_integration_for_partner_applications`                   | `oauth_redirect_uri`       |
+Currently, we also provide the binaries for the following OSes and architectures, but they are not officially supported, and we do not prioritize fixes for them:
+- Windows: arm64 and 386
+- Linux: 386
+- Darwin: 386
+- Freebsd: any architecture
 
-The following table represents fields removed from resources. They were removed because of the Terraform SDK limitations 
-on marking data as sensitive in computed collections (TODO: link to issue). Removal of computed output fields may have an impact on detecting
+### Sensitive fields
+
+To increase the provider security and decrease potential security risks due to sensitive data being exposed in logs, 
+we marked more fields as sensitive and removed some of the computed ones (the reason behind removal is described below).
+
+The table below shows, which fields were marked as sensitive. This may have an impact on your current
+configurations if you are referencing these fields in other resources (e.g. [#1907](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1907)).
+In this case, you could work around this by marking the field value as non-sensitive using the [builtin function](https://developer.hashicorp.com/terraform/language/functions/nonsensitive).
+
+| Resource name                                                            | Fields marked as sensitive               |
+|--------------------------------------------------------------------------|------------------------------------------|
+| `snowflake_storage_integration`                                          | `azure_consent_url`                      |
+| `snowflake_saml2_integration`                                            | `saml2_x509_cert`                        |
+| `snowflake_api_authentication_integration_with_authorization_code_grant` | `oauth_client_id`, `oauth_client_secret` |
+| `snowflake_api_authentication_integration_with_client_credentials`       | `oauth_client_id`, `oauth_client_secret` |
+| `snowflake_api_authentication_integration_with_jwt_bearer`               | `oauth_client_id`, `oauth_client_secret` |
+| `snowflake_oauth_integration_for_custom_clients`                         | `oauth_redirect_uri`                     |
+| `snowflake_oauth_integration_for_partner_applications`                   | `oauth_redirect_uri`                     |
+
+The next table represents fields removed from resources. They were removed because of the Terraform SDK limitations 
+on marking data as sensitive in objects or collections ([Terraform issue reference](https://github.com/hashicorp/terraform/issues/28222)). Removal of computed output fields may have an impact on detecting
 external changes (on the Snowflake side) for (usually) top-level fields they were referring to (e.g. `describe_output.oauth_client_id` -> `oauth_client_id`).
 
 | Resource name                                                            | Removed fields                                                                                                             |
 |--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `snowflake_saml2_integration`                                            | `describe_output.saml2_x509_cert`, `describe_output.saml2_snowflake_x509_cert`                                             |
 | `snowflake_api_authentication_integration_with_authorization_code_grant` | `describe_output.oauth_client_id`                                                                                          |
 | `snowflake_api_authentication_integration_with_client_credentials`       | `describe_output.oauth_client_id`                                                                                          |
 | `snowflake_api_authentication_integration_with_jwt_bearer`               | `describe_output.oauth_client_id`                                                                                          |
@@ -43,7 +64,6 @@ external changes (on the Snowflake side) for (usually) top-level fields they wer
 | `snowflake_saml2_integration`                                            | `describe_output.saml2_snowflake_x509_cert`, `describe_output.saml2_x509_cert`                                             |
 | `snowflake_security_integrations` (data source)                          | `security_integrations.describe_output.saml2_snowflake_x509_cert`, `security_integrations.describe_output.saml2_x509_cert` |
 | `snowflake_users` (data source)                                          | `users.describe_output.password`                                                                                           |
-
 
 ## v1.1.0 ➞ v1.2.0
 
