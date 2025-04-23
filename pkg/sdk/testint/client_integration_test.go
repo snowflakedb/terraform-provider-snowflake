@@ -74,7 +74,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 
-		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile)
+		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithUseLegacyTomlFormat(true))
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
@@ -118,7 +118,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 
-		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithVerifyPermissions(false))
+		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithVerifyPermissions(false), sdk.WithUseLegacyTomlFormat(true))
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
