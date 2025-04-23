@@ -44,17 +44,3 @@ func (v multilineWrapperVariable) MarshalJSON() ([]byte, error) {
 func MultilineWrapperVariable(content string) multilineWrapperVariable {
 	return multilineWrapperVariable{content}
 }
-
-type secretVariable struct {
-	content string
-}
-
-// MarshalJSON returns the JSON encoding of multilineWrapperVariable.
-func (v secretVariable) MarshalJSON() ([]byte, error) {
-	return json.Marshal(fmt.Sprintf(`%[1]s%[2]s%[1]s`, SnowflakeProviderConfigMultilineMarker, v.content))
-}
-
-// SecretVariable returns Variable containing multiline content wrapped with SnowflakeProviderConfigMultilineMarker later replaced by HclFormatter.
-func SecretVariable(content string) secretVariable {
-	return secretVariable{content}
-}
