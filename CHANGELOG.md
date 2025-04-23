@@ -7,6 +7,7 @@
 
 * Diff suppression handling follow up part 2 ([#3592](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3592)) ([39cf134](https://github.com/snowflakedb/terraform-provider-snowflake/commit/39cf1348582a44d3333c9188660a098ddef930f2))
 * Use the new TOML format by default ([#3585](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3585)) ([4fd8a0d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4fd8a0d921a29a860494cc5f751b014aa1e0a82b))
+* Verify file permissions by default ([#3519](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3519)) ([551dbfa](https://github.com/snowflakedb/terraform-provider-snowflake/commit/551dbfab36c95d528b7a1721953dfcc32d70810e))
 
 
 ### 🔧 **Misc**
@@ -16,9 +17,8 @@
 * Documentation adjustments ([#3599](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3599)) ([94417fe](https://github.com/snowflakedb/terraform-provider-snowflake/commit/94417feb24766194eab26fa0b3ab3731da409c91))
 * GH documentation updates ([#3596](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3596)) ([97bbd7e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/97bbd7ed42d070524a89b9e5f0a083fad76a1911))
 * Prepare 2.0.0 release ([#3602](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3602)) ([91c7673](https://github.com/snowflakedb/terraform-provider-snowflake/commit/91c767382fcc06ecc64b4131feb70008566bc032))
-* release 2.0.0 ([429f739](https://github.com/snowflakedb/terraform-provider-snowflake/commit/429f7393ecebffcce02df54b28a35bb162ee1c48))
-* release 2.0.0 ([429f739](https://github.com/snowflakedb/terraform-provider-snowflake/commit/429f7393ecebffcce02df54b28a35bb162ee1c48))
 * Sensitive values and documentation changes ([#3595](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3595)) ([70a4dc5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/70a4dc5d19763242e0dbcb3605c518250c6b0e05))
+* Adjust sensitive values ([#3572](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3572)) ([abef31c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/abef31c4fbed205b171a1d59a60948aefc02d42a))
 
 
 ### 🐛 **Bug fixes:**
