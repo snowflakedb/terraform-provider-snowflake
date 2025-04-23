@@ -13,42 +13,42 @@ import (
 func (c *TestClient) TempTomlConfigForServiceUser(t *testing.T, serviceUser *TmpServiceUser) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
-		return TomlConfigForServiceUser(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, serviceUser.PrivateKey)
+		return LegacyTomlConfigForServiceUser(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, serviceUser.PrivateKey)
 	})
 }
 
 func (c *TestClient) TempTomlConfigForServiceUserWithEncryptedKey(t *testing.T, serviceUser *TmpServiceUser) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
-		return TomlConfigForServiceUserWithEncryptedKey(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, serviceUser.EncryptedPrivateKey, serviceUser.Pass)
+		return LegacyTomlConfigForServiceUserWithEncryptedKey(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, serviceUser.EncryptedPrivateKey, serviceUser.Pass)
 	})
 }
 
 func (c *TestClient) TempIncorrectTomlConfigForServiceUser(t *testing.T, serviceUser *TmpServiceUser) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
-		return TomlIncorrectConfigForServiceUser(t, profile, serviceUser.AccountId)
+		return LegacyTomlIncorrectConfigForServiceUser(t, profile, serviceUser.AccountId)
 	})
 }
 
 func (c *TestClient) TempIncorrectTomlConfigForServiceUserWithEncryptedKey(t *testing.T, serviceUser *TmpServiceUser) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
-		return TomlConfigForServiceUserWithEncryptedKey(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, serviceUser.EncryptedPrivateKey, "incorrect pass")
+		return LegacyTomlConfigForServiceUserWithEncryptedKey(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, serviceUser.EncryptedPrivateKey, "incorrect pass")
 	})
 }
 
 func (c *TestClient) TempTomlConfigForLegacyServiceUser(t *testing.T, legacyServiceUser *TmpLegacyServiceUser) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
-		return TomlConfigForLegacyServiceUser(t, profile, legacyServiceUser.UserId, legacyServiceUser.RoleId, legacyServiceUser.WarehouseId, legacyServiceUser.AccountId, legacyServiceUser.Pass)
+		return LegacyTomlConfigForLegacyServiceUser(t, profile, legacyServiceUser.UserId, legacyServiceUser.RoleId, legacyServiceUser.WarehouseId, legacyServiceUser.AccountId, legacyServiceUser.Pass)
 	})
 }
 
 func (c *TestClient) TempIncorrectTomlConfigForLegacyServiceUser(t *testing.T, legacyServiceUser *TmpLegacyServiceUser) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
-		return TomlConfigForLegacyServiceUser(t, profile, legacyServiceUser.UserId, legacyServiceUser.RoleId, legacyServiceUser.WarehouseId, legacyServiceUser.AccountId, "incorrect pass")
+		return LegacyTomlConfigForLegacyServiceUser(t, profile, legacyServiceUser.UserId, legacyServiceUser.RoleId, legacyServiceUser.WarehouseId, legacyServiceUser.AccountId, "incorrect pass")
 	})
 }
 
@@ -56,14 +56,14 @@ func (c *TestClient) TempTooBigTomlConfigForServiceUser(t *testing.T, serviceUse
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
 		c := make([]byte, 11*1024*1024)
-		return TomlConfigForServiceUser(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, string(c))
+		return LegacyTomlConfigForServiceUser(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, string(c))
 	})
 }
 
 func (c *TestClient) TempTomlConfigWithCustomPermissionsForServiceUser(t *testing.T, serviceUser *TmpServiceUser, permissions fs.FileMode) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfigWithCustomPermissions(t, func(profile string) string {
-		return TomlConfigForServiceUser(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, serviceUser.PrivateKey)
+		return LegacyTomlConfigForServiceUser(t, profile, serviceUser.UserId, serviceUser.RoleId, serviceUser.WarehouseId, serviceUser.AccountId, serviceUser.PrivateKey)
 	}, permissions)
 }
 

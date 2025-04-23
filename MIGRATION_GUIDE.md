@@ -12,7 +12,7 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v1.2.0 ➞ v2.0.0
+## v1.2.1 ➞ v2.0.0
 
 ### *(breaking change)* Changes in sensitive values
 To ensure better security of users' data, we adjusted the fields containing sensitive information to be sensitive in the provider. This means these values will not be printed by Terraform during planning, etc. Note that the users are still responsible for storing the state securely. Read more about sensitive values in the [Terraform documentation](https://developer.hashicorp.com/terraform/tutorials/configuration-language/sensitive-variables).

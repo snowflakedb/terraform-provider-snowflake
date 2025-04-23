@@ -59,7 +59,7 @@ func init() {
 	testObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.TestObjectsSuffix))
 	requireTestObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.RequireTestObjectsSuffix))
 	if requireTestObjectSuffix != "" && testObjectSuffix == "" {
-		log.Println("test object suffix is required for this test run")
+		log.Printf("Test object suffix is required for this test run. Set %s env.", testenvs.TestObjectsSuffix)
 		os.Exit(1)
 	}
 
@@ -164,10 +164,6 @@ func ConfigureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 	}
 	log.Printf("[DEBUG] No cached provider configuration found or caching is not enabled; configuring a new provider")
 
-	// TODO [SNOW-2054383]: Use the new TOML format.
-	if err := d.Set("use_legacy_toml_file", true); err != nil {
-		return nil, diag.FromErr(err)
-	}
 	providerCtx, clientErrorDiag := provider.ConfigureProvider(ctx, d)
 
 	if providerCtx != nil && accTestEnabled && oswrapper.Getenv("SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES") == "true" {

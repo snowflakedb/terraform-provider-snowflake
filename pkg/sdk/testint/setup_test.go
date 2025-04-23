@@ -116,7 +116,7 @@ func (itc *integrationTestContext) initialize() error {
 	testObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.TestObjectsSuffix))
 	requireTestObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.RequireTestObjectsSuffix))
 	if requireTestObjectSuffix != "" && testObjectSuffix == "" {
-		return errors.New("test object suffix is required for this test run")
+		return fmt.Errorf("Test object suffix is required for this test run. Set %s env.", testenvs.TestObjectsSuffix)
 	}
 
 	// TODO [SNOW-2054383]: Use the new TOML format.

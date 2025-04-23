@@ -246,7 +246,7 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithUseLegacyTomlFile(true), datasourceModel()),
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
 					config := acc.TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
 					assert.Equal(t, tmpServiceUser.OrgAndAccount(), config.Account)
@@ -297,6 +297,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+	t.Setenv(string(snowflakeenvs.UseLegacyTomlFile), "")
 
 	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
@@ -403,6 +404,7 @@ func TestAcc_Provider_TomlConfigFailsIfFormatsMismatch(t *testing.T) {
 			{
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, legacyTomlTmpServiceUserConfig.Path)
+					t.Setenv(string(snowflakeenvs.UseLegacyTomlFile), "")
 				},
 				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(legacyTomlTmpServiceUserConfig.Profile).WithUseLegacyTomlFile(false), datasourceModel()),
 				ExpectError: regexp.MustCompile("account is empty"),
@@ -420,7 +422,7 @@ func TestAcc_Provider_tomlConfigIsTooBig(t *testing.T) {
 	tomlConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
 		return string(c)
 	})
-	providerModel := providermodel.SnowflakeProvider().WithProfile(tomlConfig.Path)
+	providerModel := providermodel.SnowflakeProvider().WithProfile(tomlConfig.Profile)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -508,7 +510,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 
 	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
-		return helpers.FullInvalidTomlConfigForServiceUser(t, profile)
+		return helpers.FullInvalidLegacyTomlConfigForServiceUser(t, profile)
 	})
 
 	resource.Test(t, resource.TestCase{
@@ -616,7 +618,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 
 	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
-		return helpers.FullInvalidTomlConfigForServiceUser(t, profile)
+		return helpers.FullInvalidLegacyTomlConfigForServiceUser(t, profile)
 	})
 
 	resource.Test(t, resource.TestCase{
