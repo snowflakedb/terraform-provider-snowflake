@@ -125,14 +125,12 @@ Read-Only:
 - `oauth_allowed_token_endpoints` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_allowed_token_endpoints))
 - `oauth_authorization_endpoint` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_authorization_endpoint))
 - `oauth_client_auth_method` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_client_auth_method))
-- `oauth_client_id` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_client_id))
 - `oauth_client_rsa_public_key_2_fp` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_client_rsa_public_key_2_fp))
 - `oauth_client_rsa_public_key_fp` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_client_rsa_public_key_fp))
 - `oauth_client_type` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_client_type))
 - `oauth_enforce_pkce` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_enforce_pkce))
 - `oauth_grant` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_grant))
 - `oauth_issue_refresh_tokens` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_issue_refresh_tokens))
-- `oauth_redirect_uri` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_redirect_uri))
 - `oauth_refresh_token_validity` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_refresh_token_validity))
 - `oauth_token_endpoint` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_token_endpoint))
 - `oauth_use_secondary_roles` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_use_secondary_roles))
@@ -432,17 +430,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--security_integrations--describe_output--oauth_client_id"></a>
-### Nested Schema for `security_integrations.describe_output.oauth_client_id`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--security_integrations--describe_output--oauth_client_rsa_public_key_2_fp"></a>
 ### Nested Schema for `security_integrations.describe_output.oauth_client_rsa_public_key_2_fp`
 
@@ -500,17 +487,6 @@ Read-Only:
 
 <a id="nestedobjatt--security_integrations--describe_output--oauth_issue_refresh_tokens"></a>
 ### Nested Schema for `security_integrations.describe_output.oauth_issue_refresh_tokens`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--security_integrations--describe_output--oauth_redirect_uri"></a>
-### Nested Schema for `security_integrations.describe_output.oauth_redirect_uri`
 
 Read-Only:
 

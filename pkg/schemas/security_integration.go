@@ -1,11 +1,12 @@
 package schemas
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"log"
 	"slices"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 var (

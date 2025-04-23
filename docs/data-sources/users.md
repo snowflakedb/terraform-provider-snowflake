@@ -154,7 +154,6 @@ Read-Only:
 - `mins_to_unlock` (Number)
 - `must_change_password` (Boolean)
 - `name` (String)
-- `password` (String)
 - `password_last_set_time` (String)
 - `rsa_public_key` (String)
 - `rsa_public_key2` (String)

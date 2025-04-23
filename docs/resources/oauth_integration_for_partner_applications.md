@@ -52,7 +52,7 @@ resource "snowflake_oauth_integration_for_partner_applications" "test" {
 - `comment` (String) Specifies a comment for the OAuth integration.
 - `enabled` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether this OAuth integration is enabled or disabled. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `oauth_issue_refresh_tokens` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to allow the client to exchange a refresh token for an access token when the current access token has expired. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `oauth_redirect_uri` (String) Specifies the client URI. After a user is authenticated, the web browser is redirected to this URI. The field should be only set when OAUTH_CLIENT = LOOKER. In any other case the field should be left out empty.
+- `oauth_redirect_uri` (String, Sensitive) Specifies the client URI. After a user is authenticated, the web browser is redirected to this URI. The field should be only set when OAUTH_CLIENT = LOOKER. In any other case the field should be left out empty.
 - `oauth_refresh_token_validity` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies how long refresh tokens should be valid (in seconds). OAUTH_ISSUE_REFRESH_TOKENS must be set to TRUE.
 - `oauth_use_secondary_roles` (String) Specifies whether default secondary roles set in the user properties are activated by default in the session being opened. Valid options are: `IMPLICIT` | `NONE`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -89,13 +89,11 @@ Read-Only:
 - `oauth_allowed_authorization_endpoints` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_allowed_authorization_endpoints))
 - `oauth_allowed_token_endpoints` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_allowed_token_endpoints))
 - `oauth_authorization_endpoint` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_authorization_endpoint))
-- `oauth_client_id` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_client_id))
 - `oauth_client_rsa_public_key_2_fp` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_client_rsa_public_key_2_fp))
 - `oauth_client_rsa_public_key_fp` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_client_rsa_public_key_fp))
 - `oauth_client_type` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_client_type))
 - `oauth_enforce_pkce` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_enforce_pkce))
 - `oauth_issue_refresh_tokens` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_issue_refresh_tokens))
-- `oauth_redirect_uri` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_redirect_uri))
 - `oauth_refresh_token_validity` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_refresh_token_validity))
 - `oauth_token_endpoint` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_token_endpoint))
 - `oauth_use_secondary_roles` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_use_secondary_roles))
@@ -189,17 +187,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--describe_output--oauth_client_id"></a>
-### Nested Schema for `describe_output.oauth_client_id`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--describe_output--oauth_client_rsa_public_key_2_fp"></a>
 ### Nested Schema for `describe_output.oauth_client_rsa_public_key_2_fp`
 
@@ -246,17 +233,6 @@ Read-Only:
 
 <a id="nestedobjatt--describe_output--oauth_issue_refresh_tokens"></a>
 ### Nested Schema for `describe_output.oauth_issue_refresh_tokens`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--oauth_redirect_uri"></a>
-### Nested Schema for `describe_output.oauth_redirect_uri`
 
 Read-Only:
 

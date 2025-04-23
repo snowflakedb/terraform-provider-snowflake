@@ -54,7 +54,7 @@ resource "snowflake_oauth_integration_for_custom_clients" "complete" {
 
 - `name` (String) Specifies the name of the OAuth integration. This name follows the rules for Object Identifiers. The name should be unique among security integrations in your account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `oauth_client_type` (String) Specifies the type of client being registered. Snowflake supports both confidential and public clients. Valid options are: `PUBLIC` | `CONFIDENTIAL`.
-- `oauth_redirect_uri` (String) Specifies the client URI. After a user is authenticated, the web browser is redirected to this URI.
+- `oauth_redirect_uri` (String, Sensitive) Specifies the client URI. After a user is authenticated, the web browser is redirected to this URI.
 
 ### Optional
 
@@ -104,13 +104,11 @@ Read-Only:
 - `oauth_allowed_authorization_endpoints` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_allowed_authorization_endpoints))
 - `oauth_allowed_token_endpoints` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_allowed_token_endpoints))
 - `oauth_authorization_endpoint` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_authorization_endpoint))
-- `oauth_client_id` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_client_id))
 - `oauth_client_rsa_public_key_2_fp` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_client_rsa_public_key_2_fp))
 - `oauth_client_rsa_public_key_fp` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_client_rsa_public_key_fp))
 - `oauth_client_type` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_client_type))
 - `oauth_enforce_pkce` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_enforce_pkce))
 - `oauth_issue_refresh_tokens` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_issue_refresh_tokens))
-- `oauth_redirect_uri` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_redirect_uri))
 - `oauth_refresh_token_validity` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_refresh_token_validity))
 - `oauth_token_endpoint` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_token_endpoint))
 - `oauth_use_secondary_roles` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_use_secondary_roles))
@@ -204,17 +202,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--describe_output--oauth_client_id"></a>
-### Nested Schema for `describe_output.oauth_client_id`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--describe_output--oauth_client_rsa_public_key_2_fp"></a>
 ### Nested Schema for `describe_output.oauth_client_rsa_public_key_2_fp`
 
@@ -261,17 +248,6 @@ Read-Only:
 
 <a id="nestedobjatt--describe_output--oauth_issue_refresh_tokens"></a>
 ### Nested Schema for `describe_output.oauth_issue_refresh_tokens`
-
-Read-Only:
-
-- `default` (String)
-- `name` (String)
-- `type` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--oauth_redirect_uri"></a>
-### Nested Schema for `describe_output.oauth_redirect_uri`
 
 Read-Only:
 

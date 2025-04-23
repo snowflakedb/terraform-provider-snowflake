@@ -61,7 +61,7 @@ resource "snowflake_storage_integration" "integration" {
 
 ### Read-Only
 
-- `azure_consent_url` (String) The consent URL that is used to create an Azure Snowflake service principle inside your tenant.
+- `azure_consent_url` (String, Sensitive) The consent URL that is used to create an Azure Snowflake service principle inside your tenant.
 - `azure_multi_tenant_app_name` (String) This is the name of the Snowflake client application created for your account.
 - `created_on` (String) Date and time when the storage integration was created.
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
