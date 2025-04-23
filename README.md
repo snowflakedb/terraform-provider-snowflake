@@ -1,10 +1,16 @@
+## Support
+
+For official support and urgent, production-impacting issues, please [contact Snowflake Support](https://community.snowflake.com/s/article/How-To-Submit-a-Support-Case-in-Snowflake-Lodge).
+
+> ⚠️ **Keep in mind** that the official support starts with the [v2.0.0](https://registry.terraform.io/providers/snowflakedb/snowflake/2.0.0) for stable resources only. All previous versions and preview resources are not officially supported.
+
+Please follow [creating issues guidelines](CREATING_ISSUES.md), [FAQ](FAQ.md), and [known issues](KNOWN_ISSUES.md) before submitting an issue on GitHub or directly to Snowflake Support.
+
 # Snowflake Terraform Provider
 
 > ⚠️ **Please note**: If you believe you have found a security issue, _please responsibly disclose_ by contacting us at [triage-terraformprovider-dl@snowflake.com](mailto:triage-terraformprovider-dl@snowflake.com).
 
-> ⚠️ **Disclaimer**: The project is in v1 version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
->
-> Keep in mind that V1 does not mean we have an official Snowflake support. Please follow [creating issues guidelines](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/CREATING_ISSUES.md).
+> ⚠️ **Disclaimer**: The project is in GA version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 ----
 

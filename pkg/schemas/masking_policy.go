@@ -41,7 +41,7 @@ func MaskingPolicyDescriptionToSchema(details sdk.MaskingPolicyDetails) map[stri
 	return map[string]any{
 		"name":        details.Name,
 		"signature":   MaskingPolicyArgumentsToSchema(details.Signature),
-		"return_type": details.ReturnType,
+		"return_type": details.ReturnType.ToSql(),
 		"body":        details.Body,
 	}
 }
@@ -51,7 +51,7 @@ func MaskingPolicyArgumentsToSchema(args []sdk.TableColumnSignature) []map[strin
 	for i, v := range args {
 		schema[i] = map[string]any{
 			"name": v.Name,
-			"type": v.Type,
+			"type": v.Type.ToSql(),
 		}
 	}
 	return schema

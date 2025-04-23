@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -33,11 +34,11 @@ func TestAcc_RowAccessPolicies(t *testing.T) {
 	policyModel := model.RowAccessPolicy("test", []sdk.TableColumnSignature{
 		{
 			Name: "a",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 		{
 			Name: "b",
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		},
 	}, body, id.DatabaseName(), id.Name(), id.SchemaName()).WithComment("foo")
 
@@ -72,9 +73,9 @@ func TestAcc_RowAccessPolicies(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.return_type", "BOOLEAN")),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.0.name", "a")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.1.name", "b")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
 				),
 			},
 			{

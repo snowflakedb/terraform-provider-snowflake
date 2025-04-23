@@ -217,11 +217,11 @@ func TestProcedures_CreateForJava(t *testing.T) {
 		opts.Arguments = []ProcedureArgument{
 			{
 				ArgName:     "id",
-				ArgDataType: dataTypeNumber,
+				ArgDataType: dataTypeNumber_36_2,
 			},
 			{
 				ArgName:      "name",
-				ArgDataType:  dataTypeVarchar,
+				ArgDataType:  dataTypeVarchar_100,
 				DefaultValue: String("'test'"),
 			},
 		}
@@ -231,7 +231,7 @@ func TestProcedures_CreateForJava(t *testing.T) {
 				Columns: []ProcedureColumn{
 					{
 						ColumnName:     "country_code",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 				},
 			},
@@ -589,7 +589,7 @@ func TestProcedures_CreateForPython(t *testing.T) {
 		opts.Arguments = []ProcedureArgument{
 			{
 				ArgName:      "i",
-				ArgDataType:  dataTypeNumber,
+				ArgDataType:  dataTypeNumber_36_2,
 				DefaultValue: String("1"),
 			},
 		}
@@ -839,14 +839,14 @@ func TestProcedures_CreateForScala(t *testing.T) {
 		opts.Arguments = []ProcedureArgument{
 			{
 				ArgName:      "x",
-				ArgDataType:  dataTypeVarchar,
+				ArgDataType:  dataTypeVarchar_100,
 				DefaultValue: String("'test'"),
 			},
 		}
 		opts.CopyGrants = Bool(true)
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 				NotNull:        Bool(true),
 			},
 		}
@@ -881,7 +881,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 			ProcedureDefinition: "3.141592654::FLOAT",
 			Returns: ProcedureSQLReturns{
 				ResultDataType: &ProcedureReturnsResultDataType{
-					ResultDataType: dataTypeVarchar,
+					ResultDataType: dataTypeVarchar_100,
 				},
 			},
 		}
@@ -1034,14 +1034,14 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 		opts.Arguments = []ProcedureArgument{
 			{
 				ArgName:      "message",
-				ArgDataType:  dataTypeVarchar,
+				ArgDataType:  dataTypeVarchar_100,
 				DefaultValue: String("'test'"),
 			},
 		}
 		opts.CopyGrants = Bool(true)
 		opts.Returns = ProcedureSQLReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 			},
 			NotNull: Bool(true),
 		}
@@ -1395,7 +1395,7 @@ func TestProcedures_CreateAndCallForJava(t *testing.T) {
 				Columns: []ProcedureColumn{
 					{
 						ColumnName:     "name",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 				},
 			},
@@ -1476,11 +1476,11 @@ func TestProcedures_CreateAndCallForJava(t *testing.T) {
 		opts.Arguments = []ProcedureArgument{
 			{
 				ArgName:     "id",
-				ArgDataType: dataTypeNumber,
+				ArgDataType: dataTypeNumber_36_2,
 			},
 			{
 				ArgName:     "name",
-				ArgDataType: dataTypeVarchar,
+				ArgDataType: dataTypeVarchar_100,
 			},
 		}
 		opts.Returns = ProcedureReturns{
@@ -1488,7 +1488,7 @@ func TestProcedures_CreateAndCallForJava(t *testing.T) {
 				Columns: []ProcedureColumn{
 					{
 						ColumnName:     "country_code",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 				},
 			},
@@ -1553,7 +1553,7 @@ func TestProcedures_CreateAndCallForScala(t *testing.T) {
 				Columns: []ProcedureColumn{
 					{
 						ColumnName:     "name",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 				},
 			},
@@ -1568,7 +1568,7 @@ func TestProcedures_CreateAndCallForScala(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateAndCallForScalaProcedureOptions", "Handler"))
@@ -1648,11 +1648,11 @@ func TestProcedures_CreateAndCallForScala(t *testing.T) {
 		opts.Arguments = []ProcedureArgument{
 			{
 				ArgName:     "id",
-				ArgDataType: dataTypeNumber,
+				ArgDataType: dataTypeNumber_36_2,
 			},
 			{
 				ArgName:     "name",
-				ArgDataType: dataTypeVarchar,
+				ArgDataType: dataTypeVarchar_100,
 			},
 		}
 		opts.Returns = ProcedureReturns{
@@ -1660,7 +1660,7 @@ func TestProcedures_CreateAndCallForScala(t *testing.T) {
 				Columns: []ProcedureColumn{
 					{
 						ColumnName:     "country_code",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 				},
 			},
@@ -1727,7 +1727,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 				Columns: []ProcedureColumn{
 					{
 						ColumnName:     "name",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 				},
 			},
@@ -1742,7 +1742,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateAndCallForPythonProcedureOptions", "Handler"))
@@ -1821,7 +1821,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 		opts.Arguments = []ProcedureArgument{
 			{
 				ArgName:      "i",
-				ArgDataType:  dataTypeNumber,
+				ArgDataType:  dataTypeNumber_36_2,
 				DefaultValue: String("1"),
 			},
 		}
@@ -1989,7 +1989,7 @@ func TestProcedures_CreateAndCallForSQL(t *testing.T) {
 				Columns: []ProcedureColumn{
 					{
 						ColumnName:     "name",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 				},
 			},
@@ -2052,7 +2052,7 @@ func TestProcedures_CreateAndCallForSQL(t *testing.T) {
 		opts.Arguments = []ProcedureArgument{
 			{
 				ArgName:      "message",
-				ArgDataType:  dataTypeVarchar,
+				ArgDataType:  dataTypeVarchar_100,
 				DefaultValue: String("'test'"),
 			},
 		}

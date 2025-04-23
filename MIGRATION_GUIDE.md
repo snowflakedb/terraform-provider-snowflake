@@ -7,7 +7,13 @@ across different versions.
 > [!TIP]
 > We highly recommend upgrading the versions one by one instead of bulk upgrades.
 >
-> If you want to upgrade multiple versions at once, consider reimporting your infrastructure using the newer provider version. Follow our [Resource Migration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/resource_migration) guide for more details.
+> To migrate particular resources, follow our [Resource Migration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/resource_migration) guide for more details.
+>
+> In certain cases (like using the ancient provider versions), you can upgrade multiple versions at once. To do that:
+> - read the target version documentation and all the intermediary migration guide entries;
+> - focus on changes to authentication to make sure your provider is set up correctly in the newest version;
+> - check changes to resource schemas; if in doubt, you can always simplify the resource and let the terraform figure out the changes (you can use plan output to make the configuration appropriate);
+> - reimport your infrastructure using the target provider version, preferably in smaller chunks (or experiment with 1-2 resources of each type first).
 
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.

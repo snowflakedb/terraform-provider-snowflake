@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -51,7 +52,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 		t.Helper()
 
 		argName := random.AlphaN(5)
-		argType := sdk.DataTypeVARCHAR
+		argType := testdatatypes.DataTypeVarchar
 		args := sdk.NewCreateRowAccessPolicyArgsRequest(argName, argType)
 
 		body := "true"
@@ -205,7 +206,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 
 	t.Run("describe row access policy: existing", func(t *testing.T) {
 		argName := random.AlphaN(5)
-		argType := sdk.DataTypeVARCHAR
+		argType := testdatatypes.DataTypeVarchar
 		args := sdk.NewCreateRowAccessPolicyArgsRequest(argName, argType)
 		body := "true"
 
@@ -224,7 +225,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 
 	t.Run("describe row access policy: with timestamp data type normalization", func(t *testing.T) {
 		argName := random.AlphaN(5)
-		argType := sdk.DataTypeTimestampLTZ
+		argType := testdatatypes.DataTypeTimestampLTZ
 		args := sdk.NewCreateRowAccessPolicyArgsRequest(argName, argType)
 		body := "true"
 
@@ -237,13 +238,13 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 
 		assertRowAccessPolicyDescription(t, returnedRowAccessPolicyDescription, rowAccessPolicy.ID(), []sdk.TableColumnSignature{{
 			Name: argName,
-			Type: sdk.DataTypeTimestampLTZ,
+			Type: testdatatypes.DataTypeTimestampLTZ,
 		}}, body)
 	})
 
 	t.Run("describe row access policy: with varchar data type normalization", func(t *testing.T) {
 		argName := random.AlphaN(5)
-		argType := sdk.DataType("VARCHAR(200)")
+		argType := testdatatypes.DataTypeVarchar_200
 		args := sdk.NewCreateRowAccessPolicyArgsRequest(argName, argType)
 		body := "true"
 
@@ -256,7 +257,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 
 		assertRowAccessPolicyDescription(t, returnedRowAccessPolicyDescription, rowAccessPolicy.ID(), []sdk.TableColumnSignature{{
 			Name: argName,
-			Type: sdk.DataTypeVARCHAR,
+			Type: testdatatypes.DataTypeVarchar,
 		}}, body)
 	})
 
@@ -279,7 +280,7 @@ func TestInt_RowAccessPoliciesShowByID(t *testing.T) {
 
 		body := "true"
 		argName := random.AlphaN(5)
-		argType := sdk.DataTypeVARCHAR
+		argType := testdatatypes.DataTypeVarchar
 		arg := sdk.NewCreateRowAccessPolicyArgsRequest(argName, argType)
 
 		req1 := sdk.NewCreateRowAccessPolicyRequest(id1, []sdk.CreateRowAccessPolicyArgsRequest{*arg}, body)
@@ -299,35 +300,36 @@ func TestInt_RowAccessPoliciesShowByID(t *testing.T) {
 	})
 }
 
+// TODO [next PR]: improve this test
 func TestInt_RowAccessPoliciesDescribe(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
 	t.Run("describe", func(t *testing.T) {
 		args := []sdk.CreateRowAccessPolicyArgsRequest{
-			*sdk.NewCreateRowAccessPolicyArgsRequest("A", "NUMBER(2, 0)"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("B", "DECIMAL"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("C", "INTEGER"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("D", sdk.DataTypeFloat),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("E", "DOUBLE"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("F", "VARCHAR(20)"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("G", "CHAR"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("H", sdk.DataTypeString),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("I", "TEXT"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("J", sdk.DataTypeBinary),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("K", "VARBINARY"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("L", sdk.DataTypeBoolean),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("M", sdk.DataTypeDate),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("N", "DATETIME"),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("O", sdk.DataTypeTime),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("R", sdk.DataTypeTimestampLTZ),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("S", sdk.DataTypeTimestampNTZ),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("T", sdk.DataTypeTimestampTZ),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("U", sdk.DataTypeVariant),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("V", sdk.DataTypeObject),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("W", sdk.DataTypeArray),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("X", sdk.DataTypeGeography),
-			*sdk.NewCreateRowAccessPolicyArgsRequest("Y", sdk.DataTypeGeometry),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("A", testdatatypes.DataTypeNumber_2_0),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("B", testdatatypes.DataTypeDecimal),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("C", testdatatypes.DataTypeInteger),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("D", testdatatypes.DataTypeFloat),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("E", testdatatypes.DataTypeDouble),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("F", testdatatypes.DataTypeVarchar_100),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("G", testdatatypes.DataTypeChar),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("H", testdatatypes.DataTypeString),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("I", testdatatypes.DataTypeText),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("J", testdatatypes.DataTypeBinary),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("K", testdatatypes.DataTypeVarbinary),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("L", testdatatypes.DataTypeBoolean),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("M", testdatatypes.DataTypeDate),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("N", testdatatypes.DataTypeDatetime),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("O", testdatatypes.DataTypeTime),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("R", testdatatypes.DataTypeTimestampLTZ),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("S", testdatatypes.DataTypeTimestampNTZ),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("T", testdatatypes.DataTypeTimestampTZ),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("U", testdatatypes.DataTypeVariant),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("V", testdatatypes.DataTypeObject),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("W", testdatatypes.DataTypeArray),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("X", testdatatypes.DataTypeGeography),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("Y", testdatatypes.DataTypeGeometry),
 			// TODO(SNOW-1596962): Fully support VECTOR data type sdk.ParseFunctionArgumentsFromString could be a base for another function that takes argument names into consideration.
 			// *sdk.NewCreateRowAccessPolicyArgsRequest("Z", "VECTOR(INT, 16)"),
 		}
@@ -344,11 +346,11 @@ func TestInt_RowAccessPoliciesDescribe(t *testing.T) {
 		require.NoError(t, err)
 		wantArgs := make([]sdk.TableColumnSignature, len(args))
 		for i, arg := range args {
-			dataType, err := datatypes.ParseDataType(string(arg.Type))
+			wantType, err := datatypes.ParseDataType(arg.Type.ToLegacyDataTypeSql())
 			require.NoError(t, err)
 			wantArgs[i] = sdk.TableColumnSignature{
 				Name: arg.Name,
-				Type: sdk.LegacyDataTypeFrom(dataType),
+				Type: wantType,
 			}
 		}
 		assert.Equal(t, wantArgs, policyDetails.Signature)

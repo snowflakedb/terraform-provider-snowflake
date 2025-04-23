@@ -1,17 +1,51 @@
 package model
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+// added manually as a PoC
+func (r *RowAccessPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *RowAccessPolicyModel {
+	r.DynamicBlock = dynamicBlock
+	return r
+}
+
+func RowAccessPolicyDynamicArguments(
+	resourceName string,
+	id sdk.SchemaObjectIdentifier,
+	body string,
+) *RowAccessPolicyModel {
+	m := &RowAccessPolicyModel{ResourceModelMeta: config.Meta(resourceName, resources.RowAccessPolicy)}
+	m.WithDatabase(id.DatabaseName())
+	m.WithSchema(id.SchemaName())
+	m.WithName(id.Name())
+	m.WithBody(body)
+	return m.WithDynamicBlock(config.NewDynamicBlock("argument", "arguments", []string{"name", "type"}))
+}
+
+func RowAccessPolicyFromId(
+	resourceName string,
+	id sdk.SchemaObjectIdentifier,
+	body string,
+) *RowAccessPolicyModel {
+	m := &RowAccessPolicyModel{ResourceModelMeta: config.Meta(resourceName, resources.RowAccessPolicy)}
+	m.WithDatabase(id.DatabaseName())
+	m.WithSchema(id.SchemaName())
+	m.WithName(id.Name())
+	m.WithBody(body)
+	return m
+}
+
 func (r *RowAccessPolicyModel) WithArgument(argument []sdk.TableColumnSignature) *RowAccessPolicyModel {
-	maps := make([]config.Variable, len(argument))
+	maps := make([]tfconfig.Variable, len(argument))
 	for i, v := range argument {
-		maps[i] = config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(v.Name),
-			"type": config.StringVariable(string(v.Type)),
+		maps[i] = tfconfig.MapVariable(map[string]tfconfig.Variable{
+			"name": tfconfig.StringVariable(v.Name),
+			"type": tfconfig.StringVariable(v.Type.ToSql()),
 		})
 	}
 	r.Argument = tfconfig.SetVariable(maps...)

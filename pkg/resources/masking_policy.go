@@ -54,9 +54,10 @@ var maskingPolicySchema = map[string]*schema.Schema{
 				"type": {
 					Type:             schema.TypeString,
 					Required:         true,
+					Description:      dataTypeFieldDescription("The argument type. VECTOR data types are not yet supported."),
 					DiffSuppressFunc: DiffSuppressDataTypes,
 					ValidateDiagFunc: IsDataTypeValid,
-					Description:      dataTypeFieldDescription("The argument type. VECTOR data types are not yet supported."),
+					StateFunc:        DataTypeStateFunc,
 					ForceNew:         true,
 				},
 			},
@@ -78,6 +79,7 @@ var maskingPolicySchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		DiffSuppressFunc: DiffSuppressDataTypes,
 		ValidateDiagFunc: IsDataTypeValid,
+		StateFunc:        DataTypeStateFunc,
 	},
 	"exempt_other_policies": {
 		Type:             schema.TypeString,
@@ -123,7 +125,7 @@ func MaskingPolicy() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 
 		CreateContext: TrackingCreateWrapper(resources.MaskingPolicy, CreateMaskingPolicy),
 		ReadContext:   TrackingReadWrapper(resources.MaskingPolicy, ReadMaskingPolicy(true)),
@@ -148,6 +150,12 @@ func MaskingPolicy() *schema.Resource {
 				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
 				Type:    cty.EmptyObject,
 				Upgrade: v0_95_0_MaskingPolicyStateUpgrader,
+			},
+			{
+				Version: 1,
+				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+				Type:    cty.EmptyObject,
+				Upgrade: v200MaskingPolicyStateUpgrader,
 			},
 		},
 		Timeouts: defaultTimeouts,
@@ -185,6 +193,9 @@ func ImportMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err := d.Set("body", policyDescription.Body); err != nil {
 		return nil, err
 	}
+	if err := d.Set("return_data_type", policyDescription.ReturnType.ToSql()); err != nil {
+		return nil, err
+	}
 	if err := d.Set("argument", schemas.MaskingPolicyArgumentsToSchema(policyDescription.Signature)); err != nil {
 		return nil, err
 	}
@@ -200,24 +211,23 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
 	expression := d.Get("body").(string)
-	returnDataType := d.Get("return_data_type").(string)
 
-	arguments := d.Get("argument").([]any)
-	args := make([]sdk.TableColumnSignature, 0)
-	for _, arg := range arguments {
-		v := arg.(map[string]any)
-		dataType, err := datatypes.ParseDataType(v["type"].(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		args = append(args, sdk.TableColumnSignature{
+	var columnSignatures []sdk.TableColumnSignature
+	var err error
+	if columnSignatures, err = handleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.TableColumnSignature, error) {
+		return sdk.TableColumnSignature{
 			Name: v["name"].(string),
-			Type: sdk.LegacyDataTypeFrom(dataType),
-		})
+			Type: dataType,
+		}, nil
+	}); err != nil {
+		return diag.FromErr(err)
 	}
 
-	returns, err := datatypes.ParseDataType(returnDataType)
-	if err != nil {
+	var returns datatypes.DataType
+	if err := handleDatatypeCreate(d, "return_data_type", func(dataType datatypes.DataType) error {
+		returns = dataType
+		return nil
+	}); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -234,7 +244,7 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 		opts.ExemptOtherPolicies = sdk.Pointer(parsed)
 	}
 
-	err = client.MaskingPolicies.Create(ctx, id, args, sdk.LegacyDataTypeFrom(returns), expression, opts)
+	err = client.MaskingPolicies.Create(ctx, id, columnSignatures, returns, expression, opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -282,11 +292,14 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err := d.Set("return_data_type", maskingPolicyDescription.ReturnType); err != nil {
+		if err := handleDatatypeSet(d, "return_data_type", maskingPolicyDescription.ReturnType); err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err := d.Set("argument", schemas.MaskingPolicyArgumentsToSchema(maskingPolicyDescription.Signature)); err != nil {
+		if err := handleNestedDataTypeSet(d, "argument", "type", maskingPolicyDescription.Signature,
+			func(signature sdk.TableColumnSignature) datatypes.DataType { return signature.Type },
+			func(signature sdk.TableColumnSignature, arg map[string]any) { arg["name"] = signature.Name },
+		); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -362,6 +375,9 @@ func UpdateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 			return diag.FromErr(err)
 		}
 	}
+
+	// argument is handled by ForceNew
+	// return_data_type is handled by ForceNew
 	// exempt_other_policies is handled by ForceNew
 
 	return ReadMaskingPolicy(false)(ctx, d, meta)

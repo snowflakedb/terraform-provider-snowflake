@@ -81,3 +81,66 @@ func readNestedDatatypeCommon(v map[string]any, key string) (datatypes.DataType,
 		return dataType, nil
 	}
 }
+
+// handleNestedDataTypeCreate should be used while handling nested data type attribute creation.
+func handleNestedDataTypeCreate[T any](d *schema.ResourceData, collectionKey string, dataTypeKey string, createItemFunc func(v map[string]any, dataType datatypes.DataType) (T, error)) ([]T, error) {
+	items := make([]T, 0)
+	arguments := d.Get(collectionKey).([]any)
+	for _, arg := range arguments {
+		v := arg.(map[string]any)
+		dataType, err := readNestedDatatypeCommon(v, dataTypeKey)
+		if err != nil {
+			return nil, err
+		}
+
+		item, err := createItemFunc(v, dataType)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+	return items, nil
+}
+
+// handleNestedDataTypeSet should be used while handling nested data type attribute read.
+func handleNestedDataTypeSet[T any](d *schema.ResourceData, collectionKey string, dataTypeKey string, externalCollection []T, extractDataType func(T) datatypes.DataType, setOtherFields func(T, map[string]any)) error {
+	currentConfigDatatypes := d.Get(collectionKey).([]any)
+	nestedDatatypesSchema := make([]map[string]any, 0)
+
+	for i, externalItem := range externalCollection {
+		externalDataType := extractDataType(externalItem)
+		item := make(map[string]any)
+		if i+1 > len(currentConfigDatatypes) {
+			log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, externalDataType.ToSqlWithoutUnknowns())
+			item[dataTypeKey] = externalDataType.ToSqlWithoutUnknowns()
+		} else {
+			v := currentConfigDatatypes[i].(map[string]any)
+			currentConfigDataType, err := readNestedDatatypeCommon(v, dataTypeKey)
+			if err != nil {
+				return err
+			}
+			// current config data type is saved to state with all attributes known
+			// external data type is left without changes as all the unknowns should remain as unknowns
+			if datatypes.AreDefinitelyDifferent(currentConfigDataType, externalDataType) {
+				log.Printf("[DEBUG] reading %d: external datatype %s is definitely different from the current config %s, updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
+				item[dataTypeKey] = externalDataType.ToSqlWithoutUnknowns()
+			} else {
+				log.Printf("[DEBUG] reading %d: external datatype %s is not definitely different from the current config %s, not updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
+
+				// TODO [SNOW-2054238]: add test for StateFunc behavior with collections.
+				// using toSql() here as StateFunc seems to be not working in this case
+				item[dataTypeKey] = currentConfigDataType.ToSql()
+			}
+		}
+		setOtherFields(externalItem, item)
+		nestedDatatypesSchema = append(nestedDatatypesSchema, item)
+	}
+
+	// TODO [SNOW-2054240]: test saving collections differently than through the whole pre-created map.
+	if err := d.Set(collectionKey, nestedDatatypesSchema); err != nil {
+		return err
+	}
+
+	return nil
+}

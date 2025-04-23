@@ -3,6 +3,8 @@ package sdk
 import (
 	"context"
 	"database/sql"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type RowAccessPolicies interface {
@@ -31,8 +33,8 @@ type CreateRowAccessPolicyOptions struct {
 }
 
 type CreateRowAccessPolicyArgs struct {
-	Name string   `ddl:"keyword,double_quotes"`
-	Type DataType `ddl:"keyword,no_quotes"`
+	Name string             `ddl:"keyword,double_quotes"`
+	Type datatypes.DataType `ddl:"parameter,no_equals"`
 }
 
 // AlterRowAccessPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-row-access-policy.

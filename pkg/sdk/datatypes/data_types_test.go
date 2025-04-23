@@ -1172,7 +1172,7 @@ func Test_ParseDataType_Table(t *testing.T) {
 			columns := strings.Join(collections.Map(tc.expectedColumns, func(col column) string {
 				parsedType, err := ParseDataType(col.Type)
 				require.NoError(t, err)
-				return fmt.Sprintf("%s %s", col.Name, parsedType.ToSql())
+				return fmt.Sprintf("%s %s", col.Name, parsedType.ToLegacyDataTypeSql())
 			}), ", ")
 			assert.Equal(t, fmt.Sprintf("TABLE(%s)", columns), parsed.ToSql())
 		})

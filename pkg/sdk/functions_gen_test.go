@@ -35,7 +35,7 @@ func TestFunctions_CreateForJava(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = FunctionReturns{
 			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForJavaFunctionOptions", "Handler"))
@@ -221,11 +221,11 @@ func TestFunctions_CreateForJava(t *testing.T) {
 		opts.Arguments = []FunctionArgument{
 			{
 				ArgName:     "id",
-				ArgDataType: dataTypeNumber,
+				ArgDataType: dataTypeNumber_36_2,
 			},
 			{
 				ArgName:      "name",
-				ArgDataType:  dataTypeVarchar,
+				ArgDataType:  dataTypeVarchar_100,
 				DefaultValue: String("'test'"),
 			},
 		}
@@ -235,11 +235,11 @@ func TestFunctions_CreateForJava(t *testing.T) {
 				Columns: []FunctionColumn{
 					{
 						ColumnName:     "country_code",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 					{
 						ColumnName:     "country_name",
-						ColumnDataType: dataTypeVarchar,
+						ColumnDataType: dataTypeVarchar_100,
 					},
 				},
 			},
@@ -297,7 +297,7 @@ func TestFunctions_CreateForJavascript(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = FunctionReturns{
 			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForJavascriptFunctionOptions", "FunctionDefinition"))
@@ -485,7 +485,7 @@ func TestFunctions_CreateForPython(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = FunctionReturns{
 			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForPythonFunctionOptions", "RuntimeVersion"))
@@ -495,7 +495,7 @@ func TestFunctions_CreateForPython(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = FunctionReturns{
 			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForPythonFunctionOptions", "Handler"))
@@ -680,7 +680,7 @@ func TestFunctions_CreateForPython(t *testing.T) {
 		opts.Arguments = []FunctionArgument{
 			{
 				ArgName:      "i",
-				ArgDataType:  dataTypeNumber,
+				ArgDataType:  dataTypeNumber_36_2,
 				DefaultValue: String("1"),
 			},
 		}
@@ -752,7 +752,7 @@ func TestFunctions_CreateForScala(t *testing.T) {
 
 	t.Run("validation: [opts.Handler] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ResultDataType = dataTypeVarchar
+		opts.ResultDataType = dataTypeVarchar_100
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForScalaFunctionOptions", "Handler"))
 	})
 
@@ -850,12 +850,12 @@ func TestFunctions_CreateForScala(t *testing.T) {
 		opts.Arguments = []FunctionArgument{
 			{
 				ArgName:      "x",
-				ArgDataType:  dataTypeVarchar,
+				ArgDataType:  dataTypeVarchar_100,
 				DefaultValue: String("'test'"),
 			},
 		}
 		opts.CopyGrants = Bool(true)
-		opts.ResultDataType = dataTypeVarchar
+		opts.ResultDataType = dataTypeVarchar_100
 		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
 		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
 		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
@@ -890,7 +890,7 @@ func TestFunctions_CreateForSQL(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = FunctionReturns{
 			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar,
+				ResultDataType: dataTypeVarchar_100,
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForSQLFunctionOptions", "FunctionDefinition"))
@@ -1044,7 +1044,7 @@ func TestFunctions_CreateForSQL(t *testing.T) {
 		opts.Arguments = []FunctionArgument{
 			{
 				ArgName:      "message",
-				ArgDataType:  dataTypeVarchar,
+				ArgDataType:  dataTypeVarchar_100,
 				DefaultValue: String("'test'"),
 			},
 		}

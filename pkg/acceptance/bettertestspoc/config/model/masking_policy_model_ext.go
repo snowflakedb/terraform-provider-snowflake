@@ -28,7 +28,7 @@ func (p *MaskingPolicyModel) WithArgument(argument []sdk.TableColumnSignature) *
 	for i, v := range argument {
 		maps[i] = tfconfig.MapVariable(map[string]tfconfig.Variable{
 			"name": tfconfig.StringVariable(v.Name),
-			"type": tfconfig.StringVariable(string(v.Type)),
+			"type": tfconfig.StringVariable(v.Type.ToSql()),
 		})
 	}
 	p.Argument = tfconfig.SetVariable(maps...)

@@ -8,11 +8,13 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PR]: merge these tests
 func TestInt_MaskingPoliciesShow(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -99,17 +101,17 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "col1",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 			{
 				Name: "col2",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
 		comment := random.Comment()
 		exemptOtherPolicies := random.Bool()
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, &sdk.CreateMaskingPolicyOptions{
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, &sdk.CreateMaskingPolicyOptions{
 			OrReplace:           sdk.Bool(true),
 			IfNotExists:         sdk.Bool(false),
 			Comment:             sdk.String(comment),
@@ -120,7 +122,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, name, maskingPolicyDetails.Name)
 		assert.Equal(t, signature, maskingPolicyDetails.Signature)
-		assert.Equal(t, sdk.DataTypeVARCHAR, maskingPolicyDetails.ReturnType)
+		assert.Equal(t, testdatatypes.DefaultVarcharAsString, maskingPolicyDetails.ReturnType.ToSql())
 		assert.Equal(t, expression, maskingPolicyDetails.Body)
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, &sdk.ShowMaskingPolicyOptions{
@@ -146,16 +148,16 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "col1",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 			{
 				Name: "col2",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
 		comment := random.Comment()
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, &sdk.CreateMaskingPolicyOptions{
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, &sdk.CreateMaskingPolicyOptions{
 			OrReplace:           sdk.Bool(false),
 			IfNotExists:         sdk.Bool(true),
 			Comment:             sdk.String(comment),
@@ -166,7 +168,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, name, maskingPolicyDetails.Name)
 		assert.Equal(t, signature, maskingPolicyDetails.Signature)
-		assert.Equal(t, sdk.DataTypeVARCHAR, maskingPolicyDetails.ReturnType)
+		assert.Equal(t, testdatatypes.DefaultVarcharAsString, maskingPolicyDetails.ReturnType.ToSql())
 		assert.Equal(t, expression, maskingPolicyDetails.Body)
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, &sdk.ShowMaskingPolicyOptions{
@@ -192,17 +194,17 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "col1",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, nil)
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, nil)
 		require.NoError(t, err)
 		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, name, maskingPolicyDetails.Name)
 		assert.Equal(t, signature, maskingPolicyDetails.Signature)
-		assert.Equal(t, sdk.DataTypeVARCHAR, maskingPolicyDetails.ReturnType)
+		assert.Equal(t, testdatatypes.DefaultVarcharAsString, maskingPolicyDetails.ReturnType.ToSql())
 		assert.Equal(t, expression, maskingPolicyDetails.Body)
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, &sdk.ShowMaskingPolicyOptions{
@@ -228,7 +230,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "val",
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := `
@@ -241,13 +243,13 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 				'******'
 		end
 		`
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, nil)
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, nil)
 		require.NoError(t, err)
 		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, name, maskingPolicyDetails.Name)
 		assert.Equal(t, signature, maskingPolicyDetails.Signature)
-		assert.Equal(t, sdk.DataTypeVARCHAR, maskingPolicyDetails.ReturnType)
+		assert.Equal(t, testdatatypes.DefaultVarcharAsString, maskingPolicyDetails.ReturnType.ToSql())
 		assert.Equal(t, strings.TrimSpace(expression), maskingPolicyDetails.Body)
 	})
 }
@@ -405,11 +407,11 @@ func TestInt_MaskingPoliciesShowByID(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: testClientHelper().Ids.Alpha(),
-				Type: sdk.DataTypeVARCHAR,
+				Type: testdatatypes.DataTypeVarchar,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)"
-		err := client.MaskingPolicies.Create(ctx, id, signature, sdk.DataTypeVARCHAR, expression, &sdk.CreateMaskingPolicyOptions{})
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeVarchar, expression, &sdk.CreateMaskingPolicyOptions{})
 		require.NoError(t, err)
 		t.Cleanup(cleanupMaskingPolicyHandle(t, id))
 	}

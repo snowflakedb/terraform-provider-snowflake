@@ -59,18 +59,14 @@ func TestResourceDataTypeDiffHandlingListCreate(ctx context.Context, d *schema.R
 	envName := d.Get("env_name").(string)
 	log.Printf("[DEBUG] handling create for %s", envName)
 
-	dataTypes := make([]datatypes.DataType, 0)
-	arguments := d.Get("nesting_list").([]any)
-	// TODO [next PR or will be extracted]: extract common method to work with collections on the resource side (will be done with the masking policy and row access policy application)
-	for _, arg := range arguments {
-		v := arg.(map[string]any)
-		dataType, err := readNestedDatatypeCommon(v, "nested_datatype")
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		dataTypes = append(dataTypes, dataType)
+	var dataTypes []datatypes.DataType
+	var err error
+	if dataTypes, err = handleNestedDataTypeCreate(d, "nesting_list", "nested_datatype", func(v map[string]any, dataType datatypes.DataType) (datatypes.DataType, error) {
+		return dataType, nil
+	}); err != nil {
+		return diag.FromErr(err)
 	}
-	err := testResourceDataTypeDiffHandlingListSet(envName, dataTypes)
+	err = testResourceDataTypeDiffHandlingListSet(envName, dataTypes)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -98,42 +94,10 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 			return diag.FromErr(err)
 		}
 		if envExists {
-			// TODO [next PR or will be extracted]: extract common method to work with collections on the resource side (will be done with the masking policy and row access policy application)
-			currentConfigDatatypes := d.Get("nesting_list").([]any)
-			nestedDatatypesSchema := make([]map[string]any, 0)
-			for i, externalDataType := range externalDataTypes {
-				// TODO [next PR or will be extracted]: handle missing data types too (will be done with the masking policy and row access policy application)
-				if i+1 > len(currentConfigDatatypes) {
-					log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, externalDataType.ToSqlWithoutUnknowns())
-					nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
-						"nested_datatype": externalDataType.ToSqlWithoutUnknowns(),
-					})
-				} else {
-					v := currentConfigDatatypes[i].(map[string]any)
-					currentConfigDataType, err := readNestedDatatypeCommon(v, "nested_datatype")
-					if err != nil {
-						return diag.FromErr(err)
-					}
-					// current config data type is saved to state with all attributes known
-					// external data type is left without changes as all the unknowns should remain as unknowns
-					if datatypes.AreDefinitelyDifferent(currentConfigDataType, externalDataType) {
-						log.Printf("[DEBUG] reading %d: external datatype %s is definitely different from the current config %s, updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
-						nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
-							"nested_datatype": externalDataType.ToSqlWithoutUnknowns(),
-						})
-					} else {
-						log.Printf("[DEBUG] reading %d: external datatype %s is not definitely different from the current config %s, not updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
-						nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
-							// TODO [SNOW-2054238]: add test for StateFunc behavior with collections.
-							// using toSql() here as StateFunc seems to be not working in this case
-							"nested_datatype": currentConfigDataType.ToSql(),
-						})
-					}
-				}
-			}
-
-			// TODO [SNOW-2054240]: test saving collections differently than through the whole pre-created map.
-			if err := d.Set("nesting_list", nestedDatatypesSchema); err != nil {
+			if err := handleNestedDataTypeSet(d, "nesting_list", "nested_datatype", externalDataTypes,
+				func(externalItem datatypes.DataType) datatypes.DataType { return externalItem },
+				func(externalItem datatypes.DataType, item map[string]any) {},
+			); err != nil {
 				return diag.FromErr(err)
 			}
 		}

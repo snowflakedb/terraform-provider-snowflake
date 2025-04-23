@@ -11,11 +11,11 @@ func TestMaskingPolicyCreate(t *testing.T) {
 	signature := []TableColumnSignature{
 		{
 			Name: "col1",
-			Type: DataTypeVARCHAR,
+			Type: dataTypeVarchar,
 		},
 		{
 			Name: "col2",
-			Type: DataTypeVARCHAR,
+			Type: dataTypeVarchar,
 		},
 	}
 	expression := "REPLACE('X', 1, 2)"
@@ -24,7 +24,7 @@ func TestMaskingPolicyCreate(t *testing.T) {
 		opts := &CreateMaskingPolicyOptions{
 			name:      id,
 			signature: signature,
-			returns:   DataTypeVARCHAR,
+			returns:   dataTypeVarchar,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateMaskingPolicyOptions", "body"))
 	})
@@ -33,7 +33,7 @@ func TestMaskingPolicyCreate(t *testing.T) {
 		opts := &CreateMaskingPolicyOptions{
 			name:    id,
 			body:    expression,
-			returns: DataTypeVARCHAR,
+			returns: dataTypeVarchar,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateMaskingPolicyOptions", "signature"))
 	})
@@ -52,7 +52,7 @@ func TestMaskingPolicyCreate(t *testing.T) {
 			name:        id,
 			signature:   signature,
 			body:        expression,
-			returns:     DataTypeVARCHAR,
+			returns:     dataTypeVarchar,
 			IfNotExists: Bool(true),
 			OrReplace:   Bool(true),
 		}
@@ -64,9 +64,9 @@ func TestMaskingPolicyCreate(t *testing.T) {
 			name:      id,
 			signature: signature,
 			body:      expression,
-			returns:   DataTypeVARCHAR,
+			returns:   dataTypeVarchar,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE MASKING POLICY %s AS ("col1" VARCHAR, "col2" VARCHAR) RETURNS %s -> %s`, id.FullyQualifiedName(), DataTypeVARCHAR, expression)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE MASKING POLICY %s AS ("col1" VARCHAR(16777216), "col2" VARCHAR(16777216)) RETURNS %s -> %s`, id.FullyQualifiedName(), dataTypeVarchar.ToSql(), expression)
 	})
 
 	t.Run("with complete options", func(t *testing.T) {
@@ -77,12 +77,12 @@ func TestMaskingPolicyCreate(t *testing.T) {
 			name:                id,
 			signature:           signature,
 			body:                expression,
-			returns:             DataTypeVARCHAR,
+			returns:             dataTypeVarchar,
 			Comment:             String(comment),
 			ExemptOtherPolicies: Bool(true),
 		}
 
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE MASKING POLICY %s AS ("col1" VARCHAR, "col2" VARCHAR) RETURNS %s -> %s COMMENT = '%s' EXEMPT_OTHER_POLICIES = %t`, id.FullyQualifiedName(), DataTypeVARCHAR, expression, comment, true)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE MASKING POLICY %s AS ("col1" VARCHAR(16777216), "col2" VARCHAR(16777216)) RETURNS %s -> %s COMMENT = '%s' EXEMPT_OTHER_POLICIES = %t`, id.FullyQualifiedName(), dataTypeVarchar.ToSql(), expression, comment, true)
 	})
 }
 

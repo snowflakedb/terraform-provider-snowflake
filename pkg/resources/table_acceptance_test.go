@@ -9,16 +9,15 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-
 	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -1450,10 +1449,10 @@ func TestAcc_Table_MaskingPolicy(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
 
-	maskingPolicy1, maskingPolicy1Cleanup := acc.TestClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, sdk.DataTypeVARCHAR)
+	maskingPolicy1, maskingPolicy1Cleanup := acc.TestClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
 	t.Cleanup(maskingPolicy1Cleanup)
 
-	maskingPolicy2, maskingPolicy2Cleanup := acc.TestClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, sdk.DataTypeVARCHAR)
+	maskingPolicy2, maskingPolicy2Cleanup := acc.TestClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
 	t.Cleanup(maskingPolicy2Cleanup)
 
 	tableId := acc.TestClient().Ids.RandomSchemaObjectIdentifier()

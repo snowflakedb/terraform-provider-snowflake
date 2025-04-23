@@ -23,7 +23,7 @@ var (
 )
 
 type MaskingPolicies interface {
-	Create(ctx context.Context, id SchemaObjectIdentifier, signature []TableColumnSignature, returns DataType, expression string, opts *CreateMaskingPolicyOptions) error
+	Create(ctx context.Context, id SchemaObjectIdentifier, signature []TableColumnSignature, returns datatypes.DataType, expression string, opts *CreateMaskingPolicyOptions) error
 	Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterMaskingPolicyOptions) error
 	Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropMaskingPolicyOptions) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
@@ -47,7 +47,7 @@ type CreateMaskingPolicyOptions struct {
 
 	// required
 	signature []TableColumnSignature `ddl:"keyword,parentheses" sql:"AS"`
-	returns   DataType               `ddl:"parameter,no_equals" sql:"RETURNS"`
+	returns   datatypes.DataType     `ddl:"parameter,no_equals" sql:"RETURNS"`
 	body      string                 `ddl:"parameter,no_equals" sql:"->"`
 
 	// optional
@@ -78,7 +78,7 @@ func (opts *CreateMaskingPolicyOptions) validate() error {
 	return errors.Join(errs...)
 }
 
-func (v *maskingPolicies) Create(ctx context.Context, id SchemaObjectIdentifier, signature []TableColumnSignature, returns DataType, body string, opts *CreateMaskingPolicyOptions) error {
+func (v *maskingPolicies) Create(ctx context.Context, id SchemaObjectIdentifier, signature []TableColumnSignature, returns datatypes.DataType, body string, opts *CreateMaskingPolicyOptions) error {
 	if opts == nil {
 		opts = &CreateMaskingPolicyOptions{}
 	}
@@ -359,7 +359,7 @@ func (opts *describeMaskingPolicyOptions) validate() error {
 type MaskingPolicyDetails struct {
 	Name       string
 	Signature  []TableColumnSignature
-	ReturnType DataType
+	ReturnType datatypes.DataType
 	Body       string
 }
 
@@ -378,7 +378,7 @@ func (row maskingPolicyDetailsRow) toMaskingPolicyDetails() *MaskingPolicyDetail
 	v := &MaskingPolicyDetails{
 		Name:       row.Name,
 		Signature:  []TableColumnSignature{},
-		ReturnType: LegacyDataTypeFrom(dataType),
+		ReturnType: dataType,
 		Body:       row.Body,
 	}
 

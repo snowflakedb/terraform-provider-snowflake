@@ -1459,7 +1459,7 @@ type SessionParameters struct {
 	ClientSessionKeepAlive                   *bool                             `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
 	ClientSessionKeepAliveHeartbeatFrequency *int                              `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
 	ClientTimestampTypeMapping               *ClientTimestampTypeMapping       `ddl:"parameter,single_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
-	CsvTimestampFormat                       *string                           `ddl:"parameter" sql:"CSV_TIMESTAMP_FORMAT"`
+	CsvTimestampFormat                       *string                           `ddl:"parameter,single_quotes" sql:"CSV_TIMESTAMP_FORMAT"`
 	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
 	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
 	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`

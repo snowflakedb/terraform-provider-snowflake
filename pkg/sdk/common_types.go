@@ -75,8 +75,8 @@ type TagAssociation struct {
 }
 
 type TableColumnSignature struct {
-	Name string   `ddl:"keyword,double_quotes"`
-	Type DataType `ddl:"keyword"`
+	Name string             `ddl:"keyword,double_quotes"`
+	Type datatypes.DataType `ddl:"parameter,no_equals"`
 }
 
 // Format in database is `(column <data_type>)`
@@ -99,7 +99,7 @@ func ParseTableColumnSignature(signature string) ([]TableColumnSignature, error)
 		}
 		arguments[i] = TableColumnSignature{
 			Name: strings.Join(parts[:len(parts)-1], " "),
-			Type: LegacyDataTypeFrom(dataType),
+			Type: dataType,
 		}
 	}
 	return arguments, nil
