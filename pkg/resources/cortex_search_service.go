@@ -80,13 +80,19 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// CortexSearchService returns a pointer to the resource representing a Cortex search service.
 func CortexSearchService() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.CortexSearchServices.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingCreateWrapper(resources.CortexSearchService, CreateCortexSearchService)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingReadWrapper(resources.CortexSearchService, ReadCortexSearchService)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingUpdateWrapper(resources.CortexSearchService, UpdateCortexSearchService)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingDeleteWrapper(resources.CortexSearchService, DeleteCortexSearchService)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingDeleteWrapper(resources.CortexSearchService, deleteFunc)),
 
 		Schema: cortexSearchServiceSchema,
 		Importer: &schema.ResourceImporter{
@@ -106,7 +112,7 @@ func ReadCortexSearchService(ctx context.Context, d *schema.ResourceData, meta a
 	client := meta.(*provider.Context).Client
 
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-	cortexSearchService, err := client.CortexSearchServices.ShowByID(ctx, id)
+	cortexSearchService, err := client.CortexSearchServices.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			log.Printf("[DEBUG] cortex search service (%s) not found", d.Id())
@@ -115,7 +121,7 @@ func ReadCortexSearchService(ctx context.Context, d *schema.ResourceData, meta a
 				diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to query cortex search service. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("CortexSearchServiceName: %s, Err: %s", id.FullyQualifiedName(), err),
+					Detail:   fmt.Sprintf("Cortex search service id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
@@ -207,18 +213,4 @@ func UpdateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	return append(diags, ReadCortexSearchService(ctx, d, meta)...)
-}
-
-// DeleteCortexSearchService implements schema.DeleteFunc.
-func DeleteCortexSearchService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-	request := sdk.NewDropCortexSearchServiceRequest(id).WithIfExists(true)
-
-	if err := client.CortexSearchServices.Drop(ctx, request); err != nil {
-		return diag.FromErr(err)
-	}
-	d.SetId("")
-
-	return nil
 }

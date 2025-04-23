@@ -25,7 +25,6 @@ var accountAuthenticationPolicyAttachmentSchema = map[string]*schema.Schema{
 	},
 }
 
-// AccountAuthenticationPolicyAttachment returns a pointer to the resource representing an account authentication policy attachment.
 func AccountAuthenticationPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description: "Specifies the authentication policy to use for the current account. To set the authentication policy of a different account, use a provider alias.",

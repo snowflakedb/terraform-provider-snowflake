@@ -97,11 +97,18 @@ var resourceMonitorSchema = map[string]*schema.Schema{
 }
 
 func ResourceMonitor() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.ResourceMonitors.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.ResourceMonitor, CreateResourceMonitor),
 		ReadContext:   TrackingReadWrapper(resources.ResourceMonitor, ReadResourceMonitor(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.ResourceMonitor, UpdateResourceMonitor),
-		DeleteContext: TrackingDeleteWrapper(resources.ResourceMonitor, DeleteResourceMonitor),
+		DeleteContext: TrackingDeleteWrapper(resources.ResourceMonitor, deleteFunc),
 		Description:   "Resource used to manage resource monitor objects. For more information, check [resource monitor documentation](https://docs.snowflake.com/en/user-guide/resource-monitors).",
 
 		Schema: resourceMonitorSchema,
@@ -248,7 +255,7 @@ func ReadResourceMonitor(withExternalChangesMarking bool) schema.ReadContextFunc
 			return diag.FromErr(err)
 		}
 
-		resourceMonitor, err := client.ResourceMonitors.ShowByID(ctx, id)
+		resourceMonitor, err := client.ResourceMonitors.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -419,21 +426,4 @@ func UpdateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	return ReadResourceMonitor(false)(ctx, d, meta)
-}
-
-func DeleteResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.ResourceMonitors.Drop(ctx, id, &sdk.DropResourceMonitorOptions{IfExists: sdk.Bool(true)})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }

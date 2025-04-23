@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -315,13 +316,25 @@ func (ffi *fileFormatID) String() (string, error) {
 	return strings.TrimSpace(buf.String()), nil
 }
 
-// FileFormat returns a pointer to the resource representing a file format.
 func FileFormat() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		func(resourceId string) (sdk.SchemaObjectIdentifier, error) {
+			id, err := fileFormatIDFromString(resourceId)
+			if err != nil {
+				return sdk.SchemaObjectIdentifier{}, err
+			}
+			return sdk.NewSchemaObjectIdentifier(id.DatabaseName, id.SchemaName, id.FileFormatName), nil
+		},
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.FileFormats.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatResource), TrackingCreateWrapper(resources.FileFormat, CreateFileFormat)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatResource), TrackingReadWrapper(resources.FileFormat, ReadFileFormat)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatResource), TrackingUpdateWrapper(resources.FileFormat, UpdateFileFormat)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatResource), TrackingDeleteWrapper(resources.FileFormat, DeleteFileFormat)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatResource), TrackingDeleteWrapper(resources.FileFormat, deleteFunc)),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormat, customdiff.All(
 			ComputedIfAnyAttributeChanged(fileFormatSchema, FullyQualifiedNameAttributeName, "name"),
@@ -550,9 +563,19 @@ func ReadFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 	id := sdk.NewSchemaObjectIdentifier(fileFormatID.DatabaseName, fileFormatID.SchemaName, fileFormatID.FileFormatName)
 
-	fileFormat, err := client.FileFormats.ShowByID(ctx, id)
+	fileFormat, err := client.FileFormats.ShowByIDSafely(ctx, id)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("cannot read file format: %w", err))
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query file format. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("File format id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
@@ -1122,26 +1145,6 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	return ReadFileFormat(ctx, d, meta)
-}
-
-// DeleteFileFormat implements schema.DeleteFunc.
-func DeleteFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	fileFormatID, err := fileFormatIDFromString(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	id := sdk.NewSchemaObjectIdentifier(fileFormatID.DatabaseName, fileFormatID.SchemaName, fileFormatID.FileFormatName)
-
-	err = client.FileFormats.Drop(ctx, id, nil)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error while deleting file format: %w", err))
-	}
-
-	d.SetId("")
-
-	return nil
 }
 
 func fileFormatIDFromString(stringID string) (*fileFormatID, error) {

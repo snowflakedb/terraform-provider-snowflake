@@ -649,7 +649,6 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	return ReadTable(ctx, d, meta)
 }
 
-// ReadTable implements schema.ReadFunc.
 func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 

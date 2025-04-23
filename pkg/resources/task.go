@@ -539,7 +539,7 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		task, err := client.Tasks.ShowByID(ctx, id)
+		task, err := client.Tasks.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -547,7 +547,7 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query task. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("task name: %s, Err: %s", id.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("Task id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -642,8 +642,7 @@ func DeleteTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		return diag.FromErr(sdk.JoinErrors(err))
 	}
 
-	err = client.Tasks.Drop(ctx, sdk.NewDropTaskRequest(id).WithIfExists(true))
-	if err != nil {
+	if err = client.Tasks.DropSafely(ctx, id); err != nil {
 		return diag.FromErr(fmt.Errorf("error deleting task %s err = %w", id.FullyQualifiedName(), err))
 	}
 

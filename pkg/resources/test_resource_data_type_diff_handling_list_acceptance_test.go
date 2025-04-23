@@ -166,7 +166,7 @@ resource "%[3]s" "%[4]s" {
 
 	for _, testCase := range testCases {
 		tc := testCase
-		t.Run(fmt.Sprintf("TestAcc_TestResource_DataTypeDiffHandlingList config value: %s, new config value: %s, external value: %s, expecitng changes: %t", tc.ConfigValue, tc.NewConfigValue, tc.ExternalValue, tc.ExpectChanges), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestAcc_TestResource_DataTypeDiffHandlingList config value: %s, new config value: %s, external value: %s, expecting changes: %t", tc.ConfigValue, tc.NewConfigValue, tc.ExternalValue, tc.ExpectChanges), func(t *testing.T) {
 			configValueDataType, err := datatypes.ParseDataType(tc.ConfigValue)
 			require.NoError(t, err)
 
@@ -189,13 +189,13 @@ resource "%[3]s" "%[4]s" {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionDestroyBeforeCreate),
 						planchecks.ExpectDrift(resourceReference, nestedPropertyAddress, sdk.String(expectedStateFirstStep), sdk.String(tc.ExternalValue)),
-						// TODO: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
+						// TODO [SNOW-1473409]: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
 						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, sdk.String(tc.ExternalValue), sdk.String(expectedStateFirstStep)),
 					}
 				} else {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionDestroyBeforeCreate),
-						// TODO: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
+						// TODO [SNOW-1473409]: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
 						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, sdk.String(expectedStateFirstStep), sdk.String(expectedStateSecondStep)),
 					}
 				}

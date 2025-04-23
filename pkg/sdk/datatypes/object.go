@@ -18,6 +18,10 @@ func (t *ObjectDataType) Canonical() string {
 	return ObjectLegacyDataType
 }
 
+func (t *ObjectDataType) ToSqlWithoutUnknowns() string {
+	return t.ToSql()
+}
+
 var ObjectDataTypeSynonyms = []string{ObjectLegacyDataType}
 
 func parseObjectDataTypeRaw(raw sanitizedDataTypeRaw) (*ObjectDataType, error) {

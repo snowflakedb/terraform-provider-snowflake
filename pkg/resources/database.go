@@ -92,11 +92,19 @@ var databaseSchema = map[string]*schema.Schema{
 }
 
 func Database() *schema.Resource {
+	// TODO(SNOW-1818849): unassign network policies inside the database before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Databases.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.Database, CreateDatabase),
 		UpdateContext: TrackingUpdateWrapper(resources.Database, UpdateDatabase),
 		ReadContext:   TrackingReadWrapper(resources.Database, ReadDatabase),
-		DeleteContext: TrackingDeleteWrapper(resources.Database, DeleteDatabase),
+		DeleteContext: TrackingDeleteWrapper(resources.Database, deleteFunc),
 		Description:   "Represents a standard database. If replication configuration is specified, the database is promoted to serve as a primary database for replication.",
 
 		Schema: collections.MergeMaps(databaseSchema, databaseParametersSchema),
@@ -469,24 +477,5 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diags
 	}
 
-	return nil
-}
-
-func DeleteDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// TODO(SNOW-1818849): unassign network policies inside the database before dropping
-	err = client.Databases.Drop(ctx, id, &sdk.DropDatabaseOptions{
-		IfExists: sdk.Bool(true),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
 	return nil
 }

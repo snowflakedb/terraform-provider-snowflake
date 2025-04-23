@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -154,11 +155,18 @@ var notificationIntegrationSchema = map[string]*schema.Schema{
 
 // NotificationIntegration returns a pointer to the resource representing a notification integration.
 func NotificationIntegration() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.NotificationIntegrations.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.NotificationIntegrationResource), TrackingCreateWrapper(resources.NotificationIntegration, CreateNotificationIntegration)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.NotificationIntegrationResource), TrackingReadWrapper(resources.NotificationIntegration, ReadNotificationIntegration)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.NotificationIntegrationResource), TrackingUpdateWrapper(resources.NotificationIntegration, UpdateNotificationIntegration)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.NotificationIntegrationResource), TrackingDeleteWrapper(resources.NotificationIntegration, DeleteNotificationIntegration)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.NotificationIntegrationResource), TrackingDeleteWrapper(resources.NotificationIntegration, deleteFunc)),
 
 		Schema: notificationIntegrationSchema,
 		Importer: &schema.ResourceImporter{
@@ -239,10 +247,18 @@ func ReadNotificationIntegration(ctx context.Context, d *schema.ResourceData, me
 
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
 
-	integration, err := client.NotificationIntegrations.ShowByID(ctx, id)
+	integration, err := client.NotificationIntegrations.ShowByIDSafely(ctx, id)
 	if err != nil {
-		log.Printf("[DEBUG] notification integration (%s) not found", d.Id())
-		d.SetId("")
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query notification integration. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Notification integration id: %s, Err: %s", d.Id(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 
@@ -394,20 +410,4 @@ func UpdateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	return ReadNotificationIntegration(ctx, d, meta)
-}
-
-// DeleteNotificationIntegration implements schema.DeleteFunc.
-func DeleteNotificationIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-
-	err := client.NotificationIntegrations.Drop(ctx, sdk.NewDropNotificationIntegrationRequest(id))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-
-	return nil
 }

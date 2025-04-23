@@ -125,23 +125,23 @@ func ReadContextSecretWithClientCredentials(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	secret, err := client.Secrets.ShowByID(ctx, id)
+	secret, err := client.Secrets.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return diag.Diagnostics{
 				diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to retrieve secret with client credentials. Target object not found. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Secret with client credentials name: %s, Err: %s", id.FullyQualifiedName(), err),
+					Summary:  "Failed to query secret with client credentials. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Secret with client credentials id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Error,
-				Summary:  "Failed to retrieve secret with client credentials.",
-				Detail:   fmt.Sprintf("Id: %s\nError: %s", d.Id(), err),
+				Summary:  "Failed to query secret with client credentials.",
+				Detail:   fmt.Sprintf("Secret with client credentials id: %s\nError: %s", d.Id(), err),
 			},
 		}
 	}

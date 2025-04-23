@@ -18,6 +18,10 @@ func (t *GeographyDataType) Canonical() string {
 	return GeographyLegacyDataType
 }
 
+func (t *GeographyDataType) ToSqlWithoutUnknowns() string {
+	return t.ToSql()
+}
+
 var GeographyDataTypeSynonyms = []string{GeographyLegacyDataType}
 
 func parseGeographyDataTypeRaw(raw sanitizedDataTypeRaw) (*GeographyDataType, error) {

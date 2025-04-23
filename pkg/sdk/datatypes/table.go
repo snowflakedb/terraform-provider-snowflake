@@ -10,6 +10,7 @@ import (
 // TableDataType is based on https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-java#returning-tabular-data.
 // It does not have synonyms.
 // It consists of a list of column name + column type; may be empty.
+// For now, we require both name and data type to be present for each column (so there are no unknowns).
 type TableDataType struct {
 	columns        []TableDataTypeColumn
 	underlyingType string
@@ -30,6 +31,7 @@ func (c *TableDataTypeColumn) ColumnType() DataType {
 	return c.dataType
 }
 
+// TODO [SNOW-2054316]: this method can currently print something that won't be parsed correctly because column data types are not currently parsed (e.g. `TABLE(A NUMBER(38, 0))`)
 func (t *TableDataType) ToSql() string {
 	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
 		return fmt.Sprintf("%s %s", col.name, col.dataType.ToSql())
@@ -49,6 +51,14 @@ func (t *TableDataType) Canonical() string {
 		return fmt.Sprintf("%s %s", col.name, col.dataType.Canonical())
 	}), ", ")
 	return fmt.Sprintf("%s(%s)", TableLegacyDataType, columns)
+}
+
+func (t *TableDataType) ToSqlWithoutUnknowns() string {
+	// TODO [SNOW-2054316]: improve
+	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
+		return fmt.Sprintf("%s %s", col.name, col.dataType.ToSqlWithoutUnknowns())
+	}), ", ")
+	return fmt.Sprintf("%s(%s)", t.underlyingType, columns)
 }
 
 func (t *TableDataType) Columns() []TableDataTypeColumn {
@@ -105,4 +115,30 @@ func areTableDataTypesTheSame(a, b *TableDataType) bool {
 	}
 
 	return true
+}
+
+// tables are different if:
+// - they have different numbers of columns
+// - name differs for at least one column
+// - data type is different for at least one column
+func areTableDataTypesDefinitelyDifferent(a, b *TableDataType) bool {
+	if len(a.columns) != len(b.columns) {
+		return true
+	}
+
+	for i := range a.columns {
+		aColumn := a.columns[i]
+		bColumn := b.columns[i]
+
+		if aColumn.name != bColumn.name {
+			return true
+		}
+		// TODO [SNOW-2054316]: improve
+		// AreTheSame used instead of AreDefinitelyDifferent here as complex types are not supported for table data type yet (check Test_ParseDataType_Table).
+		if !AreTheSame(aColumn.dataType, bColumn.dataType) {
+			return true
+		}
+	}
+
+	return false
 }

@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.2.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.0...v1.2.1) (2025-04-22)
+
+
+### 🔧 **Misc**
+
+* Bump versioning ([#3589](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3589)) ([3fa737a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3fa737a45ca1d58d9d984b0703f03da5cab2e3d1))
+
+## [1.2.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.1.0...v1.2.0) (2025-04-22)
+
+
+### 🎉 **What's new:**
+
+* Add a new TOML file format ([#3577](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3577)) ([e92de36](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e92de36244b6acfced4b59f3cef1c897aaa9a263))
+* Add streamlits as valid future grant target ([#3569](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3569)) ([7c870aa](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7c870aa3e10343d2af2b10ec8cc21cdd9c4ed227))
+* Handle operations in resources using safe functions ([#3578](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3578)) ([ba39d91](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ba39d9174514206b1eb7bf36cbf8a123fd824a5f))
+
+
+### 🔧 **Misc**
+
+* Adjust codeql analysis ([#3563](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3563)) ([c881ab3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c881ab39dc8af5a5212fcb53ed8b99a61cf43ab9))
+* Apply safe functions ([#3576](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3576)) ([ae45777](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ae457770179480ba2cc22e14500b96c0c33a4d0c))
+* Masking random values ([#3545](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3545)) ([244e12b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/244e12bdf94dd88b0422969a13062104f87d8472))
+* Rename ConfigDTO to LegacyConfigDTO ([#3573](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3573)) ([515d685](https://github.com/snowflakedb/terraform-provider-snowflake/commit/515d685800fabcc243499736028169fc037dbea2))
+* Test proper diff suppression for data types ([#3579](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3579)) ([059d205](https://github.com/snowflakedb/terraform-provider-snowflake/commit/059d20591dac8f8a999b03db445d46ffaca9c1de))
+* Update repo_meta.yaml ([#3566](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3566)) ([6629dbd](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6629dbdf8deb9221215d29aca0494e6a2df5d0c8))
+* Use opts for reading TOML config ([#3575](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3575)) ([9fe0d14](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9fe0d144adae85bdfa3d5f2da1c385e0f8bc7f34))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix handling references to computed fields in context of `show_output` ([#3564](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3564)) ([d464752](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d46475226a1f13bbbaed2b8e5fdc3b74ddd76c24)), closes [#3522](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3522)
+* Fix identifier tests ([#3561](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3561)) ([fd295a5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/fd295a56b7f9c6a5d719858db062f7fbe9bcfde0))
+* Handle drop operation safely ([#3570](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3570)) ([7bd15fd](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7bd15fd1ad13048e1d075310ad52356ac3affaad))
+* Split acceptance tests ([#3562](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3562)) ([73ad5d9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/73ad5d9f8563993730899ecf4c6d0aff324da445))
+
 ## [1.1.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.0.5...v1.1.0) (2025-04-10)
 
 

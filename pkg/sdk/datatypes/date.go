@@ -18,6 +18,10 @@ func (t *DateDataType) Canonical() string {
 	return DateLegacyDataType
 }
 
+func (t *DateDataType) ToSqlWithoutUnknowns() string {
+	return t.ToSql()
+}
+
 var DateDataTypeSynonyms = []string{DateLegacyDataType}
 
 func parseDateDataTypeRaw(raw sanitizedDataTypeRaw) (*DateDataType, error) {

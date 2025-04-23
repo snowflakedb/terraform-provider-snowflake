@@ -18,6 +18,10 @@ func (t *BooleanDataType) Canonical() string {
 	return BooleanLegacyDataType
 }
 
+func (t *BooleanDataType) ToSqlWithoutUnknowns() string {
+	return t.ToSql()
+}
+
 var BooleanDataTypeSynonyms = []string{BooleanLegacyDataType}
 
 func parseBooleanDataTypeRaw(raw sanitizedDataTypeRaw) (*BooleanDataType, error) {

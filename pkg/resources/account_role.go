@@ -42,12 +42,17 @@ var accountRoleSchema = map[string]*schema.Schema{
 }
 
 func AccountRole() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] { return client.Roles.DropSafely },
+	)
+
 	return &schema.Resource{
 		Schema: accountRoleSchema,
 
 		CreateContext: TrackingCreateWrapper(resources.AccountRole, CreateAccountRole),
 		ReadContext:   TrackingReadWrapper(resources.AccountRole, ReadAccountRole),
-		DeleteContext: TrackingDeleteWrapper(resources.AccountRole, DeleteAccountRole),
+		DeleteContext: TrackingDeleteWrapper(resources.AccountRole, deleteFunc),
 		UpdateContext: TrackingUpdateWrapper(resources.AccountRole, UpdateAccountRole),
 		Description:   "The resource is used for role management, where roles can be assigned privileges and, in turn, granted to users and other roles. When granted to roles they can create hierarchies of privilege structures. For more details, refer to the [official documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview).",
 
@@ -99,7 +104,7 @@ func ReadAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag
 		return diag.FromErr(err)
 	}
 
-	accountRole, err := client.Roles.ShowByID(ctx, id)
+	accountRole, err := client.Roles.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -194,26 +199,4 @@ func UpdateAccountRole(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 
 	return ReadAccountRole(ctx, d, meta)
-}
-
-func DeleteAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := client.Roles.Drop(ctx, sdk.NewDropRoleRequest(id).WithIfExists(true)); err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Failed to drop account role",
-				Detail:   fmt.Sprintf("Account role name: %s, err: %s", d.Id(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-
-	return nil
 }

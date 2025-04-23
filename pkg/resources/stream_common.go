@@ -1,14 +1,10 @@
 package resources
 
 import (
-	"context"
 	"errors"
-	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -179,27 +175,10 @@ func handleStreamTimeTravelStatement(timeTravelConfig map[string]any) sdk.OnStre
 	return statement
 }
 
-func DeleteStreamContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.Streams.Drop(ctx, sdk.NewDropStreamRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting stream",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
-}
+var DeleteStreamContext = ResourceDeleteContextFunc(
+	sdk.ParseSchemaObjectIdentifier,
+	func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Streams.DropSafely },
+)
 
 func handleStreamRead(d *schema.ResourceData,
 	id sdk.SchemaObjectIdentifier,

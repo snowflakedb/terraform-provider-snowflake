@@ -8,10 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// contents of this file will be used as common functions if approved
-// TODO [next PR]: extract/rename this file if approved
-// TODO [next PR]: add documentation comment to each method if approved
-
+// DataTypeStateFunc makes sure that the data type saved in state has attribute values known.
 func DataTypeStateFunc(dataTypeRaw any) string {
 	dataType, err := datatypes.ParseDataType(dataTypeRaw.(string))
 	if err != nil {
@@ -20,6 +17,7 @@ func DataTypeStateFunc(dataTypeRaw any) string {
 	return dataType.ToSql()
 }
 
+// handleDatatypeCreate should be used while handling top-level data type attribute creation.
 func handleDatatypeCreate(d *schema.ResourceData, key string, createFunc func(dataType datatypes.DataType) error) error {
 	log.Printf("[DEBUG] handling create for datatype field %s", key)
 	dataType, err := readDatatypeCommon(d, key)
@@ -29,6 +27,7 @@ func handleDatatypeCreate(d *schema.ResourceData, key string, createFunc func(da
 	return createFunc(dataType)
 }
 
+// handleDatatypeUpdate should be used while handling top-level data type attribute update.
 func handleDatatypeUpdate(d *schema.ResourceData, key string, updateFunc func(dataType datatypes.DataType) error) error {
 	log.Printf("[DEBUG] handling update for datatype field %s", key)
 	if d.HasChange(key) {
@@ -41,6 +40,7 @@ func handleDatatypeUpdate(d *schema.ResourceData, key string, updateFunc func(da
 	return nil
 }
 
+// handleDatatypeSet should be used while handling top-level data type attribute read.
 func handleDatatypeSet(d *schema.ResourceData, key string, externalDataType datatypes.DataType) error {
 	log.Printf("[DEBUG] handling set for datatype field %s", key)
 	currentConfigDataType, err := readDatatypeCommon(d, key)
@@ -50,11 +50,12 @@ func handleDatatypeSet(d *schema.ResourceData, key string, externalDataType data
 	// current config data type is saved to state with all attributes known
 	// external data type is left without changes as all the unknowns should remain as unknowns
 	if datatypes.AreDefinitelyDifferent(currentConfigDataType, externalDataType) {
-		return d.Set(key, SqlNew(externalDataType))
+		return d.Set(key, externalDataType.ToSqlWithoutUnknowns())
 	}
 	return nil
 }
 
+// readDatatypeCommon should be used while reading top-level data type attribute from the config/state.
 func readDatatypeCommon(d *schema.ResourceData, key string) (datatypes.DataType, error) {
 	log.Printf("[DEBUG] reading datatype field %s", key)
 	dataTypeRawConfig := d.Get(key).(string)
@@ -66,20 +67,7 @@ func readDatatypeCommon(d *schema.ResourceData, key string) (datatypes.DataType,
 	return dataType, nil
 }
 
-// SqlNew is temporary as not all the data types has the temporary method implemented
-// TODO [next PR]: Add SqlNew to each data type and remove this method if approved
-// TODO [next PR]: Pick better name for this function
-func SqlNew(dt datatypes.DataType) string {
-	switch v := dt.(type) {
-	case *datatypes.NumberDataType:
-		return v.ToSqlNew()
-	case *datatypes.TextDataType:
-		return v.ToSqlNew()
-	default:
-		return v.ToSql()
-	}
-}
-
+// readNestedDatatypeCommon should be used while reading nested data type attribute from the config/state.
 func readNestedDatatypeCommon(v map[string]any, key string) (datatypes.DataType, error) {
 	log.Printf("[DEBUG] reading nested datatype field %s", key)
 	if dataTypeRawConfig, ok := v[key]; !ok {

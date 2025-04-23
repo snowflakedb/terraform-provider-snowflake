@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -122,13 +123,19 @@ var apiIntegrationSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// APIIntegration returns a pointer to the resource representing an api integration.
 func APIIntegration() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.ApiIntegrations.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingCreateWrapper(resources.ApiIntegration, CreateAPIIntegration)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingReadWrapper(resources.ApiIntegration, ReadAPIIntegration)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingUpdateWrapper(resources.ApiIntegration, UpdateAPIIntegration)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingDeleteWrapper(resources.ApiIntegration, DeleteAPIIntegration)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingDeleteWrapper(resources.ApiIntegration, deleteFunc)),
 
 		Schema: apiIntegrationSchema,
 		Importer: &schema.ResourceImporter{
@@ -220,10 +227,18 @@ func ReadAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interf
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
 
-	integration, err := client.ApiIntegrations.ShowByID(ctx, id)
+	integration, err := client.ApiIntegrations.ShowByIDSafely(ctx, id)
 	if err != nil {
-		log.Printf("[DEBUG] api integration (%s) not found", d.Id())
-		d.SetId("")
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query api integration. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Api integration id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 
@@ -405,19 +420,4 @@ func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	return ReadAPIIntegration(ctx, d, meta)
-}
-
-// DeleteAPIIntegration implements schema.DeleteFunc.
-func DeleteAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-
-	err := client.ApiIntegrations.Drop(ctx, sdk.NewDropApiIntegrationRequest(id))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-
-	return nil
 }

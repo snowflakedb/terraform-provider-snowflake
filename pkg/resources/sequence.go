@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -67,11 +69,18 @@ var sequenceSchema = map[string]*schema.Schema{
 }
 
 func Sequence() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.Sequences.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.SequenceResource), TrackingCreateWrapper(resources.Sequence, CreateSequence)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.SequenceResource), TrackingReadWrapper(resources.Sequence, ReadSequence)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.SequenceResource), TrackingUpdateWrapper(resources.Sequence, UpdateSequence)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.SequenceResource), TrackingDeleteWrapper(resources.Sequence, DeleteSequence)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.SequenceResource), TrackingDeleteWrapper(resources.Sequence, deleteFunc)),
 
 		Schema: sequenceSchema,
 		Importer: &schema.ResourceImporter{
@@ -114,8 +123,18 @@ func ReadSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	client := meta.(*provider.Context).Client
 
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-	seq, err := client.Sequences.ShowByID(ctx, id)
+	seq, err := client.Sequences.ShowByIDSafely(ctx, id)
 	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query sequence. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Sequence id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 
@@ -187,17 +206,4 @@ func UpdateSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 	return ReadSequence(ctx, d, meta)
-}
-
-func DeleteSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-
-	err := client.Sequences.Drop(ctx, sdk.NewDropSequenceRequest(id).WithIfExists(sdk.Bool(true)))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	d.SetId("")
-	return nil
 }

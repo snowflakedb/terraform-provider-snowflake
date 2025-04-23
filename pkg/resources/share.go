@@ -46,13 +46,17 @@ var shareSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// Share returns a pointer to the resource representing a share.
 func Share() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] { return client.Shares.DropSafely },
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ShareResource), TrackingCreateWrapper(resources.Share, CreateShare)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ShareResource), TrackingReadWrapper(resources.Share, ReadShare)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ShareResource), TrackingUpdateWrapper(resources.Share, UpdateShare)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ShareResource), TrackingDeleteWrapper(resources.Share, DeleteShare)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ShareResource), TrackingDeleteWrapper(resources.Share, deleteFunc)),
 
 		Schema: shareSchema,
 		Importer: &schema.ResourceImporter{
@@ -245,16 +249,4 @@ func UpdateShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 
 	return ReadShare(ctx, d, meta)
-}
-
-// DeleteShare implements schema.DeleteFunc.
-func DeleteShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-	client := meta.(*provider.Context).Client
-
-	err := client.Shares.Drop(ctx, id, &sdk.DropShareOptions{IfExists: sdk.Bool(true)})
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting share (%v) err = %w", d.Id(), err))
-	}
-	return nil
 }

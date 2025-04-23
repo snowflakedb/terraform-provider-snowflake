@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
@@ -50,13 +49,20 @@ var databaseRoleSchema = map[string]*schema.Schema{
 }
 
 func DatabaseRole() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseDatabaseObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.DatabaseObjectIdentifier] {
+			return client.DatabaseRoles.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		SchemaVersion: 1,
 
 		CreateContext: TrackingCreateWrapper(resources.DatabaseRole, CreateDatabaseRole),
 		ReadContext:   TrackingReadWrapper(resources.DatabaseRole, ReadDatabaseRole),
 		UpdateContext: TrackingUpdateWrapper(resources.DatabaseRole, UpdateDatabaseRole),
-		DeleteContext: TrackingDeleteWrapper(resources.DatabaseRole, DeleteDatabaseRole),
+		DeleteContext: TrackingDeleteWrapper(resources.DatabaseRole, deleteFunc),
 
 		Description: "Resource used to manage database roles. For more information, check [database roles documentation](https://docs.snowflake.com/en/sql-reference/sql/create-database-role).",
 
@@ -90,20 +96,7 @@ func ReadDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
-	_, err = client.Databases.ShowByID(ctx, id.DatabaseId())
-	if err != nil {
-		log.Printf("[DEBUG] database %s for database role %s not found", id.DatabaseId().Name(), id.Name())
-		d.SetId("")
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Failed to query database. Marking the resource as removed.",
-				Detail:   fmt.Sprintf("database role name: %s, Err: %s", id.FullyQualifiedName(), err),
-			},
-		}
-	}
-
-	databaseRole, err := client.DatabaseRoles.ShowByID(ctx, id)
+	databaseRole, err := client.DatabaseRoles.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -111,7 +104,7 @@ func ReadDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) dia
 				diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Database role not found; marking it as removed",
-					Detail:   fmt.Sprintf("Database role name: %s, err: %s", id.FullyQualifiedName(), err),
+					Detail:   fmt.Sprintf("Database role id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
@@ -184,21 +177,4 @@ func UpdateDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	return ReadDatabaseRole(ctx, d, meta)
-}
-
-func DeleteDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.DatabaseRoles.Drop(ctx, sdk.NewDropDatabaseRoleRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }

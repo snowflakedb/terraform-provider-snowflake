@@ -105,13 +105,20 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// AuthenticationPolicy returns a pointer to the resource representing an authentication policy.
 func AuthenticationPolicy() *schema.Resource {
+	// TODO(SNOW-1818849): unassign policies before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseSchemaObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.AuthenticationPolicies.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingCreateWrapper(resources.AuthenticationPolicy, CreateContextAuthenticationPolicy)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingReadWrapper(resources.AuthenticationPolicy, ReadContextAuthenticationPolicy)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingUpdateWrapper(resources.AuthenticationPolicy, UpdateContextAuthenticationPolicy)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingDeleteWrapper(resources.AuthenticationPolicy, DeleteContextAuthenticationPolicy)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingDeleteWrapper(resources.AuthenticationPolicy, deleteFunc)),
 		Description:   "Resource used to manage authentication policy objects. For more information, check [authentication policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy).",
 
 		Schema: authenticationPolicySchema,
@@ -259,15 +266,15 @@ func ReadContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	authenticationPolicy, err := client.AuthenticationPolicies.ShowByID(ctx, id)
+	authenticationPolicy, err := client.AuthenticationPolicies.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return diag.Diagnostics{
 				diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to retrieve authentication policy. Target object not found. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Id: %s", d.Id()),
+					Summary:  "Failed to retrieve authentication policy. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
 				},
 			}
 		}
@@ -474,28 +481,6 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	}
 
 	return ReadContextAuthenticationPolicy(ctx, d, meta)
-}
-
-func DeleteContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting authentication policy",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	// TODO(SNOW-1818849): unassign policies before dropping
-	if err := client.AuthenticationPolicies.Drop(ctx, sdk.NewDropAuthenticationPolicyRequest(id).WithIfExists(true)); err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }
 
 func stringSlicesEqual(s1 []string, s2 []string) bool {

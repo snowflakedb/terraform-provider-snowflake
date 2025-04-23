@@ -12,6 +12,7 @@ type ExternalFunctions interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ExternalFunction, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ExternalFunction, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]ExternalFunctionProperty, error)
+	// TODO(SNOW-2048276): Add dedicated external Drop and DropSafely functions
 }
 
 // CreateExternalFunctionOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-external-function.

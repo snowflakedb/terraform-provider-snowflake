@@ -18,6 +18,10 @@ func (t *VariantDataType) Canonical() string {
 	return VariantLegacyDataType
 }
 
+func (t *VariantDataType) ToSqlWithoutUnknowns() string {
+	return t.ToSql()
+}
+
 var VariantDataTypeSynonyms = []string{VariantLegacyDataType}
 
 func parseVariantDataTypeRaw(raw sanitizedDataTypeRaw) (*VariantDataType, error) {

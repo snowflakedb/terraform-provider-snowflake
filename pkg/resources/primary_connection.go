@@ -55,11 +55,18 @@ var primaryConnectionSchema = map[string]*schema.Schema{
 }
 
 func PrimaryConnection() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Connections.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.PrimaryConnection, CreateContextPrimaryConnection),
 		ReadContext:   TrackingReadWrapper(resources.PrimaryConnection, ReadContextPrimaryConnection),
 		UpdateContext: TrackingUpdateWrapper(resources.PrimaryConnection, UpdateContextPrimaryConnection),
-		DeleteContext: TrackingDeleteWrapper(resources.PrimaryConnection, DeleteContextPrimaryConnection),
+		DeleteContext: TrackingDeleteWrapper(resources.PrimaryConnection, deleteFunc),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.PrimaryConnection, customdiff.All(
 			ComputedIfAnyAttributeChanged(primaryConnectionSchema, ShowOutputAttributeName, "comment", "is_primary", "enable_failover_to_accounts"),
@@ -257,19 +264,4 @@ func UpdateContextPrimaryConnection(ctx context.Context, d *schema.ResourceData,
 	}
 
 	return ReadContextPrimaryConnection(ctx, d, meta)
-}
-
-func DeleteContextPrimaryConnection(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	err = client.Connections.Drop(ctx, sdk.NewDropConnectionRequest(id).WithIfExists(true))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }

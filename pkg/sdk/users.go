@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
@@ -697,12 +699,9 @@ func (v *users) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*User
 		return nil, err
 	}
 
-	for _, user := range users {
-		if user.ID().name == id.Name() {
-			return &user, nil
-		}
-	}
-	return nil, ErrObjectNotExistOrAuthorized
+	return collections.FindFirst(users, func(user User) bool {
+		return user.ID().Name() == id.Name()
+	})
 }
 
 func (v *users) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*User, error) {

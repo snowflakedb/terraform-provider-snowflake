@@ -1117,9 +1117,9 @@ func Test_ParseDataType_Table(t *testing.T) {
 		{input: "TABLE(arg_name NUMBER(38), arg_name_2 VARCHAR)", expectedColumns: []column{{"arg_name", "NUMBER(38)"}, {"arg_name_2", "VARCHAR"}}},
 		{input: "TABLE(arg_name number, second float, third GEOGRAPHY)", expectedColumns: []column{{"arg_name", "number"}, {"second", "float"}, {"third", "GEOGRAPHY"}}},
 		{input: "TABLE  (		arg_name 		varchar, 		second 	date, third TIME 			)", expectedColumns: []column{{"arg_name", "varchar"}, {"second", "date"}, {"third", "time"}}},
-		// TODO: Support types with parameters (for now, only legacy types are supported because Snowflake returns only with this output), e.g. TABLE(ARG NUMBER(38, 0))
-		// TODO: Support nested tables, e.g. TABLE(ARG NUMBER, NESTED TABLE(A VARCHAR, B GEOMETRY))
-		// TODO: Support complex argument names (with quotes / spaces / special characters / etc)
+		// TODO [SNOW-2054316]: Support types with parameters (for now, only legacy types are supported because Snowflake returns only with this output), e.g. TABLE(ARG NUMBER(38, 0))
+		// TODO [SNOW-2054316]: Support nested tables, e.g. TABLE(ARG NUMBER, NESTED TABLE(A VARCHAR, B GEOMETRY))
+		// TODO [SNOW-2054316]: Support complex argument names (with quotes / spaces / special characters / etc)
 	}
 
 	negativeTestCases := []test{
@@ -1265,6 +1265,141 @@ func Test_AreTheSame(t *testing.T) {
 			}
 
 			require.Equal(t, tc.expectedOutcome, AreTheSame(p1, p2))
+		})
+	}
+}
+
+func Test_AreDefinitelyDifferent(t *testing.T) {
+	// empty d1/d2 means nil DataType input
+	type test struct {
+		d1              string
+		d2              string
+		expectedOutcome bool
+	}
+
+	testCases := []test{
+		{d1: "", d2: "", expectedOutcome: false},
+		{d1: "", d2: "NUMBER", expectedOutcome: true},
+		{d1: "NUMBER", d2: "", expectedOutcome: true},
+
+		{d1: "NUMBER(20)", d2: "NUMBER(20, 2)", expectedOutcome: false},
+		{d1: "NUMBER(20, 1)", d2: "NUMBER(20, 2)", expectedOutcome: true},
+		{d1: "NUMBER", d2: "NUMBER(20, 2)", expectedOutcome: false},
+		{d1: "NUMBER", d2: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, DefaultNumberScale), expectedOutcome: false},
+		{d1: fmt.Sprintf("NUMBER(%d)", DefaultNumberPrecision), d2: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, DefaultNumberScale), expectedOutcome: false},
+		{d1: "NUMBER", d2: "NUMBER", expectedOutcome: false},
+		{d1: "NUMBER(20)", d2: "NUMBER(20)", expectedOutcome: false},
+		{d1: "NUMBER(20, 2)", d2: "NUMBER(20, 2)", expectedOutcome: false},
+		{d1: "INT", d2: "NUMBER", expectedOutcome: false},
+		{d1: "INT", d2: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, DefaultNumberScale), expectedOutcome: false},
+		{d1: "INT", d2: "NUMBER(20)", expectedOutcome: true},
+		{d1: "INT", d2: "NUMBER(20, 4)", expectedOutcome: true},
+		{d1: "INT", d2: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, 5), expectedOutcome: true},
+		{d1: "NUMBER", d2: "VARCHAR", expectedOutcome: true},
+		{d1: "NUMBER(20)", d2: "VARCHAR(20)", expectedOutcome: true},
+		{d1: "CHAR", d2: "VARCHAR", expectedOutcome: false},
+		{d1: "CHAR", d2: fmt.Sprintf("VARCHAR(%d)", DefaultCharLength), expectedOutcome: false},
+		{d1: fmt.Sprintf("CHAR(%d)", DefaultVarcharLength), d2: "VARCHAR", expectedOutcome: false},
+		{d1: "BINARY", d2: "BINARY", expectedOutcome: false},
+		{d1: "BINARY", d2: "VARBINARY", expectedOutcome: false},
+		{d1: "BINARY(20)", d2: "BINARY(20)", expectedOutcome: false},
+		{d1: "BINARY(20)", d2: "BINARY(30)", expectedOutcome: true},
+		{d1: "BINARY", d2: "BINARY(30)", expectedOutcome: false},
+		{d1: fmt.Sprintf("BINARY(%d)", DefaultBinarySize), d2: "BINARY", expectedOutcome: false},
+		{d1: "FLOAT", d2: "FLOAT4", expectedOutcome: false},
+		{d1: "DOUBLE", d2: "FLOAT8", expectedOutcome: false},
+		{d1: "DOUBLE PRECISION", d2: "REAL", expectedOutcome: false},
+		{d1: "TIMESTAMPLTZ", d2: "TIMESTAMPNTZ", expectedOutcome: true},
+		{d1: "TIMESTAMPLTZ", d2: "TIMESTAMPTZ", expectedOutcome: true},
+		{d1: "TIMESTAMPLTZ", d2: fmt.Sprintf("TIMESTAMPLTZ(%d)", DefaultTimestampPrecision), expectedOutcome: false},
+		{d1: "VECTOR(INT, 20)", d2: "VECTOR(INT, 20)", expectedOutcome: false},
+		{d1: "VECTOR(INT, 20)", d2: "VECTOR(INT, 30)", expectedOutcome: true},
+		{d1: "VECTOR(FLOAT, 20)", d2: "VECTOR(INT, 30)", expectedOutcome: true},
+		{d1: "VECTOR(FLOAT, 20)", d2: "VECTOR(INT, 20)", expectedOutcome: true},
+		{d1: "VECTOR(FLOAT, 20)", d2: "VECTOR(FLOAT, 20)", expectedOutcome: false},
+		{d1: "VECTOR(FLOAT, 20)", d2: "FLOAT", expectedOutcome: true},
+		{d1: "TIME", d2: "TIME", expectedOutcome: false},
+		{d1: "TIME", d2: "TIME(5)", expectedOutcome: false},
+		{d1: "TIME", d2: fmt.Sprintf("TIME(%d)", DefaultTimePrecision), expectedOutcome: false},
+		{d1: "TABLE()", d2: "TABLE()", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER)", d2: "TABLE(B NUMBER)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER)", d2: "TABLE(a NUMBER)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER)", d2: "TABLE(A VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER, B NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: true},
+		{d1: "TABLE(B CHAR)", d2: "TABLE()", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(fmt.Sprintf(`check if "%s" is definitely different than "%s", expecting %t`, tc.d1, tc.d2, tc.expectedOutcome), func(t *testing.T) {
+			var p1, p2 DataType
+			var err error
+
+			if tc.d1 != "" {
+				p1, err = ParseDataType(tc.d1)
+				require.NoError(t, err)
+			}
+
+			if tc.d2 != "" {
+				p2, err = ParseDataType(tc.d2)
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tc.expectedOutcome, AreDefinitelyDifferent(p1, p2))
+		})
+	}
+}
+
+func Test_ToSqlWithoutUnknowns(t *testing.T) {
+	type test struct {
+		dt string
+	}
+
+	testCases := []test{
+		{dt: "NUMBER"},
+		{dt: "NUMBER(20)"},
+		{dt: "NUMBER(20, 4)"},
+		{dt: fmt.Sprintf("NUMBER(%d, %d)", DefaultNumberPrecision, DefaultNumberScale)},
+		{dt: "INT"},
+		{dt: "VARCHAR"},
+		{dt: "VARCHAR(15)"},
+		{dt: "CHAR"},
+		{dt: "CHAR(5)"},
+		{dt: fmt.Sprintf("VARCHAR(%d)", DefaultCharLength)},
+		{dt: fmt.Sprintf("CHAR(%d)", DefaultVarcharLength)},
+		{dt: "BINARY"},
+		{dt: "VARBINARY"},
+		{dt: "BINARY(20)"},
+		{dt: "VARBINARY(30)"},
+		{dt: fmt.Sprintf("BINARY(%d)", DefaultBinarySize)},
+		{dt: "FLOAT"},
+		{dt: "FLOAT4"},
+		{dt: "DOUBLE PRECISION"},
+		{dt: "TIME"},
+		{dt: fmt.Sprintf("TIME(%d)", DefaultTimePrecision)},
+		{dt: "TIMESTAMPLTZ"},
+		{dt: fmt.Sprintf("TIMESTAMPLTZ(%d)", DefaultTimestampPrecision)},
+		{dt: "TIMESTAMPNTZ"},
+		{dt: fmt.Sprintf("TIMESTAMPNTZ(%d)", DefaultTimestampPrecision)},
+		{dt: "TIMESTAMPTZ"},
+		{dt: fmt.Sprintf("TIMESTAMPTZ(%d)", DefaultTimestampPrecision)},
+		{dt: "TIMESTAMP WITHOUT TIME ZONE"},
+		{dt: "VECTOR(INT, 20)"},
+		{dt: "VECTOR(FLOAT, 30)"},
+		{dt: "TABLE()"},
+		{dt: "TABLE(A NUMBER)"},
+		{dt: "TABLE(A NUMBER, B INT, C VARCHAR)"},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(fmt.Sprintf(`check if ToSqlWithoutUnknowns method works correctly for "%s"`, tc.dt), func(t *testing.T) {
+			parsed, err := ParseDataType(tc.dt)
+			require.NoError(t, err)
+			require.Equal(t, tc.dt, parsed.ToSqlWithoutUnknowns())
 		})
 	}
 }

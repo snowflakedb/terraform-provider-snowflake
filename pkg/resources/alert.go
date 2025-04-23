@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -110,13 +111,17 @@ var alertSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// Alert returns a pointer to the resource representing an alert.
 func Alert() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Alerts.DropSafely },
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.AlertResource), TrackingCreateWrapper(resources.Alert, CreateAlert)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AlertResource), TrackingReadWrapper(resources.Alert, ReadAlert)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.AlertResource), TrackingUpdateWrapper(resources.Alert, UpdateAlert)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AlertResource), TrackingDeleteWrapper(resources.Alert, DeleteAlert)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AlertResource), TrackingDeleteWrapper(resources.Alert, deleteFunc)),
 
 		Schema: alertSchema,
 		Importer: &schema.ResourceImporter{
@@ -131,12 +136,19 @@ func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	alert, err := client.Alerts.ShowByID(ctx, id)
+	alert, err := client.Alerts.ShowByIDSafely(ctx, id)
 	if err != nil {
-		// If not found, mark resource to be removed from state file during apply or refresh
-		log.Printf("[DEBUG] alert (%s) not found", d.Id())
-		d.SetId("")
-		return nil
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query alert. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Alert id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("enabled", alert.State == sdk.AlertStateStarted); err != nil {
@@ -364,20 +376,6 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 		}
 	}
 	return append(diags, ReadAlert(ctx, d, meta)...)
-}
-
-// DeleteAlert implements schema.DeleteContextFunc.
-func DeleteAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	objectIdentifier := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-
-	err := client.Alerts.Drop(ctx, objectIdentifier, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }
 
 func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {

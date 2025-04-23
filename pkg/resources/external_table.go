@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -140,11 +140,18 @@ var externalTableSchema = map[string]*schema.Schema{
 }
 
 func ExternalTable() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.ExternalTables.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalTableResource), TrackingCreateWrapper(resources.ExternalTable, CreateExternalTable)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalTableResource), TrackingReadWrapper(resources.ExternalTable, ReadExternalTable)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalTableResource), TrackingUpdateWrapper(resources.ExternalTable, UpdateExternalTable)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ExternalTableResource), TrackingDeleteWrapper(resources.ExternalTable, DeleteExternalTable)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ExternalTableResource), TrackingDeleteWrapper(resources.ExternalTable, deleteFunc)),
 
 		Schema: externalTableSchema,
 		Importer: &schema.ResourceImporter{
@@ -251,10 +258,18 @@ func ReadExternalTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	externalTable, err := client.ExternalTables.ShowByID(ctx, id)
+	externalTable, err := client.ExternalTables.ShowByIDSafely(ctx, id)
 	if err != nil {
-		log.Printf("[DEBUG] external table (%s) not found", d.Id())
-		d.SetId("")
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query external table. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("External table id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 
@@ -301,19 +316,4 @@ func UpdateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	return ReadExternalTable(ctx, d, meta)
-}
-
-// DeleteExternalTable implements schema.DeleteFunc.
-func DeleteExternalTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-
-	err := client.ExternalTables.Drop(ctx, sdk.NewDropExternalTableRequest(id))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-
-	return nil
 }

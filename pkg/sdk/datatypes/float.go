@@ -18,6 +18,10 @@ func (t *FloatDataType) Canonical() string {
 	return FloatLegacyDataType
 }
 
+func (t *FloatDataType) ToSqlWithoutUnknowns() string {
+	return t.ToSql()
+}
+
 var FloatDataTypeSynonyms = []string{"FLOAT8", "FLOAT4", FloatLegacyDataType, "DOUBLE PRECISION", "DOUBLE", "REAL"}
 
 func parseFloatDataTypeRaw(raw sanitizedDataTypeRaw) (*FloatDataType, error) {

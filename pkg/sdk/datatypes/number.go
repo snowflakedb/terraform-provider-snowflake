@@ -15,6 +15,7 @@ const (
 // NumberDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-numeric#data-types-for-fixed-point-numbers
 // It does have synonyms that allow specifying precision and scale; here called synonyms.
 // It does have synonyms that does not allow specifying precision and scale; here called subtypes.
+// Precision and scale can be known or unknown.
 type NumberDataType struct {
 	precision      int
 	scale          int
@@ -39,7 +40,7 @@ func (t *NumberDataType) Canonical() string {
 	return fmt.Sprintf("%s(%d,%d)", NumberLegacyDataType, t.precision, t.scale)
 }
 
-func (t *NumberDataType) ToSqlNew() string {
+func (t *NumberDataType) ToSqlWithoutUnknowns() string {
 	switch {
 	case slices.Contains(NumberDataTypeSubTypes, t.underlyingType):
 		return t.underlyingType
@@ -108,7 +109,8 @@ func parseNumberDataTypeWithoutPrecisionAndScale(raw sanitizedDataTypeRaw) (*Num
 		args := strings.TrimPrefix(raw.raw, raw.matchedByType)
 		return nil, fmt.Errorf("number type %s cannot have arguments: %s", raw.matchedByType, args)
 	} else {
-		return &NumberDataType{DefaultNumberPrecision, DefaultNumberScale, raw.matchedByType, false, false}, nil
+		// subtypes can't have other precision/scale, so the defaults are returned as knowns
+		return &NumberDataType{DefaultNumberPrecision, DefaultNumberScale, raw.matchedByType, true, true}, nil
 	}
 }
 

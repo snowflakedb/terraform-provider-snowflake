@@ -9,6 +9,7 @@ import (
 
 // VectorDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-vector#vector
 // It does not have synonyms. It does have type (int or float) and dimension required attributes.
+// Vector attributes has to be always known (can't create a vector like VECTOR or VECTOR(INT)).
 type VectorDataType struct {
 	innerType      string
 	dimension      int
@@ -25,6 +26,10 @@ func (t *VectorDataType) ToLegacyDataTypeSql() string {
 }
 
 func (t *VectorDataType) Canonical() string {
+	return t.ToSql()
+}
+
+func (t *VectorDataType) ToSqlWithoutUnknowns() string {
 	return t.ToSql()
 }
 
@@ -60,4 +65,9 @@ func parseVectorDataTypeRaw(raw sanitizedDataTypeRaw) (*VectorDataType, error) {
 
 func areVectorDataTypesTheSame(a, b *VectorDataType) bool {
 	return a.innerType == b.innerType && a.dimension == b.dimension
+}
+
+// areVectorDataTypesDefinitelyDifferent behaves differently from other data type functions as vector attributes are always known.
+func areVectorDataTypesDefinitelyDifferent(a, b *VectorDataType) bool {
+	return !areVectorDataTypesTheSame(a, b)
 }

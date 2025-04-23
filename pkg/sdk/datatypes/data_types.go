@@ -20,6 +20,8 @@ type DataType interface {
 	ToLegacyDataTypeSql() string
 	// Canonical formats the data type between ToSql and ToLegacyDataTypeSql: it uses base type but with arguments (e.g. VARCHAR(29) for CHAR(29)).
 	Canonical() string
+	// ToSqlWithoutUnknowns formats data type explicitly specifying all KNOWN arguments and using the given type.
+	ToSqlWithoutUnknowns() string
 }
 
 type sanitizedDataTypeRaw struct {
@@ -170,8 +172,6 @@ func noArgsDataTypesAreTheSame[T DataType](_ T, _ T) bool {
 // - If only one data type is nil it returns true.
 // - It returns true for different underlying types.
 // - For the same type it performs type-specific check.
-// TODO [next PR]: test this function if approved
-// TODO [next PR]: implement all missing checks if approved
 func AreDefinitelyDifferent(a DataType, b DataType) bool {
 	if a == nil && b == nil {
 		return false
@@ -186,7 +186,7 @@ func AreDefinitelyDifferent(a DataType, b DataType) bool {
 	case *ArrayDataType:
 		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
 	case *BinaryDataType:
-		return castSuccessfully(v, b, willBeImplemented)
+		return castSuccessfully(v, b, areBinaryDataTypesDefinitelyDifferent)
 	case *BooleanDataType:
 		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
 	case *DateDataType:
@@ -202,29 +202,25 @@ func AreDefinitelyDifferent(a DataType, b DataType) bool {
 	case *ObjectDataType:
 		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
 	case *TableDataType:
-		return castSuccessfully(v, b, willBeImplemented)
+		return castSuccessfully(v, b, areTableDataTypesDefinitelyDifferent)
 	case *TextDataType:
 		return castSuccessfully(v, b, areTextDataTypesDefinitelyDifferent)
 	case *TimeDataType:
-		return castSuccessfully(v, b, willBeImplemented)
+		return castSuccessfully(v, b, areTimeDataTypesDefinitelyDifferent)
 	case *TimestampLtzDataType:
-		return castSuccessfully(v, b, willBeImplemented)
+		return castSuccessfully(v, b, areTimestampLtzDataTypesDefinitelyDifferent)
 	case *TimestampNtzDataType:
-		return castSuccessfully(v, b, willBeImplemented)
+		return castSuccessfully(v, b, areTimestampNtzDataTypesDefinitelyDifferent)
 	case *TimestampTzDataType:
-		return castSuccessfully(v, b, willBeImplemented)
+		return castSuccessfully(v, b, areTimestampTzDataTypesDefinitelyDifferent)
 	case *VariantDataType:
 		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
 	case *VectorDataType:
-		return castSuccessfully(v, b, willBeImplemented)
+		return castSuccessfully(v, b, areVectorDataTypesDefinitelyDifferent)
 	}
 	return false
 }
 
 func noArgsDataTypesAreDefinitelyDifferent[T DataType](_ T, _ T) bool {
-	return false
-}
-
-func willBeImplemented[T DataType](_ T, _ T) bool {
 	return false
 }

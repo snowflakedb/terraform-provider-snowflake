@@ -96,13 +96,21 @@ var rowAccessPolicySchema = map[string]*schema.Schema{
 
 // RowAccessPolicy returns a pointer to the resource representing a row access policy.
 func RowAccessPolicy() *schema.Resource {
+	// TODO(SNOW-1818849): unassign policies before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseSchemaObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.RowAccessPolicies.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		SchemaVersion: 1,
 
 		CreateContext: TrackingCreateWrapper(resources.RowAccessPolicy, CreateRowAccessPolicy),
 		ReadContext:   TrackingReadWrapper(resources.RowAccessPolicy, ReadRowAccessPolicy),
 		UpdateContext: TrackingUpdateWrapper(resources.RowAccessPolicy, UpdateRowAccessPolicy),
-		DeleteContext: TrackingDeleteWrapper(resources.RowAccessPolicy, DeleteRowAccessPolicy),
+		DeleteContext: TrackingDeleteWrapper(resources.RowAccessPolicy, deleteFunc),
 		Description:   "Resource used to manage row access policy objects. For more information, check [row access policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-row-access-policy).",
 
 		Schema: rowAccessPolicySchema,
@@ -210,7 +218,7 @@ func ReadRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	rowAccessPolicy, err := client.RowAccessPolicies.ShowByID(ctx, id)
+	rowAccessPolicy, err := client.RowAccessPolicies.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -218,7 +226,7 @@ func ReadRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 				diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to query row access policy. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("row access policy name: %s, Err: %s", id.FullyQualifiedName(), err),
+					Detail:   fmt.Sprintf("Row access policy id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
@@ -296,29 +304,4 @@ func UpdateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	return ReadRowAccessPolicy(ctx, d, meta)
-}
-
-func DeleteRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	client := meta.(*provider.Context).Client
-
-	// TODO(SNOW-1818849): unassign policies before dropping
-	err = client.RowAccessPolicies.Drop(ctx, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(sdk.Pointer(true)))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting row access policy",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-
-	return nil
 }

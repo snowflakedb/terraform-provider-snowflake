@@ -93,21 +93,20 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 
 		value := oswrapper.Getenv(envName)
 		log.Printf("[DEBUG] env %s value is `%s`", envName, value)
-		if value != "" {
-			// TODO [next PR]: extract splitting
-			dataTypes := strings.Split(value, "|")
+		externalDataTypes, envExists, err := testResourceDataTypeDiffHandlingListExternalRead(envName)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if envExists {
+			// TODO [next PR or will be extracted]: extract common method to work with collections on the resource side (will be done with the masking policy and row access policy application)
 			currentConfigDatatypes := d.Get("nesting_list").([]any)
 			nestedDatatypesSchema := make([]map[string]any, 0)
-			for i, dt := range dataTypes {
-				externalDataType, err := datatypes.ParseDataType(dt)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				// TODO [next PR]: handle missing data types too
+			for i, externalDataType := range externalDataTypes {
+				// TODO [next PR or will be extracted]: handle missing data types too (will be done with the masking policy and row access policy application)
 				if i+1 > len(currentConfigDatatypes) {
-					log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, SqlNew(externalDataType))
+					log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, externalDataType.ToSqlWithoutUnknowns())
 					nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
-						"nested_datatype": SqlNew(externalDataType),
+						"nested_datatype": externalDataType.ToSqlWithoutUnknowns(),
 					})
 				} else {
 					v := currentConfigDatatypes[i].(map[string]any)
@@ -118,12 +117,12 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 					// current config data type is saved to state with all attributes known
 					// external data type is left without changes as all the unknowns should remain as unknowns
 					if datatypes.AreDefinitelyDifferent(currentConfigDataType, externalDataType) {
-						log.Printf("[DEBUG] reading %d: external datatype %s is definitely different from the current config %s, updating", i, SqlNew(externalDataType), SqlNew(currentConfigDataType))
+						log.Printf("[DEBUG] reading %d: external datatype %s is definitely different from the current config %s, updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
 						nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
-							"nested_datatype": SqlNew(externalDataType),
+							"nested_datatype": externalDataType.ToSqlWithoutUnknowns(),
 						})
 					} else {
-						log.Printf("[DEBUG] reading %d: external datatype %s is not definitely different from the current config %s, not updating", i, SqlNew(externalDataType), SqlNew(currentConfigDataType))
+						log.Printf("[DEBUG] reading %d: external datatype %s is not definitely different from the current config %s, not updating", i, externalDataType.ToSqlWithoutUnknowns(), currentConfigDataType.ToSqlWithoutUnknowns())
 						nestedDatatypesSchema = append(nestedDatatypesSchema, map[string]any{
 							// TODO [SNOW-2054238]: add test for StateFunc behavior with collections.
 							// using toSql() here as StateFunc seems to be not working in this case
@@ -152,6 +151,30 @@ func TestResourceDataTypeDiffHandlingListDelete(_ context.Context, d *schema.Res
 
 	d.SetId("")
 	return nil
+}
+
+// testResourceDataTypeDiffHandlingListExternalRead returns:
+// - slice of external datatypes or nil;
+// - true if the env variable had any value, false otherwise;
+// - error or nil.
+// On the callers side, it should be first checked for error, then for the bool, and finally the slice.
+func testResourceDataTypeDiffHandlingListExternalRead(envName string) ([]datatypes.DataType, bool, error) {
+	value := oswrapper.Getenv(envName)
+	log.Printf("[DEBUG] env %s value is `%s`", envName, value)
+	if value != "" {
+		rawDataTypes := strings.Split(value, "|")
+		externalDataTypes := make([]datatypes.DataType, len(rawDataTypes))
+		for i, dt := range rawDataTypes {
+			externalDataType, err := datatypes.ParseDataType(dt)
+			if err != nil {
+				return externalDataTypes, true, err
+			}
+			externalDataTypes[i] = externalDataType
+		}
+		return externalDataTypes, true, nil
+	} else {
+		return nil, false, nil
+	}
 }
 
 func testResourceDataTypeDiffHandlingListSet(envName string, dataTypes []datatypes.DataType) error {

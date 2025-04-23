@@ -126,7 +126,7 @@ func OauthIntegrationForPartnerApplications() *schema.Resource {
 		CreateContext: TrackingCreateWrapper(resources.OauthIntegrationForPartnerApplications, CreateContextOauthIntegrationForPartnerApplications),
 		ReadContext:   TrackingReadWrapper(resources.OauthIntegrationForPartnerApplications, ReadContextOauthIntegrationForPartnerApplications(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.OauthIntegrationForPartnerApplications, UpdateContextOauthIntegrationForPartnerApplications),
-		DeleteContext: TrackingDeleteWrapper(resources.OauthIntegrationForPartnerApplications, DeleteContextSecurityIntegration),
+		DeleteContext: TrackingDeleteWrapper(resources.OauthIntegrationForPartnerApplications, DeleteSecurityIntegration),
 		Description:   "Resource used to manage oauth security integration for partner applications objects. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.OauthIntegrationForPartnerApplications, customdiff.All(
@@ -524,26 +524,4 @@ func UpdateContextOauthIntegrationForPartnerApplications(ctx context.Context, d 
 	}
 
 	return ReadContextOauthIntegrationForPartnerApplications(false)(ctx, d, meta)
-}
-
-func DeleteContextSecurityIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.SecurityIntegrations.Drop(ctx, sdk.NewDropSecurityIntegrationRequest(sdk.NewAccountObjectIdentifier(id.Name())).WithIfExists(true))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error deleting oauth integration for partner applications",
-				Detail:   fmt.Sprintf("id %v err = %v", id.Name(), err),
-			},
-		}
-	}
-
-	d.SetId("")
-	return nil
 }

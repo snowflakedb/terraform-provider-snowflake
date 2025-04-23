@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"slices"
 	"strings"
 
@@ -113,13 +113,19 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// StorageIntegration returns a pointer to the resource representing a storage integration.
 func StorageIntegration() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.StorageIntegrations.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingCreateWrapper(resources.StorageIntegration, CreateStorageIntegration)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingReadWrapper(resources.StorageIntegration, ReadStorageIntegration)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingUpdateWrapper(resources.StorageIntegration, UpdateStorageIntegration)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingDeleteWrapper(resources.StorageIntegration, DeleteStorageIntegration)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingDeleteWrapper(resources.StorageIntegration, deleteFunc)),
 
 		Schema: storageIntegrationSchema,
 		Importer: &schema.ResourceImporter{
@@ -205,11 +211,19 @@ func ReadStorageIntegration(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(fmt.Errorf("storage integration read, error decoding id: %s as sdk.AccountObjectIdentifier, got: %T", d.Id(), id))
 	}
 
-	s, err := client.StorageIntegrations.ShowByID(ctx, id)
+	s, err := client.StorageIntegrations.ShowByIDSafely(ctx, id)
 	if err != nil {
-		log.Printf("[DEBUG] storage integration (%s) not found", d.Id())
-		d.SetId("")
-		return nil
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query storage integration. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Storage integration id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
 	}
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
@@ -374,18 +388,4 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	return ReadStorageIntegration(ctx, d, meta)
-}
-
-func DeleteStorageIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, ok := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("storage integration delete, error decoding id: %s as sdk.AccountObjectIdentifier, got: %T", d.Id(), id))
-	}
-	if err := client.StorageIntegrations.Drop(ctx, sdk.NewDropStorageIntegrationRequest(id)); err != nil {
-		return diag.FromErr(fmt.Errorf("error dropping storage integration (%s), err = %w", d.Id(), err))
-	}
-
-	d.SetId("")
-	return nil
 }

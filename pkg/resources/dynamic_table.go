@@ -2,7 +2,8 @@ package resources
 
 import (
 	"context"
-	"log"
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -164,13 +165,19 @@ var dynamicTableSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-// DynamicTable returns a pointer to the resource representing a dynamic table.
 func DynamicTable() *schema.Resource {
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.DynamicTables.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.DynamicTableResource), TrackingCreateWrapper(resources.DynamicTable, CreateDynamicTable)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.DynamicTableResource), TrackingReadWrapper(resources.DynamicTable, ReadDynamicTable)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.DynamicTableResource), TrackingUpdateWrapper(resources.DynamicTable, UpdateDynamicTable)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.DynamicTableResource), TrackingDeleteWrapper(resources.DynamicTable, DeleteDynamicTable)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.DynamicTableResource), TrackingDeleteWrapper(resources.DynamicTable, deleteFunc)),
 
 		Schema: dynamicTableSchema,
 		Importer: &schema.ResourceImporter{
@@ -185,11 +192,19 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	client := meta.(*provider.Context).Client
 
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-	dynamicTable, err := client.DynamicTables.ShowByID(ctx, id)
+	dynamicTable, err := client.DynamicTables.ShowByIDSafely(ctx, id)
 	if err != nil {
-		log.Printf("[DEBUG] dynamic table (%s) not found", d.Id())
-		d.SetId("")
-		return nil
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query dynamic table. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Dynamic table id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
 	}
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
@@ -385,17 +400,4 @@ func UpdateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 	}
 	return ReadDynamicTable(ctx, d, meta)
-}
-
-// DeleteDynamicTable implements schema.DeleteFunc.
-func DeleteDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-	if err := client.DynamicTables.Drop(ctx, sdk.NewDropDynamicTableRequest(id)); err != nil {
-		return diag.FromErr(err)
-	}
-	d.SetId("")
-
-	return nil
 }

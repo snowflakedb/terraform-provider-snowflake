@@ -92,23 +92,23 @@ func ReadContextSecretWithGenericString(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	secret, err := client.Secrets.ShowByID(ctx, id)
+	secret, err := client.Secrets.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return diag.Diagnostics{
 				diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to retrieve secret with generic string. Target object not found. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Secret with generic string name: %s, Err: %s", id.FullyQualifiedName(), err),
+					Summary:  "Failed to query secret with generic string. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Secret with generic string id: %s, Err: %s", id.FullyQualifiedName(), err),
 				},
 			}
 		}
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Error,
-				Summary:  "Failed to retrieve secret generic string.",
-				Detail:   fmt.Sprintf("Secret with generic string name: %s, Err: %s", id.FullyQualifiedName(), err),
+				Summary:  "Failed to query secret generic string.",
+				Detail:   fmt.Sprintf("Secret with generic string id: %s, Err: %s", id.FullyQualifiedName(), err),
 			},
 		}
 	}

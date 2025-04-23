@@ -67,11 +67,19 @@ var networkRuleSchema = map[string]*schema.Schema{
 
 // NetworkRule returns a pointer to the resource representing a network rule.
 func NetworkRule() *schema.Resource {
+	// TODO(SNOW-1818849): unassign network rules before dropping
+	deleteFunc := ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.NetworkRules.DropSafely
+		},
+	)
+
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingCreateWrapper(resources.NetworkRule, CreateContextNetworkRule)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingReadWrapper(resources.NetworkRule, ReadContextNetworkRule)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingUpdateWrapper(resources.NetworkRule, UpdateContextNetworkRule)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingDeleteWrapper(resources.NetworkRule, DeleteContextNetworkRule)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingDeleteWrapper(resources.NetworkRule, deleteFunc)),
 
 		Schema: networkRuleSchema,
 		Importer: &schema.ResourceImporter{
@@ -122,15 +130,15 @@ func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta in
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	networkRule, err := client.NetworkRules.ShowByID(ctx, id)
-	if networkRule == nil || err != nil {
+	networkRule, err := client.NetworkRules.ShowByIDSafely(ctx, id)
+	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return diag.Diagnostics{
 				diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to retrieve network rule. Target object not found. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Id: %s", d.Id()),
+					Summary:  "Failed to query network rule. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Network rule id: %s, Err: %s", d.Id(), err),
 				},
 			}
 		}
@@ -218,18 +226,4 @@ func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	return ReadContextNetworkRule(ctx, d, meta)
-}
-
-func DeleteContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	name := d.Id()
-	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(name).(sdk.SchemaObjectIdentifier)
-
-	// TODO(SNOW-1818849): unassign network rules before dropping
-	if err := client.NetworkRules.Drop(ctx, sdk.NewDropNetworkRuleRequest(id).WithIfExists(sdk.Bool(true))); err != nil {
-		diag.FromErr(err)
-	}
-
-	d.SetId("")
-	return nil
 }

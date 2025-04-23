@@ -316,7 +316,7 @@ func ReadAccount(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		account, err := client.Accounts.ShowByID(ctx, id.AsAccountObjectIdentifier())
+		account, err := client.Accounts.ShowByIDSafely(ctx, id.AsAccountObjectIdentifier())
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
