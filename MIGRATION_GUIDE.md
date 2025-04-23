@@ -149,8 +149,8 @@ Alternatively, specify `skip_toml_file_permission_verification=false` in your pr
 ### *(breaking change)* Improved data type handling for snowflake_masking_policy and snowflake_row_access_policy
 
 The provider bases its logic on data returned from Snowflake. For data types, the responses are not always full, e.g.:
-- `NUMBER(20, 4)` can be returned as `NUMBER`
-- `NUMBER` can be returned as `NUMBER`
+- `NUMBER(20, 4)` can be returned as `NUMBER`;
+- `NUMBER` can be returned as `NUMBER`.
 
 When you create an object with data type without specifying its arguments (like `NUMBER` without specified scale and precision), Snowflake fill in the defaults based on [SQL data types reference](https://docs.snowflake.com/en/sql-reference-data-types).
 To be able to detect changes in config properly and to react to some external changes, we updated the way how we handle the data types:
