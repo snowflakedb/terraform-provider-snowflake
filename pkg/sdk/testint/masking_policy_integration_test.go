@@ -122,7 +122,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, name, maskingPolicyDetails.Name)
 		assert.Equal(t, signature, maskingPolicyDetails.Signature)
-		assert.Equal(t, sdk.DataTypeVARCHAR, maskingPolicyDetails.ReturnType)
+		assert.Equal(t, testdatatypes.DefaultVarcharAsString, maskingPolicyDetails.ReturnType.ToSql())
 		assert.Equal(t, expression, maskingPolicyDetails.Body)
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, &sdk.ShowMaskingPolicyOptions{
@@ -168,7 +168,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, name, maskingPolicyDetails.Name)
 		assert.Equal(t, signature, maskingPolicyDetails.Signature)
-		assert.Equal(t, sdk.DataTypeVARCHAR, maskingPolicyDetails.ReturnType)
+		assert.Equal(t, testdatatypes.DefaultVarcharAsString, maskingPolicyDetails.ReturnType.ToSql())
 		assert.Equal(t, expression, maskingPolicyDetails.Body)
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, &sdk.ShowMaskingPolicyOptions{
@@ -204,7 +204,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, name, maskingPolicyDetails.Name)
 		assert.Equal(t, signature, maskingPolicyDetails.Signature)
-		assert.Equal(t, sdk.DataTypeVARCHAR, maskingPolicyDetails.ReturnType)
+		assert.Equal(t, testdatatypes.DefaultVarcharAsString, maskingPolicyDetails.ReturnType.ToSql())
 		assert.Equal(t, expression, maskingPolicyDetails.Body)
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, &sdk.ShowMaskingPolicyOptions{
@@ -249,7 +249,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, name, maskingPolicyDetails.Name)
 		assert.Equal(t, signature, maskingPolicyDetails.Signature)
-		assert.Equal(t, sdk.DataTypeVARCHAR, maskingPolicyDetails.ReturnType)
+		assert.Equal(t, testdatatypes.DefaultVarcharAsString, maskingPolicyDetails.ReturnType.ToSql())
 		assert.Equal(t, strings.TrimSpace(expression), maskingPolicyDetails.Body)
 	})
 }
