@@ -616,10 +616,9 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 				),
 			},
 			{
-				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables:          accconfig.ConfigVariablesFromModel(t, policyModel),
+				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
+				Config:            accconfig.FromModels(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -631,17 +630,11 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 					HasSchemaString(id.SchemaName()).
 					HasCommentString(comment).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasBodyString(body).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-						{
-							Name: "b",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+					HasBodyString(body),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.0.name", "A")),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.1.name", "b")),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.1.type", string(sdk.DataTypeVARCHAR))),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "id", id.FullyQualifiedName())),
 					assert.Check(resource.TestCheckNoResourceAttr(resourceName, "masking_expression")),
 				),
