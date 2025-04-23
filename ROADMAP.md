@@ -7,7 +7,7 @@ As announced previously, we have released today the v2.0.0 version of the provid
 Some essential information:
 - We updated the project state in the registry docs and the project's README.
 - The [official docs](https://docs.snowflake.com/en/user-guide/terraform) will be refreshed soon.
-- Before upgrading, please read the [migration guide](MIGRATION_GUIDE.md#v121--v200) carefully, as there are some breaking changes. We wanted to make them as smooth as possible, so for some of them, there is the "opt-out" option, which will be removed in future major releases. 
+- Before upgrading, please read the [migration guide](MIGRATION_GUIDE.md#v121--v200) carefully, as there are some breaking changes. We wanted to make them as smooth as possible, so for some of them, there is the "opt-out" option (e.g. skipping the file permission validation can still be set in the provider config through [skip_toml_file_permission_verification](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#skip_toml_file_permission_verification-1) attribute), which will be removed in future major releases.
 - For more details on "what is GA?" check the [previous entry](#10042025-ga-announcement). 
 - In case of any migration issues, please contact us.
 - We will share our next milestones in early May (as the next roadmap entry). One of our main priorities is to help with migrations, so that everyone can benefit from the official support.
