@@ -93,8 +93,8 @@ func (c *Client) GetConn() *sqlx.DB {
 	return c.db
 }
 
-func NewDefaultClient() (*Client, error) {
-	return NewClient(nil)
+func NewDefaultClient(opts ...func(*FileReaderConfig)) (*Client, error) {
+	return NewClient(nil, opts...)
 }
 
 func NewDryRunClient() *Client {
@@ -106,11 +106,11 @@ func NewDryRunClient() *Client {
 	return client
 }
 
-func NewClient(cfg *gosnowflake.Config) (*Client, error) {
+func NewClient(cfg *gosnowflake.Config, opts ...func(*FileReaderConfig)) (*Client, error) {
 	var err error
 	if cfg == nil {
 		log.Printf("[DEBUG] Searching for default config in credentials chain...")
-		cfg = DefaultConfig(WithVerifyPermissions(true))
+		cfg = DefaultConfig(opts...)
 	}
 
 	dsn, err := gosnowflake.DSN(cfg)

@@ -30,5 +30,5 @@ data "snowflake_system_generate_scim_access_token" "scim" {
 
 ### Read-Only
 
-- `access_token` (String) SCIM Access Token
+- `access_token` (String, Sensitive) SCIM Access Token
 - `id` (String) The ID of this resource.

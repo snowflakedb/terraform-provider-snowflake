@@ -18,7 +18,7 @@ func init() {
 	generatedRandomValue = os.Getenv(string(testenvs.GeneratedRandomValue))
 	requireGeneratedRandomValue := os.Getenv(string(testenvs.RequireGeneratedRandomValue))
 	if requireGeneratedRandomValue != "" && generatedRandomValue == "" {
-		log.Println("generated random value is required for tests to run")
+		log.Printf("Generated random value is required for tests to run. Set %s env.", testenvs.GeneratedRandomValue)
 		os.Exit(1)
 	}
 }

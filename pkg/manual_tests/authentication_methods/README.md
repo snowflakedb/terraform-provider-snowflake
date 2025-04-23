@@ -27,11 +27,11 @@ SAML2_X509_CERT='<x509 cert, without headers>';
 10. Prepare a TOML config like:
 ```
 [okta]
-organizationname='ORGANIZATION_NAME'
-accountname='ACCOUNT_NAME'
+organization_name='ORGANIZATION_NAME'
+account_name='ACCOUNT_NAME'
 user='LOGIN_NAME' # This is a value used to login in Okta
 password='PASSWORD' # This is a password in Okta
-oktaurl='https://dev-123456.okta.com' # URL of your Okta environment
+okta_url='https://dev-123456.okta.com' # URL of your Okta environment
 ```
 11. Run the tests - you should be able to authenticate with Okta.
 

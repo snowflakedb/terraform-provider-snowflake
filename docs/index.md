@@ -17,6 +17,8 @@ Please follow [creating issues guidelines](https://github.com/snowflakedb/terraf
 
 ~> **Note** Please check the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md) when changing the version of the provider.
 
+!> **Sensitive values** Important: Do not include credentials, personal identifiers, or other regulated or sensitive information (e.g., GDPR, HIPAA, PCI-DSS data) in non-sensitive fields. Snowflake marks specific fields as sensitive—such as passwords, private keys, and tokens, meaning these fields will not appear in logs. Each sensitive field is properly marked in the documentation. All other fields are treated as non-sensitive by default. Some of them, like [task's](./resources/task) configuration, may contain sensitive information but are not marked as sensitive - you are responsible for safeguarding these fields according to your organization's security standards and regulatory requirements. Snowflake will not be liable for any exposure of data placed in non-sensitive fields. Read more in the [Sensitive values limitations](#sensitive-values-limitations) section.
+
 -> **Note** The current roadmap is available in our GitHub repository: [ROADMAP.md](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md).
 
 This is a terraform provider plugin for managing [Snowflake](https://www.snowflake.com/) accounts.
@@ -110,7 +112,7 @@ provider "snowflake" {
 - `okta_url` (String) The URL of the Okta server. e.g. https://example.okta.com. Okta URL host needs to to have a suffix `okta.com`. Read more in Snowflake [docs](https://docs.snowflake.com/en/user-guide/oauth-okta). Can also be sourced from the `SNOWFLAKE_OKTA_URL` environment variable.
 - `organization_name` (String) Specifies your Snowflake organization name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#organization-name). Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_ORGANIZATION_NAME` environment variable.
 - `params` (Map of String) Sets other connection (i.e. session) parameters. [Parameters](https://docs.snowflake.com/en/sql-reference/parameters). This field can not be set with environmental variables.
-- `passcode` (String) Specifies the passcode provided by Duo when using multi-factor authentication (MFA) for login. Can also be sourced from the `SNOWFLAKE_PASSCODE` environment variable.
+- `passcode` (String, Sensitive) Specifies the passcode provided by Duo when using multi-factor authentication (MFA) for login. Can also be sourced from the `SNOWFLAKE_PASSCODE` environment variable.
 - `passcode_in_password` (Boolean) False by default. Set to true if the MFA passcode is embedded to the configured password. Can also be sourced from the `SNOWFLAKE_PASSCODE_IN_PASSWORD` environment variable.
 - `password` (String, Sensitive) Password for user + password auth. Cannot be used with `private_key` and `private_key_passphrase`. Can also be sourced from the `SNOWFLAKE_PASSWORD` environment variable.
 - `port` (Number) Specifies a custom port value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_PORT` environment variable.
@@ -121,11 +123,11 @@ provider "snowflake" {
 - `protocol` (String) A protocol used in the connection. Valid options are: `http` | `https`. Can also be sourced from the `SNOWFLAKE_PROTOCOL` environment variable.
 - `request_timeout` (Number) request retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_REQUEST_TIMEOUT` environment variable.
 - `role` (String) Specifies the role to use by default for accessing Snowflake objects in the client session. Can also be sourced from the `SNOWFLAKE_ROLE` environment variable.
-- `skip_toml_file_permission_verification` (Boolean) True by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. We recommend setting this to `false` and setting the proper privileges - see [the section below](#order-precedence). Can also be sourced from the `SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION` environment variable.
+- `skip_toml_file_permission_verification` (Boolean) False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations). Can also be sourced from the `SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION` environment variable.
 - `tmp_directory_path` (String) Sets temporary directory used by the driver for operations like encrypting, compressing etc. Can also be sourced from the `SNOWFLAKE_TMP_DIRECTORY_PATH` environment variable.
 - `token` (String, Sensitive) Token to use for OAuth and other forms of token based auth. Can also be sourced from the `SNOWFLAKE_TOKEN` environment variable.
 - `token_accessor` (Block List, Max: 1) (see [below for nested schema](#nestedblock--token_accessor))
-- `use_legacy_toml_file` (Boolean) True by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#order-precedence) Can also be sourced from the `SNOWFLAKE_USE_LEGACY_TOML_FILE` environment variable.
+- `use_legacy_toml_file` (Boolean) False by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#examples) Can also be sourced from the `SNOWFLAKE_USE_LEGACY_TOML_FILE` environment variable.
 - `user` (String) Username. Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_USER` environment variable.
 - `validate_default_parameters` (String) True by default. If false, disables the validation checks for Database, Schema, Warehouse and Role at the time a connection is established. Can also be sourced from the `SNOWFLAKE_VALIDATE_DEFAULT_PARAMETERS` environment variable.
 - `warehouse` (String) Specifies the virtual warehouse to use by default for queries, loading, etc. in the client session. Can also be sourced from the `SNOWFLAKE_WAREHOUSE` environment variable.
@@ -235,6 +237,11 @@ export SNOWFLAKE_PASSWORD='...'
 
 Currently, the provider can be configured in three ways:
 1. In a Terraform file located in the Terraform module with other resources.
+2. In environmental variables (envs). This is mainly used to provide sensitive values.
+3. In a TOML file (default in ~/.snowflake/config).
+
+### Terraform file located in the Terraform module with other resources
+One of the methods of configuring the provider is in the Terraform module. Read more in the [Terraform docs](https://developer.hashicorp.com/terraform/language/providers/configuration).
 
 Example content of the Terraform file configuration:
 
@@ -247,15 +254,16 @@ provider "snowflake" {
 }
 ```
 
-2. In environmental variables (envs). This is mainly used to provide sensitive values.
-
+### Environmental variables
+The second method is to use environmental variables. This is mainly used to provide sensitive values.
 
 ```bash
 export SNOWFLAKE_USER="..."
 export SNOWFLAKE_PRIVATE_KEY=$(cat ~/.ssh/snowflake_key.p8)
 ```
 
-3. In a TOML file (default in ~/.snowflake/config). Notice the use of different profiles. The profile name needs to be specified in the Terraform configuration file in `profile` field. When this is not specified, `default` profile is loaded.
+### TOML file
+The third method is to use a TOML configuration file (default location in ~/.snowflake/config). Notice the use of different profiles. The profile name needs to be specified in the Terraform configuration file in `profile` field. When this is not specified, `default` profile is loaded.
 When a `default` profile is not present in the TOML file, it is treated as "empty", without failing.
 
 Read [TOML](https://toml.io/en/) specification for more details on the syntax.
@@ -268,28 +276,32 @@ provider "snowflake" {
 }
 ```
 
-Example content of the TOML file configuration:
+Example content of the TOML file configuration is listed below. Note that this example follows a new TOML format, for the legacy format see [examples](#examples) section.
 
 ```toml
 [default]
-organizationname='organization_name'
-accountname='account_name'
+organization_name='organization_name'
+account_name='account_name'
 user='user'
 password='password'
 role='ACCOUNTADMIN'
 
 [secondary_test_account]
-organizationname='organization_name'
-accountname='account2_name'
+organization_name='organization_name'
+account_name='account2_name'
 user='user'
 password='password'
 role='ACCOUNTADMIN'
 ```
 
+#### TOML file limitations
+To ensure a better security of the provider, the following limitations are introduced:
+
 -> **Note**: TOML file size is limited to 10MB.
 
 -> **Note**: Only TOML file with restricted privileges can be read. Any privileges for group or others cannot be set (the maximum valid privilege is `700`). You can set the expected privileges like `chmod 0600 ~/.snowflake/config`. This is checked only on non-Windows platforms. If you are using the provider on Windows, please make sure that your configuration file has not too permissive privileges.
 
+### Source Hierarchy
 Not all fields must be configured in one source; users can choose which fields are configured in which source.
 Provider uses an established hierarchy of sources. The current behavior is that for each field:
 1. Check if it is present in the provider configuration. If yes, use this value. If not, go to step 2.
@@ -301,6 +313,8 @@ Provider uses an established hierarchy of sources. The current behavior is that 
 -> **Note** Currently both legacy and new formats are supported. The new format can be enabled with setting `use_legacy_toml_file = false` in the provider configuration. We encourage using the new format for now, as it will be a default one in v2 version of the provider. The differences between these formats are:
 - The keys in the provider contain an underscore (`_`) as a separator, but the TOML schema has fields without any separator.
 - The field `driver_tracing` in the provider is related to `tracing` in the TOML schema.
+
+### Examples
 
 An example new TOML file contents:
 
@@ -423,6 +437,23 @@ provider "snowflake" {
 <!-- Section of deprecated resources -->
 
 <!-- Section of deprecated data sources -->
+
+## Sensitive values limitations
+
+The provider marks fields containing access credentials and other such information as sensitive. This means that the values of these fields will not be logged.
+
+There are some limitations to this mechanism:
+- Sensitive values are stored as plaintext in the state file. This is a limitation of Terraform itself ([reference](https://developer.hashicorp.com/terraform/tutorials/configuration-language/sensitive-variables#sensitive-values-in-state)). You should take care to secure access to the state file.
+- In [Plugin SDK](https://developer.hashicorp.com/terraform/plugin/sdkv2) there is no possibility to mark sensitive values conditionally ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/736)). This means it is not possible to mark sensitive values based on other fields, like marking `body` based on the value of `secure` field in views, functions, and procedures. As a result, this field is not marked as sensitive. For such cases, we add disclaimers in the resource documentation.
+- In Plugin SDK, there is no possibility to mark sensitive values in nested fields ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/201)). This means the nested fields, like these in `show_output` and `describe_output` cannot be sensitive.
+As a result, such nested fields are not marked as sensitive. For such cases, we add disclaimers in the resource documentation. Additionally, some fields are missing from `show_output` and `describe_output`. However, these fields are present in the resource's root, so they can still be referenced.
+The alternative solution we considered was setting the whole `show_output` and `describe_output` as sensitive. However, this solution could reduce the provider functionality and would require changes in user's configurations.
+
+As a general rule, please ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
+
+Read more about sensitive values in the [Terraform documentation](https://developer.hashicorp.com/terraform/tutorials/configuration-language/sensitive-variables).
+
+We are planning to research migration to Plugin Framework and we will investigate if the limitations coming from Plugin SDK can be addressed.
 
 ## Features
 

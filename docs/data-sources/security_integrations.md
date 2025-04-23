@@ -5,6 +5,8 @@ description: |-
   Data source used to get details of filtered security integrations. Filtering is aligned with the current possibilities for SHOW SECURITY INTEGRATIONS https://docs.snowflake.com/en/sql-reference/sql/show-integrations query (only like is supported). The results of SHOW and DESCRIBE are encapsulated in one output collection security_integrations.
 ---
 
+!> **Sensitive values** This datasource's `describe_output.redirect_uri` field is not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
+
 # snowflake_security_integrations (Data Source)
 
 Data source used to get details of filtered security integrations. Filtering is aligned with the current possibilities for [SHOW SECURITY INTEGRATIONS](https://docs.snowflake.com/en/sql-reference/sql/show-integrations) query (only `like` is supported). The results of SHOW and DESCRIBE are encapsulated in one output collection `security_integrations`.

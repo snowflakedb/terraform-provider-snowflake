@@ -9,6 +9,8 @@ description: |-
 
 !> **Caution: Import limitation** To import the python procedure, snowflake-snowpark-python version must be explicitly set in Snowflake (i.e. `snowflake-snowpark-python==1.14.0`). You can verify it by running `DESCRIBE PROCEDURE <your_procedure>` and checking the `packages`. Check [#3303](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3303) for reference.
 
+!> **Sensitive values** This resource's `procedure_definition` and `show_output.arguments_raw` fields are not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
+
 -> **Note** External changes to `is_secure` and `null_input_behavior` are not currently supported. They will be handled in the following versions of the provider which may still affect this resource.
 
 -> **Note** `COPY GRANTS` and `OR REPLACE` are not currently supported.

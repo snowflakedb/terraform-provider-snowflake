@@ -297,6 +297,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+	t.Setenv(string(snowflakeenvs.UseLegacyTomlFile), "")
 
 	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
@@ -318,7 +319,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithUseLegacyTomlFile(false), datasourceModel()),
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
 					config := acc.TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
 					assert.Equal(t, tmpServiceUser.OrgAndAccount(), config.Account)
@@ -396,13 +397,14 @@ func TestAcc_Provider_TomlConfigFailsIfFormatsMismatch(t *testing.T) {
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 				},
-				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
+				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithUseLegacyTomlFile(true), datasourceModel()),
 				ExpectError: regexp.MustCompile("account is empty"),
 			},
 			// Try reading the new format, but provide a file with the legacy format.
 			{
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, legacyTomlTmpServiceUserConfig.Path)
+					t.Setenv(string(snowflakeenvs.UseLegacyTomlFile), "")
 				},
 				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(legacyTomlTmpServiceUserConfig.Profile).WithUseLegacyTomlFile(false), datasourceModel()),
 				ExpectError: regexp.MustCompile("account is empty"),
@@ -420,7 +422,7 @@ func TestAcc_Provider_tomlConfigIsTooBig(t *testing.T) {
 	tomlConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
 		return string(c)
 	})
-	providerModel := providermodel.SnowflakeProvider().WithProfile(tomlConfig.Path)
+	providerModel := providermodel.SnowflakeProvider().WithProfile(tomlConfig.Profile)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -450,7 +452,7 @@ func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
 	permissions := fs.FileMode(0o755)
 
 	configPath := testhelpers.TestFileWithCustomPermissions(t, random.AlphaN(10), random.Bytes(), permissions)
-	providerModel := providermodel.SnowflakeProvider().WithProfile(configPath).WithSkipTomlFilePermissionVerification(false)
+	providerModel := providermodel.SnowflakeProvider().WithProfile(configPath)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -480,7 +482,7 @@ func TestAcc_Provider_tomlConfigFilePermissionsCanBeSkipped(t *testing.T) {
 	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := acc.TestClient().TempTomlConfigWithCustomPermissionsForServiceUser(t, tmpServiceUser, fs.FileMode(0o755))
 
-	providerModelWithSkippedPermissionVerification := providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile)
+	providerModelWithSkippedPermissionVerification := providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithSkipTomlFilePermissionVerification(true)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,

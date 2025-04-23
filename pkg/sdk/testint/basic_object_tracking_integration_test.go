@@ -98,12 +98,13 @@ func TestInt_QueryComment(t *testing.T) {
 	require.Equal(t, metadata, strings.Split(queryText, "--")[1])
 }
 
+// TODO [SNOW-2054366]: Use dedicated users for these tests.
 func TestInt_AppName(t *testing.T) {
 	// https://community.snowflake.com/s/article/How-to-see-application-name-added-in-the-connection-string-in-Snowsight
-	t.Skip("there no way to check client application name by querying Snowflake's")
+	t.Skip("there is no way to check client application name by querying Snowflake's")
 
 	version := "v0.99.0"
-	config := sdk.DefaultConfig(sdk.WithVerifyPermissions(true))
+	config := sdk.DefaultConfig(sdk.WithUseLegacyTomlFormat(true))
 	config.Application = fmt.Sprintf("terraform-provider-snowflake:%s", version)
 	client, err := sdk.NewClient(config)
 	require.NoError(t, err)

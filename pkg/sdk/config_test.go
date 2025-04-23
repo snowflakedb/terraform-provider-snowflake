@@ -263,7 +263,7 @@ func TestProfileConfig(t *testing.T) {
 	t.Run("with found profile", func(t *testing.T) {
 		t.Setenv(snowflakeenvs.ConfigPath, configPath)
 
-		config, err := ProfileConfig("securityadmin", WithVerifyPermissions(true), WithUseLegacyTomlFormat(false))
+		config, err := ProfileConfig("securityadmin")
 		require.NoError(t, err)
 		require.NotNil(t, config.PrivateKey)
 
@@ -317,7 +317,7 @@ func TestProfileConfig(t *testing.T) {
 	t.Run("with not found profile", func(t *testing.T) {
 		t.Setenv(snowflakeenvs.ConfigPath, configPath)
 
-		config, err := ProfileConfig("orgadmin", WithVerifyPermissions(true), WithUseLegacyTomlFormat(false))
+		config, err := ProfileConfig("orgadmin")
 		require.NoError(t, err)
 		require.Nil(t, config)
 	})
@@ -326,7 +326,7 @@ func TestProfileConfig(t *testing.T) {
 		filename := random.AlphaN(8)
 		t.Setenv(snowflakeenvs.ConfigPath, filename)
 
-		config, err := ProfileConfig("orgadmin", WithVerifyPermissions(true), WithUseLegacyTomlFormat(false))
+		config, err := ProfileConfig("orgadmin")
 		require.ErrorContains(t, err, fmt.Sprintf("could not load config file: reading information about the config file: stat %s: no such file or directory", filename))
 		require.Nil(t, config)
 	})

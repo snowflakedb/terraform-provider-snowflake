@@ -28,6 +28,7 @@ var systemGenerateSCIMAccesstokenSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "SCIM Access Token",
+		Sensitive:   true,
 	},
 }
 

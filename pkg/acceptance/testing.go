@@ -59,7 +59,7 @@ func init() {
 	testObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.TestObjectsSuffix))
 	requireTestObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.RequireTestObjectsSuffix))
 	if requireTestObjectSuffix != "" && testObjectSuffix == "" {
-		log.Println("test object suffix is required for this test run")
+		log.Printf("Test object suffix is required for this test run. Set %s env.", testenvs.TestObjectsSuffix)
 		os.Exit(1)
 	}
 
@@ -83,7 +83,8 @@ func init() {
 	}
 	_ = testAccProtoV6ProviderFactoriesNew
 
-	defaultConfig, err := sdk.ProfileConfig(testprofiles.Default, sdk.WithVerifyPermissions(true))
+	// TODO [SNOW-2054383]: Use the new TOML format.
+	defaultConfig, err := sdk.ProfileConfig(testprofiles.Default, sdk.WithUseLegacyTomlFormat(true))
 	if err != nil {
 		log.Panicf("Could not read configuration from profile: %v", err)
 	}
@@ -98,7 +99,8 @@ func init() {
 	}
 	atc.client = client
 
-	cfg, err := sdk.ProfileConfig(testprofiles.Secondary, sdk.WithVerifyPermissions(true))
+	// TODO [SNOW-2054383]: Use the new TOML format.
+	cfg, err := sdk.ProfileConfig(testprofiles.Secondary, sdk.WithUseLegacyTomlFormat(true))
 	if err != nil {
 		log.Panicf("Config for the secondary client is needed to run acceptance tests, err: %v", err)
 	}

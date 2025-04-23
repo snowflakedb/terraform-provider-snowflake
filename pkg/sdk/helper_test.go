@@ -9,7 +9,7 @@ import (
 func defaultTestClient(t *testing.T) *Client {
 	t.Helper()
 
-	client, err := NewDefaultClient()
+	client, err := NewDefaultClient(WithUseLegacyTomlFormat(true))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func fourthTestClient(t *testing.T) *Client {
 func testClient(t *testing.T, profile string) *Client {
 	t.Helper()
 
-	config, err := ProfileConfig(profile, WithVerifyPermissions(true))
+	config, err := ProfileConfig(profile, WithUseLegacyTomlFormat(true))
 	if err != nil {
 		t.Skipf("Snowflake %s profile not configured. Must be set in ~/.snowflake/config", profile)
 	}

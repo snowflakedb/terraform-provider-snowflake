@@ -56,8 +56,8 @@ func DefaultConfig(opts ...func(*FileReaderConfig)) *gosnowflake.Config {
 
 func ProfileConfig(profile string, opts ...func(*FileReaderConfig)) (*gosnowflake.Config, error) {
 	cfg := FileReaderConfig{
-		verifyPermissions:   false,
-		useLegacyTomlFormat: true,
+		verifyPermissions:   true,
+		useLegacyTomlFormat: false,
 	}
 	for _, opt := range opts {
 		opt(&cfg)

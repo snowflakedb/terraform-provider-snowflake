@@ -5,6 +5,8 @@ description: |-
   Resource used to manage task objects. For more information, check task documentation https://docs.snowflake.com/en/user-guide/tasks-intro.
 ---
 
+!> **Sensitive values** This resource's `config`, `show_output.config` and `show_output.definition` fields are not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
+
 # snowflake_task (Resource)
 
 Resource used to manage task objects. For more information, check [task documentation](https://docs.snowflake.com/en/user-guide/tasks-intro).

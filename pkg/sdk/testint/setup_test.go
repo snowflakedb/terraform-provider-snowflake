@@ -116,10 +116,11 @@ func (itc *integrationTestContext) initialize() error {
 	testObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.TestObjectsSuffix))
 	requireTestObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.RequireTestObjectsSuffix))
 	if requireTestObjectSuffix != "" && testObjectSuffix == "" {
-		return errors.New("test object suffix is required for this test run")
+		return fmt.Errorf("Test object suffix is required for this test run. Set %s env.", testenvs.TestObjectsSuffix)
 	}
 
-	defaultConfig, err := sdk.ProfileConfig(testprofiles.Default, sdk.WithVerifyPermissions(true))
+	// TODO [SNOW-2054383]: Use the new TOML format.
+	defaultConfig, err := sdk.ProfileConfig(testprofiles.Default, sdk.WithUseLegacyTomlFormat(true))
 	if err != nil {
 		return err
 	}
@@ -170,7 +171,8 @@ func (itc *integrationTestContext) initialize() error {
 
 	// TODO [SNOW-1763603]: improve setup; this is a quick workaround for faster local testing
 	if os.Getenv(string(testenvs.SimplifiedIntegrationTestsSetup)) == "" {
-		config, err := sdk.ProfileConfig(testprofiles.Secondary, sdk.WithVerifyPermissions(true))
+		// TODO [SNOW-2054383]: Use the new TOML format.
+		config, err := sdk.ProfileConfig(testprofiles.Secondary, sdk.WithUseLegacyTomlFormat(true))
 		if err != nil {
 			return err
 		}

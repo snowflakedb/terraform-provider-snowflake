@@ -24,9 +24,10 @@ import (
 )
 
 // TODO [SNOW-1827310]: use generated config for these tests
+// TODO [SNOW-2054366]: Use dedicated users for these tests.
 func TestInt_Client_NewClient(t *testing.T) {
 	t.Run("with default config (legacy)", func(t *testing.T) {
-		config := sdk.DefaultConfig(sdk.WithVerifyPermissions(true))
+		config := sdk.DefaultConfig(sdk.WithUseLegacyTomlFormat(true))
 		_, err := sdk.NewClient(config)
 		require.NoError(t, err)
 	})
@@ -38,29 +39,42 @@ func TestInt_Client_NewClient(t *testing.T) {
 		})
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 
-		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithVerifyPermissions(true), sdk.WithUseLegacyTomlFormat(false))
+		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile)
 		require.NoError(t, err)
 		_, err = sdk.NewClient(config)
 		require.NoError(t, err)
 	})
 
-	t.Run("with missing config (legacy)", func(t *testing.T) {
+	t.Run("with config (legacy)", func(t *testing.T) {
+		tmpServiceUser := testClientHelper().SetUpTemporaryServiceUser(t)
+		tmpServiceUserConfig := testClientHelper().StoreTempTomlConfig(t, func(profile string) string {
+			return helpers.FullLegacyTomlConfigForServiceUser(t, profile, tmpServiceUser.UserId, tmpServiceUser.RoleId, tmpServiceUser.WarehouseId, tmpServiceUser.AccountId, tmpServiceUser.PrivateKey)
+		})
+		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+
+		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithUseLegacyTomlFormat(true))
+		require.NoError(t, err)
+		_, err = sdk.NewClient(config)
+		require.NoError(t, err)
+	})
+
+	t.Run("with missing config", func(t *testing.T) {
 		dir, err := os.UserHomeDir()
 		require.NoError(t, err)
 		t.Setenv(snowflakeenvs.ConfigPath, dir)
 
-		config := sdk.DefaultConfig(sdk.WithVerifyPermissions(true))
+		config := sdk.DefaultConfig()
 		_, err = sdk.NewClient(config)
 		require.ErrorContains(t, err, "260000: account is empty")
 	})
 
-	t.Run("with incorrect config (legacy)", func(t *testing.T) {
+	t.Run("with incorrect config", func(t *testing.T) {
 		tmpServiceUser := testClientHelper().SetUpTemporaryServiceUser(t)
 		tmpServiceUserConfig := testClientHelper().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
 
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 
-		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithVerifyPermissions(true))
+		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithUseLegacyTomlFormat(true))
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
@@ -68,7 +82,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 		require.ErrorContains(t, err, "JWT token is invalid")
 	})
 
-	t.Run("with too big file (legacy)", func(t *testing.T) {
+	t.Run("with too big file", func(t *testing.T) {
 		c := make([]byte, 11*1024*1024)
 		tomlConfig := testClientHelper().StoreTempTomlConfig(t, func(profile string) string {
 			return string(c)
@@ -76,11 +90,11 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		t.Setenv(snowflakeenvs.ConfigPath, tomlConfig.Path)
 
-		_, err := sdk.ProfileConfig(tomlConfig.Profile, sdk.WithVerifyPermissions(true))
+		_, err := sdk.ProfileConfig(tomlConfig.Profile)
 		require.ErrorContains(t, err, fmt.Sprintf("could not load config file: config file %s is too big - maximum allowed size is 10MB", tomlConfig.Path))
 	})
 
-	t.Run("with incorrect privileges and enabled check (legacy)", func(t *testing.T) {
+	t.Run("with incorrect privileges and enabled check", func(t *testing.T) {
 		if oswrapper.IsRunningOnWindows() {
 			t.Skip("checking file permissions on Windows is currently done in manual tests package")
 		}
@@ -90,11 +104,11 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 
-		_, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithVerifyPermissions(true))
+		_, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile)
 		require.ErrorContains(t, err, fmt.Sprintf("could not load config file: config file %s has unsafe permissions - %#o", tmpServiceUserConfig.Path, permissions))
 	})
 
-	t.Run("with incorrect privileges and disabled check (default)", func(t *testing.T) {
+	t.Run("with incorrect privileges and disabled check", func(t *testing.T) {
 		if oswrapper.IsRunningOnWindows() {
 			t.Skip("checking file permissions on Windows is currently done in manual tests package")
 		}
@@ -104,7 +118,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 
-		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile)
+		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithVerifyPermissions(false), sdk.WithUseLegacyTomlFormat(true))
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
@@ -113,7 +127,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 	})
 
 	t.Run("with missing config - should not care about correct env variables", func(t *testing.T) {
-		config, err := sdk.ProfileConfig(testprofiles.Default, sdk.WithVerifyPermissions(true))
+		config, err := sdk.ProfileConfig(testprofiles.Default, sdk.WithUseLegacyTomlFormat(true))
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
@@ -126,13 +140,13 @@ func TestInt_Client_NewClient(t *testing.T) {
 		require.NoError(t, err)
 		t.Setenv(snowflakeenvs.ConfigPath, dir)
 
-		config = sdk.DefaultConfig(sdk.WithVerifyPermissions(true))
+		config = sdk.DefaultConfig()
 		_, err = sdk.NewClient(config)
 		require.ErrorContains(t, err, "260000: account is empty")
 	})
 
 	t.Run("registers snowflake driver", func(t *testing.T) {
-		config := sdk.DefaultConfig(sdk.WithVerifyPermissions(true))
+		config := sdk.DefaultConfig(sdk.WithUseLegacyTomlFormat(true))
 		_, err := sdk.NewClient(config)
 		require.NoError(t, err)
 
