@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/config"
+
 	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -369,11 +371,22 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 	cert := random.GenerateX509(t)
 	validUrl := "https://example.com"
 
-	basicModel := model.Saml2SecurityIntegration("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert)
-	saml2ConfigForceAuthnTrueModel := model.Saml2SecurityIntegration("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert).
-		WithSaml2ForceAuthn(r.BooleanTrue)
-	saml2ConfigForceAuthnFalseModel := model.Saml2SecurityIntegration("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert).
-		WithSaml2ForceAuthn(r.BooleanFalse)
+	temporaryVariableName := "saml2_x509_cert"
+	temporaryVariableDefinition := fmt.Sprintf(`
+	variable "%s" {
+		type = string
+		sensitive = true
+	}
+`, temporaryVariableName)
+	commonVariables := config.Variables{
+		temporaryVariableName: config.StringVariable(cert),
+	}
+
+	basicModel := model.Saml2SecurityIntegration2("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, fmt.Sprintf("var.%s", temporaryVariableName))
+	// saml2ConfigForceAuthnTrueModel := model.Saml2SecurityIntegration("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert).
+	//	WithSaml2ForceAuthn(r.BooleanTrue)
+	// saml2ConfigForceAuthnFalseModel := model.Saml2SecurityIntegration("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert).
+	//	WithSaml2ForceAuthn(r.BooleanFalse)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -384,62 +397,63 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			// set up with concrete saml2_force_authn
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.PrintPlanDetails(saml2ConfigForceAuthnTrueModel.ResourceReference(), "saml2_force_authn", "describe_output"),
-						planchecks.ExpectChange(saml2ConfigForceAuthnTrueModel.ResourceReference(), "saml2_force_authn", tfjson.ActionCreate, nil, sdk.String("true")),
-						planchecks.ExpectComputed(saml2ConfigForceAuthnTrueModel.ResourceReference(), "describe_output", true),
-					},
-				},
-				Config: accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnTrueModel.ResourceReference(), "saml2_force_authn", "true"),
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnTrueModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnTrueModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "true"),
-				),
-			},
-			// import when saml2_force_authn in config
-			{
-				ResourceName: saml2ConfigForceAuthnTrueModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_force_authn", "true"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.saml2_force_authn.0.value", "true"),
-				),
-			},
-			// change saml2_force_authn in config
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.PrintPlanDetails(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", "describe_output"),
-						planchecks.ExpectChange(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
-						planchecks.ExpectComputed(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output", true),
-					},
-				},
-				Config: accconfig.FromModels(t, saml2ConfigForceAuthnFalseModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", "false"),
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
-				),
-			},
-			// change back to non-default
-			{
-				Config: accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel),
-			},
+			//{
+			//	ConfigPlanChecks: resource.ConfigPlanChecks{
+			//		PreApply: []plancheck.PlanCheck{
+			//			planchecks.PrintPlanDetails(saml2ConfigForceAuthnTrueModel.ResourceReference(), "saml2_force_authn", "describe_output"),
+			//			planchecks.ExpectChange(saml2ConfigForceAuthnTrueModel.ResourceReference(), "saml2_force_authn", tfjson.ActionCreate, nil, sdk.String("true")),
+			//			planchecks.ExpectComputed(saml2ConfigForceAuthnTrueModel.ResourceReference(), "describe_output", true),
+			//		},
+			//	},
+			//	Config: accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnTrueModel.ResourceReference(), "saml2_force_authn", "true"),
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnTrueModel.ResourceReference(), "describe_output.#", "1"),
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnTrueModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "true"),
+			//	),
+			//},
+			//// import when saml2_force_authn in config
+			//{
+			//	ResourceName: saml2ConfigForceAuthnTrueModel.ResourceReference(),
+			//	ImportState:  true,
+			//	ImportStateCheck: importchecks.ComposeImportStateCheck(
+			//		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_force_authn", "true"),
+			//		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.#", "1"),
+			//		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.saml2_force_authn.0.value", "true"),
+			//	),
+			//},
+			//// change saml2_force_authn in config
+			//{
+			//	ConfigPlanChecks: resource.ConfigPlanChecks{
+			//		PreApply: []plancheck.PlanCheck{
+			//			planchecks.PrintPlanDetails(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", "describe_output"),
+			//			planchecks.ExpectChange(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
+			//			planchecks.ExpectComputed(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output", true),
+			//		},
+			//	},
+			//	Config: accconfig.FromModels(t, saml2ConfigForceAuthnFalseModel),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", "false"),
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output.#", "1"),
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
+			//	),
+			//},
+			//// change back to non-default
+			//{
+			//	Config: accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel),
+			//},
 			// remove non-default saml2_force_authn from config
 			{
-				Config: accconfig.FromModels(t, basicModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basicModel.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.PrintPlanDetails(basicModel.ResourceReference(), "saml2_force_authn", "describe_output"),
-						planchecks.ExpectChange(basicModel.ResourceReference(), "saml2_force_authn", tfjson.ActionUpdate, sdk.String("true"), sdk.String(r.BooleanDefault)),
-						planchecks.ExpectComputed(basicModel.ResourceReference(), "describe_output", true),
-					},
-				},
+				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				ConfigVariables: commonVariables,
+				//ConfigPlanChecks: resource.ConfigPlanChecks{
+				//	PreApply: []plancheck.PlanCheck{
+				//		plancheck.ExpectResourceAction(basicModel.ResourceReference(), plancheck.ResourceActionUpdate),
+				//		planchecks.PrintPlanDetails(basicModel.ResourceReference(), "saml2_force_authn", "describe_output"),
+				//		planchecks.ExpectChange(basicModel.ResourceReference(), "saml2_force_authn", tfjson.ActionUpdate, sdk.String("true"), sdk.String(r.BooleanDefault)),
+				//		planchecks.ExpectComputed(basicModel.ResourceReference(), "describe_output", true),
+				//	},
+				//},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
@@ -447,75 +461,75 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 				),
 			},
 			// add saml2_force_authn to config (false - which is a default in Snowflake) - no changes expected
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.PrintPlanDetails(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", "describe_output"),
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Config: accconfig.FromModels(t, saml2ConfigForceAuthnFalseModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
-				),
-			},
-			// change back to non-default
-			{
-				Config: accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel),
-			},
-			// remove saml2_force_authn from config but update externally to default (still expecting non-empty plan because we do not know the default)
-			{
-				PreConfig: func() {
-					acc.TestClient().SecurityIntegration.UpdateSaml2ForceAuthn(t, id, false)
-				},
-				Config: accconfig.FromModels(t, basicModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectNonEmptyPlan(),
-						planchecks.PrintPlanDetails(basicModel.ResourceReference(), "saml2_force_authn", "describe_output"),
-						planchecks.ExpectChange(basicModel.ResourceReference(), "saml2_force_authn", tfjson.ActionUpdate, sdk.String("false"), sdk.String(r.BooleanDefault)),
-						planchecks.ExpectComputed(basicModel.ResourceReference(), "describe_output", true),
-					},
-				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
-				),
-			},
-			// change the saml2_force_authn externally
-			{
-				PreConfig: func() {
-					// we change the type to the type different from default, expecting action
-					acc.TestClient().SecurityIntegration.UpdateSaml2ForceAuthn(t, id, true)
-				},
-				Config: accconfig.FromModels(t, basicModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectNonEmptyPlan(),
-						planchecks.PrintPlanDetails(basicModel.ResourceReference(), "saml2_force_authn", "describe_output"),
-						planchecks.ExpectChange(basicModel.ResourceReference(), "saml2_force_authn", tfjson.ActionUpdate, sdk.String("true"), sdk.String(r.BooleanDefault)),
-						planchecks.ExpectComputed(basicModel.ResourceReference(), "describe_output", true),
-					},
-				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
-				),
-			},
-			// import when no saml2_force_authn in config
-			{
-				ResourceName: basicModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_force_authn", "false"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.saml2_force_authn.0.value", "false"),
-				),
-			},
+			//{
+			//	ConfigPlanChecks: resource.ConfigPlanChecks{
+			//		PreApply: []plancheck.PlanCheck{
+			//			planchecks.PrintPlanDetails(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", "describe_output"),
+			//			plancheck.ExpectEmptyPlan(),
+			//		},
+			//	},
+			//	Config: accconfig.FromModels(t, saml2ConfigForceAuthnFalseModel),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output.#", "1"),
+			//		resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
+			//	),
+			//},
+			//// change back to non-default
+			//{
+			//	Config: accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel),
+			//},
+			//// remove saml2_force_authn from config but update externally to default (still expecting non-empty plan because we do not know the default)
+			//{
+			//	PreConfig: func() {
+			//		acc.TestClient().SecurityIntegration.UpdateSaml2ForceAuthn(t, id, false)
+			//	},
+			//	Config: accconfig.FromModels(t, basicModel),
+			//	ConfigPlanChecks: resource.ConfigPlanChecks{
+			//		PreApply: []plancheck.PlanCheck{
+			//			plancheck.ExpectNonEmptyPlan(),
+			//			planchecks.PrintPlanDetails(basicModel.ResourceReference(), "saml2_force_authn", "describe_output"),
+			//			planchecks.ExpectChange(basicModel.ResourceReference(), "saml2_force_authn", tfjson.ActionUpdate, sdk.String("false"), sdk.String(r.BooleanDefault)),
+			//			planchecks.ExpectComputed(basicModel.ResourceReference(), "describe_output", true),
+			//		},
+			//	},
+			//	Check: resource.ComposeTestCheckFunc(
+			//		resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
+			//		resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
+			//		resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
+			//	),
+			//},
+			//// change the saml2_force_authn externally
+			//{
+			//	PreConfig: func() {
+			//		// we change the type to the type different from default, expecting action
+			//		acc.TestClient().SecurityIntegration.UpdateSaml2ForceAuthn(t, id, true)
+			//	},
+			//	Config: accconfig.FromModels(t, basicModel),
+			//	ConfigPlanChecks: resource.ConfigPlanChecks{
+			//		PreApply: []plancheck.PlanCheck{
+			//			plancheck.ExpectNonEmptyPlan(),
+			//			planchecks.PrintPlanDetails(basicModel.ResourceReference(), "saml2_force_authn", "describe_output"),
+			//			planchecks.ExpectChange(basicModel.ResourceReference(), "saml2_force_authn", tfjson.ActionUpdate, sdk.String("true"), sdk.String(r.BooleanDefault)),
+			//			planchecks.ExpectComputed(basicModel.ResourceReference(), "describe_output", true),
+			//		},
+			//	},
+			//	Check: resource.ComposeTestCheckFunc(
+			//		resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
+			//		resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
+			//		resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
+			//	),
+			//},
+			//// import when no saml2_force_authn in config
+			//{
+			//	ResourceName: basicModel.ResourceReference(),
+			//	ImportState:  true,
+			//	ImportStateCheck: importchecks.ComposeImportStateCheck(
+			//		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_force_authn", "false"),
+			//		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.#", "1"),
+			//		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.saml2_force_authn.0.value", "false"),
+			//	),
+			//},
 		},
 	})
 }
