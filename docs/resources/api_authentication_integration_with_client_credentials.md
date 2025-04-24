@@ -7,6 +7,9 @@ description: |-
 
 !> **Note** The provider does not detect external changes on security integration type. In this case, remove the integration of wrong type manually with `terraform destroy` and recreate the resource. It will be addressed in the future.
 
+~> **Missing fields** The `oauth_client_id` field was removed from the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
+This may have impact on detecting external changes for the `oauth_client_id` field.
+
 # snowflake_api_authentication_integration_with_client_credentials (Resource)
 
 Resource used to manage api authentication security integration objects with client credentials. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-api-auth).

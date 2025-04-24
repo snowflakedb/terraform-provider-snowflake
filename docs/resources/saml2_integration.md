@@ -9,6 +9,9 @@ description: |-
 
 !> **Note** To use `allowed_user_domains` and `allowed_email_patterns` fields, first enable [identifier-first logins](https://docs.snowflake.com/en/user-guide/admin-security-fed-auth-security-integration-multiple#enable-identifier-first-login). This can be managed with [account_parameter](./account_parameter).
 
+~> **Missing fields** The `saml2_snowflake_x509_cert` and `saml2_x509_cert` fields were removed from the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
+This may have impact on detecting external changes for the `saml2_x509_cert` field.
+
 # snowflake_saml2_integration (Resource)
 
 Resource used to manage SAML2 security integration objects. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-saml2).

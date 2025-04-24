@@ -110,13 +110,15 @@ The following table represents fields removed from resources. They were removed 
 on marking data as sensitive in objects or collections ([Terraform issue reference](https://github.com/hashicorp/terraform/issues/28222)). Removal of computed output fields may have an impact on detecting
 external changes (on the Snowflake side) for (usually) top-level fields they were referring to (e.g. `describe_output.oauth_client_id` -> `oauth_client_id`).
 
+> Note: We may bring those fields back after exploring a better approaches (e.g., by using the new [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework)), as currently, our options with the [Terraform SDKv2](https://developer.hashicorp.com/terraform/plugin/sdkv2) are limited in that regard.
+
 | Resource name                                                            | Removed fields                                                                                                             |
 |--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | `snowflake_api_authentication_integration_with_authorization_code_grant` | `describe_output.oauth_client_id`                                                                                          |
 | `snowflake_api_authentication_integration_with_client_credentials`       | `describe_output.oauth_client_id`                                                                                          |
 | `snowflake_api_authentication_integration_with_jwt_bearer`               | `describe_output.oauth_client_id`                                                                                          |
 | `snowflake_oauth_integration_for_partner_applications`                   | `describe_output.oauth_client_id`, `describe_output.oauth_redirect_uri`                                                    |
-| `snowflake_oauth_integration_for_custom_clients`                         | `describe_output.oauth_redirect_uri`, `describe_output.oauth_redirect_uri`                                                 |
+| `snowflake_oauth_integration_for_custom_clients`                         | `describe_output.oauth_client_id`, `describe_output.oauth_redirect_uri`                                                    |
 | `snowflake_saml2_integration`                                            | `describe_output.saml2_snowflake_x509_cert`, `describe_output.saml2_x509_cert`                                             |
 | `snowflake_security_integrations` (data source)                          | `security_integrations.describe_output.saml2_snowflake_x509_cert`, `security_integrations.describe_output.saml2_x509_cert` |
 | `snowflake_users` (data source)                                          | `users.describe_output.password`                                                                                           |
