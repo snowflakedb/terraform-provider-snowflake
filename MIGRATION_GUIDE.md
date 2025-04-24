@@ -112,7 +112,6 @@ external changes (on the Snowflake side) for (usually) top-level fields they wer
 
 | Resource name                                                            | Removed fields                                                                                                             |
 |--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| `snowflake_saml2_integration`                                            | `describe_output.saml2_x509_cert`, `describe_output.saml2_snowflake_x509_cert`                                             |
 | `snowflake_api_authentication_integration_with_authorization_code_grant` | `describe_output.oauth_client_id`                                                                                          |
 | `snowflake_api_authentication_integration_with_client_credentials`       | `describe_output.oauth_client_id`                                                                                          |
 | `snowflake_api_authentication_integration_with_jwt_bearer`               | `describe_output.oauth_client_id`                                                                                          |
