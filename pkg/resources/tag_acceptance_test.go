@@ -361,6 +361,7 @@ func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
 				Config:            tagV098(id),
 				Check: assertThat(t, resourceassert.TagResource(t, tagModel.ResourceReference()).
@@ -371,6 +372,7 @@ func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, tagModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
