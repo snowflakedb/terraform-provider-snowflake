@@ -87,7 +87,7 @@ jobs:
       - name: Generate random secret
         if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
         run: |
-          random=$(openssl rand -hex 20)
+          random=$(openssl rand -hex 15)
           final_random="${TEST_SF_TF_RANDOM}${random}"
           echo "::add-mask::${final_random}"
           echo "TEST_SF_TF_GENERATED_RANDOM_VALUE=${final_random}" >> $GITHUB_ENV
