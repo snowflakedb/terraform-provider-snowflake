@@ -1207,11 +1207,11 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
+		variable "%s" {
+			type = string
+			sensitive = true
+		}
+	`, temporaryVariableName)
 	configVariables := config.Variables{
 		temporaryVariableName: config.StringVariable(cert),
 	}
