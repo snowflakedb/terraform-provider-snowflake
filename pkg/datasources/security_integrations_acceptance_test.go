@@ -74,7 +74,7 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_provider.0.value", "CUSTOM"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_sso_url.0.value", validUrl),
-					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_x509_cert.0.value", cert),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_x509_cert.0.value"),
 				),
 			},
 		},
