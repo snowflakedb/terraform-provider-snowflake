@@ -35,7 +35,18 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 	validUrl := "https://example.com"
 	role := snowflakeroles.GenericScimProvisioner
 
-	saml2Model := model.Saml2SecurityIntegration("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert)
+	temporaryVariableName := "saml2_x509_cert"
+	temporaryVariableDefinition := fmt.Sprintf(`
+	variable "%s" {
+		type = string
+		sensitive = true
+	}
+`, temporaryVariableName)
+	configVariables := config.Variables{
+		temporaryVariableName: config.StringVariable(cert),
+	}
+
+	saml2Model := model.Saml2SecurityIntegrationVar("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	scimModel := model.ScimSecurityIntegration("test", true, idTwo.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 	securityIntegrationsModel := datasourcemodel.SecurityIntegrations("test").
 		WithLike(prefix+"%").
@@ -49,7 +60,8 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, scimModel, saml2Model, securityIntegrationsModel),
+				Config:          accconfig.FromModels(t, scimModel, saml2Model, securityIntegrationsModel) + temporaryVariableDefinition,
+				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.#", "2"),
 
@@ -516,8 +528,19 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 	issuerURL := acc.TestClient().Context.IssuerURL(t)
 	comment := random.Comment()
 
+	temporaryVariableName := "saml2_x509_cert"
+	temporaryVariableDefinition := fmt.Sprintf(`
+	variable "%s" {
+		type = string
+		sensitive = true
+	}
+`, temporaryVariableName)
+	configVariables := config.Variables{
+		temporaryVariableName: config.StringVariable(cert),
+	}
+
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
-	resourceModel := model.Saml2SecurityIntegration("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert).
+	resourceModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithComment(comment).
 		WithEnabled(datasources.BooleanTrue).
 		WithAllowedEmailPatterns("^(.+dev)@example.com$").
@@ -547,7 +570,8 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, resourceModel, securityIntegrationsModel),
+				Config:          accconfig.FromModels(t, resourceModel, securityIntegrationsModel) + temporaryVariableDefinition,
+				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.#", "1"),
 
@@ -558,7 +582,7 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_x509_cert.0.value", cert),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_enable_sp_initiated.0.value", "true"),
-					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_snowflake_x509_cert.0.value"),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_snowflake_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_sign_request.0.value", "true"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_requested_nameid_format.0.value", string(sdk.Saml2SecurityIntegrationSaml2RequestedNameidFormatUnspecified)),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_post_logout_redirect_url.0.value", "https://example.com"),
@@ -582,7 +606,8 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, resourceModel, securityIntegrationsModelWithoutDescribe),
+				Config:          accconfig.FromModels(t, resourceModel, securityIntegrationsModelWithoutDescribe) + temporaryVariableDefinition,
+				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModelWithoutDescribe.DatasourceReference(), "security_integrations.#", "1"),
 
