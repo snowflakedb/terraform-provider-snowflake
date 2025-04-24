@@ -1790,6 +1790,7 @@ func TestAcc_User_gh3522_proof(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.5"),
 				Config:            gh3522ConfigFirstStep(userId),
 				Check: assertThat(t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").

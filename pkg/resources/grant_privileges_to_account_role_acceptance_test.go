@@ -137,11 +137,13 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_gh3507(t *testing.T) {
 		CheckDestroy: acc.CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.5"),
 				Config:            grantAllPrivilegesToAccountRoleBasicConfig(role.ID()),
 				ExpectError:       regexp.MustCompile(`Error: 003011 \(42501\): Grant partially executed`),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccount_AllPrivileges"),
 				ConfigVariables:          configVariables,

@@ -104,7 +104,7 @@ func TestInt_AppName(t *testing.T) {
 	t.Skip("there is no way to check client application name by querying Snowflake's")
 
 	version := "v0.99.0"
-	config := sdk.DefaultConfig(sdk.WithUseLegacyTomlFormat(true))
+	config := sdk.DefaultConfig()
 	config.Application = fmt.Sprintf("terraform-provider-snowflake:%s", version)
 	client, err := sdk.NewClient(config)
 	require.NoError(t, err)
