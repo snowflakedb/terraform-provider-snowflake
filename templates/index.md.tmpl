@@ -290,11 +290,16 @@ resource "snowflake_execute" "test" {
 
 -> Note: Timeouts can be also set at driver's level (see [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake)). These timeouts are independent. We recommend tweaking the timeouts on Terraform level first.
 
-## List of preview and stable features
+## A list of preview and stable resources and data sources
 
-The provider supports a number of Snowflake features. Some features are stable, while others are in preview.
+The provider supports a number of Snowflake features. Within the provider, some features are stable, while others are in preview
+(stability of the feature in the provider is not connected to the stability of the feature in Snowflake).
+
 Preview features are **experimental** and may introduce **breaking changes**, even between non-major versions of the provider.
-These features are disabled by default and should be used with caution, as they may not be fully tested or stable for production environments.
+Eventually, every preview resource will be promoted to stable, but the timeline for each feature is not defined (you can find more details on the current/future plans in [our roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md)).
+New resources will be introduced as preview ones and promoted over time to stable as we gain more confidence in their stability.
+
+Preview features are disabled by default and should be used with caution.
 To use them, add the relevant feature name to the `preview_features_enabled` field in the [provider configuration](#preview_features_enabled-1).
 
 {{ index (split (codefile "" "examples/additional/stable_resources.MD") "```") 1 | trimspace }}
