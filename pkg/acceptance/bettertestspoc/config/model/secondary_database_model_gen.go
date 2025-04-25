@@ -41,11 +41,7 @@ type SecondaryDatabaseModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SecondaryDatabase(
-	resourceName string,
-	asReplicaOf string,
-	name string,
-) *SecondaryDatabaseModel {
+func SecondaryDatabase(resourceName string, name string, asReplicaOf string) *SecondaryDatabaseModel {
 	s := &SecondaryDatabaseModel{ResourceModelMeta: config.Meta(resourceName, resources.SecondaryDatabase)}
 	s.WithAsReplicaOf(asReplicaOf)
 	s.WithName(name)
