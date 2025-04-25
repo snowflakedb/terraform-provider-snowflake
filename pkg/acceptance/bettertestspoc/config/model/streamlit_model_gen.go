@@ -31,14 +31,7 @@ type StreamlitModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func Streamlit(
-	resourceName string,
-	database string,
-	mainFile string,
-	name string,
-	schema string,
-	stage string,
-) *StreamlitModel {
+func Streamlit(resourceName string, database string, schema string, name string, mainFile string, stage string) *StreamlitModel {
 	s := &StreamlitModel{ResourceModelMeta: config.Meta(resourceName, resources.Streamlit)}
 	s.WithDatabase(database)
 	s.WithMainFile(mainFile)
