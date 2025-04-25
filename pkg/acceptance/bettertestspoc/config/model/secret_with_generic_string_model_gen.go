@@ -27,13 +27,7 @@ type SecretWithGenericStringModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SecretWithGenericString(
-	resourceName string,
-	database string,
-	name string,
-	schema string,
-	secretString string,
-) *SecretWithGenericStringModel {
+func SecretWithGenericString(resourceName string, database string, schema string, name string, secretString string) *SecretWithGenericStringModel {
 	s := &SecretWithGenericStringModel{ResourceModelMeta: config.Meta(resourceName, resources.SecretWithGenericString)}
 	s.WithDatabase(database)
 	s.WithName(name)

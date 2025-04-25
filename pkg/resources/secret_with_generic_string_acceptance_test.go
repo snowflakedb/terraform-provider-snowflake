@@ -32,10 +32,10 @@ func TestAcc_SecretWithGenericString_BasicFlow(t *testing.T) {
 	name := id.Name()
 	comment := random.Comment()
 
-	secretModel := model.SecretWithGenericString("s", id.DatabaseName(), name, id.SchemaName(), "foo")
-	secretModelWithComment := model.SecretWithGenericString("s", id.DatabaseName(), name, id.SchemaName(), "bar").
+	secretModel := model.SecretWithGenericString("s", id.DatabaseName(), id.SchemaName(), name, "foo")
+	secretModelWithComment := model.SecretWithGenericString("s", id.DatabaseName(), id.SchemaName(), name, "bar").
 		WithComment(comment)
-	secretModelEmptySecretString := model.SecretWithGenericString("s", id.DatabaseName(), name, id.SchemaName(), "")
+	secretModelEmptySecretString := model.SecretWithGenericString("s", id.DatabaseName(), id.SchemaName(), name, "")
 
 	resourceReference := secretModel.ResourceReference()
 
@@ -197,7 +197,7 @@ func TestAcc_SecretWithGenericString_ExternalSecretTypeChange(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithGenericString("s", id.DatabaseName(), name, id.SchemaName(), "test_usr")
+	secretModel := model.SecretWithGenericString("s", id.DatabaseName(), id.SchemaName(), name, "test_usr")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,

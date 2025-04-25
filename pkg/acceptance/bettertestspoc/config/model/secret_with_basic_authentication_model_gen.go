@@ -28,14 +28,7 @@ type SecretWithBasicAuthenticationModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SecretWithBasicAuthentication(
-	resourceName string,
-	database string,
-	name string,
-	password string,
-	schema string,
-	username string,
-) *SecretWithBasicAuthenticationModel {
+func SecretWithBasicAuthentication(resourceName string, database string, schema string, name string, password string, username string) *SecretWithBasicAuthenticationModel {
 	s := &SecretWithBasicAuthenticationModel{ResourceModelMeta: config.Meta(resourceName, resources.SecretWithBasicAuthentication)}
 	s.WithDatabase(database)
 	s.WithName(name)

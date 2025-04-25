@@ -29,15 +29,7 @@ type SecretWithAuthorizationCodeGrantModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SecretWithAuthorizationCodeGrant(
-	resourceName string,
-	apiAuthentication string,
-	database string,
-	schema string,
-	name string,
-	oauthRefreshToken string,
-	oauthRefreshTokenExpiryTime string,
-) *SecretWithAuthorizationCodeGrantModel {
+func SecretWithAuthorizationCodeGrant(resourceName string, database string, schema string, name string, apiAuthentication string, oauthRefreshToken string, oauthRefreshTokenExpiryTime string) *SecretWithAuthorizationCodeGrantModel {
 	s := &SecretWithAuthorizationCodeGrantModel{ResourceModelMeta: config.Meta(resourceName, resources.SecretWithAuthorizationCodeGrant)}
 	s.WithApiAuthentication(apiAuthentication)
 	s.WithDatabase(database)

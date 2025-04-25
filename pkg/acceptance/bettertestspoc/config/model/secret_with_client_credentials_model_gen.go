@@ -28,14 +28,7 @@ type SecretWithClientCredentialsModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SecretWithClientCredentials(
-	resourceName string,
-	apiAuthentication string,
-	database string,
-	schema string,
-	name string,
-	oauthScopes []string,
-) *SecretWithClientCredentialsModel {
+func SecretWithClientCredentials(resourceName string, database string, schema string, name string, apiAuthentication string, oauthScopes []string) *SecretWithClientCredentialsModel {
 	s := &SecretWithClientCredentialsModel{ResourceModelMeta: config.Meta(resourceName, resources.SecretWithClientCredentials)}
 	s.WithApiAuthentication(apiAuthentication)
 	s.WithDatabase(database)
