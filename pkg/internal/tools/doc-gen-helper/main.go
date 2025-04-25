@@ -77,17 +77,11 @@ func main() {
 		printTo(DeprecatedResourcesTemplate, DeprecatedResourcesContext{deprecatedResources}, filepath.Join(additionalExamplesPath, deprecatedResourcesFilename)),
 		printTo(DeprecatedDatasourcesTemplate, DeprecatedDatasourcesContext{deprecatedDatasources}, filepath.Join(additionalExamplesPath, deprecatedDatasourcesFilename)),
 
-		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStateStable, make([]FeatureStability, 0)}, filepath.Join(additionalExamplesPath, stableResourcesFilename)),
-		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDatasource, FeatureStateStable, make([]FeatureStability, 0)}, filepath.Join(additionalExamplesPath, stableDatasourcesFilename)),
+		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStateStable, stableResources}, filepath.Join(additionalExamplesPath, stableResourcesFilename)),
+		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDatasource, FeatureStateStable, stableDatasources}, filepath.Join(additionalExamplesPath, stableDatasourcesFilename)),
 
-		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStatePreview, make([]FeatureStability, 0)}, filepath.Join(additionalExamplesPath, previewResourcesFilename)),
-		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDatasource, FeatureStatePreview, make([]FeatureStability, 0)}, filepath.Join(additionalExamplesPath, previewDatasourcesFilename)),
-
-		//printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStateStable, stableResources}, filepath.Join(additionalExamplesPath, stableResourcesFilename)),
-		//printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDatasource, FeatureStateStable, stableDatasources}, filepath.Join(additionalExamplesPath, stableDatasourcesFilename)),
-		//
-		//printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStatePreview, previewResources}, filepath.Join(additionalExamplesPath, previewResourcesFilename)),
-		//printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDatasource, FeatureStatePreview, previewDatasources}, filepath.Join(additionalExamplesPath, previewDatasourcesFilename)),
+		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStatePreview, previewResources}, filepath.Join(additionalExamplesPath, previewResourcesFilename)),
+		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDatasource, FeatureStatePreview, previewDatasources}, filepath.Join(additionalExamplesPath, previewDatasourcesFilename)),
 	); errs != nil {
 		log.Fatal(errs)
 	}
