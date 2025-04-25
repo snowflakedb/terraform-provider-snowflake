@@ -27,12 +27,7 @@ type TagModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func Tag(
-	resourceName string,
-	database string,
-	name string,
-	schema string,
-) *TagModel {
+func Tag(resourceName string, database string, schema string, name string) *TagModel {
 	t := &TagModel{ResourceModelMeta: config.Meta(resourceName, resources.Tag)}
 	t.WithDatabase(database)
 	t.WithName(name)
