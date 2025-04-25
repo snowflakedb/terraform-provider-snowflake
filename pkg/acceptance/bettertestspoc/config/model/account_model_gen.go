@@ -38,18 +38,18 @@ type AccountModel struct {
 
 func Account(
 	resourceName string,
+	name string,
 	adminName string,
 	edition string,
 	email string,
 	gracePeriodInDays int,
-	name string,
 ) *AccountModel {
 	a := &AccountModel{ResourceModelMeta: config.Meta(resourceName, resources.Account)}
+	a.WithName(name)
 	a.WithAdminName(adminName)
 	a.WithEdition(edition)
 	a.WithEmail(email)
 	a.WithGracePeriodInDays(gracePeriodInDays)
-	a.WithName(name)
 	return a
 }
 
