@@ -15,7 +15,7 @@ func ProcedureJavaBasicInline(
 	handler string,
 	procedureDefinition string,
 ) *ProcedureJavaModel {
-	return ProcedureJava(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), "11", id.SchemaName(), "1.14.0").
+	return ProcedureJava(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), "11", "1.14.0").
 		WithProcedureDefinition(procedureDefinition)
 }
 
@@ -27,7 +27,7 @@ func ProcedureJavaBasicStaged(
 	stageLocation string,
 	pathOnStage string,
 ) *ProcedureJavaModel {
-	return ProcedureJava(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), "11", id.SchemaName(), "1.14.0").
+	return ProcedureJava(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), "11", "1.14.0").
 		WithImport(stageLocation, pathOnStage)
 }
 

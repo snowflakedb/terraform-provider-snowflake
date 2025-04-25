@@ -13,7 +13,7 @@ func ProcedureJavascriptBasicInline(
 	returnType datatypes.DataType,
 	procedureDefinition string,
 ) *ProcedureJavascriptModel {
-	return ProcedureJavascript(resourceName, id.DatabaseName(), id.Name(), procedureDefinition, returnType.ToSql(), id.SchemaName())
+	return ProcedureJavascript(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), procedureDefinition, returnType.ToSql())
 }
 
 func (f *ProcedureJavascriptModel) WithArgument(argName string, argDataType datatypes.DataType) *ProcedureJavascriptModel {

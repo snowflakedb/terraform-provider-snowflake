@@ -15,7 +15,7 @@ func ProcedurePythonBasicInline(
 	handler string,
 	procedureDefinition string,
 ) *ProcedurePythonModel {
-	return ProcedurePython(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), "3.8", id.SchemaName(), "1.14.0").
+	return ProcedurePython(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), "3.8", "1.14.0").
 		WithProcedureDefinition(procedureDefinition)
 }
 

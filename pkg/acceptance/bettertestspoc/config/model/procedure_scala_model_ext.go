@@ -15,7 +15,7 @@ func ProcedureScalaBasicInline(
 	handler string,
 	procedureDefinition string,
 ) *ProcedureScalaModel {
-	return ProcedureScala(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), "2.12", id.SchemaName(), "1.14.0").
+	return ProcedureScala(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), "2.12", "1.14.0").
 		WithProcedureDefinition(procedureDefinition)
 }
 
@@ -27,7 +27,7 @@ func ProcedureScalaBasicStaged(
 	stageLocation string,
 	pathOnStage string,
 ) *ProcedureScalaModel {
-	return ProcedureScala(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), "2.12", id.SchemaName(), "1.14.0").
+	return ProcedureScala(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), "2.12", "1.14.0").
 		WithImport(stageLocation, pathOnStage)
 }
 

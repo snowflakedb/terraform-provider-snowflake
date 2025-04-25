@@ -36,14 +36,7 @@ type ProcedureSqlModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ProcedureSql(
-	resourceName string,
-	database string,
-	name string,
-	procedureDefinition string,
-	returnType string,
-	schema string,
-) *ProcedureSqlModel {
+func ProcedureSql(resourceName string, database string, schema string, name string, procedureDefinition string, returnType string) *ProcedureSqlModel {
 	p := &ProcedureSqlModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedureSql)}
 	p.WithDatabase(database)
 	p.WithName(name)

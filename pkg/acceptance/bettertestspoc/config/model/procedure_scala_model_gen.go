@@ -44,16 +44,7 @@ type ProcedureScalaModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ProcedureScala(
-	resourceName string,
-	database string,
-	handler string,
-	name string,
-	returnType string,
-	runtimeVersion string,
-	schema string,
-	snowparkPackage string,
-) *ProcedureScalaModel {
+func ProcedureScala(resourceName string, database string, schema string, name string, handler string, returnType string, runtimeVersion string, snowparkPackage string) *ProcedureScalaModel {
 	p := &ProcedureScalaModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedureScala)}
 	p.WithDatabase(database)
 	p.WithHandler(handler)

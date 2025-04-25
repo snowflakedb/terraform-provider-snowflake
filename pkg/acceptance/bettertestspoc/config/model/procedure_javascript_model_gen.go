@@ -36,14 +36,7 @@ type ProcedureJavascriptModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ProcedureJavascript(
-	resourceName string,
-	database string,
-	name string,
-	procedureDefinition string,
-	returnType string,
-	schema string,
-) *ProcedureJavascriptModel {
+func ProcedureJavascript(resourceName string, database string, schema string, name string, procedureDefinition string, returnType string) *ProcedureJavascriptModel {
 	p := &ProcedureJavascriptModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedureJavascript)}
 	p.WithDatabase(database)
 	p.WithName(name)

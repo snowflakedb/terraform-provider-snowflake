@@ -44,16 +44,7 @@ type ProcedureJavaModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ProcedureJava(
-	resourceName string,
-	database string,
-	handler string,
-	name string,
-	returnType string,
-	runtimeVersion string,
-	schema string,
-	snowparkPackage string,
-) *ProcedureJavaModel {
+func ProcedureJava(resourceName string, database string, schema string, name string, handler string, returnType string, runtimeVersion string, snowparkPackage string) *ProcedureJavaModel {
 	p := &ProcedureJavaModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedureJava)}
 	p.WithDatabase(database)
 	p.WithHandler(handler)

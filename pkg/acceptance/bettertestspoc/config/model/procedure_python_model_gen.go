@@ -43,16 +43,7 @@ type ProcedurePythonModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ProcedurePython(
-	resourceName string,
-	database string,
-	handler string,
-	name string,
-	returnType string,
-	runtimeVersion string,
-	schema string,
-	snowparkPackage string,
-) *ProcedurePythonModel {
+func ProcedurePython(resourceName string, database string, schema string, name string, handler string, returnType string, runtimeVersion string, snowparkPackage string) *ProcedurePythonModel {
 	p := &ProcedurePythonModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedurePython)}
 	p.WithDatabase(database)
 	p.WithHandler(handler)
