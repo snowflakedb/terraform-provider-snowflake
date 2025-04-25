@@ -36,14 +36,7 @@ type FunctionJavascriptModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func FunctionJavascript(
-	resourceName string,
-	database string,
-	functionDefinition string,
-	name string,
-	returnType string,
-	schema string,
-) *FunctionJavascriptModel {
+func FunctionJavascript(resourceName string, database string, schema string, name string, functionDefinition string, returnType string) *FunctionJavascriptModel {
 	f := &FunctionJavascriptModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionJavascript)}
 	f.WithDatabase(database)
 	f.WithFunctionDefinition(functionDefinition)
