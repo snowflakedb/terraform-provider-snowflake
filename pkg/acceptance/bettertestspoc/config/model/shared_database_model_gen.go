@@ -38,11 +38,7 @@ type SharedDatabaseModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SharedDatabase(
-	resourceName string,
-	fromShare string,
-	name string,
-) *SharedDatabaseModel {
+func SharedDatabase(resourceName string, name string, fromShare string) *SharedDatabaseModel {
 	s := &SharedDatabaseModel{ResourceModelMeta: config.Meta(resourceName, resources.SharedDatabase)}
 	s.WithFromShare(fromShare)
 	s.WithName(name)
