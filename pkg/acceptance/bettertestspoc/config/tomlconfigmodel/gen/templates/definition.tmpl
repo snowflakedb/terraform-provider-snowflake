@@ -1,0 +1,19 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model/gen.ResourceConfigBuilderModel*/ -}}
+
+{{- $modelName := .Name | printf "%sModel" -}}
+{{- $nameLowerCase := FirstLetterLowercase .Name -}}
+{{- $modelVar := FirstLetter $nameLowerCase }}
+
+type SnowflakeConfigModel struct {
+	sdk.ConfigDTO
+	*config.ProviderModelMeta
+}
+
+///////////////////////////////////////
+// Basic builders (profile required) //
+///////////////////////////////////////
+
+func SnowflakeTomlConfig(profile string) *SnowflakeConfigModel {
+	s := &SnowflakeConfigModel{ProviderModelMeta: config.DefaultProviderMeta(profile)}
+	return s
+}
