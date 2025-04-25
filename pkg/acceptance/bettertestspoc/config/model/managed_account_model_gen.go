@@ -31,12 +31,7 @@ type ManagedAccountModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ManagedAccount(
-	resourceName string,
-	adminName string,
-	adminPassword string,
-	name string,
-) *ManagedAccountModel {
+func ManagedAccount(resourceName string, name string, adminName string, adminPassword string) *ManagedAccountModel {
 	m := &ManagedAccountModel{ResourceModelMeta: config.Meta(resourceName, resources.ManagedAccount)}
 	m.WithAdminName(adminName)
 	m.WithAdminPassword(adminPassword)
