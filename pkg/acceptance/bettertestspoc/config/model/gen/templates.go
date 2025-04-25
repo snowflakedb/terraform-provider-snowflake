@@ -37,6 +37,7 @@ var (
 		genhelpers.FirstLetter,
 		genhelpers.SnakeCaseToCamel,
 		genhelpers.RemoveForbiddenAttributeNameSuffix,
+		genhelpers.ShouldGenerateWithForAttributeType,
 	)).Parse(buildersTemplateContent)
 
 	AllTemplates = []*template.Template{PreambleTemplate, DefinitionTemplate, MarshalJsonTemplate, BuildersTemplate}
