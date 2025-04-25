@@ -46,17 +46,17 @@ type FunctionJavaModel struct {
 func FunctionJava(
 	resourceName string,
 	database string,
-	handler string,
-	name string,
-	returnType string,
 	schema string,
+	name string,
+	handler string,
+	returnType string,
 ) *FunctionJavaModel {
 	f := &FunctionJavaModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionJava)}
 	f.WithDatabase(database)
-	f.WithHandler(handler)
-	f.WithName(name)
-	f.WithReturnType(returnType)
 	f.WithSchema(schema)
+	f.WithName(name)
+	f.WithHandler(handler)
+	f.WithReturnType(returnType)
 	return f
 }
 
