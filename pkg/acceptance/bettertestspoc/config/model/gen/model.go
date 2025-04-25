@@ -92,3 +92,39 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		},
 	}
 }
+
+type TomlConfigBuilderModel struct {
+	Name       string
+	Attributes []TomlConfigBuilderAttributeModel
+	PreambleModel
+}
+
+func (m TomlConfigBuilderModel) SomeFunc() {
+}
+
+type TomlConfigBuilderAttributeModel struct {
+	Name          string
+	AttributeType string
+}
+
+func ModelFromTomlConfigSchemaDetails(tomlConfigSchemaDetails genhelpers.TomlConfigSchemaDetails) TomlConfigBuilderModel {
+	attributes := make([]TomlConfigBuilderAttributeModel, 0)
+
+	for _, attr := range tomlConfigSchemaDetails.Attributes {
+		name := genhelpers.SanitizeAttributeName(attr.Name)
+
+		attributes = append(attributes, TomlConfigBuilderAttributeModel{
+			Name:          name,
+			AttributeType: attr.AttributeType,
+		})
+	}
+
+	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
+	return TomlConfigBuilderModel{
+		Name:       tomlConfigSchemaDetails.ObjectName(),
+		Attributes: attributes,
+		PreambleModel: PreambleModel{
+			PackageName: packageWithGenerateDirective,
+		},
+	}
+}
