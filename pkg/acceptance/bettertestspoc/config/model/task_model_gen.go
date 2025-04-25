@@ -93,14 +93,7 @@ type TaskModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func Task(
-	resourceName string,
-	database string,
-	name string,
-	schema string,
-	sqlStatement string,
-	started bool,
-) *TaskModel {
+func Task(resourceName string, database string, schema string, name string, sqlStatement string, started bool) *TaskModel {
 	t := &TaskModel{ResourceModelMeta: config.Meta(resourceName, resources.Task)}
 	t.WithDatabase(database)
 	t.WithName(name)
