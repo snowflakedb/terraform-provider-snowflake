@@ -7,13 +7,18 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 )
 
 var (
 	splitOnTheWordsBeginnings = regexp.MustCompile(`(.)([A-Z][a-z]+)`)
 	splitRemainingWordBreaks  = regexp.MustCompile("([a-z0-9])([A-Z]+)")
+
+	forbiddenAttributeNames = []string{"type"}
 )
+
+const forbiddenAttributeNameSuffix = "_"
 
 // ToSnakeCase allows converting a CamelCase text to camel_case one (needed for schema attribute names). Examples:
 // - CamelCase -> camel_case
@@ -59,4 +64,11 @@ func WriteCodeToFile(buffer *bytes.Buffer, fileName string) error {
 		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
 	}
 	return nil
+}
+
+func SanitizeAttributeName(name string) string {
+	if slices.Contains(forbiddenAttributeNames, name) {
+		return name + forbiddenAttributeNameSuffix
+	}
+	return name
 }

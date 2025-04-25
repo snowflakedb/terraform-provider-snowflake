@@ -26,6 +26,7 @@ func (m ResourceConfigBuilderModel) SomeFunc() {
 
 type ResourceConfigBuilderAttributeModel struct {
 	Name           string
+	JsonName       string
 	AttributeType  string
 	Required       bool
 	VariableMethod string
@@ -38,10 +39,13 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		if slices.Contains([]string{resources.ShowOutputAttributeName, resources.ParametersAttributeName, resources.DescribeOutputAttributeName}, attr.Name) {
 			continue
 		}
+		jsonName := attr.Name
+		name := genhelpers.SanitizeAttributeName(attr.Name)
 
 		if v, ok := multilineAttributesOverrides[resourceSchemaDetails.Name]; ok && slices.Contains(v, attr.Name) && attr.AttributeType == schema.TypeString {
 			attributes = append(attributes, ResourceConfigBuilderAttributeModel{
-				Name:           attr.Name,
+				Name:           name,
+				JsonName:       jsonName,
 				AttributeType:  "string",
 				Required:       attr.Required,
 				VariableMethod: "MultilineWrapperVariable",
@@ -69,7 +73,8 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		}
 
 		attributes = append(attributes, ResourceConfigBuilderAttributeModel{
-			Name:           attr.Name,
+			Name:           name,
+			JsonName:       jsonName,
 			AttributeType:  attributeType,
 			Required:       attr.Required,
 			VariableMethod: variableMethod,

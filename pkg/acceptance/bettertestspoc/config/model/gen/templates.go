@@ -19,6 +19,7 @@ var (
 		genhelpers.FirstLetterLowercase,
 		genhelpers.FirstLetter,
 		genhelpers.SnakeCaseToCamel,
+		genhelpers.RemoveForbiddenAttributeNameSuffix,
 	)).Parse(definitionTemplateContent)
 
 	//go:embed templates/marshal_json.tmpl
@@ -35,6 +36,7 @@ var (
 		genhelpers.FirstLetterLowercase,
 		genhelpers.FirstLetter,
 		genhelpers.SnakeCaseToCamel,
+		genhelpers.RemoveForbiddenAttributeNameSuffix,
 	)).Parse(buildersTemplateContent)
 
 	AllTemplates = []*template.Template{PreambleTemplate, DefinitionTemplate, MarshalJsonTemplate, BuildersTemplate}

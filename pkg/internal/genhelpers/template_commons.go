@@ -36,12 +36,21 @@ func CamelToWords(camel string) string {
 }
 
 func SnakeCaseToCamel(snake string) string {
+	var suffix string
+	if strings.HasSuffix(snake, "_") {
+		suffix = "_"
+		snake = strings.TrimSuffix(snake, "_")
+	}
 	snake = strings.ToLower(snake)
 	parts := strings.Split(snake, "_")
 	for idx, p := range parts {
 		parts[idx] = strings.ToUpper(p[:1]) + p[1:]
 	}
-	return strings.Join(parts, "")
+	return strings.Join(parts, "") + suffix
+}
+
+func RemoveForbiddenAttributeNameSuffix(input string) string {
+	return strings.TrimRight(input, forbiddenAttributeNameSuffix)
 }
 
 func IsLastItem(itemIdx int, collectionLength int) bool {
