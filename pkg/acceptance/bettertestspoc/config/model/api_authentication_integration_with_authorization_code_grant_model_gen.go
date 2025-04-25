@@ -34,14 +34,14 @@ type ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel struct {
 
 func ApiAuthenticationIntegrationWithAuthorizationCodeGrant(
 	resourceName string,
-	enabled bool,
 	name string,
+	enabled bool,
 	oauthClientId string,
 	oauthClientSecret string,
 ) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
 	a := &ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel{ResourceModelMeta: config.Meta(resourceName, resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant)}
-	a.WithEnabled(enabled)
 	a.WithName(name)
+	a.WithEnabled(enabled)
 	a.WithOauthClientId(oauthClientId)
 	a.WithOauthClientSecret(oauthClientSecret)
 	return a

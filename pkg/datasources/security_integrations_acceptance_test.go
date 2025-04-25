@@ -89,7 +89,7 @@ func TestAcc_SecurityIntegrations_ApiAuthenticationWithAuthorizationCodeGrant(t 
 	pass := random.Password()
 	comment := random.Comment()
 
-	resourceModel := model.ApiAuthenticationIntegrationWithAuthorizationCodeGrant("test", true, id.Name(), "foo", pass).
+	resourceModel := model.ApiAuthenticationIntegrationWithAuthorizationCodeGrant("test", id.Name(), true, "foo", pass).
 		WithComment(comment).
 		WithOauthAccessTokenValidity(42).
 		WithOauthAuthorizationEndpoint("https://example.com").
