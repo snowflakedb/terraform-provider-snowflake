@@ -15,6 +15,7 @@ import (
 type PreambleModel struct {
 	PackageName               string
 	AdditionalStandardImports []string
+	AdditionalImports         []string
 }
 
 type ResourceConfigBuilderModel struct {
@@ -37,7 +38,7 @@ type ResourceConfigBuilderAttributeModel struct {
 }
 
 func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails) ResourceConfigBuilderModel {
-	additionalImports := []string{"encoding/json"}
+	additionalImports := make([]string, 0)
 	attributes := make([]ResourceConfigBuilderAttributeModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
 		if slices.Contains([]string{resources.ShowOutputAttributeName, resources.ParametersAttributeName, resources.DescribeOutputAttributeName}, attr.Name) {
@@ -81,7 +82,9 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 			if attr.Required {
 				attrType, additionalImport := handleAttributeTypeForListsAndSets(attr, resourceSchemaDetails.Name)
 				attributeType = attrType
-				additionalImports = append(additionalImports, additionalImport)
+				if additionalImport != "" {
+					additionalImports = append(additionalImports, additionalImport)
+				}
 			}
 		}
 
@@ -102,7 +105,8 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		Attributes: attributes,
 		PreambleModel: PreambleModel{
 			PackageName:               packageWithGenerateDirective,
-			AdditionalStandardImports: additionalImports,
+			AdditionalStandardImports: []string{"encoding/json"},
+			AdditionalImports:         additionalImports,
 		},
 	}
 }
@@ -125,7 +129,11 @@ func handleAttributeTypeForListsAndSets(attr genhelpers.SchemaAttribute, resourc
 		if v, ok := complexListAttributesOverrides[resourceName]; ok {
 			if t, ok := v[attr.Name]; ok {
 				attributeType = "[]" + t
-				additionalImport = strings.Split(t, ".")[0]
+				if v, ok := genhelpers.PredefinedImports[strings.Split(t, ".")[0]]; ok {
+					additionalImport = v
+				} else {
+					log.Printf("[WARN] No predefined import found for type %s", t)
+				}
 			} else {
 				log.Printf("[WARN] No complex list attribute override found for resource's %s attribute %s", resourceName, attr.Name)
 			}

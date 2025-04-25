@@ -13,4 +13,7 @@ import (
 
     "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
     "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+    {{- range .AdditionalImports }}
+    "{{- . }}"
+    {{- end }}
 )
