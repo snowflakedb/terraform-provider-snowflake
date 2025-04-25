@@ -28,13 +28,7 @@ type ScimSecurityIntegrationModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ScimSecurityIntegration(
-	resourceName string,
-	enabled bool,
-	name string,
-	runAsRole string,
-	scimClient string,
-) *ScimSecurityIntegrationModel {
+func ScimSecurityIntegration(resourceName string, name string, enabled bool, runAsRole string, scimClient string) *ScimSecurityIntegrationModel {
 	s := &ScimSecurityIntegrationModel{ResourceModelMeta: config.Meta(resourceName, resources.ScimSecurityIntegration)}
 	s.WithEnabled(enabled)
 	s.WithName(name)

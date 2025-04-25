@@ -36,7 +36,7 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 	role := snowflakeroles.GenericScimProvisioner
 
 	saml2Model := model.Saml2SecurityIntegration("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert)
-	scimModel := model.ScimSecurityIntegration("test", true, idTwo.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModel := model.ScimSecurityIntegration("test", idTwo.Name(), true, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 	securityIntegrationsModel := datasourcemodel.SecurityIntegrations("test").
 		WithLike(prefix+"%").
 		WithDependsOn(saml2Model.ResourceReference(), scimModel.ResourceReference())
@@ -612,7 +612,7 @@ func TestAcc_SecurityIntegrations_Scim(t *testing.T) {
 	role := snowflakeroles.GenericScimProvisioner
 	comment := random.Comment()
 
-	resourceModel := model.ScimSecurityIntegration("test", false, id.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
+	resourceModel := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
 		WithComment(comment).
 		WithNetworkPolicy(networkPolicy.ID().Name())
 	securityIntegrationsModel := datasourcemodel.SecurityIntegrations("test").
@@ -680,9 +680,9 @@ func TestAcc_SecurityIntegrations_Filtering(t *testing.T) {
 	idThree := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 	role := snowflakeroles.GenericScimProvisioner
 
-	scimModel1 := model.ScimSecurityIntegration("test1", false, idOne.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModel2 := model.ScimSecurityIntegration("test2", false, idTwo.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModel3 := model.ScimSecurityIntegration("test3", false, idThree.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModel1 := model.ScimSecurityIntegration("test1", idOne.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModel2 := model.ScimSecurityIntegration("test2", idTwo.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModel3 := model.ScimSecurityIntegration("test3", idThree.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 	securityIntegrationsModelLikeFirst := datasourcemodel.SecurityIntegrations("test").
 		WithLike(idOne.Name()).
 		WithDependsOn(scimModel1.ResourceReference(), scimModel2.ResourceReference(), scimModel3.ResourceReference())
