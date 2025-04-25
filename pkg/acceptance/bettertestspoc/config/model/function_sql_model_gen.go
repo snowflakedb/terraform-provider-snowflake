@@ -35,14 +35,7 @@ type FunctionSqlModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func FunctionSql(
-	resourceName string,
-	database string,
-	functionDefinition string,
-	name string,
-	returnType string,
-	schema string,
-) *FunctionSqlModel {
+func FunctionSql(resourceName string, database string, schema string, name string, functionDefinition string, returnType string) *FunctionSqlModel {
 	f := &FunctionSqlModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionSql)}
 	f.WithDatabase(database)
 	f.WithFunctionDefinition(functionDefinition)
