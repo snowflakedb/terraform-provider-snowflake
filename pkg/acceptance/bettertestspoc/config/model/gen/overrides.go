@@ -21,5 +21,6 @@ var multilineAttributesOverrides = map[string][]string{
 }
 
 var complexListAttributesOverrides = map[string]map[string]string{
-	"MaskingPolicy": {"argument": "sdk.TableColumnSignature"},
+	"MaskingPolicy":   {"argument": "sdk.TableColumnSignature"},
+	"RowAccessPolicy": {"argument": "sdk.TableColumnSignature"},
 }
