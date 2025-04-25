@@ -40,20 +40,20 @@ type ExternalOauthSecurityIntegrationModel struct {
 
 func ExternalOauthSecurityIntegration(
 	resourceName string,
+	name string,
 	enabled bool,
 	externalOauthIssuer string,
 	externalOauthSnowflakeUserMappingAttribute string,
 	externalOauthTokenUserMappingClaim []string,
 	externalOauthType string,
-	name string,
 ) *ExternalOauthSecurityIntegrationModel {
 	e := &ExternalOauthSecurityIntegrationModel{ResourceModelMeta: config.Meta(resourceName, resources.ExternalOauthSecurityIntegration)}
+	e.WithName(name)
 	e.WithEnabled(enabled)
 	e.WithExternalOauthIssuer(externalOauthIssuer)
 	e.WithExternalOauthSnowflakeUserMappingAttribute(externalOauthSnowflakeUserMappingAttribute)
 	e.WithExternalOauthTokenUserMappingClaim(externalOauthTokenUserMappingClaim)
 	e.WithExternalOauthType(externalOauthType)
-	e.WithName(name)
 	return e
 }
 
