@@ -31,14 +31,7 @@ type RowAccessPolicyModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func RowAccessPolicy(
-	resourceName string,
-	argument []sdk.TableColumnSignature,
-	body string,
-	database string,
-	name string,
-	schema string,
-) *RowAccessPolicyModel {
+func RowAccessPolicy(resourceName string, database string, schema string, name string, argument []sdk.TableColumnSignature, body string) *RowAccessPolicyModel {
 	r := &RowAccessPolicyModel{ResourceModelMeta: config.Meta(resourceName, resources.RowAccessPolicy)}
 	r.WithArgument(argument)
 	r.WithBody(body)
