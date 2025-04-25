@@ -86,6 +86,9 @@ test-acceptance-%: ## run acceptance tests for the given resource only, e.g. tes
 build-local: ## build the binary locally
 	go build -o $(BASE_BINARY_NAME) .
 
+release-local: ## use GoReleaser to build the binary locally
+	goreleaser build --clean --skip=validate --single-target
+
 install-tf: build-local ## installs plugin where terraform can find it
 	mkdir -p $(TERRAFORM_PLUGINS_DIR)
 	cp ./$(BASE_BINARY_NAME) $(TERRAFORM_PLUGIN_LOCAL_INSTALL)

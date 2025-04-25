@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tracking"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/snowflakedb/gosnowflake"
 )
