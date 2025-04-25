@@ -43,15 +43,7 @@ type FunctionPythonModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func FunctionPython(
-	resourceName string,
-	database string,
-	handler string,
-	name string,
-	returnType string,
-	runtimeVersion string,
-	schema string,
-) *FunctionPythonModel {
+func FunctionPython(resourceName string, database string, schema string, name string, handler string, returnType string, runtimeVersion string) *FunctionPythonModel {
 	f := &FunctionPythonModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionPython)}
 	f.WithDatabase(database)
 	f.WithHandler(handler)
