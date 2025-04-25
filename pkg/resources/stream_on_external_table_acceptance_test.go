@@ -368,10 +368,10 @@ func TestAcc_StreamOnExternalTable_CopyGrants(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	streamModelWithCopyGrants := model.StreamOnExternalTable("test", id.DatabaseName(), externalTable.ID().FullyQualifiedName(), id.Name(), id.SchemaName()).
+	streamModelWithCopyGrants := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), externalTable.ID().FullyQualifiedName()).
 		WithInsertOnly(r.BooleanTrue).
 		WithCopyGrants(true)
-	streamModelWithoutCopyGrants := model.StreamOnExternalTable("test", id.DatabaseName(), externalTable.ID().FullyQualifiedName(), id.Name(), id.SchemaName()).
+	streamModelWithoutCopyGrants := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), externalTable.ID().FullyQualifiedName()).
 		WithInsertOnly(r.BooleanTrue).
 		WithCopyGrants(false)
 
@@ -440,12 +440,12 @@ func TestAcc_StreamOnExternalTable_CheckGrantsAfterRecreation(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	model1 := model.StreamOnExternalTable("test", id.DatabaseName(), externalTable.ID().FullyQualifiedName(), id.Name(), id.SchemaName()).
+	model1 := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), externalTable.ID().FullyQualifiedName()).
 		WithInsertOnly(r.BooleanTrue).
 		WithCopyGrants(true)
-	model1WithoutCopyGrants := model.StreamOnExternalTable("test", id.DatabaseName(), externalTable.ID().FullyQualifiedName(), id.Name(), id.SchemaName()).
+	model1WithoutCopyGrants := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), externalTable.ID().FullyQualifiedName()).
 		WithInsertOnly(r.BooleanTrue)
-	model2 := model.StreamOnExternalTable("test", id.DatabaseName(), externalTable2.ID().FullyQualifiedName(), id.Name(), id.SchemaName()).
+	model2 := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), externalTable2.ID().FullyQualifiedName()).
 		WithInsertOnly(r.BooleanTrue).
 		WithCopyGrants(true)
 
@@ -509,7 +509,7 @@ func TestAcc_StreamOnExternalTable_PermadiffWhenIsStaleAndHasNoRetentionTime(t *
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
-	streamModel := model.StreamOnExternalTable("test", id.DatabaseName(), externalTable.ID().FullyQualifiedName(), id.Name(), id.SchemaName()).WithInsertOnly(r.BooleanTrue)
+	streamModel := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), externalTable.ID().FullyQualifiedName()).WithInsertOnly(r.BooleanTrue)
 
 	var createdOn string
 
@@ -588,7 +588,7 @@ func TestAcc_StreamOnExternalTable_StaleWithExternalChanges(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
-	streamModel := model.StreamOnExternalTable("test", id.DatabaseName(), externalTable.ID().FullyQualifiedName(), id.Name(), id.SchemaName()).WithInsertOnly(r.BooleanTrue)
+	streamModel := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), externalTable.ID().FullyQualifiedName()).WithInsertOnly(r.BooleanTrue)
 
 	var createdOn string
 
@@ -839,9 +839,9 @@ func TestAcc_StreamOnExternalTable_InvalidConfiguration(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelWithInvalidExternalTableId := model.StreamOnExternalTable("test", id.DatabaseName(), "invalid", id.Name(), id.SchemaName())
+	modelWithInvalidExternalTableId := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), "invalid")
 
-	modelWithBefore := model.StreamOnExternalTable("test", id.DatabaseName(), "foo.bar.hoge", id.Name(), id.SchemaName()).
+	modelWithBefore := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), "foo.bar.hoge").
 		WithComment("foo").
 		WithCopyGrants(false).
 		WithInsertOnly(r.BooleanTrue).
@@ -852,7 +852,7 @@ func TestAcc_StreamOnExternalTable_InvalidConfiguration(t *testing.T) {
 			"stream":    pluginconfig.StringVariable("0"),
 		}))
 
-	modelWithAt := model.StreamOnExternalTable("test", id.DatabaseName(), "foo.bar.hoge", id.Name(), id.SchemaName()).
+	modelWithAt := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), "foo.bar.hoge").
 		WithComment("foo").
 		WithCopyGrants(false).
 		WithInsertOnly(r.BooleanTrue).

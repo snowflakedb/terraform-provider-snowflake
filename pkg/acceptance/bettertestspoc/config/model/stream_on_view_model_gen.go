@@ -33,13 +33,7 @@ type StreamOnViewModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func StreamOnView(
-	resourceName string,
-	database string,
-	name string,
-	schema string,
-	view string,
-) *StreamOnViewModel {
+func StreamOnView(resourceName string, database string, schema string, name string, view string) *StreamOnViewModel {
 	s := &StreamOnViewModel{ResourceModelMeta: config.Meta(resourceName, resources.StreamOnView)}
 	s.WithDatabase(database)
 	s.WithName(name)

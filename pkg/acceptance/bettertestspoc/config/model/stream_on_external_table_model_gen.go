@@ -32,13 +32,7 @@ type StreamOnExternalTableModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func StreamOnExternalTable(
-	resourceName string,
-	database string,
-	externalTable string,
-	name string,
-	schema string,
-) *StreamOnExternalTableModel {
+func StreamOnExternalTable(resourceName string, database string, schema string, name string, externalTable string) *StreamOnExternalTableModel {
 	s := &StreamOnExternalTableModel{ResourceModelMeta: config.Meta(resourceName, resources.StreamOnExternalTable)}
 	s.WithDatabase(database)
 	s.WithExternalTable(externalTable)

@@ -33,7 +33,7 @@ func TestAcc_Streams(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table.ID().FullyQualifiedName()).
+	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName()).
 		WithAppendOnly(datasources.BooleanTrue).
 		WithComment(comment)
 	streamsModel := datasourcemodel.Streams("test").
@@ -128,7 +128,7 @@ func TestAcc_StreamOnTable(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table.ID().FullyQualifiedName()).
+	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName()).
 		WithAppendOnly(datasources.BooleanTrue).
 		WithComment(comment)
 	streamsModel := datasourcemodel.Streams("test").
@@ -260,7 +260,7 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage.ID().FullyQualifiedName()).
+	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName()).
 		WithComment(comment)
 	streamsModel := datasourcemodel.Streams("test").
 		WithLike(id.Name()).
@@ -327,7 +327,7 @@ func TestAcc_StreamOnView(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	streamModel := model.StreamOnView("test", id.DatabaseName(), id.Name(), id.SchemaName(), view.ID().FullyQualifiedName()).
+	streamModel := model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), view.ID().FullyQualifiedName()).
 		WithComment(comment).
 		WithAppendOnly(datasources.BooleanTrue)
 	streamsModel := datasourcemodel.Streams("test").
@@ -393,9 +393,9 @@ func TestAcc_Streams_Filtering(t *testing.T) {
 	id2 := acc.TestClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id3 := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	model1 := model.StreamOnTable("test_1", id1.DatabaseName(), id1.Name(), id1.SchemaName(), table.ID().FullyQualifiedName())
-	model2 := model.StreamOnTable("test_2", id2.DatabaseName(), id2.Name(), id2.SchemaName(), table.ID().FullyQualifiedName())
-	model3 := model.StreamOnTable("test_3", id3.DatabaseName(), id3.Name(), id3.SchemaName(), table.ID().FullyQualifiedName())
+	model1 := model.StreamOnTable("test_1", id1.DatabaseName(), id1.SchemaName(), id1.Name(), table.ID().FullyQualifiedName())
+	model2 := model.StreamOnTable("test_2", id2.DatabaseName(), id2.SchemaName(), id2.Name(), table.ID().FullyQualifiedName())
+	model3 := model.StreamOnTable("test_3", id3.DatabaseName(), id3.SchemaName(), id3.Name(), table.ID().FullyQualifiedName())
 	streamsModelLikeFirstOne := datasourcemodel.Streams("test").
 		WithLike(id1.Name()).
 		WithInDatabase(id1.DatabaseId()).

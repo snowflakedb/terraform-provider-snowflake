@@ -5,5 +5,5 @@ import (
 )
 
 func StreamOnTableBase(resourceName string, id, tableId sdk.SchemaObjectIdentifier) *StreamOnTableModel {
-	return StreamOnTable(resourceName, id.DatabaseName(), id.Name(), id.SchemaName(), tableId.FullyQualifiedName())
+	return StreamOnTable(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), tableId.FullyQualifiedName())
 }

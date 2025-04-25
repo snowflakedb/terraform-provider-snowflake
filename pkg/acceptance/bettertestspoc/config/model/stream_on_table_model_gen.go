@@ -33,13 +33,7 @@ type StreamOnTableModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func StreamOnTable(
-	resourceName string,
-	database string,
-	name string,
-	schema string,
-	table string,
-) *StreamOnTableModel {
+func StreamOnTable(resourceName string, database string, schema string, name string, table string) *StreamOnTableModel {
 	s := &StreamOnTableModel{ResourceModelMeta: config.Meta(resourceName, resources.StreamOnTable)}
 	s.WithDatabase(database)
 	s.WithName(name)

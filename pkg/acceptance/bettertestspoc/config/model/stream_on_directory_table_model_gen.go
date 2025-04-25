@@ -29,13 +29,7 @@ type StreamOnDirectoryTableModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func StreamOnDirectoryTable(
-	resourceName string,
-	database string,
-	name string,
-	schema string,
-	stage string,
-) *StreamOnDirectoryTableModel {
+func StreamOnDirectoryTable(resourceName string, database string, schema string, name string, stage string) *StreamOnDirectoryTableModel {
 	s := &StreamOnDirectoryTableModel{ResourceModelMeta: config.Meta(resourceName, resources.StreamOnDirectoryTable)}
 	s.WithDatabase(database)
 	s.WithName(name)
