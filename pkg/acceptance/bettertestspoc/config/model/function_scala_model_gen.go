@@ -43,15 +43,7 @@ type FunctionScalaModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func FunctionScala(
-	resourceName string,
-	database string,
-	handler string,
-	name string,
-	returnType string,
-	runtimeVersion string,
-	schema string,
-) *FunctionScalaModel {
+func FunctionScala(resourceName string, database string, schema string, name string, handler string, returnType string, runtimeVersion string) *FunctionScalaModel {
 	f := &FunctionScalaModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionScala)}
 	f.WithDatabase(database)
 	f.WithHandler(handler)
