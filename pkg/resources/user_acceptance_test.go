@@ -1644,6 +1644,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 		CheckDestroy: acc.CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
 				Config:            config.FromModels(t, userModel),
 				Check: assertThat(t,
@@ -1652,6 +1653,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, userModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -1691,11 +1693,9 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 				ExpectError:       regexp.MustCompile("\"default_namespace\": converting NULL to string is unsupported"),
 			},
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
-				PreConfig: func() {
-					acc.UnsetConfigPathEnv(t)
-				},
-				Config: config.FromModels(t, userModel),
+				Config:            config.FromModels(t, userModel),
 				Check: assertThat(t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNoDefaultNamespace(),
