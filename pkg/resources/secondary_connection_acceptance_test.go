@@ -39,8 +39,8 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(accountId, connection.ID())
 	comment := random.Comment()
 
-	secondaryConnectionModel := model.SecondaryConnection("t", primaryConnectionAsExternalId.FullyQualifiedName(), connection.ID().Name())
-	secondaryConnectionModelWithComment := model.SecondaryConnection("t", primaryConnectionAsExternalId.FullyQualifiedName(), connection.ID().Name()).
+	secondaryConnectionModel := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName())
+	secondaryConnectionModelWithComment := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName()).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{

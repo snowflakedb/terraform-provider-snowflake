@@ -25,11 +25,7 @@ type SecondaryConnectionModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SecondaryConnection(
-	resourceName string,
-	asReplicaOf string,
-	name string,
-) *SecondaryConnectionModel {
+func SecondaryConnection(resourceName string, name string, asReplicaOf string) *SecondaryConnectionModel {
 	s := &SecondaryConnectionModel{ResourceModelMeta: config.Meta(resourceName, resources.SecondaryConnection)}
 	s.WithAsReplicaOf(asReplicaOf)
 	s.WithName(name)
