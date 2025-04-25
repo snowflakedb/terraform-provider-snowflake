@@ -290,14 +290,31 @@ resource "snowflake_execute" "test" {
 
 -> Note: Timeouts can be also set at driver's level (see [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake)). These timeouts are independent. We recommend tweaking the timeouts on Terraform level first.
 
-## List of resources
+{{- $stableResources := index (split (codefile "" "examples/additional/stable_resources.MD") "```") 1 | trimspace }}
+{{- $stableDatasources := index (split (codefile "" "examples/additional/stable_datasources.MD") "```") 1 | trimspace }}
+{{- $previewResources := index (split (codefile "" "examples/additional/preview_resources.MD") "```") 1 | trimspace }}
+{{- $previewDatasources := index (split (codefile "" "examples/additional/preview_datasources.MD") "```") 1 | trimspace }}
 
-TODO
+{{- $stableResourcesNonEmpty := (gt (len (split $stableResources "\n")) 1) }}
+{{- $stableDatasourcesNonEmpty := (gt (len (split $stableDatasources "\n")) 1) }}
+{{- $previewResourcesNonEmpty := (gt (len (split $previewResources "\n")) 1) }}
+{{- $previewDatasourcesNonEmpty := (gt (len (split $previewDatasources "\n")) 1) }}
 
-{{ index (split (codefile "" "examples/additional/stable_resources.MD") "```") 1 | trimspace }}
+{{- if $stableResourcesNonEmpty | or $stableDatasourcesNonEmpty | or $previewResourcesNonEmpty | or $previewDatasourcesNonEmpty }}
 
-{{ index (split (codefile "" "examples/additional/stable_datasources.MD") "```") 1 | trimspace }}
+## List of preview and stable features
 
-{{ index (split (codefile "" "examples/additional/preview_resources.MD") "```") 1 | trimspace }}
+The provider supports a number of Snowflake features. Some features are stable, while others are in preview.
+Preview features are **experimental** and may introduce **breaking changes**, even between non-major versions of the provider.
+These features are disabled by default and should be used with caution, as they may not be fully tested or stable for production environments.
+To use them, add the relevant feature name to the `preview_features_enabled` field in the [provider configuration](#preview_features_enabled-1).
 
-{{ index (split (codefile "" "examples/additional/preview_datasources.MD") "```") 1 | trimspace }}
+{{ $stableResources }}
+
+{{ $stableDatasources }}
+
+{{ $previewResources }}
+
+{{ $previewDatasources }}
+
+{{- end }}
