@@ -33,14 +33,14 @@ type ApiAuthenticationIntegrationWithClientCredentialsModel struct {
 
 func ApiAuthenticationIntegrationWithClientCredentials(
 	resourceName string,
-	enabled bool,
 	name string,
+	enabled bool,
 	oauthClientId string,
 	oauthClientSecret string,
 ) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a := &ApiAuthenticationIntegrationWithClientCredentialsModel{ResourceModelMeta: config.Meta(resourceName, resources.ApiAuthenticationIntegrationWithClientCredentials)}
-	a.WithEnabled(enabled)
 	a.WithName(name)
+	a.WithEnabled(enabled)
 	a.WithOauthClientId(oauthClientId)
 	a.WithOauthClientSecret(oauthClientSecret)
 	return a

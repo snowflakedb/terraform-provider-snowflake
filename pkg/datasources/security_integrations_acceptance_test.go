@@ -169,7 +169,7 @@ func TestAcc_SecurityIntegrations_ApiAuthenticationWithClientCredentials(t *test
 	pass2 := random.Password()
 	comment := random.Comment()
 
-	resourceModel := model.ApiAuthenticationIntegrationWithClientCredentials("test", true, id.Name(), pass1, pass2).
+	resourceModel := model.ApiAuthenticationIntegrationWithClientCredentials("test", id.Name(), true, pass1, pass2).
 		WithComment(comment).
 		WithOauthAccessTokenValidity(42).
 		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
