@@ -33,6 +33,7 @@ type ResourceConfigBuilderAttributeModel struct {
 	Required       bool
 	VariableMethod string
 	MethodImport   string
+	OriginalType   schema.ValueType
 }
 
 func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails) ResourceConfigBuilderModel {
@@ -53,6 +54,7 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 				Required:       attr.Required,
 				VariableMethod: "MultilineWrapperVariable",
 				MethodImport:   "config",
+				OriginalType:   attr.AttributeType,
 			})
 			continue
 		}
@@ -90,6 +92,7 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 			Required:       attr.Required,
 			VariableMethod: variableMethod,
 			MethodImport:   "tfconfig",
+			OriginalType:   attr.AttributeType,
 		})
 	}
 
