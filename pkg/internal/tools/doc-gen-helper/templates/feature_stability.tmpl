@@ -1,0 +1,6 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tools/doc-gen-helper.FeatureStabilityContext*/ -}}
+{{ if gt (len .Features) 0 }} ## Currently {{ .FeatureState }} {{ .FeatureType }}s {{ end }}
+
+{{ range .Features -}}
+    - {{ .NameRelativeLink }}
+{{ end -}}

@@ -1,0 +1,7 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tools/doc-gen-helper.DeprecatedDatasourcesContext*/ -}}
+<!-- Section of deprecated data sources -->
+{{if gt (len .Datasources) 0}} ## Currently deprecated data sources {{end}}
+
+{{ range .Datasources -}}
+	- {{ .NameRelativeLink }}{{ if .ReplacementRelativeLink }} - use {{ .ReplacementRelativeLink }} instead{{ end }}
+{{ end -}}

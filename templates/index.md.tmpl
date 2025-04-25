@@ -289,3 +289,15 @@ resource "snowflake_execute" "test" {
 ```
 
 -> Note: Timeouts can be also set at driver's level (see [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake)). These timeouts are independent. We recommend tweaking the timeouts on Terraform level first.
+
+## List of resources
+
+TODO
+
+{{ index (split (codefile "" "examples/additional/stable_resources.MD") "```") 1 | trimspace }}
+
+{{ index (split (codefile "" "examples/additional/stable_datasources.MD") "```") 1 | trimspace }}
+
+{{ index (split (codefile "" "examples/additional/preview_resources.MD") "```") 1 | trimspace }}
+
+{{ index (split (codefile "" "examples/additional/preview_datasources.MD") "```") 1 | trimspace }}

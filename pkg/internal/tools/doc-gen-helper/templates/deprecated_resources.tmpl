@@ -1,0 +1,7 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tools/doc-gen-helper.DeprecatedResourcesContext*/ -}}
+<!-- Section of deprecated resources -->
+{{ if gt (len .Resources) 0 }} ## Currently deprecated resources {{ end }}
+
+{{ range .Resources -}}
+    - {{ .NameRelativeLink }}{{ if .ReplacementRelativeLink }} - use {{ .ReplacementRelativeLink }} instead{{ end }}
+{{ end -}}
