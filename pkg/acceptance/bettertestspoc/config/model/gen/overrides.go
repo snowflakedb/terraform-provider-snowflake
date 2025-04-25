@@ -1,5 +1,6 @@
 package gen
 
+// TODO [SNOW-1501905]: extract all overrides to object definitions
 var multilineAttributesOverrides = map[string][]string{
 	"User":                             {"rsa_public_key", "rsa_public_key_2"},
 	"ServiceUser":                      {"rsa_public_key", "rsa_public_key_2"},
@@ -17,4 +18,8 @@ var multilineAttributesOverrides = map[string][]string{
 	"Account":                          {"admin_rsa_public_key"},
 	"Saml2SecurityIntegration":         {"saml2_x509_cert"},
 	"OauthIntegrationForCustomClients": {"oauth_client_rsa_public_key", "oauth_client_rsa_public_key_2"},
+}
+
+var complexListAttributesOverrides = map[string]map[string]string{
+	"MaskingPolicy": {"argument": "sdk.TableColumnSignature"},
 }
