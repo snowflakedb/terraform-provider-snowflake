@@ -1,5 +1,7 @@
 <!-- Section of stable resource -->
-## Currently stable resources - [snowflake_account](./docs/resources/account)
+## Currently stable resources 
+
+- [snowflake_account](./docs/resources/account)
 - [snowflake_account_parameter](./docs/resources/account_parameter)
 - [snowflake_account_role](./docs/resources/account_role)
 - [snowflake_api_authentication_integration_with_authorization_code_grant](./docs/resources/api_authentication_integration_with_authorization_code_grant)

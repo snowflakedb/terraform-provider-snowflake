@@ -2,6 +2,6 @@
 <!-- Section of {{ .FeatureState }} {{ .FeatureType }} -->
 {{ if gt (len .Features) 0 }}## Currently {{ .FeatureState }} {{ .FeatureType }}s {{ end }}
 
-{{- range .Features -}}
+{{ range .Features -}}
     - {{ .NameRelativeLink }}
 {{ end -}}

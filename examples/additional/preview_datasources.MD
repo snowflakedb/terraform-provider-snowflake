@@ -1,5 +1,7 @@
 <!-- Section of preview datasource -->
-## Currently preview datasources - [snowflake_alerts](./docs/data-sources/alerts)
+## Currently preview datasources 
+
+- [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_cortex_search_services](./docs/data-sources/cortex_search_services)
 - [snowflake_current_account](./docs/data-sources/current_account)
 - [snowflake_current_role](./docs/data-sources/current_role)

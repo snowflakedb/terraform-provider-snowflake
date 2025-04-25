@@ -504,13 +504,12 @@ resource "snowflake_execute" "test" {
 The provider supports a number of Snowflake features. Some features are stable, while others are in preview.
 Preview features are **experimental** and may introduce **breaking changes**, even between non-major versions of the provider.
 These features are disabled by default and should be used with caution, as they may not be fully tested or stable for production environments.
-Eventually, every preview resource will be promoted to stable, but the timeline for each feature is not defined (you can find more details on the current/future plans in [our roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md)).
-New resources will be introduced as preview ones and promoted over time to stable as we gain more confidence in their stability.
-
-To use preview resources and datasources, add the relevant feature name to the `preview_features_enabled` field in the [provider configuration](#preview_features_enabled-1).
+To use them, add the relevant feature name to the `preview_features_enabled` field in the [provider configuration](#preview_features_enabled-1).
 
 <!-- Section of stable resource -->
-## Currently stable resources - [snowflake_account](./docs/resources/account)
+## Currently stable resources 
+
+- [snowflake_account](./docs/resources/account)
 - [snowflake_account_parameter](./docs/resources/account_parameter)
 - [snowflake_account_role](./docs/resources/account_role)
 - [snowflake_api_authentication_integration_with_authorization_code_grant](./docs/resources/api_authentication_integration_with_authorization_code_grant)
@@ -559,7 +558,9 @@ To use preview resources and datasources, add the relevant feature name to the `
 - [snowflake_warehouse](./docs/resources/warehouse)
 
 <!-- Section of stable datasource -->
-## Currently stable datasources - [snowflake_account_roles](./docs/data-sources/account_roles)
+## Currently stable datasources 
+
+- [snowflake_account_roles](./docs/data-sources/account_roles)
 - [snowflake_accounts](./docs/data-sources/accounts)
 - [snowflake_connections](./docs/data-sources/connections)
 - [snowflake_database_roles](./docs/data-sources/database_roles)
@@ -581,7 +582,9 @@ To use preview resources and datasources, add the relevant feature name to the `
 - [snowflake_warehouses](./docs/data-sources/warehouses)
 
 <!-- Section of preview resource -->
-## Currently preview resources - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
+## Currently preview resources 
+
+- [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
 - [snowflake_alert](./docs/resources/alert)
 - [snowflake_api_integration](./docs/resources/api_integration)
@@ -624,7 +627,9 @@ To use preview resources and datasources, add the relevant feature name to the `
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
 
 <!-- Section of preview datasource -->
-## Currently preview datasources - [snowflake_alerts](./docs/data-sources/alerts)
+## Currently preview datasources 
+
+- [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_cortex_search_services](./docs/data-sources/cortex_search_services)
 - [snowflake_current_account](./docs/data-sources/current_account)
 - [snowflake_current_role](./docs/data-sources/current_role)
