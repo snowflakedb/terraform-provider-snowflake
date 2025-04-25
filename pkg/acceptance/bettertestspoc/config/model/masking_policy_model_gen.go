@@ -33,15 +33,7 @@ type MaskingPolicyModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func MaskingPolicy(
-	resourceName string,
-	argument []sdk.TableColumnSignature,
-	body string,
-	database string,
-	name string,
-	returnDataType string,
-	schema string,
-) *MaskingPolicyModel {
+func MaskingPolicy(resourceName string, database string, schema string, name string, argument []sdk.TableColumnSignature, body string, returnDataType string) *MaskingPolicyModel {
 	m := &MaskingPolicyModel{ResourceModelMeta: config.Meta(resourceName, resources.MaskingPolicy)}
 	m.WithArgument(argument)
 	m.WithBody(body)

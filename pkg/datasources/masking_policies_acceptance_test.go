@@ -31,7 +31,7 @@ func TestAcc_MaskingPolicies(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
 		{
 			Name: "a",
 			Type: testdatatypes.DataTypeVarchar,
@@ -40,7 +40,7 @@ func TestAcc_MaskingPolicies(t *testing.T) {
 			Name: "b",
 			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName()).WithComment("foo")
+	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns()).WithComment("foo")
 
 	dsName := "data.snowflake_masking_policies.test"
 	resource.Test(t, resource.TestCase{

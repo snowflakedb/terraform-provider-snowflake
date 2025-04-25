@@ -67,7 +67,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			Type: testdatatypes.DataTypeTimestampNTZ,
 		},
 	}
-	policyModel := model.MaskingPolicy("test", argument, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), argument, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -259,7 +259,7 @@ func TestAcc_MaskingPolicy_complete(t *testing.T) {
 			Type: testdatatypes.DataTypeVarchar,
 		},
 	}
-	policyModel := model.MaskingPolicy("test", argument, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName()).WithComment("foo").WithExemptOtherPolicies(r.BooleanTrue)
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), argument, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns()).WithComment("foo").WithExemptOtherPolicies(r.BooleanTrue)
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -446,12 +446,12 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 	newId := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
 		{
 			Name: "a",
 			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
+	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -536,12 +536,12 @@ func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'ok' else '***' end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
 		{
 			Name: "a",
 			Type: testdatatypes.DataTypeText,
 		},
-	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
+	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -577,7 +577,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 
 	comment := random.Comment()
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
 		{
 			Name: "A",
 			Type: testdatatypes.DataTypeVarchar,
@@ -586,7 +586,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 			Name: "b",
 			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName()).WithComment(comment).WithExemptOtherPolicies(r.BooleanTrue)
+	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns()).WithComment(comment).WithExemptOtherPolicies(r.BooleanTrue)
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
