@@ -12,9 +12,11 @@ import (
 )
 
 type FunctionSqlModel struct {
+	Database              tfconfig.Variable `json:"database,omitempty"`
+	Schema                tfconfig.Variable `json:"schema,omitempty"`
+	Name                  tfconfig.Variable `json:"name,omitempty"`
 	Arguments             tfconfig.Variable `json:"arguments,omitempty"`
 	Comment               tfconfig.Variable `json:"comment,omitempty"`
-	Database              tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput   tfconfig.Variable `json:"enable_console_output,omitempty"`
 	FullyQualifiedName    tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	FunctionDefinition    tfconfig.Variable `json:"function_definition,omitempty"`
@@ -22,10 +24,8 @@ type FunctionSqlModel struct {
 	IsSecure              tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel              tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel           tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                  tfconfig.Variable `json:"name,omitempty"`
 	ReturnResultsBehavior tfconfig.Variable `json:"return_results_behavior,omitempty"`
 	ReturnType            tfconfig.Variable `json:"return_type,omitempty"`
-	Schema                tfconfig.Variable `json:"schema,omitempty"`
 	TraceLevel            tfconfig.Variable `json:"trace_level,omitempty"`
 
 	*config.ResourceModelMeta
@@ -35,29 +35,36 @@ type FunctionSqlModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func FunctionSql(resourceName string, database string, schema string, name string, functionDefinition string, returnType string) *FunctionSqlModel {
+func FunctionSql(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	functionDefinition string,
+	returnType string,
+) *FunctionSqlModel {
 	f := &FunctionSqlModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionSql)}
 	f.WithDatabase(database)
-	f.WithFunctionDefinition(functionDefinition)
-	f.WithName(name)
-	f.WithReturnType(returnType)
 	f.WithSchema(schema)
+	f.WithName(name)
+	f.WithFunctionDefinition(functionDefinition)
+	f.WithReturnType(returnType)
 	return f
 }
 
 func FunctionSqlWithDefaultMeta(
 	database string,
-	functionDefinition string,
-	name string,
-	returnType string,
 	schema string,
+	name string,
+	functionDefinition string,
+	returnType string,
 ) *FunctionSqlModel {
 	f := &FunctionSqlModel{ResourceModelMeta: config.DefaultMeta(resources.FunctionSql)}
 	f.WithDatabase(database)
-	f.WithFunctionDefinition(functionDefinition)
-	f.WithName(name)
-	f.WithReturnType(returnType)
 	f.WithSchema(schema)
+	f.WithName(name)
+	f.WithFunctionDefinition(functionDefinition)
+	f.WithReturnType(returnType)
 	return f
 }
 
@@ -85,15 +92,25 @@ func (f *FunctionSqlModel) WithDependsOn(values ...string) *FunctionSqlModel {
 // below all the proper values //
 /////////////////////////////////
 
+func (f *FunctionSqlModel) WithDatabase(database string) *FunctionSqlModel {
+	f.Database = tfconfig.StringVariable(database)
+	return f
+}
+
+func (f *FunctionSqlModel) WithSchema(schema string) *FunctionSqlModel {
+	f.Schema = tfconfig.StringVariable(schema)
+	return f
+}
+
+func (f *FunctionSqlModel) WithName(name string) *FunctionSqlModel {
+	f.Name = tfconfig.StringVariable(name)
+	return f
+}
+
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (f *FunctionSqlModel) WithComment(comment string) *FunctionSqlModel {
 	f.Comment = tfconfig.StringVariable(comment)
-	return f
-}
-
-func (f *FunctionSqlModel) WithDatabase(database string) *FunctionSqlModel {
-	f.Database = tfconfig.StringVariable(database)
 	return f
 }
 
@@ -132,11 +149,6 @@ func (f *FunctionSqlModel) WithMetricLevel(metricLevel string) *FunctionSqlModel
 	return f
 }
 
-func (f *FunctionSqlModel) WithName(name string) *FunctionSqlModel {
-	f.Name = tfconfig.StringVariable(name)
-	return f
-}
-
 func (f *FunctionSqlModel) WithReturnResultsBehavior(returnResultsBehavior string) *FunctionSqlModel {
 	f.ReturnResultsBehavior = tfconfig.StringVariable(returnResultsBehavior)
 	return f
@@ -144,11 +156,6 @@ func (f *FunctionSqlModel) WithReturnResultsBehavior(returnResultsBehavior strin
 
 func (f *FunctionSqlModel) WithReturnType(returnType string) *FunctionSqlModel {
 	f.ReturnType = tfconfig.StringVariable(returnType)
-	return f
-}
-
-func (f *FunctionSqlModel) WithSchema(schema string) *FunctionSqlModel {
-	f.Schema = tfconfig.StringVariable(schema)
 	return f
 }
 
@@ -161,6 +168,21 @@ func (f *FunctionSqlModel) WithTraceLevel(traceLevel string) *FunctionSqlModel {
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (f *FunctionSqlModel) WithDatabaseValue(value tfconfig.Variable) *FunctionSqlModel {
+	f.Database = value
+	return f
+}
+
+func (f *FunctionSqlModel) WithSchemaValue(value tfconfig.Variable) *FunctionSqlModel {
+	f.Schema = value
+	return f
+}
+
+func (f *FunctionSqlModel) WithNameValue(value tfconfig.Variable) *FunctionSqlModel {
+	f.Name = value
+	return f
+}
+
 func (f *FunctionSqlModel) WithArgumentsValue(value tfconfig.Variable) *FunctionSqlModel {
 	f.Arguments = value
 	return f
@@ -168,11 +190,6 @@ func (f *FunctionSqlModel) WithArgumentsValue(value tfconfig.Variable) *Function
 
 func (f *FunctionSqlModel) WithCommentValue(value tfconfig.Variable) *FunctionSqlModel {
 	f.Comment = value
-	return f
-}
-
-func (f *FunctionSqlModel) WithDatabaseValue(value tfconfig.Variable) *FunctionSqlModel {
-	f.Database = value
 	return f
 }
 
@@ -211,11 +228,6 @@ func (f *FunctionSqlModel) WithMetricLevelValue(value tfconfig.Variable) *Functi
 	return f
 }
 
-func (f *FunctionSqlModel) WithNameValue(value tfconfig.Variable) *FunctionSqlModel {
-	f.Name = value
-	return f
-}
-
 func (f *FunctionSqlModel) WithReturnResultsBehaviorValue(value tfconfig.Variable) *FunctionSqlModel {
 	f.ReturnResultsBehavior = value
 	return f
@@ -223,11 +235,6 @@ func (f *FunctionSqlModel) WithReturnResultsBehaviorValue(value tfconfig.Variabl
 
 func (f *FunctionSqlModel) WithReturnTypeValue(value tfconfig.Variable) *FunctionSqlModel {
 	f.ReturnType = value
-	return f
-}
-
-func (f *FunctionSqlModel) WithSchemaValue(value tfconfig.Variable) *FunctionSqlModel {
-	f.Schema = value
 	return f
 }
 

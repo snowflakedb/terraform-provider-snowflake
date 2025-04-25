@@ -12,11 +12,11 @@ import (
 )
 
 type ResourceMonitorModel struct {
+	Name                    tfconfig.Variable `json:"name,omitempty"`
 	CreditQuota             tfconfig.Variable `json:"credit_quota,omitempty"`
 	EndTimestamp            tfconfig.Variable `json:"end_timestamp,omitempty"`
 	Frequency               tfconfig.Variable `json:"frequency,omitempty"`
 	FullyQualifiedName      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                    tfconfig.Variable `json:"name,omitempty"`
 	NotifyTriggers          tfconfig.Variable `json:"notify_triggers,omitempty"`
 	NotifyUsers             tfconfig.Variable `json:"notify_users,omitempty"`
 	StartTimestamp          tfconfig.Variable `json:"start_timestamp,omitempty"`
@@ -71,6 +71,11 @@ func (r *ResourceMonitorModel) WithDependsOn(values ...string) *ResourceMonitorM
 // below all the proper values //
 /////////////////////////////////
 
+func (r *ResourceMonitorModel) WithName(name string) *ResourceMonitorModel {
+	r.Name = tfconfig.StringVariable(name)
+	return r
+}
+
 func (r *ResourceMonitorModel) WithCreditQuota(creditQuota int) *ResourceMonitorModel {
 	r.CreditQuota = tfconfig.IntegerVariable(creditQuota)
 	return r
@@ -88,11 +93,6 @@ func (r *ResourceMonitorModel) WithFrequency(frequency string) *ResourceMonitorM
 
 func (r *ResourceMonitorModel) WithFullyQualifiedName(fullyQualifiedName string) *ResourceMonitorModel {
 	r.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return r
-}
-
-func (r *ResourceMonitorModel) WithName(name string) *ResourceMonitorModel {
-	r.Name = tfconfig.StringVariable(name)
 	return r
 }
 
@@ -119,6 +119,11 @@ func (r *ResourceMonitorModel) WithSuspendTrigger(suspendTrigger int) *ResourceM
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (r *ResourceMonitorModel) WithNameValue(value tfconfig.Variable) *ResourceMonitorModel {
+	r.Name = value
+	return r
+}
+
 func (r *ResourceMonitorModel) WithCreditQuotaValue(value tfconfig.Variable) *ResourceMonitorModel {
 	r.CreditQuota = value
 	return r
@@ -136,11 +141,6 @@ func (r *ResourceMonitorModel) WithFrequencyValue(value tfconfig.Variable) *Reso
 
 func (r *ResourceMonitorModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ResourceMonitorModel {
 	r.FullyQualifiedName = value
-	return r
-}
-
-func (r *ResourceMonitorModel) WithNameValue(value tfconfig.Variable) *ResourceMonitorModel {
-	r.Name = value
 	return r
 }
 

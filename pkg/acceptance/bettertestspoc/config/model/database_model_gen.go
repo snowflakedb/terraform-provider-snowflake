@@ -12,6 +12,7 @@ import (
 )
 
 type DatabaseModel struct {
+	Name                                    tfconfig.Variable `json:"name,omitempty"`
 	Catalog                                 tfconfig.Variable `json:"catalog,omitempty"`
 	Comment                                 tfconfig.Variable `json:"comment,omitempty"`
 	DataRetentionTimeInDays                 tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
@@ -23,7 +24,6 @@ type DatabaseModel struct {
 	IsTransient                             tfconfig.Variable `json:"is_transient,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
-	Name                                    tfconfig.Variable `json:"name,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	ReplaceInvalidCharacters                tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
 	Replication                             tfconfig.Variable `json:"replication,omitempty"`
@@ -83,6 +83,11 @@ func (d *DatabaseModel) WithDependsOn(values ...string) *DatabaseModel {
 // below all the proper values //
 /////////////////////////////////
 
+func (d *DatabaseModel) WithName(name string) *DatabaseModel {
+	d.Name = tfconfig.StringVariable(name)
+	return d
+}
+
 func (d *DatabaseModel) WithCatalog(catalog string) *DatabaseModel {
 	d.Catalog = tfconfig.StringVariable(catalog)
 	return d
@@ -138,11 +143,6 @@ func (d *DatabaseModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDay
 	return d
 }
 
-func (d *DatabaseModel) WithName(name string) *DatabaseModel {
-	d.Name = tfconfig.StringVariable(name)
-	return d
-}
-
 func (d *DatabaseModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *DatabaseModel {
 	d.QuotedIdentifiersIgnoreCase = tfconfig.BoolVariable(quotedIdentifiersIgnoreCase)
 	return d
@@ -193,6 +193,11 @@ func (d *DatabaseModel) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *DatabaseMo
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (d *DatabaseModel) WithNameValue(value tfconfig.Variable) *DatabaseModel {
+	d.Name = value
+	return d
+}
 
 func (d *DatabaseModel) WithCatalogValue(value tfconfig.Variable) *DatabaseModel {
 	d.Catalog = value
@@ -246,11 +251,6 @@ func (d *DatabaseModel) WithLogLevelValue(value tfconfig.Variable) *DatabaseMode
 
 func (d *DatabaseModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.Variable) *DatabaseModel {
 	d.MaxDataExtensionTimeInDays = value
-	return d
-}
-
-func (d *DatabaseModel) WithNameValue(value tfconfig.Variable) *DatabaseModel {
-	d.Name = value
 	return d
 }
 

@@ -12,10 +12,10 @@ import (
 )
 
 type ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel struct {
+	Name                       tfconfig.Variable `json:"name,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                    tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                       tfconfig.Variable `json:"name,omitempty"`
 	OauthAccessTokenValidity   tfconfig.Variable `json:"oauth_access_token_validity,omitempty"`
 	OauthAllowedScopes         tfconfig.Variable `json:"oauth_allowed_scopes,omitempty"`
 	OauthAuthorizationEndpoint tfconfig.Variable `json:"oauth_authorization_endpoint,omitempty"`
@@ -48,14 +48,14 @@ func ApiAuthenticationIntegrationWithAuthorizationCodeGrant(
 }
 
 func ApiAuthenticationIntegrationWithAuthorizationCodeGrantWithDefaultMeta(
-	enabled bool,
 	name string,
+	enabled bool,
 	oauthClientId string,
 	oauthClientSecret string,
 ) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
 	a := &ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel{ResourceModelMeta: config.DefaultMeta(resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant)}
-	a.WithEnabled(enabled)
 	a.WithName(name)
+	a.WithEnabled(enabled)
 	a.WithOauthClientId(oauthClientId)
 	a.WithOauthClientSecret(oauthClientSecret)
 	return a
@@ -85,6 +85,11 @@ func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithDepend
 // below all the proper values //
 /////////////////////////////////
 
+func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithName(name string) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
+	a.Name = tfconfig.StringVariable(name)
+	return a
+}
+
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithComment(comment string) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
 	a.Comment = tfconfig.StringVariable(comment)
 	return a
@@ -97,11 +102,6 @@ func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithEnable
 
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithFullyQualifiedName(fullyQualifiedName string) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
 	a.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithName(name string) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
-	a.Name = tfconfig.StringVariable(name)
 	return a
 }
 
@@ -146,6 +146,11 @@ func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithOauthT
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithNameValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
+	a.Name = value
+	return a
+}
+
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithCommentValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
 	a.Comment = value
 	return a
@@ -158,11 +163,6 @@ func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithEnable
 
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
 	a.FullyQualifiedName = value
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithNameValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
-	a.Name = value
 	return a
 }
 

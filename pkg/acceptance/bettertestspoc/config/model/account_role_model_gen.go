@@ -12,9 +12,9 @@ import (
 )
 
 type AccountRoleModel struct {
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -64,6 +64,11 @@ func (a *AccountRoleModel) WithDependsOn(values ...string) *AccountRoleModel {
 // below all the proper values //
 /////////////////////////////////
 
+func (a *AccountRoleModel) WithName(name string) *AccountRoleModel {
+	a.Name = tfconfig.StringVariable(name)
+	return a
+}
+
 func (a *AccountRoleModel) WithComment(comment string) *AccountRoleModel {
 	a.Comment = tfconfig.StringVariable(comment)
 	return a
@@ -74,14 +79,14 @@ func (a *AccountRoleModel) WithFullyQualifiedName(fullyQualifiedName string) *Ac
 	return a
 }
 
-func (a *AccountRoleModel) WithName(name string) *AccountRoleModel {
-	a.Name = tfconfig.StringVariable(name)
-	return a
-}
-
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (a *AccountRoleModel) WithNameValue(value tfconfig.Variable) *AccountRoleModel {
+	a.Name = value
+	return a
+}
 
 func (a *AccountRoleModel) WithCommentValue(value tfconfig.Variable) *AccountRoleModel {
 	a.Comment = value
@@ -90,10 +95,5 @@ func (a *AccountRoleModel) WithCommentValue(value tfconfig.Variable) *AccountRol
 
 func (a *AccountRoleModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *AccountRoleModel {
 	a.FullyQualifiedName = value
-	return a
-}
-
-func (a *AccountRoleModel) WithNameValue(value tfconfig.Variable) *AccountRoleModel {
-	a.Name = value
 	return a
 }

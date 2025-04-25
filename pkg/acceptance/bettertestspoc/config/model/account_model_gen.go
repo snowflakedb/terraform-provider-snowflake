@@ -12,6 +12,7 @@ import (
 )
 
 type AccountModel struct {
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	AdminName          tfconfig.Variable `json:"admin_name,omitempty"`
 	AdminPassword      tfconfig.Variable `json:"admin_password,omitempty"`
 	AdminRsaPublicKey  tfconfig.Variable `json:"admin_rsa_public_key,omitempty"`
@@ -25,7 +26,6 @@ type AccountModel struct {
 	IsOrgAdmin         tfconfig.Variable `json:"is_org_admin,omitempty"`
 	LastName           tfconfig.Variable `json:"last_name,omitempty"`
 	MustChangePassword tfconfig.Variable `json:"must_change_password,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
 	Region             tfconfig.Variable `json:"region,omitempty"`
 	RegionGroup        tfconfig.Variable `json:"region_group,omitempty"`
 
@@ -54,18 +54,18 @@ func Account(
 }
 
 func AccountWithDefaultMeta(
+	name string,
 	adminName string,
 	edition string,
 	email string,
 	gracePeriodInDays int,
-	name string,
 ) *AccountModel {
 	a := &AccountModel{ResourceModelMeta: config.DefaultMeta(resources.Account)}
+	a.WithName(name)
 	a.WithAdminName(adminName)
 	a.WithEdition(edition)
 	a.WithEmail(email)
 	a.WithGracePeriodInDays(gracePeriodInDays)
-	a.WithName(name)
 	return a
 }
 
@@ -92,6 +92,11 @@ func (a *AccountModel) WithDependsOn(values ...string) *AccountModel {
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (a *AccountModel) WithName(name string) *AccountModel {
+	a.Name = tfconfig.StringVariable(name)
+	return a
+}
 
 func (a *AccountModel) WithAdminName(adminName string) *AccountModel {
 	a.AdminName = tfconfig.StringVariable(adminName)
@@ -158,11 +163,6 @@ func (a *AccountModel) WithMustChangePassword(mustChangePassword string) *Accoun
 	return a
 }
 
-func (a *AccountModel) WithName(name string) *AccountModel {
-	a.Name = tfconfig.StringVariable(name)
-	return a
-}
-
 func (a *AccountModel) WithRegion(region string) *AccountModel {
 	a.Region = tfconfig.StringVariable(region)
 	return a
@@ -176,6 +176,11 @@ func (a *AccountModel) WithRegionGroup(regionGroup string) *AccountModel {
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (a *AccountModel) WithNameValue(value tfconfig.Variable) *AccountModel {
+	a.Name = value
+	return a
+}
 
 func (a *AccountModel) WithAdminNameValue(value tfconfig.Variable) *AccountModel {
 	a.AdminName = value
@@ -239,11 +244,6 @@ func (a *AccountModel) WithLastNameValue(value tfconfig.Variable) *AccountModel 
 
 func (a *AccountModel) WithMustChangePasswordValue(value tfconfig.Variable) *AccountModel {
 	a.MustChangePassword = value
-	return a
-}
-
-func (a *AccountModel) WithNameValue(value tfconfig.Variable) *AccountModel {
-	a.Name = value
 	return a
 }
 

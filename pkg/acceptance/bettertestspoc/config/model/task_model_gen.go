@@ -12,6 +12,9 @@ import (
 )
 
 type TaskModel struct {
+	Database                                 tfconfig.Variable `json:"database,omitempty"`
+	Schema                                   tfconfig.Variable `json:"schema,omitempty"`
+	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                       tfconfig.Variable `json:"abort_detached_query,omitempty"`
 	After                                    tfconfig.Variable `json:"after,omitempty"`
 	AllowOverlappingExecution                tfconfig.Variable `json:"allow_overlapping_execution,omitempty"`
@@ -28,7 +31,6 @@ type TaskModel struct {
 	ClientTimestampTypeMapping               tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
 	Comment                                  tfconfig.Variable `json:"comment,omitempty"`
 	Config                                   tfconfig.Variable `json:"config,omitempty"`
-	Database                                 tfconfig.Variable `json:"database,omitempty"`
 	DateInputFormat                          tfconfig.Variable `json:"date_input_format,omitempty"`
 	DateOutputFormat                         tfconfig.Variable `json:"date_output_format,omitempty"`
 	EnableUnloadPhysicalTypeOptimization     tfconfig.Variable `json:"enable_unload_physical_type_optimization,omitempty"`
@@ -45,7 +47,6 @@ type TaskModel struct {
 	LockTimeout                              tfconfig.Variable `json:"lock_timeout,omitempty"`
 	LogLevel                                 tfconfig.Variable `json:"log_level,omitempty"`
 	MultiStatementCount                      tfconfig.Variable `json:"multi_statement_count,omitempty"`
-	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	NoorderSequenceAsDefault                 tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
 	OdbcTreatDecimalAsInt                    tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
 	QueryTag                                 tfconfig.Variable `json:"query_tag,omitempty"`
@@ -53,7 +54,6 @@ type TaskModel struct {
 	RowsPerResultset                         tfconfig.Variable `json:"rows_per_resultset,omitempty"`
 	S3StageVpceDnsName                       tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
 	Schedule                                 tfconfig.Variable `json:"schedule,omitempty"`
-	Schema                                   tfconfig.Variable `json:"schema,omitempty"`
 	SearchPath                               tfconfig.Variable `json:"search_path,omitempty"`
 	SqlStatement                             tfconfig.Variable `json:"sql_statement,omitempty"`
 	Started                                  tfconfig.Variable `json:"started,omitempty"`
@@ -93,11 +93,18 @@ type TaskModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func Task(resourceName string, database string, schema string, name string, sqlStatement string, started bool) *TaskModel {
+func Task(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	sqlStatement string,
+	started bool,
+) *TaskModel {
 	t := &TaskModel{ResourceModelMeta: config.Meta(resourceName, resources.Task)}
 	t.WithDatabase(database)
-	t.WithName(name)
 	t.WithSchema(schema)
+	t.WithName(name)
 	t.WithSqlStatement(sqlStatement)
 	t.WithStarted(started)
 	return t
@@ -105,15 +112,15 @@ func Task(resourceName string, database string, schema string, name string, sqlS
 
 func TaskWithDefaultMeta(
 	database string,
-	name string,
 	schema string,
+	name string,
 	sqlStatement string,
 	started bool,
 ) *TaskModel {
 	t := &TaskModel{ResourceModelMeta: config.DefaultMeta(resources.Task)}
 	t.WithDatabase(database)
-	t.WithName(name)
 	t.WithSchema(schema)
+	t.WithName(name)
 	t.WithSqlStatement(sqlStatement)
 	t.WithStarted(started)
 	return t
@@ -142,6 +149,21 @@ func (t *TaskModel) WithDependsOn(values ...string) *TaskModel {
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (t *TaskModel) WithDatabase(database string) *TaskModel {
+	t.Database = tfconfig.StringVariable(database)
+	return t
+}
+
+func (t *TaskModel) WithSchema(schema string) *TaskModel {
+	t.Schema = tfconfig.StringVariable(schema)
+	return t
+}
+
+func (t *TaskModel) WithName(name string) *TaskModel {
+	t.Name = tfconfig.StringVariable(name)
+	return t
+}
 
 func (t *TaskModel) WithAbortDetachedQuery(abortDetachedQuery bool) *TaskModel {
 	t.AbortDetachedQuery = tfconfig.BoolVariable(abortDetachedQuery)
@@ -217,11 +239,6 @@ func (t *TaskModel) WithComment(comment string) *TaskModel {
 
 func (t *TaskModel) WithConfig(config string) *TaskModel {
 	t.Config = tfconfig.StringVariable(config)
-	return t
-}
-
-func (t *TaskModel) WithDatabase(database string) *TaskModel {
-	t.Database = tfconfig.StringVariable(database)
 	return t
 }
 
@@ -305,11 +322,6 @@ func (t *TaskModel) WithMultiStatementCount(multiStatementCount int) *TaskModel 
 	return t
 }
 
-func (t *TaskModel) WithName(name string) *TaskModel {
-	t.Name = tfconfig.StringVariable(name)
-	return t
-}
-
 func (t *TaskModel) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *TaskModel {
 	t.NoorderSequenceAsDefault = tfconfig.BoolVariable(noorderSequenceAsDefault)
 	return t
@@ -341,11 +353,6 @@ func (t *TaskModel) WithS3StageVpceDnsName(s3StageVpceDnsName string) *TaskModel
 }
 
 // schedule attribute type is not yet supported, so WithSchedule can't be generated
-
-func (t *TaskModel) WithSchema(schema string) *TaskModel {
-	t.Schema = tfconfig.StringVariable(schema)
-	return t
-}
 
 func (t *TaskModel) WithSearchPath(searchPath string) *TaskModel {
 	t.SearchPath = tfconfig.StringVariable(searchPath)
@@ -506,6 +513,21 @@ func (t *TaskModel) WithWhen(when string) *TaskModel {
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (t *TaskModel) WithDatabaseValue(value tfconfig.Variable) *TaskModel {
+	t.Database = value
+	return t
+}
+
+func (t *TaskModel) WithSchemaValue(value tfconfig.Variable) *TaskModel {
+	t.Schema = value
+	return t
+}
+
+func (t *TaskModel) WithNameValue(value tfconfig.Variable) *TaskModel {
+	t.Name = value
+	return t
+}
+
 func (t *TaskModel) WithAbortDetachedQueryValue(value tfconfig.Variable) *TaskModel {
 	t.AbortDetachedQuery = value
 	return t
@@ -583,11 +605,6 @@ func (t *TaskModel) WithCommentValue(value tfconfig.Variable) *TaskModel {
 
 func (t *TaskModel) WithConfigValue(value tfconfig.Variable) *TaskModel {
 	t.Config = value
-	return t
-}
-
-func (t *TaskModel) WithDatabaseValue(value tfconfig.Variable) *TaskModel {
-	t.Database = value
 	return t
 }
 
@@ -671,11 +688,6 @@ func (t *TaskModel) WithMultiStatementCountValue(value tfconfig.Variable) *TaskM
 	return t
 }
 
-func (t *TaskModel) WithNameValue(value tfconfig.Variable) *TaskModel {
-	t.Name = value
-	return t
-}
-
 func (t *TaskModel) WithNoorderSequenceAsDefaultValue(value tfconfig.Variable) *TaskModel {
 	t.NoorderSequenceAsDefault = value
 	return t
@@ -708,11 +720,6 @@ func (t *TaskModel) WithS3StageVpceDnsNameValue(value tfconfig.Variable) *TaskMo
 
 func (t *TaskModel) WithScheduleValue(value tfconfig.Variable) *TaskModel {
 	t.Schedule = value
-	return t
-}
-
-func (t *TaskModel) WithSchemaValue(value tfconfig.Variable) *TaskModel {
-	t.Schema = value
 	return t
 }
 

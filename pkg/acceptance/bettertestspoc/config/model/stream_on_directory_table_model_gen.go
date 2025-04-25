@@ -12,12 +12,12 @@ import (
 )
 
 type StreamOnDirectoryTableModel struct {
+	Database           tfconfig.Variable `json:"database,omitempty"`
+	Schema             tfconfig.Variable `json:"schema,omitempty"`
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	CopyGrants         tfconfig.Variable `json:"copy_grants,omitempty"`
-	Database           tfconfig.Variable `json:"database,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	Stage              tfconfig.Variable `json:"stage,omitempty"`
 	Stale              tfconfig.Variable `json:"stale,omitempty"`
 	StreamType         tfconfig.Variable `json:"stream_type,omitempty"`
@@ -29,25 +29,31 @@ type StreamOnDirectoryTableModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func StreamOnDirectoryTable(resourceName string, database string, schema string, name string, stage string) *StreamOnDirectoryTableModel {
+func StreamOnDirectoryTable(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	stage string,
+) *StreamOnDirectoryTableModel {
 	s := &StreamOnDirectoryTableModel{ResourceModelMeta: config.Meta(resourceName, resources.StreamOnDirectoryTable)}
 	s.WithDatabase(database)
-	s.WithName(name)
 	s.WithSchema(schema)
+	s.WithName(name)
 	s.WithStage(stage)
 	return s
 }
 
 func StreamOnDirectoryTableWithDefaultMeta(
 	database string,
-	name string,
 	schema string,
+	name string,
 	stage string,
 ) *StreamOnDirectoryTableModel {
 	s := &StreamOnDirectoryTableModel{ResourceModelMeta: config.DefaultMeta(resources.StreamOnDirectoryTable)}
 	s.WithDatabase(database)
-	s.WithName(name)
 	s.WithSchema(schema)
+	s.WithName(name)
 	s.WithStage(stage)
 	return s
 }
@@ -76,6 +82,21 @@ func (s *StreamOnDirectoryTableModel) WithDependsOn(values ...string) *StreamOnD
 // below all the proper values //
 /////////////////////////////////
 
+func (s *StreamOnDirectoryTableModel) WithDatabase(database string) *StreamOnDirectoryTableModel {
+	s.Database = tfconfig.StringVariable(database)
+	return s
+}
+
+func (s *StreamOnDirectoryTableModel) WithSchema(schema string) *StreamOnDirectoryTableModel {
+	s.Schema = tfconfig.StringVariable(schema)
+	return s
+}
+
+func (s *StreamOnDirectoryTableModel) WithName(name string) *StreamOnDirectoryTableModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
+
 func (s *StreamOnDirectoryTableModel) WithComment(comment string) *StreamOnDirectoryTableModel {
 	s.Comment = tfconfig.StringVariable(comment)
 	return s
@@ -86,23 +107,8 @@ func (s *StreamOnDirectoryTableModel) WithCopyGrants(copyGrants bool) *StreamOnD
 	return s
 }
 
-func (s *StreamOnDirectoryTableModel) WithDatabase(database string) *StreamOnDirectoryTableModel {
-	s.Database = tfconfig.StringVariable(database)
-	return s
-}
-
 func (s *StreamOnDirectoryTableModel) WithFullyQualifiedName(fullyQualifiedName string) *StreamOnDirectoryTableModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return s
-}
-
-func (s *StreamOnDirectoryTableModel) WithName(name string) *StreamOnDirectoryTableModel {
-	s.Name = tfconfig.StringVariable(name)
-	return s
-}
-
-func (s *StreamOnDirectoryTableModel) WithSchema(schema string) *StreamOnDirectoryTableModel {
-	s.Schema = tfconfig.StringVariable(schema)
 	return s
 }
 
@@ -125,6 +131,21 @@ func (s *StreamOnDirectoryTableModel) WithStreamType(streamType string) *StreamO
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (s *StreamOnDirectoryTableModel) WithDatabaseValue(value tfconfig.Variable) *StreamOnDirectoryTableModel {
+	s.Database = value
+	return s
+}
+
+func (s *StreamOnDirectoryTableModel) WithSchemaValue(value tfconfig.Variable) *StreamOnDirectoryTableModel {
+	s.Schema = value
+	return s
+}
+
+func (s *StreamOnDirectoryTableModel) WithNameValue(value tfconfig.Variable) *StreamOnDirectoryTableModel {
+	s.Name = value
+	return s
+}
+
 func (s *StreamOnDirectoryTableModel) WithCommentValue(value tfconfig.Variable) *StreamOnDirectoryTableModel {
 	s.Comment = value
 	return s
@@ -135,23 +156,8 @@ func (s *StreamOnDirectoryTableModel) WithCopyGrantsValue(value tfconfig.Variabl
 	return s
 }
 
-func (s *StreamOnDirectoryTableModel) WithDatabaseValue(value tfconfig.Variable) *StreamOnDirectoryTableModel {
-	s.Database = value
-	return s
-}
-
 func (s *StreamOnDirectoryTableModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *StreamOnDirectoryTableModel {
 	s.FullyQualifiedName = value
-	return s
-}
-
-func (s *StreamOnDirectoryTableModel) WithNameValue(value tfconfig.Variable) *StreamOnDirectoryTableModel {
-	s.Name = value
-	return s
-}
-
-func (s *StreamOnDirectoryTableModel) WithSchemaValue(value tfconfig.Variable) *StreamOnDirectoryTableModel {
-	s.Schema = value
 	return s
 }
 

@@ -12,12 +12,12 @@ import (
 )
 
 type SecretWithBasicAuthenticationModel struct {
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	Database           tfconfig.Variable `json:"database,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	Password           tfconfig.Variable `json:"password,omitempty"`
 	Schema             tfconfig.Variable `json:"schema,omitempty"`
+	Name               tfconfig.Variable `json:"name,omitempty"`
+	Comment            tfconfig.Variable `json:"comment,omitempty"`
+	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	Password           tfconfig.Variable `json:"password,omitempty"`
 	SecretType         tfconfig.Variable `json:"secret_type,omitempty"`
 	Username           tfconfig.Variable `json:"username,omitempty"`
 
@@ -28,28 +28,35 @@ type SecretWithBasicAuthenticationModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SecretWithBasicAuthentication(resourceName string, database string, schema string, name string, password string, username string) *SecretWithBasicAuthenticationModel {
+func SecretWithBasicAuthentication(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	password string,
+	username string,
+) *SecretWithBasicAuthenticationModel {
 	s := &SecretWithBasicAuthenticationModel{ResourceModelMeta: config.Meta(resourceName, resources.SecretWithBasicAuthentication)}
 	s.WithDatabase(database)
+	s.WithSchema(schema)
 	s.WithName(name)
 	s.WithPassword(password)
-	s.WithSchema(schema)
 	s.WithUsername(username)
 	return s
 }
 
 func SecretWithBasicAuthenticationWithDefaultMeta(
 	database string,
+	schema string,
 	name string,
 	password string,
-	schema string,
 	username string,
 ) *SecretWithBasicAuthenticationModel {
 	s := &SecretWithBasicAuthenticationModel{ResourceModelMeta: config.DefaultMeta(resources.SecretWithBasicAuthentication)}
 	s.WithDatabase(database)
+	s.WithSchema(schema)
 	s.WithName(name)
 	s.WithPassword(password)
-	s.WithSchema(schema)
 	s.WithUsername(username)
 	return s
 }
@@ -78,18 +85,13 @@ func (s *SecretWithBasicAuthenticationModel) WithDependsOn(values ...string) *Se
 // below all the proper values //
 /////////////////////////////////
 
-func (s *SecretWithBasicAuthenticationModel) WithComment(comment string) *SecretWithBasicAuthenticationModel {
-	s.Comment = tfconfig.StringVariable(comment)
-	return s
-}
-
 func (s *SecretWithBasicAuthenticationModel) WithDatabase(database string) *SecretWithBasicAuthenticationModel {
 	s.Database = tfconfig.StringVariable(database)
 	return s
 }
 
-func (s *SecretWithBasicAuthenticationModel) WithFullyQualifiedName(fullyQualifiedName string) *SecretWithBasicAuthenticationModel {
-	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+func (s *SecretWithBasicAuthenticationModel) WithSchema(schema string) *SecretWithBasicAuthenticationModel {
+	s.Schema = tfconfig.StringVariable(schema)
 	return s
 }
 
@@ -98,13 +100,18 @@ func (s *SecretWithBasicAuthenticationModel) WithName(name string) *SecretWithBa
 	return s
 }
 
-func (s *SecretWithBasicAuthenticationModel) WithPassword(password string) *SecretWithBasicAuthenticationModel {
-	s.Password = tfconfig.StringVariable(password)
+func (s *SecretWithBasicAuthenticationModel) WithComment(comment string) *SecretWithBasicAuthenticationModel {
+	s.Comment = tfconfig.StringVariable(comment)
 	return s
 }
 
-func (s *SecretWithBasicAuthenticationModel) WithSchema(schema string) *SecretWithBasicAuthenticationModel {
-	s.Schema = tfconfig.StringVariable(schema)
+func (s *SecretWithBasicAuthenticationModel) WithFullyQualifiedName(fullyQualifiedName string) *SecretWithBasicAuthenticationModel {
+	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationModel) WithPassword(password string) *SecretWithBasicAuthenticationModel {
+	s.Password = tfconfig.StringVariable(password)
 	return s
 }
 
@@ -122,18 +129,13 @@ func (s *SecretWithBasicAuthenticationModel) WithUsername(username string) *Secr
 // below it's possible to set any value //
 //////////////////////////////////////////
 
-func (s *SecretWithBasicAuthenticationModel) WithCommentValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
-	s.Comment = value
-	return s
-}
-
 func (s *SecretWithBasicAuthenticationModel) WithDatabaseValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
 	s.Database = value
 	return s
 }
 
-func (s *SecretWithBasicAuthenticationModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
-	s.FullyQualifiedName = value
+func (s *SecretWithBasicAuthenticationModel) WithSchemaValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
+	s.Schema = value
 	return s
 }
 
@@ -142,13 +144,18 @@ func (s *SecretWithBasicAuthenticationModel) WithNameValue(value tfconfig.Variab
 	return s
 }
 
-func (s *SecretWithBasicAuthenticationModel) WithPasswordValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
-	s.Password = value
+func (s *SecretWithBasicAuthenticationModel) WithCommentValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
+	s.Comment = value
 	return s
 }
 
-func (s *SecretWithBasicAuthenticationModel) WithSchemaValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
-	s.Schema = value
+func (s *SecretWithBasicAuthenticationModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
+	s.FullyQualifiedName = value
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationModel) WithPasswordValue(value tfconfig.Variable) *SecretWithBasicAuthenticationModel {
+	s.Password = value
 	return s
 }
 

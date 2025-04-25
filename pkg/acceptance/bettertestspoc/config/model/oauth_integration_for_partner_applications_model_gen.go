@@ -12,11 +12,11 @@ import (
 )
 
 type OauthIntegrationForPartnerApplicationsModel struct {
+	Name                      tfconfig.Variable `json:"name,omitempty"`
 	BlockedRolesList          tfconfig.Variable `json:"blocked_roles_list,omitempty"`
 	Comment                   tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                   tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName        tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                      tfconfig.Variable `json:"name,omitempty"`
 	OauthClient               tfconfig.Variable `json:"oauth_client,omitempty"`
 	OauthIssueRefreshTokens   tfconfig.Variable `json:"oauth_issue_refresh_tokens,omitempty"`
 	OauthRedirectUri          tfconfig.Variable `json:"oauth_redirect_uri,omitempty"`
@@ -76,6 +76,11 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithDependsOn(values ...st
 // below all the proper values //
 /////////////////////////////////
 
+func (o *OauthIntegrationForPartnerApplicationsModel) WithName(name string) *OauthIntegrationForPartnerApplicationsModel {
+	o.Name = tfconfig.StringVariable(name)
+	return o
+}
+
 // blocked_roles_list attribute type is not yet supported, so WithBlockedRolesList can't be generated
 
 func (o *OauthIntegrationForPartnerApplicationsModel) WithComment(comment string) *OauthIntegrationForPartnerApplicationsModel {
@@ -90,11 +95,6 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithEnabled(enabled string
 
 func (o *OauthIntegrationForPartnerApplicationsModel) WithFullyQualifiedName(fullyQualifiedName string) *OauthIntegrationForPartnerApplicationsModel {
 	o.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsModel) WithName(name string) *OauthIntegrationForPartnerApplicationsModel {
-	o.Name = tfconfig.StringVariable(name)
 	return o
 }
 
@@ -129,6 +129,11 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithOauthUseSecondaryRoles
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (o *OauthIntegrationForPartnerApplicationsModel) WithNameValue(value tfconfig.Variable) *OauthIntegrationForPartnerApplicationsModel {
+	o.Name = value
+	return o
+}
+
 func (o *OauthIntegrationForPartnerApplicationsModel) WithBlockedRolesListValue(value tfconfig.Variable) *OauthIntegrationForPartnerApplicationsModel {
 	o.BlockedRolesList = value
 	return o
@@ -146,11 +151,6 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithEnabledValue(value tfc
 
 func (o *OauthIntegrationForPartnerApplicationsModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *OauthIntegrationForPartnerApplicationsModel {
 	o.FullyQualifiedName = value
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsModel) WithNameValue(value tfconfig.Variable) *OauthIntegrationForPartnerApplicationsModel {
-	o.Name = value
 	return o
 }
 

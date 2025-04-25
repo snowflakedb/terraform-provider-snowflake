@@ -12,21 +12,21 @@ import (
 )
 
 type ProcedureJavascriptModel struct {
+	Database            tfconfig.Variable `json:"database,omitempty"`
+	Schema              tfconfig.Variable `json:"schema,omitempty"`
+	Name                tfconfig.Variable `json:"name,omitempty"`
 	Arguments           tfconfig.Variable `json:"arguments,omitempty"`
 	Comment             tfconfig.Variable `json:"comment,omitempty"`
-	Database            tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExecuteAs           tfconfig.Variable `json:"execute_as,omitempty"`
 	FullyQualifiedName  tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsSecure            tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel            tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel         tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                tfconfig.Variable `json:"name,omitempty"`
 	NullInputBehavior   tfconfig.Variable `json:"null_input_behavior,omitempty"`
 	ProcedureDefinition tfconfig.Variable `json:"procedure_definition,omitempty"`
 	ProcedureLanguage   tfconfig.Variable `json:"procedure_language,omitempty"`
 	ReturnType          tfconfig.Variable `json:"return_type,omitempty"`
-	Schema              tfconfig.Variable `json:"schema,omitempty"`
 	TraceLevel          tfconfig.Variable `json:"trace_level,omitempty"`
 
 	*config.ResourceModelMeta
@@ -36,29 +36,36 @@ type ProcedureJavascriptModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ProcedureJavascript(resourceName string, database string, schema string, name string, procedureDefinition string, returnType string) *ProcedureJavascriptModel {
+func ProcedureJavascript(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	procedureDefinition string,
+	returnType string,
+) *ProcedureJavascriptModel {
 	p := &ProcedureJavascriptModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedureJavascript)}
 	p.WithDatabase(database)
+	p.WithSchema(schema)
 	p.WithName(name)
 	p.WithProcedureDefinition(procedureDefinition)
 	p.WithReturnType(returnType)
-	p.WithSchema(schema)
 	return p
 }
 
 func ProcedureJavascriptWithDefaultMeta(
 	database string,
+	schema string,
 	name string,
 	procedureDefinition string,
 	returnType string,
-	schema string,
 ) *ProcedureJavascriptModel {
 	p := &ProcedureJavascriptModel{ResourceModelMeta: config.DefaultMeta(resources.ProcedureJavascript)}
 	p.WithDatabase(database)
+	p.WithSchema(schema)
 	p.WithName(name)
 	p.WithProcedureDefinition(procedureDefinition)
 	p.WithReturnType(returnType)
-	p.WithSchema(schema)
 	return p
 }
 
@@ -86,15 +93,25 @@ func (p *ProcedureJavascriptModel) WithDependsOn(values ...string) *ProcedureJav
 // below all the proper values //
 /////////////////////////////////
 
+func (p *ProcedureJavascriptModel) WithDatabase(database string) *ProcedureJavascriptModel {
+	p.Database = tfconfig.StringVariable(database)
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithSchema(schema string) *ProcedureJavascriptModel {
+	p.Schema = tfconfig.StringVariable(schema)
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithName(name string) *ProcedureJavascriptModel {
+	p.Name = tfconfig.StringVariable(name)
+	return p
+}
+
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (p *ProcedureJavascriptModel) WithComment(comment string) *ProcedureJavascriptModel {
 	p.Comment = tfconfig.StringVariable(comment)
-	return p
-}
-
-func (p *ProcedureJavascriptModel) WithDatabase(database string) *ProcedureJavascriptModel {
-	p.Database = tfconfig.StringVariable(database)
 	return p
 }
 
@@ -128,11 +145,6 @@ func (p *ProcedureJavascriptModel) WithMetricLevel(metricLevel string) *Procedur
 	return p
 }
 
-func (p *ProcedureJavascriptModel) WithName(name string) *ProcedureJavascriptModel {
-	p.Name = tfconfig.StringVariable(name)
-	return p
-}
-
 func (p *ProcedureJavascriptModel) WithNullInputBehavior(nullInputBehavior string) *ProcedureJavascriptModel {
 	p.NullInputBehavior = tfconfig.StringVariable(nullInputBehavior)
 	return p
@@ -153,11 +165,6 @@ func (p *ProcedureJavascriptModel) WithReturnType(returnType string) *ProcedureJ
 	return p
 }
 
-func (p *ProcedureJavascriptModel) WithSchema(schema string) *ProcedureJavascriptModel {
-	p.Schema = tfconfig.StringVariable(schema)
-	return p
-}
-
 func (p *ProcedureJavascriptModel) WithTraceLevel(traceLevel string) *ProcedureJavascriptModel {
 	p.TraceLevel = tfconfig.StringVariable(traceLevel)
 	return p
@@ -167,6 +174,21 @@ func (p *ProcedureJavascriptModel) WithTraceLevel(traceLevel string) *ProcedureJ
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (p *ProcedureJavascriptModel) WithDatabaseValue(value tfconfig.Variable) *ProcedureJavascriptModel {
+	p.Database = value
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithSchemaValue(value tfconfig.Variable) *ProcedureJavascriptModel {
+	p.Schema = value
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithNameValue(value tfconfig.Variable) *ProcedureJavascriptModel {
+	p.Name = value
+	return p
+}
+
 func (p *ProcedureJavascriptModel) WithArgumentsValue(value tfconfig.Variable) *ProcedureJavascriptModel {
 	p.Arguments = value
 	return p
@@ -174,11 +196,6 @@ func (p *ProcedureJavascriptModel) WithArgumentsValue(value tfconfig.Variable) *
 
 func (p *ProcedureJavascriptModel) WithCommentValue(value tfconfig.Variable) *ProcedureJavascriptModel {
 	p.Comment = value
-	return p
-}
-
-func (p *ProcedureJavascriptModel) WithDatabaseValue(value tfconfig.Variable) *ProcedureJavascriptModel {
-	p.Database = value
 	return p
 }
 
@@ -212,11 +229,6 @@ func (p *ProcedureJavascriptModel) WithMetricLevelValue(value tfconfig.Variable)
 	return p
 }
 
-func (p *ProcedureJavascriptModel) WithNameValue(value tfconfig.Variable) *ProcedureJavascriptModel {
-	p.Name = value
-	return p
-}
-
 func (p *ProcedureJavascriptModel) WithNullInputBehaviorValue(value tfconfig.Variable) *ProcedureJavascriptModel {
 	p.NullInputBehavior = value
 	return p
@@ -234,11 +246,6 @@ func (p *ProcedureJavascriptModel) WithProcedureLanguageValue(value tfconfig.Var
 
 func (p *ProcedureJavascriptModel) WithReturnTypeValue(value tfconfig.Variable) *ProcedureJavascriptModel {
 	p.ReturnType = value
-	return p
-}
-
-func (p *ProcedureJavascriptModel) WithSchemaValue(value tfconfig.Variable) *ProcedureJavascriptModel {
-	p.Schema = value
 	return p
 }
 

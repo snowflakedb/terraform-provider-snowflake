@@ -12,11 +12,11 @@ import (
 )
 
 type SecondaryConnectionModel struct {
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	AsReplicaOf        tfconfig.Variable `json:"as_replica_of,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsPrimary          tfconfig.Variable `json:"is_primary,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -25,20 +25,24 @@ type SecondaryConnectionModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func SecondaryConnection(resourceName string, name string, asReplicaOf string) *SecondaryConnectionModel {
+func SecondaryConnection(
+	resourceName string,
+	name string,
+	asReplicaOf string,
+) *SecondaryConnectionModel {
 	s := &SecondaryConnectionModel{ResourceModelMeta: config.Meta(resourceName, resources.SecondaryConnection)}
-	s.WithAsReplicaOf(asReplicaOf)
 	s.WithName(name)
+	s.WithAsReplicaOf(asReplicaOf)
 	return s
 }
 
 func SecondaryConnectionWithDefaultMeta(
-	asReplicaOf string,
 	name string,
+	asReplicaOf string,
 ) *SecondaryConnectionModel {
 	s := &SecondaryConnectionModel{ResourceModelMeta: config.DefaultMeta(resources.SecondaryConnection)}
-	s.WithAsReplicaOf(asReplicaOf)
 	s.WithName(name)
+	s.WithAsReplicaOf(asReplicaOf)
 	return s
 }
 
@@ -66,6 +70,11 @@ func (s *SecondaryConnectionModel) WithDependsOn(values ...string) *SecondaryCon
 // below all the proper values //
 /////////////////////////////////
 
+func (s *SecondaryConnectionModel) WithName(name string) *SecondaryConnectionModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
+
 func (s *SecondaryConnectionModel) WithAsReplicaOf(asReplicaOf string) *SecondaryConnectionModel {
 	s.AsReplicaOf = tfconfig.StringVariable(asReplicaOf)
 	return s
@@ -86,14 +95,14 @@ func (s *SecondaryConnectionModel) WithIsPrimary(isPrimary bool) *SecondaryConne
 	return s
 }
 
-func (s *SecondaryConnectionModel) WithName(name string) *SecondaryConnectionModel {
-	s.Name = tfconfig.StringVariable(name)
-	return s
-}
-
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (s *SecondaryConnectionModel) WithNameValue(value tfconfig.Variable) *SecondaryConnectionModel {
+	s.Name = value
+	return s
+}
 
 func (s *SecondaryConnectionModel) WithAsReplicaOfValue(value tfconfig.Variable) *SecondaryConnectionModel {
 	s.AsReplicaOf = value
@@ -112,10 +121,5 @@ func (s *SecondaryConnectionModel) WithFullyQualifiedNameValue(value tfconfig.Va
 
 func (s *SecondaryConnectionModel) WithIsPrimaryValue(value tfconfig.Variable) *SecondaryConnectionModel {
 	s.IsPrimary = value
-	return s
-}
-
-func (s *SecondaryConnectionModel) WithNameValue(value tfconfig.Variable) *SecondaryConnectionModel {
-	s.Name = value
 	return s
 }

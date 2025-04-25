@@ -12,15 +12,15 @@ import (
 )
 
 type StreamlitModel struct {
-	Comment                    tfconfig.Variable `json:"comment,omitempty"`
 	Database                   tfconfig.Variable `json:"database,omitempty"`
+	Schema                     tfconfig.Variable `json:"schema,omitempty"`
+	Name                       tfconfig.Variable `json:"name,omitempty"`
+	Comment                    tfconfig.Variable `json:"comment,omitempty"`
 	DirectoryLocation          tfconfig.Variable `json:"directory_location,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MainFile                   tfconfig.Variable `json:"main_file,omitempty"`
-	Name                       tfconfig.Variable `json:"name,omitempty"`
 	QueryWarehouse             tfconfig.Variable `json:"query_warehouse,omitempty"`
-	Schema                     tfconfig.Variable `json:"schema,omitempty"`
 	Stage                      tfconfig.Variable `json:"stage,omitempty"`
 	Title                      tfconfig.Variable `json:"title,omitempty"`
 
@@ -31,28 +31,35 @@ type StreamlitModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func Streamlit(resourceName string, database string, schema string, name string, mainFile string, stage string) *StreamlitModel {
+func Streamlit(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	mainFile string,
+	stage string,
+) *StreamlitModel {
 	s := &StreamlitModel{ResourceModelMeta: config.Meta(resourceName, resources.Streamlit)}
 	s.WithDatabase(database)
-	s.WithMainFile(mainFile)
-	s.WithName(name)
 	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithMainFile(mainFile)
 	s.WithStage(stage)
 	return s
 }
 
 func StreamlitWithDefaultMeta(
 	database string,
-	mainFile string,
-	name string,
 	schema string,
+	name string,
+	mainFile string,
 	stage string,
 ) *StreamlitModel {
 	s := &StreamlitModel{ResourceModelMeta: config.DefaultMeta(resources.Streamlit)}
 	s.WithDatabase(database)
-	s.WithMainFile(mainFile)
-	s.WithName(name)
 	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithMainFile(mainFile)
 	s.WithStage(stage)
 	return s
 }
@@ -81,13 +88,23 @@ func (s *StreamlitModel) WithDependsOn(values ...string) *StreamlitModel {
 // below all the proper values //
 /////////////////////////////////
 
-func (s *StreamlitModel) WithComment(comment string) *StreamlitModel {
-	s.Comment = tfconfig.StringVariable(comment)
+func (s *StreamlitModel) WithDatabase(database string) *StreamlitModel {
+	s.Database = tfconfig.StringVariable(database)
 	return s
 }
 
-func (s *StreamlitModel) WithDatabase(database string) *StreamlitModel {
-	s.Database = tfconfig.StringVariable(database)
+func (s *StreamlitModel) WithSchema(schema string) *StreamlitModel {
+	s.Schema = tfconfig.StringVariable(schema)
+	return s
+}
+
+func (s *StreamlitModel) WithName(name string) *StreamlitModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
+
+func (s *StreamlitModel) WithComment(comment string) *StreamlitModel {
+	s.Comment = tfconfig.StringVariable(comment)
 	return s
 }
 
@@ -108,18 +125,8 @@ func (s *StreamlitModel) WithMainFile(mainFile string) *StreamlitModel {
 	return s
 }
 
-func (s *StreamlitModel) WithName(name string) *StreamlitModel {
-	s.Name = tfconfig.StringVariable(name)
-	return s
-}
-
 func (s *StreamlitModel) WithQueryWarehouse(queryWarehouse string) *StreamlitModel {
 	s.QueryWarehouse = tfconfig.StringVariable(queryWarehouse)
-	return s
-}
-
-func (s *StreamlitModel) WithSchema(schema string) *StreamlitModel {
-	s.Schema = tfconfig.StringVariable(schema)
 	return s
 }
 
@@ -137,13 +144,23 @@ func (s *StreamlitModel) WithTitle(title string) *StreamlitModel {
 // below it's possible to set any value //
 //////////////////////////////////////////
 
-func (s *StreamlitModel) WithCommentValue(value tfconfig.Variable) *StreamlitModel {
-	s.Comment = value
+func (s *StreamlitModel) WithDatabaseValue(value tfconfig.Variable) *StreamlitModel {
+	s.Database = value
 	return s
 }
 
-func (s *StreamlitModel) WithDatabaseValue(value tfconfig.Variable) *StreamlitModel {
-	s.Database = value
+func (s *StreamlitModel) WithSchemaValue(value tfconfig.Variable) *StreamlitModel {
+	s.Schema = value
+	return s
+}
+
+func (s *StreamlitModel) WithNameValue(value tfconfig.Variable) *StreamlitModel {
+	s.Name = value
+	return s
+}
+
+func (s *StreamlitModel) WithCommentValue(value tfconfig.Variable) *StreamlitModel {
+	s.Comment = value
 	return s
 }
 
@@ -167,18 +184,8 @@ func (s *StreamlitModel) WithMainFileValue(value tfconfig.Variable) *StreamlitMo
 	return s
 }
 
-func (s *StreamlitModel) WithNameValue(value tfconfig.Variable) *StreamlitModel {
-	s.Name = value
-	return s
-}
-
 func (s *StreamlitModel) WithQueryWarehouseValue(value tfconfig.Variable) *StreamlitModel {
 	s.QueryWarehouse = value
-	return s
-}
-
-func (s *StreamlitModel) WithSchemaValue(value tfconfig.Variable) *StreamlitModel {
-	s.Schema = value
 	return s
 }
 

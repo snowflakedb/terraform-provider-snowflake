@@ -12,6 +12,7 @@ import (
 )
 
 type LegacyServiceUserModel struct {
+	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                       tfconfig.Variable `json:"abort_detached_query,omitempty"`
 	Autocommit                               tfconfig.Variable `json:"autocommit,omitempty"`
 	BinaryInputFormat                        tfconfig.Variable `json:"binary_input_format,omitempty"`
@@ -52,7 +53,6 @@ type LegacyServiceUserModel struct {
 	MinsToUnlock                             tfconfig.Variable `json:"mins_to_unlock,omitempty"`
 	MultiStatementCount                      tfconfig.Variable `json:"multi_statement_count,omitempty"`
 	MustChangePassword                       tfconfig.Variable `json:"must_change_password,omitempty"`
-	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	NetworkPolicy                            tfconfig.Variable `json:"network_policy,omitempty"`
 	NoorderSequenceAsDefault                 tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
 	OdbcTreatDecimalAsInt                    tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
@@ -136,6 +136,11 @@ func (l *LegacyServiceUserModel) WithDependsOn(values ...string) *LegacyServiceU
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (l *LegacyServiceUserModel) WithName(name string) *LegacyServiceUserModel {
+	l.Name = tfconfig.StringVariable(name)
+	return l
+}
 
 func (l *LegacyServiceUserModel) WithAbortDetachedQuery(abortDetachedQuery bool) *LegacyServiceUserModel {
 	l.AbortDetachedQuery = tfconfig.BoolVariable(abortDetachedQuery)
@@ -337,11 +342,6 @@ func (l *LegacyServiceUserModel) WithMustChangePassword(mustChangePassword strin
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithName(name string) *LegacyServiceUserModel {
-	l.Name = tfconfig.StringVariable(name)
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithNetworkPolicy(networkPolicy string) *LegacyServiceUserModel {
 	l.NetworkPolicy = tfconfig.StringVariable(networkPolicy)
 	return l
@@ -520,6 +520,11 @@ func (l *LegacyServiceUserModel) WithWeekStart(weekStart int) *LegacyServiceUser
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (l *LegacyServiceUserModel) WithNameValue(value tfconfig.Variable) *LegacyServiceUserModel {
+	l.Name = value
+	return l
+}
 
 func (l *LegacyServiceUserModel) WithAbortDetachedQueryValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.AbortDetachedQuery = value
@@ -718,11 +723,6 @@ func (l *LegacyServiceUserModel) WithMultiStatementCountValue(value tfconfig.Var
 
 func (l *LegacyServiceUserModel) WithMustChangePasswordValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.MustChangePassword = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithNameValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.Name = value
 	return l
 }
 

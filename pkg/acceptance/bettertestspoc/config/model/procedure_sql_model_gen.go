@@ -12,21 +12,21 @@ import (
 )
 
 type ProcedureSqlModel struct {
+	Database            tfconfig.Variable `json:"database,omitempty"`
+	Schema              tfconfig.Variable `json:"schema,omitempty"`
+	Name                tfconfig.Variable `json:"name,omitempty"`
 	Arguments           tfconfig.Variable `json:"arguments,omitempty"`
 	Comment             tfconfig.Variable `json:"comment,omitempty"`
-	Database            tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExecuteAs           tfconfig.Variable `json:"execute_as,omitempty"`
 	FullyQualifiedName  tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsSecure            tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel            tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel         tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                tfconfig.Variable `json:"name,omitempty"`
 	NullInputBehavior   tfconfig.Variable `json:"null_input_behavior,omitempty"`
 	ProcedureDefinition tfconfig.Variable `json:"procedure_definition,omitempty"`
 	ProcedureLanguage   tfconfig.Variable `json:"procedure_language,omitempty"`
 	ReturnType          tfconfig.Variable `json:"return_type,omitempty"`
-	Schema              tfconfig.Variable `json:"schema,omitempty"`
 	TraceLevel          tfconfig.Variable `json:"trace_level,omitempty"`
 
 	*config.ResourceModelMeta
@@ -36,29 +36,36 @@ type ProcedureSqlModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ProcedureSql(resourceName string, database string, schema string, name string, procedureDefinition string, returnType string) *ProcedureSqlModel {
+func ProcedureSql(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	procedureDefinition string,
+	returnType string,
+) *ProcedureSqlModel {
 	p := &ProcedureSqlModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedureSql)}
 	p.WithDatabase(database)
+	p.WithSchema(schema)
 	p.WithName(name)
 	p.WithProcedureDefinition(procedureDefinition)
 	p.WithReturnType(returnType)
-	p.WithSchema(schema)
 	return p
 }
 
 func ProcedureSqlWithDefaultMeta(
 	database string,
+	schema string,
 	name string,
 	procedureDefinition string,
 	returnType string,
-	schema string,
 ) *ProcedureSqlModel {
 	p := &ProcedureSqlModel{ResourceModelMeta: config.DefaultMeta(resources.ProcedureSql)}
 	p.WithDatabase(database)
+	p.WithSchema(schema)
 	p.WithName(name)
 	p.WithProcedureDefinition(procedureDefinition)
 	p.WithReturnType(returnType)
-	p.WithSchema(schema)
 	return p
 }
 
@@ -86,15 +93,25 @@ func (p *ProcedureSqlModel) WithDependsOn(values ...string) *ProcedureSqlModel {
 // below all the proper values //
 /////////////////////////////////
 
+func (p *ProcedureSqlModel) WithDatabase(database string) *ProcedureSqlModel {
+	p.Database = tfconfig.StringVariable(database)
+	return p
+}
+
+func (p *ProcedureSqlModel) WithSchema(schema string) *ProcedureSqlModel {
+	p.Schema = tfconfig.StringVariable(schema)
+	return p
+}
+
+func (p *ProcedureSqlModel) WithName(name string) *ProcedureSqlModel {
+	p.Name = tfconfig.StringVariable(name)
+	return p
+}
+
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (p *ProcedureSqlModel) WithComment(comment string) *ProcedureSqlModel {
 	p.Comment = tfconfig.StringVariable(comment)
-	return p
-}
-
-func (p *ProcedureSqlModel) WithDatabase(database string) *ProcedureSqlModel {
-	p.Database = tfconfig.StringVariable(database)
 	return p
 }
 
@@ -128,11 +145,6 @@ func (p *ProcedureSqlModel) WithMetricLevel(metricLevel string) *ProcedureSqlMod
 	return p
 }
 
-func (p *ProcedureSqlModel) WithName(name string) *ProcedureSqlModel {
-	p.Name = tfconfig.StringVariable(name)
-	return p
-}
-
 func (p *ProcedureSqlModel) WithNullInputBehavior(nullInputBehavior string) *ProcedureSqlModel {
 	p.NullInputBehavior = tfconfig.StringVariable(nullInputBehavior)
 	return p
@@ -153,11 +165,6 @@ func (p *ProcedureSqlModel) WithReturnType(returnType string) *ProcedureSqlModel
 	return p
 }
 
-func (p *ProcedureSqlModel) WithSchema(schema string) *ProcedureSqlModel {
-	p.Schema = tfconfig.StringVariable(schema)
-	return p
-}
-
 func (p *ProcedureSqlModel) WithTraceLevel(traceLevel string) *ProcedureSqlModel {
 	p.TraceLevel = tfconfig.StringVariable(traceLevel)
 	return p
@@ -167,6 +174,21 @@ func (p *ProcedureSqlModel) WithTraceLevel(traceLevel string) *ProcedureSqlModel
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (p *ProcedureSqlModel) WithDatabaseValue(value tfconfig.Variable) *ProcedureSqlModel {
+	p.Database = value
+	return p
+}
+
+func (p *ProcedureSqlModel) WithSchemaValue(value tfconfig.Variable) *ProcedureSqlModel {
+	p.Schema = value
+	return p
+}
+
+func (p *ProcedureSqlModel) WithNameValue(value tfconfig.Variable) *ProcedureSqlModel {
+	p.Name = value
+	return p
+}
+
 func (p *ProcedureSqlModel) WithArgumentsValue(value tfconfig.Variable) *ProcedureSqlModel {
 	p.Arguments = value
 	return p
@@ -174,11 +196,6 @@ func (p *ProcedureSqlModel) WithArgumentsValue(value tfconfig.Variable) *Procedu
 
 func (p *ProcedureSqlModel) WithCommentValue(value tfconfig.Variable) *ProcedureSqlModel {
 	p.Comment = value
-	return p
-}
-
-func (p *ProcedureSqlModel) WithDatabaseValue(value tfconfig.Variable) *ProcedureSqlModel {
-	p.Database = value
 	return p
 }
 
@@ -212,11 +229,6 @@ func (p *ProcedureSqlModel) WithMetricLevelValue(value tfconfig.Variable) *Proce
 	return p
 }
 
-func (p *ProcedureSqlModel) WithNameValue(value tfconfig.Variable) *ProcedureSqlModel {
-	p.Name = value
-	return p
-}
-
 func (p *ProcedureSqlModel) WithNullInputBehaviorValue(value tfconfig.Variable) *ProcedureSqlModel {
 	p.NullInputBehavior = value
 	return p
@@ -234,11 +246,6 @@ func (p *ProcedureSqlModel) WithProcedureLanguageValue(value tfconfig.Variable) 
 
 func (p *ProcedureSqlModel) WithReturnTypeValue(value tfconfig.Variable) *ProcedureSqlModel {
 	p.ReturnType = value
-	return p
-}
-
-func (p *ProcedureSqlModel) WithSchemaValue(value tfconfig.Variable) *ProcedureSqlModel {
-	p.Schema = value
 	return p
 }
 

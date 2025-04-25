@@ -12,6 +12,7 @@ import (
 )
 
 type UserModel struct {
+	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                       tfconfig.Variable `json:"abort_detached_query,omitempty"`
 	Autocommit                               tfconfig.Variable `json:"autocommit,omitempty"`
 	BinaryInputFormat                        tfconfig.Variable `json:"binary_input_format,omitempty"`
@@ -57,7 +58,6 @@ type UserModel struct {
 	MinsToUnlock                             tfconfig.Variable `json:"mins_to_unlock,omitempty"`
 	MultiStatementCount                      tfconfig.Variable `json:"multi_statement_count,omitempty"`
 	MustChangePassword                       tfconfig.Variable `json:"must_change_password,omitempty"`
-	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	NetworkPolicy                            tfconfig.Variable `json:"network_policy,omitempty"`
 	NoorderSequenceAsDefault                 tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
 	OdbcTreatDecimalAsInt                    tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
@@ -141,6 +141,11 @@ func (u *UserModel) WithDependsOn(values ...string) *UserModel {
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (u *UserModel) WithName(name string) *UserModel {
+	u.Name = tfconfig.StringVariable(name)
+	return u
+}
 
 func (u *UserModel) WithAbortDetachedQuery(abortDetachedQuery bool) *UserModel {
 	u.AbortDetachedQuery = tfconfig.BoolVariable(abortDetachedQuery)
@@ -367,11 +372,6 @@ func (u *UserModel) WithMustChangePassword(mustChangePassword string) *UserModel
 	return u
 }
 
-func (u *UserModel) WithName(name string) *UserModel {
-	u.Name = tfconfig.StringVariable(name)
-	return u
-}
-
 func (u *UserModel) WithNetworkPolicy(networkPolicy string) *UserModel {
 	u.NetworkPolicy = tfconfig.StringVariable(networkPolicy)
 	return u
@@ -550,6 +550,11 @@ func (u *UserModel) WithWeekStart(weekStart int) *UserModel {
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (u *UserModel) WithNameValue(value tfconfig.Variable) *UserModel {
+	u.Name = value
+	return u
+}
 
 func (u *UserModel) WithAbortDetachedQueryValue(value tfconfig.Variable) *UserModel {
 	u.AbortDetachedQuery = value
@@ -773,11 +778,6 @@ func (u *UserModel) WithMultiStatementCountValue(value tfconfig.Variable) *UserM
 
 func (u *UserModel) WithMustChangePasswordValue(value tfconfig.Variable) *UserModel {
 	u.MustChangePassword = value
-	return u
-}
-
-func (u *UserModel) WithNameValue(value tfconfig.Variable) *UserModel {
-	u.Name = value
 	return u
 }
 
