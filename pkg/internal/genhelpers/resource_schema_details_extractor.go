@@ -22,6 +22,8 @@ type SchemaAttribute struct {
 	Required         bool
 }
 
+var preferredFrontOrdering = []string{"database", "schema", "name"}
+
 // TODO: test
 func ExtractResourceSchemaDetails(name string, resourceSchema map[string]*schema.Schema) ResourceSchemaDetails {
 	orderedAttributeNames := make([]string, 0)
@@ -29,6 +31,13 @@ func ExtractResourceSchemaDetails(name string, resourceSchema map[string]*schema
 		orderedAttributeNames = append(orderedAttributeNames, key)
 	}
 	slices.Sort(orderedAttributeNames)
+
+	for _, v := range slices.Backward(preferredFrontOrdering) {
+		if idx := slices.Index(orderedAttributeNames, v); idx != -1 {
+			orderedAttributeNames = append(orderedAttributeNames[:idx], orderedAttributeNames[idx+1:]...)
+			orderedAttributeNames = append([]string{v}, orderedAttributeNames...)
+		}
+	}
 
 	attributes := make([]SchemaAttribute, 0)
 	for _, k := range orderedAttributeNames {
