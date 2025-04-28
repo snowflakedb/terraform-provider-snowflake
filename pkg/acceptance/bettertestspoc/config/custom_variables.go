@@ -55,3 +55,7 @@ func QuotedWrapperVariable(content string) wrapperVariable {
 func UnquotedWrapperVariable(content string) wrapperVariable {
 	return wrapperVariable{SnowflakeProviderConfigUnquoteMarker, content}
 }
+
+func VariableReference(variableName string) wrapperVariable {
+	return UnquotedWrapperVariable(fmt.Sprintf("var.%s", variableName))
+}

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -22,7 +21,7 @@ func Saml2SecurityIntegrationVar(
 	s.WithSaml2Issuer(saml2Issuer)
 	s.WithSaml2Provider(saml2Provider)
 	s.WithSaml2SsoUrl(saml2SsoUrl)
-	s.WithSaml2X509CertValue(config.UnquotedWrapperVariable(fmt.Sprintf("var.%s", saml2CertVariableName)))
+	s.WithSaml2X509CertValue(config.VariableReference(saml2CertVariableName))
 	return s
 }
 

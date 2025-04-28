@@ -36,15 +36,7 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 	role := snowflakeroles.GenericScimProvisioner
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	saml2Model := model.Saml2SecurityIntegrationVar("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	scimModel := model.ScimSecurityIntegration("test", true, idTwo.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
@@ -529,15 +521,7 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 	comment := random.Comment()
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
 	resourceModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).

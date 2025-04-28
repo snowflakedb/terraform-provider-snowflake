@@ -8,8 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/config"
-
 	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -41,18 +39,8 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 	comment := random.Comment()
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
-	configVariables2 := config.Variables{
-		temporaryVariableName: config.StringVariable(cert2),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	_, configVariables2 := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert2)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
@@ -392,15 +380,7 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	saml2ConfigForceAuthnTrueModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
@@ -576,15 +556,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 	comment := random.Comment()
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
 	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
@@ -707,15 +679,7 @@ func TestAcc_Saml2Integration_InvalidNameIdFormat(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithSaml2RequestedNameidFormat("invalid")
@@ -748,15 +712,7 @@ func TestAcc_Saml2Integration_InvalidProvider(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, "invalid", validUrl, temporaryVariableName)
 
@@ -790,15 +746,7 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 	issuerURL := acc.TestClient().Context.IssuerURL(t)
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	baseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
@@ -999,15 +947,7 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	withZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
@@ -1154,15 +1094,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 
@@ -1206,15 +1138,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition := fmt.Sprintf(`
-		variable "%s" {
-			type = string
-			sensitive = true
-		}
-	`, temporaryVariableName)
-	configVariables := config.Variables{
-		temporaryVariableName: config.StringVariable(cert),
-	}
+	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", quotedId, issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 

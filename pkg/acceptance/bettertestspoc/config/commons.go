@@ -1,6 +1,10 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-testing/config"
+)
 
 type DynamicBlock map[string]DynamicBlockContent
 
@@ -54,4 +58,18 @@ func NewDynamicBlock(label string, variableName string, values []string) *Dynami
 			Content: args,
 		},
 	}
+}
+
+func TempSecretStringVariableConfig(variableName string, value string) (string, config.Variables) {
+	temporaryVariableDefinition := fmt.Sprintf(`
+	variable "%s" {
+		type = string
+		sensitive = true
+	}
+`, variableName)
+	configVariables := config.Variables{
+		variableName: config.StringVariable(value),
+	}
+
+	return temporaryVariableDefinition, configVariables
 }
