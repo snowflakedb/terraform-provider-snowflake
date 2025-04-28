@@ -8,7 +8,7 @@ func markdown(name string) string {
 
 var (
 	deprecatedResourcesFilename   = markdown("deprecated_resources")
-	deprecatedDataSourcesFilename = markdown("deprecated_datasources")
+	deprecatedDataSourcesFilename = markdown("deprecated_data_sources")
 
 	stableResourcesFilename   = markdown("stable_resources")
 	stableDataSourcesFilename = markdown("stable_data_sources")

@@ -60,11 +60,11 @@ func main() {
 	stableDataSources := make([]FeatureStability, 0)
 	previewDataSources := make([]FeatureStability, 0)
 	for _, key := range orderedDataSources {
-		datasource := provider.Provider().DataSourcesMap[key]
+		dataSource := provider.Provider().DataSourcesMap[key]
 		nameRelativeLink := docs.RelativeLink(key, filepath.Join("docs", "data-sources", strings.Replace(key, "snowflake_", "", 1)))
 
-		if datasource.DeprecationMessage != "" {
-			deprecatedDataSources = append(deprecatedDataSources, newDeprecatedDataSource(nameRelativeLink, datasource))
+		if dataSource.DeprecationMessage != "" {
+			deprecatedDataSources = append(deprecatedDataSources, newDeprecatedDataSource(nameRelativeLink, dataSource))
 		}
 
 		if slices.Contains(previewfeatures.AllPreviewFeatures, fmt.Sprintf("%s_datasource", key)) {
@@ -101,8 +101,8 @@ func newDeprecatedResource(nameRelativeLink string, resource *schema.Resource) D
 	}
 }
 
-func newDeprecatedDataSource(nameRelativeLink string, datasource *schema.Resource) DeprecatedDataSource {
-	replacement, path, _ := docs.GetDeprecatedResourceReplacement(datasource.DeprecationMessage)
+func newDeprecatedDataSource(nameRelativeLink string, dataSource *schema.Resource) DeprecatedDataSource {
+	replacement, path, _ := docs.GetDeprecatedResourceReplacement(dataSource.DeprecationMessage)
 	var replacementRelativeLink string
 	if replacement != "" && path != "" {
 		replacementRelativeLink = docs.RelativeLink(replacement, filepath.Join("docs", "data-sources", path))
