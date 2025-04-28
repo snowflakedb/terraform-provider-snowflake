@@ -20,7 +20,9 @@ Please execute the program that consumes these plugins, which will
 load any plugins automatically
 ```
 
-To use the locally released binary, run the following command.
+To use the locally released binary, run the following command: `make install-locally-released-tf`.
+
+In case it's not working on your machine, you can run the following command manually:
 > **Note:** Replace the placeholders with the actual values:
 > - `CURRENT_OS` - **lowercased** output from `uname -s` command (e.g., `darwin`)
 > - `CURRENT_ARCH` - output from `arch` command (e.g., `arm64`, `amd64`)

@@ -3,7 +3,9 @@ export TEST_SF_TF_SKIP_MANAGED_ACCOUNT_TEST=true
 export BASE_BINARY_NAME=terraform-provider-snowflake
 export TERRAFORM_PLUGINS_DIR=$(HOME)/.terraform.d/plugins
 export TERRAFORM_PLUGIN_LOCAL_INSTALL=$(TERRAFORM_PLUGINS_DIR)/$(BASE_BINARY_NAME)
-export GIT_LATEST_TAG=$(git tag --sort=-version:refname | head -n 1)
+export LATEST_GIT_TAG=$(shell git tag --sort=-version:refname | head -n 1)
+export CURRENT_OS := $(shell uname -s)
+export CURRENT_ARCH := $(shell arch)
 
 default: help
 
@@ -93,6 +95,10 @@ install-tf: build-local ## installs plugin where terraform can find it
 
 release-local: ## use GoReleaser to build the binary locally
 	goreleaser build --clean --skip=validate --single-target
+
+install-locally-released-tf: release-local ## installs plugin (built by the GoReleaser) where terraform can find it
+	mkdir -p $(TERRAFORM_PLUGINS_DIR)
+	cp ./dist/terraform-provider-snowflake_$(CURRENT_OS)_$(CURRENT_ARCH)/terraform-provider-snowflake_$(LATEST_GIT_TAG) $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
 uninstall-tf: ## uninstalls plugin from where terraform can find it
 	rm -f $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
