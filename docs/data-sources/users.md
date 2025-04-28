@@ -7,7 +7,7 @@ description: |-
 
 !> **Sensitive values** This data source's `display_name`, `email`, `login_name`, `first_name`, `middle_name` and `last_name` fields nested in `show_output` and `describe_output` fields are not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
 
-~> **Missing fields** The `password` field is not present in from the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
+~> **Missing fields** The `password` field is not present in the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
 
 # snowflake_users (Data Source)
 

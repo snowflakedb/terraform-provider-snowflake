@@ -11,7 +11,7 @@ description: |-
 
 !> **Note** The provider does not detect external changes on security integration type. In this case, remove the integration of wrong type manually with `terraform destroy` and recreate the resource. It will be addressed in the future.
 
-~> **Missing fields** The `oauth_client_id` field is not present the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
+~> **Missing fields** The `oauth_client_id` field is not present in the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
 This may have impact on detecting external changes for the `oauth_client_id` field.
 
 # {{.Name}} ({{.Type}})
