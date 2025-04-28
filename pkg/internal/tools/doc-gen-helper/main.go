@@ -50,39 +50,39 @@ func main() {
 		}
 	}
 
-	orderedDatasources := make([]string, 0)
+	orderedDataSources := make([]string, 0)
 	for key := range provider.Provider().DataSourcesMap {
-		orderedDatasources = append(orderedDatasources, key)
+		orderedDataSources = append(orderedDataSources, key)
 	}
-	slices.Sort(orderedDatasources)
+	slices.Sort(orderedDataSources)
 
-	deprecatedDatasources := make([]DeprecatedDatasource, 0)
-	stableDatasources := make([]FeatureStability, 0)
-	previewDatasources := make([]FeatureStability, 0)
-	for _, key := range orderedDatasources {
+	deprecatedDataSources := make([]DeprecatedDataSource, 0)
+	stableDataSources := make([]FeatureStability, 0)
+	previewDataSources := make([]FeatureStability, 0)
+	for _, key := range orderedDataSources {
 		datasource := provider.Provider().DataSourcesMap[key]
 		nameRelativeLink := docs.RelativeLink(key, filepath.Join("docs", "data-sources", strings.Replace(key, "snowflake_", "", 1)))
 
 		if datasource.DeprecationMessage != "" {
-			deprecatedDatasources = append(deprecatedDatasources, newDeprecatedDatasource(nameRelativeLink, datasource))
+			deprecatedDataSources = append(deprecatedDataSources, newDeprecatedDataSource(nameRelativeLink, datasource))
 		}
 
 		if slices.Contains(previewfeatures.AllPreviewFeatures, fmt.Sprintf("%s_datasource", key)) {
-			previewDatasources = append(previewDatasources, FeatureStability{nameRelativeLink})
+			previewDataSources = append(previewDataSources, FeatureStability{nameRelativeLink})
 		} else {
-			stableDatasources = append(stableDatasources, FeatureStability{nameRelativeLink})
+			stableDataSources = append(stableDataSources, FeatureStability{nameRelativeLink})
 		}
 	}
 
 	if errs := errors.Join(
 		printTo(DeprecatedResourcesTemplate, DeprecatedResourcesContext{deprecatedResources}, filepath.Join(additionalExamplesPath, deprecatedResourcesFilename)),
-		printTo(DeprecatedDatasourcesTemplate, DeprecatedDatasourcesContext{deprecatedDatasources}, filepath.Join(additionalExamplesPath, deprecatedDatasourcesFilename)),
+		printTo(DeprecatedDataSourcesTemplate, DeprecatedDataSourcesContext{deprecatedDataSources}, filepath.Join(additionalExamplesPath, deprecatedDataSourcesFilename)),
 
 		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStateStable, stableResources}, filepath.Join(additionalExamplesPath, stableResourcesFilename)),
-		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDatasource, FeatureStateStable, stableDatasources}, filepath.Join(additionalExamplesPath, stableDatasourcesFilename)),
+		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDataSource, FeatureStateStable, stableDataSources}, filepath.Join(additionalExamplesPath, stableDataSourcesFilename)),
 
 		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStatePreview, previewResources}, filepath.Join(additionalExamplesPath, previewResourcesFilename)),
-		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDatasource, FeatureStatePreview, previewDatasources}, filepath.Join(additionalExamplesPath, previewDatasourcesFilename)),
+		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDataSource, FeatureStatePreview, previewDataSources}, filepath.Join(additionalExamplesPath, previewDataSourcesFilename)),
 	); errs != nil {
 		log.Fatal(errs)
 	}
@@ -101,14 +101,14 @@ func newDeprecatedResource(nameRelativeLink string, resource *schema.Resource) D
 	}
 }
 
-func newDeprecatedDatasource(nameRelativeLink string, datasource *schema.Resource) DeprecatedDatasource {
+func newDeprecatedDataSource(nameRelativeLink string, datasource *schema.Resource) DeprecatedDataSource {
 	replacement, path, _ := docs.GetDeprecatedResourceReplacement(datasource.DeprecationMessage)
 	var replacementRelativeLink string
 	if replacement != "" && path != "" {
 		replacementRelativeLink = docs.RelativeLink(replacement, filepath.Join("docs", "data-sources", path))
 	}
 
-	return DeprecatedDatasource{
+	return DeprecatedDataSource{
 		NameRelativeLink:        nameRelativeLink,
 		ReplacementRelativeLink: replacementRelativeLink,
 	}

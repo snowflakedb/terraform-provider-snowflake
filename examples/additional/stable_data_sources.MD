@@ -1,5 +1,5 @@
-<!-- Section of stable datasource -->
-## Currently stable datasources 
+<!-- Section of stable data sources -->
+## Currently stable data sources 
 
 - [snowflake_account_roles](./docs/data-sources/account_roles)
 - [snowflake_accounts](./docs/data-sources/accounts)

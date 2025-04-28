@@ -9,11 +9,11 @@ type DeprecatedResource struct {
 	ReplacementRelativeLink string
 }
 
-type DeprecatedDatasourcesContext struct {
-	Datasources []DeprecatedDatasource
+type DeprecatedDataSourcesContext struct {
+	DataSources []DeprecatedDataSource
 }
 
-type DeprecatedDatasource struct {
+type DeprecatedDataSource struct {
 	NameRelativeLink        string
 	ReplacementRelativeLink string
 }
@@ -22,7 +22,7 @@ type FeatureType string
 
 const (
 	FeatureTypeResource   FeatureType = "resource"
-	FeatureTypeDatasource FeatureType = "datasource"
+	FeatureTypeDataSource FeatureType = "data source"
 )
 
 type FeatureState string

@@ -8,11 +8,11 @@ func markdown(name string) string {
 
 var (
 	deprecatedResourcesFilename   = markdown("deprecated_resources")
-	deprecatedDatasourcesFilename = markdown("deprecated_datasources")
+	deprecatedDataSourcesFilename = markdown("deprecated_datasources")
 
 	stableResourcesFilename   = markdown("stable_resources")
-	stableDatasourcesFilename = markdown("stable_datasources")
+	stableDataSourcesFilename = markdown("stable_data_sources")
 
 	previewResourcesFilename   = markdown("preview_resources")
-	previewDatasourcesFilename = markdown("preview_datasources")
+	previewDataSourcesFilename = markdown("preview_data_sources")
 )

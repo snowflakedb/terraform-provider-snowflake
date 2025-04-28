@@ -1,4 +1,4 @@
-<!-- Section of stable resource -->
+<!-- Section of stable resources -->
 ## Currently stable resources 
 
 - [snowflake_account](./docs/resources/account)

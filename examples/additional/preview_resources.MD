@@ -1,4 +1,4 @@
-<!-- Section of preview resource -->
+<!-- Section of preview resources -->
 ## Currently preview resources 
 
 - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
