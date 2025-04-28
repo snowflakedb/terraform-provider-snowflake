@@ -40,7 +40,7 @@ func AdminName() string {
 }
 
 func Email() string {
-	return SensitiveAlphanumeric() + gofakeit.Email()
+	return generatedRandomValue + AlphanumericN(5) + gofakeit.Email()
 }
 
 func Password() string {
