@@ -66,3 +66,24 @@ func Test_ColumnOutput(t *testing.T) {
 		})
 	}
 }
+
+func Test_SanitizeAttributeName(t *testing.T) {
+	type test struct {
+		input    string
+		expected string
+	}
+
+	testCases := []test{
+		{input: "type", expected: "type" + forbiddenAttributeNameSuffix},
+		{input: "abc", expected: "abc"},
+		{input: "type_abc", expected: "type_abc"},
+		{input: "abc_type", expected: "abc_type"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s=>%s", tc.input, tc.expected), func(t *testing.T) {
+			result := SanitizeAttributeName(tc.input)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}

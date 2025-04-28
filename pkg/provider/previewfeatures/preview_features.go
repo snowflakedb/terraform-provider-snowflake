@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type feature string
@@ -145,13 +147,7 @@ var allPreviewFeatures = []feature{
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
 }
-var AllPreviewFeatures = make([]string, len(allPreviewFeatures))
-
-func init() {
-	for i, v := range allPreviewFeatures {
-		AllPreviewFeatures[i] = string(v)
-	}
-}
+var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 
 func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 	if !slices.ContainsFunc(enabledFeatures, func(s string) bool {

@@ -3,6 +3,9 @@ export TEST_SF_TF_SKIP_MANAGED_ACCOUNT_TEST=true
 export BASE_BINARY_NAME=terraform-provider-snowflake
 export TERRAFORM_PLUGINS_DIR=$(HOME)/.terraform.d/plugins
 export TERRAFORM_PLUGIN_LOCAL_INSTALL=$(TERRAFORM_PLUGINS_DIR)/$(BASE_BINARY_NAME)
+export LATEST_GIT_TAG=$(shell git tag --sort=-version:refname | head -n 1)
+export CURRENT_OS := $(shell uname -s)
+export CURRENT_ARCH := $(shell arch)
 
 default: help
 
@@ -66,10 +69,10 @@ test: ## run unit and integration tests
 	go test -v -cover -timeout=60m ./...
 
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true SNOWFLAKE_USE_LEGACY_TOML_FILE=true go test -run "^TestAcc_" -v -cover -timeout=120m ./...
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./...
 
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true SNOWFLAKE_USE_LEGACY_TOML_FILE=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./...
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./...
 
 test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./...
@@ -89,6 +92,13 @@ build-local: ## build the binary locally
 install-tf: build-local ## installs plugin where terraform can find it
 	mkdir -p $(TERRAFORM_PLUGINS_DIR)
 	cp ./$(BASE_BINARY_NAME) $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
+
+release-local: ## use GoReleaser to build the binary locally
+	goreleaser build --clean --skip=validate --single-target
+
+install-locally-released-tf: release-local ## installs plugin (built by the GoReleaser) where terraform can find it
+	mkdir -p $(TERRAFORM_PLUGINS_DIR)
+	cp ./dist/terraform-provider-snowflake_$(CURRENT_OS)_$(CURRENT_ARCH)/terraform-provider-snowflake_$(LATEST_GIT_TAG) $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
 uninstall-tf: ## uninstalls plugin from where terraform can find it
 	rm -f $(TERRAFORM_PLUGIN_LOCAL_INSTALL)

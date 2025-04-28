@@ -9,8 +9,12 @@ import (
 
 // WithExternalOauthTokenUserMappingClaim was added to satisfy the default builders. The method itself is not generated because its type is not yet supported.
 // This method will conflict the generated one when the type is supported.
-func (e *ExternalOauthSecurityIntegrationModel) WithExternalOauthTokenUserMappingClaim(externalOauthTokenUserMappingClaim string) *ExternalOauthSecurityIntegrationModel {
-	e.ExternalOauthTokenUserMappingClaim = tfconfig.SetVariable(tfconfig.StringVariable(externalOauthTokenUserMappingClaim))
+func (e *ExternalOauthSecurityIntegrationModel) WithExternalOauthTokenUserMappingClaim(values []string) *ExternalOauthSecurityIntegrationModel {
+	e.ExternalOauthTokenUserMappingClaim = tfconfig.SetVariable(
+		collections.Map(values, func(value string) tfconfig.Variable {
+			return tfconfig.StringVariable(value)
+		})...,
+	)
 	return e
 }
 

@@ -2266,6 +2266,7 @@ func TestAcc_Table_SchemaRemovedExternally(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.5"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2289,6 +2290,7 @@ func TestAcc_Table_SchemaRemovedExternally(t *testing.T) {
 			// The New version removes table from the state which ends up with create operation
 			// and the "error creating table" error (because of the missing underlying schema).
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				Config:                   tableConfig(tableId),
 				ExpectError:              regexp.MustCompile("error creating table"),

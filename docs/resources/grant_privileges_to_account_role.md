@@ -12,9 +12,6 @@ description: |-
 
 ~> **Note** When granting privileges on applications (for example, the default "SNOWFLAKE" application) use `on_account_object.object_type = "DATABASE"` instead.
 
-<!-- TODO(SNOW-1844996): Remove this note.-->
--> **Note** Granting on future Streamlits is currently missing. It will be added in the future. Use [execute](./execute) resource instead.
-
 # snowflake_grant_privileges_to_account_role (Resource)
 
 

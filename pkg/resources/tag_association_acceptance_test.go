@@ -629,6 +629,7 @@ func TestAcc_TagAssociation_migrateFromVersion_0_98_0(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
 				Config:            tagAssociationV098(tagId, tagValue, schemaId),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -643,6 +644,7 @@ func TestAcc_TagAssociation_migrateFromVersion_0_98_0(t *testing.T) {
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				Config:                   accconfig.FromModels(t, tagModel, tagAssociationModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{

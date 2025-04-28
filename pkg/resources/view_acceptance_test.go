@@ -69,9 +69,9 @@ func TestAcc_View_basic(t *testing.T) {
 	comment := random.Comment()
 
 	columnNames := []string{"ID", "FOO"}
-	basicViewModel := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), statement).WithColumnNames(columnNames...)
-	viewModelRecursiveWithOtherStatement := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), otherStatement).WithColumnNames(columnNames...).WithIsRecursive(provider.BooleanTrue)
-	viewModelWithOtherStatement := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), otherStatement).WithColumnNames(columnNames...)
+	basicViewModel := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement).WithColumnNames(columnNames...)
+	viewModelRecursiveWithOtherStatement := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), otherStatement).WithColumnNames(columnNames...).WithIsRecursive(provider.BooleanTrue)
+	viewModelWithOtherStatement := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), otherStatement).WithColumnNames(columnNames...)
 
 	updatedViewModel := func(
 		rowAccessPolicyId sdk.SchemaObjectIdentifier,
@@ -81,7 +81,7 @@ func TestAcc_View_basic(t *testing.T) {
 		cron string,
 		scheduleStatus sdk.DataMetricScheduleStatusOption,
 	) *model.ViewModel {
-		return model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), statement).
+		return model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement).
 			WithRowAccessPolicy(rowAccessPolicyId, "ID").
 			WithAggregationPolicy(aggregationPolicyId, "ID").
 			WithDataMetricFunction(dataMetricFunctionId, "ID", scheduleStatus).
@@ -453,7 +453,7 @@ func TestAcc_View_temporary(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
-	viewModel := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), statement)
+	viewModel := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -957,8 +957,8 @@ func TestAcc_View_Issue3073(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
-	viewModel := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), statement)
-	viewModelWithColumns := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), statement).WithColumnValue(config.SetVariable(
+	viewModel := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement)
+	viewModelWithColumns := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement).WithColumnValue(config.SetVariable(
 		config.MapVariable(map[string]config.Variable{
 			"column_name": config.StringVariable("ROLE_NAME"),
 		}),
@@ -1026,9 +1026,9 @@ func TestAcc_View_IncorrectColumnsWithOrReplace(t *testing.T) {
 	statementUnquotedColumns := `SELECT ROLE_NAME as role_name, ROLE_OWNER as role_owner FROM INFORMATION_SCHEMA.APPLICABLE_ROLES`
 	statementUnquotedColumns3 := `SELECT ROLE_NAME as role_name, ROLE_OWNER as role_owner, IS_GRANTABLE as is_grantable FROM INFORMATION_SCHEMA.APPLICABLE_ROLES`
 
-	viewModel := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), statement)
-	viewLowercaseStatementModel := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), statementUnquotedColumns)
-	viewLowercaseStatementModel3 := model.View("test", id.DatabaseName(), id.Name(), id.SchemaName(), statementUnquotedColumns3)
+	viewModel := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement)
+	viewLowercaseStatementModel := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statementUnquotedColumns)
+	viewLowercaseStatementModel3 := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statementUnquotedColumns3)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,

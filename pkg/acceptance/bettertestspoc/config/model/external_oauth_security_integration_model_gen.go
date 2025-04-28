@@ -43,7 +43,7 @@ func ExternalOauthSecurityIntegration(
 	enabled bool,
 	externalOauthIssuer string,
 	externalOauthSnowflakeUserMappingAttribute string,
-	externalOauthTokenUserMappingClaim,
+	externalOauthTokenUserMappingClaim []string,
 	externalOauthType string,
 	name string,
 ) *ExternalOauthSecurityIntegrationModel {
@@ -61,7 +61,7 @@ func ExternalOauthSecurityIntegrationWithDefaultMeta(
 	enabled bool,
 	externalOauthIssuer string,
 	externalOauthSnowflakeUserMappingAttribute string,
-	externalOauthTokenUserMappingClaim,
+	externalOauthTokenUserMappingClaim []string,
 	externalOauthType string,
 	name string,
 ) *ExternalOauthSecurityIntegrationModel {

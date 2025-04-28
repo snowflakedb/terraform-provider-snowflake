@@ -31,8 +31,8 @@ func TestAcc_Views(t *testing.T) {
 	viewId2 := acc.TestClient().Ids.RandomSchemaObjectIdentifierInSchemaWithPrefix(prefix+"2", schema.ID())
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
-	viewModel1 := model.View("v1", viewId.DatabaseName(), viewId.Name(), viewId.SchemaName(), statement)
-	viewModel2 := model.View("v2", viewId2.DatabaseName(), viewId2.Name(), viewId2.SchemaName(), statement)
+	viewModel1 := model.View("v1", viewId.DatabaseName(), viewId.SchemaName(), viewId.Name(), statement)
+	viewModel2 := model.View("v2", viewId2.DatabaseName(), viewId2.SchemaName(), viewId2.Name(), statement)
 	viewsModelInSchema := datasourcemodel.Views("in_schema").
 		WithInSchema(schema.ID()).
 		WithDependsOn(viewModel1.ResourceReference(), viewModel2.ResourceReference())

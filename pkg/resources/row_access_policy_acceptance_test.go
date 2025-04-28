@@ -247,7 +247,7 @@ func TestAcc_RowAccessPolicy_Issue2053(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
 				Config:            accconfig.FromModels(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -460,7 +460,7 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 				),
 			},
 			{
-				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
 				Config:            accconfig.FromModels(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -532,7 +532,7 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 				),
 			},
 			{
-				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
 				Config:            accconfig.FromModels(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -601,6 +601,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0(t *testing.T) {
 		PreCheck: func() { acc.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.2.1"),
 				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
 				ConfigVariables:   commonVariables,
@@ -612,6 +613,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0(t *testing.T) {
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				Config:                   accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
 				ConfigVariables:          commonVariables,
@@ -665,6 +667,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 		PreCheck: func() { acc.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.2.1"),
 				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
 				ConfigVariables:   commonVariables,
@@ -678,6 +681,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				Config:                   accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
 				ConfigVariables:          commonVariables,

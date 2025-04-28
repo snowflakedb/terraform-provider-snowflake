@@ -264,7 +264,7 @@ func TestAcc_SecurityIntegrations_ExternalOauth(t *testing.T) {
 	mappingAttribute := random.AlphaN(6)
 	audience := random.AlphaN(6)
 
-	resourceModel := model.ExternalOauthSecurityIntegration("test", true, issuer, string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress), claim, string(sdk.ExternalOauthSecurityIntegrationTypeCustom), id.Name()).
+	resourceModel := model.ExternalOauthSecurityIntegration("test", true, issuer, string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress), []string{claim}, string(sdk.ExternalOauthSecurityIntegrationTypeCustom), id.Name()).
 		WithComment(comment).
 		WithExternalOauthAllowedRoles(role.ID()).
 		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).

@@ -58,7 +58,7 @@ func TestClient_queryOne(t *testing.T) {
 // TODO [SNOW-2054366]: Use dedicated users for these tests.
 func TestClient_NewClientDriverLoggingLevel(t *testing.T) {
 	t.Run("get default gosnowflake driver logging level", func(t *testing.T) {
-		config := DefaultConfig(WithUseLegacyTomlFormat(true))
+		config := DefaultConfig()
 		_, err := NewClient(config)
 		require.NoError(t, err)
 
@@ -72,7 +72,7 @@ func TestClient_NewClientDriverLoggingLevel(t *testing.T) {
 	})
 
 	t.Run("set gosnowflake driver logging level with config", func(t *testing.T) {
-		config := DefaultConfig(WithUseLegacyTomlFormat(true))
+		config := DefaultConfig()
 		config.Tracing = "trace"
 		_, err := NewClient(config)
 		require.NoError(t, err)

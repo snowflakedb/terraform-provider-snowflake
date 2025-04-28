@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	oldprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -17,6 +18,8 @@ var version string = "dev" // goreleaser can pass other information to the main 
 // https://goreleaser.com/cookbooks/using-main.version/
 
 func main() {
+	tracking.SetProviderVersion(version)
+
 	ctx := context.Background()
 
 	var debug bool
