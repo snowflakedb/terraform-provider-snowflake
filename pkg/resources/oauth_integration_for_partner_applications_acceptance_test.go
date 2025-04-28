@@ -779,7 +779,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_DetectExternalChangesForOaut
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				Config: accconfig.FromModels(t, configModel),

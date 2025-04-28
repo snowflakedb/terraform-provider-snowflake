@@ -146,7 +146,7 @@ If you want to build and test the provider locally (manually, not through accept
 
 Next, edit your `~/.terraformrc` file to include the following:
 
-```
+```hcl
 provider_installation {
 
   dev_overrides {

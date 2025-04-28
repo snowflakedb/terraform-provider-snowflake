@@ -1,21 +1,18 @@
 package main
 
-import "text/template"
-
-var DeprecatedResourcesTemplate, _ = template.New("deprecatedResourcesTemplate").Parse(
-	`<!-- Section of deprecated resources -->
-{{if gt (len .Resources) 0}} ## Currently deprecated resources {{end}}
-
-{{ range .Resources -}}
-	- {{ .NameRelativeLink }}{{ if .ReplacementRelativeLink }} - use {{ .ReplacementRelativeLink }} instead{{ end }}
-{{ end -}}`,
+import (
+	_ "embed"
+	"text/template"
 )
 
-var DeprecatedDatasourcesTemplate, _ = template.New("deprecatedDatasourcesTemplate").Parse(
-	`<!-- Section of deprecated data sources -->
-{{if gt (len .Datasources) 0}} ## Currently deprecated data sources {{end}}
+//go:embed templates/deprecated_resources.tmpl
+var DeprecatedResourcesTemplateContent string
+var DeprecatedResourcesTemplate = template.Must(template.New("deprecated_resources").Parse(DeprecatedResourcesTemplateContent))
 
-{{ range .Datasources -}}
-	- {{ .NameRelativeLink }}{{ if .ReplacementRelativeLink }} - use {{ .ReplacementRelativeLink }} instead{{ end }}
-{{ end -}}`,
-)
+//go:embed templates/deprecated_data_sources.tmpl
+var DeprecatedDataSourcesTemplateContent string
+var DeprecatedDataSourcesTemplate = template.Must(template.New("deprecated_data_sources").Parse(DeprecatedDataSourcesTemplateContent))
+
+//go:embed templates/feature_stability.tmpl
+var FeatureStabilityTemplateContent string
+var FeatureStabilityTemplate = template.Must(template.New("stable_resources").Parse(FeatureStabilityTemplateContent))
