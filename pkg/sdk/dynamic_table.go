@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tracking"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 

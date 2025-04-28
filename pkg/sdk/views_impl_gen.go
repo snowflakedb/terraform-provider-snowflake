@@ -3,7 +3,7 @@ package sdk
 import (
 	"context"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tracking"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
