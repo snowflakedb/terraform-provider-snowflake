@@ -49,6 +49,7 @@ type Client struct {
 	FileFormats                  FileFormats
 	Functions                    Functions
 	Grants                       Grants
+	ImageRepositories            ImageRepositories
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
@@ -177,6 +178,7 @@ func (c *Client) initialize() {
 	c.FileFormats = &fileFormats{client: c}
 	c.Functions = &functions{client: c}
 	c.Grants = &grants{client: c}
+	c.ImageRepositories = &imageRepositories{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
