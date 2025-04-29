@@ -724,7 +724,7 @@ func TestAcc_TagAssociation_issue_3622(t *testing.T) {
 				// The new version handles the SchemaObjectIdentifier correctly, so the panic is not triggered.
 				Config: accconfig.FromModels(t, tagModel, newTagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeTable))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), newTagValue, string(sdk.ObjectTypeTable))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", newTagValue),
 				),
 			},
