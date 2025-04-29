@@ -12,9 +12,11 @@ import (
 )
 
 type FunctionJavascriptModel struct {
+	Database              tfconfig.Variable `json:"database,omitempty"`
+	Schema                tfconfig.Variable `json:"schema,omitempty"`
+	Name                  tfconfig.Variable `json:"name,omitempty"`
 	Arguments             tfconfig.Variable `json:"arguments,omitempty"`
 	Comment               tfconfig.Variable `json:"comment,omitempty"`
-	Database              tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput   tfconfig.Variable `json:"enable_console_output,omitempty"`
 	FullyQualifiedName    tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	FunctionDefinition    tfconfig.Variable `json:"function_definition,omitempty"`
@@ -22,11 +24,9 @@ type FunctionJavascriptModel struct {
 	IsSecure              tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel              tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel           tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                  tfconfig.Variable `json:"name,omitempty"`
 	NullInputBehavior     tfconfig.Variable `json:"null_input_behavior,omitempty"`
 	ReturnResultsBehavior tfconfig.Variable `json:"return_results_behavior,omitempty"`
 	ReturnType            tfconfig.Variable `json:"return_type,omitempty"`
-	Schema                tfconfig.Variable `json:"schema,omitempty"`
 	TraceLevel            tfconfig.Variable `json:"trace_level,omitempty"`
 
 	*config.ResourceModelMeta
@@ -39,33 +39,33 @@ type FunctionJavascriptModel struct {
 func FunctionJavascript(
 	resourceName string,
 	database string,
-	functionDefinition string,
-	name string,
-	returnType string,
 	schema string,
+	name string,
+	functionDefinition string,
+	returnType string,
 ) *FunctionJavascriptModel {
 	f := &FunctionJavascriptModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionJavascript)}
 	f.WithDatabase(database)
-	f.WithFunctionDefinition(functionDefinition)
-	f.WithName(name)
-	f.WithReturnType(returnType)
 	f.WithSchema(schema)
+	f.WithName(name)
+	f.WithFunctionDefinition(functionDefinition)
+	f.WithReturnType(returnType)
 	return f
 }
 
 func FunctionJavascriptWithDefaultMeta(
 	database string,
-	functionDefinition string,
-	name string,
-	returnType string,
 	schema string,
+	name string,
+	functionDefinition string,
+	returnType string,
 ) *FunctionJavascriptModel {
 	f := &FunctionJavascriptModel{ResourceModelMeta: config.DefaultMeta(resources.FunctionJavascript)}
 	f.WithDatabase(database)
-	f.WithFunctionDefinition(functionDefinition)
-	f.WithName(name)
-	f.WithReturnType(returnType)
 	f.WithSchema(schema)
+	f.WithName(name)
+	f.WithFunctionDefinition(functionDefinition)
+	f.WithReturnType(returnType)
 	return f
 }
 
@@ -93,15 +93,25 @@ func (f *FunctionJavascriptModel) WithDependsOn(values ...string) *FunctionJavas
 // below all the proper values //
 /////////////////////////////////
 
+func (f *FunctionJavascriptModel) WithDatabase(database string) *FunctionJavascriptModel {
+	f.Database = tfconfig.StringVariable(database)
+	return f
+}
+
+func (f *FunctionJavascriptModel) WithSchema(schema string) *FunctionJavascriptModel {
+	f.Schema = tfconfig.StringVariable(schema)
+	return f
+}
+
+func (f *FunctionJavascriptModel) WithName(name string) *FunctionJavascriptModel {
+	f.Name = tfconfig.StringVariable(name)
+	return f
+}
+
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (f *FunctionJavascriptModel) WithComment(comment string) *FunctionJavascriptModel {
 	f.Comment = tfconfig.StringVariable(comment)
-	return f
-}
-
-func (f *FunctionJavascriptModel) WithDatabase(database string) *FunctionJavascriptModel {
-	f.Database = tfconfig.StringVariable(database)
 	return f
 }
 
@@ -140,11 +150,6 @@ func (f *FunctionJavascriptModel) WithMetricLevel(metricLevel string) *FunctionJ
 	return f
 }
 
-func (f *FunctionJavascriptModel) WithName(name string) *FunctionJavascriptModel {
-	f.Name = tfconfig.StringVariable(name)
-	return f
-}
-
 func (f *FunctionJavascriptModel) WithNullInputBehavior(nullInputBehavior string) *FunctionJavascriptModel {
 	f.NullInputBehavior = tfconfig.StringVariable(nullInputBehavior)
 	return f
@@ -160,11 +165,6 @@ func (f *FunctionJavascriptModel) WithReturnType(returnType string) *FunctionJav
 	return f
 }
 
-func (f *FunctionJavascriptModel) WithSchema(schema string) *FunctionJavascriptModel {
-	f.Schema = tfconfig.StringVariable(schema)
-	return f
-}
-
 func (f *FunctionJavascriptModel) WithTraceLevel(traceLevel string) *FunctionJavascriptModel {
 	f.TraceLevel = tfconfig.StringVariable(traceLevel)
 	return f
@@ -174,6 +174,21 @@ func (f *FunctionJavascriptModel) WithTraceLevel(traceLevel string) *FunctionJav
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (f *FunctionJavascriptModel) WithDatabaseValue(value tfconfig.Variable) *FunctionJavascriptModel {
+	f.Database = value
+	return f
+}
+
+func (f *FunctionJavascriptModel) WithSchemaValue(value tfconfig.Variable) *FunctionJavascriptModel {
+	f.Schema = value
+	return f
+}
+
+func (f *FunctionJavascriptModel) WithNameValue(value tfconfig.Variable) *FunctionJavascriptModel {
+	f.Name = value
+	return f
+}
+
 func (f *FunctionJavascriptModel) WithArgumentsValue(value tfconfig.Variable) *FunctionJavascriptModel {
 	f.Arguments = value
 	return f
@@ -181,11 +196,6 @@ func (f *FunctionJavascriptModel) WithArgumentsValue(value tfconfig.Variable) *F
 
 func (f *FunctionJavascriptModel) WithCommentValue(value tfconfig.Variable) *FunctionJavascriptModel {
 	f.Comment = value
-	return f
-}
-
-func (f *FunctionJavascriptModel) WithDatabaseValue(value tfconfig.Variable) *FunctionJavascriptModel {
-	f.Database = value
 	return f
 }
 
@@ -224,11 +234,6 @@ func (f *FunctionJavascriptModel) WithMetricLevelValue(value tfconfig.Variable) 
 	return f
 }
 
-func (f *FunctionJavascriptModel) WithNameValue(value tfconfig.Variable) *FunctionJavascriptModel {
-	f.Name = value
-	return f
-}
-
 func (f *FunctionJavascriptModel) WithNullInputBehaviorValue(value tfconfig.Variable) *FunctionJavascriptModel {
 	f.NullInputBehavior = value
 	return f
@@ -241,11 +246,6 @@ func (f *FunctionJavascriptModel) WithReturnResultsBehaviorValue(value tfconfig.
 
 func (f *FunctionJavascriptModel) WithReturnTypeValue(value tfconfig.Variable) *FunctionJavascriptModel {
 	f.ReturnType = value
-	return f
-}
-
-func (f *FunctionJavascriptModel) WithSchemaValue(value tfconfig.Variable) *FunctionJavascriptModel {
-	f.Schema = value
 	return f
 }
 

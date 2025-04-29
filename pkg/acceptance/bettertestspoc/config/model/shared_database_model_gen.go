@@ -12,6 +12,7 @@ import (
 )
 
 type SharedDatabaseModel struct {
+	Name                                    tfconfig.Variable `json:"name,omitempty"`
 	Catalog                                 tfconfig.Variable `json:"catalog,omitempty"`
 	Comment                                 tfconfig.Variable `json:"comment,omitempty"`
 	DefaultDdlCollation                     tfconfig.Variable `json:"default_ddl_collation,omitempty"`
@@ -20,7 +21,6 @@ type SharedDatabaseModel struct {
 	FromShare                               tfconfig.Variable `json:"from_share,omitempty"`
 	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
-	Name                                    tfconfig.Variable `json:"name,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	ReplaceInvalidCharacters                tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
 	StorageSerializationPolicy              tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
@@ -40,22 +40,22 @@ type SharedDatabaseModel struct {
 
 func SharedDatabase(
 	resourceName string,
-	fromShare string,
 	name string,
+	fromShare string,
 ) *SharedDatabaseModel {
 	s := &SharedDatabaseModel{ResourceModelMeta: config.Meta(resourceName, resources.SharedDatabase)}
-	s.WithFromShare(fromShare)
 	s.WithName(name)
+	s.WithFromShare(fromShare)
 	return s
 }
 
 func SharedDatabaseWithDefaultMeta(
-	fromShare string,
 	name string,
+	fromShare string,
 ) *SharedDatabaseModel {
 	s := &SharedDatabaseModel{ResourceModelMeta: config.DefaultMeta(resources.SharedDatabase)}
-	s.WithFromShare(fromShare)
 	s.WithName(name)
+	s.WithFromShare(fromShare)
 	return s
 }
 
@@ -82,6 +82,11 @@ func (s *SharedDatabaseModel) WithDependsOn(values ...string) *SharedDatabaseMod
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (s *SharedDatabaseModel) WithName(name string) *SharedDatabaseModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
 
 func (s *SharedDatabaseModel) WithCatalog(catalog string) *SharedDatabaseModel {
 	s.Catalog = tfconfig.StringVariable(catalog)
@@ -120,11 +125,6 @@ func (s *SharedDatabaseModel) WithFullyQualifiedName(fullyQualifiedName string) 
 
 func (s *SharedDatabaseModel) WithLogLevel(logLevel string) *SharedDatabaseModel {
 	s.LogLevel = tfconfig.StringVariable(logLevel)
-	return s
-}
-
-func (s *SharedDatabaseModel) WithName(name string) *SharedDatabaseModel {
-	s.Name = tfconfig.StringVariable(name)
 	return s
 }
 
@@ -177,6 +177,11 @@ func (s *SharedDatabaseModel) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *Shar
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (s *SharedDatabaseModel) WithNameValue(value tfconfig.Variable) *SharedDatabaseModel {
+	s.Name = value
+	return s
+}
+
 func (s *SharedDatabaseModel) WithCatalogValue(value tfconfig.Variable) *SharedDatabaseModel {
 	s.Catalog = value
 	return s
@@ -214,11 +219,6 @@ func (s *SharedDatabaseModel) WithFullyQualifiedNameValue(value tfconfig.Variabl
 
 func (s *SharedDatabaseModel) WithLogLevelValue(value tfconfig.Variable) *SharedDatabaseModel {
 	s.LogLevel = value
-	return s
-}
-
-func (s *SharedDatabaseModel) WithNameValue(value tfconfig.Variable) *SharedDatabaseModel {
-	s.Name = value
 	return s
 }
 

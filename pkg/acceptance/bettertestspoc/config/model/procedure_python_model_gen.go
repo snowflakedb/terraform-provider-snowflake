@@ -12,9 +12,11 @@ import (
 )
 
 type ProcedurePythonModel struct {
+	Database                   tfconfig.Variable `json:"database,omitempty"`
+	Schema                     tfconfig.Variable `json:"schema,omitempty"`
+	Name                       tfconfig.Variable `json:"name,omitempty"`
 	Arguments                  tfconfig.Variable `json:"arguments,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
-	Database                   tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput        tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExecuteAs                  tfconfig.Variable `json:"execute_as,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
@@ -24,14 +26,12 @@ type ProcedurePythonModel struct {
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                       tfconfig.Variable `json:"name,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
 	Packages                   tfconfig.Variable `json:"packages,omitempty"`
 	ProcedureDefinition        tfconfig.Variable `json:"procedure_definition,omitempty"`
 	ProcedureLanguage          tfconfig.Variable `json:"procedure_language,omitempty"`
 	ReturnType                 tfconfig.Variable `json:"return_type,omitempty"`
 	RuntimeVersion             tfconfig.Variable `json:"runtime_version,omitempty"`
-	Schema                     tfconfig.Variable `json:"schema,omitempty"`
 	Secrets                    tfconfig.Variable `json:"secrets,omitempty"`
 	SnowparkPackage            tfconfig.Variable `json:"snowpark_package,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
@@ -46,40 +46,40 @@ type ProcedurePythonModel struct {
 func ProcedurePython(
 	resourceName string,
 	database string,
-	handler string,
+	schema string,
 	name string,
+	handler string,
 	returnType string,
 	runtimeVersion string,
-	schema string,
 	snowparkPackage string,
 ) *ProcedurePythonModel {
 	p := &ProcedurePythonModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedurePython)}
 	p.WithDatabase(database)
-	p.WithHandler(handler)
+	p.WithSchema(schema)
 	p.WithName(name)
+	p.WithHandler(handler)
 	p.WithReturnType(returnType)
 	p.WithRuntimeVersion(runtimeVersion)
-	p.WithSchema(schema)
 	p.WithSnowparkPackage(snowparkPackage)
 	return p
 }
 
 func ProcedurePythonWithDefaultMeta(
 	database string,
-	handler string,
+	schema string,
 	name string,
+	handler string,
 	returnType string,
 	runtimeVersion string,
-	schema string,
 	snowparkPackage string,
 ) *ProcedurePythonModel {
 	p := &ProcedurePythonModel{ResourceModelMeta: config.DefaultMeta(resources.ProcedurePython)}
 	p.WithDatabase(database)
-	p.WithHandler(handler)
+	p.WithSchema(schema)
 	p.WithName(name)
+	p.WithHandler(handler)
 	p.WithReturnType(returnType)
 	p.WithRuntimeVersion(runtimeVersion)
-	p.WithSchema(schema)
 	p.WithSnowparkPackage(snowparkPackage)
 	return p
 }
@@ -108,15 +108,25 @@ func (p *ProcedurePythonModel) WithDependsOn(values ...string) *ProcedurePythonM
 // below all the proper values //
 /////////////////////////////////
 
+func (p *ProcedurePythonModel) WithDatabase(database string) *ProcedurePythonModel {
+	p.Database = tfconfig.StringVariable(database)
+	return p
+}
+
+func (p *ProcedurePythonModel) WithSchema(schema string) *ProcedurePythonModel {
+	p.Schema = tfconfig.StringVariable(schema)
+	return p
+}
+
+func (p *ProcedurePythonModel) WithName(name string) *ProcedurePythonModel {
+	p.Name = tfconfig.StringVariable(name)
+	return p
+}
+
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (p *ProcedurePythonModel) WithComment(comment string) *ProcedurePythonModel {
 	p.Comment = tfconfig.StringVariable(comment)
-	return p
-}
-
-func (p *ProcedurePythonModel) WithDatabase(database string) *ProcedurePythonModel {
-	p.Database = tfconfig.StringVariable(database)
 	return p
 }
 
@@ -159,11 +169,6 @@ func (p *ProcedurePythonModel) WithMetricLevel(metricLevel string) *ProcedurePyt
 	return p
 }
 
-func (p *ProcedurePythonModel) WithName(name string) *ProcedurePythonModel {
-	p.Name = tfconfig.StringVariable(name)
-	return p
-}
-
 func (p *ProcedurePythonModel) WithNullInputBehavior(nullInputBehavior string) *ProcedurePythonModel {
 	p.NullInputBehavior = tfconfig.StringVariable(nullInputBehavior)
 	return p
@@ -191,11 +196,6 @@ func (p *ProcedurePythonModel) WithRuntimeVersion(runtimeVersion string) *Proced
 	return p
 }
 
-func (p *ProcedurePythonModel) WithSchema(schema string) *ProcedurePythonModel {
-	p.Schema = tfconfig.StringVariable(schema)
-	return p
-}
-
 // secrets attribute type is not yet supported, so WithSecrets can't be generated
 
 func (p *ProcedurePythonModel) WithSnowparkPackage(snowparkPackage string) *ProcedurePythonModel {
@@ -212,6 +212,21 @@ func (p *ProcedurePythonModel) WithTraceLevel(traceLevel string) *ProcedurePytho
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (p *ProcedurePythonModel) WithDatabaseValue(value tfconfig.Variable) *ProcedurePythonModel {
+	p.Database = value
+	return p
+}
+
+func (p *ProcedurePythonModel) WithSchemaValue(value tfconfig.Variable) *ProcedurePythonModel {
+	p.Schema = value
+	return p
+}
+
+func (p *ProcedurePythonModel) WithNameValue(value tfconfig.Variable) *ProcedurePythonModel {
+	p.Name = value
+	return p
+}
+
 func (p *ProcedurePythonModel) WithArgumentsValue(value tfconfig.Variable) *ProcedurePythonModel {
 	p.Arguments = value
 	return p
@@ -219,11 +234,6 @@ func (p *ProcedurePythonModel) WithArgumentsValue(value tfconfig.Variable) *Proc
 
 func (p *ProcedurePythonModel) WithCommentValue(value tfconfig.Variable) *ProcedurePythonModel {
 	p.Comment = value
-	return p
-}
-
-func (p *ProcedurePythonModel) WithDatabaseValue(value tfconfig.Variable) *ProcedurePythonModel {
-	p.Database = value
 	return p
 }
 
@@ -272,11 +282,6 @@ func (p *ProcedurePythonModel) WithMetricLevelValue(value tfconfig.Variable) *Pr
 	return p
 }
 
-func (p *ProcedurePythonModel) WithNameValue(value tfconfig.Variable) *ProcedurePythonModel {
-	p.Name = value
-	return p
-}
-
 func (p *ProcedurePythonModel) WithNullInputBehaviorValue(value tfconfig.Variable) *ProcedurePythonModel {
 	p.NullInputBehavior = value
 	return p
@@ -304,11 +309,6 @@ func (p *ProcedurePythonModel) WithReturnTypeValue(value tfconfig.Variable) *Pro
 
 func (p *ProcedurePythonModel) WithRuntimeVersionValue(value tfconfig.Variable) *ProcedurePythonModel {
 	p.RuntimeVersion = value
-	return p
-}
-
-func (p *ProcedurePythonModel) WithSchemaValue(value tfconfig.Variable) *ProcedurePythonModel {
-	p.Schema = value
 	return p
 }
 

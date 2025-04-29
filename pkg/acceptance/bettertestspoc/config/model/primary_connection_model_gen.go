@@ -12,11 +12,11 @@ import (
 )
 
 type PrimaryConnectionModel struct {
+	Name                     tfconfig.Variable `json:"name,omitempty"`
 	Comment                  tfconfig.Variable `json:"comment,omitempty"`
 	EnableFailoverToAccounts tfconfig.Variable `json:"enable_failover_to_accounts,omitempty"`
 	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsPrimary                tfconfig.Variable `json:"is_primary,omitempty"`
-	Name                     tfconfig.Variable `json:"name,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -66,6 +66,11 @@ func (p *PrimaryConnectionModel) WithDependsOn(values ...string) *PrimaryConnect
 // below all the proper values //
 /////////////////////////////////
 
+func (p *PrimaryConnectionModel) WithName(name string) *PrimaryConnectionModel {
+	p.Name = tfconfig.StringVariable(name)
+	return p
+}
+
 func (p *PrimaryConnectionModel) WithComment(comment string) *PrimaryConnectionModel {
 	p.Comment = tfconfig.StringVariable(comment)
 	return p
@@ -83,14 +88,14 @@ func (p *PrimaryConnectionModel) WithIsPrimary(isPrimary bool) *PrimaryConnectio
 	return p
 }
 
-func (p *PrimaryConnectionModel) WithName(name string) *PrimaryConnectionModel {
-	p.Name = tfconfig.StringVariable(name)
-	return p
-}
-
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (p *PrimaryConnectionModel) WithNameValue(value tfconfig.Variable) *PrimaryConnectionModel {
+	p.Name = value
+	return p
+}
 
 func (p *PrimaryConnectionModel) WithCommentValue(value tfconfig.Variable) *PrimaryConnectionModel {
 	p.Comment = value
@@ -109,10 +114,5 @@ func (p *PrimaryConnectionModel) WithFullyQualifiedNameValue(value tfconfig.Vari
 
 func (p *PrimaryConnectionModel) WithIsPrimaryValue(value tfconfig.Variable) *PrimaryConnectionModel {
 	p.IsPrimary = value
-	return p
-}
-
-func (p *PrimaryConnectionModel) WithNameValue(value tfconfig.Variable) *PrimaryConnectionModel {
-	p.Name = value
 	return p
 }

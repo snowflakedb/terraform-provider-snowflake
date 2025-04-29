@@ -13,7 +13,7 @@ func ProcedureSqlBasicInline(
 	returnType datatypes.DataType,
 	procedureDefinition string,
 ) *ProcedureSqlModel {
-	return ProcedureSql(resourceName, id.DatabaseName(), id.Name(), procedureDefinition, returnType.ToSql(), id.SchemaName())
+	return ProcedureSql(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), procedureDefinition, returnType.ToSql())
 }
 
 func (f *ProcedureSqlModel) WithArgument(argName string, argDataType datatypes.DataType) *ProcedureSqlModel {

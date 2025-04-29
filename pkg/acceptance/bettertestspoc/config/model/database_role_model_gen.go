@@ -12,10 +12,10 @@ import (
 )
 
 type DatabaseRoleModel struct {
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	Database           tfconfig.Variable `json:"database,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Name               tfconfig.Variable `json:"name,omitempty"`
+	Comment            tfconfig.Variable `json:"comment,omitempty"`
+	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -69,18 +69,8 @@ func (d *DatabaseRoleModel) WithDependsOn(values ...string) *DatabaseRoleModel {
 // below all the proper values //
 /////////////////////////////////
 
-func (d *DatabaseRoleModel) WithComment(comment string) *DatabaseRoleModel {
-	d.Comment = tfconfig.StringVariable(comment)
-	return d
-}
-
 func (d *DatabaseRoleModel) WithDatabase(database string) *DatabaseRoleModel {
 	d.Database = tfconfig.StringVariable(database)
-	return d
-}
-
-func (d *DatabaseRoleModel) WithFullyQualifiedName(fullyQualifiedName string) *DatabaseRoleModel {
-	d.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return d
 }
 
@@ -89,26 +79,36 @@ func (d *DatabaseRoleModel) WithName(name string) *DatabaseRoleModel {
 	return d
 }
 
+func (d *DatabaseRoleModel) WithComment(comment string) *DatabaseRoleModel {
+	d.Comment = tfconfig.StringVariable(comment)
+	return d
+}
+
+func (d *DatabaseRoleModel) WithFullyQualifiedName(fullyQualifiedName string) *DatabaseRoleModel {
+	d.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+	return d
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
-
-func (d *DatabaseRoleModel) WithCommentValue(value tfconfig.Variable) *DatabaseRoleModel {
-	d.Comment = value
-	return d
-}
 
 func (d *DatabaseRoleModel) WithDatabaseValue(value tfconfig.Variable) *DatabaseRoleModel {
 	d.Database = value
 	return d
 }
 
-func (d *DatabaseRoleModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *DatabaseRoleModel {
-	d.FullyQualifiedName = value
+func (d *DatabaseRoleModel) WithNameValue(value tfconfig.Variable) *DatabaseRoleModel {
+	d.Name = value
 	return d
 }
 
-func (d *DatabaseRoleModel) WithNameValue(value tfconfig.Variable) *DatabaseRoleModel {
-	d.Name = value
+func (d *DatabaseRoleModel) WithCommentValue(value tfconfig.Variable) *DatabaseRoleModel {
+	d.Comment = value
+	return d
+}
+
+func (d *DatabaseRoleModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *DatabaseRoleModel {
+	d.FullyQualifiedName = value
 	return d
 }

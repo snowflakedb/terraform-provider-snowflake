@@ -12,10 +12,10 @@ import (
 )
 
 type ScimSecurityIntegrationModel struct {
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	Enabled            tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
 	NetworkPolicy      tfconfig.Variable `json:"network_policy,omitempty"`
 	RunAsRole          tfconfig.Variable `json:"run_as_role,omitempty"`
 	ScimClient         tfconfig.Variable `json:"scim_client,omitempty"`
@@ -30,28 +30,28 @@ type ScimSecurityIntegrationModel struct {
 
 func ScimSecurityIntegration(
 	resourceName string,
-	enabled bool,
 	name string,
+	enabled bool,
 	runAsRole string,
 	scimClient string,
 ) *ScimSecurityIntegrationModel {
 	s := &ScimSecurityIntegrationModel{ResourceModelMeta: config.Meta(resourceName, resources.ScimSecurityIntegration)}
-	s.WithEnabled(enabled)
 	s.WithName(name)
+	s.WithEnabled(enabled)
 	s.WithRunAsRole(runAsRole)
 	s.WithScimClient(scimClient)
 	return s
 }
 
 func ScimSecurityIntegrationWithDefaultMeta(
-	enabled bool,
 	name string,
+	enabled bool,
 	runAsRole string,
 	scimClient string,
 ) *ScimSecurityIntegrationModel {
 	s := &ScimSecurityIntegrationModel{ResourceModelMeta: config.DefaultMeta(resources.ScimSecurityIntegration)}
-	s.WithEnabled(enabled)
 	s.WithName(name)
+	s.WithEnabled(enabled)
 	s.WithRunAsRole(runAsRole)
 	s.WithScimClient(scimClient)
 	return s
@@ -81,6 +81,11 @@ func (s *ScimSecurityIntegrationModel) WithDependsOn(values ...string) *ScimSecu
 // below all the proper values //
 /////////////////////////////////
 
+func (s *ScimSecurityIntegrationModel) WithName(name string) *ScimSecurityIntegrationModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
+
 func (s *ScimSecurityIntegrationModel) WithComment(comment string) *ScimSecurityIntegrationModel {
 	s.Comment = tfconfig.StringVariable(comment)
 	return s
@@ -93,11 +98,6 @@ func (s *ScimSecurityIntegrationModel) WithEnabled(enabled bool) *ScimSecurityIn
 
 func (s *ScimSecurityIntegrationModel) WithFullyQualifiedName(fullyQualifiedName string) *ScimSecurityIntegrationModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return s
-}
-
-func (s *ScimSecurityIntegrationModel) WithName(name string) *ScimSecurityIntegrationModel {
-	s.Name = tfconfig.StringVariable(name)
 	return s
 }
 
@@ -125,6 +125,11 @@ func (s *ScimSecurityIntegrationModel) WithSyncPassword(syncPassword string) *Sc
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (s *ScimSecurityIntegrationModel) WithNameValue(value tfconfig.Variable) *ScimSecurityIntegrationModel {
+	s.Name = value
+	return s
+}
+
 func (s *ScimSecurityIntegrationModel) WithCommentValue(value tfconfig.Variable) *ScimSecurityIntegrationModel {
 	s.Comment = value
 	return s
@@ -137,11 +142,6 @@ func (s *ScimSecurityIntegrationModel) WithEnabledValue(value tfconfig.Variable)
 
 func (s *ScimSecurityIntegrationModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ScimSecurityIntegrationModel {
 	s.FullyQualifiedName = value
-	return s
-}
-
-func (s *ScimSecurityIntegrationModel) WithNameValue(value tfconfig.Variable) *ScimSecurityIntegrationModel {
-	s.Name = value
 	return s
 }
 

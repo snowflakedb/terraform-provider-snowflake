@@ -13,13 +13,13 @@ import (
 )
 
 type RowAccessPolicyModel struct {
+	Database           tfconfig.Variable `json:"database,omitempty"`
+	Schema             tfconfig.Variable `json:"schema,omitempty"`
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	Argument           tfconfig.Variable `json:"argument,omitempty"`
 	Body               tfconfig.Variable `json:"body,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	Database           tfconfig.Variable `json:"database,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	Schema             tfconfig.Variable `json:"schema,omitempty"`
 
 	// added manually
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
@@ -33,34 +33,34 @@ type RowAccessPolicyModel struct {
 
 func RowAccessPolicy(
 	resourceName string,
+	database string,
+	schema string,
+	name string,
 	argument []sdk.TableColumnSignature,
 	body string,
-	database string,
-	name string,
-	schema string,
 ) *RowAccessPolicyModel {
 	r := &RowAccessPolicyModel{ResourceModelMeta: config.Meta(resourceName, resources.RowAccessPolicy)}
+	r.WithDatabase(database)
+	r.WithSchema(schema)
+	r.WithName(name)
 	r.WithArgument(argument)
 	r.WithBody(body)
-	r.WithDatabase(database)
-	r.WithName(name)
-	r.WithSchema(schema)
 	return r
 }
 
 func RowAccessPolicyWithDefaultMeta(
+	database string,
+	schema string,
+	name string,
 	argument []sdk.TableColumnSignature,
 	body string,
-	database string,
-	name string,
-	schema string,
 ) *RowAccessPolicyModel {
 	r := &RowAccessPolicyModel{ResourceModelMeta: config.DefaultMeta(resources.RowAccessPolicy)}
+	r.WithDatabase(database)
+	r.WithSchema(schema)
+	r.WithName(name)
 	r.WithArgument(argument)
 	r.WithBody(body)
-	r.WithDatabase(database)
-	r.WithName(name)
-	r.WithSchema(schema)
 	return r
 }
 
@@ -88,6 +88,21 @@ func (r *RowAccessPolicyModel) WithDependsOn(values ...string) *RowAccessPolicyM
 // below all the proper values //
 /////////////////////////////////
 
+func (r *RowAccessPolicyModel) WithDatabase(database string) *RowAccessPolicyModel {
+	r.Database = tfconfig.StringVariable(database)
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithSchema(schema string) *RowAccessPolicyModel {
+	r.Schema = tfconfig.StringVariable(schema)
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithName(name string) *RowAccessPolicyModel {
+	r.Name = tfconfig.StringVariable(name)
+	return r
+}
+
 // argument attribute type is not yet supported, so WithArgument can't be generated
 
 func (r *RowAccessPolicyModel) WithBody(body string) *RowAccessPolicyModel {
@@ -100,29 +115,29 @@ func (r *RowAccessPolicyModel) WithComment(comment string) *RowAccessPolicyModel
 	return r
 }
 
-func (r *RowAccessPolicyModel) WithDatabase(database string) *RowAccessPolicyModel {
-	r.Database = tfconfig.StringVariable(database)
-	return r
-}
-
 func (r *RowAccessPolicyModel) WithFullyQualifiedName(fullyQualifiedName string) *RowAccessPolicyModel {
 	r.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return r
-}
-
-func (r *RowAccessPolicyModel) WithName(name string) *RowAccessPolicyModel {
-	r.Name = tfconfig.StringVariable(name)
-	return r
-}
-
-func (r *RowAccessPolicyModel) WithSchema(schema string) *RowAccessPolicyModel {
-	r.Schema = tfconfig.StringVariable(schema)
 	return r
 }
 
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (r *RowAccessPolicyModel) WithDatabaseValue(value tfconfig.Variable) *RowAccessPolicyModel {
+	r.Database = value
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithSchemaValue(value tfconfig.Variable) *RowAccessPolicyModel {
+	r.Schema = value
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithNameValue(value tfconfig.Variable) *RowAccessPolicyModel {
+	r.Name = value
+	return r
+}
 
 func (r *RowAccessPolicyModel) WithArgumentValue(value tfconfig.Variable) *RowAccessPolicyModel {
 	r.Argument = value
@@ -139,22 +154,7 @@ func (r *RowAccessPolicyModel) WithCommentValue(value tfconfig.Variable) *RowAcc
 	return r
 }
 
-func (r *RowAccessPolicyModel) WithDatabaseValue(value tfconfig.Variable) *RowAccessPolicyModel {
-	r.Database = value
-	return r
-}
-
 func (r *RowAccessPolicyModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *RowAccessPolicyModel {
 	r.FullyQualifiedName = value
-	return r
-}
-
-func (r *RowAccessPolicyModel) WithNameValue(value tfconfig.Variable) *RowAccessPolicyModel {
-	r.Name = value
-	return r
-}
-
-func (r *RowAccessPolicyModel) WithSchemaValue(value tfconfig.Variable) *RowAccessPolicyModel {
-	r.Schema = value
 	return r
 }

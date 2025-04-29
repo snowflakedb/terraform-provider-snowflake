@@ -13,7 +13,7 @@ func StreamlitWithIds(
 	mainFile string,
 	stageId sdk.SchemaObjectIdentifier,
 ) *StreamlitModel {
-	return Streamlit(resourceName, id.DatabaseName(), mainFile, id.Name(), id.SchemaName(), stageId.FullyQualifiedName())
+	return Streamlit(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), mainFile, stageId.FullyQualifiedName())
 }
 
 func (s *StreamlitModel) WithExternalAccessIntegrations(integrations ...sdk.AccountObjectIdentifier) *StreamlitModel {

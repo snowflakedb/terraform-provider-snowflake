@@ -12,9 +12,11 @@ import (
 )
 
 type FunctionScalaModel struct {
+	Database                   tfconfig.Variable `json:"database,omitempty"`
+	Schema                     tfconfig.Variable `json:"schema,omitempty"`
+	Name                       tfconfig.Variable `json:"name,omitempty"`
 	Arguments                  tfconfig.Variable `json:"arguments,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
-	Database                   tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput        tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -25,13 +27,11 @@ type FunctionScalaModel struct {
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                       tfconfig.Variable `json:"name,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
 	Packages                   tfconfig.Variable `json:"packages,omitempty"`
 	ReturnResultsBehavior      tfconfig.Variable `json:"return_results_behavior,omitempty"`
 	ReturnType                 tfconfig.Variable `json:"return_type,omitempty"`
 	RuntimeVersion             tfconfig.Variable `json:"runtime_version,omitempty"`
-	Schema                     tfconfig.Variable `json:"schema,omitempty"`
 	Secrets                    tfconfig.Variable `json:"secrets,omitempty"`
 	TargetPath                 tfconfig.Variable `json:"target_path,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
@@ -46,37 +46,37 @@ type FunctionScalaModel struct {
 func FunctionScala(
 	resourceName string,
 	database string,
-	handler string,
+	schema string,
 	name string,
+	handler string,
 	returnType string,
 	runtimeVersion string,
-	schema string,
 ) *FunctionScalaModel {
 	f := &FunctionScalaModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionScala)}
 	f.WithDatabase(database)
-	f.WithHandler(handler)
+	f.WithSchema(schema)
 	f.WithName(name)
+	f.WithHandler(handler)
 	f.WithReturnType(returnType)
 	f.WithRuntimeVersion(runtimeVersion)
-	f.WithSchema(schema)
 	return f
 }
 
 func FunctionScalaWithDefaultMeta(
 	database string,
-	handler string,
+	schema string,
 	name string,
+	handler string,
 	returnType string,
 	runtimeVersion string,
-	schema string,
 ) *FunctionScalaModel {
 	f := &FunctionScalaModel{ResourceModelMeta: config.DefaultMeta(resources.FunctionScala)}
 	f.WithDatabase(database)
-	f.WithHandler(handler)
+	f.WithSchema(schema)
 	f.WithName(name)
+	f.WithHandler(handler)
 	f.WithReturnType(returnType)
 	f.WithRuntimeVersion(runtimeVersion)
-	f.WithSchema(schema)
 	return f
 }
 
@@ -104,15 +104,25 @@ func (f *FunctionScalaModel) WithDependsOn(values ...string) *FunctionScalaModel
 // below all the proper values //
 /////////////////////////////////
 
+func (f *FunctionScalaModel) WithDatabase(database string) *FunctionScalaModel {
+	f.Database = tfconfig.StringVariable(database)
+	return f
+}
+
+func (f *FunctionScalaModel) WithSchema(schema string) *FunctionScalaModel {
+	f.Schema = tfconfig.StringVariable(schema)
+	return f
+}
+
+func (f *FunctionScalaModel) WithName(name string) *FunctionScalaModel {
+	f.Name = tfconfig.StringVariable(name)
+	return f
+}
+
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (f *FunctionScalaModel) WithComment(comment string) *FunctionScalaModel {
 	f.Comment = tfconfig.StringVariable(comment)
-	return f
-}
-
-func (f *FunctionScalaModel) WithDatabase(database string) *FunctionScalaModel {
-	f.Database = tfconfig.StringVariable(database)
 	return f
 }
 
@@ -160,11 +170,6 @@ func (f *FunctionScalaModel) WithMetricLevel(metricLevel string) *FunctionScalaM
 	return f
 }
 
-func (f *FunctionScalaModel) WithName(name string) *FunctionScalaModel {
-	f.Name = tfconfig.StringVariable(name)
-	return f
-}
-
 func (f *FunctionScalaModel) WithNullInputBehavior(nullInputBehavior string) *FunctionScalaModel {
 	f.NullInputBehavior = tfconfig.StringVariable(nullInputBehavior)
 	return f
@@ -187,11 +192,6 @@ func (f *FunctionScalaModel) WithRuntimeVersion(runtimeVersion string) *Function
 	return f
 }
 
-func (f *FunctionScalaModel) WithSchema(schema string) *FunctionScalaModel {
-	f.Schema = tfconfig.StringVariable(schema)
-	return f
-}
-
 // secrets attribute type is not yet supported, so WithSecrets can't be generated
 
 // target_path attribute type is not yet supported, so WithTargetPath can't be generated
@@ -205,6 +205,21 @@ func (f *FunctionScalaModel) WithTraceLevel(traceLevel string) *FunctionScalaMod
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (f *FunctionScalaModel) WithDatabaseValue(value tfconfig.Variable) *FunctionScalaModel {
+	f.Database = value
+	return f
+}
+
+func (f *FunctionScalaModel) WithSchemaValue(value tfconfig.Variable) *FunctionScalaModel {
+	f.Schema = value
+	return f
+}
+
+func (f *FunctionScalaModel) WithNameValue(value tfconfig.Variable) *FunctionScalaModel {
+	f.Name = value
+	return f
+}
+
 func (f *FunctionScalaModel) WithArgumentsValue(value tfconfig.Variable) *FunctionScalaModel {
 	f.Arguments = value
 	return f
@@ -212,11 +227,6 @@ func (f *FunctionScalaModel) WithArgumentsValue(value tfconfig.Variable) *Functi
 
 func (f *FunctionScalaModel) WithCommentValue(value tfconfig.Variable) *FunctionScalaModel {
 	f.Comment = value
-	return f
-}
-
-func (f *FunctionScalaModel) WithDatabaseValue(value tfconfig.Variable) *FunctionScalaModel {
-	f.Database = value
 	return f
 }
 
@@ -270,11 +280,6 @@ func (f *FunctionScalaModel) WithMetricLevelValue(value tfconfig.Variable) *Func
 	return f
 }
 
-func (f *FunctionScalaModel) WithNameValue(value tfconfig.Variable) *FunctionScalaModel {
-	f.Name = value
-	return f
-}
-
 func (f *FunctionScalaModel) WithNullInputBehaviorValue(value tfconfig.Variable) *FunctionScalaModel {
 	f.NullInputBehavior = value
 	return f
@@ -297,11 +302,6 @@ func (f *FunctionScalaModel) WithReturnTypeValue(value tfconfig.Variable) *Funct
 
 func (f *FunctionScalaModel) WithRuntimeVersionValue(value tfconfig.Variable) *FunctionScalaModel {
 	f.RuntimeVersion = value
-	return f
-}
-
-func (f *FunctionScalaModel) WithSchemaValue(value tfconfig.Variable) *FunctionScalaModel {
-	f.Schema = value
 	return f
 }
 

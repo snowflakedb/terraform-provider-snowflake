@@ -9,7 +9,7 @@ import (
 )
 
 func FunctionPythonBasicInline(resourceName string, id sdk.SchemaObjectIdentifierWithArguments, runtimeVersion string, returnType datatypes.DataType, handler string, functionDefinition string) *FunctionPythonModel {
-	return FunctionPython(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), runtimeVersion, id.SchemaName()).WithFunctionDefinition(functionDefinition)
+	return FunctionPython(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), runtimeVersion).WithFunctionDefinition(functionDefinition)
 }
 
 func (f *FunctionPythonModel) WithArgument(argName string, argDataType datatypes.DataType) *FunctionPythonModel {

@@ -297,8 +297,8 @@ func TestAcc_StreamOnTable_CopyGrants(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	streamModelWithoutCopyGrants := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table.ID().FullyQualifiedName()).WithCopyGrants(false)
-	streamModelWithCopyGrants := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table.ID().FullyQualifiedName()).WithCopyGrants(true)
+	streamModelWithoutCopyGrants := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName()).WithCopyGrants(false)
+	streamModelWithCopyGrants := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName()).WithCopyGrants(true)
 
 	var createdOn string
 
@@ -362,10 +362,10 @@ func TestAcc_StreamOnTable_CheckGrantsAfterRecreation(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	model1 := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table.ID().FullyQualifiedName()).
+	model1 := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName()).
 		WithCopyGrants(true)
-	model1WithoutCopyGrants := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table.ID().FullyQualifiedName())
-	model2 := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table2.ID().FullyQualifiedName()).
+	model1WithoutCopyGrants := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName())
+	model2 := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table2.ID().FullyQualifiedName()).
 		WithCopyGrants(true)
 
 	resource.Test(t, resource.TestCase{
@@ -425,7 +425,7 @@ func TestAcc_StreamOnTable_PermadiffWhenIsStaleAndHasNoRetentionTime(t *testing.
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
-	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table.ID().FullyQualifiedName())
+	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName())
 
 	var createdOn string
 
@@ -501,7 +501,7 @@ func TestAcc_StreamOnTable_StaleWithExternalChanges(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
-	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), table.ID().FullyQualifiedName())
+	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName())
 
 	var createdOn string
 
@@ -792,9 +792,9 @@ func TestAcc_StreamOnTable_InvalidConfiguration(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelWithInvalidTableId := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), "invalid")
+	modelWithInvalidTableId := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), "invalid")
 
-	modelWithBefore := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), "foo.bar.hoge").
+	modelWithBefore := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), "foo.bar.hoge").
 		WithComment("foo").
 		WithCopyGrants(false).
 		WithAppendOnly(r.BooleanFalse).
@@ -806,7 +806,7 @@ func TestAcc_StreamOnTable_InvalidConfiguration(t *testing.T) {
 			"stream":    pluginconfig.StringVariable("0"),
 		}))
 
-	modelWithAt := model.StreamOnTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), "foo.bar.hoge").
+	modelWithAt := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), "foo.bar.hoge").
 		WithComment("foo").
 		WithCopyGrants(false).
 		WithAppendOnly(r.BooleanFalse).

@@ -39,7 +39,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 	key, _ := random.GenerateRSAPublicKey(t)
 	region := acc.TestClient().Context.CurrentRegion(t)
 
-	configModel := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminRsaPublicKey(key)
 
 	resource.Test(t, resource.TestCase{
@@ -141,7 +141,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 	region := acc.TestClient().Context.CurrentRegion(t)
 	comment := random.Comment()
 
-	configModel := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypePerson).
 		WithAdminRsaPublicKey(key).
 		WithFirstName(firstName).
@@ -251,10 +251,10 @@ func TestAcc_Account_Rename(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 
-	configModel := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
-	newConfigModel := model.Account("test", name, string(sdk.EditionStandard), email, 3, newId.Name()).
+	newConfigModel := model.Account("test", newId.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
@@ -310,17 +310,17 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 
-	configModelWithOrgAdminTrue := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModelWithOrgAdminTrue := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key).
 		WithIsOrgAdmin(r.BooleanTrue)
 
-	configModelWithOrgAdminFalse := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModelWithOrgAdminFalse := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key).
 		WithIsOrgAdmin(r.BooleanFalse)
 
-	configModelWithoutOrgAdmin := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModelWithoutOrgAdmin := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
@@ -438,14 +438,14 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 	newName := random.AdminName()
 	newPass := random.Password()
 
-	configModel := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypePerson).
 		WithFirstName(firstName).
 		WithLastName(lastName).
 		WithMustChangePassword(r.BooleanTrue).
 		WithAdminPassword(pass)
 
-	newConfigModel := model.Account("test", newName, string(sdk.EditionStandard), newEmail, 3, id.Name()).
+	newConfigModel := model.Account("test", id.Name(), newName, string(sdk.EditionStandard), newEmail, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminPassword(newPass).
 		WithFirstName(newFirstName).
@@ -509,7 +509,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	t.Setenv(snowflakeenvs.Role, snowflakeroles.Accountadmin.Name())
 
-	configModel := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
@@ -537,15 +537,15 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 
-	configModelInvalidUserType := model.Account("test", name, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModelInvalidUserType := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserType("invalid_user_type").
 		WithAdminRsaPublicKey(key)
 
-	configModelInvalidAccountEdition := model.Account("test", name, "invalid_account_edition", email, 3, id.Name()).
+	configModelInvalidAccountEdition := model.Account("test", id.Name(), name, "invalid_account_edition", email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
-	configModelInvalidGracePeriodInDays := model.Account("test", name, string(sdk.EditionStandard), email, 2, id.Name()).
+	configModelInvalidGracePeriodInDays := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 2).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
@@ -585,7 +585,7 @@ func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
 	region := acc.TestClient().Context.CurrentRegion(t)
 	comment := random.Comment()
 
-	configModel := model.Account("test", adminName, string(sdk.EditionStandard), email, 3, id.Name()).
+	configModel := model.Account("test", id.Name(), adminName, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminPassword(adminPassword).
 		WithFirstName(firstName).

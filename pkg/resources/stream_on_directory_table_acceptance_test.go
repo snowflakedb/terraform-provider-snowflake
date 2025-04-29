@@ -36,7 +36,7 @@ func TestAcc_StreamOnDirectoryTable_Basic(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	baseModel := func() *model.StreamOnDirectoryTableModel {
-		return model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage.ID().FullyQualifiedName())
+		return model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
 	}
 
 	modelWithExtraFields := baseModel().
@@ -278,8 +278,8 @@ func TestAcc_StreamOnDirectoryTable_CopyGrants(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	streamOnDirectoryModelWithCopyGrants := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage.ID().FullyQualifiedName()).WithCopyGrants(true)
-	streamOnDirectoryModelWithoutCopyGrants := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage.ID().FullyQualifiedName()).WithCopyGrants(false)
+	streamOnDirectoryModelWithCopyGrants := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName()).WithCopyGrants(true)
+	streamOnDirectoryModelWithoutCopyGrants := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName()).WithCopyGrants(false)
 
 	var createdOn string
 
@@ -343,9 +343,9 @@ func TestAcc_StreamOnDirectoryTable_CheckGrantsAfterRecreation(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	model1 := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage.ID().FullyQualifiedName()).WithCopyGrants(true)
-	model1WithoutCopyGrants := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage.ID().FullyQualifiedName())
-	model2 := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage2.ID().FullyQualifiedName()).WithCopyGrants(true)
+	model1 := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName()).WithCopyGrants(true)
+	model1WithoutCopyGrants := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
+	model2 := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage2.ID().FullyQualifiedName()).WithCopyGrants(true)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -426,7 +426,7 @@ func TestAcc_StreamOnDirectoryTable_RecreateWhenStale(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
-	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage.ID().FullyQualifiedName())
+	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -453,7 +453,7 @@ func TestAcc_StreamOnDirectoryTable_InvalidConfiguration(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelWithInvalidStageId := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), "invalid")
+	modelWithInvalidStageId := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), "invalid")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -481,7 +481,7 @@ func TestAcc_StreamOnDirectoryTable_ExternalStreamTypeChange(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.Name(), id.SchemaName(), stage.ID().FullyQualifiedName())
+	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,

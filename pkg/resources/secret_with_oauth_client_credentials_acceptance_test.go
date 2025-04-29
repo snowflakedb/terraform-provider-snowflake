@@ -42,12 +42,12 @@ func TestAcc_SecretWithClientCredentials_BasicFlow(t *testing.T) {
 	comment := random.Comment()
 	newComment := random.Comment()
 
-	secretModel := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{"foo", "bar"}).WithComment(comment)
-	secretModelTestInScopes := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{"test"}).WithComment(newComment)
-	secretModelFooInScopesWithComment := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{"foo"}).WithComment(newComment)
-	secretModelFooInScopes := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{"foo"})
-	secretModelWithoutComment := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{"foo", "bar"})
-	secretModelWithoutCommentWithOauthScopes := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{"foo", "bar"}).
+	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"}).WithComment(comment)
+	secretModelTestInScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"test"}).WithComment(newComment)
+	secretModelFooInScopesWithComment := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo"}).WithComment(newComment)
+	secretModelFooInScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo"})
+	secretModelWithoutComment := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"})
+	secretModelWithoutCommentWithOauthScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"}).
 		WithOauthScopes([]string{"foo", "bar"})
 	secretName := secretModel.ResourceReference()
 
@@ -242,9 +242,9 @@ func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{})
-	secretModelEmptyScopes := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{})
-	secretModelWithScope := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{}).WithOauthScopes([]string{"foo"})
+	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{})
+	secretModelEmptyScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{})
+	secretModelWithScope := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{}).WithOauthScopes([]string{"foo"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -324,7 +324,7 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChange(t *testing.T) 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{"foo", "bar"})
+	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -386,7 +386,7 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChangeToOAuthAuthCode
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithClientCredentials("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, []string{"foo", "bar"})
+	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,

@@ -193,7 +193,7 @@ func TestAcc_Connections_FilteringWithReplica(t *testing.T) {
 		WithEnableConnectionFailover(*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{accountId})))
 
 	connectionModelOne := model.PrimaryConnection("c1", idOne.Name())
-	connectionModelTwo := model.SecondaryConnection("c2", primaryConnectionAsExternalId.FullyQualifiedName(), idTwo.Name())
+	connectionModelTwo := model.SecondaryConnection("c2", idTwo.Name(), primaryConnectionAsExternalId.FullyQualifiedName())
 
 	configWithLike := accconfig.FromModels(t, connectionModelOne) +
 		accconfig.FromModels(t, connectionModelTwo)

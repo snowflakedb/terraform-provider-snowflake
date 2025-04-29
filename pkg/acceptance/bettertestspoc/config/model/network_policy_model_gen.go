@@ -12,13 +12,13 @@ import (
 )
 
 type NetworkPolicyModel struct {
+	Name                   tfconfig.Variable `json:"name,omitempty"`
 	AllowedIpList          tfconfig.Variable `json:"allowed_ip_list,omitempty"`
 	AllowedNetworkRuleList tfconfig.Variable `json:"allowed_network_rule_list,omitempty"`
 	BlockedIpList          tfconfig.Variable `json:"blocked_ip_list,omitempty"`
 	BlockedNetworkRuleList tfconfig.Variable `json:"blocked_network_rule_list,omitempty"`
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                   tfconfig.Variable `json:"name,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -68,6 +68,11 @@ func (n *NetworkPolicyModel) WithDependsOn(values ...string) *NetworkPolicyModel
 // below all the proper values //
 /////////////////////////////////
 
+func (n *NetworkPolicyModel) WithName(name string) *NetworkPolicyModel {
+	n.Name = tfconfig.StringVariable(name)
+	return n
+}
+
 // allowed_ip_list attribute type is not yet supported, so WithAllowedIpList can't be generated
 
 // allowed_network_rule_list attribute type is not yet supported, so WithAllowedNetworkRuleList can't be generated
@@ -86,14 +91,14 @@ func (n *NetworkPolicyModel) WithFullyQualifiedName(fullyQualifiedName string) *
 	return n
 }
 
-func (n *NetworkPolicyModel) WithName(name string) *NetworkPolicyModel {
-	n.Name = tfconfig.StringVariable(name)
-	return n
-}
-
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (n *NetworkPolicyModel) WithNameValue(value tfconfig.Variable) *NetworkPolicyModel {
+	n.Name = value
+	return n
+}
 
 func (n *NetworkPolicyModel) WithAllowedIpListValue(value tfconfig.Variable) *NetworkPolicyModel {
 	n.AllowedIpList = value
@@ -122,10 +127,5 @@ func (n *NetworkPolicyModel) WithCommentValue(value tfconfig.Variable) *NetworkP
 
 func (n *NetworkPolicyModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *NetworkPolicyModel {
 	n.FullyQualifiedName = value
-	return n
-}
-
-func (n *NetworkPolicyModel) WithNameValue(value tfconfig.Variable) *NetworkPolicyModel {
-	n.Name = value
 	return n
 }

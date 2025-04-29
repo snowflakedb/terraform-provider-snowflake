@@ -50,9 +50,9 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 		accountEnableConsoleOutput                     = new(string)
 	)
 
-	sharedDatabaseModel := model.SharedDatabase("test", shareExternalId.FullyQualifiedName(), id.Name()).
+	sharedDatabaseModel := model.SharedDatabase("test", id.Name(), shareExternalId.FullyQualifiedName()).
 		WithComment(comment)
-	sharedDatabaseModelRenamed := model.SharedDatabase("test", shareExternalId.FullyQualifiedName(), newId.Name()).
+	sharedDatabaseModelRenamed := model.SharedDatabase("test", newId.Name(), shareExternalId.FullyQualifiedName()).
 		WithComment(newComment)
 
 	resource.Test(t, resource.TestCase{
@@ -159,7 +159,7 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	sharedDatabaseModelComplete := model.SharedDatabase("test", externalShareId.FullyQualifiedName(), id.Name()).
+	sharedDatabaseModelComplete := model.SharedDatabase("test", id.Name(), externalShareId.FullyQualifiedName()).
 		WithComment(comment).
 		WithExternalVolume(externalVolumeId.Name()).
 		WithCatalog(catalogId.Name()).
@@ -282,7 +282,7 @@ func TestAcc_SharedDatabase_migrateFromV0941_ensureSmoothUpgradeWithNewResourceI
 
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 
-	sharedDatabaseModel := model.SharedDatabase("test", externalShareId.FullyQualifiedName(), id.Name())
+	sharedDatabaseModel := model.SharedDatabase("test", id.Name(), externalShareId.FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },
@@ -321,7 +321,7 @@ func TestAcc_SharedDatabase_IdentifierQuotingDiffSuppression(t *testing.T) {
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
 	unquotedExternalShareId := fmt.Sprintf("%s.%s.%s", externalShareId.AccountIdentifier().OrganizationName(), externalShareId.AccountIdentifier().AccountName(), externalShareId.Name())
 
-	sharedDatabaseModel := model.SharedDatabase("test", unquotedExternalShareId, quotedId)
+	sharedDatabaseModel := model.SharedDatabase("test", quotedId, unquotedExternalShareId)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },

@@ -12,6 +12,7 @@ import (
 )
 
 type ManagedAccountModel struct {
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	AdminName          tfconfig.Variable `json:"admin_name,omitempty"`
 	AdminPassword      tfconfig.Variable `json:"admin_password,omitempty"`
 	Cloud              tfconfig.Variable `json:"cloud,omitempty"`
@@ -19,7 +20,6 @@ type ManagedAccountModel struct {
 	CreatedOn          tfconfig.Variable `json:"created_on,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Locator            tfconfig.Variable `json:"locator,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
 	Region             tfconfig.Variable `json:"region,omitempty"`
 	Type_              tfconfig.Variable `json:"type,omitempty"`
 	Url                tfconfig.Variable `json:"url,omitempty"`
@@ -33,26 +33,26 @@ type ManagedAccountModel struct {
 
 func ManagedAccount(
 	resourceName string,
+	name string,
 	adminName string,
 	adminPassword string,
-	name string,
 ) *ManagedAccountModel {
 	m := &ManagedAccountModel{ResourceModelMeta: config.Meta(resourceName, resources.ManagedAccount)}
+	m.WithName(name)
 	m.WithAdminName(adminName)
 	m.WithAdminPassword(adminPassword)
-	m.WithName(name)
 	return m
 }
 
 func ManagedAccountWithDefaultMeta(
+	name string,
 	adminName string,
 	adminPassword string,
-	name string,
 ) *ManagedAccountModel {
 	m := &ManagedAccountModel{ResourceModelMeta: config.DefaultMeta(resources.ManagedAccount)}
+	m.WithName(name)
 	m.WithAdminName(adminName)
 	m.WithAdminPassword(adminPassword)
-	m.WithName(name)
 	return m
 }
 
@@ -79,6 +79,11 @@ func (m *ManagedAccountModel) WithDependsOn(values ...string) *ManagedAccountMod
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (m *ManagedAccountModel) WithName(name string) *ManagedAccountModel {
+	m.Name = tfconfig.StringVariable(name)
+	return m
+}
 
 func (m *ManagedAccountModel) WithAdminName(adminName string) *ManagedAccountModel {
 	m.AdminName = tfconfig.StringVariable(adminName)
@@ -115,11 +120,6 @@ func (m *ManagedAccountModel) WithLocator(locator string) *ManagedAccountModel {
 	return m
 }
 
-func (m *ManagedAccountModel) WithName(name string) *ManagedAccountModel {
-	m.Name = tfconfig.StringVariable(name)
-	return m
-}
-
 func (m *ManagedAccountModel) WithRegion(region string) *ManagedAccountModel {
 	m.Region = tfconfig.StringVariable(region)
 	return m
@@ -138,6 +138,11 @@ func (m *ManagedAccountModel) WithUrl(url string) *ManagedAccountModel {
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (m *ManagedAccountModel) WithNameValue(value tfconfig.Variable) *ManagedAccountModel {
+	m.Name = value
+	return m
+}
 
 func (m *ManagedAccountModel) WithAdminNameValue(value tfconfig.Variable) *ManagedAccountModel {
 	m.AdminName = value
@@ -171,11 +176,6 @@ func (m *ManagedAccountModel) WithFullyQualifiedNameValue(value tfconfig.Variabl
 
 func (m *ManagedAccountModel) WithLocatorValue(value tfconfig.Variable) *ManagedAccountModel {
 	m.Locator = value
-	return m
-}
-
-func (m *ManagedAccountModel) WithNameValue(value tfconfig.Variable) *ManagedAccountModel {
-	m.Name = value
 	return m
 }
 

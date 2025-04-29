@@ -17,7 +17,7 @@ func FunctionJavaBasicInline(
 	handler string,
 	functionDefinition string,
 ) *FunctionJavaModel {
-	return FunctionJava(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), id.SchemaName()).WithFunctionDefinition(functionDefinition)
+	return FunctionJava(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql()).WithFunctionDefinition(functionDefinition)
 }
 
 func FunctionJavaBasicStaged(
@@ -28,7 +28,7 @@ func FunctionJavaBasicStaged(
 	stageLocation string,
 	pathOnStage string,
 ) *FunctionJavaModel {
-	return FunctionJava(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), id.SchemaName()).
+	return FunctionJava(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql()).
 		WithImport(stageLocation, pathOnStage)
 }
 

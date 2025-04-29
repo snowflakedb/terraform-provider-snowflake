@@ -12,6 +12,7 @@ import (
 )
 
 type ServiceUserModel struct {
+	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                       tfconfig.Variable `json:"abort_detached_query,omitempty"`
 	Autocommit                               tfconfig.Variable `json:"autocommit,omitempty"`
 	BinaryInputFormat                        tfconfig.Variable `json:"binary_input_format,omitempty"`
@@ -51,7 +52,6 @@ type ServiceUserModel struct {
 	LoginName                                tfconfig.Variable `json:"login_name,omitempty"`
 	MinsToUnlock                             tfconfig.Variable `json:"mins_to_unlock,omitempty"`
 	MultiStatementCount                      tfconfig.Variable `json:"multi_statement_count,omitempty"`
-	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	NetworkPolicy                            tfconfig.Variable `json:"network_policy,omitempty"`
 	NoorderSequenceAsDefault                 tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
 	OdbcTreatDecimalAsInt                    tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
@@ -134,6 +134,11 @@ func (s *ServiceUserModel) WithDependsOn(values ...string) *ServiceUserModel {
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (s *ServiceUserModel) WithName(name string) *ServiceUserModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
 
 func (s *ServiceUserModel) WithAbortDetachedQuery(abortDetachedQuery bool) *ServiceUserModel {
 	s.AbortDetachedQuery = tfconfig.BoolVariable(abortDetachedQuery)
@@ -330,11 +335,6 @@ func (s *ServiceUserModel) WithMultiStatementCount(multiStatementCount int) *Ser
 	return s
 }
 
-func (s *ServiceUserModel) WithName(name string) *ServiceUserModel {
-	s.Name = tfconfig.StringVariable(name)
-	return s
-}
-
 func (s *ServiceUserModel) WithNetworkPolicy(networkPolicy string) *ServiceUserModel {
 	s.NetworkPolicy = tfconfig.StringVariable(networkPolicy)
 	return s
@@ -508,6 +508,11 @@ func (s *ServiceUserModel) WithWeekStart(weekStart int) *ServiceUserModel {
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (s *ServiceUserModel) WithNameValue(value tfconfig.Variable) *ServiceUserModel {
+	s.Name = value
+	return s
+}
 
 func (s *ServiceUserModel) WithAbortDetachedQueryValue(value tfconfig.Variable) *ServiceUserModel {
 	s.AbortDetachedQuery = value
@@ -701,11 +706,6 @@ func (s *ServiceUserModel) WithMinsToUnlockValue(value tfconfig.Variable) *Servi
 
 func (s *ServiceUserModel) WithMultiStatementCountValue(value tfconfig.Variable) *ServiceUserModel {
 	s.MultiStatementCount = value
-	return s
-}
-
-func (s *ServiceUserModel) WithNameValue(value tfconfig.Variable) *ServiceUserModel {
-	s.Name = value
 	return s
 }
 

@@ -12,6 +12,7 @@ import (
 )
 
 type SecondaryDatabaseModel struct {
+	Name                                    tfconfig.Variable `json:"name,omitempty"`
 	AsReplicaOf                             tfconfig.Variable `json:"as_replica_of,omitempty"`
 	Catalog                                 tfconfig.Variable `json:"catalog,omitempty"`
 	Comment                                 tfconfig.Variable `json:"comment,omitempty"`
@@ -23,7 +24,6 @@ type SecondaryDatabaseModel struct {
 	IsTransient                             tfconfig.Variable `json:"is_transient,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
-	Name                                    tfconfig.Variable `json:"name,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	ReplaceInvalidCharacters                tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
 	StorageSerializationPolicy              tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
@@ -43,22 +43,22 @@ type SecondaryDatabaseModel struct {
 
 func SecondaryDatabase(
 	resourceName string,
-	asReplicaOf string,
 	name string,
+	asReplicaOf string,
 ) *SecondaryDatabaseModel {
 	s := &SecondaryDatabaseModel{ResourceModelMeta: config.Meta(resourceName, resources.SecondaryDatabase)}
-	s.WithAsReplicaOf(asReplicaOf)
 	s.WithName(name)
+	s.WithAsReplicaOf(asReplicaOf)
 	return s
 }
 
 func SecondaryDatabaseWithDefaultMeta(
-	asReplicaOf string,
 	name string,
+	asReplicaOf string,
 ) *SecondaryDatabaseModel {
 	s := &SecondaryDatabaseModel{ResourceModelMeta: config.DefaultMeta(resources.SecondaryDatabase)}
-	s.WithAsReplicaOf(asReplicaOf)
 	s.WithName(name)
+	s.WithAsReplicaOf(asReplicaOf)
 	return s
 }
 
@@ -85,6 +85,11 @@ func (s *SecondaryDatabaseModel) WithDependsOn(values ...string) *SecondaryDatab
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (s *SecondaryDatabaseModel) WithName(name string) *SecondaryDatabaseModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
 
 func (s *SecondaryDatabaseModel) WithAsReplicaOf(asReplicaOf string) *SecondaryDatabaseModel {
 	s.AsReplicaOf = tfconfig.StringVariable(asReplicaOf)
@@ -141,11 +146,6 @@ func (s *SecondaryDatabaseModel) WithMaxDataExtensionTimeInDays(maxDataExtension
 	return s
 }
 
-func (s *SecondaryDatabaseModel) WithName(name string) *SecondaryDatabaseModel {
-	s.Name = tfconfig.StringVariable(name)
-	return s
-}
-
 func (s *SecondaryDatabaseModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SecondaryDatabaseModel {
 	s.QuotedIdentifiersIgnoreCase = tfconfig.BoolVariable(quotedIdentifiersIgnoreCase)
 	return s
@@ -194,6 +194,11 @@ func (s *SecondaryDatabaseModel) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *S
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (s *SecondaryDatabaseModel) WithNameValue(value tfconfig.Variable) *SecondaryDatabaseModel {
+	s.Name = value
+	return s
+}
 
 func (s *SecondaryDatabaseModel) WithAsReplicaOfValue(value tfconfig.Variable) *SecondaryDatabaseModel {
 	s.AsReplicaOf = value
@@ -247,11 +252,6 @@ func (s *SecondaryDatabaseModel) WithLogLevelValue(value tfconfig.Variable) *Sec
 
 func (s *SecondaryDatabaseModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.Variable) *SecondaryDatabaseModel {
 	s.MaxDataExtensionTimeInDays = value
-	return s
-}
-
-func (s *SecondaryDatabaseModel) WithNameValue(value tfconfig.Variable) *SecondaryDatabaseModel {
-	s.Name = value
 	return s
 }
 

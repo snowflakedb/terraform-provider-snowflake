@@ -12,10 +12,11 @@ import (
 )
 
 type SchemaModel struct {
+	Database                                tfconfig.Variable `json:"database,omitempty"`
+	Name                                    tfconfig.Variable `json:"name,omitempty"`
 	Catalog                                 tfconfig.Variable `json:"catalog,omitempty"`
 	Comment                                 tfconfig.Variable `json:"comment,omitempty"`
 	DataRetentionTimeInDays                 tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
-	Database                                tfconfig.Variable `json:"database,omitempty"`
 	DefaultDdlCollation                     tfconfig.Variable `json:"default_ddl_collation,omitempty"`
 	EnableConsoleOutput                     tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
@@ -23,7 +24,6 @@ type SchemaModel struct {
 	IsTransient                             tfconfig.Variable `json:"is_transient,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
-	Name                                    tfconfig.Variable `json:"name,omitempty"`
 	PipeExecutionPaused                     tfconfig.Variable `json:"pipe_execution_paused,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	ReplaceInvalidCharacters                tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
@@ -88,6 +88,16 @@ func (s *SchemaModel) WithDependsOn(values ...string) *SchemaModel {
 // below all the proper values //
 /////////////////////////////////
 
+func (s *SchemaModel) WithDatabase(database string) *SchemaModel {
+	s.Database = tfconfig.StringVariable(database)
+	return s
+}
+
+func (s *SchemaModel) WithName(name string) *SchemaModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
+
 func (s *SchemaModel) WithCatalog(catalog string) *SchemaModel {
 	s.Catalog = tfconfig.StringVariable(catalog)
 	return s
@@ -100,11 +110,6 @@ func (s *SchemaModel) WithComment(comment string) *SchemaModel {
 
 func (s *SchemaModel) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *SchemaModel {
 	s.DataRetentionTimeInDays = tfconfig.IntegerVariable(dataRetentionTimeInDays)
-	return s
-}
-
-func (s *SchemaModel) WithDatabase(database string) *SchemaModel {
-	s.Database = tfconfig.StringVariable(database)
 	return s
 }
 
@@ -140,11 +145,6 @@ func (s *SchemaModel) WithLogLevel(logLevel string) *SchemaModel {
 
 func (s *SchemaModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *SchemaModel {
 	s.MaxDataExtensionTimeInDays = tfconfig.IntegerVariable(maxDataExtensionTimeInDays)
-	return s
-}
-
-func (s *SchemaModel) WithName(name string) *SchemaModel {
-	s.Name = tfconfig.StringVariable(name)
 	return s
 }
 
@@ -207,6 +207,16 @@ func (s *SchemaModel) WithWithManagedAccess(withManagedAccess string) *SchemaMod
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (s *SchemaModel) WithDatabaseValue(value tfconfig.Variable) *SchemaModel {
+	s.Database = value
+	return s
+}
+
+func (s *SchemaModel) WithNameValue(value tfconfig.Variable) *SchemaModel {
+	s.Name = value
+	return s
+}
+
 func (s *SchemaModel) WithCatalogValue(value tfconfig.Variable) *SchemaModel {
 	s.Catalog = value
 	return s
@@ -219,11 +229,6 @@ func (s *SchemaModel) WithCommentValue(value tfconfig.Variable) *SchemaModel {
 
 func (s *SchemaModel) WithDataRetentionTimeInDaysValue(value tfconfig.Variable) *SchemaModel {
 	s.DataRetentionTimeInDays = value
-	return s
-}
-
-func (s *SchemaModel) WithDatabaseValue(value tfconfig.Variable) *SchemaModel {
-	s.Database = value
 	return s
 }
 
@@ -259,11 +264,6 @@ func (s *SchemaModel) WithLogLevelValue(value tfconfig.Variable) *SchemaModel {
 
 func (s *SchemaModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.Variable) *SchemaModel {
 	s.MaxDataExtensionTimeInDays = value
-	return s
-}
-
-func (s *SchemaModel) WithNameValue(value tfconfig.Variable) *SchemaModel {
-	s.Name = value
 	return s
 }
 

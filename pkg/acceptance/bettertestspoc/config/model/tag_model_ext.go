@@ -7,7 +7,7 @@ import (
 )
 
 func TagBase(resourceName string, tagId sdk.SchemaObjectIdentifier) *TagModel {
-	return Tag(resourceName, tagId.DatabaseName(), tagId.Name(), tagId.SchemaName())
+	return Tag(resourceName, tagId.DatabaseName(), tagId.SchemaName(), tagId.Name())
 }
 
 func (t *TagModel) WithAllowedValues(allowedValues ...string) *TagModel {

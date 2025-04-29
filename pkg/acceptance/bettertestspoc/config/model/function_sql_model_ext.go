@@ -8,7 +8,7 @@ import (
 )
 
 func FunctionSqlBasicInline(resourceName string, id sdk.SchemaObjectIdentifierWithArguments, functionDefinition string, returnType string) *FunctionSqlModel {
-	return FunctionSql(resourceName, id.DatabaseName(), functionDefinition, id.Name(), returnType, id.SchemaName())
+	return FunctionSql(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), functionDefinition, returnType)
 }
 
 func (f *FunctionSqlModel) WithArgument(argName string, argDataType datatypes.DataType) *FunctionSqlModel {
