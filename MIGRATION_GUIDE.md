@@ -22,11 +22,10 @@ across different versions.
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
 
-Reference: [#3622](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3622).
+The `snowflake_tag_association` resource was crashing when performing the update operation (e.g., because the `tag_value` was changed)
+for objects that are created on schema level. This was fixed, and now you can create tag associations for objects that are created on schema level.
 
-The `snowflake_tag_association` resource was crashing for objects that are created on schema level.
-This was fixed, and now you can create tag associations for objects that are created on schema level, but
-we are advising to use the fields in target resources instead, e.g., `snowflake_table.tag`.
+Reference: [#3622](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3622).
 
 ## v1.2.1 ➞ v2.0.0
 
