@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-var ProviderVersion string
+var ProviderVersion = "dev"
 
 func SetProviderVersion(version string) {
 	providerVersion := fmt.Sprintf("v%s", version)
