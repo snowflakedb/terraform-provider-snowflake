@@ -18,6 +18,16 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.0.0 ➞ v2.0.1
+
+### *(bugfix)* Fixed `snowflake_tag_association` resource
+
+Reference: [#3622](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3622).
+
+The `snowflake_tag_association` resource was crashing for objects that are created on schema level.
+This was fixed, and now you can create tag associations for objects that are created on schema level, but
+we are advising to use the fields in target resources instead, e.g., `snowflake_table.tag`.
+
 ## v1.2.1 ➞ v2.0.0
 
 ### Supported architectures
