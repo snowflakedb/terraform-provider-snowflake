@@ -104,10 +104,10 @@ jobs:
         run: |
           mkdir -p $HOME/.snowflake
           cd $HOME/.snowflake
-          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_NEW }}" > ./config
-          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
-          chmod 0600 ./config ./config_v097_compatible ./config_legacy
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible
 
       - name: Run unit and integration tests
         run: make test
