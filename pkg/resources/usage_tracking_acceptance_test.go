@@ -5,6 +5,7 @@ package resources_test
 import (
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 
@@ -40,10 +41,12 @@ func TestAcc_CompleteUsageTracking(t *testing.T) {
 		return func(state *terraform.State) error {
 			expectedMetadata := tracking.NewVersionedResourceMetadata(resources.Schema, operation)
 			if _, err := collections.FindFirst(queryHistory, func(history helpers.QueryHistory) bool {
-				metadata, err := tracking.ParseMetadata(history.QueryText)
-				return err == nil &&
-					expectedMetadata == metadata &&
-					strings.Contains(history.QueryText, query)
+				if strings.Contains(history.QueryText, query) {
+					metadata, err := tracking.ParseMetadata(history.QueryText)
+					require.NoError(t, err)
+					return expectedMetadata == metadata
+				}
+				return false
 			}); err != nil {
 				return fmt.Errorf("query history does not contain query metadata: %v with query containing: %s", expectedMetadata, query)
 			}
@@ -53,8 +56,10 @@ func TestAcc_CompleteUsageTracking(t *testing.T) {
 
 	assertQueryMetadataExists := func(t *testing.T, operation tracking.Operation, query string) resource.TestCheckFunc {
 		t.Helper()
-		queryHistory := acc.TestClient().InformationSchema.GetQueryHistory(t, 100)
-		return assertQueryMetadataExistsPrefetched(t, queryHistory, operation, query)
+		return func(state *terraform.State) error {
+			queryHistory := acc.TestClient().InformationSchema.GetQueryHistory(t, 100)
+			return assertQueryMetadataExistsPrefetched(t, queryHistory, operation, query)(state)
+		}
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -95,7 +100,7 @@ func TestAcc_CompleteUsageTracking(t *testing.T) {
 						HasNameString(id.Name()).
 						HasCommentString(comment),
 					assert.Check(func(state *terraform.State) error {
-						queryHistory := acc.TestClient().InformationSchema.GetQueryHistory(t, 100)
+						queryHistory := acc.TestClient().InformationSchema.GetQueryHistory(t, 200)
 						return errors.Join(
 							assertQueryMetadataExistsPrefetched(t, queryHistory, tracking.UpdateOperation, fmt.Sprintf(`ALTER SCHEMA %s SET COMMENT = '%s'`, id.FullyQualifiedName(), comment))(state),
 							assertQueryMetadataExistsPrefetched(t, queryHistory, tracking.ReadOperation, fmt.Sprintf(`SHOW SCHEMAS LIKE '%s'`, id.Name()))(state),
