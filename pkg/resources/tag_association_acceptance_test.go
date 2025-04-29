@@ -687,3 +687,47 @@ resource "snowflake_tag_association" "test" {
 }
 `, tagId.DatabaseName(), tagId.SchemaName(), tagId.Name(), tagValue, sdk.ObjectTypeSchema, schemaId.DatabaseName(), schemaId.Name())
 }
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3622 is fixed
+func TestAcc_TagAssociation_issue_3622(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	tagId := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+	table, cleanupTable := acc.TestClient().Table.Create(t)
+	t.Cleanup(cleanupTable)
+	tagValue := "TAG_VALUE"
+	newTagValue := "NEW_TAG_VALUE"
+
+	tagModel := model.TagBase("test", tagId)
+	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{table.ID()}, string(sdk.ObjectTypeTable), tagId.FullyQualifiedName(), tagValue).
+		WithDependsOn(tagModel.ResourceReference())
+	newTagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{table.ID()}, string(sdk.ObjectTypeTable), tagId.FullyQualifiedName(), newTagValue).
+		WithDependsOn(tagModel.ResourceReference())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tagModel, tagAssociationModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeTable))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", tagValue),
+				),
+			},
+			{
+				// Couldn't assert it, but with `ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0")`,
+				// the plugin crashes with the same panic as in https://github.com/snowflakedb/terraform-provider-snowflake/issues/3622.
+				// The new version handles the SchemaObjectIdentifier correctly, so the panic is not triggered.
+				Config: accconfig.FromModels(t, tagModel, newTagAssociationModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeTable))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", newTagValue),
+				),
+			},
+		},
+	})
+}
