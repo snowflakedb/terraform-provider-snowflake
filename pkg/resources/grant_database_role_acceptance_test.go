@@ -4,6 +4,7 @@ package resources_test
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -420,4 +421,64 @@ resource "snowflake_grant_database_role" "test" {
   parent_database_role_name = "%[1]s.${snowflake_database_role.parent_role.name}"
 }
 `, databaseRoleId.DatabaseName(), databaseRoleId.Name(), parentRoleId.Name())
+}
+
+func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	databaseRoleId := acc.TestClient().Ids.RandomDatabaseObjectIdentifier()
+	parentRoleId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+
+	user, userCleanup := acc.TestClient().User.CreateUser(t)
+	t.Cleanup(userCleanup)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:            grantDatabaseRoleIssue3629Config(databaseRoleId, parentRoleId),
+				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
+			},
+			{
+				PreConfig: func() {
+					acc.TestClient().BcrBundles.EnableBcrBundle(t, "2025_02")
+					acc.TestClient().Execute.SQL(t, fmt.Sprintf("GRANT DATABASE ROLE %s TO USER %s", databaseRoleId.FullyQualifiedName(), user.ID().FullyQualifiedName()))
+				},
+				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
+				Config:            grantDatabaseRoleIssue3629Config(databaseRoleId, parentRoleId),
+				ExpectError:       regexp.MustCompile("Provider produced inconsistent result after apply"),
+			},
+			{
+				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("snowflake_database_role.test", plancheck.ResourceActionNoop),
+					},
+				},
+				Config: grantDatabaseRoleIssue3629Config(databaseRoleId, parentRoleId),
+			},
+		},
+	})
+}
+
+func grantDatabaseRoleIssue3629Config(databaseRoleId sdk.DatabaseObjectIdentifier, accountRoleId sdk.AccountObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_database_role" "test" {
+    database = "%[1]s"
+    name = "%[2]s"
+}
+
+resource "snowflake_account_role" "test" {
+  name = "%[3]s"
+}
+
+resource "snowflake_grant_database_role" "test" {
+  database_role_name = snowflake_database_role.test.fully_qualified_name
+  parent_role_name = snowflake_account_role.test.fully_qualified_name
+}
+`, databaseRoleId.DatabaseName(), databaseRoleId.Name(), accountRoleId.Name())
 }
