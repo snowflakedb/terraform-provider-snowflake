@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
+	"github.com/snowflakedb/terraform-provider-snowflake/v2/pkg/testhelpers"
 	"github.com/stretchr/testify/require"
 )
 
