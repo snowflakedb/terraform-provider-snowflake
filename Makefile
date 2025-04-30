@@ -93,8 +93,11 @@ install-tf: build-local ## installs plugin where terraform can find it
 	mkdir -p $(TERRAFORM_PLUGINS_DIR)
 	cp ./$(BASE_BINARY_NAME) $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
-release-local: ## use GoReleaser to build the binary locally
+release-local: ## use GoReleaser to build the binary locally for the current OS and ARCH
 	goreleaser build --clean --skip=validate --single-target
+
+release-local-all: ## use GoReleaser to build the binary locally
+	goreleaser build --clean --skip=validate
 
 install-locally-released-tf: release-local ## installs plugin (built by the GoReleaser) where terraform can find it
 	mkdir -p $(TERRAFORM_PLUGINS_DIR)
