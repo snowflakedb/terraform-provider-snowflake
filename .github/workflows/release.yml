@@ -33,18 +33,21 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@d6f3f49f3345e29369fe57596a3ca8f94c4d2ca7 # v5
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+#      - name: Import GPG key
+#        id: import_gpg
+#        uses: crazy-max/ghaction-import-gpg@d6f3f49f3345e29369fe57596a3ca8f94c4d2ca7 # v5
+#        with:
+#          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+#          passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Import GPG key
+        id: import_gpg
+        # TODO: Test with passphrase
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" > private_key.asc
-          gpg --batch --import private_key.asc
-          rm private_key.asc
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --no-default-keyring
+          fingerprint=$(gpg --list-secret-keys --with-colons | awk -F: '$1 == "fpr" {print $10}' | head -n 1)
+          echo "FINGERPRINT=$fingerprint" >> "$GITHUB_OUTPUT"
+      
 
       - name: Release please
         uses: googleapis/release-please-action@db8f2c60ee802b3748b512940dde88eabd7b7e01 # v3
@@ -77,3 +80,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.create-token.outputs.token }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+
+      - name: GPG key cleanup
+        run: |
+          gpg --batch --yes --delete-secret-keys ${{ steps.import_gpg.outputs.fingerprint }}
+          gpg --batch --yes --delete-keys ${{ steps.import_gpg.outputs.fingerprint }}
