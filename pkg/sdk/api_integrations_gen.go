@@ -27,6 +27,7 @@ type CreateApiIntegrationOptions struct {
 	AwsApiProviderParams    *AwsApiParams                  `ddl:"keyword"`
 	AzureApiProviderParams  *AzureApiParams                `ddl:"keyword"`
 	GoogleApiProviderParams *GoogleApiParams               `ddl:"keyword"`
+	GitApiProviderParams    *GitApiParams                  `ddl:"keyword"`
 	ApiAllowedPrefixes      []ApiIntegrationEndpointPrefix `ddl:"parameter,parentheses" sql:"API_ALLOWED_PREFIXES"`
 	ApiBlockedPrefixes      []ApiIntegrationEndpointPrefix `ddl:"parameter,parentheses" sql:"API_BLOCKED_PREFIXES"`
 	Enabled                 bool                           `ddl:"parameter" sql:"ENABLED"`
@@ -35,6 +36,10 @@ type CreateApiIntegrationOptions struct {
 
 type ApiIntegrationEndpointPrefix struct {
 	Path string `ddl:"keyword,single_quotes"`
+}
+
+type AllowedAuthenticationSecret struct {
+	Secret string `ddl:"keyword,single_quotes"`
 }
 
 type AwsApiParams struct {
@@ -55,6 +60,11 @@ type GoogleApiParams struct {
 	GoogleAudience string `ddl:"parameter,single_quotes" sql:"GOOGLE_AUDIENCE"`
 }
 
+type GitApiParams struct {
+	apiProvider                  string                         `ddl:"static" sql:"API_PROVIDER = git_https_api"`
+	AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret `ddl:"parameter,parentheses" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
+}
+
 // AlterApiIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-api-integration.
 type AlterApiIntegrationOptions struct {
 	alter          bool                    `ddl:"static" sql:"ALTER"`
@@ -71,6 +81,7 @@ type ApiIntegrationSet struct {
 	AwsParams          *SetAwsApiParams               `ddl:"keyword"`
 	AzureParams        *SetAzureApiParams             `ddl:"keyword"`
 	GoogleParams       *SetGoogleApiParams            `ddl:"keyword"`
+	GitParams          *SetGitApiParams               `ddl:"keyword"`
 	Enabled            *bool                          `ddl:"parameter" sql:"ENABLED"`
 	ApiAllowedPrefixes []ApiIntegrationEndpointPrefix `ddl:"parameter,parentheses" sql:"API_ALLOWED_PREFIXES"`
 	ApiBlockedPrefixes []ApiIntegrationEndpointPrefix `ddl:"parameter,parentheses" sql:"API_BLOCKED_PREFIXES"`
@@ -90,6 +101,10 @@ type SetAzureApiParams struct {
 
 type SetGoogleApiParams struct {
 	GoogleAudience string `ddl:"parameter,single_quotes" sql:"GOOGLE_AUDIENCE"`
+}
+
+type SetGitApiParams struct {
+	AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret `ddl:"parameter,parentheses" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
 }
 
 type ApiIntegrationUnset struct {
