@@ -542,8 +542,8 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 		return []sdk.TableColumnSignature{
 			// TODO(SNOW-1348114): use only one column, if possible.
 			// We need a dummy column here because a table must have at least one column, and when we rename the second one in the config, it gets dropped for a moment.
-			{"DUMMY", testdatatypes.DataTypeVariant},
-			{columnIdentifier.Name(), testdatatypes.DataTypeVariant},
+			{Name: "DUMMY", Type: testdatatypes.DataTypeVariant},
+			{Name: columnIdentifier.Name(), Type: testdatatypes.DataTypeVariant},
 		}
 	}
 
