@@ -34,7 +34,7 @@ func TagAssociation(
 	tagValue string,
 ) *TagAssociationModel {
 	t := &TagAssociationModel{ResourceModelMeta: config.Meta(resourceName, resources.TagAssociation)}
-	t.WithObjectIdentifiers(objectIdentifiers...)
+	t.WithObjectIdentifiers(objectIdentifiers)
 	t.WithObjectType(objectType)
 	t.WithTagId(tagId)
 	t.WithTagValue(tagValue)
@@ -48,7 +48,7 @@ func TagAssociationWithDefaultMeta(
 	tagValue string,
 ) *TagAssociationModel {
 	t := &TagAssociationModel{ResourceModelMeta: config.DefaultMeta(resources.TagAssociation)}
-	t.WithObjectIdentifiers(objectIdentifiers...)
+	t.WithObjectIdentifiers(objectIdentifiers)
 	t.WithObjectType(objectType)
 	t.WithTagId(tagId)
 	t.WithTagValue(tagValue)

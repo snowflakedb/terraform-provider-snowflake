@@ -125,7 +125,7 @@ func handleAttributeTypeForListsAndSets(attr genhelpers.SchemaAttribute, resourc
 		attributeType = "[]float"
 	case schema.TypeString:
 		attributeType, additionalImport = handleListTypeOverrides(resourceName, attr.Name)
-		if attributeType != "" {
+		if attributeType == "" {
 			attributeType = "[]string"
 		}
 	case schema.TypeMap:
