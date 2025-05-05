@@ -14,7 +14,6 @@ import (
 
 type TagAssociationModel struct {
 	ObjectIdentifiers tfconfig.Variable `json:"object_identifiers,omitempty"`
-	ObjectName        tfconfig.Variable `json:"object_name,omitempty"`
 	ObjectType        tfconfig.Variable `json:"object_type,omitempty"`
 	SkipValidation    tfconfig.Variable `json:"skip_validation,omitempty"`
 	TagId             tfconfig.Variable `json:"tag_id,omitempty"`
@@ -82,11 +81,6 @@ func (t *TagAssociationModel) WithDependsOn(values ...string) *TagAssociationMod
 
 // object_identifiers attribute type is not yet supported, so WithObjectIdentifiers can't be generated
 
-func (t *TagAssociationModel) WithObjectName(objectName string) *TagAssociationModel {
-	t.ObjectName = tfconfig.StringVariable(objectName)
-	return t
-}
-
 func (t *TagAssociationModel) WithObjectType(objectType string) *TagAssociationModel {
 	t.ObjectType = tfconfig.StringVariable(objectType)
 	return t
@@ -113,11 +107,6 @@ func (t *TagAssociationModel) WithTagValue(tagValue string) *TagAssociationModel
 
 func (t *TagAssociationModel) WithObjectIdentifiersValue(value tfconfig.Variable) *TagAssociationModel {
 	t.ObjectIdentifiers = value
-	return t
-}
-
-func (t *TagAssociationModel) WithObjectNameValue(value tfconfig.Variable) *TagAssociationModel {
-	t.ObjectName = value
 	return t
 }
 
