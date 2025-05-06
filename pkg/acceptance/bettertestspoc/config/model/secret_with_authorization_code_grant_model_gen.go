@@ -22,6 +22,8 @@ type SecretWithAuthorizationCodeGrantModel struct {
 	OauthRefreshTokenExpiryTime tfconfig.Variable `json:"oauth_refresh_token_expiry_time,omitempty"`
 	SecretType                  tfconfig.Variable `json:"secret_type,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -66,9 +68,9 @@ func SecretWithAuthorizationCodeGrantWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SecretWithAuthorizationCodeGrantModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithAuthorizationCodeGrantModel
@@ -83,6 +85,11 @@ func (s *SecretWithAuthorizationCodeGrantModel) MarshalJSON() ([]byte, error) {
 
 func (s *SecretWithAuthorizationCodeGrantModel) WithDependsOn(values ...string) *SecretWithAuthorizationCodeGrantModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecretWithAuthorizationCodeGrantModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

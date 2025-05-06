@@ -30,6 +30,8 @@ type OauthIntegrationForCustomClientsModel struct {
 	PreAuthorizedRolesList      tfconfig.Variable `json:"pre_authorized_roles_list,omitempty"`
 	RelatedParameters           tfconfig.Variable `json:"related_parameters,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -62,9 +64,9 @@ func OauthIntegrationForCustomClientsWithDefaultMeta(
 	return o
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (o *OauthIntegrationForCustomClientsModel) MarshalJSON() ([]byte, error) {
 	type Alias OauthIntegrationForCustomClientsModel
@@ -79,6 +81,11 @@ func (o *OauthIntegrationForCustomClientsModel) MarshalJSON() ([]byte, error) {
 
 func (o *OauthIntegrationForCustomClientsModel) WithDependsOn(values ...string) *OauthIntegrationForCustomClientsModel {
 	o.SetDependsOn(values...)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *OauthIntegrationForCustomClientsModel {
+	o.DynamicBlock = dynamicBlock
 	return o
 }
 

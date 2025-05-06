@@ -34,6 +34,8 @@ type SecondaryDatabaseModel struct {
 	UserTaskMinimumTriggerIntervalInSeconds tfconfig.Variable `json:"user_task_minimum_trigger_interval_in_seconds,omitempty"`
 	UserTaskTimeoutMs                       tfconfig.Variable `json:"user_task_timeout_ms,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -62,9 +64,9 @@ func SecondaryDatabaseWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SecondaryDatabaseModel) MarshalJSON() ([]byte, error) {
 	type Alias SecondaryDatabaseModel
@@ -79,6 +81,11 @@ func (s *SecondaryDatabaseModel) MarshalJSON() ([]byte, error) {
 
 func (s *SecondaryDatabaseModel) WithDependsOn(values ...string) *SecondaryDatabaseModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *SecondaryDatabaseModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecondaryDatabaseModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

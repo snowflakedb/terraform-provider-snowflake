@@ -23,6 +23,8 @@ type ResourceMonitorModel struct {
 	SuspendImmediateTrigger tfconfig.Variable `json:"suspend_immediate_trigger,omitempty"`
 	SuspendTrigger          tfconfig.Variable `json:"suspend_trigger,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -47,9 +49,9 @@ func ResourceMonitorWithDefaultMeta(
 	return r
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (r *ResourceMonitorModel) MarshalJSON() ([]byte, error) {
 	type Alias ResourceMonitorModel
@@ -64,6 +66,11 @@ func (r *ResourceMonitorModel) MarshalJSON() ([]byte, error) {
 
 func (r *ResourceMonitorModel) WithDependsOn(values ...string) *ResourceMonitorModel {
 	r.SetDependsOn(values...)
+	return r
+}
+
+func (r *ResourceMonitorModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ResourceMonitorModel {
+	r.DynamicBlock = dynamicBlock
 	return r
 }
 

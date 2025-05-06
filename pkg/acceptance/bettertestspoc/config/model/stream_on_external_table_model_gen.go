@@ -25,6 +25,8 @@ type StreamOnExternalTableModel struct {
 	Stale              tfconfig.Variable `json:"stale,omitempty"`
 	StreamType         tfconfig.Variable `json:"stream_type,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -61,9 +63,9 @@ func StreamOnExternalTableWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *StreamOnExternalTableModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnExternalTableModel
@@ -78,6 +80,11 @@ func (s *StreamOnExternalTableModel) MarshalJSON() ([]byte, error) {
 
 func (s *StreamOnExternalTableModel) WithDependsOn(values ...string) *StreamOnExternalTableModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *StreamOnExternalTableModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StreamOnExternalTableModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

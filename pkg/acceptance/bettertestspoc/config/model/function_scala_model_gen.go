@@ -36,6 +36,8 @@ type FunctionScalaModel struct {
 	TargetPath                 tfconfig.Variable `json:"target_path,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -80,9 +82,9 @@ func FunctionScalaWithDefaultMeta(
 	return f
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (f *FunctionScalaModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionScalaModel
@@ -97,6 +99,11 @@ func (f *FunctionScalaModel) MarshalJSON() ([]byte, error) {
 
 func (f *FunctionScalaModel) WithDependsOn(values ...string) *FunctionScalaModel {
 	f.SetDependsOn(values...)
+	return f
+}
+
+func (f *FunctionScalaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionScalaModel {
+	f.DynamicBlock = dynamicBlock
 	return f
 }
 

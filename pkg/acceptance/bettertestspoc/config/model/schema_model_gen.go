@@ -36,6 +36,8 @@ type SchemaModel struct {
 	UserTaskTimeoutMs                       tfconfig.Variable `json:"user_task_timeout_ms,omitempty"`
 	WithManagedAccess                       tfconfig.Variable `json:"with_managed_access,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -64,9 +66,9 @@ func SchemaWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SchemaModel) MarshalJSON() ([]byte, error) {
 	type Alias SchemaModel
@@ -81,6 +83,11 @@ func (s *SchemaModel) MarshalJSON() ([]byte, error) {
 
 func (s *SchemaModel) WithDependsOn(values ...string) *SchemaModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *SchemaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SchemaModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 
