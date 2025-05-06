@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    snowflake = {
+      source  = "Snowflake-Labs/snowflake"
+      version = "1.0.0"
+    }
+  }
+}
 ## Minimal
 resource "snowflake_database" "primary" {
   name = "database_name"
@@ -35,7 +43,7 @@ resource "snowflake_database" "primary" {
   }
 }
 
-## Replication with for_each
+## Replication with dynamic block
 locals {
   replication_configs = [
     {
@@ -50,13 +58,15 @@ locals {
 }
 
 resource "snowflake_database" "primary" {
-  name     = "database_name"
-  for_each = { for rc in local.replication_configs : rc.account_identifier => rc }
+  name = "database_name"
 
   replication {
-    enable_to_account {
-      account_identifier = each.value.account_identifier
-      with_failover      = each.value.with_failover
+    dynamic "enable_to_account" {
+      for_each = { for rc in local.replication_configs : rc.account_identifier => rc }
+      content {
+        account_identifier = enable_to_account.value.account_identifier
+        with_failover      = enable_to_account.value.with_failover
+      }
     }
     ignore_edition_check = true
   }
