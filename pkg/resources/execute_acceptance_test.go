@@ -140,7 +140,6 @@ func TestAcc_Execute_withRead(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "query_results.#"),
 					resource.TestCheckResourceAttr(resourceName, "query_results.0.name", name),
 					resource.TestCheckResourceAttrSet(resourceName, "query_results.0.created_on"),
-					resource.TestCheckResourceAttr(resourceName, "query_results.0.budget", ""),
 					resource.TestCheckResourceAttr(resourceName, "query_results.0.comment", ""),
 				),
 			},

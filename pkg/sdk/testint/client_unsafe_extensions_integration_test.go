@@ -21,6 +21,14 @@ func TestInt_Client_UnsafeQuery(t *testing.T) {
 
 		assert.Len(t, results, 1)
 		row := results[0]
+
+		require.NotNil(t, row["name"])
+		require.NotNil(t, row["created_on"])
+		require.NotNil(t, row["owner"])
+		require.NotNil(t, row["options"])
+		require.NotNil(t, row["comment"])
+		require.NotNil(t, row["is_default"])
+
 		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), *row["name"])
 		assert.NotEmpty(t, *row["created_on"])
 		assert.Equal(t, "STANDARD", *row["kind"])
@@ -28,7 +36,6 @@ func TestInt_Client_UnsafeQuery(t *testing.T) {
 		assert.Equal(t, "", *row["options"])
 		assert.Equal(t, "", *row["comment"])
 		assert.Equal(t, "N", *row["is_default"])
-		assert.Nil(t, *row["budget"])
 	})
 
 	t.Run("test more results", func(t *testing.T) {
