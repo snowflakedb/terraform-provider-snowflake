@@ -222,6 +222,7 @@ provider "snowflake" {
 	})
 }
 
+// TODO [this PR]: test complex variable like list(object) from https://developer.hashicorp.com/terraform/language/values/variables#declaring-an-input-variable
 func Test_VariableFromModelPoc(t *testing.T) {
 	t.Run("test string variable", func(t *testing.T) {
 		variableModel := config.StringVariable("some_variable")
