@@ -143,4 +143,53 @@ func Test_JsonConfigProvider(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, expectedResult, string(result))
 	})
+
+	t.Run("test string variable json config", func(t *testing.T) {
+		variableModel := config.StringVariable("some_name")
+		expectedResult := fmt.Sprintf(`{
+    "variable": {
+        "some_name": {
+            "type": "%[1]sstring%[1]s"
+        }
+    }
+}`, config.SnowflakeProviderConfigUnquoteMarker)
+
+		result, err := config.DefaultJsonConfigProvider.TfCommonJsonFromModel(*variableModel)
+		require.NoError(t, err)
+		assert.Equal(t, expectedResult, string(result))
+	})
+
+	t.Run("test string variable with default json config", func(t *testing.T) {
+		variableModel := config.StringVariable("some_name").
+			WithStringDefault("some value")
+		expectedResult := fmt.Sprintf(`{
+    "variable": {
+        "some_name": {
+            "type": "%[1]sstring%[1]s",
+            "default": "some value"
+        }
+    }
+}`, config.SnowflakeProviderConfigUnquoteMarker)
+
+		result, err := config.DefaultJsonConfigProvider.TfCommonJsonFromModel(*variableModel)
+		require.NoError(t, err)
+		assert.Equal(t, expectedResult, string(result))
+	})
+
+	t.Run("test number variable with default json config", func(t *testing.T) {
+		variableModel := config.NumberVariable("some_name").
+			WithUnquotedDefault("1")
+		expectedResult := fmt.Sprintf(`{
+    "variable": {
+        "some_name": {
+            "type": "%[1]snumber%[1]s",
+            "default": "%[1]s1%[1]s"
+        }
+    }
+}`, config.SnowflakeProviderConfigUnquoteMarker)
+
+		result, err := config.DefaultJsonConfigProvider.TfCommonJsonFromModel(*variableModel)
+		require.NoError(t, err)
+		assert.Equal(t, expectedResult, string(result))
+	})
 }

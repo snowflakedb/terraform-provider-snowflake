@@ -222,6 +222,48 @@ provider "snowflake" {
 	})
 }
 
+func Test_VariableFromModelPoc(t *testing.T) {
+	t.Run("test string variable", func(t *testing.T) {
+		variableModel := config.StringVariable("some_variable")
+		expectedOutput := strings.TrimPrefix(`
+variable "some_variable" {
+  type = string
+}
+`, "\n")
+		result := config.VariableFromModel(t, *variableModel)
+
+		require.Equal(t, expectedOutput, result)
+	})
+
+	t.Run("test string variable with default", func(t *testing.T) {
+		variableModel := config.StringVariable("some_variable").
+			WithStringDefault("some value")
+		expectedOutput := strings.TrimPrefix(`
+variable "some_variable" {
+  type = string
+  default = "some value"
+}
+`, "\n")
+		result := config.VariableFromModel(t, *variableModel)
+
+		require.Equal(t, expectedOutput, result)
+	})
+
+	t.Run("test number variable with default", func(t *testing.T) {
+		variableModel := config.NumberVariable("some_variable").
+			WithUnquotedDefault("1")
+		expectedOutput := strings.TrimPrefix(`
+variable "some_variable" {
+  type = number
+  default = 1
+}
+`, "\n")
+		result := config.VariableFromModel(t, *variableModel)
+
+		require.Equal(t, expectedOutput, result)
+	})
+}
+
 func Test_ConfigFromModelsPoc(t *testing.T) {
 	t.Run("test basic", func(t *testing.T) {
 		providerModel := providermodel.SnowflakeProvider()

@@ -12,6 +12,7 @@ type JsonConfigProvider interface {
 	ResourceJsonFromModel(model ResourceModel) ([]byte, error)
 	DatasourceJsonFromModel(model DatasourceModel) ([]byte, error)
 	ProviderJsonFromModel(model ProviderModel) ([]byte, error)
+	TfCommonJsonFromModel(model VariableModel) ([]byte, error)
 }
 
 type basicJsonConfigProvider struct{}
@@ -64,4 +65,14 @@ func (p *basicJsonConfigProvider) ProviderJsonFromModel(model ProviderModel) ([]
 
 type providerJson struct {
 	Provider map[string]ProviderModel `json:"provider"`
+}
+
+func (p *basicJsonConfigProvider) TfCommonJsonFromModel(model VariableModel) ([]byte, error) {
+	modelJson := map[string]map[string]VariableModel{
+		model.CommonTfType(): {
+			model.CommonTfName(): model,
+		},
+	}
+
+	return json.MarshalIndent(modelJson, "", "    ")
 }
