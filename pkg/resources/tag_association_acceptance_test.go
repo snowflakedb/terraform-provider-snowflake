@@ -552,11 +552,11 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 	tableModel2 := model.TableWithId("test", tableId2, columns(columnId2))
 	tableModel3 := model.TableWithId("test", tableId2, columns(columnId3))
 	tagAssociationModel1 := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId1}, string(sdk.ObjectTypeColumn), tagId.FullyQualifiedName(), "TAG_VALUE").
-		WithDependsOn(tableModel1.ResourceReference())
+		WithDependsOn(tagModel.ResourceReference(), tableModel1.ResourceReference())
 	tagAssociationModel2 := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId2}, string(sdk.ObjectTypeColumn), tagId.FullyQualifiedName(), "TAG_VALUE").
-		WithDependsOn(tableModel2.ResourceReference())
+		WithDependsOn(tagModel.ResourceReference(), tableModel2.ResourceReference())
 	tagAssociationModel3 := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId3}, string(sdk.ObjectTypeColumn), tagId.FullyQualifiedName(), "TAG_VALUE").
-		WithDependsOn(tableModel3.ResourceReference())
+		WithDependsOn(tagModel.ResourceReference(), tableModel3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
