@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.0.0...v2.0.1) (2025-05-06)
+
+
+### 🔧 **Misc**
+
+* Add a holiday notice ([#3635](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3635)) ([f202704](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f202704766ccf68fa214a60a6aa1566b96671ab3))
+* Remove the holiday note ([#3644](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3644)) ([11b3848](https://github.com/snowflakedb/terraform-provider-snowflake/commit/11b384852862d75cd5a4d68520a44b058eaafe18))
+
+
+### 🐛 **Bug fixes:**
+
+* remove tautological err == nil check in network policy attachment test ([#3631](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3631)) ([24de0b7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/24de0b7a1657f98517d6f401fc48876479b68dd3))
+
 ## [2.0.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.1...v2.0.0) (2025-04-23)
 
 
