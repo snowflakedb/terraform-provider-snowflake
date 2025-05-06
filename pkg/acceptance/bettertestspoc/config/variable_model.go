@@ -40,7 +40,6 @@ func NumberVariable(
 	return Variable(variableName, "number")
 }
 
-// TODO [this PR]: use in practice
 func SetMapStringVariable(
 	variableName string,
 ) *VariableModel {

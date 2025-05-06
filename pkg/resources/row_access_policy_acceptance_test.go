@@ -345,6 +345,7 @@ func TestAcc_RowAccessPolicy_InvalidDataType(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -355,12 +356,6 @@ func TestAcc_RowAccessPolicy_InvalidDataType(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -369,7 +364,7 @@ func TestAcc_RowAccessPolicy_InvalidDataType(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				PlanOnly:        true,
 				ExpectError:     regexp.MustCompile(`invalid data type: invalid-type`),
@@ -578,6 +573,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -588,12 +584,6 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -603,7 +593,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0(t *testing.T) {
 			{
 				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.2.1"),
-				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -615,7 +605,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0(t *testing.T) {
 			{
 				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:                   accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:          commonVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -644,6 +634,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -654,12 +645,6 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -669,7 +654,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 			{
 				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.2.1"),
-				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -683,7 +668,7 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 			{
 				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:                   accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:          commonVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -712,6 +697,7 @@ func TestAcc_RowAccessPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -731,12 +717,6 @@ func TestAcc_RowAccessPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -745,7 +725,7 @@ func TestAcc_RowAccessPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 		PreCheck: func() { acc.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -763,7 +743,7 @@ func TestAcc_RowAccessPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: updatedDataType,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -787,6 +767,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChange(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -801,12 +782,6 @@ func TestAcc_RowAccessPolicy_dataType_externalChange(t *testing.T) {
 		*sdk.NewCreateRowAccessPolicyArgsRequest("A", testdatatypes.DataTypeNumber),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -816,7 +791,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChange(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.RowAccessPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -839,7 +814,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChange(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -863,6 +838,7 @@ func TestAcc_RowAccessPolicy_dataType_argumentExternalChangeSuppressed(t *testin
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -877,12 +853,6 @@ func TestAcc_RowAccessPolicy_dataType_argumentExternalChangeSuppressed(t *testin
 		*sdk.NewCreateRowAccessPolicyArgsRequest("A", testdatatypes.DataTypeVarchar_100),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -892,7 +862,7 @@ func TestAcc_RowAccessPolicy_dataType_argumentExternalChangeSuppressed(t *testin
 		CheckDestroy: acc.CheckDestroy(t, resources.RowAccessPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -915,7 +885,7 @@ func TestAcc_RowAccessPolicy_dataType_argumentExternalChangeSuppressed(t *testin
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -939,6 +909,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeMoreArguments(t *testing.T) 
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -954,12 +925,6 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeMoreArguments(t *testing.T) 
 		*sdk.NewCreateRowAccessPolicyArgsRequest("B", testdatatypes.DataTypeVarchar),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -969,7 +934,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeMoreArguments(t *testing.T) 
 		CheckDestroy: acc.CheckDestroy(t, resources.RowAccessPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -992,7 +957,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeMoreArguments(t *testing.T) 
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -1016,6 +981,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeFewerArguments(t *testing.T)
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.RowAccessPolicyDynamicArguments("test", id, body)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -1034,12 +1000,6 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeFewerArguments(t *testing.T)
 		*sdk.NewCreateRowAccessPolicyArgsRequest("A", testdatatypes.DataTypeVarchar),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -1049,7 +1009,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeFewerArguments(t *testing.T)
 		CheckDestroy: acc.CheckDestroy(t, resources.RowAccessPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -1076,7 +1036,7 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeFewerArguments(t *testing.T)
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
