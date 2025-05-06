@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 
@@ -280,6 +283,17 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	createResponse, err := client.Accounts.Create(ctx, id, opts)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if err := util.Retry(5, 3*time.Second, func() (error, bool) {
+		_, err = client.Accounts.ShowByID(ctx, id)
+		if err != nil {
+			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
+			return nil, false
+		}
+		return nil, true
+	}); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to query account (%s) after creation, err: %w", id.FullyQualifiedName(), err))
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(sdk.NewAccountIdentifier(createResponse.OrganizationName, createResponse.AccountName)))
