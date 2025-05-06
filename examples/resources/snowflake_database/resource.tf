@@ -1,11 +1,3 @@
-terraform {
-  required_providers {
-    snowflake = {
-      source  = "Snowflake-Labs/snowflake"
-      version = "1.0.0"
-    }
-  }
-}
 ## Minimal
 resource "snowflake_database" "primary" {
   name = "database_name"
