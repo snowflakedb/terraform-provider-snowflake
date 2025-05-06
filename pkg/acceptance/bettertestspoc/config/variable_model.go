@@ -2,6 +2,7 @@ package config
 
 import tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
+// TODO [this PR]: use types instead of tfconfig.Variable?
 type VariableModel struct {
 	Type    tfconfig.Variable `json:"type,omitempty"`
 	Default tfconfig.Variable `json:"default,omitempty"`
