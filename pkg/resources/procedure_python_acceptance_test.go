@@ -3,6 +3,7 @@
 package resources_test
 
 import (
+	"fmt"
 	"testing"
 
 	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
@@ -260,11 +261,19 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 	})
 }
 
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3401
 func TestAcc_ProcedurePython_ImportsDifSuppression(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
 
-	stage, stageCleanup := acc.TestClient().Stage.CreateStage(t)
+	// We set up a separate database, schema, and stage with capitalized ids
+	database, databaseCleanup := acc.TestClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := acc.TestClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	stage, stageCleanup := acc.TestClient().Stage.CreateStageInSchema(t, schema.ID())
 	t.Cleanup(stageCleanup)
 
 	tmpPythonFunction := acc.TestClient().CreateSamplePythonFunctionAndModuleOnStage(t, stage)
@@ -281,7 +290,7 @@ func TestAcc_ProcedurePython_ImportsDifSuppression(t *testing.T) {
 	procedureModel := model.ProcedurePythonBasicInline("w", id, dataType, funcName, definition).
 		WithArgument(argName, dataType).
 		WithImports(
-			sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction.PythonFileName()},
+			sdk.NormalizedPath{StageLocation: fmt.Sprintf("%s.%s.%s", stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name()), PathOnStage: tmpPythonFunction.PythonFileName()},
 			sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
 		).
 		WithSnowparkPackage("1.14.0").
