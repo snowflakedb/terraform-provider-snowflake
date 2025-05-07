@@ -288,7 +288,7 @@ func procedureBaseSchema() map[string]schema.Schema {
 			ForceNew:    true,
 			Description: "The Snowpark package is required for stored procedures, so it must always be present. For more information about Snowpark, see [Snowpark API](https://docs.snowflake.com/en/developer-guide/snowpark/index).",
 		},
-		// TODO [SNOW-1348103]: what do we do with the version "latest".
+		// TODO [SNOW-1850370]: what do we do with the version "latest".
 		"packages": {
 			Type:        schema.TypeSet,
 			Elem:        &schema.Schema{Type: schema.TypeString},

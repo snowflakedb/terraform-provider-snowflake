@@ -261,6 +261,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 	})
 }
 
+// TODO [SNOW-1850370]: handle suppression for set of objects
 // proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3401
 func TestAcc_ProcedurePython_ImportsDifSuppression(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
@@ -320,6 +321,29 @@ func TestAcc_ProcedurePython_ImportsDifSuppression(t *testing.T) {
 					resourceshowoutputassert.ProcedureShowOutput(t, procedureModel.ResourceReference()).
 						HasIsSecure(false),
 				),
+				//Terraform used the selected providers to generate the following execution
+				//plan. Resource actions are indicated with the following symbols:
+				//~ update in-place
+				//
+				//Terraform will perform the following actions:
+				//
+				//# snowflake_procedure_python.w will be updated in-place
+				//~ resource "snowflake_procedure_python" "w" {
+				//	id                           = "\"acc_test_db_AT_24B879F2_0307_CFA1_3289_8F0ECD791006\".\"acc_test_sc_AT_24B879F2_0307_CFA1_3289_8F0ECD791006\".\"HOTTLTAT_24B879F2_0307_CFA1_3289_8F0ECD791006\"(VARCHAR)"
+				//	name                         = "HOTTLTAT_24B879F2_0307_CFA1_3289_8F0ECD791006"
+				//	# (19 unchanged attributes hidden)
+				//
+				//	- imports {
+				//	- path_on_stage  = "example*dsezo.py" -> null
+				//	- stage_location = "\"HOTXDPAT_24B879F2_0307_CFA1_3289_8F0ECD791006\".\"EFXTSLAT_24B879F2_0307_CFA1_3289_8F0ECD791006\".\"WDLIWIAT_24B879F2_0307_CFA1_3289_8F0ECD791006\"" -> null
+				//	}
+				//	+ imports {
+				//	+ path_on_stage  = "example*dsezo.py"
+				//	+ stage_location = "HOTXDPAT_24B879F2_0307_CFA1_3289_8F0ECD791006.EFXTSLAT_24B879F2_0307_CFA1_3289_8F0ECD791006.WDLIWIAT_24B879F2_0307_CFA1_3289_8F0ECD791006"
+				//	}
+				//	# (2 unchanged blocks hidden)
+				//}
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
