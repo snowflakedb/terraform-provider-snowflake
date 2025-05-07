@@ -135,8 +135,8 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 	externalAccessIntegration2, externalAccessIntegration2Cleanup := acc.TestClient().ExternalAccessIntegration.CreateExternalAccessIntegrationWithNetworkRuleAndSecret(t, networkRule.ID(), secret2.ID())
 	t.Cleanup(externalAccessIntegration2Cleanup)
 
-	tmpPythonFunction := acc.TestClient().CreateSamplePythonFunctionAndModule(t)
-	tmpPythonFunction2 := acc.TestClient().CreateSamplePythonFunctionAndModule(t)
+	tmpPythonFunction := acc.TestClient().CreateSamplePythonFunctionAndModuleOnUserStage(t)
+	tmpPythonFunction2 := acc.TestClient().CreateSamplePythonFunctionAndModuleOnUserStage(t)
 
 	funcName := "echoVarchar"
 	argName := "x"
@@ -253,6 +253,62 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(procedureModelUpdateWithoutRecreation.ResourceReference(), "external_access_integrations.0", externalAccessIntegration.Name())),
 					assert.Check(resource.TestCheckResourceAttr(procedureModelUpdateWithoutRecreation.ResourceReference(), "packages.#", "1")),
 					resourceshowoutputassert.ProcedureShowOutput(t, procedureModelUpdateWithoutRecreation.ResourceReference()).
+						HasIsSecure(false),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_ProcedurePython_ImportsDifSuppression(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	stage, stageCleanup := acc.TestClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	tmpPythonFunction := acc.TestClient().CreateSamplePythonFunctionAndModuleOnStage(t, stage)
+	tmpPythonFunction2 := acc.TestClient().CreateSamplePythonFunctionAndModuleOnStage(t, stage)
+
+	funcName := "echoVarchar"
+	argName := "x"
+	dataType := testdatatypes.DataTypeVarchar_100
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+
+	definition := acc.TestClient().Procedure.SamplePythonDefinition(t, funcName, argName)
+
+	procedureModel := model.ProcedurePythonBasicInline("w", id, dataType, funcName, definition).
+		WithArgument(argName, dataType).
+		WithImports(
+			sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction.PythonFileName()},
+			sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
+		).
+		WithSnowparkPackage("1.14.0").
+		WithRuntimeVersion("3.8").
+		WithIsSecure("false")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		CheckDestroy: acc.CheckDestroy(t, resources.ProcedurePython),
+		Steps: []resource.TestStep{
+			// CREATE AND EXPECT EMPTY PLAN
+			{
+				Config: config.FromModels(t, procedureModel),
+				Check: assertThat(t,
+					resourceassert.ProcedurePythonResource(t, procedureModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasIsSecureString(r.BooleanFalse).
+						HasImportsLength(2).
+						HasRuntimeVersionString("3.8").
+						HasProcedureDefinitionString(definition).
+						HasProcedureLanguageString("PYTHON").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.ProcedureShowOutput(t, procedureModel.ResourceReference()).
 						HasIsSecure(false),
 				),
 			},
