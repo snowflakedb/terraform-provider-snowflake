@@ -1884,7 +1884,6 @@ func TestAcc_User_gh3655(t *testing.T) {
 		WithNetworkPolicyValue(config.UnquotedWrapperVariable("snowflake_network_policy.test.fully_qualified_name"))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1892,7 +1891,16 @@ func TestAcc_User_gh3655(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, networkPolicyModel, userModel),
+				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
+				Config:            config.FromModels(t, networkPolicyModel, userModel),
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNetworkPolicyString(networkPolicyId.Name()),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, networkPolicyModel, userModel),
 				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
 					HasNetworkPolicyString(networkPolicyId.Name()),
 				),

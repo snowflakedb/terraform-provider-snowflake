@@ -35,7 +35,7 @@ This version adds the support for this parameter in the `snowflake_account_param
 
 Reference: [#3639](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3639).
 
-### *(bugfix)* Added diff suppression to `network_policy` to all user resources
+### *(bugfix)* Fixed permadiff issue with the `network_policy` attribute in all user resources
 
 Using `snowflake_network_policy.my_policy.fully_qualified_name` directly as `network_policy` input for `snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user` resources could result in a permadiff (like ` ~ network_policy = "NETWORK_POLICY_ID" -> "\"NETWORK_POLICY_ID\""`).
 This version adds appropriate validation and diff suppression to `network_policy` attribute, so such permadiffs are avoided.
