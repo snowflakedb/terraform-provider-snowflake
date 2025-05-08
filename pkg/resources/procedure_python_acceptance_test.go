@@ -377,12 +377,12 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 	definition := acc.TestClient().Procedure.SamplePythonDefinition(t, funcName, argName)
 
 	importsBefore := []sdk.NormalizedPath{
-		sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction1.PythonFileName()},
-		sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
+		{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction1.PythonFileName()},
+		{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
 	}
 	importsAfter := []sdk.NormalizedPath{
-		sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction3.PythonFileName()},
-		sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
+		{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction3.PythonFileName()},
+		{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
 	}
 
 	procedureModel := model.ProcedurePythonBasicInline("w", id, dataType, funcName, definition).
