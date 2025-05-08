@@ -10,6 +10,7 @@ import (
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -263,7 +264,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 
 // TODO [SNOW-1850370]: handle suppression for set of objects
 // proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3401
-func TestAcc_ProcedurePython_ImportsDifSuppression(t *testing.T) {
+func TestAcc_ProcedurePython_ImportsDiffSuppression(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
 
@@ -306,7 +307,6 @@ func TestAcc_ProcedurePython_ImportsDifSuppression(t *testing.T) {
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		CheckDestroy: acc.CheckDestroy(t, resources.ProcedurePython),
 		Steps: []resource.TestStep{
-			// CREATE AND EXPECT EMPTY PLAN
 			{
 				Config: config.FromModels(t, procedureModel),
 				Check: assertThat(t,
@@ -344,6 +344,107 @@ func TestAcc_ProcedurePython_ImportsDifSuppression(t *testing.T) {
 				//	 # (2 unchanged blocks hidden)
 				// }
 				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3401
+func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	// We set up a separate database, schema, and stage with capitalized ids
+	database, databaseCleanup := acc.TestClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := acc.TestClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	stage, stageCleanup := acc.TestClient().Stage.CreateStageInSchema(t, schema.ID())
+	t.Cleanup(stageCleanup)
+
+	tmpPythonFunction1 := acc.TestClient().CreateSamplePythonFunctionAndModuleOnStage(t, stage)
+	tmpPythonFunction2 := acc.TestClient().CreateSamplePythonFunctionAndModuleOnStage(t, stage)
+	tmpPythonFunction3 := acc.TestClient().CreateSamplePythonFunctionAndModuleOnStage(t, stage)
+
+	funcName := "echoVarchar"
+	argName := "x"
+	dataType := testdatatypes.DataTypeVarchar_100
+
+	id := acc.TestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+
+	definition := acc.TestClient().Procedure.SamplePythonDefinition(t, funcName, argName)
+
+	importsBefore := []sdk.NormalizedPath{
+		sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction1.PythonFileName()},
+		sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
+	}
+	importsAfter := []sdk.NormalizedPath{
+		sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction3.PythonFileName()},
+		sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
+	}
+
+	procedureModel := model.ProcedurePythonBasicInline("w", id, dataType, funcName, definition).
+		WithArgument(argName, dataType).
+		WithImports(importsBefore...).
+		WithSnowparkPackage("1.14.0").
+		WithRuntimeVersion("3.8").
+		WithIsSecure("false")
+
+	procedureModelWithUpdatedImports := model.ProcedurePythonBasicInline("w", id, dataType, funcName, definition).
+		WithArgument(argName, dataType).
+		WithImports(importsAfter...).
+		WithSnowparkPackage("1.14.0").
+		WithRuntimeVersion("3.8").
+		WithIsSecure("false")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		CheckDestroy: acc.CheckDestroy(t, resources.ProcedurePython),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, procedureModel),
+				Check: assertThat(t,
+					resourceassert.ProcedurePythonResource(t, procedureModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasIsSecureString(r.BooleanFalse).
+						HasImportsLength(2).
+						HasRuntimeVersionString("3.8").
+						HasProcedureDefinitionString(definition).
+						HasProcedureLanguageString("PYTHON").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.ProcedureShowOutput(t, procedureModel.ResourceReference()).
+						HasIsSecure(false),
+					objectassert.ProcedureDetails(t, id).
+						HasExactlyImportsNormalizedInAnyOrder(importsBefore...),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(procedureModelWithUpdatedImports.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, procedureModelWithUpdatedImports),
+				Check: assertThat(t,
+					resourceassert.ProcedurePythonResource(t, procedureModelWithUpdatedImports.ResourceReference()).
+						HasNameString(id.Name()).
+						HasIsSecureString(r.BooleanFalse).
+						HasImportsLength(2).
+						HasRuntimeVersionString("3.8").
+						HasProcedureDefinitionString(definition).
+						HasProcedureLanguageString("PYTHON").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.ProcedureShowOutput(t, procedureModelWithUpdatedImports.ResourceReference()).
+						HasIsSecure(false),
+					objectassert.ProcedureDetails(t, id).
+						HasExactlyImportsNormalizedInAnyOrder(importsAfter...),
+				),
 			},
 		},
 	})

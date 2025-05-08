@@ -273,11 +273,13 @@ func procedureBaseSchema() map[string]schema.Schema {
 						Type:        schema.TypeString,
 						Required:    true,
 						Description: "Stage location without leading `@`. To use your user's stage set this to `~`, otherwise pass fully qualified name of the stage (with every part contained in double quotes or use `snowflake_stage.<your stage's resource name>.fully_qualified_name` if you manage this stage through terraform).",
+						ForceNew:    true,
 					},
 					"path_on_stage": {
 						Type:        schema.TypeString,
 						Required:    true,
 						Description: "Path for import on stage, without the leading `/`.",
+						ForceNew:    true,
 					},
 				},
 			},
