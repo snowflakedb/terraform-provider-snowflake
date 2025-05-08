@@ -15,6 +15,8 @@ type AccountParameterModel struct {
 	Key   tfconfig.Variable `json:"key,omitempty"`
 	Value tfconfig.Variable `json:"value,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -43,9 +45,9 @@ func AccountParameterWithDefaultMeta(
 	return a
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (a *AccountParameterModel) MarshalJSON() ([]byte, error) {
 	type Alias AccountParameterModel
@@ -60,6 +62,11 @@ func (a *AccountParameterModel) MarshalJSON() ([]byte, error) {
 
 func (a *AccountParameterModel) WithDependsOn(values ...string) *AccountParameterModel {
 	a.SetDependsOn(values...)
+	return a
+}
+
+func (a *AccountParameterModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *AccountParameterModel {
+	a.DynamicBlock = dynamicBlock
 	return a
 }
 

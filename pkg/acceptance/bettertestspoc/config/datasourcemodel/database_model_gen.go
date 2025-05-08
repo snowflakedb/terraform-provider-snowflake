@@ -12,11 +12,11 @@ import (
 )
 
 type DatabaseModel struct {
+	Name          tfconfig.Variable `json:"name,omitempty"`
 	Comment       tfconfig.Variable `json:"comment,omitempty"`
 	CreatedOn     tfconfig.Variable `json:"created_on,omitempty"`
 	IsCurrent     tfconfig.Variable `json:"is_current,omitempty"`
 	IsDefault     tfconfig.Variable `json:"is_default,omitempty"`
-	Name          tfconfig.Variable `json:"name,omitempty"`
 	Options       tfconfig.Variable `json:"options,omitempty"`
 	Origin        tfconfig.Variable `json:"origin,omitempty"`
 	Owner         tfconfig.Variable `json:"owner,omitempty"`
@@ -72,6 +72,11 @@ func (d *DatabaseModel) WithDependsOn(values ...string) *DatabaseModel {
 // below all the proper values //
 /////////////////////////////////
 
+func (d *DatabaseModel) WithName(name string) *DatabaseModel {
+	d.Name = tfconfig.StringVariable(name)
+	return d
+}
+
 func (d *DatabaseModel) WithComment(comment string) *DatabaseModel {
 	d.Comment = tfconfig.StringVariable(comment)
 	return d
@@ -89,11 +94,6 @@ func (d *DatabaseModel) WithIsCurrent(isCurrent bool) *DatabaseModel {
 
 func (d *DatabaseModel) WithIsDefault(isDefault bool) *DatabaseModel {
 	d.IsDefault = tfconfig.BoolVariable(isDefault)
-	return d
-}
-
-func (d *DatabaseModel) WithName(name string) *DatabaseModel {
-	d.Name = tfconfig.StringVariable(name)
 	return d
 }
 
@@ -121,6 +121,11 @@ func (d *DatabaseModel) WithRetentionTime(retentionTime int) *DatabaseModel {
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (d *DatabaseModel) WithNameValue(value tfconfig.Variable) *DatabaseModel {
+	d.Name = value
+	return d
+}
+
 func (d *DatabaseModel) WithCommentValue(value tfconfig.Variable) *DatabaseModel {
 	d.Comment = value
 	return d
@@ -138,11 +143,6 @@ func (d *DatabaseModel) WithIsCurrentValue(value tfconfig.Variable) *DatabaseMod
 
 func (d *DatabaseModel) WithIsDefaultValue(value tfconfig.Variable) *DatabaseModel {
 	d.IsDefault = value
-	return d
-}
-
-func (d *DatabaseModel) WithNameValue(value tfconfig.Variable) *DatabaseModel {
-	d.Name = value
 	return d
 }
 

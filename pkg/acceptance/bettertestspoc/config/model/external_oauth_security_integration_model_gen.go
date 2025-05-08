@@ -31,6 +31,8 @@ type ExternalOauthSecurityIntegrationModel struct {
 	FullyQualifiedName                         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	RelatedParameters                          tfconfig.Variable `json:"related_parameters,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -75,9 +77,9 @@ func ExternalOauthSecurityIntegrationWithDefaultMeta(
 	return e
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (e *ExternalOauthSecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias ExternalOauthSecurityIntegrationModel
@@ -92,6 +94,11 @@ func (e *ExternalOauthSecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 
 func (e *ExternalOauthSecurityIntegrationModel) WithDependsOn(values ...string) *ExternalOauthSecurityIntegrationModel {
 	e.SetDependsOn(values...)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalOauthSecurityIntegrationModel {
+	e.DynamicBlock = dynamicBlock
 	return e
 }
 

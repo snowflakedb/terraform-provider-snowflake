@@ -21,6 +21,8 @@ type SecretWithBasicAuthenticationModel struct {
 	SecretType         tfconfig.Variable `json:"secret_type,omitempty"`
 	Username           tfconfig.Variable `json:"username,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -61,9 +63,9 @@ func SecretWithBasicAuthenticationWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SecretWithBasicAuthenticationModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithBasicAuthenticationModel
@@ -78,6 +80,11 @@ func (s *SecretWithBasicAuthenticationModel) MarshalJSON() ([]byte, error) {
 
 func (s *SecretWithBasicAuthenticationModel) WithDependsOn(values ...string) *SecretWithBasicAuthenticationModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecretWithBasicAuthenticationModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

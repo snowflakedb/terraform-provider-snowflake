@@ -17,6 +17,8 @@ type DatabaseRoleModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -45,9 +47,9 @@ func DatabaseRoleWithDefaultMeta(
 	return d
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (d *DatabaseRoleModel) MarshalJSON() ([]byte, error) {
 	type Alias DatabaseRoleModel
@@ -62,6 +64,11 @@ func (d *DatabaseRoleModel) MarshalJSON() ([]byte, error) {
 
 func (d *DatabaseRoleModel) WithDependsOn(values ...string) *DatabaseRoleModel {
 	d.SetDependsOn(values...)
+	return d
+}
+
+func (d *DatabaseRoleModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *DatabaseRoleModel {
+	d.DynamicBlock = dynamicBlock
 	return d
 }
 

@@ -52,7 +52,7 @@ mod: ## add missing and remove unused modules
 mod-check: mod ## check if there are any missing/unused modules
 	git diff --exit-code -- go.mod go.sum
 
-pre-push: mod fmt generate-docs-additional-files docs lint test-architecture ## Run a few checks before pushing a change (docs, fmt, mod, etc.)
+pre-push: generate-all-config-model-builders-check mod fmt generate-docs-additional-files docs lint test-architecture ## Run a few checks before pushing a change (docs, fmt, mod, etc.)
 
 pre-push-check: pre-push mod-check generate-docs-additional-files-check docs-check ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
@@ -93,8 +93,11 @@ install-tf: build-local ## installs plugin where terraform can find it
 	mkdir -p $(TERRAFORM_PLUGINS_DIR)
 	cp ./$(BASE_BINARY_NAME) $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
-release-local: ## use GoReleaser to build the binary locally
+release-local: ## use GoReleaser to build the binary locally for the current OS and ARCH
 	goreleaser build --clean --skip=validate --single-target
+
+release-local-all: ## use GoReleaser to build the binary locally
+	goreleaser build --clean --skip=validate
 
 install-locally-released-tf: release-local ## installs plugin (built by the GoReleaser) where terraform can find it
 	mkdir -p $(TERRAFORM_PLUGINS_DIR)
@@ -184,6 +187,15 @@ generate-datasource-model-builders: ## Generate datasource model builders
 
 clean-datasource-model-builders: ## Clean datasource model builders
 	rm -f ./pkg/acceptance/bettertestspoc/config/datasourcemodel/*_gen.go
+
+clean-all-config-model-builders: clean-resource-model-builders clean-datasource-model-builders clean-provider-model-builders ## clean all generated config model builders
+
+generate-all-config-model-builders: generate-resource-model-builders generate-datasource-model-builders generate-provider-model-builders ## generate all config model builders
+
+generate-all-config-model-builders-check: clean-all-config-model-builders generate-all-config-model-builders ## check that generated config model builders are up-to-date
+	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/model
+	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/datasourcemodel
+	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/providelmodel
 
 clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-snowflake-object-parameters-assertions clean-resource-assertions clean-resource-parameters-assertions clean-resource-show-output-assertions clean-resource-model-builders clean-provider-model-builders clean-datasource-model-builders ## clean all generated assertions and config models
 

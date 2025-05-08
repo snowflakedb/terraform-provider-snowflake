@@ -35,6 +35,8 @@ type DatabaseModel struct {
 	UserTaskMinimumTriggerIntervalInSeconds tfconfig.Variable `json:"user_task_minimum_trigger_interval_in_seconds,omitempty"`
 	UserTaskTimeoutMs                       tfconfig.Variable `json:"user_task_timeout_ms,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -59,9 +61,9 @@ func DatabaseWithDefaultMeta(
 	return d
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (d *DatabaseModel) MarshalJSON() ([]byte, error) {
 	type Alias DatabaseModel
@@ -76,6 +78,11 @@ func (d *DatabaseModel) MarshalJSON() ([]byte, error) {
 
 func (d *DatabaseModel) WithDependsOn(values ...string) *DatabaseModel {
 	d.SetDependsOn(values...)
+	return d
+}
+
+func (d *DatabaseModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *DatabaseModel {
+	d.DynamicBlock = dynamicBlock
 	return d
 }
 

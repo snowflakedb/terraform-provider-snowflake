@@ -105,21 +105,16 @@ jobs:
         if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
         run: make dev-setup
 
-      - name: Create and populate .snowflake/config file
+      - name: Create and populate configuration files
         if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
         id: create_config
-        # TODO (next PR): Move SNOWFLAKE_CONFIG_FILE_NEW contents to SNOWFLAKE_CONFIG_FILE and use SNOWFLAKE_CONFIG_FILE here.
-        run: mkdir -p $HOME/.snowflake && echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_NEW }}" > $HOME/.snowflake/config && chmod 0600 $HOME/.snowflake/config
-
-      - name: Create and populate .snowflake/config_v097_compatible file
-        if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
-        id: create_config_v097_compatible
-        run: mkdir -p $HOME/.snowflake && echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > $HOME/.snowflake/config_v097_compatible && chmod 0600 $HOME/.snowflake/config_v097_compatible
-
-      - name: Create and populate .snowflake/config_legacy file
-        if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
-        id: create_config_legacy
-        run: mkdir -p $HOME/.snowflake && echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > $HOME/.snowflake/config_legacy && chmod 0600 $HOME/.snowflake/config_legacy
+        run: |
+          mkdir -p $HOME/.snowflake
+          cd $HOME/.snowflake
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible
 
       - name: Setup Terraform
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}

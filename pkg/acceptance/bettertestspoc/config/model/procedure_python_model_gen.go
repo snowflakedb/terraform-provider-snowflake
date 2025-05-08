@@ -36,6 +36,8 @@ type ProcedurePythonModel struct {
 	SnowparkPackage            tfconfig.Variable `json:"snowpark_package,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -84,9 +86,9 @@ func ProcedurePythonWithDefaultMeta(
 	return p
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (p *ProcedurePythonModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedurePythonModel
@@ -101,6 +103,11 @@ func (p *ProcedurePythonModel) MarshalJSON() ([]byte, error) {
 
 func (p *ProcedurePythonModel) WithDependsOn(values ...string) *ProcedurePythonModel {
 	p.SetDependsOn(values...)
+	return p
+}
+
+func (p *ProcedurePythonModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedurePythonModel {
+	p.DynamicBlock = dynamicBlock
 	return p
 }
 

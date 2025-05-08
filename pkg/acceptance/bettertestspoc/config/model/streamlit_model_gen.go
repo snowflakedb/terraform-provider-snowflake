@@ -24,6 +24,8 @@ type StreamlitModel struct {
 	Stage                      tfconfig.Variable `json:"stage,omitempty"`
 	Title                      tfconfig.Variable `json:"title,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -64,9 +66,9 @@ func StreamlitWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *StreamlitModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamlitModel
@@ -81,6 +83,11 @@ func (s *StreamlitModel) MarshalJSON() ([]byte, error) {
 
 func (s *StreamlitModel) WithDependsOn(values ...string) *StreamlitModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *StreamlitModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StreamlitModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

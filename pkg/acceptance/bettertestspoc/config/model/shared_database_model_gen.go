@@ -31,6 +31,8 @@ type SharedDatabaseModel struct {
 	UserTaskMinimumTriggerIntervalInSeconds tfconfig.Variable `json:"user_task_minimum_trigger_interval_in_seconds,omitempty"`
 	UserTaskTimeoutMs                       tfconfig.Variable `json:"user_task_timeout_ms,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -59,9 +61,9 @@ func SharedDatabaseWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SharedDatabaseModel) MarshalJSON() ([]byte, error) {
 	type Alias SharedDatabaseModel
@@ -76,6 +78,11 @@ func (s *SharedDatabaseModel) MarshalJSON() ([]byte, error) {
 
 func (s *SharedDatabaseModel) WithDependsOn(values ...string) *SharedDatabaseModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *SharedDatabaseModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SharedDatabaseModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

@@ -30,6 +30,8 @@ type WarehouseModel struct {
 	WarehouseSize                   tfconfig.Variable `json:"warehouse_size,omitempty"`
 	WarehouseType                   tfconfig.Variable `json:"warehouse_type,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -54,9 +56,9 @@ func WarehouseWithDefaultMeta(
 	return w
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (w *WarehouseModel) MarshalJSON() ([]byte, error) {
 	type Alias WarehouseModel
@@ -71,6 +73,11 @@ func (w *WarehouseModel) MarshalJSON() ([]byte, error) {
 
 func (w *WarehouseModel) WithDependsOn(values ...string) *WarehouseModel {
 	w.SetDependsOn(values...)
+	return w
+}
+
+func (w *WarehouseModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *WarehouseModel {
+	w.DynamicBlock = dynamicBlock
 	return w
 }
 

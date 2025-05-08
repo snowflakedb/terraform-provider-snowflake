@@ -12,9 +12,9 @@ import (
 )
 
 type DatabaseRoleModel struct {
-	Comment  tfconfig.Variable `json:"comment,omitempty"`
 	Database tfconfig.Variable `json:"database,omitempty"`
 	Name     tfconfig.Variable `json:"name,omitempty"`
+	Comment  tfconfig.Variable `json:"comment,omitempty"`
 	Owner    tfconfig.Variable `json:"owner,omitempty"`
 
 	*config.DatasourceModelMeta
@@ -71,11 +71,6 @@ func (d *DatabaseRoleModel) WithDependsOn(values ...string) *DatabaseRoleModel {
 // below all the proper values //
 /////////////////////////////////
 
-func (d *DatabaseRoleModel) WithComment(comment string) *DatabaseRoleModel {
-	d.Comment = tfconfig.StringVariable(comment)
-	return d
-}
-
 func (d *DatabaseRoleModel) WithDatabase(database string) *DatabaseRoleModel {
 	d.Database = tfconfig.StringVariable(database)
 	return d
@@ -83,6 +78,11 @@ func (d *DatabaseRoleModel) WithDatabase(database string) *DatabaseRoleModel {
 
 func (d *DatabaseRoleModel) WithName(name string) *DatabaseRoleModel {
 	d.Name = tfconfig.StringVariable(name)
+	return d
+}
+
+func (d *DatabaseRoleModel) WithComment(comment string) *DatabaseRoleModel {
+	d.Comment = tfconfig.StringVariable(comment)
 	return d
 }
 
@@ -95,11 +95,6 @@ func (d *DatabaseRoleModel) WithOwner(owner string) *DatabaseRoleModel {
 // below it's possible to set any value //
 //////////////////////////////////////////
 
-func (d *DatabaseRoleModel) WithCommentValue(value tfconfig.Variable) *DatabaseRoleModel {
-	d.Comment = value
-	return d
-}
-
 func (d *DatabaseRoleModel) WithDatabaseValue(value tfconfig.Variable) *DatabaseRoleModel {
 	d.Database = value
 	return d
@@ -107,6 +102,11 @@ func (d *DatabaseRoleModel) WithDatabaseValue(value tfconfig.Variable) *Database
 
 func (d *DatabaseRoleModel) WithNameValue(value tfconfig.Variable) *DatabaseRoleModel {
 	d.Name = value
+	return d
+}
+
+func (d *DatabaseRoleModel) WithCommentValue(value tfconfig.Variable) *DatabaseRoleModel {
+	d.Comment = value
 	return d
 }
 

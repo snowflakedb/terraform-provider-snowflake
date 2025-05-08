@@ -18,6 +18,23 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.0.0 ➞ v2.0.1
+
+### *(bugfix)* Fixed `snowflake_tag_association` resource
+
+The `snowflake_tag_association` resource was crashing when performing the update operation (e.g., because the `tag_value` was changed)
+for objects that are created on schema level. This was fixed, and now you can create tag associations for objects that are created on schema level.
+
+Reference: [#3622](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3622).
+
+### *(bugfix)* Added missing `DISABLE_USER_PRIVILEGE_GRANTS` account parameter
+
+As part of the [2025_02 Bundle](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_02_bundle), support for User Based Access Control (UBAC) will be added ([BCR-1924](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_02/bcr-1924)).
+It can be disabled by setting the `DISABLE_USER_PRIVILEGE_GRANTS` parameter to `true`.
+This version adds the support for this parameter in the `snowflake_account_parameter` resource.
+
+Reference: [#3639](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3639).
+
 ## v1.2.1 ➞ v2.0.0
 
 ### Supported architectures

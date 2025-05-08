@@ -49,8 +49,8 @@ type CreateWithOAuthAuthorizationCodeFlowSecretOptions struct {
 	IfNotExists                 *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                        SchemaObjectIdentifier  `ddl:"identifier"`
 	secretType                  string                  `ddl:"static" sql:"TYPE = OAUTH2"`
-	OauthRefreshToken           string                  `ddl:"parameter,single_quotes" sql:"OAUTH_REFRESH_TOKEN"`
-	OauthRefreshTokenExpiryTime string                  `ddl:"parameter,single_quotes" sql:"OAUTH_REFRESH_TOKEN_EXPIRY_TIME"`
+	OauthRefreshToken           string                  `ddl:"parameter,single_quotes,no_parentheses" sql:"OAUTH_REFRESH_TOKEN"`
+	OauthRefreshTokenExpiryTime string                  `ddl:"parameter,single_quotes,no_parentheses" sql:"OAUTH_REFRESH_TOKEN_EXPIRY_TIME"`
 	ApiIntegration              AccountObjectIdentifier `ddl:"identifier,equals" sql:"API_AUTHENTICATION"`
 	Comment                     *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -63,8 +63,8 @@ type CreateWithBasicAuthenticationSecretOptions struct {
 	IfNotExists *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name        SchemaObjectIdentifier `ddl:"identifier"`
 	secretType  string                 `ddl:"static" sql:"TYPE = PASSWORD"`
-	Username    string                 `ddl:"parameter,single_quotes" sql:"USERNAME"`
-	Password    string                 `ddl:"parameter,single_quotes" sql:"PASSWORD"`
+	Username    string                 `ddl:"parameter,single_quotes,no_parentheses" sql:"USERNAME"`
+	Password    string                 `ddl:"parameter,single_quotes,no_parentheses" sql:"PASSWORD"`
 	Comment     *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -178,6 +178,7 @@ type DescribeSecretOptions struct {
 	secret   bool                   `ddl:"static" sql:"SECRET"`
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 }
+
 type secretDetailsDBRow struct {
 	CreatedOn                   time.Time      `db:"created_on"`
 	Name                        string         `db:"name"`
@@ -192,6 +193,7 @@ type secretDetailsDBRow struct {
 	OauthScopes                 sql.NullString `db:"oauth_scopes"`
 	IntegrationName             sql.NullString `db:"integration_name"`
 }
+
 type SecretDetails struct {
 	CreatedOn                   time.Time
 	Name                        string

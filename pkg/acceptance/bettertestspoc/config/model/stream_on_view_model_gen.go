@@ -26,6 +26,8 @@ type StreamOnViewModel struct {
 	StreamType         tfconfig.Variable `json:"stream_type,omitempty"`
 	View               tfconfig.Variable `json:"view,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -62,9 +64,9 @@ func StreamOnViewWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *StreamOnViewModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnViewModel
@@ -79,6 +81,11 @@ func (s *StreamOnViewModel) MarshalJSON() ([]byte, error) {
 
 func (s *StreamOnViewModel) WithDependsOn(values ...string) *StreamOnViewModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *StreamOnViewModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StreamOnViewModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 
