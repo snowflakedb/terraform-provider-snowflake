@@ -35,6 +35,15 @@ This version adds the support for this parameter in the `snowflake_account_param
 
 Reference: [#3639](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3639).
 
+### *(bugfix)* Imports propagation to Snowflake for all `snowflake_procedure_*` resources
+
+The `snowflake_procedure_python`, `snowflake_procedure_scala`, and `snowflake_procedure_java` resources were not propagating changes to `imports` set to Snowflake.
+There is no `ALTER` to update the imports post-creation, so changes require dropping and recreating the given procedure.
+
+No action is needed.
+
+Reference: [#3401](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3401).
+
 ## v1.2.1 ➞ v2.0.0
 
 ### Supported architectures
