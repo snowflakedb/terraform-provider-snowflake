@@ -26,6 +26,8 @@ type TableModel struct {
 	PrimaryKey              tfconfig.Variable `json:"primary_key,omitempty"`
 	Tag                     tfconfig.Variable `json:"tag,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -62,9 +64,9 @@ func TableWithDefaultMeta(
 	return t
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (t *TableModel) MarshalJSON() ([]byte, error) {
 	type Alias TableModel
@@ -79,6 +81,11 @@ func (t *TableModel) MarshalJSON() ([]byte, error) {
 
 func (t *TableModel) WithDependsOn(values ...string) *TableModel {
 	t.SetDependsOn(values...)
+	return t
+}
+
+func (t *TableModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *TableModel {
+	t.DynamicBlock = dynamicBlock
 	return t
 }
 

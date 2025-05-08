@@ -36,6 +36,8 @@ type FunctionPythonModel struct {
 	Secrets                    tfconfig.Variable `json:"secrets,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -80,9 +82,9 @@ func FunctionPythonWithDefaultMeta(
 	return f
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (f *FunctionPythonModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionPythonModel
@@ -97,6 +99,11 @@ func (f *FunctionPythonModel) MarshalJSON() ([]byte, error) {
 
 func (f *FunctionPythonModel) WithDependsOn(values ...string) *FunctionPythonModel {
 	f.SetDependsOn(values...)
+	return f
+}
+
+func (f *FunctionPythonModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionPythonModel {
+	f.DynamicBlock = dynamicBlock
 	return f
 }
 

@@ -135,12 +135,12 @@ func (v *ParameterTransformer) DoubleQuotes() *ParameterTransformer {
 }
 
 func (v *ParameterTransformer) NoParentheses() *ParameterTransformer {
-	v.quotes = "no_parentheses"
+	v.parentheses = "no_parentheses"
 	return v
 }
 
 func (v *ParameterTransformer) Parentheses() *ParameterTransformer {
-	v.quotes = "parentheses"
+	v.parentheses = "parentheses"
 	return v
 }
 
@@ -194,7 +194,7 @@ func (v *ListTransformer) NoEquals() *ListTransformer {
 }
 
 func (v *ListTransformer) NoComma() *ListTransformer {
-	v.equals = "no_comma"
+	v.comma = "no_comma"
 	return v
 }
 

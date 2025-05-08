@@ -16,6 +16,8 @@ type AccountRoleModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -40,9 +42,9 @@ func AccountRoleWithDefaultMeta(
 	return a
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (a *AccountRoleModel) MarshalJSON() ([]byte, error) {
 	type Alias AccountRoleModel
@@ -57,6 +59,11 @@ func (a *AccountRoleModel) MarshalJSON() ([]byte, error) {
 
 func (a *AccountRoleModel) WithDependsOn(values ...string) *AccountRoleModel {
 	a.SetDependsOn(values...)
+	return a
+}
+
+func (a *AccountRoleModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *AccountRoleModel {
+	a.DynamicBlock = dynamicBlock
 	return a
 }
 

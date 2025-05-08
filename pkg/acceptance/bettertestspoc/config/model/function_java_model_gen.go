@@ -36,6 +36,8 @@ type FunctionJavaModel struct {
 	TargetPath                 tfconfig.Variable `json:"target_path,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -76,9 +78,9 @@ func FunctionJavaWithDefaultMeta(
 	return f
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (f *FunctionJavaModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionJavaModel
@@ -93,6 +95,11 @@ func (f *FunctionJavaModel) MarshalJSON() ([]byte, error) {
 
 func (f *FunctionJavaModel) WithDependsOn(values ...string) *FunctionJavaModel {
 	f.SetDependsOn(values...)
+	return f
+}
+
+func (f *FunctionJavaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionJavaModel {
+	f.DynamicBlock = dynamicBlock
 	return f
 }
 

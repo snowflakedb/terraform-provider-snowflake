@@ -24,6 +24,8 @@ type OauthIntegrationForPartnerApplicationsModel struct {
 	OauthUseSecondaryRoles    tfconfig.Variable `json:"oauth_use_secondary_roles,omitempty"`
 	RelatedParameters         tfconfig.Variable `json:"related_parameters,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -52,9 +54,9 @@ func OauthIntegrationForPartnerApplicationsWithDefaultMeta(
 	return o
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (o *OauthIntegrationForPartnerApplicationsModel) MarshalJSON() ([]byte, error) {
 	type Alias OauthIntegrationForPartnerApplicationsModel
@@ -69,6 +71,11 @@ func (o *OauthIntegrationForPartnerApplicationsModel) MarshalJSON() ([]byte, err
 
 func (o *OauthIntegrationForPartnerApplicationsModel) WithDependsOn(values ...string) *OauthIntegrationForPartnerApplicationsModel {
 	o.SetDependsOn(values...)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *OauthIntegrationForPartnerApplicationsModel {
+	o.DynamicBlock = dynamicBlock
 	return o
 }
 

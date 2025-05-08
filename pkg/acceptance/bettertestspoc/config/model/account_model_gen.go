@@ -29,6 +29,8 @@ type AccountModel struct {
 	Region             tfconfig.Variable `json:"region,omitempty"`
 	RegionGroup        tfconfig.Variable `json:"region_group,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -69,9 +71,9 @@ func AccountWithDefaultMeta(
 	return a
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (a *AccountModel) MarshalJSON() ([]byte, error) {
 	type Alias AccountModel
@@ -86,6 +88,11 @@ func (a *AccountModel) MarshalJSON() ([]byte, error) {
 
 func (a *AccountModel) WithDependsOn(values ...string) *AccountModel {
 	a.SetDependsOn(values...)
+	return a
+}
+
+func (a *AccountModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *AccountModel {
+	a.DynamicBlock = dynamicBlock
 	return a
 }
 

@@ -89,6 +89,8 @@ type LegacyServiceUserModel struct {
 	WeekOfYearPolicy                         tfconfig.Variable `json:"week_of_year_policy,omitempty"`
 	WeekStart                                tfconfig.Variable `json:"week_start,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -113,9 +115,9 @@ func LegacyServiceUserWithDefaultMeta(
 	return l
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (l *LegacyServiceUserModel) MarshalJSON() ([]byte, error) {
 	type Alias LegacyServiceUserModel
@@ -130,6 +132,11 @@ func (l *LegacyServiceUserModel) MarshalJSON() ([]byte, error) {
 
 func (l *LegacyServiceUserModel) WithDependsOn(values ...string) *LegacyServiceUserModel {
 	l.SetDependsOn(values...)
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *LegacyServiceUserModel {
+	l.DynamicBlock = dynamicBlock
 	return l
 }
 

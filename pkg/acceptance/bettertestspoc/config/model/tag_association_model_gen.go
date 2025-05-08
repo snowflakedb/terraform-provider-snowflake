@@ -19,6 +19,8 @@ type TagAssociationModel struct {
 	TagId             tfconfig.Variable `json:"tag_id,omitempty"`
 	TagValue          tfconfig.Variable `json:"tag_value,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -55,9 +57,9 @@ func TagAssociationWithDefaultMeta(
 	return t
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (t *TagAssociationModel) MarshalJSON() ([]byte, error) {
 	type Alias TagAssociationModel
@@ -72,6 +74,11 @@ func (t *TagAssociationModel) MarshalJSON() ([]byte, error) {
 
 func (t *TagAssociationModel) WithDependsOn(values ...string) *TagAssociationModel {
 	t.SetDependsOn(values...)
+	return t
+}
+
+func (t *TagAssociationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *TagAssociationModel {
+	t.DynamicBlock = dynamicBlock
 	return t
 }
 

@@ -68,6 +68,12 @@ func (parameters *parameters) SetAccountParameter(ctx context.Context, parameter
 		opts.Set.Parameters.AccountParameters.ClientEncryptionKeySize = Pointer(v)
 	case AccountParameterCortexEnabledCrossRegion:
 		opts.Set.Parameters.AccountParameters.CortexEnabledCrossRegion = &value
+	case AccountParameterDisableUserPrivilegeGrants:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		opts.Set.Parameters.AccountParameters.DisableUserPrivilegeGrants = b
 	case AccountParameterEnableIdentifierFirstLogin:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
@@ -211,6 +217,8 @@ func (parameters *parameters) UnsetAccountParameter(ctx context.Context, paramet
 		opts.Unset.Parameters.AccountParameters.ClientEncryptionKeySize = Pointer(true)
 	case AccountParameterCortexEnabledCrossRegion:
 		opts.Unset.Parameters.AccountParameters.CortexEnabledCrossRegion = Pointer(true)
+	case AccountParameterDisableUserPrivilegeGrants:
+		opts.Unset.Parameters.AccountParameters.DisableUserPrivilegeGrants = Pointer(true)
 	case AccountParameterEnableIdentifierFirstLogin:
 		opts.Unset.Parameters.AccountParameters.EnableIdentifierFirstLogin = Pointer(true)
 	case AccountParameterEnableInternalStagesPrivatelink:
@@ -509,6 +517,7 @@ const (
 	AccountParameterAllowIDToken                                     AccountParameter = "ALLOW_ID_TOKEN" // #nosec G101
 	AccountParameterClientEncryptionKeySize                          AccountParameter = "CLIENT_ENCRYPTION_KEY_SIZE"
 	AccountParameterCortexEnabledCrossRegion                         AccountParameter = "CORTEX_ENABLED_CROSS_REGION"
+	AccountParameterDisableUserPrivilegeGrants                       AccountParameter = "DISABLE_USER_PRIVILEGE_GRANTS"
 	AccountParameterEnableIdentifierFirstLogin                       AccountParameter = "ENABLE_IDENTIFIER_FIRST_LOGIN"
 	AccountParameterEnableInternalStagesPrivatelink                  AccountParameter = "ENABLE_INTERNAL_STAGES_PRIVATELINK"
 	AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository  AccountParameter = "ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"   // #nosec G101
@@ -623,6 +632,7 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterAllowIDToken,
 	AccountParameterClientEncryptionKeySize,
 	AccountParameterCortexEnabledCrossRegion,
+	AccountParameterDisableUserPrivilegeGrants,
 	AccountParameterEnableIdentifierFirstLogin,
 	AccountParameterEnableInternalStagesPrivatelink,
 	AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository,
@@ -1183,6 +1193,7 @@ type AccountParameters struct {
 	AllowIDToken                                     *bool   `ddl:"parameter" sql:"ALLOW_ID_TOKEN"`
 	ClientEncryptionKeySize                          *int    `ddl:"parameter" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
 	CortexEnabledCrossRegion                         *string `ddl:"parameter,single_quotes" sql:"CORTEX_ENABLED_CROSS_REGION"`
+	DisableUserPrivilegeGrants                       *bool   `ddl:"parameter" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
 	EnableIdentifierFirstLogin                       *bool   `ddl:"parameter" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
 	EnableInternalStagesPrivatelink                  *bool   `ddl:"parameter" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
 	EnablePersonalDatabase                           *bool   `ddl:"parameter" sql:"ENABLE_PERSONAL_DATABASE"`
@@ -1235,6 +1246,7 @@ type AccountParametersUnset struct {
 	AllowIDToken                                     *bool `ddl:"keyword" sql:"ALLOW_ID_TOKEN"`
 	ClientEncryptionKeySize                          *bool `ddl:"keyword" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
 	CortexEnabledCrossRegion                         *bool `ddl:"keyword" sql:"CORTEX_ENABLED_CROSS_REGION"`
+	DisableUserPrivilegeGrants                       *bool `ddl:"keyword" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
 	EnableIdentifierFirstLogin                       *bool `ddl:"keyword" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
 	EnableInternalStagesPrivatelink                  *bool `ddl:"keyword" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
 	EnablePersonalDatabase                           *bool `ddl:"keyword" sql:"ENABLE_PERSONAL_DATABASE"`

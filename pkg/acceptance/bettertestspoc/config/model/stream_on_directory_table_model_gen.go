@@ -22,6 +22,8 @@ type StreamOnDirectoryTableModel struct {
 	Stale              tfconfig.Variable `json:"stale,omitempty"`
 	StreamType         tfconfig.Variable `json:"stream_type,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -58,9 +60,9 @@ func StreamOnDirectoryTableWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *StreamOnDirectoryTableModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnDirectoryTableModel
@@ -75,6 +77,11 @@ func (s *StreamOnDirectoryTableModel) MarshalJSON() ([]byte, error) {
 
 func (s *StreamOnDirectoryTableModel) WithDependsOn(values ...string) *StreamOnDirectoryTableModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *StreamOnDirectoryTableModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StreamOnDirectoryTableModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

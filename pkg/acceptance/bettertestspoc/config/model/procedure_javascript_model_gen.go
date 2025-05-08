@@ -29,6 +29,8 @@ type ProcedureJavascriptModel struct {
 	ReturnType          tfconfig.Variable `json:"return_type,omitempty"`
 	TraceLevel          tfconfig.Variable `json:"trace_level,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -69,9 +71,9 @@ func ProcedureJavascriptWithDefaultMeta(
 	return p
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (p *ProcedureJavascriptModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedureJavascriptModel
@@ -86,6 +88,11 @@ func (p *ProcedureJavascriptModel) MarshalJSON() ([]byte, error) {
 
 func (p *ProcedureJavascriptModel) WithDependsOn(values ...string) *ProcedureJavascriptModel {
 	p.SetDependsOn(values...)
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedureJavascriptModel {
+	p.DynamicBlock = dynamicBlock
 	return p
 }
 
