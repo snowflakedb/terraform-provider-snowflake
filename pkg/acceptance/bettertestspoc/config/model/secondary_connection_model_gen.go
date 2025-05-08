@@ -18,6 +18,8 @@ type SecondaryConnectionModel struct {
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsPrimary          tfconfig.Variable `json:"is_primary,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -46,9 +48,9 @@ func SecondaryConnectionWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SecondaryConnectionModel) MarshalJSON() ([]byte, error) {
 	type Alias SecondaryConnectionModel
@@ -63,6 +65,11 @@ func (s *SecondaryConnectionModel) MarshalJSON() ([]byte, error) {
 
 func (s *SecondaryConnectionModel) WithDependsOn(values ...string) *SecondaryConnectionModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *SecondaryConnectionModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecondaryConnectionModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

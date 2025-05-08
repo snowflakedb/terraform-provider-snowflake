@@ -20,6 +20,8 @@ type NetworkPolicyModel struct {
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -44,9 +46,9 @@ func NetworkPolicyWithDefaultMeta(
 	return n
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (n *NetworkPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias NetworkPolicyModel
@@ -61,6 +63,11 @@ func (n *NetworkPolicyModel) MarshalJSON() ([]byte, error) {
 
 func (n *NetworkPolicyModel) WithDependsOn(values ...string) *NetworkPolicyModel {
 	n.SetDependsOn(values...)
+	return n
+}
+
+func (n *NetworkPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *NetworkPolicyModel {
+	n.DynamicBlock = dynamicBlock
 	return n
 }
 

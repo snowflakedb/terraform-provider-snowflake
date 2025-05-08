@@ -21,7 +21,6 @@ type RowAccessPolicyModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 
-	// added manually
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
@@ -64,9 +63,9 @@ func RowAccessPolicyWithDefaultMeta(
 	return r
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (r *RowAccessPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias RowAccessPolicyModel
@@ -81,6 +80,11 @@ func (r *RowAccessPolicyModel) MarshalJSON() ([]byte, error) {
 
 func (r *RowAccessPolicyModel) WithDependsOn(values ...string) *RowAccessPolicyModel {
 	r.SetDependsOn(values...)
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *RowAccessPolicyModel {
+	r.DynamicBlock = dynamicBlock
 	return r
 }
 

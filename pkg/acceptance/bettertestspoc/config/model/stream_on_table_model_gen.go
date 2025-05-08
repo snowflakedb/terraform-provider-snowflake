@@ -26,6 +26,8 @@ type StreamOnTableModel struct {
 	StreamType         tfconfig.Variable `json:"stream_type,omitempty"`
 	Table              tfconfig.Variable `json:"table,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -62,9 +64,9 @@ func StreamOnTableWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *StreamOnTableModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnTableModel
@@ -79,6 +81,11 @@ func (s *StreamOnTableModel) MarshalJSON() ([]byte, error) {
 
 func (s *StreamOnTableModel) WithDependsOn(values ...string) *StreamOnTableModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *StreamOnTableModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StreamOnTableModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

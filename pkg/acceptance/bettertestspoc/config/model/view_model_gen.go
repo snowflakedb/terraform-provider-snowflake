@@ -29,6 +29,8 @@ type ViewModel struct {
 	RowAccessPolicy    tfconfig.Variable `json:"row_access_policy,omitempty"`
 	Statement          tfconfig.Variable `json:"statement,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -65,9 +67,9 @@ func ViewWithDefaultMeta(
 	return v
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (v *ViewModel) MarshalJSON() ([]byte, error) {
 	type Alias ViewModel
@@ -82,6 +84,11 @@ func (v *ViewModel) MarshalJSON() ([]byte, error) {
 
 func (v *ViewModel) WithDependsOn(values ...string) *ViewModel {
 	v.SetDependsOn(values...)
+	return v
+}
+
+func (v *ViewModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ViewModel {
+	v.DynamicBlock = dynamicBlock
 	return v
 }
 

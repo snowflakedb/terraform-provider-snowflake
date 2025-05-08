@@ -28,6 +28,8 @@ type FunctionSqlModel struct {
 	ReturnType            tfconfig.Variable `json:"return_type,omitempty"`
 	TraceLevel            tfconfig.Variable `json:"trace_level,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -68,9 +70,9 @@ func FunctionSqlWithDefaultMeta(
 	return f
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (f *FunctionSqlModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionSqlModel
@@ -85,6 +87,11 @@ func (f *FunctionSqlModel) MarshalJSON() ([]byte, error) {
 
 func (f *FunctionSqlModel) WithDependsOn(values ...string) *FunctionSqlModel {
 	f.SetDependsOn(values...)
+	return f
+}
+
+func (f *FunctionSqlModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionSqlModel {
+	f.DynamicBlock = dynamicBlock
 	return f
 }
 

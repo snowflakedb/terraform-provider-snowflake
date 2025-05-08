@@ -37,6 +37,8 @@ type ProcedureScalaModel struct {
 	TargetPath                 tfconfig.Variable `json:"target_path,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -85,9 +87,9 @@ func ProcedureScalaWithDefaultMeta(
 	return p
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (p *ProcedureScalaModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedureScalaModel
@@ -102,6 +104,11 @@ func (p *ProcedureScalaModel) MarshalJSON() ([]byte, error) {
 
 func (p *ProcedureScalaModel) WithDependsOn(values ...string) *ProcedureScalaModel {
 	p.SetDependsOn(values...)
+	return p
+}
+
+func (p *ProcedureScalaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedureScalaModel {
+	p.DynamicBlock = dynamicBlock
 	return p
 }
 

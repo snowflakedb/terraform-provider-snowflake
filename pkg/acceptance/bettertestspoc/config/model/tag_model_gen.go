@@ -20,6 +20,8 @@ type TagModel struct {
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MaskingPolicies    tfconfig.Variable `json:"masking_policies,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -52,9 +54,9 @@ func TagWithDefaultMeta(
 	return t
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (t *TagModel) MarshalJSON() ([]byte, error) {
 	type Alias TagModel
@@ -69,6 +71,11 @@ func (t *TagModel) MarshalJSON() ([]byte, error) {
 
 func (t *TagModel) WithDependsOn(values ...string) *TagModel {
 	t.SetDependsOn(values...)
+	return t
+}
+
+func (t *TagModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *TagModel {
+	t.DynamicBlock = dynamicBlock
 	return t
 }
 

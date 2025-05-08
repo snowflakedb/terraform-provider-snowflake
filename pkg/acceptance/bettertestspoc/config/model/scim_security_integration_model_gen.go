@@ -21,6 +21,8 @@ type ScimSecurityIntegrationModel struct {
 	ScimClient         tfconfig.Variable `json:"scim_client,omitempty"`
 	SyncPassword       tfconfig.Variable `json:"sync_password,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -57,9 +59,9 @@ func ScimSecurityIntegrationWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *ScimSecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias ScimSecurityIntegrationModel
@@ -74,6 +76,11 @@ func (s *ScimSecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 
 func (s *ScimSecurityIntegrationModel) WithDependsOn(values ...string) *ScimSecurityIntegrationModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *ScimSecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ScimSecurityIntegrationModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 
