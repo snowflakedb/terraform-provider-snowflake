@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -361,4 +362,23 @@ func (c *GrantClient) ShowGrantsToDatabaseRole(t *testing.T, databaseRoleId sdk.
 			DatabaseRole: databaseRoleId,
 		},
 	})
+}
+
+func (c *GrantClient) GrantDatabaseRoleToUser(t *testing.T, databaseRoleId sdk.DatabaseObjectIdentifier, userId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	// TODO(SNOW-2095669): Update when the client is updated to support this
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("GRANT DATABASE ROLE %s TO USER %s", databaseRoleId.FullyQualifiedName(), userId.FullyQualifiedName()))
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) GrantAccountRoleToUser(t *testing.T, accountRoleId sdk.AccountObjectIdentifier, userId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.context.client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(accountRoleId, sdk.GrantRole{
+		User: &userId,
+	}))
+	require.NoError(t, err)
 }

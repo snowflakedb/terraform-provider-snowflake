@@ -18,6 +18,18 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.0.0 ➞ v2.0.1
+
+### *(bugfix)* Fixed snowflake_grant_database_role resource
+granting a database role directly to a user breaks
+
+The `2025_02` Snowflake BCR enables granting database roles directly to users.  
+This caused issues in the provider, leading to `Provider produced inconsistent result after apply` errors  
+when a database role was granted to a user. This version resolves the issue.
+No configuration changes are necessary.
+
+References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
+
 ## v1.2.1 ➞ v2.0.0
 
 ### Supported architectures

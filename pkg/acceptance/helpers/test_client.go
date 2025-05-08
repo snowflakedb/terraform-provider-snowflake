@@ -28,7 +28,6 @@ type TestClient struct {
 	DataMetricFunctionReferences *DataMetricFunctionReferencesClient
 	DynamicTable                 *DynamicTableClient
 	EventTable                   *EventTableClient
-	Execute                      *ExecuteClient
 	ExternalAccessIntegration    *ExternalAccessIntegrationClient
 	ExternalFunction             *ExternalFunctionClient
 	ExternalTable                *ExternalTableClient
@@ -105,7 +104,6 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		DataMetricFunctionReferences: NewDataMetricFunctionReferencesClient(context),
 		DynamicTable:                 NewDynamicTableClient(context, idsGenerator),
 		EventTable:                   NewEventTableClient(context, idsGenerator),
-		Execute:                      NewExecuteClient(context),
 		ExternalAccessIntegration:    NewExternalAccessIntegrationClient(context, idsGenerator),
 		ExternalFunction:             NewExternalFunctionClient(context, idsGenerator),
 		ExternalTable:                NewExternalTableClient(context, idsGenerator),
