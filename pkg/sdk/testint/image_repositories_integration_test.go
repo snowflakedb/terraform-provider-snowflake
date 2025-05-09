@@ -18,8 +18,8 @@ func TestInt_ImageRepositories(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	// TODO(SNOW-2070746): The name must not use special characters, including lowercase ones. Remove this after fix on snowflake side.
-	db, dbCleanup := testClientHelper().Database.CreateDatabase(t)
+	// TODO(SNOW-2070746): We set up a separate database and schema with capitalized ids. Remove this after fix on snowflake side.
+	db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(dbCleanup)
 
 	schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
@@ -74,7 +74,7 @@ func TestInt_ImageRepositories(t *testing.T) {
 		)
 	})
 
-	// TODO(SNOW-2070746): The name must not use special characters, including lowercase ones. Remove this after fix on snowflake side.
+	// TODO(SNOW-2070746): Using symbols that require quoting the name fails - in this case, lowercase letters. Remove this after fix on snowflake side.
 	t.Run("create with an ID with lowercase letters fails", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		req := sdk.NewCreateImageRepositoryRequest(id)
