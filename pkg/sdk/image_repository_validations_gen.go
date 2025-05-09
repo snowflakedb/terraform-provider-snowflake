@@ -29,8 +29,8 @@ func (opts *AlterImageRepositoryOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Set) {
-		errs = append(errs, errExactlyOneOf("AlterImageRepositoryOptions", "Set"))
+	if !exactlyOneValueSet(opts.Set, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"))
 	}
 	return JoinErrors(errs...)
 }

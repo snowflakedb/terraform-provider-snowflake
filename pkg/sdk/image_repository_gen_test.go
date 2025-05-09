@@ -39,10 +39,17 @@ func TestImageRepositories_Create(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		comment := random.Comment()
+		tagId := NewAccountObjectIdentifier("tag1")
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.Comment = &comment
-		assertOptsValidAndSQLEquals(t, opts, "CREATE IMAGE REPOSITORY IF NOT EXISTS %s COMMENT = '%s'", id.FullyQualifiedName(), comment)
+		opts.Tag = []TagAssociation{
+			{
+				Name:  tagId,
+				Value: "value1",
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE IMAGE REPOSITORY IF NOT EXISTS %s COMMENT = '%s' TAG (%s = 'value1')", id.FullyQualifiedName(), comment, tagId.FullyQualifiedName())
 	})
 }
 
@@ -59,10 +66,16 @@ func TestImageRepositories_Alter(t *testing.T) {
 		var opts *AlterImageRepositoryOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: invalid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("set: all options", func(t *testing.T) {
@@ -83,6 +96,31 @@ func TestImageRepositories_Alter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER IMAGE REPOSITORY %s SET COMMENT = ''", id.FullyQualifiedName())
+	})
+
+	t.Run("set tags", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.SetTags = []TagAssociation{
+			{
+				Name:  NewAccountObjectIdentifier("tag1"),
+				Value: "value1",
+			},
+			{
+				Name:  NewAccountObjectIdentifier("tag2"),
+				Value: "value2",
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER IMAGE REPOSITORY IF EXISTS %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
+	})
+
+	t.Run("unset tags", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetTags = []ObjectIdentifier{
+			NewAccountObjectIdentifier("tag1"),
+			NewAccountObjectIdentifier("tag2"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER IMAGE REPOSITORY %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
 	})
 }
 

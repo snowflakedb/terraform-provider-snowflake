@@ -32,6 +32,7 @@ var (
 		ObjectTypeExternalFunction,
 		ObjectTypeExternalTable,
 		ObjectTypeFunction,
+		ObjectTypeImageRepository,
 		ObjectTypeGitRepository,
 		ObjectTypeIcebergTable,
 		ObjectTypeMaterializedView,

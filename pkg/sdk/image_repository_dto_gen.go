@@ -14,12 +14,15 @@ type CreateImageRepositoryRequest struct {
 	IfNotExists *bool
 	name        SchemaObjectIdentifier // required
 	Comment     *string
+	Tag         []TagAssociation
 }
 
 type AlterImageRepositoryRequest struct {
-	IfExists *bool
-	name     SchemaObjectIdentifier // required
-	Set      *ImageRepositorySetRequest
+	IfExists  *bool
+	name      SchemaObjectIdentifier // required
+	Set       *ImageRepositorySetRequest
+	SetTags   []TagAssociation
+	UnsetTags []ObjectIdentifier
 }
 
 type ImageRepositorySetRequest struct {
