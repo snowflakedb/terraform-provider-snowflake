@@ -31,6 +31,8 @@ type Saml2SecurityIntegrationModel struct {
 	Saml2SsoUrl                    tfconfig.Variable `json:"saml2_sso_url,omitempty"`
 	Saml2X509Cert                  tfconfig.Variable `json:"saml2_x509_cert,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -71,9 +73,9 @@ func Saml2SecurityIntegrationWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *Saml2SecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias Saml2SecurityIntegrationModel
@@ -88,6 +90,11 @@ func (s *Saml2SecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 
 func (s *Saml2SecurityIntegrationModel) WithDependsOn(values ...string) *Saml2SecurityIntegrationModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *Saml2SecurityIntegrationModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

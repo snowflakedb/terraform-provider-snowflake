@@ -14,11 +14,12 @@ import (
 
 type TagAssociationModel struct {
 	ObjectIdentifiers tfconfig.Variable `json:"object_identifiers,omitempty"`
-	ObjectName        tfconfig.Variable `json:"object_name,omitempty"`
 	ObjectType        tfconfig.Variable `json:"object_type,omitempty"`
 	SkipValidation    tfconfig.Variable `json:"skip_validation,omitempty"`
 	TagId             tfconfig.Variable `json:"tag_id,omitempty"`
 	TagValue          tfconfig.Variable `json:"tag_value,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -35,7 +36,7 @@ func TagAssociation(
 	tagValue string,
 ) *TagAssociationModel {
 	t := &TagAssociationModel{ResourceModelMeta: config.Meta(resourceName, resources.TagAssociation)}
-	t.WithObjectIdentifiers(objectIdentifiers...)
+	t.WithObjectIdentifiers(objectIdentifiers)
 	t.WithObjectType(objectType)
 	t.WithTagId(tagId)
 	t.WithTagValue(tagValue)
@@ -49,16 +50,16 @@ func TagAssociationWithDefaultMeta(
 	tagValue string,
 ) *TagAssociationModel {
 	t := &TagAssociationModel{ResourceModelMeta: config.DefaultMeta(resources.TagAssociation)}
-	t.WithObjectIdentifiers(objectIdentifiers...)
+	t.WithObjectIdentifiers(objectIdentifiers)
 	t.WithObjectType(objectType)
 	t.WithTagId(tagId)
 	t.WithTagValue(tagValue)
 	return t
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (t *TagAssociationModel) MarshalJSON() ([]byte, error) {
 	type Alias TagAssociationModel
@@ -76,16 +77,16 @@ func (t *TagAssociationModel) WithDependsOn(values ...string) *TagAssociationMod
 	return t
 }
 
+func (t *TagAssociationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *TagAssociationModel {
+	t.DynamicBlock = dynamicBlock
+	return t
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
 
 // object_identifiers attribute type is not yet supported, so WithObjectIdentifiers can't be generated
-
-func (t *TagAssociationModel) WithObjectName(objectName string) *TagAssociationModel {
-	t.ObjectName = tfconfig.StringVariable(objectName)
-	return t
-}
 
 func (t *TagAssociationModel) WithObjectType(objectType string) *TagAssociationModel {
 	t.ObjectType = tfconfig.StringVariable(objectType)
@@ -113,11 +114,6 @@ func (t *TagAssociationModel) WithTagValue(tagValue string) *TagAssociationModel
 
 func (t *TagAssociationModel) WithObjectIdentifiersValue(value tfconfig.Variable) *TagAssociationModel {
 	t.ObjectIdentifiers = value
-	return t
-}
-
-func (t *TagAssociationModel) WithObjectNameValue(value tfconfig.Variable) *TagAssociationModel {
-	t.ObjectName = value
 	return t
 }
 

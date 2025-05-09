@@ -94,6 +94,8 @@ type UserModel struct {
 	WeekOfYearPolicy                         tfconfig.Variable `json:"week_of_year_policy,omitempty"`
 	WeekStart                                tfconfig.Variable `json:"week_start,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -118,9 +120,9 @@ func UserWithDefaultMeta(
 	return u
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (u *UserModel) MarshalJSON() ([]byte, error) {
 	type Alias UserModel
@@ -135,6 +137,11 @@ func (u *UserModel) MarshalJSON() ([]byte, error) {
 
 func (u *UserModel) WithDependsOn(values ...string) *UserModel {
 	u.SetDependsOn(values...)
+	return u
+}
+
+func (u *UserModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *UserModel {
+	u.DynamicBlock = dynamicBlock
 	return u
 }
 

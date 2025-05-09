@@ -18,6 +18,8 @@ type PrimaryConnectionModel struct {
 	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsPrimary                tfconfig.Variable `json:"is_primary,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -42,9 +44,9 @@ func PrimaryConnectionWithDefaultMeta(
 	return p
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (p *PrimaryConnectionModel) MarshalJSON() ([]byte, error) {
 	type Alias PrimaryConnectionModel
@@ -59,6 +61,11 @@ func (p *PrimaryConnectionModel) MarshalJSON() ([]byte, error) {
 
 func (p *PrimaryConnectionModel) WithDependsOn(values ...string) *PrimaryConnectionModel {
 	p.SetDependsOn(values...)
+	return p
+}
+
+func (p *PrimaryConnectionModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *PrimaryConnectionModel {
+	p.DynamicBlock = dynamicBlock
 	return p
 }
 

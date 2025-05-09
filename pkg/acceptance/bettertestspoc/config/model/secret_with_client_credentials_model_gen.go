@@ -21,6 +21,8 @@ type SecretWithClientCredentialsModel struct {
 	OauthScopes        tfconfig.Variable `json:"oauth_scopes,omitempty"`
 	SecretType         tfconfig.Variable `json:"secret_type,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -61,9 +63,9 @@ func SecretWithClientCredentialsWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SecretWithClientCredentialsModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithClientCredentialsModel
@@ -78,6 +80,11 @@ func (s *SecretWithClientCredentialsModel) MarshalJSON() ([]byte, error) {
 
 func (s *SecretWithClientCredentialsModel) WithDependsOn(values ...string) *SecretWithClientCredentialsModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecretWithClientCredentialsModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

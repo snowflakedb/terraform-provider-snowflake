@@ -1,6 +1,7 @@
 # Our roadmap
 
-## (23.04.2025) v2.0.0 release - GA
+## (2025-04-23) v2.0.0 release - GA
+<a name="23042025-v200-release---ga"></a>
 
 As announced previously, we have released today the v2.0.0 version of the provider, which is an officially supported Snowflake product!
 
@@ -14,7 +15,8 @@ Some essential information:
 
 As always, we encourage you to contact us with any questions or issues. Happy Terraforming!
 
-## (10.04.2025) GA announcement
+## (2025-04-10) GA announcement
+<a name="10042025-ga-announcement"></a>
 
 ### GA release
 
@@ -66,7 +68,8 @@ The migration to the snowflakedb GitHub organization was successfully concluded.
 
 The old namespace will be deleted on **July 31st**. We will soon add the deprecation notice to the old namespace. Please contact us if you encounter any problems switching to the provider in the new namespace.
 
-## (24.03.2025) snowflakedb migration
+## (2025-03-24) snowflakedb migration
+<a name="24032025-snowflakedb-migration"></a>
 
 As part of GA preparation, we must migrate out of the [Snowflake-Labs](https://github.com/Snowflake-Labs) GitHub organization to [snowflakedb](https://github.com/snowflakedb), as noted in the [previous Roadmap entry](#what-is-ga). It should happen within a few days. A few important notes on that:
 - **The [old terraform registry](http://registry.terraform.io/providers/Snowflake-Labs/snowflake/latest/docs) will still be accessible so no immediate action is needed** (at least for now; we will have separate communication regarding its deprecation). However, don’t wait with the migration, as we plan to deprecate and remove the old registry sooner rather than later.
@@ -78,7 +81,8 @@ If you have any questions about the migration topic, please contact us through G
 
 We will announce the GA date soon, so stay tuned!
 
-## (07.02.2025) GA scope and roadmap
+## (2025-02-07) GA scope and roadmap
+<a name="07022025-ga-scope-and-roadmap"></a>
 
 ### Current focus and goals
 
@@ -206,7 +210,8 @@ Please contact us through your account managers if any feature is critical.
 The same applies to the non-critical issues where a workaround exists.
 We will still fix the critical issues as part of our best-effort support.
 
-## (13.12.2024) V1 release update
+## (2024-12-13) V1 release update
+<a name="13122024-v1-release-update"></a>
 
 We have released a long-awaited [v1.0.0](https://github.com/snowflakedb/terraform-provider-snowflake/releases/tag/v1.0.0). A few things to know now:
 - Together with v1.0.0 we have also released "the last" 0.x.x version - 0.100.0. v1.0.0 is built on top of that; it removed the [deprecated resources](https://github.com/snowflakedb/terraform-provider-snowflake/blob/ab015e8cf6f4db762b4043e8bfce2a010b623602/v1-preparations/LIST_OF_REMOVED_RESOURCES_FOR_V1.md) and attributes mostly, so if you are using one of the latest 0.x versions, you should be really close to v1.
@@ -218,7 +223,8 @@ We have released a long-awaited [v1.0.0](https://github.com/snowflakedb/terrafor
 - Our next milestone is reaching GA, which requires mostly procedural steps. Before that, no big changes are planned for the provider.
 - Besides the GA, we want to focus mostly on stabilizing the preview resources. We will share their current prioritization in January. The main ones for now are functions, procedures, and tables.
 
-## (25.10.2024) Project state overview
+## (2024-10-25) Project state overview
+<a name="25102024-project-state-overview"></a>
 
 ### Goals
 
@@ -328,7 +334,8 @@ This is only a general overview of the next year and may be subject to change:
 * Design transition to the [plugin framework](https://developer.hashicorp.com/terraform/plugin/framework)
 * Introduce Terraform modules
 
-## (05.05.2024) Roadmap Overview
+## (2024-05-05) Roadmap Overview
+<a name="05052024-roadmap-overview"></a>
 
 ### Goals
 Since the last update we have focused on:
@@ -383,7 +390,8 @@ This will be the moment to validate our V1 efforts by checking if everything was
 - Enable Snowflake support
 - Support for the public preview features
 
-## (19.01.2024) Roadmap Overview
+## (2024-01-19) Roadmap Overview
+<a name="19012024-roadmap-overview"></a>
 ### Goals
 The primary goals we are working on currently are:
 - Adding missing and updating existing functionalities (resources and data sources);

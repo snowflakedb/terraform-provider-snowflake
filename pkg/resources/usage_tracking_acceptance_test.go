@@ -3,6 +3,7 @@
 package resources_test
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -22,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_CompleteUsageTracking(t *testing.T) {
@@ -34,20 +36,29 @@ func TestAcc_CompleteUsageTracking(t *testing.T) {
 	schemaModel := model.Schema("test", id.DatabaseName(), id.Name())
 	schemaModelWithComment := model.Schema("test", id.DatabaseName(), id.Name()).WithComment(comment)
 
-	assertQueryMetadataExists := func(t *testing.T, operation tracking.Operation, query string) resource.TestCheckFunc {
+	assertQueryMetadataExistsPrefetched := func(t *testing.T, queryHistory []helpers.QueryHistory, operation tracking.Operation, query string) resource.TestCheckFunc {
 		t.Helper()
 		return func(state *terraform.State) error {
-			queryHistory := acc.TestClient().InformationSchema.GetQueryHistory(t, 60)
 			expectedMetadata := tracking.NewVersionedResourceMetadata(resources.Schema, operation)
 			if _, err := collections.FindFirst(queryHistory, func(history helpers.QueryHistory) bool {
-				metadata, err := tracking.ParseMetadata(history.QueryText)
-				return err == nil &&
-					expectedMetadata == metadata &&
-					strings.Contains(history.QueryText, query)
+				if strings.Contains(history.QueryText, query) {
+					metadata, err := tracking.ParseMetadata(history.QueryText)
+					require.NoError(t, err)
+					return expectedMetadata == metadata
+				}
+				return false
 			}); err != nil {
 				return fmt.Errorf("query history does not contain query metadata: %v with query containing: %s", expectedMetadata, query)
 			}
 			return nil
+		}
+	}
+
+	assertQueryMetadataExists := func(t *testing.T, operation tracking.Operation, query string) resource.TestCheckFunc {
+		t.Helper()
+		return func(state *terraform.State) error {
+			queryHistory := acc.TestClient().InformationSchema.GetQueryHistory(t, 100)
+			return assertQueryMetadataExistsPrefetched(t, queryHistory, operation, query)(state)
 		}
 	}
 
@@ -88,9 +99,14 @@ func TestAcc_CompleteUsageTracking(t *testing.T) {
 					resourceassert.SchemaResource(t, schemaModelWithComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(comment),
-					assert.Check(assertQueryMetadataExists(t, tracking.UpdateOperation, fmt.Sprintf(`ALTER SCHEMA %s SET COMMENT = '%s'`, id.FullyQualifiedName(), comment))),
-					assert.Check(assertQueryMetadataExists(t, tracking.ReadOperation, fmt.Sprintf(`SHOW SCHEMAS LIKE '%s'`, id.Name()))),
-					assert.Check(assertQueryMetadataExists(t, tracking.CustomDiffOperation, fmt.Sprintf(`SHOW PARAMETERS IN SCHEMA %s`, id.FullyQualifiedName()))),
+					assert.Check(func(state *terraform.State) error {
+						queryHistory := acc.TestClient().InformationSchema.GetQueryHistory(t, 200)
+						return errors.Join(
+							assertQueryMetadataExistsPrefetched(t, queryHistory, tracking.UpdateOperation, fmt.Sprintf(`ALTER SCHEMA %s SET COMMENT = '%s'`, id.FullyQualifiedName(), comment))(state),
+							assertQueryMetadataExistsPrefetched(t, queryHistory, tracking.ReadOperation, fmt.Sprintf(`SHOW SCHEMAS LIKE '%s'`, id.Name()))(state),
+							assertQueryMetadataExistsPrefetched(t, queryHistory, tracking.CustomDiffOperation, fmt.Sprintf(`SHOW PARAMETERS IN SCHEMA %s`, id.FullyQualifiedName()))(state),
+						)
+					}),
 				),
 			},
 			// Delete

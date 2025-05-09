@@ -8,6 +8,8 @@ type {{ $modelName }} struct {
     {{ range .Attributes -}}
         {{ SnakeCaseToCamel .Name }} tfconfig.Variable `json:"{{ .JsonName }},omitempty"`
     {{ end }}
+    DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
     *config.ResourceModelMeta
 }
 

@@ -3,9 +3,9 @@
 {{- $modelName := .Name | printf "%sModel" -}}
 {{- $nameLowerCase := FirstLetterLowercase .Name -}}
 {{- $modelVar := FirstLetter $nameLowerCase }}
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func ({{ $modelVar }} *{{ $modelName }}) MarshalJSON() ([]byte, error) {
     type Alias {{ $modelName }}
@@ -20,5 +20,10 @@ func ({{ $modelVar }} *{{ $modelName }}) MarshalJSON() ([]byte, error) {
 
 func ({{ $modelVar }} *{{ $modelName }}) WithDependsOn(values ...string) *{{ $modelName }} {
     {{ $modelVar }}.SetDependsOn(values...)
+    return {{ $modelVar }}
+}
+
+func ({{ $modelVar }} *{{ $modelName }}) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *{{ $modelName }} {
+    {{ $modelVar }}.DynamicBlock = dynamicBlock
     return {{ $modelVar }}
 }

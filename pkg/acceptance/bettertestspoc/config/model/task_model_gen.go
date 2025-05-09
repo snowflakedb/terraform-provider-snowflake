@@ -86,6 +86,8 @@ type TaskModel struct {
 	WeekStart                                tfconfig.Variable `json:"week_start,omitempty"`
 	When                                     tfconfig.Variable `json:"when,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -126,9 +128,9 @@ func TaskWithDefaultMeta(
 	return t
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (t *TaskModel) MarshalJSON() ([]byte, error) {
 	type Alias TaskModel
@@ -143,6 +145,11 @@ func (t *TaskModel) MarshalJSON() ([]byte, error) {
 
 func (t *TaskModel) WithDependsOn(values ...string) *TaskModel {
 	t.SetDependsOn(values...)
+	return t
+}
+
+func (t *TaskModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *TaskModel {
+	t.DynamicBlock = dynamicBlock
 	return t
 }
 

@@ -23,7 +23,6 @@ type MaskingPolicyModel struct {
 	FullyQualifiedName  tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	ReturnDataType      tfconfig.Variable `json:"return_data_type,omitempty"`
 
-	// added manually as a PoC
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
@@ -70,9 +69,9 @@ func MaskingPolicyWithDefaultMeta(
 	return m
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (m *MaskingPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias MaskingPolicyModel
@@ -90,7 +89,6 @@ func (m *MaskingPolicyModel) WithDependsOn(values ...string) *MaskingPolicyModel
 	return m
 }
 
-// added manually as a PoC
 func (m *MaskingPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *MaskingPolicyModel {
 	m.DynamicBlock = dynamicBlock
 	return m

@@ -138,8 +138,8 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 	externalAccessIntegration2, externalAccessIntegration2Cleanup := acc.TestClient().ExternalAccessIntegration.CreateExternalAccessIntegrationWithNetworkRuleAndSecret(t, networkRule.ID(), secret2.ID())
 	t.Cleanup(externalAccessIntegration2Cleanup)
 
-	tmpPythonFunction := acc.TestClient().CreateSamplePythonFunctionAndModule(t)
-	tmpPythonFunction2 := acc.TestClient().CreateSamplePythonFunctionAndModule(t)
+	tmpPythonFunction := acc.TestClient().CreateSamplePythonFunctionAndModuleOnUserStage(t)
+	tmpPythonFunction2 := acc.TestClient().CreateSamplePythonFunctionAndModuleOnUserStage(t)
 
 	funcName := "some_function"
 	argName := "x"

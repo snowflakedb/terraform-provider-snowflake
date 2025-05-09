@@ -20,6 +20,8 @@ type SecretWithGenericStringModel struct {
 	SecretString       tfconfig.Variable `json:"secret_string,omitempty"`
 	SecretType         tfconfig.Variable `json:"secret_type,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -56,9 +58,9 @@ func SecretWithGenericStringWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SecretWithGenericStringModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithGenericStringModel
@@ -73,6 +75,11 @@ func (s *SecretWithGenericStringModel) MarshalJSON() ([]byte, error) {
 
 func (s *SecretWithGenericStringModel) WithDependsOn(values ...string) *SecretWithGenericStringModel {
 	s.SetDependsOn(values...)
+	return s
+}
+
+func (s *SecretWithGenericStringModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecretWithGenericStringModel {
+	s.DynamicBlock = dynamicBlock
 	return s
 }
 

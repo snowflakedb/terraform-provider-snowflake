@@ -119,7 +119,19 @@ func (c *TestClient) CreateSampleJavaProcedureAndJarInLocation(t *testing.T, sta
 	}
 }
 
-func (c *TestClient) CreateSamplePythonFunctionAndModule(t *testing.T) *TmpFunction {
+func (c *TestClient) CreateSamplePythonFunctionAndModuleOnUserStage(t *testing.T) *TmpFunction {
+	t.Helper()
+
+	return c.CreateSamplePythonFunctionAndModuleInLocation(t, "@~")
+}
+
+func (c *TestClient) CreateSamplePythonFunctionAndModuleOnStage(t *testing.T, stage *sdk.Stage) *TmpFunction {
+	t.Helper()
+
+	return c.CreateSamplePythonFunctionAndModuleInLocation(t, stage.Location())
+}
+
+func (c *TestClient) CreateSamplePythonFunctionAndModuleInLocation(t *testing.T, stageLocation string) *TmpFunction {
 	t.Helper()
 	ctx := context.Background()
 
@@ -143,7 +155,7 @@ func (c *TestClient) CreateSamplePythonFunctionAndModule(t *testing.T) *TmpFunct
 
 	// using os.CreateTemp underneath - last * in pattern is replaced with random string
 	modulePattern := fmt.Sprintf("example*%s.py", random.AlphaLowerN(3))
-	modulePath := c.Stage.PutOnUserStageWithContent(t, modulePattern, definition)
+	modulePath := c.Stage.PutInLocationWithContent(t, stageLocation, modulePattern, definition)
 	moduleFileName := filepath.Base(modulePath)
 
 	return &TmpFunction{
@@ -152,7 +164,7 @@ func (c *TestClient) CreateSamplePythonFunctionAndModule(t *testing.T) *TmpFunct
 		FuncName:      funcName,
 		ArgName:       argName,
 		ArgType:       dataType,
-		StageLocation: "@~",
+		StageLocation: stageLocation,
 	}
 }
 

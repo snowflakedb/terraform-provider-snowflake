@@ -8,12 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// added manually as a PoC
-func (r *RowAccessPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *RowAccessPolicyModel {
-	r.DynamicBlock = dynamicBlock
-	return r
-}
-
 func RowAccessPolicyDynamicArguments(
 	resourceName string,
 	id sdk.SchemaObjectIdentifier,

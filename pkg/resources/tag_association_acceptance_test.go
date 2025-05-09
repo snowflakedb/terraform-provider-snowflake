@@ -14,11 +14,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -538,28 +538,26 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 	columnId2 := sdk.NewTableColumnIdentifier(tableId2.DatabaseName(), tableId2.SchemaName(), tableId2.Name(), "column")
 	columnId3 := sdk.NewTableColumnIdentifier(tableId2.DatabaseName(), tableId2.SchemaName(), tableId2.Name(), "column.test")
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"tag_name":                    config.StringVariable(tagId.Name()),
-			"table_name":                  config.StringVariable(tableId1.Name()),
-			"column_name":                 config.StringVariable(columnId1.Name()),
-			"column_fully_qualified_name": config.StringVariable(columnId1.FullyQualifiedName()),
-			"database":                    config.StringVariable(acc.TestDatabaseName),
-			"schema":                      config.StringVariable(acc.TestSchemaName),
+	columns := func(columnIdentifier sdk.TableColumnIdentifier) []sdk.TableColumnSignature {
+		return []sdk.TableColumnSignature{
+			// TODO(SNOW-1348114): use only one column, if possible.
+			// We need a dummy column here because a table must have at least one column, and when we rename the second one in the config, it gets dropped for a moment.
+			{Name: "DUMMY", Type: testdatatypes.DataTypeVariant},
+			{Name: columnIdentifier.Name(), Type: testdatatypes.DataTypeVariant},
 		}
 	}
 
-	m2 := m()
-	m2["table_name"] = config.StringVariable(tableId2.Name())
-	m2["column_name"] = config.StringVariable(columnId2.Name())
-	m2["column_fully_qualified_name"] = config.StringVariable(columnId2.FullyQualifiedName())
+	tagModel := model.TagBase("test", tagId)
+	tableModel1 := model.TableWithId("test", tableId1, columns(columnId1))
+	tableModel2 := model.TableWithId("test", tableId2, columns(columnId2))
+	tableModel3 := model.TableWithId("test", tableId2, columns(columnId3))
+	tagAssociationModel1 := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId1}, string(sdk.ObjectTypeColumn), tagId.FullyQualifiedName(), "TAG_VALUE").
+		WithDependsOn(tagModel.ResourceReference(), tableModel1.ResourceReference())
+	tagAssociationModel2 := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId2}, string(sdk.ObjectTypeColumn), tagId.FullyQualifiedName(), "TAG_VALUE").
+		WithDependsOn(tagModel.ResourceReference(), tableModel2.ResourceReference())
+	tagAssociationModel3 := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId3}, string(sdk.ObjectTypeColumn), tagId.FullyQualifiedName(), "TAG_VALUE").
+		WithDependsOn(tagModel.ResourceReference(), tableModel3.ResourceReference())
 
-	m3 := m()
-	m3["table_name"] = config.StringVariable(tableId2.Name())
-	m3["column_name"] = config.StringVariable(columnId3.Name())
-	m3["column_fully_qualified_name"] = config.StringVariable(columnId3.FullyQualifiedName())
-
-	resourceName := "snowflake_tag_association.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -569,39 +567,36 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_TagAssociation/issue1926"),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tagModel, tableModel1, tagAssociationModel1),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
-					resource.TestCheckResourceAttr(resourceName, "object_type", string(sdk.ObjectTypeColumn)),
-					resource.TestCheckResourceAttr(resourceName, "object_identifiers.#", "1"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "object_identifiers.*", columnId1.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "tag_id", tagId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "tag_value", "TAG_VALUE"),
+					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
+					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "object_identifiers.#", "1"),
+					resource.TestCheckTypeSetElemAttr(tagAssociationModel1.ResourceReference(), "object_identifiers.*", columnId1.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "tag_id", tagId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "tag_value", "TAG_VALUE"),
 				),
 			},
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_TagAssociation/issue1926"),
-				ConfigVariables: m2,
+				Config: accconfig.FromModels(t, tagModel, tableModel2, tagAssociationModel2),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
-					resource.TestCheckResourceAttr(resourceName, "object_type", string(sdk.ObjectTypeColumn)),
-					resource.TestCheckResourceAttr(resourceName, "object_identifiers.#", "1"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "object_identifiers.*", columnId2.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "tag_id", tagId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "tag_value", "TAG_VALUE"),
+					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
+					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "object_identifiers.#", "1"),
+					resource.TestCheckTypeSetElemAttr(tagAssociationModel2.ResourceReference(), "object_identifiers.*", columnId2.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "tag_id", tagId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "tag_value", "TAG_VALUE"),
 				),
 			},
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_TagAssociation/issue1926"),
-				ConfigVariables: m3,
+				Config: accconfig.FromModels(t, tagModel, tableModel3, tagAssociationModel3),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
-					resource.TestCheckResourceAttr(resourceName, "object_type", string(sdk.ObjectTypeColumn)),
-					resource.TestCheckResourceAttr(resourceName, "object_identifiers.#", "1"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "object_identifiers.*", columnId3.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "tag_id", tagId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "tag_value", "TAG_VALUE"),
+					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
+					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "object_identifiers.#", "1"),
+					resource.TestCheckTypeSetElemAttr(tagAssociationModel3.ResourceReference(), "object_identifiers.*", columnId3.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "tag_id", tagId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "tag_value", "TAG_VALUE"),
 				),
 			},
 		},
@@ -686,4 +681,48 @@ resource "snowflake_tag_association" "test" {
 	}
 }
 `, tagId.DatabaseName(), tagId.SchemaName(), tagId.Name(), tagValue, sdk.ObjectTypeSchema, schemaId.DatabaseName(), schemaId.Name())
+}
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3622 is fixed
+func TestAcc_TagAssociation_issue_3622(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	tagId := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+	table, cleanupTable := acc.TestClient().Table.Create(t)
+	t.Cleanup(cleanupTable)
+	tagValue := "TAG_VALUE"
+	newTagValue := "NEW_TAG_VALUE"
+
+	tagModel := model.TagBase("test", tagId)
+	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{table.ID()}, string(sdk.ObjectTypeTable), tagId.FullyQualifiedName(), tagValue).
+		WithDependsOn(tagModel.ResourceReference())
+	newTagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{table.ID()}, string(sdk.ObjectTypeTable), tagId.FullyQualifiedName(), newTagValue).
+		WithDependsOn(tagModel.ResourceReference())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tagModel, tagAssociationModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeTable))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", tagValue),
+				),
+			},
+			{
+				// Couldn't assert it, but with `ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0")`,
+				// the plugin crashes with the same panic as in https://github.com/snowflakedb/terraform-provider-snowflake/issues/3622.
+				// The new version handles the SchemaObjectIdentifier correctly, so the panic is not triggered.
+				Config: accconfig.FromModels(t, tagModel, newTagAssociationModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), newTagValue, string(sdk.ObjectTypeTable))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", newTagValue),
+				),
+			},
+		},
+	})
 }

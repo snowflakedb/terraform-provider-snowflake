@@ -50,7 +50,7 @@ func TestInt_Functions(t *testing.T) {
 	t.Cleanup(externalAccessIntegrationCleanup)
 
 	tmpJavaFunction := testClientHelper().CreateSampleJavaFunctionAndJarOnUserStage(t)
-	tmpPythonFunction := testClientHelper().CreateSamplePythonFunctionAndModule(t)
+	tmpPythonFunction := testClientHelper().CreateSamplePythonFunctionAndModuleOnUserStage(t)
 
 	assertParametersSet := func(t *testing.T, functionParametersAssert *objectparametersassert.FunctionParametersAssert) {
 		t.Helper()

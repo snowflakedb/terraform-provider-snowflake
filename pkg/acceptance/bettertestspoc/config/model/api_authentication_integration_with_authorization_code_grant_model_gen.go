@@ -25,6 +25,8 @@ type ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel struct {
 	OauthRefreshTokenValidity  tfconfig.Variable `json:"oauth_refresh_token_validity,omitempty"`
 	OauthTokenEndpoint         tfconfig.Variable `json:"oauth_token_endpoint,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -61,9 +63,9 @@ func ApiAuthenticationIntegrationWithAuthorizationCodeGrantWithDefaultMeta(
 	return a
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) MarshalJSON() ([]byte, error) {
 	type Alias ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel
@@ -78,6 +80,11 @@ func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) MarshalJSO
 
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithDependsOn(values ...string) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
 	a.SetDependsOn(values...)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
+	a.DynamicBlock = dynamicBlock
 	return a
 }
 

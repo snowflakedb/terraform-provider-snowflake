@@ -23,4 +23,7 @@ var multilineAttributesOverrides = map[string][]string{
 var complexListAttributesOverrides = map[string]map[string]string{
 	"MaskingPolicy":   {"argument": "sdk.TableColumnSignature"},
 	"RowAccessPolicy": {"argument": "sdk.TableColumnSignature"},
+	"TagAssociation":  {"object_identifiers": "sdk.ObjectIdentifier"},
+	// TODO [SNOW-1348114]: use better type for override (not null and default are currently not supported)
+	"Table": {"column": "sdk.TableColumnSignature"},
 }
