@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -315,21 +316,17 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(fmt.Errorf("storage integration update, error decoding id: %s as sdk.AccountObjectIdentifier, got: %T", d.Id(), id))
 	}
 
-	var runSetStatement bool
-	setReq := sdk.NewStorageIntegrationSetRequest()
+	set, unset := sdk.NewStorageIntegrationSetRequest(), sdk.NewStorageIntegrationUnsetRequest()
 
 	if d.HasChange("comment") {
-		runSetStatement = true
-		setReq.WithComment(d.Get("comment").(string))
+		set.WithComment(d.Get("comment").(string))
 	}
 
 	if d.HasChange("enabled") {
-		runSetStatement = true
-		setReq.WithEnabled(d.Get("enabled").(bool))
+		set.WithEnabled(d.Get("enabled").(bool))
 	}
 
 	if d.HasChange("storage_allowed_locations") {
-		runSetStatement = true
 		stringStorageAllowedLocations := expandStringList(d.Get("storage_allowed_locations").([]any))
 		storageAllowedLocations := make([]sdk.StorageLocation, len(stringStorageAllowedLocations))
 		for i, loc := range stringStorageAllowedLocations {
@@ -337,42 +334,34 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 				Path: loc,
 			}
 		}
-		setReq.WithStorageAllowedLocations(storageAllowedLocations)
+		set.WithStorageAllowedLocations(storageAllowedLocations)
 	}
 
 	// We need to UNSET this if we remove all storage blocked locations, because Snowflake won't accept an empty list
 	if d.HasChange("storage_blocked_locations") {
-		v := d.Get("storage_blocked_locations").([]interface{})
-		if len(v) == 0 {
-			if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).
-				WithUnset(*sdk.NewStorageIntegrationUnsetRequest().WithStorageBlockedLocations(true))); err != nil {
-				return diag.FromErr(fmt.Errorf("error unsetting storage_blocked_locations, err = %w", err))
-			}
-		} else {
-			runSetStatement = true
-			stringStorageBlockedLocations := expandStringList(d.Get("storage_blocked_locations").([]any))
+		storageBlockedLocations := d.Get("storage_blocked_locations")
+		if len(storageBlockedLocations.([]interface{})) > 0 {
+			stringStorageBlockedLocations := expandStringList(storageBlockedLocations.([]any))
 			storageBlockedLocations := make([]sdk.StorageLocation, len(stringStorageBlockedLocations))
 			for i, loc := range stringStorageBlockedLocations {
 				storageBlockedLocations[i] = sdk.StorageLocation{
 					Path: loc,
 				}
 			}
-			setReq.WithStorageBlockedLocations(storageBlockedLocations)
+			set.WithStorageBlockedLocations(storageBlockedLocations)
+		} else {
+			unset.WithStorageBlockedLocations(true)
 		}
 	}
 
 	if d.HasChange("storage_aws_role_arn") || d.HasChange("storage_aws_object_acl") || d.HasChange("storage_aws_external_id") {
-		runSetStatement = true
 		s3SetParams := sdk.NewSetS3StorageParamsRequest(d.Get("storage_aws_role_arn").(string))
 
 		if d.HasChange("storage_aws_object_acl") {
 			if v, ok := d.GetOk("storage_aws_object_acl"); ok {
 				s3SetParams.WithStorageAwsObjectAcl(v.(string))
 			} else {
-				if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).
-					WithUnset(*sdk.NewStorageIntegrationUnsetRequest().WithStorageAwsObjectAcl(true))); err != nil {
-					return diag.FromErr(fmt.Errorf("error unsetting storage_aws_object_acl, err = %w", err))
-				}
+				unset.WithStorageAwsObjectAcl(true)
 			}
 		}
 
@@ -380,23 +369,27 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			if v, ok := d.GetOk("storage_aws_external_id"); ok {
 				s3SetParams.WithStorageAwsExternalId(v.(string))
 			} else {
-				if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).
-					WithUnset(*sdk.NewStorageIntegrationUnsetRequest().WithStorageAwsExternalId(true))); err != nil {
-					return diag.FromErr(fmt.Errorf("error unsetting storage_aws_external_id, err = %w", err))
-				}
+				unset.WithStorageAwsExternalId(true)
 			}
 		}
 
-		setReq.WithS3Params(*s3SetParams)
+		set.WithS3Params(*s3SetParams)
 	}
 
 	if d.HasChange("azure_tenant_id") {
-		runSetStatement = true
-		setReq.WithAzureParams(*sdk.NewSetAzureStorageParamsRequest(d.Get("azure_tenant_id").(string)))
+		set.WithAzureParams(*sdk.NewSetAzureStorageParamsRequest(d.Get("azure_tenant_id").(string)))
 	}
 
-	if runSetStatement {
-		if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).WithSet(*setReq)); err != nil {
+	if !reflect.DeepEqual(*set, *sdk.NewStorageIntegrationSetRequest()) {
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithSet(*set)
+		if err := client.StorageIntegrations.Alter(ctx, req); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating storage integration, err = %w", err))
+		}
+	}
+
+	if !reflect.DeepEqual(*unset, *sdk.NewStorageIntegrationUnsetRequest()) {
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithUnset(*unset)
+		if err := client.StorageIntegrations.Alter(ctx, req); err != nil {
 			return diag.FromErr(fmt.Errorf("error updating storage integration, err = %w", err))
 		}
 	}
