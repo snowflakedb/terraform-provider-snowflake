@@ -290,7 +290,11 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		_, err = client.Accounts.ShowByID(ctx, id)
 		if err != nil {
 			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
-			return nil, false
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				return nil, false
+			} else {
+				return err, true
+			}
 		}
 		return nil, true
 	}); err != nil {
