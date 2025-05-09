@@ -531,6 +531,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_grant_privileges_to_account_role](./docs/resources/grant_privileges_to_account_role)
 - [snowflake_grant_privileges_to_database_role](./docs/resources/grant_privileges_to_database_role)
 - [snowflake_grant_privileges_to_share](./docs/resources/grant_privileges_to_share)
+- [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_legacy_service_user](./docs/resources/legacy_service_user)
 - [snowflake_masking_policy](./docs/resources/masking_policy)
 - [snowflake_network_policy](./docs/resources/network_policy)

@@ -221,4 +221,8 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "Table",
 		schema: resources.Table().Schema,
 	},
+	{
+		name:   "ImageRepository",
+		schema: resources.ImageRepository().Schema,
+	},
 }

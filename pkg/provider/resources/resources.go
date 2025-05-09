@@ -33,6 +33,7 @@ const (
 	GrantPrivilegesToAccountRole                           resource = "snowflake_grant_privileges_to_account_role"
 	GrantPrivilegesToDatabaseRole                          resource = "snowflake_grant_privileges_to_database_role"
 	GrantPrivilegesToShare                                 resource = "snowflake_grant_privileges_to_share"
+	ImageRepository                                        resource = "snowflake_image_repository"
 	FunctionJava                                           resource = "snowflake_function_java"
 	FunctionJavascript                                     resource = "snowflake_function_javascript"
 	FunctionPython                                         resource = "snowflake_function_python"
