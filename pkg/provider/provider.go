@@ -516,6 +516,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_file_formats":                       datasources.FileFormats(),
 		"snowflake_functions":                          datasources.Functions(),
 		"snowflake_grants":                             datasources.Grants(),
+		"snowflake_image_repositories":                 datasources.ImageRepositories(),
 		"snowflake_masking_policies":                   datasources.MaskingPolicies(),
 		"snowflake_materialized_views":                 datasources.MaterializedViews(),
 		"snowflake_network_policies":                   datasources.NetworkPolicies(),
