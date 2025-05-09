@@ -38,6 +38,47 @@ func TestAcc_StorageIntegration_Empty_StorageAllowedLocations(t *testing.T) {
 	})
 }
 
+func TestAcc_StorageIntegration_AWS_Create_WithExternalId(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	awsRoleArn := "arn:aws:iam::000000000001:/role/test"
+	awsExternalId := "test-create-external-id-12345"
+
+	configVariables := config.Variables{
+		"name":         config.StringVariable(id.Name()),
+		"aws_role_arn": config.StringVariable(awsRoleArn),
+		"external_id":  config.StringVariable(awsExternalId),
+		"allowed_locations": config.SetVariable(
+			config.StringVariable("s3://foo/"),
+		),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: acc.CheckDestroy(t, resources.StorageIntegration),
+		Steps: []resource.TestStep{
+			{
+				ConfigVariables: configVariables,
+				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Create_WithExternalId"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_role_arn", awsRoleArn),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", awsExternalId),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", "s3://foo/"),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_StorageIntegration_AWSObjectACL_Update(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
@@ -102,6 +143,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 	awsRoleArn := "arn:aws:iam::000000000001:/role/test"
+	awsExternalId := "test-external-id-12345"
 
 	configVariables := func(set bool) config.Variables {
 		variables := config.Variables{
@@ -113,6 +155,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 		}
 		if set {
 			variables["aws_object_acl"] = config.StringVariable("bucket-owner-full-control")
+			variables["external_id"] = config.StringVariable(awsExternalId)
 			variables["comment"] = config.StringVariable("some comment")
 			variables["allowed_locations"] = config.SetVariable(
 				config.StringVariable("s3://foo/"),
@@ -146,6 +189,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", "s3://foo/"),
 					resource.TestCheckNoResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations"),
 					resource.TestCheckNoResourceAttr("snowflake_storage_integration.test", "storage_aws_object_acl"),
+					resource.TestCheckNoResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", ""),
 				),
 			},
@@ -158,6 +202,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", "some comment"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_role_arn", awsRoleArn),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", awsExternalId),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", "s3://bar/"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.1", "s3://foo/"),
@@ -179,6 +224,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", "s3://foo/"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_object_acl", ""),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", ""),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", ""),
 				),
 			},

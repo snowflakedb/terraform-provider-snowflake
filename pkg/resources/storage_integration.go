@@ -65,7 +65,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 	},
 	"storage_aws_external_id": {
 		Type:        schema.TypeString,
-		Computed:    true,
+		Optional:    true,
 		Description: "The external ID that Snowflake will use when assuming the AWS role.",
 	},
 	"storage_aws_iam_user_arn": {
@@ -182,6 +182,9 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		s3Params := sdk.NewS3StorageParamsRequest(s3Protocol, v.(string))
 		if _, ok := d.GetOk("storage_aws_object_acl"); ok {
 			s3Params.WithStorageAwsObjectAcl(d.Get("storage_aws_object_acl").(string))
+		}
+		if _, ok := d.GetOk("storage_aws_external_id"); ok {
+			s3Params.WithStorageAwsExternalId(d.Get("storage_aws_external_id").(string))
 		}
 		req.WithS3StorageProviderParams(*s3Params)
 	case storageProvider == "AZURE":
@@ -358,7 +361,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	if d.HasChange("storage_aws_role_arn") || d.HasChange("storage_aws_object_acl") {
+	if d.HasChange("storage_aws_role_arn") || d.HasChange("storage_aws_object_acl") || d.HasChange("storage_aws_external_id") {
 		runSetStatement = true
 		s3SetParams := sdk.NewSetS3StorageParamsRequest(d.Get("storage_aws_role_arn").(string))
 
@@ -369,6 +372,17 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 				if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).
 					WithUnset(*sdk.NewStorageIntegrationUnsetRequest().WithStorageAwsObjectAcl(true))); err != nil {
 					return diag.FromErr(fmt.Errorf("error unsetting storage_aws_object_acl, err = %w", err))
+				}
+			}
+		}
+
+		if d.HasChange("storage_aws_external_id") {
+			if v, ok := d.GetOk("storage_aws_external_id"); ok {
+				s3SetParams.WithStorageAwsExternalId(v.(string))
+			} else {
+				if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).
+					WithUnset(*sdk.NewStorageIntegrationUnsetRequest().WithStorageAwsExternalId(true))); err != nil {
+					return diag.FromErr(fmt.Errorf("error unsetting storage_aws_external_id, err = %w", err))
 				}
 			}
 		}
