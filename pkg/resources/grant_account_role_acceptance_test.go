@@ -234,44 +234,37 @@ resource "snowflake_grant_account_role" "test" {
 `, quotedRoleId, quotedParentRoleId)
 }
 
-// proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629 doesn't affect the grant account role resource
+// proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629 (UBAC) doesn't affect the grant account role resource
 func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
 
-	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+	accountRole, accountRoleCleanup := acc.SecondaryTestClient().Role.CreateRole(t)
+	t.Cleanup(accountRoleCleanup)
 
-	accountRoleId := acc.SecondaryTestClient().Ids.RandomAccountObjectIdentifier()
-	parentRoleId := acc.SecondaryTestClient().Ids.RandomAccountObjectIdentifier()
+	parentAccountRole, parentAccountRoleCleanup := acc.SecondaryTestClient().Role.CreateRole(t)
+	t.Cleanup(parentAccountRoleCleanup)
 
 	user, userCleanup := acc.SecondaryTestClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+	testConfig := accconfig.FromModels(t, providerModel) + grantAccountRoleIssue3629Config(accountRole.ID(), parentAccountRole.ID())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:            accconfig.FromModels(t, providerModel) + grantAccountRoleIssue3629Config(accountRoleId, parentRoleId),
-				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr("snowflake_account_role.test", "id", helpers.EncodeResourceIdentifier(accountRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_account_role.parent", "id", helpers.EncodeResourceIdentifier(parentRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_account_role.test", "id", helpers.EncodeResourceIdentifier(accountRoleId.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleId.FullyQualifiedName()))),
-				),
-			},
-			{
 				PreConfig: func() {
-					acc.SecondaryTestClient().Grant.GrantAccountRoleToUser(t, accountRoleId, user.ID())
+					acc.SecondaryTestClient().Role.GrantRoleToUser(t, accountRole.ID(), user.ID())
 				},
-				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
-				Config:            accconfig.FromModels(t, providerModel) + grantAccountRoleIssue3629Config(accountRoleId, parentRoleId),
+				Config: testConfig,
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr("snowflake_account_role.test", "id", helpers.EncodeResourceIdentifier(accountRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_account_role.parent", "id", helpers.EncodeResourceIdentifier(parentRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_account_role.test", "id", helpers.EncodeResourceIdentifier(accountRoleId.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleId.FullyQualifiedName()))),
+					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_account_role.test", "id", helpers.EncodeResourceIdentifier(accountRole.ID().FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentAccountRole.ID().FullyQualifiedName()))),
 				),
 			},
 		},
@@ -280,17 +273,9 @@ func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
 
 func grantAccountRoleIssue3629Config(accountRoleId sdk.AccountObjectIdentifier, parentRoleId sdk.AccountObjectIdentifier) string {
 	return fmt.Sprintf(`
-resource "snowflake_account_role" "test" {
-	name = "%[1]s"
-}
-
-resource "snowflake_account_role" "parent" {
-	name = "%[2]s"
-}
-
 resource "snowflake_grant_account_role" "test" {
-  role_name = snowflake_account_role.test.fully_qualified_name
-  parent_role_name = snowflake_account_role.parent.fully_qualified_name
+  role_name = "%[1]s"
+  parent_role_name = "%[2]s"
 }
 `, accountRoleId.Name(), parentRoleId.Name())
 }

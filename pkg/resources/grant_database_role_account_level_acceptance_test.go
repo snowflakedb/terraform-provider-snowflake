@@ -5,12 +5,14 @@ package resources_test
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 
 	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
@@ -26,13 +28,17 @@ func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
 
-	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+	databaseRole, databaseRoleCleanup := acc.SecondaryTestClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
 
-	databaseRoleId := acc.SecondaryTestClient().Ids.RandomDatabaseObjectIdentifier()
-	parentRoleId := acc.SecondaryTestClient().Ids.RandomAccountObjectIdentifier()
+	accountRole, accountRoleCleanup := acc.SecondaryTestClient().Role.CreateRole(t)
+	t.Cleanup(accountRoleCleanup)
 
 	user, userCleanup := acc.SecondaryTestClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+	testConfig := accconfig.FromModels(t, providerModel) + grantDatabaseRoleIssue3629Config(databaseRole.ID(), accountRole.ID())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },
@@ -41,35 +47,22 @@ func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:            config.FromModels(t, providerModel) + grantDatabaseRoleIssue3629Config(databaseRoleId, parentRoleId),
-				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr("snowflake_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_account_role.test", "id", helpers.EncodeResourceIdentifier(parentRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRoleId.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleId.FullyQualifiedName()))),
-				),
-			},
-			{
 				PreConfig: func() {
 					acc.SecondaryTestClient().BcrBundles.EnableBcrBundle(t, "2025_02")
-					acc.SecondaryTestClient().Grant.GrantDatabaseRoleToUser(t, databaseRoleId, user.ID())
+					acc.SecondaryTestClient().Grant.GrantDatabaseRoleToUser(t, databaseRole.ID(), user.ID())
 				},
 				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
-				Config:            config.FromModels(t, providerModel) + grantDatabaseRoleIssue3629Config(databaseRoleId, parentRoleId),
+				Config:            testConfig,
 				ExpectError:       regexp.MustCompile("Provider produced inconsistent result after apply"),
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr("snowflake_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_account_role.test", "id", helpers.EncodeResourceIdentifier(parentRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRoleId.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleId.FullyQualifiedName()))),
+					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRole.ID().FullyQualifiedName(), sdk.ObjectTypeRole.String(), accountRole.ID().FullyQualifiedName()))),
 				),
 			},
 			{
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, providerModel) + grantDatabaseRoleIssue3629Config(databaseRoleId, parentRoleId),
+				Config:                   testConfig,
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr("snowflake_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_account_role.test", "id", helpers.EncodeResourceIdentifier(parentRoleId))),
-					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRoleId.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleId.FullyQualifiedName()))),
+					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRole.ID().FullyQualifiedName(), sdk.ObjectTypeRole.String(), accountRole.ID().FullyQualifiedName()))),
 				),
 			},
 		},
@@ -78,18 +71,9 @@ func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
 
 func grantDatabaseRoleIssue3629Config(databaseRoleId sdk.DatabaseObjectIdentifier, accountRoleId sdk.AccountObjectIdentifier) string {
 	return fmt.Sprintf(`
-resource "snowflake_database_role" "test" {
-    database = "%[1]s"
-    name = "%[2]s"
-}
-
-resource "snowflake_account_role" "test" {
-  name = "%[3]s"
-}
-
 resource "snowflake_grant_database_role" "test" {
-  database_role_name = snowflake_database_role.test.fully_qualified_name
-  parent_role_name = snowflake_account_role.test.fully_qualified_name
+  database_role_name = %[1]s
+  parent_role_name = "%[2]s"
 }
-`, databaseRoleId.DatabaseName(), databaseRoleId.Name(), accountRoleId.Name())
+`, strconv.Quote(databaseRoleId.FullyQualifiedName()), accountRoleId.Name())
 }
