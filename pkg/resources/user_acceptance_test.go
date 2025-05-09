@@ -1870,3 +1870,41 @@ resource "snowflake_legacy_service_user" "two" {
 }
 `, userId.Name(), userId2.Name(), comment)
 }
+
+// Result of https://github.com/snowflakedb/terraform-provider-snowflake/issues/3655
+func TestAcc_User_gh3655(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	networkPolicyId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	userId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+
+	networkPolicyModel := model.NetworkPolicy("test", networkPolicyId.Name())
+	userModel := model.User("test", userId.Name()).
+		WithNetworkPolicyValue(config.UnquotedWrapperVariable("snowflake_network_policy.test.fully_qualified_name"))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		CheckDestroy: acc.CheckDestroy(t, resources.User),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
+				Config:            config.FromModels(t, networkPolicyModel, userModel),
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNetworkPolicyString(networkPolicyId.Name()),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, networkPolicyModel, userModel),
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNetworkPolicyString(networkPolicyId.Name()),
+				),
+			},
+		},
+	})
+}
