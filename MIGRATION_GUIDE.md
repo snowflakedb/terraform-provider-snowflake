@@ -23,6 +23,9 @@ across different versions.
 ### *(new feature)* snowflake_image_repository resource
 Added a new resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
+### *(new feature)* snowflake_image_repository data source
+Added a new data source for image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-image-repositories).
+
 ## v2.0.0 ➞ v2.0.1
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource

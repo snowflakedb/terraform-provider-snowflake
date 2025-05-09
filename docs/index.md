@@ -572,6 +572,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_database_roles](./docs/data-sources/database_roles)
 - [snowflake_databases](./docs/data-sources/databases)
 - [snowflake_grants](./docs/data-sources/grants)
+- [snowflake_image_repositories](./docs/data-sources/image_repositories)
 - [snowflake_masking_policies](./docs/data-sources/masking_policies)
 - [snowflake_network_policies](./docs/data-sources/network_policies)
 - [snowflake_resource_monitors](./docs/data-sources/resource_monitors)

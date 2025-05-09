@@ -18,6 +18,8 @@ type ImageRepositoryModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
 	*config.ResourceModelMeta
 }
 
@@ -50,9 +52,9 @@ func ImageRepositoryWithDefaultMeta(
 	return i
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (i *ImageRepositoryModel) MarshalJSON() ([]byte, error) {
 	type Alias ImageRepositoryModel
@@ -67,6 +69,11 @@ func (i *ImageRepositoryModel) MarshalJSON() ([]byte, error) {
 
 func (i *ImageRepositoryModel) WithDependsOn(values ...string) *ImageRepositoryModel {
 	i.SetDependsOn(values...)
+	return i
+}
+
+func (i *ImageRepositoryModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ImageRepositoryModel {
+	i.DynamicBlock = dynamicBlock
 	return i
 }
 
