@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -194,6 +195,12 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 				),
 			},
 			{
+				PreConfig: func() {
+					alterRequest := sdk.NewAlterStorageIntegrationRequest(id).
+						WithSet(*sdk.NewStorageIntegrationSetRequest().
+							WithComment("altered comment outside of terraform"))
+					acc.TestClient().StorageIntegration.Alter(t, alterRequest)
+				},
 				ConfigVariables: configVariables(true),
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/set"),
 				Check: resource.ComposeTestCheckFunc(
