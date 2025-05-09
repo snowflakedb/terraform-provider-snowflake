@@ -70,8 +70,7 @@ func ImageRepository() *schema.Resource {
 		Description:   "Resource used to manage image repositories. For more information, check [image repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ImageRepository, customdiff.All(
-			ComputedIfAnyAttributeChanged(imageRepositorySchema, ShowOutputAttributeName, "name", "comment", "allowed_values"),
-			ComputedIfAnyAttributeChanged(imageRepositorySchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(imageRepositorySchema, ShowOutputAttributeName, "comment"),
 		)),
 
 		Schema: imageRepositorySchema,
