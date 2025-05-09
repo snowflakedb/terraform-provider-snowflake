@@ -908,6 +908,25 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithUnsetTags(tags))
 			},
 		},
+		{
+			name:       "ImageRepository",
+			objectType: sdk.ObjectTypeImageRepository,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				// TODO(SNOW-2070746): We set up a separate database and schema with capitalized ids. Remove this after fix on snowflake side.
+				db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
+				t.Cleanup(dbCleanup)
+
+				schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
+				t.Cleanup(schemaCleanup)
+				return testClientHelper().ImageRepository.CreateInSchema(t, schema.ID())
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.ImageRepositories.Alter(ctx, sdk.NewAlterImageRepositoryRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.ImageRepositories.Alter(ctx, sdk.NewAlterImageRepositoryRequest(id).WithUnsetTags(tags))
+			},
+		},
 	}
 
 	for _, tc := range schemaObjectTestCases {
