@@ -242,6 +242,7 @@ func (v *grants) GrantOwnership(ctx context.Context, on OwnershipGrantOn, to Own
 	return validateAndExec(v.client, ctx, opts)
 }
 
+// TODO(SNOW-2097063): Improve SHOW GRANTS implementation
 func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, error) {
 	if opts == nil {
 		opts = &ShowGrantOptions{}
