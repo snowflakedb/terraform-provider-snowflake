@@ -53,6 +53,15 @@ No action is needed.
 
 Reference: [#3655](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3655).
 
+### *(bugfix)* Fixed snowflake_grant_database_role resource
+
+The `2025_02` Snowflake BCR enables granting database roles directly to users.  
+This caused issues in the provider, leading to `Provider produced inconsistent result after apply` errors  
+when a database role was granted to a user. This version resolves the issue.
+No configuration changes are necessary.
+
+References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
+
 ## v1.2.1 ➞ v2.0.0
 
 ### Supported architectures

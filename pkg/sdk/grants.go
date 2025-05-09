@@ -226,6 +226,7 @@ func (v *Grant) ID() ObjectIdentifier {
 	return v.Name
 }
 
+// TODO(SNOW-2097063): Improve SHOW GRANTS implementation
 func (row grantRow) convert() *Grant {
 	grantedTo := ObjectType(strings.ReplaceAll(row.GrantedTo, "_", " "))
 	grantTo := ObjectType(strings.ReplaceAll(row.GrantTo, "_", " "))
