@@ -39,9 +39,10 @@ type StorageLocation struct {
 }
 
 type S3StorageParams struct {
-	Protocol            S3Protocol `ddl:"parameter,single_quotes" sql:"STORAGE_PROVIDER"`
-	StorageAwsRoleArn   string     `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
-	StorageAwsObjectAcl *string    `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
+	Protocol             S3Protocol `ddl:"parameter,single_quotes" sql:"STORAGE_PROVIDER"`
+	StorageAwsRoleArn    string     `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
+	StorageAwsExternalId *string    `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_EXTERNAL_ID"`
+	StorageAwsObjectAcl  *string    `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
 }
 
 type GCSStorageParams struct {
@@ -75,8 +76,9 @@ type StorageIntegrationSet struct {
 }
 
 type SetS3StorageParams struct {
-	StorageAwsRoleArn   string  `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
-	StorageAwsObjectAcl *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
+	StorageAwsRoleArn    string  `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
+	StorageAwsExternalId *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_EXTERNAL_ID"`
+	StorageAwsObjectAcl  *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
 }
 
 type SetAzureStorageParams struct {
@@ -84,6 +86,7 @@ type SetAzureStorageParams struct {
 }
 
 type StorageIntegrationUnset struct {
+	StorageAwsExternalId    *bool `ddl:"keyword" sql:"STORAGE_AWS_EXTERNAL_ID"`
 	StorageAwsObjectAcl     *bool `ddl:"keyword" sql:"STORAGE_AWS_OBJECT_ACL"`
 	Enabled                 *bool `ddl:"keyword" sql:"ENABLED"`
 	StorageBlockedLocations *bool `ddl:"keyword" sql:"STORAGE_BLOCKED_LOCATIONS"`
@@ -125,6 +128,10 @@ type StorageIntegration struct {
 
 func (v *StorageIntegration) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
+}
+
+func (v *StorageIntegration) ObjectType() ObjectType {
+	return ObjectTypeStorageIntegration
 }
 
 // DescribeStorageIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-integration.
