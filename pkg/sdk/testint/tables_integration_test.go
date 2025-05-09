@@ -916,7 +916,7 @@ func TestInt_Table(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
 
-		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithTerse(*sdk.Bool(true)).WithLike(sdk.Like{
+		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithTerse(true).WithLike(sdk.Like{
 			Pattern: sdk.String(table.Name),
 		}))
 		require.NoError(t, err)
@@ -929,7 +929,7 @@ func TestInt_Table(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
 
-		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithStartsWith(*sdk.String(table.Name)))
+		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithStartsWith(table.Name))
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(tables))
 
