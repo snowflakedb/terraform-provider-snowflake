@@ -18,6 +18,11 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.0.1 ➞ v2.1.0
+
+### *(new feature)* snowflake_image_repository resource
+Added a new resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
+
 ## v2.0.0 ➞ v2.0.1
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
@@ -74,7 +79,7 @@ Currently, we also provide the binaries for the following OSes and architectures
 ### *(breaking change)* Changes in sensitive values
 To ensure better security of users' data, we adjusted the fields containing sensitive information to be sensitive in the provider.
 Some fields had to be removed due to Terraform SDK limitations (more on that in the [removal of sensitive fields](#removal-of-sensitive-fields) section).
-This means these values will not be printed by Terraform during planning, etc. Note that the users are still responsible for storing the state securely. 
+This means these values will not be printed by Terraform during planning, etc. Note that the users are still responsible for storing the state securely.
 Read more about sensitive values in the [Terraform documentation](https://developer.hashicorp.com/terraform/tutorials/configuration-language/sensitive-variables).
 
 Fields changed to sensitive:
@@ -208,13 +213,13 @@ No migration needed.
 
 ### New behavior for Read and Delete operations when removing high-hierarchy objects
 Some objects in Snowflake are created in hierarchy, for example, tables (database → schema → table).
-When the user wants to remove the higher-hierarchy object (like a database), the lower-hierarchy objects should be removed beforehand. 
-Otherwise, Terraform would fail to remove the lower-hierarchy objects from the state, 
+When the user wants to remove the higher-hierarchy object (like a database), the lower-hierarchy objects should be removed beforehand.
+Otherwise, Terraform would fail to remove the lower-hierarchy objects from the state,
 and without manual state management it wouldn't be possible to remove this object, ending up in broken state (reference issue: [#1243](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1243)).
 This may only happen in particular cases, for example, if part of the hierarchy is managed outside Terraform or the configuration is missing dependencies between resources.
 This behavior was described more in detail in [our documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_research_summary#renaming-higher-hierarchy-objects).
 
-For improved usability, we adjusted the Read and Delete operation implementations for all resources, 
+For improved usability, we adjusted the Read and Delete operation implementations for all resources,
 so that now, they're able to know the higher-hierarchy object is missing, and they can safely remove themselves from the state.
 
 To demonstrate this behavior, let's take the following configuration:
@@ -230,10 +235,10 @@ resource "snowflake_table" "test" {
 }
 ```
 > Note: The `TEST_DATABASE` is created manually through Snowflake and the table configuration is already applied through Terraform.
- 
+
 When you remove the database by running `DROP DATABASE TEST_DATABASE` in Snowflake, and then run `terraform apply`,
 previously, you would end up in the infinite loop of errors and only manual removal from state (`terraform state rm snowflake_table.test`)
-would help you to remove the table from the state (and then from the configuration). 
+would help you to remove the table from the state (and then from the configuration).
 
 In the future, we are planning to do the same with object attachments, like grants, policies, etc. (To address cases like: [#3412](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3412))
 
@@ -1900,7 +1905,7 @@ They are all described in short in the [changes before v1 doc](./v1-preparations
 
 ### old grant resources removal
 Following the [announcement](https://github.com/snowflakedb/terraform-provider-snowflake/discussions/2736) we have removed the old grant resources.
-The two resources [snowflake_role_ownership_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/role_ownership_grant) and 
+The two resources [snowflake_role_ownership_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/role_ownership_grant) and
 [snowflake_user_ownership_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user_ownership_grant) were not listed in the announcement,
 but they were also marked as deprecated ones. We are removing them too to conclude the grants redesign saga.
 
