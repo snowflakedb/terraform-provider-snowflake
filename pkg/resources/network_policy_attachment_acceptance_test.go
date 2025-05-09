@@ -106,7 +106,7 @@ func testAccCheckNetworkPolicyAttachmentDestroy(s *terraform.State) error {
 			fmt.Printf("[WARN] network policy (%s) not found on account", rs.Primary.Attributes["Id"])
 			return nil
 		}
-		if err == nil && parameter.Level == "ACCOUNT" && parameter.Key == "NETWORK_POLICY" && parameter.Value == rs.Primary.Attributes["network_policy_name"] {
+		if parameter.Level == "ACCOUNT" && parameter.Key == "NETWORK_POLICY" && parameter.Value == rs.Primary.Attributes["network_policy_name"] {
 			return fmt.Errorf("network policy attachment %v still exists", rs.Primary.Attributes["Id"])
 		}
 	}
