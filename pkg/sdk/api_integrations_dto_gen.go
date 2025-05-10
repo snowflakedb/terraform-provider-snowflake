@@ -17,6 +17,7 @@ type CreateApiIntegrationRequest struct {
 	AwsApiProviderParams    *AwsApiParamsRequest
 	AzureApiProviderParams  *AzureApiParamsRequest
 	GoogleApiProviderParams *GoogleApiParamsRequest
+	GitApiProviderParams    *GitApiParamsRequest
 	ApiAllowedPrefixes      []ApiIntegrationEndpointPrefix // required
 	ApiBlockedPrefixes      []ApiIntegrationEndpointPrefix
 	Enabled                 bool // required
@@ -43,6 +44,10 @@ type GoogleApiParamsRequest struct {
 	GoogleAudience string // required
 }
 
+type GitApiParamsRequest struct {
+	AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret
+}
+
 type AlterApiIntegrationRequest struct {
 	IfExists  *bool
 	name      AccountObjectIdentifier // required
@@ -56,6 +61,7 @@ type ApiIntegrationSetRequest struct {
 	AwsParams          *SetAwsApiParamsRequest
 	AzureParams        *SetAzureApiParamsRequest
 	GoogleParams       *SetGoogleApiParamsRequest
+	GitParams          *SetGitApiParamsRequest
 	Enabled            *bool
 	ApiAllowedPrefixes []ApiIntegrationEndpointPrefix
 	ApiBlockedPrefixes []ApiIntegrationEndpointPrefix
@@ -75,6 +81,10 @@ type SetAzureApiParamsRequest struct {
 
 type SetGoogleApiParamsRequest struct {
 	GoogleAudience string // required
+}
+
+type SetGitApiParamsRequest struct {
+	AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret
 }
 
 type ApiIntegrationUnsetRequest struct {

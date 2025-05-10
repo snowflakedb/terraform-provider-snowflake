@@ -25,6 +25,10 @@ func (v *QueryStruct) ListAssignment(sqlPrefix string, listItemKind string, tran
 	return v.Assignment(sqlPrefix, KindOfSlice(listItemKind), transformer)
 }
 
+func (v *QueryStruct) OptionalListAssignment(sqlPrefix string, listItemKind string, transformer *ParameterTransformer) *QueryStruct {
+	return v.Assignment(sqlPrefix, "*[]"+listItemKind, transformer)
+}
+
 func (v *QueryStruct) NumberAssignment(sqlPrefix string, transformer *ParameterTransformer) *QueryStruct {
 	return v.Assignment(sqlPrefix, "int", transformer)
 }
