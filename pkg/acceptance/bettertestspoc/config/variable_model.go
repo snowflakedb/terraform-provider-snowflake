@@ -2,7 +2,11 @@ package config
 
 import tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
-// TODO [this PR]: use types instead of tfconfig.Variable?
+// VariableModel allows to use predefined variable block.
+// Check: https://developer.hashicorp.com/terraform/language/values/variables#declaring-an-input-variable.
+// TODO [SNOW-1501905]: Consider using types instead of tfconfig.Variable
+//   - The reason to use tfconfig.Variable in the earlier models was to be able to put any value to also test invalid configs.
+//   - Maybe there is no sense to do that for all the fields in the Terraform predefined blocks like locals, variables, etc.
 type VariableModel struct {
 	Type      tfconfig.Variable `json:"type,omitempty"`
 	Default   tfconfig.Variable `json:"default,omitempty"`
