@@ -58,6 +58,11 @@ func (v *VariableModel) WithStringDefault(default_ string) *VariableModel {
 	return v
 }
 
+func (v *VariableModel) WithDefault(variable tfconfig.Variable) *VariableModel {
+	v.Default = variable
+	return v
+}
+
 func (v *VariableModel) WithUnquotedDefault(default_ string) *VariableModel {
 	v.Default = UnquotedWrapperVariable(default_)
 	return v

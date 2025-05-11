@@ -222,7 +222,6 @@ provider "snowflake" {
 	})
 }
 
-// TODO [this PR]: test complex variable like list(object) from https://developer.hashicorp.com/terraform/language/values/variables#declaring-an-input-variable
 func Test_VariableFromModelPoc(t *testing.T) {
 	t.Run("test string variable", func(t *testing.T) {
 		variableModel := config.StringVariable("some_variable")
@@ -250,6 +249,20 @@ variable "some_variable" {
 		require.Equal(t, expectedOutput, result)
 	})
 
+	t.Run("test string variable with default using tf config variable", func(t *testing.T) {
+		variableModel := config.StringVariable("some_variable").
+			WithDefault(tfconfig.StringVariable("some value"))
+		expectedOutput := strings.TrimPrefix(`
+variable "some_variable" {
+  type = string
+  default = "some value"
+}
+`, "\n")
+		result := config.VariableFromModel(t, variableModel)
+
+		require.Equal(t, expectedOutput, result)
+	})
+
 	t.Run("test number variable with default", func(t *testing.T) {
 		variableModel := config.NumberVariable("some_variable").
 			WithUnquotedDefault("1")
@@ -259,6 +272,53 @@ variable "some_variable" {
   default = 1
 }
 `, "\n")
+		result := config.VariableFromModel(t, variableModel)
+
+		require.Equal(t, expectedOutput, result)
+	})
+
+	t.Run("test number variable with default using tf config variable", func(t *testing.T) {
+		variableModel := config.NumberVariable("some_variable").
+			WithDefault(tfconfig.IntegerVariable(1))
+		expectedOutput := strings.TrimPrefix(`
+variable "some_variable" {
+  type = number
+  default = 1
+}
+`, "\n")
+		result := config.VariableFromModel(t, variableModel)
+
+		require.Equal(t, expectedOutput, result)
+	})
+
+	// TODO [SNOW-1501905]: Handle default:
+	//   default = [
+	//    {
+	//      internal = 8300
+	//      external = 8300
+	//      protocol = "tcp"
+	//    }
+	//  ]
+	// TODO [SNOW-1501905]: Add abstraction over tf config types (it could be also used in all other model builders)
+	// Example list(object) from https://developer.hashicorp.com/terraform/language/values/variables#declaring-an-input-variable.
+	t.Run("test complex variable", func(t *testing.T) {
+		variableModel := config.Variable("some_variable", strings.TrimPrefix(`
+list(object({
+    internal = number
+    external = number
+    protocol = string
+  }))
+`, "\n"))
+		expectedOutput := strings.TrimPrefix(`
+variable "some_variable" {
+  type = list(object({
+    internal = number
+    external = number
+    protocol = string
+  }))
+}
+`, "\n")
+
 		result := config.VariableFromModel(t, variableModel)
 
 		require.Equal(t, expectedOutput, result)
