@@ -590,7 +590,7 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, resourceModel, securityIntegrationsModelWithoutDescribe) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, resourceModel, securityIntegrationsModelWithoutDescribe, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModelWithoutDescribe.DatasourceReference(), "security_integrations.#", "1"),
