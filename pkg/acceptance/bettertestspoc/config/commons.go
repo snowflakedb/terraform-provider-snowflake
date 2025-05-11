@@ -60,17 +60,12 @@ func NewDynamicBlock(label string, variableName string, values []string) *Dynami
 	}
 }
 
-// TODO [this PR]: add sensitive value to model builder and replace this method
-func TempSecretStringVariableConfig(variableName string, value string) (string, config.Variables) {
-	temporaryVariableDefinition := fmt.Sprintf(`
-	variable "%s" {
-		type = string
-		sensitive = true
-	}
-`, variableName)
+func SecretStringVariableModelWithConfigVariables(variableName string, value string) (*VariableModel, config.Variables) {
+	variableModel := StringVariable(variableName).WithSensitive(true)
+
 	configVariables := config.Variables{
 		variableName: config.StringVariable(value),
 	}
 
-	return temporaryVariableDefinition, configVariables
+	return variableModel, configVariables
 }

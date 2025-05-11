@@ -4,8 +4,9 @@ import tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 // TODO [this PR]: use types instead of tfconfig.Variable?
 type VariableModel struct {
-	Type    tfconfig.Variable `json:"type,omitempty"`
-	Default tfconfig.Variable `json:"default,omitempty"`
+	Type      tfconfig.Variable `json:"type,omitempty"`
+	Default   tfconfig.Variable `json:"default,omitempty"`
+	Sensitive tfconfig.Variable `json:"sensitive,omitempty"`
 
 	name string
 }
@@ -59,5 +60,10 @@ func (v *VariableModel) WithStringDefault(default_ string) *VariableModel {
 
 func (v *VariableModel) WithUnquotedDefault(default_ string) *VariableModel {
 	v.Default = UnquotedWrapperVariable(default_)
+	return v
+}
+
+func (v *VariableModel) WithSensitive(sensitive bool) *VariableModel {
+	v.Sensitive = tfconfig.BoolVariable(sensitive)
 	return v
 }

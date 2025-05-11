@@ -36,7 +36,7 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 	role := snowflakeroles.GenericScimProvisioner
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	saml2Model := model.Saml2SecurityIntegrationVar("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	scimModel := model.ScimSecurityIntegration("test", idTwo.Name(), true, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
@@ -52,7 +52,7 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, scimModel, saml2Model, securityIntegrationsModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, scimModel, saml2Model, securityIntegrationsModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.#", "2"),
@@ -521,7 +521,7 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 	comment := random.Comment()
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
 	resourceModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
@@ -554,7 +554,7 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, resourceModel, securityIntegrationsModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, resourceModel, securityIntegrationsModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.#", "1"),
