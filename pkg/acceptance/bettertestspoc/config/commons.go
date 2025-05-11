@@ -69,3 +69,8 @@ func SecretStringVariableModelWithConfigVariables(variableName string, value str
 
 	return variableModel, configVariables
 }
+
+type TerraformBlockModel interface {
+	BlockName() string
+	BlockType() string
+}

@@ -70,17 +70,15 @@ func ProviderFromModel(t *testing.T, model ProviderModel) string {
 // - .tf.json generation
 // - conversion to HCL using hcl v1 lib
 // It is still not ideal. HCL v2 should be considered.
-// TODO [this PR]: extract interface for tf common blocks when adding locals
-func VariableFromModel(t *testing.T, model VariableModel) string {
+func VariableFromModel(t *testing.T, model TerraformBlockModel) string {
 	t.Helper()
 
-	variableJson, err := DefaultJsonConfigProvider.TfCommonJsonFromModel(model)
+	variableJson, err := DefaultJsonConfigProvider.TerraformBlockJsonFromModel(model)
 	require.NoError(t, err)
 
 	hcl, err := DefaultHclConfigProvider.HclFromJson(variableJson)
 	require.NoError(t, err)
-	hcl, err = revertEqualSignForMapTypeAttributes(hcl)
-	require.NoError(t, err)
+	t.Logf("Generated config:\n%s", hcl)
 
 	return hcl
 }
@@ -100,7 +98,7 @@ func FromModels(t *testing.T, models ...any) string {
 			sb.WriteString(DatasourceFromModel(t, m))
 		case ProviderModel:
 			sb.WriteString(ProviderFromModel(t, m))
-		case VariableModel:
+		case TerraformBlockModel:
 			sb.WriteString(VariableFromModel(t, m))
 		default:
 			t.Fatalf("unknown model: %T", model)

@@ -11,11 +11,11 @@ type VariableModel struct {
 	name string
 }
 
-func (v *VariableModel) CommonTfName() string {
+func (v *VariableModel) BlockName() string {
 	return v.name
 }
 
-func (v *VariableModel) CommonTfType() string {
+func (v *VariableModel) BlockType() string {
 	return "variable"
 }
 

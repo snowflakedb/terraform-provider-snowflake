@@ -154,7 +154,7 @@ func Test_JsonConfigProvider(t *testing.T) {
     }
 }`, config.SnowflakeProviderConfigUnquoteMarker)
 
-		result, err := config.DefaultJsonConfigProvider.TfCommonJsonFromModel(*variableModel)
+		result, err := config.DefaultJsonConfigProvider.TerraformBlockJsonFromModel(variableModel)
 		require.NoError(t, err)
 		assert.Equal(t, expectedResult, string(result))
 	})
@@ -171,7 +171,7 @@ func Test_JsonConfigProvider(t *testing.T) {
     }
 }`, config.SnowflakeProviderConfigUnquoteMarker)
 
-		result, err := config.DefaultJsonConfigProvider.TfCommonJsonFromModel(*variableModel)
+		result, err := config.DefaultJsonConfigProvider.TerraformBlockJsonFromModel(variableModel)
 		require.NoError(t, err)
 		assert.Equal(t, expectedResult, string(result))
 	})
@@ -188,7 +188,7 @@ func Test_JsonConfigProvider(t *testing.T) {
     }
 }`, config.SnowflakeProviderConfigUnquoteMarker)
 
-		result, err := config.DefaultJsonConfigProvider.TfCommonJsonFromModel(*variableModel)
+		result, err := config.DefaultJsonConfigProvider.TerraformBlockJsonFromModel(variableModel)
 		require.NoError(t, err)
 		assert.Equal(t, expectedResult, string(result))
 	})

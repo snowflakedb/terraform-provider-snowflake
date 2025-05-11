@@ -231,7 +231,7 @@ variable "some_variable" {
   type = string
 }
 `, "\n")
-		result := config.VariableFromModel(t, *variableModel)
+		result := config.VariableFromModel(t, variableModel)
 
 		require.Equal(t, expectedOutput, result)
 	})
@@ -245,7 +245,7 @@ variable "some_variable" {
   default = "some value"
 }
 `, "\n")
-		result := config.VariableFromModel(t, *variableModel)
+		result := config.VariableFromModel(t, variableModel)
 
 		require.Equal(t, expectedOutput, result)
 	})
@@ -259,7 +259,7 @@ variable "some_variable" {
   default = 1
 }
 `, "\n")
-		result := config.VariableFromModel(t, *variableModel)
+		result := config.VariableFromModel(t, variableModel)
 
 		require.Equal(t, expectedOutput, result)
 	})

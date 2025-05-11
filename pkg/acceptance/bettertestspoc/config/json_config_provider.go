@@ -12,7 +12,7 @@ type JsonConfigProvider interface {
 	ResourceJsonFromModel(model ResourceModel) ([]byte, error)
 	DatasourceJsonFromModel(model DatasourceModel) ([]byte, error)
 	ProviderJsonFromModel(model ProviderModel) ([]byte, error)
-	TfCommonJsonFromModel(model VariableModel) ([]byte, error)
+	TerraformBlockJsonFromModel(model TerraformBlockModel) ([]byte, error)
 }
 
 type basicJsonConfigProvider struct{}
@@ -67,10 +67,10 @@ type providerJson struct {
 	Provider map[string]ProviderModel `json:"provider"`
 }
 
-func (p *basicJsonConfigProvider) TfCommonJsonFromModel(model VariableModel) ([]byte, error) {
-	modelJson := map[string]map[string]VariableModel{
-		model.CommonTfType(): {
-			model.CommonTfName(): model,
+func (p *basicJsonConfigProvider) TerraformBlockJsonFromModel(model TerraformBlockModel) ([]byte, error) {
+	modelJson := map[string]map[string]TerraformBlockModel{
+		model.BlockType(): {
+			model.BlockName(): model,
 		},
 	}
 
