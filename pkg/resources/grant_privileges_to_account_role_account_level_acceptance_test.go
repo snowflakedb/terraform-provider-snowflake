@@ -22,6 +22,7 @@ import (
 func TestAcc_GrantPrivilegesToAccountRole_OnDatabase_WithPrivilegesGrantedOnDatabaseToUser(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	role, roleCleanup := acc.SecondaryTestClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
