@@ -20,7 +20,7 @@ func TestInt_ShowGrants_To_Users(t *testing.T) {
 		accountRole, accountRoleCleanup := secondaryTestClientHelper().Role.CreateRole(t)
 		t.Cleanup(accountRoleCleanup)
 
-		secondaryTestClientHelper().Grant.GrantAccountRoleToUser(t, accountRole.ID(), user.ID())
+		secondaryTestClientHelper().Role.GrantRoleToUser(t, accountRole.ID(), user.ID())
 		grants, err := secondaryTestClientHelper().Grant.ShowGrantsOfAccountRole(t, accountRole.ID())
 		require.NoError(t, err)
 
