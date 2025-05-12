@@ -238,6 +238,7 @@ resource "snowflake_grant_account_role" "test" {
 func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	acc.TestAccPreCheck(t)
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	accountRole, accountRoleCleanup := acc.SecondaryTestClient().Role.CreateRole(t)
 	t.Cleanup(accountRoleCleanup)
