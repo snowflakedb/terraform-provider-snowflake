@@ -195,12 +195,6 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 				),
 			},
 			{
-				PreConfig: func() {
-					alterRequest := sdk.NewAlterStorageIntegrationRequest(id).
-						WithSet(*sdk.NewStorageIntegrationSetRequest().
-							WithComment("altered comment outside of terraform"))
-					acc.TestClient().StorageIntegration.Alter(t, alterRequest)
-				},
 				ConfigVariables: configVariables(true),
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/set"),
 				Check: resource.ComposeTestCheckFunc(
@@ -220,6 +214,24 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 				),
 			},
 			{
+				PreConfig: func() {
+					unsetRequest := sdk.NewAlterStorageIntegrationRequest(id).
+						WithUnset(*sdk.NewStorageIntegrationUnsetRequest().
+							WithStorageAwsExternalId(true).
+							WithStorageAwsObjectAcl(true).
+							WithStorageBlockedLocations(true))
+					acc.TestClient().StorageIntegration.Alter(t, unsetRequest)
+				},
+				ConfigVariables: configVariables(true),
+				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/set"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", awsExternalId),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_object_acl", "bucket-owner-full-control"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations.#", "2"),
+				),
+			},
+			{
 				ConfigVariables: configVariables(false),
 				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/unset"),
 				Check: resource.ComposeTestCheckFunc(
@@ -233,6 +245,27 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_object_acl", ""),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", ""),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", ""),
+				),
+			},
+			{
+				PreConfig: func() {
+					setRequest := sdk.NewAlterStorageIntegrationRequest(id).
+						WithSet(*sdk.NewStorageIntegrationSetRequest().
+							WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).
+								WithStorageAwsExternalId(awsExternalId).
+								WithStorageAwsObjectAcl("bucket-owner-full-control")).
+							WithStorageBlockedLocations([]sdk.StorageLocation{
+								{Path: "s3://external-blocked/"},
+							}))
+					acc.TestClient().StorageIntegration.Alter(t, setRequest)
+				},
+				ConfigVariables: configVariables(false),
+				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/unset"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", ""),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_object_acl", ""),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations.#", "0"),
 				),
 			},
 		},
