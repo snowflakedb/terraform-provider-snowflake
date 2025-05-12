@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.1.0...v2.1.1) (2025-05-12)
+
+
+### 🔧 **Misc**
+
+* Fix tests that run on secondary account profile ([#3666](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3666)) ([976b36c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/976b36c5702b5566eef7a1db04142f7920b7c188))
+
 ## [2.1.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.0.0...v2.1.0) (2025-05-12)
 
 
