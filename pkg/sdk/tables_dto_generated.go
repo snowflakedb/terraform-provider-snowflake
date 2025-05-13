@@ -1624,7 +1624,7 @@ func (s *ShowTableRequest) WithTerse(terse bool) *ShowTableRequest {
 }
 
 func (s *ShowTableRequest) WithHistory(history *bool) *ShowTableRequest {
-	s.history = history
+	s.History = history
 	return s
 }
 

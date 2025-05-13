@@ -223,7 +223,7 @@ func (s *ShowTableRequest) toOpts() *showTableOptions {
 	}
 	return &showTableOptions{
 		Terse:      s.Terse,
-		History:    s.history,
+		History:    s.History,
 		Like:       like,
 		StartsWith: s.StartsWith,
 		LimitFrom:  limitFrom,
@@ -520,7 +520,7 @@ type TableExternalTableColumnDropActionRequest struct {
 
 type ShowTableRequest struct {
 	Terse      *bool
-	history    *bool
+	History    *bool
 	Like       *Like
 	In         *ExtendedIn
 	StartsWith *string
