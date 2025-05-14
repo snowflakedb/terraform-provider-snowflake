@@ -209,22 +209,22 @@ func (itc *integrationTestContext) initialize() error {
 		}
 		itc.secondaryWarehouse = secondaryWarehouse
 
-		err = helpers.EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.client, itc.ctx)
+		err = testClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.ctx)
 		if err != nil {
 			return err
 		}
-		err = helpers.EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.secondaryClient, itc.secondaryCtx)
+		err = secondaryTestClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.secondaryCtx)
 		if err != nil {
 			return err
 		}
 
 		// TODO(SNOW-1842271): Adjust test setup to work properly with Accountadmin role for object tests and Orgadmin for account tests
 		if os.Getenv(string(testenvs.TestAccountCreate)) == "" {
-			err = helpers.EnsureScimProvisionerRolesExist(itc.client, itc.ctx)
+			err = testClientHelper().EnsureScimProvisionerRolesExist(itc.ctx)
 			if err != nil {
 				return err
 			}
-			err = helpers.EnsureScimProvisionerRolesExist(itc.secondaryClient, itc.secondaryCtx)
+			err = secondaryTestClientHelper().EnsureScimProvisionerRolesExist(itc.secondaryCtx)
 			if err != nil {
 				return err
 			}
