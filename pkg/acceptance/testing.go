@@ -56,6 +56,7 @@ var (
 )
 
 func init() {
+	log.Println("[DEBUG] Running init from old acceptance tests setup")
 	testObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.TestObjectsSuffix))
 	requireTestObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.RequireTestObjectsSuffix))
 	if requireTestObjectSuffix != "" && testObjectSuffix == "" {
