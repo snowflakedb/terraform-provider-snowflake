@@ -5,7 +5,7 @@ description: |-
   Resource used to manage image repositories. For more information, check image repositories documentation https://docs.snowflake.com/en/sql-reference/sql/create-image-repository.
 ---
 
--> **Note** Quoted names for special characters or case-sensitive names are not supported. The same constraint also applies to database and schema names where you create an image repository. That is, database and schema names without quotes are valid when creating an image repository.
+-> **Note** Quoted names for special characters or case-sensitive names are not supported. The same constraint also applies to database and schema names where you create an image repository. That is, database and schema names without quotes are valid when creating an image repository. This limitation in the provider follows the limitation in Snowflake (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository)). Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier).
 
 # snowflake_image_repository (Resource)
 

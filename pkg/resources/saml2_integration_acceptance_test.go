@@ -39,8 +39,8 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 	comment := random.Comment()
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
-	_, configVariables2 := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert2)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
+	_, configVariables2 := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert2)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
@@ -75,7 +75,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with empty optionals
 			{
-				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "name", id.Name()),
@@ -128,7 +128,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 			},
 			// import - without optionals
 			{
-				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ResourceName:    basicModel.ResourceReference(),
 				ImportState:     true,
@@ -154,7 +154,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 			},
 			// set optionals
 			{
-				Config:          accconfig.FromModels(t, completeModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, completeModel, temporaryVariableModel),
 				ConfigVariables: configVariables2,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "name", id.Name()),
@@ -209,7 +209,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 			},
 			// import - complete
 			{
-				Config:          accconfig.FromModels(t, completeModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, completeModel, temporaryVariableModel),
 				ConfigVariables: configVariables2,
 				ResourceName:    completeModel.ResourceReference(),
 				ImportState:     true,
@@ -237,7 +237,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 			},
 			// change values externally
 			{
-				Config:          accconfig.FromModels(t, completeModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, completeModel, temporaryVariableModel),
 				ConfigVariables: configVariables2,
 				PreConfig: func() {
 					acc.TestClient().SecurityIntegration.UpdateSaml2(t, sdk.NewAlterSaml2SecurityIntegrationRequest(id).
@@ -313,7 +313,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 			},
 			// unset
 			{
-				Config:          accconfig.FromModels(t, recreatesModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, recreatesModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "name", id.Name()),
@@ -380,7 +380,7 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	saml2ConfigForceAuthnTrueModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
@@ -405,7 +405,7 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 						planchecks.ExpectComputed(saml2ConfigForceAuthnTrueModel.ResourceReference(), "describe_output", true),
 					},
 				},
-				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(saml2ConfigForceAuthnTrueModel.ResourceReference(), "saml2_force_authn", "true"),
@@ -433,7 +433,7 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 						planchecks.ExpectComputed(saml2ConfigForceAuthnFalseModel.ResourceReference(), "describe_output", true),
 					},
 				},
-				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnFalseModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnFalseModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", "false"),
@@ -443,12 +443,12 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 			},
 			// change back to non-default
 			{
-				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 			},
 			// remove non-default saml2_force_authn from config
 			{
-				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -472,7 +472,7 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnFalseModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnFalseModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(saml2ConfigForceAuthnFalseModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
@@ -482,7 +482,7 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 			},
 			// change back to non-default
 			{
-				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, saml2ConfigForceAuthnTrueModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 			},
 			// remove saml2_force_authn from config but update externally to default (still expecting non-empty plan because we do not know the default)
@@ -490,7 +490,7 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 				PreConfig: func() {
 					acc.TestClient().SecurityIntegration.UpdateSaml2ForceAuthn(t, id, false)
 				},
-				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -512,7 +512,7 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 					// we change the type to the type different from default, expecting action
 					acc.TestClient().SecurityIntegration.UpdateSaml2ForceAuthn(t, id, true)
 				},
-				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -556,7 +556,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 	comment := random.Comment()
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
 	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
@@ -583,7 +583,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, completeModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, completeModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "name", id.Name()),
@@ -638,7 +638,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, completeModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, completeModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ResourceName:    completeModel.ResourceReference(),
 				ImportState:     true,
@@ -679,7 +679,7 @@ func TestAcc_Saml2Integration_InvalidNameIdFormat(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithSaml2RequestedNameidFormat("invalid")
@@ -693,7 +693,7 @@ func TestAcc_Saml2Integration_InvalidNameIdFormat(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				PlanOnly:        true,
 				ExpectError:     regexp.MustCompile("Error: invalid Saml2SecurityIntegrationSaml2RequestedNameidFormatOption: invalid"),
@@ -712,7 +712,7 @@ func TestAcc_Saml2Integration_InvalidProvider(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, "invalid", validUrl, temporaryVariableName)
 
@@ -725,7 +725,7 @@ func TestAcc_Saml2Integration_InvalidProvider(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				PlanOnly:        true,
 				ExpectError:     regexp.MustCompile("Error: invalid Saml2SecurityIntegrationSaml2ProviderOption: INVALID"),
@@ -746,7 +746,7 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 	issuerURL := acc.TestClient().Context.IssuerURL(t)
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	baseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
@@ -794,7 +794,7 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, baseModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, baseModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(baseModel.ResourceReference(), "name", id.Name()),
@@ -809,7 +809,7 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, withoutLoginPageLabelModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withoutLoginPageLabelModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -835,7 +835,7 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, withoutSnowflakeIssuerUrlModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withoutSnowflakeIssuerUrlModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -861,7 +861,7 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, withoutAcsUrlModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withoutAcsUrlModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -887,7 +887,7 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, withoutAllowedEmailPatternsModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withoutAllowedEmailPatternsModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -912,7 +912,7 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, withoutAllowedUserDomainsModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withoutAllowedUserDomainsModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -947,7 +947,7 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 	withZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
@@ -969,7 +969,7 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with valid "zero" values
 			{
-				Config:          accconfig.FromModels(t, withZeroValuesModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withZeroValuesModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -995,7 +995,7 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 			},
 			// remove all from config (to validate that unset is run correctly)
 			{
-				Config:          accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1021,7 +1021,7 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 			},
 			// set to "non-zero" values
 			{
-				Config:          accconfig.FromModels(t, withNonZeroValuesModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withNonZeroValuesModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(withNonZeroValuesModel.ResourceReference(), "enabled", "true"),
@@ -1038,7 +1038,7 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 			},
 			// add valid "zero" values again (to validate if set is run correctly)
 			{
-				Config:          accconfig.FromModels(t, withZeroValuesModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withZeroValuesModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1064,7 +1064,7 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 			},
 			// import zero values
 			{
-				Config:          accconfig.FromModels(t, withZeroValuesModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, withZeroValuesModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				ImportState:     true,
 				ResourceName:    withZeroValuesModel.ResourceReference(),
@@ -1094,7 +1094,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 
@@ -1108,7 +1108,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 			{
 				PreConfig:         func() { acc.SetV097CompatibleConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:            accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:   configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "id", id.Name()),
@@ -1117,7 +1117,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 			{
 				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:                   accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:          configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "id", id.Name()),
@@ -1138,7 +1138,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	validUrl := "https://example.com"
 
 	temporaryVariableName := "saml2_x509_cert"
-	temporaryVariableDefinition, configVariables := accconfig.TempSecretStringVariableConfig(temporaryVariableName, cert)
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	basicModel := model.Saml2SecurityIntegrationVar("test", quotedId, issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
 
@@ -1153,7 +1153,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { acc.SetV097CompatibleConfigPathEnv(t) },
 				ExternalProviders:  acc.ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:             accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:    configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "name", id.Name()),
@@ -1163,7 +1163,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 			{
 				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, basicModel) + temporaryVariableDefinition,
+				Config:                   accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:          configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

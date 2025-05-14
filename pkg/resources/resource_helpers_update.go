@@ -16,6 +16,13 @@ func stringAttributeUpdate(d *schema.ResourceData, key string, setField **string
 	return nil
 }
 
+func stringAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **sdk.StringAllowEmpty) error {
+	if d.HasChange(key) {
+		*setField = &sdk.StringAllowEmpty{Value: d.Get(key).(string)}
+	}
+	return nil
+}
+
 func intAttributeUpdate(d *schema.ResourceData, key string, setField **int, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {

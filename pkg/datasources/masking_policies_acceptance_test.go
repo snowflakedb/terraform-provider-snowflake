@@ -121,6 +121,7 @@ func TestAcc_MaskingPolicies_Filtering(t *testing.T) {
 	maskingPoliciesModelLikePrefix := datasourcemodel.MaskingPolicies("test").
 		WithLike(prefix+"%").
 		WithDependsOn(maskingPolicyModel1.ResourceReference(), maskingPolicyModel2.ResourceReference(), maskingPolicyModel3.ResourceReference())
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -131,11 +132,6 @@ func TestAcc_MaskingPolicies_Filtering(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -145,14 +141,14 @@ func TestAcc_MaskingPolicies_Filtering(t *testing.T) {
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, maskingPoliciesModelLikeFirstOne) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, maskingPoliciesModelLikeFirstOne),
 				ConfigVariables: commonVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.#", "1"),
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, maskingPoliciesModelLikePrefix) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, maskingPoliciesModelLikePrefix),
 				ConfigVariables: commonVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.#", "2"),
