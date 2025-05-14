@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -63,10 +64,10 @@ func ImageRepository() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ImageRepository, CreateImageRepository),
-		ReadContext:   TrackingReadWrapper(resources.ImageRepository, ReadImageRepository),
-		UpdateContext: TrackingUpdateWrapper(resources.ImageRepository, UpdateImageRepository),
-		DeleteContext: TrackingDeleteWrapper(resources.ImageRepository, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingCreateWrapper(resources.ImageRepository, CreateImageRepository)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingReadWrapper(resources.ImageRepository, ReadImageRepository)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingUpdateWrapper(resources.ImageRepository, UpdateImageRepository)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingDeleteWrapper(resources.ImageRepository, deleteFunc)),
 		Description:   "Resource used to manage image repositories. For more information, check [image repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ImageRepository, customdiff.All(
