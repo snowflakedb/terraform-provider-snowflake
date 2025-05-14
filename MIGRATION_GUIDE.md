@@ -18,12 +18,12 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.0.1 ➞ v2.1.0
+## v2.1.0 ➞ v2.2.0
 
 ### *(new feature)* snowflake_image_repository resource
 Added a new resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
-## v2.0.0 ➞ v2.0.1
+## v2.0.0 ➞ v2.1.0
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
 
@@ -57,6 +57,15 @@ This version adds appropriate validation and diff suppression to `network_policy
 No action is needed.
 
 Reference: [#3655](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3655).
+
+### *(bugfix)* Fixed snowflake_grant_database_role resource
+
+The `2025_02` Snowflake BCR enables granting database roles directly to users.
+This caused issues in the provider, leading to `Provider produced inconsistent result after apply` errors
+when a database role was granted to a user. This version resolves the issue.
+No configuration changes are necessary.
+
+References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
 
 ## v1.2.1 ➞ v2.0.0
 
@@ -1774,6 +1783,19 @@ Both topics will be addressed in the following versions.
 #### *(note)* user types
 
 `service` and `legacy_service` user types are currently not supported. They will be supported in the following versions as separate resources (namely `snowflake_service_user` and `snowflake_legacy_service_user`).
+
+If you used the existing `snowflake_user` and altered its type externally (manually or through `snowflake_unsafe_execute`), then after migrating to v0.95.0 the provider will try to recreate it as a `person` type.
+
+Because `snowflake_service_user` and `snowflake_legacy_service_user` resources are available in v0.97.0 version, you can temporarily suppress these changes to allow version-by-version migration. To do that, use [`ignore_changes`](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) meta-attribute:
+
+```hcl
+resource "snowflake_user" "example_user" {
+  # ...
+  lifecycle {
+    ignore_changes = [ user_type ]
+  }
+}
+```
 
 ## v0.94.0 ➞ v0.94.1
 ### changes in snowflake_schema
