@@ -7,7 +7,7 @@ import (
 )
 
 // DatabaseWithParametersSet should be used to create database which sets the parameters that can be altered on the account level in other tests; this way, the test is not affected by the changes.
-// TODO [this PR]: consider using helper instead
+// TODO [SNOW-2100060]: consider using helper instead
 func DatabaseWithParametersSet(
 	resourceName string,
 	name string,

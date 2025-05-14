@@ -65,6 +65,24 @@ func ProviderFromModel(t *testing.T, model ProviderModel) string {
 	return hcl
 }
 
+// VariableFromModel should be used in terraform acceptance tests for Config attribute to get string config from VariableModel.
+// Current implementation is an improved implementation using two steps:
+// - .tf.json generation
+// - conversion to HCL using hcl v1 lib
+// It is still not ideal. HCL v2 should be considered.
+func VariableFromModel(t *testing.T, model TerraformBlockModel) string {
+	t.Helper()
+
+	variableJson, err := DefaultJsonConfigProvider.TerraformBlockJsonFromModel(model)
+	require.NoError(t, err)
+
+	hcl, err := DefaultHclConfigProvider.HclFromJson(variableJson)
+	require.NoError(t, err)
+	t.Logf("Generated config:\n%s", hcl)
+
+	return hcl
+}
+
 // FromModels should be used in terraform acceptance tests for Config attribute to get string config from all models.
 // FromModels allows to combine multiple model types.
 // TODO [SNOW-1501905]: introduce some common interface for all three existing models (ResourceModel, DatasourceModel, and ProviderModel)
@@ -80,6 +98,8 @@ func FromModels(t *testing.T, models ...any) string {
 			sb.WriteString(DatasourceFromModel(t, m))
 		case ProviderModel:
 			sb.WriteString(ProviderFromModel(t, m))
+		case TerraformBlockModel:
+			sb.WriteString(VariableFromModel(t, m))
 		default:
 			t.Fatalf("unknown model: %T", model)
 		}

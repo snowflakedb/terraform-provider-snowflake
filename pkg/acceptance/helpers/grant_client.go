@@ -2,7 +2,10 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -361,4 +364,22 @@ func (c *GrantClient) ShowGrantsToDatabaseRole(t *testing.T, databaseRoleId sdk.
 			DatabaseRole: databaseRoleId,
 		},
 	})
+}
+
+func (c *GrantClient) GrantDatabaseRoleToUser(t *testing.T, databaseRoleId sdk.DatabaseObjectIdentifier, userId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	// TODO(SNOW-2095669): Update when the client is updated to support this
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("GRANT DATABASE ROLE %s TO USER %s", databaseRoleId.FullyQualifiedName(), userId.FullyQualifiedName()))
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) GrantPrivilegesOnDatabaseToUser(t *testing.T, databaseId sdk.AccountObjectIdentifier, userId sdk.AccountObjectIdentifier, privileges ...sdk.AccountObjectPrivilege) {
+	t.Helper()
+	ctx := context.Background()
+
+	// TODO(SNOW-2095669): Update when the client is updated to support this
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("GRANT %s ON DATABASE %s TO USER %s", collections.JoinStrings(privileges, ","), databaseId.FullyQualifiedName(), userId.FullyQualifiedName()))
+	require.NoError(t, err)
 }
