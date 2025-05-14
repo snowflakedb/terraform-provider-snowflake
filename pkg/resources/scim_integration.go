@@ -396,8 +396,11 @@ func UpdateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	if d.HasChange("comment") {
-		set.WithComment(sdk.StringAllowEmpty{Value: d.Get("comment").(string)})
+	errs := errors.Join(
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	if (*set != sdk.ScimIntegrationSetRequest{}) {

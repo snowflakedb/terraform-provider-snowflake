@@ -21,7 +21,7 @@ across different versions.
 ## v2.1.0 ➞ v2.2.0
 
 ### *(new feature)* snowflake_image_repository resource
-Added a new resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
+Added a new resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier). The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
 ## v2.0.0 ➞ v2.1.0
 

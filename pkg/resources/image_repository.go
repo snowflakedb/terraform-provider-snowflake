@@ -90,8 +90,11 @@ func CreateImageRepository(ctx context.Context, d *schema.ResourceData, meta any
 	id := sdk.NewSchemaObjectIdentifier(database, schemaName, name)
 
 	request := sdk.NewCreateImageRepositoryRequest(id)
-	if v, ok := d.GetOk("comment"); ok {
-		request.WithComment(v.(string))
+	errs := errors.Join(
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 	if err := client.ImageRepositories.Create(ctx, request); err != nil {
 		return diag.FromErr(err)
@@ -123,7 +126,7 @@ func ReadImageRepository(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 	errs := errors.Join(
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ImageRepositoryToSchema(imageRepository)}),
-		d.Set(FullyQualifiedNameAttributeName, imageRepository.ID().FullyQualifiedName()),
+		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set("comment", imageRepository.Comment),
 	)
 	if errs != nil {
@@ -139,8 +142,11 @@ func UpdateImageRepository(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 	set := sdk.NewImageRepositorySetRequest()
-	if d.HasChange("comment") {
-		set.WithComment(sdk.StringAllowEmpty{Value: d.Get("comment").(string)})
+	errs := errors.Join(
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 	if err := client.ImageRepositories.Alter(ctx, sdk.NewAlterImageRepositoryRequest(id).WithSet(*set)); err != nil {
 		return diag.FromErr(err)

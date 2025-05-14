@@ -577,8 +577,11 @@ func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 
 	set, unset := sdk.NewExternalOauthIntegrationSetRequest(), sdk.NewExternalOauthIntegrationUnsetRequest()
 
-	if d.HasChange("comment") {
-		set.WithComment(sdk.StringAllowEmpty{Value: d.Get("comment").(string)})
+	errs := errors.Join(
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	if d.HasChange("enabled") {
