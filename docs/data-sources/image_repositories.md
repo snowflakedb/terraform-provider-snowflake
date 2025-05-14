@@ -65,7 +65,7 @@ output "in_output" {
   }
 }
 
-output "in_output" {
+output "in_output_simple" {
   value = data.snowflake_image_repositories.in.image_repositories
 }
 
