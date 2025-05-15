@@ -592,7 +592,7 @@ func assertTagUnset(t *testing.T, tagId sdk.SchemaObjectIdentifier, id sdk.Objec
 	return err
 }
 
-func TestAccCheckGrantApplicationRoleDestroy(s *terraform.State) error {
+func CheckGrantApplicationRoleDestroy(s *terraform.State) error {
 	client := TestAccProvider.Meta().(*provider.Context).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "snowflake_grant_application_role" {
