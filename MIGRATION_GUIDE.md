@@ -62,11 +62,18 @@ This feature will be marked as a stable feature in future releases. Breaking cha
 
 ### *(new feature)* Managing tags for image repositories and compute pools
 The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository) and [compute pools](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool).
+<<<<<<< HEAD
 
 ### *(bugfix)* Fixed handling users' grants
 
 In v2.1.0, we introduced a fix in handling users' grants ([migration guide](#bugfix-fixed-snowflake_grant_database_role-resource)), which addressed changes in the `2025_02` bundle. The username was parsed incorrectly if it had a prefix formed of `U`, `S`, `E`, and `R` characters. The username returned from `SHOW GRANTS` was incorrect in this case. Now, such names should be handled correctly.
 No configuration changes are necessary.
+||||||| parent of 23774c6b (Add compute pool sdk)
+### *(new feature)* Managing tags for image repositories
+
+The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).
+=======
+>>>>>>> 23774c6b (Add compute pool sdk)
 
 ## v2.0.0 ➞ v2.1.0
 
