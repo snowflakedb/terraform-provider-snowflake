@@ -194,21 +194,22 @@ func (r computePoolDescRow) convert() *ComputePoolDetails {
 		UpdatedOn:       r.UpdatedOn,
 		Owner:           r.Owner,
 		IsExclusive:     r.IsExclusive,
+		ErrorCode:       r.ErrorCode,
+		StatusMessage:   r.StatusMessage,
 	}
 	if r.Comment.Valid {
 		cp.Comment = &r.Comment.String
 	}
 	if r.Application.Valid {
-		cp.Application = &r.Application.String
+		id, err := ParseAccountObjectIdentifier(r.Application.String)
+		if err != nil {
+			log.Printf("[DEBUG] failed to parse application in compute pool: %v", err)
+		} else {
+			cp.Application = &id
+		}
 	}
 	if r.Budget.Valid {
 		cp.Budget = &r.Budget.String
-	}
-	if r.ErrorCode.Valid {
-		cp.ErrorCode = &r.ErrorCode.String
-	}
-	if r.StatusMessage.Valid {
-		cp.StatusMessage = &r.StatusMessage.String
 	}
 	instanceFamily, err := ToComputePoolInstanceFamily(r.InstanceFamily)
 	if err != nil {

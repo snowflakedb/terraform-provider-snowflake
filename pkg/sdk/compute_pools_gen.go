@@ -159,8 +159,8 @@ type computePoolDescRow struct {
 	IsExclusive     bool           `db:"is_exclusive"`
 	Application     sql.NullString `db:"application"`
 	Budget          sql.NullString `db:"budget"`
-	ErrorCode       sql.NullString `db:"error_code"`
-	StatusMessage   sql.NullString `db:"status_message"`
+	ErrorCode       string         `db:"error_code"`
+	StatusMessage   string         `db:"status_message"`
 }
 
 type ComputePoolDetails struct {
@@ -182,8 +182,8 @@ type ComputePoolDetails struct {
 	Owner           string
 	Comment         *string
 	IsExclusive     bool
-	Application     *string
+	Application     *AccountObjectIdentifier
 	Budget          *string
-	ErrorCode       *string
-	StatusMessage   *string
+	ErrorCode       string
+	StatusMessage   string
 }

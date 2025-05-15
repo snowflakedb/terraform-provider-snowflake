@@ -230,8 +230,8 @@ var ComputePoolsDef = g.NewInterface(
 		Bool("is_exclusive").
 		OptionalText("application").
 		OptionalText("budget").
-		OptionalText("error_code").
-		OptionalText("status_message"),
+		Text("error_code").
+		Text("status_message"),
 	g.PlainStruct("ComputePoolDetails").
 		Text("Name").
 		Field("State", "ComputePoolState").
@@ -251,10 +251,10 @@ var ComputePoolsDef = g.NewInterface(
 		Text("Owner").
 		OptionalText("Comment").
 		Bool("IsExclusive").
-		OptionalText("Application").
+		Field("Application", "*AccountObjectIdentifier").
 		OptionalText("Budget").
-		OptionalText("ErrorCode").
-		OptionalText("StatusMessage"),
+		Text("ErrorCode").
+		Text("StatusMessage"),
 	g.NewQueryStruct("DescComputePool").
 		Describe().
 		SQL("COMPUTE POOL").
