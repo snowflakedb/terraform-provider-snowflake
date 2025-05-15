@@ -2,7 +2,7 @@ package testacc
 
 import (
 	"fmt"
-	"log/slog"
+	"log"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -15,10 +15,11 @@ import (
 // It's supposed to be used like:
 //
 //	defer timer("something to measure name")()
-func timer(name string, logger *slog.Logger) func() {
+func timer(name string, logger *log.Logger) func() {
+	logger.Printf("[INFO] Timer start: %s starting now", name)
 	start := time.Now()
 	return func() {
-		logger.Info("%s took %v", name, time.Since(start))
+		logger.Printf("[INFO] Timer stop: %s took %v", name, time.Since(start))
 	}
 }
 

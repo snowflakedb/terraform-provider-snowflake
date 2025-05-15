@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
+	"log"
 	"os"
 	"testing"
 
@@ -29,8 +29,8 @@ var (
 )
 
 // TODO [next PRs]: make logging level configurable
-// TODO [next PRs]: adjust during logger rework (e.g. use in model builders)
-var accTestLog = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+// TODO [next PRs]: adjust during logger rework (e.g. use in model builders); maybe use log/slog
+var accTestLog = log.New(os.Stdout, "", log.LstdFlags)
 
 type acceptanceTestContext struct {
 	config              *gosnowflake.Config
@@ -71,11 +71,11 @@ func execute(m *testing.M) int {
 }
 
 func setup() {
-	accTestLog.Info("Running acceptance tests setup")
+	accTestLog.Printf("[INFO] Running acceptance tests setup")
 
 	err := atc.initialize()
 	if err != nil {
-		accTestLog.Error("Acceptance test context initialization failed with: `%s`", err)
+		accTestLog.Printf("[ERROR] Acceptance test context initialization failed with: `%s`", err)
 		cleanup()
 		os.Exit(1)
 	}
@@ -84,7 +84,7 @@ func setup() {
 // TODO [next PRs]: extract more convenience methods for reuse
 // TODO [next PRs]: potentially extract test context logic into separate directory
 func (atc *acceptanceTestContext) initialize() error {
-	accTestLog.Info("Initializing acceptance test context")
+	accTestLog.Printf("[INFO] Initializing acceptance test context")
 
 	enableAcceptance := os.Getenv(fmt.Sprintf("%v", testenvs.EnableAcceptance))
 	if enableAcceptance == "" {
@@ -138,7 +138,7 @@ func (atc *acceptanceTestContext) initialize() error {
 		atc.secondaryTestClient = helpers.NewTestClient(secondaryClient, TestDatabaseName, TestSchemaName, TestWarehouseName, acceptancetests.ObjectsSuffix)
 
 		if secondaryConfig.Account == defaultConfig.Account {
-			accTestLog.Warn("Default and secondary configs are set to the same account; it may cause problems in tests requiring multiple accounts")
+			accTestLog.Printf("[WARN] Default and secondary configs are set to the same account; it may cause problems in tests requiring multiple accounts")
 		}
 
 		secondaryDb, secondaryDbCleanup, err := secondaryTestClient().CreateTestDatabase(ctx, true)
@@ -181,7 +181,7 @@ func (atc *acceptanceTestContext) initialize() error {
 }
 
 func cleanup() {
-	accTestLog.Info("Running acceptance tests cleanup")
+	accTestLog.Printf("[INFO] Running acceptance tests cleanup")
 	if atc.databaseCleanup != nil {
 		defer atc.databaseCleanup()
 	}

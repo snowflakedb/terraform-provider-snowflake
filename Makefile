@@ -87,8 +87,8 @@ test-acceptance-tmp: ## run acceptance tests - temporary to prove it's working
 test-account-level-features: ## run integration and acceptance test modifying account
 	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/resources ./pkg/datasources ./pkg/provider ./pkg/sdk/testint
 
-test-account-level-features-tmp: ## run integration and acceptance test modifying account - temporary to prove it's working
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/testacc ./pkg/sdk/testint
+test-account-level-features-tmp: ## run integration and acceptance test modifying account - temporary to prove it's working; add  ./pkg/sdk/testint later
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/testacc
 
 test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint

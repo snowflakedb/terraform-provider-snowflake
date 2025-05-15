@@ -58,26 +58,26 @@ func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 	accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
 	if err != nil {
 		accTestEnabled = false
-		accTestLog.Error("TF_ACC environmental variable has incorrect format: %v, using %v as a default value", err, accTestEnabled)
+		accTestLog.Printf("[ERROR] TF_ACC environmental variable has incorrect format: %v, using %v as a default value", err, accTestEnabled)
 	}
 	configureClientOnceEnabled, err := oswrapper.GetenvBool("SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE")
 	if err != nil {
 		configureClientOnceEnabled = false
-		accTestLog.Error("SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE environmental variable has incorrect format: %v, using %v as a default value", err, configureClientOnceEnabled)
+		accTestLog.Printf("[ERROR] SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE environmental variable has incorrect format: %v, using %v as a default value", err, configureClientOnceEnabled)
 	}
 	// hacky way to speed up our acceptance tests
 	if accTestEnabled && configureClientOnceEnabled {
-		accTestLog.Debug("Returning cached provider configuration result")
+		accTestLog.Printf("[DEBUG] Returning cached provider configuration result")
 		if configureProviderCtx != nil {
-			accTestLog.Debug("Returning cached provider configuration context")
+			accTestLog.Printf("[DEBUG] Returning cached provider configuration context")
 			return configureProviderCtx, nil
 		}
 		if configureClientErrorDiag.HasError() {
-			accTestLog.Debug("Returning cached provider configuration error")
+			accTestLog.Printf("[DEBUG] Returning cached provider configuration error")
 			return nil, configureClientErrorDiag
 		}
 	}
-	accTestLog.Debug("[DEBUG] No cached provider configuration found or caching is not enabled; configuring a new provider")
+	accTestLog.Printf("[DEBUG] No cached provider configuration found or caching is not enabled; configuring a new provider")
 
 	providerCtx, clientErrorDiag := provider.ConfigureProvider(ctx, d)
 
