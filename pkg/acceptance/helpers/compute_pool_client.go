@@ -26,11 +26,18 @@ func (c *ComputePoolClient) client() sdk.ComputePools {
 
 func (c *ComputePoolClient) Create(t *testing.T) (*sdk.ComputePool, func()) {
 	t.Helper()
-	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	err := c.client().Create(ctx, sdk.NewCreateComputePoolRequest(id, 1, 1, sdk.ComputePoolInstanceFamilyCpuX64XS))
+	return c.CreateWithRequest(t, sdk.NewCreateComputePoolRequest(id, 1, 1, sdk.ComputePoolInstanceFamilyCpuX64XS))
+}
+
+func (c *ComputePoolClient) CreateWithRequest(t *testing.T, req *sdk.CreateComputePoolRequest) (*sdk.ComputePool, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Create(ctx, req)
 	require.NoError(t, err)
+	id := req.GetName()
 	computePool, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 	return computePool, c.DropFunc(t, id)
@@ -44,4 +51,17 @@ func (c *ComputePoolClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifie
 		err := c.client().Drop(ctx, sdk.NewDropComputePoolRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *ComputePoolClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ComputePool, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
+}
+
+func (c *ComputePoolClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ComputePoolDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Describe(ctx, id)
 }

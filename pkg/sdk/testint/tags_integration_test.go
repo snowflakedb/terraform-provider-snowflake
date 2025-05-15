@@ -674,9 +674,9 @@ func TestInt_TagsAssociations(t *testing.T) {
 	t.Run("account object Application: invalid operation", func(t *testing.T) {
 		applicationPackage, applicationPackageCleanup := createApplicationPackage(t)
 		t.Cleanup(applicationPackageCleanup)
-		db, dbCleanup := testClientHelper().Application.CreateApplication(t, applicationPackage.ID(), "V01")
-		t.Cleanup(dbCleanup)
-		id := db.ID()
+		application, applicationCleanup := testClientHelper().Application.CreateApplication(t, applicationPackage.ID(), "V01")
+		t.Cleanup(applicationCleanup)
+		id := application.ID()
 
 		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithSetTags(tags))
 		require.NoError(t, err)
