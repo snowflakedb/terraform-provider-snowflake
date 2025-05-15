@@ -14,7 +14,7 @@ import (
 // timer measures time from invocation point to the end of method.
 // It's supposed to be used like:
 //
-//	defer timer("something to measure name")()
+//	defer timer("something to measure name", logger)()
 func timer(name string, logger *log.Logger) func() {
 	logger.Printf("[INFO] Timer start: %s starting now", name)
 	start := time.Now()
