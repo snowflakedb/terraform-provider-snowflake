@@ -62,14 +62,3 @@ func (c *ComputePoolAssert) HasNoApplication() *ComputePoolAssert {
 	})
 	return c
 }
-
-func (c *ComputePoolAssert) HasNoBudget() *ComputePoolAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
-		t.Helper()
-		if o.Budget != nil {
-			return fmt.Errorf("expected budget to have nil; got: %s", *o.Budget)
-		}
-		return nil
-	})
-	return c
-}

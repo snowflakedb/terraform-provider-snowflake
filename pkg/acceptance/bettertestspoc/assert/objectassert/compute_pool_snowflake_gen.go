@@ -239,22 +239,9 @@ func (c *ComputePoolAssert) HasApplication(expected sdk.AccountObjectIdentifier)
 		if o.Application == nil {
 			return fmt.Errorf("expected application to have value; got: nil")
 		}
-		if *o.Application.Name() != expected.Name() {
-			return fmt.Errorf("expected application: %v; got: %v", expected.Name(), *o.Application.Name())
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ComputePoolAssert) HasBudget(expected string) *ComputePoolAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
-		t.Helper()
-		if o.Budget == nil {
-			return fmt.Errorf("expected budget to have value; got: nil")
-		}
-		if *o.Budget != expected {
-			return fmt.Errorf("expected budget: %v; got: %v", expected, *o.Budget)
+		// Fixed manually.
+		if o.Application.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected application: %v; got: %v", expected.FullyQualifiedName(), o.Application.FullyQualifiedName())
 		}
 		return nil
 	})
