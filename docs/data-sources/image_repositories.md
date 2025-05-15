@@ -67,10 +67,6 @@ output "in_output" {
   }
 }
 
-output "in_output_simple" {
-  value = data.snowflake_image_repositories.in.image_repositories
-}
-
 # Ensure the number of image repositories is equal to at least one element (with the use of postcondition)
 data "snowflake_image_repositories" "assert_with_postcondition" {
   like = "image-repository-name%"
