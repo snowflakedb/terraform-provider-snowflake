@@ -174,7 +174,7 @@ func (atc *acceptanceTestContext) initialize() error {
 	}
 
 	if err := setUpProvider(); err != nil {
-		return fmt.Errorf("cannot set up the provider for the acceptance tests, err: %v", err)
+		return fmt.Errorf("cannot set up the provider for the acceptance tests, err: %w", err)
 	}
 
 	return nil

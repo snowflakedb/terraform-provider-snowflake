@@ -41,7 +41,7 @@ func setUpProvider() error {
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("cannot upgrade server from proto v5 to proto v6, failing, err: %v", err)
+		return fmt.Errorf("cannot upgrade server from proto v5 to proto v6, failing, err: %w", err)
 	}
 
 	TestAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
