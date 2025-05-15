@@ -132,20 +132,11 @@ func TestAcc_ImageRepositories_emptyIn(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config:      imageRepositoriesDatasourceEmptyIn(),
+				Config:      accconfig.FromModels(t, datasourcemodel.ImageRepositories("test").WithEmptyIn()),
 				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
 			},
 		},
 	})
-}
-
-func imageRepositoriesDatasourceEmptyIn() string {
-	return `
-data "snowflake_image_repositories" "test" {
-  in {
-  }
-}
-`
 }
 
 func TestAcc_ImageRepositories_NotFound_WithPostConditions(t *testing.T) {
