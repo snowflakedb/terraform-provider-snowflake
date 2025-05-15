@@ -45,9 +45,9 @@ func TestMain(m *testing.M) {
 
 func execute(m *testing.M) int {
 	defer timer("tests")()
+	defer cleanup()
 	setup()
 	exitVal := m.Run()
-	cleanup()
 	return exitVal
 }
 
@@ -147,21 +147,21 @@ func (itc *integrationTestContext) initialize() error {
 	// TODO [SNOW-1763603]: we can't use test client because of the testing.T parameter that is not present here; discuss
 	itc.testClient = helpers.NewTestClient(c, TestDatabaseName, TestSchemaName, TestWarehouseName, integrationtests.ObjectsSuffix)
 
-	db, dbCleanup, err := createDb(itc.client, itc.ctx, false, itc.testClient)
+	db, dbCleanup, err := testClientHelper().CreateTestDatabase(itc.ctx, false)
 	itc.databaseCleanup = dbCleanup
 	if err != nil {
 		return err
 	}
 	itc.database = db
 
-	sc, scCleanup, err := createSc(itc.client, itc.ctx, itc.database, false)
+	sc, scCleanup, err := testClientHelper().CreateTestSchema(itc.ctx, false)
 	itc.schemaCleanup = scCleanup
 	if err != nil {
 		return err
 	}
 	itc.schema = sc
 
-	wh, whCleanup, err := createWh(itc.client, itc.ctx, false)
+	wh, whCleanup, err := testClientHelper().CreateTestWarehouse(itc.ctx, false)
 	itc.warehouseCleanup = whCleanup
 	if err != nil {
 		return err
@@ -188,21 +188,21 @@ func (itc *integrationTestContext) initialize() error {
 
 		itc.secondaryTestClient = helpers.NewTestClient(secondaryClient, TestDatabaseName, TestSchemaName, TestWarehouseName, integrationtests.ObjectsSuffix)
 
-		secondaryDb, secondaryDbCleanup, err := createDb(itc.secondaryClient, itc.secondaryCtx, true, itc.secondaryTestClient)
+		secondaryDb, secondaryDbCleanup, err := secondaryTestClientHelper().CreateTestDatabase(itc.ctx, false)
 		itc.secondaryDatabaseCleanup = secondaryDbCleanup
 		if err != nil {
 			return err
 		}
 		itc.secondaryDatabase = secondaryDb
 
-		secondarySchema, secondarySchemaCleanup, err := createSc(itc.secondaryClient, itc.secondaryCtx, itc.database, true)
+		secondarySchema, secondarySchemaCleanup, err := secondaryTestClientHelper().CreateTestSchema(itc.ctx, false)
 		itc.secondarySchemaCleanup = secondarySchemaCleanup
 		if err != nil {
 			return err
 		}
 		itc.secondarySchema = secondarySchema
 
-		secondaryWarehouse, secondaryWarehouseCleanup, err := createWh(itc.secondaryClient, itc.secondaryCtx, true)
+		secondaryWarehouse, secondaryWarehouseCleanup, err := secondaryTestClientHelper().CreateTestWarehouse(itc.ctx, false)
 		itc.secondaryWarehouseCleanup = secondaryWarehouseCleanup
 		if err != nil {
 			return err
@@ -234,47 +234,6 @@ func (itc *integrationTestContext) initialize() error {
 	return nil
 }
 
-func createDb(client *sdk.Client, ctx context.Context, ifNotExists bool, testClient *helpers.TestClient) (*sdk.Database, func(), error) {
-	id := sdk.NewAccountObjectIdentifier(TestDatabaseName)
-	cleanup := func() {
-		_ = client.Databases.Drop(ctx, id, &sdk.DropDatabaseOptions{IfExists: sdk.Bool(true)})
-	}
-	opts := testClient.Database.TestParametersSet()
-	opts.IfNotExists = sdk.Bool(ifNotExists)
-	err := client.Databases.Create(ctx, id, opts)
-	if err != nil {
-		return nil, cleanup, err
-	}
-	database, err := client.Databases.ShowByID(ctx, id)
-	return database, cleanup, err
-}
-
-func createSc(client *sdk.Client, ctx context.Context, db *sdk.Database, ifNotExists bool) (*sdk.Schema, func(), error) {
-	id := sdk.NewDatabaseObjectIdentifier(db.Name, TestSchemaName)
-	cleanup := func() {
-		_ = client.Schemas.Drop(ctx, id, &sdk.DropSchemaOptions{IfExists: sdk.Bool(true)})
-	}
-	err := client.Schemas.Create(ctx, id, &sdk.CreateSchemaOptions{IfNotExists: sdk.Bool(ifNotExists)})
-	if err != nil {
-		return nil, cleanup, err
-	}
-	schema, err := client.Schemas.ShowByID(ctx, sdk.NewDatabaseObjectIdentifier(db.Name, TestSchemaName))
-	return schema, cleanup, err
-}
-
-func createWh(client *sdk.Client, ctx context.Context, ifNotExists bool) (*sdk.Warehouse, func(), error) {
-	id := sdk.NewAccountObjectIdentifier(TestWarehouseName)
-	cleanup := func() {
-		_ = client.Warehouses.Drop(ctx, id, &sdk.DropWarehouseOptions{IfExists: sdk.Bool(true)})
-	}
-	err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{IfNotExists: sdk.Bool(ifNotExists)})
-	if err != nil {
-		return nil, cleanup, err
-	}
-	warehouse, err := client.Warehouses.ShowByID(ctx, id)
-	return warehouse, cleanup, err
-}
-
 // timer measures time from invocation point to the end of method.
 // It's supposed to be used like:
 //
@@ -300,16 +259,6 @@ func testContext(t *testing.T) context.Context {
 func testSecondaryClient(t *testing.T) *sdk.Client {
 	t.Helper()
 	return itc.secondaryClient
-}
-
-func testSecondaryContext(t *testing.T) context.Context {
-	t.Helper()
-	return itc.secondaryCtx
-}
-
-func testConfig(t *testing.T) *gosnowflake.Config {
-	t.Helper()
-	return itc.config
 }
 
 func testClientHelper() *helpers.TestClient {
