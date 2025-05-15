@@ -107,6 +107,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeImageRepository,
 		ObjectStruct: sdk.ImageRepository{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeComputePool,
+		ObjectStruct: sdk.ComputePool{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
