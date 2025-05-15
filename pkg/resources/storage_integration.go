@@ -17,6 +17,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -65,9 +66,10 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
 	},
 	"storage_aws_external_id": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "The external ID that Snowflake will use when assuming the AWS role.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("storage_aws_external_id"),
+		Description:      "The external ID that Snowflake will use when assuming the AWS role.",
 	},
 	"storage_aws_iam_user_arn": {
 		Type:        schema.TypeString,
@@ -133,6 +135,9 @@ func StorageIntegration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: defaultTimeouts,
+		CustomizeDiff: customdiff.All(
+			ComputedIfAnyAttributeChanged(storageIntegrationSchema, DescribeOutputAttributeName, "storage_aws_external_id", "enabled", "comment"),
+		),
 	}
 }
 
