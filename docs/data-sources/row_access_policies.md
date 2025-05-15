@@ -84,7 +84,7 @@ data "snowflake_row_access_policies" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of row access policies is equal to at exactly one element (with the use of check block)
+# Ensure the number of row access policies is equal to exactly one element (with the use of check block)
 check "row_access_policy_check" {
   data "snowflake_row_access_policies" "assert_with_check_block" {
     like = "row-access-policy-name"

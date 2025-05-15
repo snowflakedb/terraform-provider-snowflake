@@ -7,16 +7,16 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (s *ImageRepositoriesModel) WithEmptyIn() *ImageRepositoriesModel {
-	return s.WithInValue(
+func (i *ImageRepositoriesModel) WithEmptyIn() *ImageRepositoriesModel {
+	return i.WithInValue(
 		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
 		}),
 	)
 }
 
-func (t *ImageRepositoriesModel) WithInDatabase(databaseId sdk.AccountObjectIdentifier) *ImageRepositoriesModel {
-	return t.WithInValue(
+func (i *ImageRepositoriesModel) WithInDatabase(databaseId sdk.AccountObjectIdentifier) *ImageRepositoriesModel {
+	return i.WithInValue(
 		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"database": tfconfig.StringVariable(databaseId.Name()),
 		}),
