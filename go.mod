@@ -3,7 +3,6 @@ module github.com/Snowflake-Labs/terraform-provider-snowflake
 go 1.23.6
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/gookit/color v1.5.4
 	github.com/hashicorp/go-cty v1.5.0

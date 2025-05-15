@@ -1,4 +1,4 @@
-package acceptance
+package testacc
 
 import (
 	"context"
@@ -16,6 +16,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
+
+// TODO [next PRs]: this file is currently almost exact copy of check_destroy file in old acceptance package:
+// 	- the package name was changed
+//  - TestClient() -> testClient()
 
 func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*terraform.State) error {
 	t.Helper()
@@ -162,9 +166,6 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	},
 	resources.FunctionSql: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Functions.ShowByID)
-	},
-	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
-		return runShowById(ctx, id, client.ImageRepositories.ShowByID)
 	},
 	resources.LegacyServiceUser: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Users.ShowByID)
@@ -331,7 +332,7 @@ func CheckGrantAccountRoleDestroy(t *testing.T) func(*terraform.State) error {
 			roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
 			objectType := parts[1]
 			targetIdentifier := parts[2]
-			grants, err := TestClient().Grant.ShowGrantsOfAccountRole(t, roleIdentifier)
+			grants, err := testClient().Grant.ShowGrantsOfAccountRole(t, roleIdentifier)
 			if err != nil {
 				return nil
 			}
@@ -367,7 +368,7 @@ func CheckGrantDatabaseRoleDestroy(t *testing.T) func(*terraform.State) error {
 			databaseRoleName := ids[0]
 			objectType := ids[1]
 			parentRoleName := ids[2]
-			grants, err := TestClient().Grant.ShowGrantsOfDatabaseRole(t, sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(databaseRoleName))
+			grants, err := testClient().Grant.ShowGrantsOfDatabaseRole(t, sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(databaseRoleName))
 			if err != nil {
 				continue
 			}
@@ -394,7 +395,7 @@ func CheckAccountRolePrivilegesRevoked(t *testing.T) func(*terraform.State) erro
 			}
 
 			id := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["account_role_name"])
-			grants, err := TestClient().Grant.ShowGrantsToAccountRole(t, id)
+			grants, err := testClient().Grant.ShowGrantsToAccountRole(t, id)
 			if err != nil {
 				if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 					continue
@@ -424,7 +425,7 @@ func CheckDatabaseRolePrivilegesRevoked(t *testing.T) func(*terraform.State) err
 			}
 
 			id := sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["database_role_name"])
-			grants, err := TestClient().Grant.ShowGrantsToDatabaseRole(t, id)
+			grants, err := testClient().Grant.ShowGrantsToDatabaseRole(t, id)
 			if err != nil {
 				return err
 			}
@@ -454,7 +455,7 @@ func CheckSharePrivilegesRevoked(t *testing.T) func(*terraform.State) error {
 			}
 
 			id := sdk.NewExternalObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["to_share"])
-			grants, err := TestClient().Grant.ShowGrantsToShare(t, sdk.NewAccountObjectIdentifier(id.Name()))
+			grants, err := testClient().Grant.ShowGrantsToShare(t, sdk.NewAccountObjectIdentifier(id.Name()))
 			if err != nil {
 				return err
 			}
@@ -478,7 +479,7 @@ func CheckUserPasswordPolicyAttachmentDestroy(t *testing.T) func(*terraform.Stat
 			if rs.Type != "snowflake_user_password_policy_attachment" {
 				continue
 			}
-			policyReferences, err := TestClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
+			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
 			if err != nil {
 				if strings.Contains(err.Error(), "does not exist or not authorized") {
 					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
@@ -507,7 +508,7 @@ func CheckUserAuthenticationPolicyAttachmentDestroy(t *testing.T) func(*terrafor
 			if rs.Type != "snowflake_user_authentication_policy_attachment" {
 				continue
 			}
-			policyReferences, err := TestClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
+			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
 			if err != nil {
 				if strings.Contains(err.Error(), "does not exist or not authorized") {
 					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
@@ -577,7 +578,7 @@ func CheckTagUnset(t *testing.T, tagId sdk.SchemaObjectIdentifier, id sdk.Object
 func assertTagUnset(t *testing.T, tagId sdk.SchemaObjectIdentifier, id sdk.ObjectIdentifier, objectType sdk.ObjectType) error {
 	t.Helper()
 
-	tag, err := TestClient().Tag.GetForObject(t, tagId, id, objectType)
+	tag, err := testClient().Tag.GetForObject(t, tagId, id, objectType)
 	if err != nil {
 		if strings.Contains(err.Error(), "does not exist or not authorized") {
 			// Note: this can happen if the referenced object was deleted before; in this case, ignore the error
@@ -630,7 +631,7 @@ func CheckAccountParameterUnset(t *testing.T, paramName sdk.AccountParameter) fu
 			if rs.Type != "snowflake_account_parameter" {
 				continue
 			}
-			parameter := TestClient().Parameter.ShowAccountParameter(t, paramName)
+			parameter := testClient().Parameter.ShowAccountParameter(t, paramName)
 			if parameter.Level != sdk.ParameterTypeSnowflakeDefault {
 				return fmt.Errorf("expected parameter level empty, got %v", parameter.Level)
 			}

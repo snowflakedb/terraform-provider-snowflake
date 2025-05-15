@@ -124,6 +124,20 @@ jobs:
           terraform_version: 1.7.4
           terraform_wrapper: false
 
+      - name: Run integration and acceptance account-level tests in the new directory
+        run: make test-account-level-features-tmp
+        if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
+        env:
+          SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT: ${{ secrets.SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT }}
+          TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL }}
+          TEST_SF_TF_AWS_EXTERNAL_KEY_ID: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_KEY_ID }}
+          TEST_SF_TF_AWS_EXTERNAL_ROLE_ARN: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_ROLE_ARN }}
+          TEST_SF_TF_AWS_EXTERNAL_SECRET_KEY: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_SECRET_KEY }}
+          TEST_SF_TF_AZURE_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_BUCKET_URL }}
+          TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN }}
+          TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID }}
+          TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL }}
+
       - name: Run integration and acceptance account-level tests
         run: make test-account-level-features
         if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}

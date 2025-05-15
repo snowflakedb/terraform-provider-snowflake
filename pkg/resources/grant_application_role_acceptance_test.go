@@ -62,7 +62,7 @@ func TestAcc_GrantApplicationRole_accountRole(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.TestAccCheckGrantApplicationRoleDestroy,
+		CheckDestroy: acc.CheckGrantApplicationRoleDestroy,
 		Steps: []resource.TestStep{
 			{
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -109,7 +109,7 @@ func TestAcc_GrantApplicationRole_application(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.TestAccCheckGrantApplicationRoleDestroy,
+		CheckDestroy: acc.CheckGrantApplicationRoleDestroy,
 		Steps: []resource.TestStep{
 			{
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
