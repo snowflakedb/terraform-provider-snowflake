@@ -2,14 +2,12 @@ package helpers
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [SNOW-1790174]: change raw sqls to proper client
 type ComputePoolClient struct {
 	context *TestClientContext
 	ids     *IdsGenerator
@@ -22,26 +20,28 @@ func NewComputePoolClient(context *TestClientContext, idsGenerator *IdsGenerator
 	}
 }
 
-func (c *ComputePoolClient) client() *sdk.Client {
-	return c.context.client
+func (c *ComputePoolClient) client() sdk.ComputePools {
+	return c.context.client.ComputePools
 }
 
-func (c *ComputePoolClient) CreateComputePool(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
+func (c *ComputePoolClient) Create(t *testing.T) (*sdk.ComputePool, func()) {
 	t.Helper()
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	_, err := c.client().ExecForTests(ctx, fmt.Sprintf(`CREATE COMPUTE POOL %s MIN_NODES = 1 MAX_NODES = 1 INSTANCE_FAMILY = CPU_X64_XS`, id.FullyQualifiedName()))
+	err := c.client().Create(ctx, sdk.NewCreateComputePoolRequest(id, 1, 1, sdk.ComputePoolInstanceFamilyCPUX64XS))
 	require.NoError(t, err)
-	return id, c.DropComputePoolFunc(t, id)
+	computePool, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return computePool, c.DropFunc(t, id)
 }
 
-func (c *ComputePoolClient) DropComputePoolFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
+func (c *ComputePoolClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
 
 	return func() {
-		_, err := c.client().ExecForTests(ctx, fmt.Sprintf(`DROP COMPUTE POOL IF EXISTS %s`, id.FullyQualifiedName()))
+		err := c.client().Drop(ctx, sdk.NewDropComputePoolRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

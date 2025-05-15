@@ -506,6 +506,19 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return client.SecurityIntegrations.AlterApiAuthenticationWithAuthorizationCodeGrantFlow(ctx, sdk.NewAlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest(id).WithUnsetTags(tags))
 			},
 		},
+		{
+			name:       "ComputePool",
+			objectType: sdk.ObjectTypeComputePool,
+			setupObject: func() (IDProvider[sdk.AccountObjectIdentifier], func()) {
+				return testClientHelper().ComputePool.Create(t)
+			},
+			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithUnsetTags(tags))
+			},
+		},
 		// TODO [SNOW-1452191]: add a test for jwt bearer integration
 		{
 			name:       "ExternalOauth",

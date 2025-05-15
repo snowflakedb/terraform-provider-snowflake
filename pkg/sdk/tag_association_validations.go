@@ -11,6 +11,7 @@ var (
 		// account level
 		ObjectTypeApplication,
 		ObjectTypeApplicationPackage,
+		ObjectTypeComputePool,
 		ObjectTypeDatabase,
 		ObjectTypeFailoverGroup,
 		ObjectTypeIntegration,

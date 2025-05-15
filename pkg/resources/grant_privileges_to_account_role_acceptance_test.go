@@ -398,13 +398,13 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_gh2717(t *testing.T) {
 	role, roleCleanup := acc.TestClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	computePoolId, computePoolCleanup := acc.TestClient().ComputePool.CreateComputePool(t)
+	computePool, computePoolCleanup := acc.TestClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	configVariables := config.Variables{
 		"name":         config.StringVariable(roleFullyQualifiedName),
-		"compute_pool": config.StringVariable(computePoolId.Name()),
+		"compute_pool": config.StringVariable(computePool.ID().Name()),
 		"privileges": config.ListVariable(
 			config.StringVariable(string(sdk.AccountObjectPrivilegeUsage)),
 		),
@@ -428,8 +428,8 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_gh2717(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.AccountObjectPrivilegeUsage)),
 					resource.TestCheckResourceAttr(resourceName, "on_account_object.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "on_account_object.0.object_type", string(sdk.ObjectTypeComputePool)),
-					resource.TestCheckResourceAttr(resourceName, "on_account_object.0.object_name", computePoolId.Name()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|USAGE|OnAccountObject|%s|%s", roleFullyQualifiedName, sdk.ObjectTypeComputePool, computePoolId.FullyQualifiedName())),
+					resource.TestCheckResourceAttr(resourceName, "on_account_object.0.object_name", computePool.ID().Name()),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|USAGE|OnAccountObject|%s|%s", roleFullyQualifiedName, sdk.ObjectTypeComputePool, computePool.ID().FullyQualifiedName())),
 				),
 			},
 		},
