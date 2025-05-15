@@ -80,6 +80,7 @@ const (
 	ObjectTypeGitRepository        ObjectType = "GIT REPOSITORY"
 	ObjectTypeModel                ObjectType = "MODEL"
 	ObjectTypeService              ObjectType = "SERVICE"
+	ObjectTypeStorageIntegration   ObjectType = "STORAGE INTEGRATION"
 )
 
 func (o ObjectType) String() string {
@@ -155,6 +156,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeGitRepository,
 	ObjectTypeModel,
 	ObjectTypeService,
+	ObjectTypeStorageIntegration,
 }
 
 // TODO(SNOW-1834370): use ToObjectType in other places with type conversion (instead of sdk.ObjectType)
@@ -231,6 +233,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeGitRepository:        PluralObjectTypeGitRepositories,
 		ObjectTypeModel:                PluralObjectTypeModels,
 		ObjectTypeService:              PluralObjectTypeServices,
+		ObjectTypeStorageIntegration:   PluralObjectTypeStorageIntegrations,
 	}
 }
 
@@ -342,6 +345,7 @@ const (
 	PluralObjectTypeGitRepositories        PluralObjectType = "GIT REPOSITORIES"
 	PluralObjectTypeModels                 PluralObjectType = "MODELS"
 	PluralObjectTypeServices               PluralObjectType = "SERVICES"
+	PluralObjectTypeStorageIntegrations    PluralObjectType = "STORAGE INTEGRATIONS"
 )
 
 func (p PluralObjectType) String() string {
