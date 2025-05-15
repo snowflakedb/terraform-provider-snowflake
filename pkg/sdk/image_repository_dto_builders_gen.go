@@ -31,6 +31,11 @@ func (s *CreateImageRepositoryRequest) WithComment(Comment string) *CreateImageR
 	return s
 }
 
+func (s *CreateImageRepositoryRequest) WithTag(Tag []TagAssociation) *CreateImageRepositoryRequest {
+	s.Tag = Tag
+	return s
+}
+
 func NewAlterImageRepositoryRequest(
 	name SchemaObjectIdentifier,
 ) *AlterImageRepositoryRequest {
@@ -46,6 +51,16 @@ func (s *AlterImageRepositoryRequest) WithIfExists(IfExists bool) *AlterImageRep
 
 func (s *AlterImageRepositoryRequest) WithSet(Set ImageRepositorySetRequest) *AlterImageRepositoryRequest {
 	s.Set = &Set
+	return s
+}
+
+func (s *AlterImageRepositoryRequest) WithSetTags(SetTags []TagAssociation) *AlterImageRepositoryRequest {
+	s.SetTags = SetTags
+	return s
+}
+
+func (s *AlterImageRepositoryRequest) WithUnsetTags(UnsetTags []ObjectIdentifier) *AlterImageRepositoryRequest {
+	s.UnsetTags = UnsetTags
 	return s
 }
 

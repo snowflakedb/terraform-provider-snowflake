@@ -25,10 +25,14 @@ Added a new preview resource for managing image repositories. See reference [doc
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repository_resource` to `preview_features_enabled` field in the provider configuration.
 
-### *(new feature)* snowflake_image_repository data source
+### *(new feature)* snowflake_image_repositories data source
 Added a new preview data source for image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-image-repositories).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repositories_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Managing tags for image repositories
+
+The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).
 
 ## v2.0.0 ➞ v2.1.0
 

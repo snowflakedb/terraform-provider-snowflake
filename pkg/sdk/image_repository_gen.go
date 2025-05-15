@@ -23,6 +23,7 @@ type CreateImageRepositoryOptions struct {
 	IfNotExists     *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name            SchemaObjectIdentifier `ddl:"identifier"`
 	Comment         *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag             []TagAssociation       `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 // AlterImageRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-image-repository.
@@ -32,6 +33,8 @@ type AlterImageRepositoryOptions struct {
 	IfExists        *bool                  `ddl:"keyword" sql:"IF EXISTS"`
 	name            SchemaObjectIdentifier `ddl:"identifier"`
 	Set             *ImageRepositorySet    `ddl:"keyword" sql:"SET"`
+	SetTags         []TagAssociation       `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags       []ObjectIdentifier     `ddl:"keyword" sql:"UNSET TAG"`
 }
 
 type ImageRepositorySet struct {

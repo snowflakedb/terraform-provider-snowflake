@@ -17,6 +17,7 @@ var ImageRepositoriesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"),
 ).AlterOperation(
@@ -33,8 +34,10 @@ var ImageRepositoriesDef = g.NewInterface(
 				OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()),
 			g.KeywordOptions().SQL("SET"),
 		).
+		OptionalSetTags().
+		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Set"),
+		WithValidation(g.ExactlyOneValueSet, "Set", "SetTags", "UnsetTags"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-image-repository",
 	g.NewQueryStruct("DropImageRepository").
