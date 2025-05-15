@@ -85,10 +85,6 @@ var ShowComputePoolSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"budget": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
 }
 
 var _ = ShowComputePoolSchema
@@ -116,10 +112,7 @@ func ComputePoolToSchema(computePool *sdk.ComputePool) map[string]any {
 	}
 	computePoolSchema["is_exclusive"] = computePool.IsExclusive
 	if computePool.Application != nil {
-		computePoolSchema["application"] = computePool.Application
-	}
-	if computePool.Budget != nil {
-		computePoolSchema["budget"] = computePool.Budget
+		computePoolSchema["application"] = computePool.Application.Name()
 	}
 	return computePoolSchema
 }

@@ -239,20 +239,6 @@ func (c *ComputePoolDetailsAssert) HasApplication(expected *sdk.AccountObjectIde
 	return c
 }
 
-func (c *ComputePoolDetailsAssert) HasBudget(expected string) *ComputePoolDetailsAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ComputePoolDetails) error {
-		t.Helper()
-		if o.Budget == nil {
-			return fmt.Errorf("expected budget to have value; got: nil")
-		}
-		if *o.Budget != expected {
-			return fmt.Errorf("expected budget: %v; got: %v", expected, *o.Budget)
-		}
-		return nil
-	})
-	return c
-}
-
 func (a *ComputePoolDetailsAssert) HasCreatedOnNotEmpty() *ComputePoolDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ComputePoolDetails) error {
 		t.Helper()
@@ -302,17 +288,6 @@ func (c *ComputePoolDetailsAssert) HasNoApplication() *ComputePoolDetailsAssert 
 		t.Helper()
 		if o.Application != nil {
 			return fmt.Errorf("expected application to have nil; got: %s", *o.Application)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ComputePoolDetailsAssert) HasNoBudget() *ComputePoolDetailsAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ComputePoolDetails) error {
-		t.Helper()
-		if o.Budget != nil {
-			return fmt.Errorf("expected budget to have nil; got: %s", *o.Budget)
 		}
 		return nil
 	})
