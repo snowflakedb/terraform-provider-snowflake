@@ -62,6 +62,7 @@ func (r *CreateImageRepositoryRequest) toOpts() *CreateImageRepositoryOptions {
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
 		Comment:     r.Comment,
+		Tag:         r.Tag,
 	}
 	return opts
 }
@@ -70,6 +71,9 @@ func (r *AlterImageRepositoryRequest) toOpts() *AlterImageRepositoryOptions {
 	opts := &AlterImageRepositoryOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
+
+		SetTags:   r.SetTags,
+		UnsetTags: r.UnsetTags,
 	}
 	if r.Set != nil {
 		opts.Set = &ImageRepositorySet{
