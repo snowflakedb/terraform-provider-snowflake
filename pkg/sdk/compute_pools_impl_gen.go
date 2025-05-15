@@ -150,7 +150,12 @@ func (r computePoolsRow) convert() *ComputePool {
 		cp.Comment = &r.Comment.String
 	}
 	if r.Application.Valid {
-		cp.Application = &r.Application.String
+		id, err := ParseAccountObjectIdentifier(r.Application.String)
+		if err != nil {
+			log.Printf("[DEBUG] failed to parse application in compute pool: %v", err)
+		} else {
+			cp.Application = &id
+		}
 	}
 	if r.Budget.Valid {
 		cp.Budget = &r.Budget.String

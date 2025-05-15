@@ -119,7 +119,7 @@ type ComputePool struct {
 	Owner           string
 	Comment         *string
 	IsExclusive     bool
-	Application     *string
+	Application     *AccountObjectIdentifier
 	Budget          *string
 }
 
