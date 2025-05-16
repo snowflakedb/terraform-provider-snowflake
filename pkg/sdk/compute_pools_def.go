@@ -199,15 +199,7 @@ var ComputePoolsDef = g.NewInterface(
 		Text("Owner").
 		OptionalText("Comment").
 		Bool("IsExclusive").
-<<<<<<< HEAD
 		Field("Application", "*AccountObjectIdentifier"),
-||||||| parent of d2f8220c (Fix app name)
-		OptionalText("Application").
-		OptionalText("Budget"),
-=======
-		Field("Application", "*AccountObjectIdentifier").
-		OptionalText("Budget"),
->>>>>>> d2f8220c (Fix app name)
 	g.NewQueryStruct("ShowComputePools").
 		Show().
 		SQL("COMPUTE POOLS").
