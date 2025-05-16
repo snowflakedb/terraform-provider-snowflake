@@ -36,7 +36,7 @@ data "snowflake_network_policies" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of network policies is equal to at exactly one element (with the use of check block)
+# Ensure the number of network policies is equal to exactly one element (with the use of check block)
 check "network_policy_check" {
   data "snowflake_network_policies" "assert_with_check_block" {
     like = "network-policy-name"

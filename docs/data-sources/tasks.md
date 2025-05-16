@@ -123,7 +123,7 @@ data "snowflake_tasks" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of tasks is equal to at exactly one element (with the use of check block)
+# Ensure the number of tasks is equal to exactly one element (with the use of check block)
 check "task_check" {
   data "snowflake_tasks" "assert_with_check_block" {
     like = "task-name"

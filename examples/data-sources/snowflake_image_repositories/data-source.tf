@@ -62,7 +62,7 @@ data "snowflake_image_repositories" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of image repositories is equal to at exactly one element (with the use of check block)
+# Ensure the number of image repositories is equal to exactly one element (with the use of check block)
 check "image_repository_check" {
   data "snowflake_image_repositories" "assert_with_check_block" {
     like = "image-repository-name"

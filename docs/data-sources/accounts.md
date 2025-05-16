@@ -49,7 +49,7 @@ data "snowflake_accounts" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of accounts is equal to at exactly one element (with the use of check block)
+# Ensure the number of accounts is equal to exactly one element (with the use of check block)
 check "account_check" {
   data "snowflake_accounts" "assert_with_check_block" {
     like = "account-name"

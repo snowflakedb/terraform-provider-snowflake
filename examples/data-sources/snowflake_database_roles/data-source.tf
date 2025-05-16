@@ -42,7 +42,7 @@ data "snowflake_database_roles" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of database roles is equal to at exactly one element (with the use of check block)
+# Ensure the number of database roles is equal to exactly one element (with the use of check block)
 check "database_role_check" {
   data "snowflake_database_roles" "assert_with_check_block" {
     in_database = "database-name"

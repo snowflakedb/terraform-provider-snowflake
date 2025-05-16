@@ -35,7 +35,7 @@ data "snowflake_account_roles" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of roles is equal to at exactly one element (with the use of check block)
+# Ensure the number of roles is equal to exactly one element (with the use of check block)
 check "role_check" {
   data "snowflake_account_roles" "assert_with_check_block" {
     like = "role-name"

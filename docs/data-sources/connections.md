@@ -38,7 +38,7 @@ output "like_prefix_output" {
   value = data.snowflake_connections.like_prefix.connections
 }
 
-# Ensure the number of connections is equal to at exactly one element (with the use of check block)
+# Ensure the number of connections is equal to exactly one element (with the use of check block)
 check "connection_check" {
   data "snowflake_connections" "assert_with_check_block" {
     like = "connection-name"

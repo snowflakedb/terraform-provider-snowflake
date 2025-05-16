@@ -60,7 +60,7 @@ data "snowflake_databases" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of databases is equal to at exactly one element (with the use of check block)
+# Ensure the number of databases is equal to exactly one element (with the use of check block)
 check "database_check" {
   data "snowflake_databases" "assert_with_check_block" {
     like = "database-name"

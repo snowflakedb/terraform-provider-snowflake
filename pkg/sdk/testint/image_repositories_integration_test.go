@@ -129,7 +129,7 @@ func TestInt_ImageRepositories(t *testing.T) {
 		require.ErrorContains(t, err, "000002 (0A000): Unsupported feature 'UNSET'")
 	})
 
-	t.Run("show streamlit: with like", func(t *testing.T) {
+	t.Run("show: with like", func(t *testing.T) {
 		imageRepository, funcCleanup := testClientHelper().ImageRepository.CreateInSchema(t, schema.ID())
 		t.Cleanup(funcCleanup)
 
