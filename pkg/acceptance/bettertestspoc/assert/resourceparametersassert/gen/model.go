@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	objectparametersassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert/gen"
+	objectparametersassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/assert/objectparametersassert/gen"
 )
 
 // TODO [SNOW-1501905]: extract to commons?

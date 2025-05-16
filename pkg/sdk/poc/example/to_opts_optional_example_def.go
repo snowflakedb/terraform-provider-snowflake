@@ -1,7 +1,7 @@
 package example
 
 import (
-	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/poc/generator"
 )
 
 //go:generate go run ../main.go

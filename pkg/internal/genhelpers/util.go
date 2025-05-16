@@ -21,7 +21,7 @@ var (
 const forbiddenAttributeNameSuffix = "_"
 
 var PredefinedImports = map[string]string{
-	"sdk": "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk",
+	"sdk": "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk",
 }
 
 // ToSnakeCase allows converting a CamelCase text to camel_case one (needed for schema attribute names). Examples:

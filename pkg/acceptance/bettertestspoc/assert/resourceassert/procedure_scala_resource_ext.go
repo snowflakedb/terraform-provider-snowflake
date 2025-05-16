@@ -3,7 +3,7 @@ package resourceassert
 import (
 	"strconv"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/assert"
 )
 
 func (f *ProcedureScalaResourceAssert) HasImportsLength(len int) *ProcedureScalaResourceAssert {
