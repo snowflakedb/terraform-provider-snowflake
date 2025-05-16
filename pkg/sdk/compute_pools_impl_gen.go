@@ -88,6 +88,9 @@ func (r *AlterComputePoolRequest) toOpts() *AlterComputePoolOptions {
 	opts := &AlterComputePoolOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
+		Resume:   r.Resume,
+		Suspend:  r.Suspend,
+		StopAll:  r.StopAll,
 
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,

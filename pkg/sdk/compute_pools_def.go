@@ -122,6 +122,9 @@ var ComputePoolsDef = g.NewInterface(
 		SQL("COMPUTE POOL").
 		IfExists().
 		Name().
+		OptionalSQL("RESUME").
+		OptionalSQL("SUSPEND").
+		OptionalSQL("STOP ALL").
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("ComputePoolSet").
@@ -145,7 +148,7 @@ var ComputePoolsDef = g.NewInterface(
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags"),
+		WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-compute-pool",
 	g.NewQueryStruct("DropComputePool").

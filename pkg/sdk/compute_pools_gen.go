@@ -40,6 +40,9 @@ type AlterComputePoolOptions struct {
 	computePool bool                    `ddl:"static" sql:"COMPUTE POOL"`
 	IfExists    *bool                   `ddl:"keyword" sql:"IF EXISTS"`
 	name        AccountObjectIdentifier `ddl:"identifier"`
+	Resume      *bool                   `ddl:"keyword" sql:"RESUME"`
+	Suspend     *bool                   `ddl:"keyword" sql:"SUSPEND"`
+	StopAll     *bool                   `ddl:"keyword" sql:"STOP ALL"`
 	Set         *ComputePoolSet         `ddl:"keyword" sql:"SET"`
 	Unset       *ComputePoolUnset       `ddl:"list,no_parentheses" sql:"UNSET"`
 	SetTags     []TagAssociation        `ddl:"keyword" sql:"SET TAG"`

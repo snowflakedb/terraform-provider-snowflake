@@ -97,14 +97,32 @@ func TestComputePools_Alter(t *testing.T) {
 
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterComputePoolOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ComputePoolSet{}
 		opts.Unset = &ComputePoolUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterComputePoolOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
+	})
+
+	t.Run("suspend", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Suspend = Pointer(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s SUSPEND`, id.FullyQualifiedName())
+	})
+
+	t.Run("resume", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Resume = Pointer(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s RESUME`, id.FullyQualifiedName())
+	})
+
+	t.Run("stop all", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.StopAll = Pointer(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s STOP ALL`, id.FullyQualifiedName())
 	})
 
 	t.Run("set", func(t *testing.T) {

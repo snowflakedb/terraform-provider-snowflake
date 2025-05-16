@@ -27,6 +27,9 @@ type CreateComputePoolRequest struct {
 type AlterComputePoolRequest struct {
 	IfExists  *bool
 	name      AccountObjectIdentifier // required
+	Resume    *bool
+	Suspend   *bool
+	StopAll   *bool
 	Set       *ComputePoolSetRequest
 	Unset     *ComputePoolUnsetRequest
 	SetTags   []TagAssociation

@@ -66,6 +66,21 @@ func (s *AlterComputePoolRequest) WithIfExists(IfExists bool) *AlterComputePoolR
 	return s
 }
 
+func (s *AlterComputePoolRequest) WithResume(Resume bool) *AlterComputePoolRequest {
+	s.Resume = &Resume
+	return s
+}
+
+func (s *AlterComputePoolRequest) WithSuspend(Suspend bool) *AlterComputePoolRequest {
+	s.Suspend = &Suspend
+	return s
+}
+
+func (s *AlterComputePoolRequest) WithStopAll(StopAll bool) *AlterComputePoolRequest {
+	s.StopAll = &StopAll
+	return s
+}
+
 func (s *AlterComputePoolRequest) WithSet(Set ComputePoolSetRequest) *AlterComputePoolRequest {
 	s.Set = &Set
 	return s
