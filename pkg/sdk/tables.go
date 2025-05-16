@@ -499,14 +499,14 @@ type dropTableOptions struct {
 }
 
 type showTableOptions struct {
-	show       bool       `ddl:"static" sql:"SHOW"`
-	Terse      *bool      `ddl:"keyword" sql:"TERSE"`
-	tables     bool       `ddl:"static" sql:"TABLES"`
-	History    *bool      `ddl:"keyword" sql:"HISTORY"`
-	Like       *Like      `ddl:"keyword" sql:"LIKE"`
-	In         *In        `ddl:"keyword" sql:"IN"`
-	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	LimitFrom  *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+	show       bool        `ddl:"static" sql:"SHOW"`
+	Terse      *bool       `ddl:"keyword" sql:"TERSE"`
+	tables     bool        `ddl:"static" sql:"TABLES"`
+	History    *bool       `ddl:"keyword" sql:"HISTORY"`
+	Like       *Like       `ddl:"keyword" sql:"LIKE"`
+	In         *ExtendedIn `ddl:"keyword" sql:"IN"`
+	StartsWith *string     `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	LimitFrom  *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
 type tableDBRow struct {

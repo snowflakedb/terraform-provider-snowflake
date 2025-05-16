@@ -1618,33 +1618,33 @@ func NewShowTableRequest() *ShowTableRequest {
 	return &ShowTableRequest{}
 }
 
-func (s *ShowTableRequest) WithTerse(terse *bool) *ShowTableRequest {
-	s.terse = terse
+func (s *ShowTableRequest) WithTerse(terse bool) *ShowTableRequest {
+	s.Terse = &terse
 	return s
 }
 
 func (s *ShowTableRequest) WithHistory(history *bool) *ShowTableRequest {
-	s.history = history
+	s.History = history
 	return s
 }
 
-func (s *ShowTableRequest) WithLikePattern(likePattern string) *ShowTableRequest {
-	s.likePattern = likePattern
+func (s *ShowTableRequest) WithLike(like Like) *ShowTableRequest {
+	s.Like = &like
 	return s
 }
 
-func (s *ShowTableRequest) WithIn(in *In) *ShowTableRequest {
-	s.in = in
+func (s *ShowTableRequest) WithIn(in ExtendedIn) *ShowTableRequest {
+	s.In = &in
 	return s
 }
 
-func (s *ShowTableRequest) WithStartsWith(startsWith *string) *ShowTableRequest {
-	s.startsWith = startsWith
+func (s *ShowTableRequest) WithStartsWith(startsWith string) *ShowTableRequest {
+	s.StartsWith = &startsWith
 	return s
 }
 
-func (s *ShowTableRequest) WithLimitFrom(limitFrom *LimitFrom) *ShowTableRequest {
-	s.limitFrom = limitFrom
+func (s *ShowTableRequest) WithLimitFrom(limit LimitFrom) *ShowTableRequest {
+	s.Limit = &limit
 	return s
 }
 
