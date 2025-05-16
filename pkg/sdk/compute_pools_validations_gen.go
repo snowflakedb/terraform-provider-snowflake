@@ -47,6 +47,11 @@ func (opts *AlterComputePoolOptions) validate() error {
 		if valueSet(opts.Set.MaxNodes) && !validateIntGreaterThan(*opts.Set.MaxNodes, 0) {
 			errs = append(errs, errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreater, 0))
 		}
+		// Validation added manually.
+		if valueSet(opts.Set.MinNodes) && valueSet(opts.Set.MaxNodes) && !validateIntGreaterThanOrEqual(*opts.Set.MaxNodes, *opts.Set.MinNodes) {
+			errs = append(errs, errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreaterOrEqual, *opts.Set.MinNodes))
+		}
+
 		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.AutoResume, opts.Set.AutoSuspendSecs, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"))
 		}

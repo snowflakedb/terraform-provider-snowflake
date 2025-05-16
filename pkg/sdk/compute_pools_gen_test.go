@@ -95,6 +95,31 @@ func TestComputePools_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: MinNodes must be greater than 0", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ComputePoolSet{
+			MinNodes: Pointer(0),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterComputePoolOptions", "Set.MinNodes", IntErrGreater, 0))
+	})
+
+	t.Run("validation: MaxNodes must be greater than 0", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ComputePoolSet{
+			MaxNodes: Pointer(0),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreater, 0))
+	})
+
+	t.Run("validation: MaxNodes must be greater than or equal to MinNodes", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ComputePoolSet{
+			MinNodes: Pointer(2),
+			MaxNodes: Pointer(1),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreaterOrEqual, *opts.Set.MinNodes))
+	})
+
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
