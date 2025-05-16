@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/acceptancetests"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers/random/acceptancetests"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers/random/integrationtests"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/testenvs"
 	"github.com/stretchr/testify/assert"
 )
 

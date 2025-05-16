@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider/datasources"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider/previewfeatures"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

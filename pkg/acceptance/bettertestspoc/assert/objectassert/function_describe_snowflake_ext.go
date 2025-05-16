@@ -7,11 +7,11 @@ import (
 
 	assert2 "github.com/stretchr/testify/assert"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/datatypes"
 )
 
 // TODO [SNOW-1501905]: this file should be fully regenerated when adding and option to assert the results of describe

@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/testenvs"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/hashicorp/go-uuid"

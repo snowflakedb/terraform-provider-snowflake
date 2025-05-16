@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/testenvs"
 	"github.com/stretchr/testify/require"
 )
 

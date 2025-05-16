@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
 )
 
 // to ensure sdk package is used

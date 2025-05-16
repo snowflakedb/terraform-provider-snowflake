@@ -3,7 +3,7 @@ package model
 import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
 )
 
 // DatabaseWithParametersSet should be used to create database which sets the parameters that can be altered on the account level in other tests; this way, the test is not affected by the changes.

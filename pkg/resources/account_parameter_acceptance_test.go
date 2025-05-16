@@ -5,16 +5,16 @@ package resources_test
 import (
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
+	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/testprofiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

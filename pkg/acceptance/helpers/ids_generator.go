@@ -3,10 +3,10 @@ package helpers
 import (
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/datatypes"
 )
 
 type IdsGenerator struct {

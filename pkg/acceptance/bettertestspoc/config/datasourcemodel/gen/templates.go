@@ -5,9 +5,9 @@ import (
 
 	_ "embed"
 
-	resourcemodel "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model/gen"
+	resourcemodel "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/config/model/gen"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/genhelpers"
 )
 
 var (

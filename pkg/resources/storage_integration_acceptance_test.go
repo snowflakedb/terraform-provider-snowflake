@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
+	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider/resources"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"

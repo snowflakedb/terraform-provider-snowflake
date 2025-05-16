@@ -7,8 +7,8 @@ import (
 
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider/resources"
 )
 
 type SecretWithBasicAuthenticationModel struct {

@@ -7,9 +7,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"

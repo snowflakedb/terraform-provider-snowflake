@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

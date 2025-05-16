@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
 	"github.com/snowflakedb/gosnowflake"
 	"github.com/stretchr/testify/require"
 )

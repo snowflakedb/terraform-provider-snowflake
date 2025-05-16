@@ -7,12 +7,12 @@ import (
 	"regexp"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
+	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"

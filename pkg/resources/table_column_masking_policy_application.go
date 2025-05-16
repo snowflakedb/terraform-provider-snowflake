@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

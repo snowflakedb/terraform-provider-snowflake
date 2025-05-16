@@ -3,9 +3,9 @@ package sdk
 import (
 	"context"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/internal/tracking"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/collections"
 )
 
 var _ Views = (*views)(nil)

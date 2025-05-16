@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/datatypes"
 )
 
 func v0_95_0_RowAccessPolicyStateUpgrader(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {

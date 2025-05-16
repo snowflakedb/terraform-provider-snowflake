@@ -95,8 +95,8 @@ GitHub issue reference: [#2489](https://github.com/snowflakedb/terraform-provide
 │ panic: runtime error: index out of range [2] with length 2
 │
 │ goroutine 61 [running]:
-│ github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake.SchemaObjectIdentifierFromQualifiedName({0x140001c2870?, 0x103adf987?})
-│ github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake/identifier.go:58 +0x174
+│ github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/snowflake.SchemaObjectIdentifierFromQualifiedName({0x140001c2870?, 0x103adf987?})
+│ github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/snowflake/identifier.go:58 +0x174
 ```
 
 GitHub issue reference: [#2224](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2224)

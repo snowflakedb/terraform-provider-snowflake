@@ -11,11 +11,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider/previewfeatures"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/provider/docs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/provider"
 )
 
 func main() {

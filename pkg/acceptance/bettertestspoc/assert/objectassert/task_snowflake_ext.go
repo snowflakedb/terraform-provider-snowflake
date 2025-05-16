@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
 )
 
 func (t *TaskAssert) HasNotEmptyCreatedOn() *TaskAssert {

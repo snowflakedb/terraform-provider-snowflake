@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert/gen"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/bettertestspoc/assert/objectassert/gen"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/genhelpers"
 )
 
 func main() {
