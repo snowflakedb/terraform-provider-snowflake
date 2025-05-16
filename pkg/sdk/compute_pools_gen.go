@@ -100,7 +100,6 @@ type computePoolsRow struct {
 	Comment         sql.NullString `db:"comment"`
 	IsExclusive     bool           `db:"is_exclusive"`
 	Application     sql.NullString `db:"application"`
-	Budget          sql.NullString `db:"budget"`
 }
 
 type ComputePool struct {
@@ -123,7 +122,6 @@ type ComputePool struct {
 	Comment         *string
 	IsExclusive     bool
 	Application     *AccountObjectIdentifier
-	Budget          *string
 }
 
 func (v *ComputePool) ID() AccountObjectIdentifier {
@@ -161,7 +159,6 @@ type computePoolDescRow struct {
 	Comment         sql.NullString `db:"comment"`
 	IsExclusive     bool           `db:"is_exclusive"`
 	Application     sql.NullString `db:"application"`
-	Budget          sql.NullString `db:"budget"`
 	ErrorCode       string         `db:"error_code"`
 	StatusMessage   string         `db:"status_message"`
 }
@@ -186,7 +183,6 @@ type ComputePoolDetails struct {
 	Comment         *string
 	IsExclusive     bool
 	Application     *AccountObjectIdentifier
-	Budget          *string
 	ErrorCode       string
 	StatusMessage   string
 }

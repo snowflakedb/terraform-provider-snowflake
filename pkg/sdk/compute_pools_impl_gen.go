@@ -160,9 +160,6 @@ func (r computePoolsRow) convert() *ComputePool {
 			cp.Application = &id
 		}
 	}
-	if r.Budget.Valid {
-		cp.Budget = &r.Budget.String
-	}
 	instanceFamily, err := ToComputePoolInstanceFamily(r.InstanceFamily)
 	if err != nil {
 		log.Printf("[DEBUG] error converting compute pool instance family: %v", err)
@@ -215,9 +212,6 @@ func (r computePoolDescRow) convert() *ComputePoolDetails {
 		} else {
 			cp.Application = &id
 		}
-	}
-	if r.Budget.Valid {
-		cp.Budget = &r.Budget.String
 	}
 	instanceFamily, err := ToComputePoolInstanceFamily(r.InstanceFamily)
 	if err != nil {
