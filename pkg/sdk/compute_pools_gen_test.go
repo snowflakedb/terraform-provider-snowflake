@@ -16,7 +16,7 @@ func TestComputePools_Create(t *testing.T) {
 			name:           id,
 			MinNodes:       1,
 			MaxNodes:       3,
-			InstanceFamily: ComputePoolInstanceFamilyCPUX64XS,
+			InstanceFamily: ComputePoolInstanceFamilyCpuX64XS,
 		}
 	}
 
@@ -58,7 +58,7 @@ func TestComputePools_Create(t *testing.T) {
 			ForApplication:     &appId,
 			MinNodes:           2,
 			MaxNodes:           3,
-			InstanceFamily:     ComputePoolInstanceFamilyCPUX64XS,
+			InstanceFamily:     ComputePoolInstanceFamilyCpuX64XS,
 			AutoResume:         Pointer(true),
 			InitiallySuspended: Pointer(true),
 			AutoSuspendSecs:    Pointer(42),
@@ -260,25 +260,25 @@ func Test_ComputePool_ToComputePoolInstanceFamily(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "cpu_x64_xs", want: ComputePoolInstanceFamilyCPUX64XS},
+		{input: "cpu_x64_xs", want: ComputePoolInstanceFamilyCpuX64XS},
 
 		// Supported Values
-		{input: "CPU_X64_XS", want: ComputePoolInstanceFamilyCPUX64XS},
-		{input: "CPU_X64_S", want: ComputePoolInstanceFamilyCPUX64S},
-		{input: "CPU_X64_M", want: ComputePoolInstanceFamilyCPUX64M},
-		{input: "CPU_X64_L", want: ComputePoolInstanceFamilyCPUX64L},
-		{input: "HIGHMEM_X64_S", want: ComputePoolInstanceFamilyHIGHMEMX64S},
-		{input: "HIGHMEM_X64_M", want: ComputePoolInstanceFamilyHIGHMEMX64M},
-		{input: "HIGHMEM_X64_L", want: ComputePoolInstanceFamilyHIGHMEMX64L},
-		{input: "HIGHMEM_X64_SL", want: ComputePoolInstanceFamilyHIGHMEMX64SL},
-		{input: "GPU_NV_S", want: ComputePoolInstanceFamilyGPUNVS},
-		{input: "GPU_NV_M", want: ComputePoolInstanceFamilyGPUNVM},
-		{input: "GPU_NV_L", want: ComputePoolInstanceFamilyGPUNVL},
-		{input: "GPU_NV_XS", want: ComputePoolInstanceFamilyGPUNVXS},
-		{input: "GPU_NV_SM", want: ComputePoolInstanceFamilyGPUNVSM},
-		{input: "GPU_NV_2M", want: ComputePoolInstanceFamilyGPUNV2M},
-		{input: "GPU_NV_3M", want: ComputePoolInstanceFamilyGPUNV3M},
-		{input: "GPU_NV_SL", want: ComputePoolInstanceFamilyGPUNVSL},
+		{input: "CPU_X64_XS", want: ComputePoolInstanceFamilyCpuX64XS},
+		{input: "CPU_X64_S", want: ComputePoolInstanceFamilyCpuX64S},
+		{input: "CPU_X64_M", want: ComputePoolInstanceFamilyCpuX64M},
+		{input: "CPU_X64_L", want: ComputePoolInstanceFamilyCpuX64L},
+		{input: "HIGHMEM_X64_S", want: ComputePoolInstanceFamilyHighMemX64S},
+		{input: "HIGHMEM_X64_M", want: ComputePoolInstanceFamilyHighMemX64M},
+		{input: "HIGHMEM_X64_L", want: ComputePoolInstanceFamilyHighMemX64L},
+		{input: "HIGHMEM_X64_SL", want: ComputePoolInstanceFamilyHighMemX64SL},
+		{input: "GPU_NV_S", want: ComputePoolInstanceFamilyGpuNvS},
+		{input: "GPU_NV_M", want: ComputePoolInstanceFamilyGpuNvM},
+		{input: "GPU_NV_L", want: ComputePoolInstanceFamilyGpuNvL},
+		{input: "GPU_NV_XS", want: ComputePoolInstanceFamilyGpuNvXS},
+		{input: "GPU_NV_SM", want: ComputePoolInstanceFamilyGpuNvSM},
+		{input: "GPU_NV_2M", want: ComputePoolInstanceFamilyGpuNv2M},
+		{input: "GPU_NV_3M", want: ComputePoolInstanceFamilyGpuNv3M},
+		{input: "GPU_NV_SL", want: ComputePoolInstanceFamilyGpuNvSL},
 	}
 
 	invalid := []test{

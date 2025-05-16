@@ -13,43 +13,43 @@ import (
 type ComputePoolInstanceFamily string
 
 const (
-	ComputePoolInstanceFamilyCPUX64XS    ComputePoolInstanceFamily = "CPU_X64_XS"
-	ComputePoolInstanceFamilyCPUX64S     ComputePoolInstanceFamily = "CPU_X64_S"
-	ComputePoolInstanceFamilyCPUX64M     ComputePoolInstanceFamily = "CPU_X64_M"
-	ComputePoolInstanceFamilyCPUX64L     ComputePoolInstanceFamily = "CPU_X64_L"
-	ComputePoolInstanceFamilyHIGHMEMX64S ComputePoolInstanceFamily = "HIGHMEM_X64_S"
+	ComputePoolInstanceFamilyCpuX64XS    ComputePoolInstanceFamily = "CPU_X64_XS"
+	ComputePoolInstanceFamilyCpuX64S     ComputePoolInstanceFamily = "CPU_X64_S"
+	ComputePoolInstanceFamilyCpuX64M     ComputePoolInstanceFamily = "CPU_X64_M"
+	ComputePoolInstanceFamilyCpuX64L     ComputePoolInstanceFamily = "CPU_X64_L"
+	ComputePoolInstanceFamilyHighMemX64S ComputePoolInstanceFamily = "HIGHMEM_X64_S"
 	// Note: Currently the list of instance families in https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool
 	// has two entries for HIGHMEM_X64_M. They have the same name, but have different values depending on the region.
-	ComputePoolInstanceFamilyHIGHMEMX64M  ComputePoolInstanceFamily = "HIGHMEM_X64_M"
-	ComputePoolInstanceFamilyHIGHMEMX64L  ComputePoolInstanceFamily = "HIGHMEM_X64_L"
-	ComputePoolInstanceFamilyHIGHMEMX64SL ComputePoolInstanceFamily = "HIGHMEM_X64_SL"
-	ComputePoolInstanceFamilyGPUNVS       ComputePoolInstanceFamily = "GPU_NV_S"
-	ComputePoolInstanceFamilyGPUNVM       ComputePoolInstanceFamily = "GPU_NV_M"
-	ComputePoolInstanceFamilyGPUNVL       ComputePoolInstanceFamily = "GPU_NV_L"
-	ComputePoolInstanceFamilyGPUNVXS      ComputePoolInstanceFamily = "GPU_NV_XS"
-	ComputePoolInstanceFamilyGPUNVSM      ComputePoolInstanceFamily = "GPU_NV_SM"
-	ComputePoolInstanceFamilyGPUNV2M      ComputePoolInstanceFamily = "GPU_NV_2M"
-	ComputePoolInstanceFamilyGPUNV3M      ComputePoolInstanceFamily = "GPU_NV_3M"
-	ComputePoolInstanceFamilyGPUNVSL      ComputePoolInstanceFamily = "GPU_NV_SL"
+	ComputePoolInstanceFamilyHighMemX64M  ComputePoolInstanceFamily = "HIGHMEM_X64_M"
+	ComputePoolInstanceFamilyHighMemX64L  ComputePoolInstanceFamily = "HIGHMEM_X64_L"
+	ComputePoolInstanceFamilyHighMemX64SL ComputePoolInstanceFamily = "HIGHMEM_X64_SL"
+	ComputePoolInstanceFamilyGpuNvS       ComputePoolInstanceFamily = "GPU_NV_S"
+	ComputePoolInstanceFamilyGpuNvM       ComputePoolInstanceFamily = "GPU_NV_M"
+	ComputePoolInstanceFamilyGpuNvL       ComputePoolInstanceFamily = "GPU_NV_L"
+	ComputePoolInstanceFamilyGpuNvXS      ComputePoolInstanceFamily = "GPU_NV_XS"
+	ComputePoolInstanceFamilyGpuNvSM      ComputePoolInstanceFamily = "GPU_NV_SM"
+	ComputePoolInstanceFamilyGpuNv2M      ComputePoolInstanceFamily = "GPU_NV_2M"
+	ComputePoolInstanceFamilyGpuNv3M      ComputePoolInstanceFamily = "GPU_NV_3M"
+	ComputePoolInstanceFamilyGpuNvSL      ComputePoolInstanceFamily = "GPU_NV_SL"
 )
 
 var allComputePoolInstanceFamilies = []ComputePoolInstanceFamily{
-	ComputePoolInstanceFamilyCPUX64XS,
-	ComputePoolInstanceFamilyCPUX64S,
-	ComputePoolInstanceFamilyCPUX64M,
-	ComputePoolInstanceFamilyCPUX64L,
-	ComputePoolInstanceFamilyHIGHMEMX64S,
-	ComputePoolInstanceFamilyHIGHMEMX64M,
-	ComputePoolInstanceFamilyHIGHMEMX64L,
-	ComputePoolInstanceFamilyHIGHMEMX64SL,
-	ComputePoolInstanceFamilyGPUNVS,
-	ComputePoolInstanceFamilyGPUNVM,
-	ComputePoolInstanceFamilyGPUNVL,
-	ComputePoolInstanceFamilyGPUNVXS,
-	ComputePoolInstanceFamilyGPUNVSM,
-	ComputePoolInstanceFamilyGPUNV2M,
-	ComputePoolInstanceFamilyGPUNV3M,
-	ComputePoolInstanceFamilyGPUNVSL,
+	ComputePoolInstanceFamilyCpuX64XS,
+	ComputePoolInstanceFamilyCpuX64S,
+	ComputePoolInstanceFamilyCpuX64M,
+	ComputePoolInstanceFamilyCpuX64L,
+	ComputePoolInstanceFamilyHighMemX64S,
+	ComputePoolInstanceFamilyHighMemX64M,
+	ComputePoolInstanceFamilyHighMemX64L,
+	ComputePoolInstanceFamilyHighMemX64SL,
+	ComputePoolInstanceFamilyGpuNvS,
+	ComputePoolInstanceFamilyGpuNvM,
+	ComputePoolInstanceFamilyGpuNvL,
+	ComputePoolInstanceFamilyGpuNvXS,
+	ComputePoolInstanceFamilyGpuNvSM,
+	ComputePoolInstanceFamilyGpuNv2M,
+	ComputePoolInstanceFamilyGpuNv3M,
+	ComputePoolInstanceFamilyGpuNvSL,
 }
 
 func ToComputePoolInstanceFamily(s string) (ComputePoolInstanceFamily, error) {

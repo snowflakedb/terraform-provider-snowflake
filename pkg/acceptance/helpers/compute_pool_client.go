@@ -29,7 +29,7 @@ func (c *ComputePoolClient) Create(t *testing.T) (*sdk.ComputePool, func()) {
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	err := c.client().Create(ctx, sdk.NewCreateComputePoolRequest(id, 1, 1, sdk.ComputePoolInstanceFamilyCPUX64XS))
+	err := c.client().Create(ctx, sdk.NewCreateComputePoolRequest(id, 1, 1, sdk.ComputePoolInstanceFamilyCpuX64XS))
 	require.NoError(t, err)
 	computePool, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
