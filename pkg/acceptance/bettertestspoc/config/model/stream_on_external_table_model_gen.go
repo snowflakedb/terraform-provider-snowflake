@@ -12,18 +12,20 @@ import (
 )
 
 type StreamOnExternalTableModel struct {
+	Database           tfconfig.Variable `json:"database,omitempty"`
+	Schema             tfconfig.Variable `json:"schema,omitempty"`
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	At                 tfconfig.Variable `json:"at,omitempty"`
 	Before             tfconfig.Variable `json:"before,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	CopyGrants         tfconfig.Variable `json:"copy_grants,omitempty"`
-	Database           tfconfig.Variable `json:"database,omitempty"`
 	ExternalTable      tfconfig.Variable `json:"external_table,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	InsertOnly         tfconfig.Variable `json:"insert_only,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	Stale              tfconfig.Variable `json:"stale,omitempty"`
 	StreamType         tfconfig.Variable `json:"stream_type,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -35,35 +37,35 @@ type StreamOnExternalTableModel struct {
 func StreamOnExternalTable(
 	resourceName string,
 	database string,
-	externalTable string,
-	name string,
 	schema string,
+	name string,
+	externalTable string,
 ) *StreamOnExternalTableModel {
 	s := &StreamOnExternalTableModel{ResourceModelMeta: config.Meta(resourceName, resources.StreamOnExternalTable)}
 	s.WithDatabase(database)
-	s.WithExternalTable(externalTable)
-	s.WithName(name)
 	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithExternalTable(externalTable)
 	return s
 }
 
 func StreamOnExternalTableWithDefaultMeta(
 	database string,
-	externalTable string,
-	name string,
 	schema string,
+	name string,
+	externalTable string,
 ) *StreamOnExternalTableModel {
 	s := &StreamOnExternalTableModel{ResourceModelMeta: config.DefaultMeta(resources.StreamOnExternalTable)}
 	s.WithDatabase(database)
-	s.WithExternalTable(externalTable)
-	s.WithName(name)
 	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithExternalTable(externalTable)
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *StreamOnExternalTableModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnExternalTableModel
@@ -81,9 +83,29 @@ func (s *StreamOnExternalTableModel) WithDependsOn(values ...string) *StreamOnEx
 	return s
 }
 
+func (s *StreamOnExternalTableModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StreamOnExternalTableModel {
+	s.DynamicBlock = dynamicBlock
+	return s
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (s *StreamOnExternalTableModel) WithDatabase(database string) *StreamOnExternalTableModel {
+	s.Database = tfconfig.StringVariable(database)
+	return s
+}
+
+func (s *StreamOnExternalTableModel) WithSchema(schema string) *StreamOnExternalTableModel {
+	s.Schema = tfconfig.StringVariable(schema)
+	return s
+}
+
+func (s *StreamOnExternalTableModel) WithName(name string) *StreamOnExternalTableModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
 
 // at attribute type is not yet supported, so WithAt can't be generated
 
@@ -96,11 +118,6 @@ func (s *StreamOnExternalTableModel) WithComment(comment string) *StreamOnExtern
 
 func (s *StreamOnExternalTableModel) WithCopyGrants(copyGrants bool) *StreamOnExternalTableModel {
 	s.CopyGrants = tfconfig.BoolVariable(copyGrants)
-	return s
-}
-
-func (s *StreamOnExternalTableModel) WithDatabase(database string) *StreamOnExternalTableModel {
-	s.Database = tfconfig.StringVariable(database)
 	return s
 }
 
@@ -119,16 +136,6 @@ func (s *StreamOnExternalTableModel) WithInsertOnly(insertOnly string) *StreamOn
 	return s
 }
 
-func (s *StreamOnExternalTableModel) WithName(name string) *StreamOnExternalTableModel {
-	s.Name = tfconfig.StringVariable(name)
-	return s
-}
-
-func (s *StreamOnExternalTableModel) WithSchema(schema string) *StreamOnExternalTableModel {
-	s.Schema = tfconfig.StringVariable(schema)
-	return s
-}
-
 func (s *StreamOnExternalTableModel) WithStale(stale bool) *StreamOnExternalTableModel {
 	s.Stale = tfconfig.BoolVariable(stale)
 	return s
@@ -142,6 +149,21 @@ func (s *StreamOnExternalTableModel) WithStreamType(streamType string) *StreamOn
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (s *StreamOnExternalTableModel) WithDatabaseValue(value tfconfig.Variable) *StreamOnExternalTableModel {
+	s.Database = value
+	return s
+}
+
+func (s *StreamOnExternalTableModel) WithSchemaValue(value tfconfig.Variable) *StreamOnExternalTableModel {
+	s.Schema = value
+	return s
+}
+
+func (s *StreamOnExternalTableModel) WithNameValue(value tfconfig.Variable) *StreamOnExternalTableModel {
+	s.Name = value
+	return s
+}
 
 func (s *StreamOnExternalTableModel) WithAtValue(value tfconfig.Variable) *StreamOnExternalTableModel {
 	s.At = value
@@ -163,11 +185,6 @@ func (s *StreamOnExternalTableModel) WithCopyGrantsValue(value tfconfig.Variable
 	return s
 }
 
-func (s *StreamOnExternalTableModel) WithDatabaseValue(value tfconfig.Variable) *StreamOnExternalTableModel {
-	s.Database = value
-	return s
-}
-
 func (s *StreamOnExternalTableModel) WithExternalTableValue(value tfconfig.Variable) *StreamOnExternalTableModel {
 	s.ExternalTable = value
 	return s
@@ -180,16 +197,6 @@ func (s *StreamOnExternalTableModel) WithFullyQualifiedNameValue(value tfconfig.
 
 func (s *StreamOnExternalTableModel) WithInsertOnlyValue(value tfconfig.Variable) *StreamOnExternalTableModel {
 	s.InsertOnly = value
-	return s
-}
-
-func (s *StreamOnExternalTableModel) WithNameValue(value tfconfig.Variable) *StreamOnExternalTableModel {
-	s.Name = value
-	return s
-}
-
-func (s *StreamOnExternalTableModel) WithSchemaValue(value tfconfig.Variable) *StreamOnExternalTableModel {
-	s.Schema = value
 	return s
 }
 

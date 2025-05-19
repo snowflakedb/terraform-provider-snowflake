@@ -43,8 +43,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_BasicFlow(t *testing.T) {
 	refreshToken := "test_token"
 	newRefreshToken := "new_test_token"
 
-	secretModel := model.SecretWithAuthorizationCodeGrant("s", apiIntegration.ID().Name(), id.DatabaseName(), id.SchemaName(), name, refreshToken, refreshTokenExpiryDateTime)
-	secretModelAllSet := model.SecretWithAuthorizationCodeGrant("s", apiIntegration.ID().Name(), id.DatabaseName(), id.SchemaName(), name, newRefreshToken, newRefreshTokenExpiryDateOnly).WithComment(comment)
+	secretModel := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, apiIntegration.ID().Name(), refreshToken, refreshTokenExpiryDateTime)
+	secretModelAllSet := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, apiIntegration.ID().Name(), newRefreshToken, newRefreshTokenExpiryDateOnly).WithComment(comment)
 
 	resourceReference := secretModel.ResourceReference()
 
@@ -190,10 +190,10 @@ func TestAcc_SecretWithAuthorizationCodeGrant_DifferentTimeFormats(t *testing.T)
 	refreshTokenExpiryDateTime := time.Now().Add(4 * 24 * time.Hour).Format(time.DateTime)
 	refreshTokenExpiryWithPDT := fmt.Sprintf("%s %s", time.Now().Add(4*24*time.Hour).Format("2006-01-02 15:04"), "PDT")
 
-	secretModelDateOnly := model.SecretWithAuthorizationCodeGrant("s", apiIntegration.ID().Name(), id.DatabaseName(), id.SchemaName(), name, "test_token", refreshTokenExpiryDateOnly)
-	secretModelWithoutSeconds := model.SecretWithAuthorizationCodeGrant("s", apiIntegration.ID().Name(), id.DatabaseName(), id.SchemaName(), name, "test_token", refreshTokenExpiryWithoutSeconds)
-	secretModelDateTime := model.SecretWithAuthorizationCodeGrant("s", apiIntegration.ID().Name(), id.DatabaseName(), id.SchemaName(), name, "test_token", refreshTokenExpiryDateTime)
-	secretModelWithPDT := model.SecretWithAuthorizationCodeGrant("s", apiIntegration.ID().Name(), id.DatabaseName(), id.SchemaName(), name, "test_token", refreshTokenExpiryWithPDT)
+	secretModelDateOnly := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, apiIntegration.ID().Name(), "test_token", refreshTokenExpiryDateOnly)
+	secretModelWithoutSeconds := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, apiIntegration.ID().Name(), "test_token", refreshTokenExpiryWithoutSeconds)
+	secretModelDateTime := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, apiIntegration.ID().Name(), "test_token", refreshTokenExpiryDateTime)
+	secretModelWithPDT := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, apiIntegration.ID().Name(), "test_token", refreshTokenExpiryWithPDT)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -265,7 +265,7 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalRefreshTokenExpiryTimeChan
 	externalRefreshTokenExpiryTime := time.Now().Add(10 * 24 * time.Hour)
 	refreshToken := "test_token"
 
-	secretModel := model.SecretWithAuthorizationCodeGrant("s", apiIntegration.ID().Name(), id.DatabaseName(), id.SchemaName(), name, refreshToken, refreshTokenExpiryDateTime).WithComment(comment)
+	secretModel := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, apiIntegration.ID().Name(), refreshToken, refreshTokenExpiryDateTime).WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -339,7 +339,7 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalSecretTypeChange(t *testin
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithAuthorizationCodeGrant("s", apiIntegration.ID().Name(), id.DatabaseName(), id.SchemaName(), name, "test_refresh_token", time.Now().Add(24*time.Hour).Format(time.DateOnly))
+	secretModel := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, apiIntegration.ID().Name(), "test_refresh_token", time.Now().Add(24*time.Hour).Format(time.DateOnly))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -401,7 +401,7 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalSecretTypeChangeToOAuthCli
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithAuthorizationCodeGrant("s", integrationId.Name(), id.DatabaseName(), id.SchemaName(), name, "test_refresh_token", time.Now().Add(24*time.Hour).Format(time.DateOnly))
+	secretModel := model.SecretWithAuthorizationCodeGrant("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), "test_refresh_token", time.Now().Add(24*time.Hour).Format(time.DateOnly))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,

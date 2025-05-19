@@ -35,8 +35,11 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 	validUrl := "https://example.com"
 	role := snowflakeroles.GenericScimProvisioner
 
-	saml2Model := model.Saml2SecurityIntegration("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert)
-	scimModel := model.ScimSecurityIntegration("test", true, idTwo.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	temporaryVariableName := "saml2_x509_cert"
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
+
+	saml2Model := model.Saml2SecurityIntegrationVar("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
+	scimModel := model.ScimSecurityIntegration("test", idTwo.Name(), true, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 	securityIntegrationsModel := datasourcemodel.SecurityIntegrations("test").
 		WithLike(prefix+"%").
 		WithDependsOn(saml2Model.ResourceReference(), scimModel.ResourceReference())
@@ -49,7 +52,8 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, scimModel, saml2Model, securityIntegrationsModel),
+				Config:          accconfig.FromModels(t, scimModel, saml2Model, securityIntegrationsModel, temporaryVariableModel),
+				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.#", "2"),
 
@@ -74,7 +78,7 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_provider.0.value", "CUSTOM"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_sso_url.0.value", validUrl),
-					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_x509_cert.0.value", cert),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.0.saml2_x509_cert.0.value"),
 				),
 			},
 		},
@@ -89,7 +93,7 @@ func TestAcc_SecurityIntegrations_ApiAuthenticationWithAuthorizationCodeGrant(t 
 	pass := random.Password()
 	comment := random.Comment()
 
-	resourceModel := model.ApiAuthenticationIntegrationWithAuthorizationCodeGrant("test", true, id.Name(), "foo", pass).
+	resourceModel := model.ApiAuthenticationIntegrationWithAuthorizationCodeGrant("test", id.Name(), true, "foo", pass).
 		WithComment(comment).
 		WithOauthAccessTokenValidity(42).
 		WithOauthAuthorizationEndpoint("https://example.com").
@@ -130,7 +134,7 @@ func TestAcc_SecurityIntegrations_ApiAuthenticationWithAuthorizationCodeGrant(t 
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_access_token_validity.0.value", "42"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "12345"),
-					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_id.0.value", "foo"),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_id.0.value"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_authorization_endpoint.0.value", "https://example.com"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_token_endpoint.0.value", "https://example.com"),
@@ -169,7 +173,7 @@ func TestAcc_SecurityIntegrations_ApiAuthenticationWithClientCredentials(t *test
 	pass2 := random.Password()
 	comment := random.Comment()
 
-	resourceModel := model.ApiAuthenticationIntegrationWithClientCredentials("test", true, id.Name(), pass1, pass2).
+	resourceModel := model.ApiAuthenticationIntegrationWithClientCredentials("test", id.Name(), true, pass1, pass2).
 		WithComment(comment).
 		WithOauthAccessTokenValidity(42).
 		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
@@ -209,7 +213,7 @@ func TestAcc_SecurityIntegrations_ApiAuthenticationWithClientCredentials(t *test
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_access_token_validity.0.value", "42"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "12345"),
-					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_id.0.value", pass1),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_id.0.value"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_token_endpoint.0.value", "https://example.com"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_allowed_scopes.0.value", "[foo]"),
@@ -252,7 +256,7 @@ func TestAcc_SecurityIntegrations_ExternalOauth(t *testing.T) {
 	mappingAttribute := random.AlphaN(6)
 	audience := random.AlphaN(6)
 
-	resourceModel := model.ExternalOauthSecurityIntegration("test", true, issuer, string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress), claim, string(sdk.ExternalOauthSecurityIntegrationTypeCustom), id.Name()).
+	resourceModel := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer, string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress), []string{claim}, string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
 		WithComment(comment).
 		WithExternalOauthAllowedRoles(role.ID()).
 		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
@@ -376,7 +380,7 @@ func TestAcc_SecurityIntegrations_OauthForCustomClients(t *testing.T) {
 
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.#", "1"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeConfidential)),
-					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_redirect_uri.0.value", validUrl),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_redirect_uri"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "true"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_enforce_pkce.0.value", "true"),
@@ -390,7 +394,7 @@ func TestAcc_SecurityIntegrations_OauthForCustomClients(t *testing.T) {
 					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_rsa_public_key_fp.0.value"),
 					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_rsa_public_key_2_fp.0.value"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.comment.0.value", comment),
-					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_id.0.value"),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_id"),
 					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_authorization_endpoint.0.value"),
 					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_token_endpoint.0.value"),
 					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_allowed_authorization_endpoints.0.value"),
@@ -516,8 +520,11 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 	issuerURL := acc.TestClient().Context.IssuerURL(t)
 	comment := random.Comment()
 
+	temporaryVariableName := "saml2_x509_cert"
+	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
+
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
-	resourceModel := model.Saml2SecurityIntegration("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, cert).
+	resourceModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithComment(comment).
 		WithEnabled(datasources.BooleanTrue).
 		WithAllowedEmailPatterns("^(.+dev)@example.com$").
@@ -547,7 +554,8 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, resourceModel, securityIntegrationsModel),
+				Config:          accconfig.FromModels(t, resourceModel, securityIntegrationsModel, temporaryVariableModel),
+				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.#", "1"),
 
@@ -555,10 +563,10 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_sso_url.0.value", validUrl),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
-					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_x509_cert.0.value", cert),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_x509_cert"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_enable_sp_initiated.0.value", "true"),
-					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_snowflake_x509_cert.0.value"),
+					resource.TestCheckNoResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_snowflake_x509_cert"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_sign_request.0.value", "true"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_requested_nameid_format.0.value", string(sdk.Saml2SecurityIntegrationSaml2RequestedNameidFormatUnspecified)),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.0.describe_output.0.saml2_post_logout_redirect_url.0.value", "https://example.com"),
@@ -582,7 +590,8 @@ func TestAcc_SecurityIntegrations_Saml2(t *testing.T) {
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, resourceModel, securityIntegrationsModelWithoutDescribe),
+				Config:          accconfig.FromModels(t, resourceModel, securityIntegrationsModelWithoutDescribe, temporaryVariableModel),
+				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securityIntegrationsModelWithoutDescribe.DatasourceReference(), "security_integrations.#", "1"),
 
@@ -612,7 +621,7 @@ func TestAcc_SecurityIntegrations_Scim(t *testing.T) {
 	role := snowflakeroles.GenericScimProvisioner
 	comment := random.Comment()
 
-	resourceModel := model.ScimSecurityIntegration("test", false, id.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
+	resourceModel := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
 		WithComment(comment).
 		WithNetworkPolicy(networkPolicy.ID().Name())
 	securityIntegrationsModel := datasourcemodel.SecurityIntegrations("test").
@@ -680,9 +689,9 @@ func TestAcc_SecurityIntegrations_Filtering(t *testing.T) {
 	idThree := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 	role := snowflakeroles.GenericScimProvisioner
 
-	scimModel1 := model.ScimSecurityIntegration("test1", false, idOne.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModel2 := model.ScimSecurityIntegration("test2", false, idTwo.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModel3 := model.ScimSecurityIntegration("test3", false, idThree.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModel1 := model.ScimSecurityIntegration("test1", idOne.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModel2 := model.ScimSecurityIntegration("test2", idTwo.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModel3 := model.ScimSecurityIntegration("test3", idThree.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 	securityIntegrationsModelLikeFirst := datasourcemodel.SecurityIntegrations("test").
 		WithLike(idOne.Name()).
 		WithDependsOn(scimModel1.ResourceReference(), scimModel2.ResourceReference(), scimModel3.ResourceReference())

@@ -2409,6 +2409,7 @@ func TestAcc_Task_StateUpgrade_NoOptionalFields(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
 				Config:            taskNoOptionalFieldsConfigV0980(id),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -2417,6 +2418,7 @@ func TestAcc_Task_StateUpgrade_NoOptionalFields(t *testing.T) {
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables:          config.ConfigVariablesFromModel(t, configModel),
@@ -2456,6 +2458,7 @@ func TestAcc_Task_StateUpgrade(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
 				Config:            taskBasicConfigV0980(id, condition),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -2468,6 +2471,7 @@ func TestAcc_Task_StateUpgrade(t *testing.T) {
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          acc.ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables:          config.ConfigVariablesFromModel(t, configModel),
@@ -2516,6 +2520,7 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
 				Config:            taskCompleteConfigV0980(id, rootTask.ID(), acc.TestClient().Ids.WarehouseId(), 50, comment),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -2530,6 +2535,7 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, configModel),
 				Check: assertThat(t,

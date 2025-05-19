@@ -32,10 +32,10 @@ func TestAcc_SecretWithBasicAuthentication_BasicFlow(t *testing.T) {
 	name := id.Name()
 	comment := random.Comment()
 
-	secretModel := model.SecretWithBasicAuthentication("s", id.DatabaseName(), name, "foo", id.SchemaName(), "foo")
-	secretModelDifferentCredentialsWithComment := model.SecretWithBasicAuthentication("s", id.DatabaseName(), name, "bar", id.SchemaName(), "bar").WithComment(comment)
-	secretModelWithoutComment := model.SecretWithBasicAuthentication("s", id.DatabaseName(), name, "bar", id.SchemaName(), "bar")
-	secretModelEmptyCredentials := model.SecretWithBasicAuthentication("s", id.DatabaseName(), name, "", id.SchemaName(), "")
+	secretModel := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "foo", "foo")
+	secretModelDifferentCredentialsWithComment := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "bar", "bar").WithComment(comment)
+	secretModelWithoutComment := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "bar", "bar")
+	secretModelEmptyCredentials := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "", "")
 
 	resourceReference := secretModel.ResourceReference()
 
@@ -206,7 +206,7 @@ func TestAcc_SecretWithBasicAuthentication_CreateWithEmptyCredentials(t *testing
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
-	secretModelEmptyCredentials := model.SecretWithBasicAuthentication("s", id.DatabaseName(), name, "", id.SchemaName(), "")
+	secretModelEmptyCredentials := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "", "")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -240,7 +240,7 @@ func TestAcc_SecretWithBasicAuthentication_ExternalSecretTypeChange(t *testing.T
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
-	secretModel := model.SecretWithBasicAuthentication("s", id.DatabaseName(), name, "test_pswd", id.SchemaName(), "test_usr")
+	secretModel := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "test_pswd", "test_usr")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,

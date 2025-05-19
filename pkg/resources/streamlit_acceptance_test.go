@@ -391,7 +391,7 @@ func TestAcc_Streamlit_InvalidStage(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	streamlitModel := model.Streamlit("test", id.DatabaseId().FullyQualifiedName(), "some", id.Name(), id.SchemaId().FullyQualifiedName(), "some")
+	streamlitModel := model.Streamlit("test", id.DatabaseId().FullyQualifiedName(), id.SchemaId().FullyQualifiedName(), id.Name(), "some", "some")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -460,7 +460,7 @@ func TestAcc_Streamlit_IdentifierQuotingDiffSuppression(t *testing.T) {
 	quotedSchemaName := fmt.Sprintf(`"%s"`, id.SchemaName())
 	quotedName := fmt.Sprintf(`"%s"`, id.Name())
 
-	streamlitModel := model.Streamlit("test", quotedDatabaseName, "main_file", quotedName, quotedSchemaName, stage.ID().FullyQualifiedName())
+	streamlitModel := model.Streamlit("test", quotedDatabaseName, quotedSchemaName, quotedName, "main_file", stage.ID().FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },

@@ -16,7 +16,7 @@ func init() {
 	resource.AddTestSweepers("snowflake_dynamic_table", &resource.Sweeper{
 		Name: "snowflake_dynamic_table",
 		F: func(profile string) error {
-			client, err := sdk.NewDefaultClient(sdk.WithUseLegacyTomlFormat(true))
+			client, err := sdk.NewDefaultClient()
 			if err != nil {
 				return fmt.Errorf("error getting default client during sweep: %w", err)
 			}

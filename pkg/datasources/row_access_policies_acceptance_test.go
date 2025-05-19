@@ -31,7 +31,7 @@ func TestAcc_RowAccessPolicies(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
-	policyModel := model.RowAccessPolicy("test", []sdk.TableColumnSignature{
+	policyModel := model.RowAccessPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
 		{
 			Name: "a",
 			Type: testdatatypes.DataTypeVarchar,
@@ -40,7 +40,7 @@ func TestAcc_RowAccessPolicies(t *testing.T) {
 			Name: "b",
 			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), id.SchemaName()).WithComment("foo")
+	}, body).WithComment("foo")
 
 	dsName := "data.snowflake_row_access_policies.test"
 	resource.Test(t, resource.TestCase{

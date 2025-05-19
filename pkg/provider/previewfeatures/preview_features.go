@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type feature string
@@ -37,6 +39,8 @@ const (
 	FunctionScalaResource                         feature = "snowflake_function_scala_resource"
 	FunctionSqlResource                           feature = "snowflake_function_sql_resource"
 	FunctionsDatasource                           feature = "snowflake_functions_datasource"
+	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
+	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
@@ -106,6 +110,8 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
+	ImageRepositoryResource,
+	ImageRepositoriesDatasource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
@@ -145,13 +151,7 @@ var allPreviewFeatures = []feature{
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
 }
-var AllPreviewFeatures = make([]string, len(allPreviewFeatures))
-
-func init() {
-	for i, v := range allPreviewFeatures {
-		AllPreviewFeatures[i] = string(v)
-	}
-}
+var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 
 func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 	if !slices.ContainsFunc(enabledFeatures, func(s string) bool {

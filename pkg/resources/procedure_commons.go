@@ -273,11 +273,13 @@ func procedureBaseSchema() map[string]schema.Schema {
 						Type:        schema.TypeString,
 						Required:    true,
 						Description: "Stage location without leading `@`. To use your user's stage set this to `~`, otherwise pass fully qualified name of the stage (with every part contained in double quotes or use `snowflake_stage.<your stage's resource name>.fully_qualified_name` if you manage this stage through terraform).",
+						ForceNew:    true,
 					},
 					"path_on_stage": {
 						Type:        schema.TypeString,
 						Required:    true,
 						Description: "Path for import on stage, without the leading `/`.",
+						ForceNew:    true,
 					},
 				},
 			},
@@ -288,7 +290,7 @@ func procedureBaseSchema() map[string]schema.Schema {
 			ForceNew:    true,
 			Description: "The Snowpark package is required for stored procedures, so it must always be present. For more information about Snowpark, see [Snowpark API](https://docs.snowflake.com/en/developer-guide/snowpark/index).",
 		},
-		// TODO [SNOW-1348103]: what do we do with the version "latest".
+		// TODO [SNOW-1850370]: what do we do with the version "latest".
 		"packages": {
 			Type:        schema.TypeSet,
 			Elem:        &schema.Schema{Type: schema.TypeString},

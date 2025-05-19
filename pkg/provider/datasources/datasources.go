@@ -21,6 +21,7 @@ const (
 	FileFormats                    datasource = "snowflake_file_formats"
 	Functions                      datasource = "snowflake_functions"
 	Grants                         datasource = "snowflake_grants"
+	ImageRepositories              datasource = "snowflake_image_repositories"
 	MaskingPolicies                datasource = "snowflake_masking_policies"
 	MaterializedViews              datasource = "snowflake_materialized_views"
 	NetworkPolicies                datasource = "snowflake_network_policies"

@@ -17,8 +17,9 @@ import (
 )
 
 var definitionMapping = map[string]*generator.Interface{
-	"database_role_def.go":                   example.DatabaseRole,
-	"to_opts_optional_example_def.go":        example.ToOptsOptionalExample,
+	"database_role_def.go":            example.DatabaseRole,
+	"to_opts_optional_example_def.go": example.ToOptsOptionalExample,
+
 	"network_policies_def.go":                sdk.NetworkPoliciesDef,
 	"session_policies_def.go":                sdk.SessionPoliciesDef,
 	"tasks_def.go":                           sdk.TasksDef,
@@ -48,6 +49,8 @@ var definitionMapping = map[string]*generator.Interface{
 	"authentication_policies_def.go":         sdk.AuthenticationPoliciesDef,
 	"secrets_def.go":                         sdk.SecretsDef,
 	"connections_def.go":                     sdk.ConnectionDef,
+	"image_repository_def.go":                sdk.ImageRepositoriesDef,
+	"compute_pools_def.go":                   sdk.ComputePoolsDef,
 }
 
 func main() {

@@ -38,7 +38,7 @@ func TestInt_Procedures(t *testing.T) {
 	t.Cleanup(externalAccessIntegrationCleanup)
 
 	tmpJavaProcedure := testClientHelper().CreateSampleJavaProcedureAndJarOnUserStage(t)
-	tmpPythonFunction := testClientHelper().CreateSamplePythonFunctionAndModule(t)
+	tmpPythonFunction := testClientHelper().CreateSamplePythonFunctionAndModuleOnUserStage(t)
 
 	assertParametersSet := func(t *testing.T, procedureParametersAssert *objectparametersassert.ProcedureParametersAssert) {
 		t.Helper()

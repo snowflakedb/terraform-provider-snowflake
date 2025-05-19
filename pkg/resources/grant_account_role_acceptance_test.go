@@ -7,6 +7,12 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+
 	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -226,4 +232,51 @@ resource "snowflake_grant_account_role" "test" {
   parent_role_name = snowflake_account_role.parent_role.name
 }
 `, quotedRoleId, quotedParentRoleId)
+}
+
+// proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629 (UBAC) doesn't affect the grant account role resource
+func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	accountRole, accountRoleCleanup := acc.SecondaryTestClient().Role.CreateRole(t)
+	t.Cleanup(accountRoleCleanup)
+
+	parentAccountRole, parentAccountRoleCleanup := acc.SecondaryTestClient().Role.CreateRole(t)
+	t.Cleanup(parentAccountRoleCleanup)
+
+	user, userCleanup := acc.SecondaryTestClient().User.CreateUser(t)
+	t.Cleanup(userCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+	testConfig := accconfig.FromModels(t, providerModel) + grantAccountRoleIssue3629Config(accountRole.ID(), parentAccountRole.ID())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acc.TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					acc.SecondaryTestClient().Role.GrantRoleToUser(t, accountRole.ID(), user.ID())
+				},
+				Config: testConfig,
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_account_role.test", "id", helpers.EncodeResourceIdentifier(accountRole.ID().FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentAccountRole.ID().FullyQualifiedName()))),
+				),
+			},
+		},
+	})
+}
+
+func grantAccountRoleIssue3629Config(accountRoleId sdk.AccountObjectIdentifier, parentRoleId sdk.AccountObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_grant_account_role" "test" {
+  role_name = "%[1]s"
+  parent_role_name = "%[2]s"
+}
+`, accountRoleId.Name(), parentRoleId.Name())
 }

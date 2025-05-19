@@ -1644,6 +1644,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 		CheckDestroy: acc.CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
 				Config:            config.FromModels(t, userModel),
 				Check: assertThat(t,
@@ -1652,6 +1653,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, userModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -1691,11 +1693,9 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 				ExpectError:       regexp.MustCompile("\"default_namespace\": converting NULL to string is unsupported"),
 			},
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("0.98.0"),
-				PreConfig: func() {
-					acc.UnsetConfigPathEnv(t)
-				},
-				Config: config.FromModels(t, userModel),
+				Config:            config.FromModels(t, userModel),
 				Check: assertThat(t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNoDefaultNamespace(),
@@ -1790,6 +1790,7 @@ func TestAcc_User_gh3522_proof(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.5"),
 				Config:            gh3522ConfigFirstStep(userId),
 				Check: assertThat(t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
@@ -1868,4 +1869,42 @@ resource "snowflake_legacy_service_user" "two" {
   comment = "%[3]s"
 }
 `, userId.Name(), userId2.Name(), comment)
+}
+
+// Result of https://github.com/snowflakedb/terraform-provider-snowflake/issues/3655
+func TestAcc_User_gh3655(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+
+	networkPolicyId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	userId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+
+	networkPolicyModel := model.NetworkPolicy("test", networkPolicyId.Name())
+	userModel := model.User("test", userId.Name()).
+		WithNetworkPolicyValue(config.UnquotedWrapperVariable("snowflake_network_policy.test.fully_qualified_name"))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		CheckDestroy: acc.CheckDestroy(t, resources.User),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: acc.ExternalProviderWithExactVersion("2.0.0"),
+				Config:            config.FromModels(t, networkPolicyModel, userModel),
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNetworkPolicyString(networkPolicyId.Name()),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, networkPolicyModel, userModel),
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNetworkPolicyString(networkPolicyId.Name()),
+				),
+			},
+		},
+	})
 }

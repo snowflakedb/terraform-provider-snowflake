@@ -7,17 +7,16 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var tagAssociationSchema = map[string]*schema.Schema{
@@ -34,7 +33,7 @@ var tagAssociationSchema = map[string]*schema.Schema{
 	"object_type": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      fmt.Sprintf("Specifies the type of object to add a tag. Allowed object types: %v.", sdk.TagAssociationAllowedObjectTypesString),
+		Description:      fmt.Sprintf("Specifies the type of object to add a tag. Allowed object types: %v.", possibleValuesListed(sdk.TagAssociationAllowedObjectTypesString)),
 		ValidateFunc:     validation.StringInSlice(sdk.TagAssociationAllowedObjectTypesString, true),
 		DiffSuppressFunc: ignoreCaseSuppressFunc,
 		ForceNew:         true,
@@ -219,12 +218,30 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		newIds, err := ExpandObjectIdentifierSet(n.(*schema.Set).List(), objectType)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		addedIds, removedIds, commonIds := ListDiffWithCommonItems(oldIds, newIds)
+		oldIdsFQN := collections.Map(oldIds, sdk.ObjectIdentifier.FullyQualifiedName)
+		newIdsFQN := collections.Map(newIds, sdk.ObjectIdentifier.FullyQualifiedName)
+		addedIdsFQN, removedIdsFQN, commonIdsFQN := ListDiffWithCommonItems(oldIdsFQN, newIdsFQN)
+
+		addedIds, err := collections.MapErr(addedIdsFQN, sdk.ParseObjectIdentifierString)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		removedIds, err := collections.MapErr(removedIdsFQN, sdk.ParseObjectIdentifierString)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		commonIds, err := collections.MapErr(commonIdsFQN, sdk.ParseObjectIdentifierString)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 		for _, id := range addedIds {
 			request := sdk.NewSetTagRequest(objectType, id).WithSetTags([]sdk.TagAssociation{

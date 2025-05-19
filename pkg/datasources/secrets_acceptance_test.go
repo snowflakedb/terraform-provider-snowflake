@@ -36,7 +36,7 @@ func TestAcc_Secrets_WithClientCredentials(t *testing.T) {
 	)
 	t.Cleanup(apiIntegrationCleanup)
 
-	secretModel := model.SecretWithClientCredentials("test", integrationId.Name(), id.DatabaseName(), id.SchemaName(), id.Name(), []string{"username", "test_scope"})
+	secretModel := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), []string{"username", "test_scope"})
 	secretsModel := datasourcemodel.Secrets("test").
 		WithInDatabase(id.DatabaseId()).
 		WithDependsOn(secretModel.ResourceReference())
@@ -91,7 +91,7 @@ func TestAcc_Secrets_WithAuthorizationCodeGrant(t *testing.T) {
 	)
 	t.Cleanup(apiIntegrationCleanup)
 
-	secretModel := model.SecretWithAuthorizationCodeGrant("test", integrationId.Name(), id.DatabaseName(), id.SchemaName(), id.Name(), "test_token", time.Now().Add(24*time.Hour).Format(time.DateTime)).WithComment("test_comment")
+	secretModel := model.SecretWithAuthorizationCodeGrant("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), "test_token", time.Now().Add(24*time.Hour).Format(time.DateTime)).WithComment("test_comment")
 	secretsModel := datasourcemodel.Secrets("test").
 		WithInDatabase(id.DatabaseId()).
 		WithDependsOn(secretModel.ResourceReference())
@@ -136,7 +136,7 @@ func TestAcc_Secrets_WithBasicAuthentication(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	secretModel := model.SecretWithBasicAuthentication("test", id.DatabaseName(), id.Name(), "test_passwd", id.SchemaName(), "test_username")
+	secretModel := model.SecretWithBasicAuthentication("test", id.DatabaseName(), id.SchemaName(), id.Name(), "test_passwd", "test_username")
 	secretsModel := datasourcemodel.Secrets("test").
 		WithInDatabase(id.DatabaseId()).
 		WithDependsOn(secretModel.ResourceReference())
@@ -180,7 +180,7 @@ func TestAcc_Secrets_WithGenericString(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	secretModel := model.SecretWithGenericString("test", id.DatabaseName(), id.Name(), id.SchemaName(), "test_secret_string")
+	secretModel := model.SecretWithGenericString("test", id.DatabaseName(), id.SchemaName(), id.Name(), "test_secret_string")
 	secretsModel := datasourcemodel.Secrets("test").
 		WithInDatabase(id.DatabaseId()).
 		WithDependsOn(secretModel.ResourceReference())
@@ -242,11 +242,11 @@ func TestAcc_Secrets_Filtering(t *testing.T) {
 
 	pass := random.Password()
 
-	secretModelBasicAuth := model.SecretWithBasicAuthentication("s", idOne.DatabaseName(), idOne.Name(), pass, idOne.SchemaName(), "test_username")
-	secretModelGenericString := model.SecretWithGenericString("s2", idTwo.DatabaseName(), idTwo.Name(), idTwo.SchemaName(), pass)
-	secretModelClientCredentials := model.SecretWithClientCredentials("s3", integrationId.Name(), idThree.DatabaseName(), idThree.SchemaName(), idThree.Name(), []string{"first_scope", "second_scope"})
-	secretModelAuthorizationCodeGrant := model.SecretWithAuthorizationCodeGrant("s4", integrationId.Name(), idFour.DatabaseName(), idFour.SchemaName(), idFour.Name(), pass, time.Now().Add(24*time.Hour).Format(time.DateTime))
-	secretModelInDifferentSchema := model.SecretWithBasicAuthentication("s5", idFive.DatabaseName(), idFive.Name(), pass, idFive.SchemaName(), "test_username")
+	secretModelBasicAuth := model.SecretWithBasicAuthentication("s", idOne.DatabaseName(), idOne.SchemaName(), idOne.Name(), pass, "test_username")
+	secretModelGenericString := model.SecretWithGenericString("s2", idTwo.DatabaseName(), idTwo.SchemaName(), idTwo.Name(), pass)
+	secretModelClientCredentials := model.SecretWithClientCredentials("s3", idThree.DatabaseName(), idThree.SchemaName(), idThree.Name(), integrationId.Name(), []string{"first_scope", "second_scope"})
+	secretModelAuthorizationCodeGrant := model.SecretWithAuthorizationCodeGrant("s4", idFour.DatabaseName(), idFour.SchemaName(), idFour.Name(), integrationId.Name(), pass, time.Now().Add(24*time.Hour).Format(time.DateTime))
+	secretModelInDifferentSchema := model.SecretWithBasicAuthentication("s5", idFive.DatabaseName(), idFive.SchemaName(), idFive.Name(), pass, "test_username")
 	allSecretModels := []accconfig.ResourceModel{secretModelBasicAuth, secretModelGenericString, secretModelClientCredentials, secretModelAuthorizationCodeGrant, secretModelInDifferentSchema}
 	allReferences := collections.Map(allSecretModels, func(resourceModel accconfig.ResourceModel) string { return resourceModel.ResourceReference() })
 

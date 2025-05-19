@@ -10,6 +10,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -190,6 +194,32 @@ func TestAcc_AccountParameter_CSV_TIMESTAMP_FORMAT(t *testing.T) {
 				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
 					HasKeyString(string(sdk.AccountParameterCsvTimestampFormat)).
 					HasValueString("YYYY-MM-DD"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_AccountParameter_DISABLE_USER_PRIVILEGE_GRANTS(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	acc.TestAccPreCheck(t)
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterDisableUserPrivilegeGrants), resources.BooleanTrue)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		CheckDestroy:             acc.CheckAccountParameterUnset(t, sdk.AccountParameterDisableUserPrivilegeGrants),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					acc.TestClient().BcrBundles.EnableBcrBundle(t, "2025_02")
+				},
+				Config: config.FromModels(t, providerModel, accountParameterModel),
+				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
+					HasKeyString(string(sdk.AccountParameterDisableUserPrivilegeGrants)).
+					HasValueString(resources.BooleanTrue),
 				),
 			},
 		},

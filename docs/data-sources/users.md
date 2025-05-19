@@ -7,6 +7,8 @@ description: |-
 
 !> **Sensitive values** This data source's `display_name`, `email`, `login_name`, `first_name`, `middle_name` and `last_name` fields nested in `show_output` and `describe_output` fields are not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
 
+~> **Missing fields** The `password` field is not present in the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
+
 # snowflake_users (Data Source)
 
 Data source used to get details of filtered users. Filtering is aligned with the current possibilities for [SHOW USERS](https://docs.snowflake.com/en/sql-reference/sql/show-users) query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS IN are encapsulated in one output collection. Important note is that when querying users you don't have permissions to, the querying options are limited. You won't get almost any field in `show_output` (only empty or default values), the DESCRIBE command will return error when called, so you have to set `with_describe = false`; the SHOW PARAMETERS command will return error when called too, so you have to set `with_parameters = false`.
@@ -76,7 +78,7 @@ data "snowflake_users" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of users is equal to at exactly one element (with the use of check block)
+# Ensure the number of users is equal to exactly one element (with the use of check block)
 check "user_check" {
   data "snowflake_users" "assert_with_check_block" {
     like = "user-name"

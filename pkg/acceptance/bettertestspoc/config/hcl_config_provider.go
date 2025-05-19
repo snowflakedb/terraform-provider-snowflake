@@ -68,7 +68,7 @@ func convertJsonToHclStringV1(jsonBytes []byte) (string, error) {
 // Conversion to HCL using hcl v1 does not unquote block types (i.e. `"resource"` instead of expected `resource`).
 // Check experiments subpackage for details.
 func unquoteBlockType(s string) (string, error) {
-	blockTypeRegex := regexp.MustCompile(`"(resource|data|provider|dynamic)"(( "\w+"){1,2} {)`)
+	blockTypeRegex := regexp.MustCompile(`"(resource|data|provider|dynamic|variable)"(( "\w+"){1,2} {)`)
 	return blockTypeRegex.ReplaceAllString(s, `$1$2`), nil
 }
 

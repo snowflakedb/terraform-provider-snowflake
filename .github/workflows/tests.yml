@@ -87,7 +87,7 @@ jobs:
       - name: Generate random secret
         if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
         run: |
-          random=$(openssl rand -hex 20)
+          random=$(openssl rand -hex 15)
           final_random="${TEST_SF_TF_RANDOM}${random}"
           echo "::add-mask::${final_random}"
           echo "TEST_SF_TF_GENERATED_RANDOM_VALUE=${final_random}" >> $GITHUB_ENV
@@ -98,15 +98,16 @@ jobs:
         if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
         run: make dev-setup
 
-      - name: Create and populate .snowflake/config file
+      - name: Create and populate configuration files
         if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
         id: create_config
-        run: mkdir -p $HOME/.snowflake && echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > $HOME/.snowflake/config && chmod 0600 $HOME/.snowflake/config
-
-      - name: Create and populate .snowflake/config_v097_compatible file
-        if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
-        id: create_config_v097_compatible
-        run: mkdir -p $HOME/.snowflake && echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > $HOME/.snowflake/config_v097_compatible && chmod 0600 $HOME/.snowflake/config_v097_compatible
+        run: |
+          mkdir -p $HOME/.snowflake
+          cd $HOME/.snowflake
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible
 
       - name: Run unit and integration tests
         run: make test

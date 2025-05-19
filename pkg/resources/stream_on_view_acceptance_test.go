@@ -374,10 +374,10 @@ func TestAcc_StreamOnView_CheckGrantsAfterRecreation(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	model1 := model.StreamOnView("test", id.DatabaseName(), id.Name(), id.SchemaName(), view.ID().FullyQualifiedName()).
+	model1 := model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), view.ID().FullyQualifiedName()).
 		WithCopyGrants(true)
-	model1WithoutCopyGrants := model.StreamOnView("test", id.DatabaseName(), id.Name(), id.SchemaName(), view.ID().FullyQualifiedName())
-	model2 := model.StreamOnView("test", id.DatabaseName(), id.Name(), id.SchemaName(), view2.ID().FullyQualifiedName()).
+	model1WithoutCopyGrants := model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), view.ID().FullyQualifiedName())
+	model2 := model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), view2.ID().FullyQualifiedName()).
 		WithCopyGrants(true)
 
 	resource.Test(t, resource.TestCase{
@@ -726,7 +726,7 @@ func TestAcc_StreamOnView_Before(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	baseModel := func() *model.StreamOnViewModel {
-		return model.StreamOnView("test", id.DatabaseName(), id.Name(), id.SchemaName(), view.ID().FullyQualifiedName()).
+		return model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), view.ID().FullyQualifiedName()).
 			WithComment("foo").
 			WithAppendOnly(r.BooleanTrue).
 			WithShowInitialRows(r.BooleanTrue).
@@ -820,9 +820,9 @@ func TestAcc_StreamOnView_InvalidConfiguration(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelWithInvalidTableId := model.StreamOnView("test", id.DatabaseName(), id.Name(), id.SchemaName(), "invalid")
+	modelWithInvalidTableId := model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), "invalid")
 
-	modelWithBefore := model.StreamOnView("test", id.DatabaseName(), id.Name(), id.SchemaName(), "foo.bar.hoge").
+	modelWithBefore := model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), "foo.bar.hoge").
 		WithComment("foo").
 		WithCopyGrants(false).
 		WithAppendOnly(r.BooleanFalse).
@@ -834,7 +834,7 @@ func TestAcc_StreamOnView_InvalidConfiguration(t *testing.T) {
 			"stream":    pluginconfig.StringVariable("0"),
 		}))
 
-	modelWithAt := model.StreamOnView("test", id.DatabaseName(), id.Name(), id.SchemaName(), "foo.bar.hoge").
+	modelWithAt := model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), "foo.bar.hoge").
 		WithComment("foo").
 		WithCopyGrants(false).
 		WithAppendOnly(r.BooleanFalse).

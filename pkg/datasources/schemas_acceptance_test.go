@@ -37,7 +37,7 @@ func TestAcc_Schemas_Complete(t *testing.T) {
 		WithComment(comment).
 		WithIsTransient(datasources.BooleanTrue).
 		WithWithManagedAccess(datasources.BooleanTrue)
-	viewModel := model.View("test", viewId.DatabaseName(), viewId.Name(), viewId.SchemaName(), statement).
+	viewModel := model.View("test", viewId.DatabaseName(), viewId.SchemaName(), viewId.Name(), statement).
 		WithColumnNames(columnNames...).
 		WithDependsOn(schemaModel.ResourceReference())
 	schemasModel := datasourcemodel.Schemas("test").

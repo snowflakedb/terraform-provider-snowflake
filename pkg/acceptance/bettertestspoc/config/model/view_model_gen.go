@@ -12,6 +12,9 @@ import (
 )
 
 type ViewModel struct {
+	Database           tfconfig.Variable `json:"database,omitempty"`
+	Schema             tfconfig.Variable `json:"schema,omitempty"`
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	AggregationPolicy  tfconfig.Variable `json:"aggregation_policy,omitempty"`
 	ChangeTracking     tfconfig.Variable `json:"change_tracking,omitempty"`
 	Column             tfconfig.Variable `json:"column,omitempty"`
@@ -19,15 +22,14 @@ type ViewModel struct {
 	CopyGrants         tfconfig.Variable `json:"copy_grants,omitempty"`
 	DataMetricFunction tfconfig.Variable `json:"data_metric_function,omitempty"`
 	DataMetricSchedule tfconfig.Variable `json:"data_metric_schedule,omitempty"`
-	Database           tfconfig.Variable `json:"database,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsRecursive        tfconfig.Variable `json:"is_recursive,omitempty"`
 	IsSecure           tfconfig.Variable `json:"is_secure,omitempty"`
 	IsTemporary        tfconfig.Variable `json:"is_temporary,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
 	RowAccessPolicy    tfconfig.Variable `json:"row_access_policy,omitempty"`
-	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	Statement          tfconfig.Variable `json:"statement,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -39,35 +41,35 @@ type ViewModel struct {
 func View(
 	resourceName string,
 	database string,
-	name string,
 	schema string,
+	name string,
 	statement string,
 ) *ViewModel {
 	v := &ViewModel{ResourceModelMeta: config.Meta(resourceName, resources.View)}
 	v.WithDatabase(database)
-	v.WithName(name)
 	v.WithSchema(schema)
+	v.WithName(name)
 	v.WithStatement(statement)
 	return v
 }
 
 func ViewWithDefaultMeta(
 	database string,
-	name string,
 	schema string,
+	name string,
 	statement string,
 ) *ViewModel {
 	v := &ViewModel{ResourceModelMeta: config.DefaultMeta(resources.View)}
 	v.WithDatabase(database)
-	v.WithName(name)
 	v.WithSchema(schema)
+	v.WithName(name)
 	v.WithStatement(statement)
 	return v
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (v *ViewModel) MarshalJSON() ([]byte, error) {
 	type Alias ViewModel
@@ -85,9 +87,29 @@ func (v *ViewModel) WithDependsOn(values ...string) *ViewModel {
 	return v
 }
 
+func (v *ViewModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ViewModel {
+	v.DynamicBlock = dynamicBlock
+	return v
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (v *ViewModel) WithDatabase(database string) *ViewModel {
+	v.Database = tfconfig.StringVariable(database)
+	return v
+}
+
+func (v *ViewModel) WithSchema(schema string) *ViewModel {
+	v.Schema = tfconfig.StringVariable(schema)
+	return v
+}
+
+func (v *ViewModel) WithName(name string) *ViewModel {
+	v.Name = tfconfig.StringVariable(name)
+	return v
+}
 
 // aggregation_policy attribute type is not yet supported, so WithAggregationPolicy can't be generated
 
@@ -112,11 +134,6 @@ func (v *ViewModel) WithCopyGrants(copyGrants bool) *ViewModel {
 
 // data_metric_schedule attribute type is not yet supported, so WithDataMetricSchedule can't be generated
 
-func (v *ViewModel) WithDatabase(database string) *ViewModel {
-	v.Database = tfconfig.StringVariable(database)
-	return v
-}
-
 func (v *ViewModel) WithFullyQualifiedName(fullyQualifiedName string) *ViewModel {
 	v.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return v
@@ -137,17 +154,7 @@ func (v *ViewModel) WithIsTemporary(isTemporary string) *ViewModel {
 	return v
 }
 
-func (v *ViewModel) WithName(name string) *ViewModel {
-	v.Name = tfconfig.StringVariable(name)
-	return v
-}
-
 // row_access_policy attribute type is not yet supported, so WithRowAccessPolicy can't be generated
-
-func (v *ViewModel) WithSchema(schema string) *ViewModel {
-	v.Schema = tfconfig.StringVariable(schema)
-	return v
-}
 
 func (v *ViewModel) WithStatement(statement string) *ViewModel {
 	v.Statement = tfconfig.StringVariable(statement)
@@ -157,6 +164,21 @@ func (v *ViewModel) WithStatement(statement string) *ViewModel {
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (v *ViewModel) WithDatabaseValue(value tfconfig.Variable) *ViewModel {
+	v.Database = value
+	return v
+}
+
+func (v *ViewModel) WithSchemaValue(value tfconfig.Variable) *ViewModel {
+	v.Schema = value
+	return v
+}
+
+func (v *ViewModel) WithNameValue(value tfconfig.Variable) *ViewModel {
+	v.Name = value
+	return v
+}
 
 func (v *ViewModel) WithAggregationPolicyValue(value tfconfig.Variable) *ViewModel {
 	v.AggregationPolicy = value
@@ -193,11 +215,6 @@ func (v *ViewModel) WithDataMetricScheduleValue(value tfconfig.Variable) *ViewMo
 	return v
 }
 
-func (v *ViewModel) WithDatabaseValue(value tfconfig.Variable) *ViewModel {
-	v.Database = value
-	return v
-}
-
 func (v *ViewModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ViewModel {
 	v.FullyQualifiedName = value
 	return v
@@ -218,18 +235,8 @@ func (v *ViewModel) WithIsTemporaryValue(value tfconfig.Variable) *ViewModel {
 	return v
 }
 
-func (v *ViewModel) WithNameValue(value tfconfig.Variable) *ViewModel {
-	v.Name = value
-	return v
-}
-
 func (v *ViewModel) WithRowAccessPolicyValue(value tfconfig.Variable) *ViewModel {
 	v.RowAccessPolicy = value
-	return v
-}
-
-func (v *ViewModel) WithSchemaValue(value tfconfig.Variable) *ViewModel {
-	v.Schema = value
 	return v
 }
 

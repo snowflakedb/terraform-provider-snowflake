@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // TODO [SNOW-1501905]: describe all methods in this file
@@ -36,12 +38,30 @@ func CamelToWords(camel string) string {
 }
 
 func SnakeCaseToCamel(snake string) string {
+	var suffix string
+	if strings.HasSuffix(snake, "_") {
+		suffix = "_"
+		snake = strings.TrimSuffix(snake, "_")
+	}
 	snake = strings.ToLower(snake)
 	parts := strings.Split(snake, "_")
 	for idx, p := range parts {
 		parts[idx] = strings.ToUpper(p[:1]) + p[1:]
 	}
-	return strings.Join(parts, "")
+	return strings.Join(parts, "") + suffix
+}
+
+func RemoveForbiddenAttributeNameSuffix(input string) string {
+	return strings.TrimRight(input, forbiddenAttributeNameSuffix)
+}
+
+func ShouldGenerateWithForAttributeType(valueType schema.ValueType) bool {
+	switch valueType {
+	case schema.TypeBool, schema.TypeInt, schema.TypeFloat, schema.TypeString:
+		return true
+	default:
+		return false
+	}
 }
 
 func IsLastItem(itemIdx int, collectionLength int) bool {

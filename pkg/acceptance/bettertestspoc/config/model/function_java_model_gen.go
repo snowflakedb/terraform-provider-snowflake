@@ -12,9 +12,11 @@ import (
 )
 
 type FunctionJavaModel struct {
+	Database                   tfconfig.Variable `json:"database,omitempty"`
+	Schema                     tfconfig.Variable `json:"schema,omitempty"`
+	Name                       tfconfig.Variable `json:"name,omitempty"`
 	Arguments                  tfconfig.Variable `json:"arguments,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
-	Database                   tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput        tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -25,16 +27,16 @@ type FunctionJavaModel struct {
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                       tfconfig.Variable `json:"name,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
 	Packages                   tfconfig.Variable `json:"packages,omitempty"`
 	ReturnResultsBehavior      tfconfig.Variable `json:"return_results_behavior,omitempty"`
 	ReturnType                 tfconfig.Variable `json:"return_type,omitempty"`
 	RuntimeVersion             tfconfig.Variable `json:"runtime_version,omitempty"`
-	Schema                     tfconfig.Variable `json:"schema,omitempty"`
 	Secrets                    tfconfig.Variable `json:"secrets,omitempty"`
 	TargetPath                 tfconfig.Variable `json:"target_path,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -46,39 +48,39 @@ type FunctionJavaModel struct {
 func FunctionJava(
 	resourceName string,
 	database string,
-	handler string,
-	name string,
-	returnType string,
 	schema string,
+	name string,
+	handler string,
+	returnType string,
 ) *FunctionJavaModel {
 	f := &FunctionJavaModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionJava)}
 	f.WithDatabase(database)
-	f.WithHandler(handler)
-	f.WithName(name)
-	f.WithReturnType(returnType)
 	f.WithSchema(schema)
+	f.WithName(name)
+	f.WithHandler(handler)
+	f.WithReturnType(returnType)
 	return f
 }
 
 func FunctionJavaWithDefaultMeta(
 	database string,
-	handler string,
-	name string,
-	returnType string,
 	schema string,
+	name string,
+	handler string,
+	returnType string,
 ) *FunctionJavaModel {
 	f := &FunctionJavaModel{ResourceModelMeta: config.DefaultMeta(resources.FunctionJava)}
 	f.WithDatabase(database)
-	f.WithHandler(handler)
-	f.WithName(name)
-	f.WithReturnType(returnType)
 	f.WithSchema(schema)
+	f.WithName(name)
+	f.WithHandler(handler)
+	f.WithReturnType(returnType)
 	return f
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (f *FunctionJavaModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionJavaModel
@@ -96,19 +98,34 @@ func (f *FunctionJavaModel) WithDependsOn(values ...string) *FunctionJavaModel {
 	return f
 }
 
+func (f *FunctionJavaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionJavaModel {
+	f.DynamicBlock = dynamicBlock
+	return f
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (f *FunctionJavaModel) WithDatabase(database string) *FunctionJavaModel {
+	f.Database = tfconfig.StringVariable(database)
+	return f
+}
+
+func (f *FunctionJavaModel) WithSchema(schema string) *FunctionJavaModel {
+	f.Schema = tfconfig.StringVariable(schema)
+	return f
+}
+
+func (f *FunctionJavaModel) WithName(name string) *FunctionJavaModel {
+	f.Name = tfconfig.StringVariable(name)
+	return f
+}
 
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (f *FunctionJavaModel) WithComment(comment string) *FunctionJavaModel {
 	f.Comment = tfconfig.StringVariable(comment)
-	return f
-}
-
-func (f *FunctionJavaModel) WithDatabase(database string) *FunctionJavaModel {
-	f.Database = tfconfig.StringVariable(database)
 	return f
 }
 
@@ -156,11 +173,6 @@ func (f *FunctionJavaModel) WithMetricLevel(metricLevel string) *FunctionJavaMod
 	return f
 }
 
-func (f *FunctionJavaModel) WithName(name string) *FunctionJavaModel {
-	f.Name = tfconfig.StringVariable(name)
-	return f
-}
-
 func (f *FunctionJavaModel) WithNullInputBehavior(nullInputBehavior string) *FunctionJavaModel {
 	f.NullInputBehavior = tfconfig.StringVariable(nullInputBehavior)
 	return f
@@ -183,11 +195,6 @@ func (f *FunctionJavaModel) WithRuntimeVersion(runtimeVersion string) *FunctionJ
 	return f
 }
 
-func (f *FunctionJavaModel) WithSchema(schema string) *FunctionJavaModel {
-	f.Schema = tfconfig.StringVariable(schema)
-	return f
-}
-
 // secrets attribute type is not yet supported, so WithSecrets can't be generated
 
 // target_path attribute type is not yet supported, so WithTargetPath can't be generated
@@ -201,6 +208,21 @@ func (f *FunctionJavaModel) WithTraceLevel(traceLevel string) *FunctionJavaModel
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (f *FunctionJavaModel) WithDatabaseValue(value tfconfig.Variable) *FunctionJavaModel {
+	f.Database = value
+	return f
+}
+
+func (f *FunctionJavaModel) WithSchemaValue(value tfconfig.Variable) *FunctionJavaModel {
+	f.Schema = value
+	return f
+}
+
+func (f *FunctionJavaModel) WithNameValue(value tfconfig.Variable) *FunctionJavaModel {
+	f.Name = value
+	return f
+}
+
 func (f *FunctionJavaModel) WithArgumentsValue(value tfconfig.Variable) *FunctionJavaModel {
 	f.Arguments = value
 	return f
@@ -208,11 +230,6 @@ func (f *FunctionJavaModel) WithArgumentsValue(value tfconfig.Variable) *Functio
 
 func (f *FunctionJavaModel) WithCommentValue(value tfconfig.Variable) *FunctionJavaModel {
 	f.Comment = value
-	return f
-}
-
-func (f *FunctionJavaModel) WithDatabaseValue(value tfconfig.Variable) *FunctionJavaModel {
-	f.Database = value
 	return f
 }
 
@@ -266,11 +283,6 @@ func (f *FunctionJavaModel) WithMetricLevelValue(value tfconfig.Variable) *Funct
 	return f
 }
 
-func (f *FunctionJavaModel) WithNameValue(value tfconfig.Variable) *FunctionJavaModel {
-	f.Name = value
-	return f
-}
-
 func (f *FunctionJavaModel) WithNullInputBehaviorValue(value tfconfig.Variable) *FunctionJavaModel {
 	f.NullInputBehavior = value
 	return f
@@ -293,11 +305,6 @@ func (f *FunctionJavaModel) WithReturnTypeValue(value tfconfig.Variable) *Functi
 
 func (f *FunctionJavaModel) WithRuntimeVersionValue(value tfconfig.Variable) *FunctionJavaModel {
 	f.RuntimeVersion = value
-	return f
-}
-
-func (f *FunctionJavaModel) WithSchemaValue(value tfconfig.Variable) *FunctionJavaModel {
-	f.Schema = value
 	return f
 }
 

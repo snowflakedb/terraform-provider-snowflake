@@ -217,4 +217,12 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "SharedDatabase",
 		schema: resources.SharedDatabase().Schema,
 	},
+	{
+		name:   "Table",
+		schema: resources.Table().Schema,
+	},
+	{
+		name:   "ImageRepository",
+		schema: resources.ImageRepository().Schema,
+	},
 }

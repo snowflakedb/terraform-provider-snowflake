@@ -90,7 +90,7 @@ func TestAcc_Grants_On_SchemaObject(t *testing.T) {
 	statement := "SELECT ROLE_NAME FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 	columnNames := []string{"ROLE_NAME"}
 
-	viewModel := model.View("test", viewId.DatabaseName(), viewId.Name(), viewId.SchemaName(), statement).WithColumnNames(columnNames...)
+	viewModel := model.View("test", viewId.DatabaseName(), viewId.SchemaName(), viewId.Name(), statement).WithColumnNames(columnNames...)
 	grantsModel := datasourcemodel.GrantsOnSchemaObject("test", viewId, sdk.ObjectTypeView).
 		WithDependsOn(viewModel.ResourceReference())
 

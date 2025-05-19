@@ -38,12 +38,12 @@ func TestAcc_ScimIntegration_basic(t *testing.T) {
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	scimModelBasic := model.ScimSecurityIntegration("test", false, id.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModelOktaFull := model.ScimSecurityIntegration("test", true, id.Name(), role2.Name(), string(sdk.ScimSecurityIntegrationScimClientOkta)).
+	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModelOktaFull := model.ScimSecurityIntegration("test", id.Name(), true, role2.Name(), string(sdk.ScimSecurityIntegrationScimClientOkta)).
 		WithSyncPassword(r.BooleanFalse).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithComment(comment)
-	scimModelOkta := model.ScimSecurityIntegration("test", true, id.Name(), role2.Name(), string(sdk.ScimSecurityIntegrationScimClientOkta))
+	scimModelOkta := model.ScimSecurityIntegration("test", id.Name(), true, role2.Name(), string(sdk.ScimSecurityIntegrationScimClientOkta))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -168,7 +168,7 @@ func TestAcc_ScimIntegration_complete(t *testing.T) {
 	role := snowflakeroles.GenericScimProvisioner
 	comment := random.Comment()
 
-	scimCompleteModel := model.ScimSecurityIntegration("test", false, id.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
+	scimCompleteModel := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
 		WithSyncPassword(r.BooleanFalse).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithComment(comment)
@@ -215,7 +215,7 @@ func TestAcc_ScimIntegration_completeAzure(t *testing.T) {
 	role := snowflakeroles.GenericScimProvisioner
 	comment := random.Comment()
 
-	scimCompleteAzureModel := model.ScimSecurityIntegration("test", false, id.Name(), role.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
+	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithComment(comment)
 
@@ -255,7 +255,7 @@ func TestAcc_ScimIntegration_InvalidScimClient(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 
-	scimModelBasic := model.ScimSecurityIntegration("test", false, id.Name(), snowflakeroles.GenericScimProvisioner.Name(), "invalid")
+	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), "invalid")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -279,7 +279,7 @@ func TestAcc_ScimIntegration_InvalidRunAsRole(t *testing.T) {
 
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 
-	scimModelBasic := model.ScimSecurityIntegration("test", false, id.Name(), "invalid", string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, "invalid", string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -327,7 +327,7 @@ func TestAcc_ScimIntegration_InvalidCreateWithSyncPasswordWithAzure(t *testing.T
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	scimCompleteAzureModel := model.ScimSecurityIntegration("test", false, id.Name(), snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
+	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
 		WithComment(comment).
 		WithSyncPassword(r.BooleanFalse)
 
@@ -355,8 +355,8 @@ func TestAcc_ScimIntegration_InvalidUpdateWithSyncPasswordWithAzure(t *testing.T
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	scimBasicAzureModel := model.ScimSecurityIntegration("test", false, id.Name(), snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure))
-	scimCompleteAzureModel := model.ScimSecurityIntegration("test", false, id.Name(), snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
+	scimBasicAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure))
+	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
 		WithComment(comment).
 		WithSyncPassword(r.BooleanFalse)
 
@@ -553,7 +553,7 @@ func TestAcc_ScimIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResource
 
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 
-	scimModelBasic := model.ScimSecurityIntegration("test", false, id.Name(), snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },
@@ -589,7 +589,7 @@ func TestAcc_ScimIntegration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
 
-	scimModelBasic := model.ScimSecurityIntegration("test", false, quotedId, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModelBasic := model.ScimSecurityIntegration("test", quotedId, false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },

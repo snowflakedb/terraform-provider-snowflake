@@ -56,8 +56,7 @@ func (c *AccountClient) Create(t *testing.T) (*sdk.Account, func()) {
 	id := c.ids.RandomSensitiveAccountObjectIdentifier()
 	name := random.AdminName()
 	email := random.Email()
-	privateKey := random.GenerateRSAPrivateKey(t)
-	publicKey, _ := random.GenerateRSAPublicKeyFromPrivateKey(t, privateKey)
+	publicKey, _ := random.GenerateRSAPublicKey(t)
 
 	return c.CreateWithRequest(t, id, &sdk.CreateAccountOptions{
 		AdminName:         name,

@@ -67,7 +67,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			Type: testdatatypes.DataTypeTimestampNTZ,
 		},
 	}
-	policyModel := model.MaskingPolicy("test", argument, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), argument, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -259,7 +259,7 @@ func TestAcc_MaskingPolicy_complete(t *testing.T) {
 			Type: testdatatypes.DataTypeVarchar,
 		},
 	}
-	policyModel := model.MaskingPolicy("test", argument, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName()).WithComment("foo").WithExemptOtherPolicies(r.BooleanTrue)
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), argument, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns()).WithComment("foo").WithExemptOtherPolicies(r.BooleanTrue)
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -390,6 +390,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 	body := "case when current_role() in ('ANALYST') then val else sha2(val, 512) end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -399,12 +400,6 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 			}),
 		),
 	}
-
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -424,9 +419,9 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 				),
 			},
 			{
-				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
-				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
@@ -446,12 +441,12 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 	newId := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
 		{
 			Name: "a",
 			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
+	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -496,6 +491,7 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -506,12 +502,6 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -520,7 +510,7 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				PlanOnly:        true,
 				ExpectError:     regexp.MustCompile(`invalid data type: invalid-type`),
@@ -536,12 +526,12 @@ func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
 	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'ok' else '***' end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
 		{
 			Name: "a",
 			Type: testdatatypes.DataTypeText,
 		},
-	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName())
+	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns())
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -577,7 +567,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 
 	comment := random.Comment()
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicy("test", []sdk.TableColumnSignature{
+	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
 		{
 			Name: "A",
 			Type: testdatatypes.DataTypeVarchar,
@@ -586,7 +576,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 			Name: "b",
 			Type: testdatatypes.DataTypeVarchar,
 		},
-	}, body, id.DatabaseName(), id.Name(), testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns(), id.SchemaName()).WithComment(comment).WithExemptOtherPolicies(r.BooleanTrue)
+	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns()).WithComment(comment).WithExemptOtherPolicies(r.BooleanTrue)
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -616,7 +606,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 				),
 			},
 			{
-				PreConfig:         func() { acc.UnsetConfigPathEnv(t) },
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.0.0"),
 				Config:            accconfig.FromModels(t, policyModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -674,6 +664,7 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -684,12 +675,6 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -697,8 +682,9 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 		PreCheck: func() { acc.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.2.1"),
-				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -709,8 +695,9 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 				),
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:                   accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:          commonVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -739,6 +726,7 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataType("VARCHAR(100)"))
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -749,12 +737,6 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -762,8 +744,9 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 		PreCheck: func() { acc.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
+				PreConfig:         func() { acc.SetLegacyConfigPathEnv(t) },
 				ExternalProviders: acc.ExternalProviderWithExactVersion("1.2.1"),
-				Config:            accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -776,8 +759,9 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
+				PreConfig:                func() { acc.UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:                   accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:          commonVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -806,6 +790,7 @@ func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -825,12 +810,6 @@ func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -840,7 +819,7 @@ func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -858,7 +837,7 @@ func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: updatedDataType,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -883,6 +862,7 @@ func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
 	updatedPolicyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataType("VARCHAR(100)"))
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -893,12 +873,6 @@ func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
 		),
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -908,7 +882,7 @@ func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -921,7 +895,7 @@ func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config:          accconfig.FromModels(t, updatedPolicyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, updatedPolicyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -941,6 +915,7 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 	updatedBody := "case when current_role() in ('ANALYST') then 1 else 2 end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -958,12 +933,6 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 		},
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -973,7 +942,7 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -999,7 +968,7 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -1024,6 +993,7 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -1041,12 +1011,6 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 		},
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -1056,7 +1020,7 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -1078,7 +1042,7 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -1103,6 +1067,7 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -1120,12 +1085,6 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 		},
 	}
 
-	temporaryVariableDefinition := `
-	variable "arguments" {
-		type = set(map(string))
-	}
-`
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { acc.TestAccPreCheck(t) },
@@ -1135,7 +1094,7 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 		CheckDestroy: acc.CheckDestroy(t, resources.MaskingPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -1157,7 +1116,7 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config:          accconfig.FromModels(t, policyModel) + temporaryVariableDefinition,
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).

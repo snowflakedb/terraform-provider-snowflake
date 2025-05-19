@@ -506,6 +506,19 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return client.SecurityIntegrations.AlterApiAuthenticationWithAuthorizationCodeGrantFlow(ctx, sdk.NewAlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest(id).WithUnsetTags(tags))
 			},
 		},
+		{
+			name:       "ComputePool",
+			objectType: sdk.ObjectTypeComputePool,
+			setupObject: func() (IDProvider[sdk.AccountObjectIdentifier], func()) {
+				return testClientHelper().ComputePool.Create(t)
+			},
+			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithUnsetTags(tags))
+			},
+		},
 		// TODO [SNOW-1452191]: add a test for jwt bearer integration
 		{
 			name:       "ExternalOauth",
@@ -906,6 +919,25 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
 				return client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
+			name:       "ImageRepository",
+			objectType: sdk.ObjectTypeImageRepository,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				// TODO(SNOW-2070746): We set up a separate database and schema with capitalized ids. Remove this after fix on snowflake side.
+				db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
+				t.Cleanup(dbCleanup)
+
+				schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
+				t.Cleanup(schemaCleanup)
+				return testClientHelper().ImageRepository.CreateInSchema(t, schema.ID())
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.ImageRepositories.Alter(ctx, sdk.NewAlterImageRepositoryRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.ImageRepositories.Alter(ctx, sdk.NewAlterImageRepositoryRequest(id).WithUnsetTags(tags))
 			},
 		},
 	}

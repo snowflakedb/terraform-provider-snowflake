@@ -35,8 +35,10 @@ type QueryHistory struct {
 
 func (c *InformationSchemaClient) GetQueryHistory(t *testing.T, limit int) []QueryHistory {
 	t.Helper()
+
 	result, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf("SELECT * FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY(RESULT_LIMIT => %d))", limit))
 	require.NoError(t, err)
+
 	return collections.Map(result, func(queryResult map[string]*any) QueryHistory {
 		return c.mapQueryHistory(t, queryResult)
 	})
@@ -44,9 +46,11 @@ func (c *InformationSchemaClient) GetQueryHistory(t *testing.T, limit int) []Que
 
 func (c *InformationSchemaClient) GetQueryHistoryByQueryId(t *testing.T, limit int, queryId string) QueryHistory {
 	t.Helper()
+
 	result, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf("SELECT * FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY(RESULT_LIMIT => %d)) WHERE QUERY_ID = '%s'", limit, queryId))
 	require.NoError(t, err)
 	require.Len(t, result, 1)
+
 	return c.mapQueryHistory(t, result[0])
 }
 

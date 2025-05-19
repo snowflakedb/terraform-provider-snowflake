@@ -9,13 +9,14 @@
 
 {{ range .Attributes -}}
     {{- $attributeNameCamel := SnakeCaseToCamel .Name -}}
-    {{ if .AttributeType }}
-        func ({{ $modelVar }} *{{ $modelName }}) With{{ $attributeNameCamel }}({{ FirstLetterLowercase $attributeNameCamel }} {{ .AttributeType }}) *{{ $modelName }} {
+    {{- $attributeNameWithoutForbiddenAttributeNameSuffix := RemoveForbiddenAttributeNameSuffix $attributeNameCamel -}}
+    {{ if ShouldGenerateWithForAttributeType .OriginalType }}
+        func ({{ $modelVar }} *{{ $modelName }}) With{{ $attributeNameWithoutForbiddenAttributeNameSuffix }}({{ FirstLetterLowercase $attributeNameCamel }} {{ .AttributeType }}) *{{ $modelName }} {
             {{ $modelVar }}.{{ $attributeNameCamel }} = {{ .MethodImport }}.{{ .VariableMethod }}({{ FirstLetterLowercase $attributeNameCamel }})
             return {{ $modelVar }}
         }
     {{ else }}
-        // {{ .Name }} attribute type is not yet supported, so With{{ $attributeNameCamel }} can't be generated
+        // {{ .Name }} attribute type is not yet supported, so With{{ $attributeNameWithoutForbiddenAttributeNameSuffix }} can't be generated
     {{ end }}
 
 {{ end -}}
@@ -26,7 +27,8 @@
 
 {{ range .Attributes -}}
     {{- $attributeNameCamel := SnakeCaseToCamel .Name -}}
-    func ({{ $modelVar }} *{{ $modelName }}) With{{ $attributeNameCamel }}Value(value tfconfig.Variable) *{{ $modelName }} {
+    {{- $attributeNameWithoutForbiddenAttributeNameSuffix := RemoveForbiddenAttributeNameSuffix $attributeNameCamel -}}
+    func ({{ $modelVar }} *{{ $modelName }}) With{{ $attributeNameWithoutForbiddenAttributeNameSuffix }}Value(value tfconfig.Variable) *{{ $modelName }} {
         {{ $modelVar }}.{{ $attributeNameCamel }} = value
         return {{ $modelVar }}
     }

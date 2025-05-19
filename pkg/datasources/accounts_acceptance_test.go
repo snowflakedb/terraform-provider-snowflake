@@ -23,8 +23,7 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 
 	prefix := acc.TestClient().Ids.AlphaN(4)
 
-	privateKey := random.GenerateRSAPrivateKey(t)
-	publicKey, _ := random.GenerateRSAPublicKeyFromPrivateKey(t, privateKey)
+	publicKey, _ := random.GenerateRSAPublicKey(t)
 	account, accountCleanup := acc.TestClient().Account.CreateWithRequest(t, acc.TestClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix), &sdk.CreateAccountOptions{
 		AdminName:         acc.TestClient().Ids.Alpha(),
 		AdminRSAPublicKey: &publicKey,

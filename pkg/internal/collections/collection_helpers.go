@@ -2,6 +2,7 @@ package collections
 
 import (
 	"errors"
+	"strings"
 )
 
 var ErrObjectNotFound = errors.New("object does not exist")
@@ -48,4 +49,9 @@ func MergeMaps[M ~map[K]V, K comparable, V any](src ...M) M {
 		}
 	}
 	return merged
+}
+
+func JoinStrings[S ~string](stringCollection []S, separator string) string {
+	mappedCollection := Map(stringCollection, func(stringValue S) string { return string(stringValue) })
+	return strings.Join(mappedCollection, separator)
 }

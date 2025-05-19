@@ -6,8 +6,10 @@
 
 type {{ $modelName }} struct {
     {{ range .Attributes -}}
-        {{ SnakeCaseToCamel .Name }} tfconfig.Variable `json:"{{ .Name }},omitempty"`
+        {{ SnakeCaseToCamel .Name }} tfconfig.Variable `json:"{{ .JsonName }},omitempty"`
     {{ end }}
+    DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
+
     *config.ResourceModelMeta
 }
 
@@ -27,8 +29,9 @@ func {{ .Name }}(
     {{ $modelVar }} := &{{ $modelName }}{ResourceModelMeta: config.Meta(resourceName, resources.{{ .Name }})}
     {{ range .Attributes -}}
         {{- $attributeNameCamel := SnakeCaseToCamel .Name -}}
+        {{- $attributeNameWithoutForbiddenAttributeNameSuffix := RemoveForbiddenAttributeNameSuffix $attributeNameCamel -}}
         {{ if .Required -}}
-            {{ $modelVar }}.With{{ $attributeNameCamel }}({{ FirstLetterLowercase $attributeNameCamel }})
+            {{ $modelVar }}.With{{ $attributeNameWithoutForbiddenAttributeNameSuffix }}({{ FirstLetterLowercase $attributeNameCamel }})
         {{ end }}
     {{- end -}}
     return {{ $modelVar }}
@@ -45,8 +48,9 @@ func {{ .Name }}WithDefaultMeta(
     {{ $modelVar }} := &{{ $modelName }}{ResourceModelMeta: config.DefaultMeta(resources.{{ .Name }})}
     {{ range .Attributes -}}
         {{- $attributeNameCamel := SnakeCaseToCamel .Name -}}
+        {{- $attributeNameWithoutForbiddenAttributeNameSuffix := RemoveForbiddenAttributeNameSuffix $attributeNameCamel -}}
         {{ if .Required -}}
-            {{ $modelVar }}.With{{ $attributeNameCamel }}({{ FirstLetterLowercase $attributeNameCamel }})
+            {{ $modelVar }}.With{{ $attributeNameWithoutForbiddenAttributeNameSuffix }}({{ FirstLetterLowercase $attributeNameCamel }})
         {{ end }}
     {{- end -}}
     return {{ $modelVar }}

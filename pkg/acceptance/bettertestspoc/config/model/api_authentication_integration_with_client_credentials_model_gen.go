@@ -12,10 +12,10 @@ import (
 )
 
 type ApiAuthenticationIntegrationWithClientCredentialsModel struct {
+	Name                      tfconfig.Variable `json:"name,omitempty"`
 	Comment                   tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                   tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName        tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                      tfconfig.Variable `json:"name,omitempty"`
 	OauthAccessTokenValidity  tfconfig.Variable `json:"oauth_access_token_validity,omitempty"`
 	OauthAllowedScopes        tfconfig.Variable `json:"oauth_allowed_scopes,omitempty"`
 	OauthClientAuthMethod     tfconfig.Variable `json:"oauth_client_auth_method,omitempty"`
@@ -23,6 +23,8 @@ type ApiAuthenticationIntegrationWithClientCredentialsModel struct {
 	OauthClientSecret         tfconfig.Variable `json:"oauth_client_secret,omitempty"`
 	OauthRefreshTokenValidity tfconfig.Variable `json:"oauth_refresh_token_validity,omitempty"`
 	OauthTokenEndpoint        tfconfig.Variable `json:"oauth_token_endpoint,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -33,36 +35,36 @@ type ApiAuthenticationIntegrationWithClientCredentialsModel struct {
 
 func ApiAuthenticationIntegrationWithClientCredentials(
 	resourceName string,
-	enabled bool,
 	name string,
+	enabled bool,
 	oauthClientId string,
 	oauthClientSecret string,
 ) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a := &ApiAuthenticationIntegrationWithClientCredentialsModel{ResourceModelMeta: config.Meta(resourceName, resources.ApiAuthenticationIntegrationWithClientCredentials)}
-	a.WithEnabled(enabled)
 	a.WithName(name)
+	a.WithEnabled(enabled)
 	a.WithOauthClientId(oauthClientId)
 	a.WithOauthClientSecret(oauthClientSecret)
 	return a
 }
 
 func ApiAuthenticationIntegrationWithClientCredentialsWithDefaultMeta(
-	enabled bool,
 	name string,
+	enabled bool,
 	oauthClientId string,
 	oauthClientSecret string,
 ) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a := &ApiAuthenticationIntegrationWithClientCredentialsModel{ResourceModelMeta: config.DefaultMeta(resources.ApiAuthenticationIntegrationWithClientCredentials)}
-	a.WithEnabled(enabled)
 	a.WithName(name)
+	a.WithEnabled(enabled)
 	a.WithOauthClientId(oauthClientId)
 	a.WithOauthClientSecret(oauthClientSecret)
 	return a
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) MarshalJSON() ([]byte, error) {
 	type Alias ApiAuthenticationIntegrationWithClientCredentialsModel
@@ -80,9 +82,19 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithDependsOn(v
 	return a
 }
 
+func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ApiAuthenticationIntegrationWithClientCredentialsModel {
+	a.DynamicBlock = dynamicBlock
+	return a
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithName(name string) *ApiAuthenticationIntegrationWithClientCredentialsModel {
+	a.Name = tfconfig.StringVariable(name)
+	return a
+}
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithComment(comment string) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a.Comment = tfconfig.StringVariable(comment)
@@ -96,11 +108,6 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithEnabled(ena
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithFullyQualifiedName(fullyQualifiedName string) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithName(name string) *ApiAuthenticationIntegrationWithClientCredentialsModel {
-	a.Name = tfconfig.StringVariable(name)
 	return a
 }
 
@@ -140,6 +147,11 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithOauthTokenE
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithNameValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithClientCredentialsModel {
+	a.Name = value
+	return a
+}
+
 func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithCommentValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a.Comment = value
 	return a
@@ -152,11 +164,6 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithEnabledValu
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a.FullyQualifiedName = value
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithNameValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithClientCredentialsModel {
-	a.Name = value
 	return a
 }
 

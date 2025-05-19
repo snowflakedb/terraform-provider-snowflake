@@ -1,6 +1,10 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-testing/config"
+)
 
 type DynamicBlock map[string]DynamicBlockContent
 
@@ -54,4 +58,19 @@ func NewDynamicBlock(label string, variableName string, values []string) *Dynami
 			Content: args,
 		},
 	}
+}
+
+func SecretStringVariableModelWithConfigVariables(variableName string, value string) (*VariableModel, config.Variables) {
+	variableModel := StringVariable(variableName).WithSensitive(true)
+
+	configVariables := config.Variables{
+		variableName: config.StringVariable(value),
+	}
+
+	return variableModel, configVariables
+}
+
+type TerraformBlockModel interface {
+	BlockName() string
+	BlockType() string
 }

@@ -59,9 +59,9 @@ func TestAcc_CreateSecondaryDatabase_Basic(t *testing.T) {
 		accountEnableConsoleOutput                     = new(string)
 	)
 
-	secondaryDatabaseModel := model.SecondaryDatabase("test", externalPrimaryId.FullyQualifiedName(), id.Name()).
+	secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName()).
 		WithComment(comment)
-	renamedSecondaryDatabaseModel := model.SecondaryDatabase("test", externalPrimaryId.FullyQualifiedName(), newId.Name()).
+	renamedSecondaryDatabaseModel := model.SecondaryDatabase("test", newId.Name(), externalPrimaryId.FullyQualifiedName()).
 		WithComment(newComment)
 
 	resource.Test(t, resource.TestCase{
@@ -203,8 +203,8 @@ func TestAcc_CreateSecondaryDatabase_complete(t *testing.T) {
 		accountEnableConsoleOutput                     = new(string)
 	)
 
-	secondaryDatabaseModel := model.SecondaryDatabase("test", externalPrimaryId.FullyQualifiedName(), id.Name())
-	secondaryDatabaseModelComplete := model.SecondaryDatabase("test", externalPrimaryId.FullyQualifiedName(), id.Name()).
+	secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName())
+	secondaryDatabaseModelComplete := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName()).
 		WithComment(comment).
 		WithDataRetentionTimeInDays(20).
 		WithMaxDataExtensionTimeInDays(25).
@@ -222,7 +222,7 @@ func TestAcc_CreateSecondaryDatabase_complete(t *testing.T) {
 		WithUserTaskMinimumTriggerIntervalInSeconds(60).
 		WithQuotedIdentifiersIgnoreCase(true).
 		WithEnableConsoleOutput(true)
-	secondaryDatabaseModelCompleteUpdated := model.SecondaryDatabase("test", externalPrimaryId.FullyQualifiedName(), newId.Name()).
+	secondaryDatabaseModelCompleteUpdated := model.SecondaryDatabase("test", newId.Name(), externalPrimaryId.FullyQualifiedName()).
 		WithComment(newComment).
 		WithDataRetentionTimeInDays(40).
 		WithMaxDataExtensionTimeInDays(45).
@@ -408,7 +408,7 @@ func TestAcc_CreateSecondaryDatabase_DataRetentionTimeInDays(t *testing.T) {
 	secondaryDatabaseModel := func(
 		dataRetentionTimeInDays *int,
 	) *model.SecondaryDatabaseModel {
-		secondaryDatabaseModel := model.SecondaryDatabase("test", externalPrimaryId.FullyQualifiedName(), id.Name()).
+		secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName()).
 			WithMaxDataExtensionTimeInDays(10).
 			WithExternalVolume(externalVolumeId.Name()).
 			WithCatalog(catalogId.Name()).
@@ -509,7 +509,7 @@ func TestAcc_SecondaryDatabase_migrateFromV0941_ensureSmoothUpgradeWithNewResour
 		require.Eventually(t, func() bool { return acc.SecondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
 	})
 
-	secondaryDatabaseModel := model.SecondaryDatabase("test", externalPrimaryId.FullyQualifiedName(), id.Name())
+	secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },
@@ -554,7 +554,7 @@ func TestAcc_SecondaryDatabase_IdentifierQuotingDiffSuppression(t *testing.T) {
 		require.Eventually(t, func() bool { return acc.SecondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
 	})
 
-	secondaryDatabaseModel := model.SecondaryDatabase("test", unquotedExternalPrimaryId, quotedId)
+	secondaryDatabaseModel := model.SecondaryDatabase("test", quotedId, unquotedExternalPrimaryId)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acc.TestAccPreCheck(t) },

@@ -12,6 +12,7 @@ import (
 )
 
 type WarehouseModel struct {
+	Name                            tfconfig.Variable `json:"name,omitempty"`
 	AutoResume                      tfconfig.Variable `json:"auto_resume,omitempty"`
 	AutoSuspend                     tfconfig.Variable `json:"auto_suspend,omitempty"`
 	Comment                         tfconfig.Variable `json:"comment,omitempty"`
@@ -21,7 +22,6 @@ type WarehouseModel struct {
 	MaxClusterCount                 tfconfig.Variable `json:"max_cluster_count,omitempty"`
 	MaxConcurrencyLevel             tfconfig.Variable `json:"max_concurrency_level,omitempty"`
 	MinClusterCount                 tfconfig.Variable `json:"min_cluster_count,omitempty"`
-	Name                            tfconfig.Variable `json:"name,omitempty"`
 	QueryAccelerationMaxScaleFactor tfconfig.Variable `json:"query_acceleration_max_scale_factor,omitempty"`
 	ResourceMonitor                 tfconfig.Variable `json:"resource_monitor,omitempty"`
 	ScalingPolicy                   tfconfig.Variable `json:"scaling_policy,omitempty"`
@@ -29,6 +29,8 @@ type WarehouseModel struct {
 	StatementTimeoutInSeconds       tfconfig.Variable `json:"statement_timeout_in_seconds,omitempty"`
 	WarehouseSize                   tfconfig.Variable `json:"warehouse_size,omitempty"`
 	WarehouseType                   tfconfig.Variable `json:"warehouse_type,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -54,9 +56,9 @@ func WarehouseWithDefaultMeta(
 	return w
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (w *WarehouseModel) MarshalJSON() ([]byte, error) {
 	type Alias WarehouseModel
@@ -74,9 +76,19 @@ func (w *WarehouseModel) WithDependsOn(values ...string) *WarehouseModel {
 	return w
 }
 
+func (w *WarehouseModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *WarehouseModel {
+	w.DynamicBlock = dynamicBlock
+	return w
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (w *WarehouseModel) WithName(name string) *WarehouseModel {
+	w.Name = tfconfig.StringVariable(name)
+	return w
+}
 
 func (w *WarehouseModel) WithAutoResume(autoResume string) *WarehouseModel {
 	w.AutoResume = tfconfig.StringVariable(autoResume)
@@ -123,11 +135,6 @@ func (w *WarehouseModel) WithMinClusterCount(minClusterCount int) *WarehouseMode
 	return w
 }
 
-func (w *WarehouseModel) WithName(name string) *WarehouseModel {
-	w.Name = tfconfig.StringVariable(name)
-	return w
-}
-
 func (w *WarehouseModel) WithQueryAccelerationMaxScaleFactor(queryAccelerationMaxScaleFactor int) *WarehouseModel {
 	w.QueryAccelerationMaxScaleFactor = tfconfig.IntegerVariable(queryAccelerationMaxScaleFactor)
 	return w
@@ -166,6 +173,11 @@ func (w *WarehouseModel) WithWarehouseType(warehouseType string) *WarehouseModel
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (w *WarehouseModel) WithNameValue(value tfconfig.Variable) *WarehouseModel {
+	w.Name = value
+	return w
+}
 
 func (w *WarehouseModel) WithAutoResumeValue(value tfconfig.Variable) *WarehouseModel {
 	w.AutoResume = value
@@ -209,11 +221,6 @@ func (w *WarehouseModel) WithMaxConcurrencyLevelValue(value tfconfig.Variable) *
 
 func (w *WarehouseModel) WithMinClusterCountValue(value tfconfig.Variable) *WarehouseModel {
 	w.MinClusterCount = value
-	return w
-}
-
-func (w *WarehouseModel) WithNameValue(value tfconfig.Variable) *WarehouseModel {
-	w.Name = value
 	return w
 }
 

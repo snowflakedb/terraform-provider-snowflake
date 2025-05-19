@@ -12,12 +12,12 @@ import (
 )
 
 type Saml2SecurityIntegrationModel struct {
+	Name                           tfconfig.Variable `json:"name,omitempty"`
 	AllowedEmailPatterns           tfconfig.Variable `json:"allowed_email_patterns,omitempty"`
 	AllowedUserDomains             tfconfig.Variable `json:"allowed_user_domains,omitempty"`
 	Comment                        tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                        tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName             tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                           tfconfig.Variable `json:"name,omitempty"`
 	Saml2EnableSpInitiated         tfconfig.Variable `json:"saml2_enable_sp_initiated,omitempty"`
 	Saml2ForceAuthn                tfconfig.Variable `json:"saml2_force_authn,omitempty"`
 	Saml2Issuer                    tfconfig.Variable `json:"saml2_issuer,omitempty"`
@@ -30,6 +30,8 @@ type Saml2SecurityIntegrationModel struct {
 	Saml2SpInitiatedLoginPageLabel tfconfig.Variable `json:"saml2_sp_initiated_login_page_label,omitempty"`
 	Saml2SsoUrl                    tfconfig.Variable `json:"saml2_sso_url,omitempty"`
 	Saml2X509Cert                  tfconfig.Variable `json:"saml2_x509_cert,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -71,9 +73,9 @@ func Saml2SecurityIntegrationWithDefaultMeta(
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *Saml2SecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias Saml2SecurityIntegrationModel
@@ -91,9 +93,19 @@ func (s *Saml2SecurityIntegrationModel) WithDependsOn(values ...string) *Saml2Se
 	return s
 }
 
+func (s *Saml2SecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *Saml2SecurityIntegrationModel {
+	s.DynamicBlock = dynamicBlock
+	return s
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (s *Saml2SecurityIntegrationModel) WithName(name string) *Saml2SecurityIntegrationModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
 
 // allowed_email_patterns attribute type is not yet supported, so WithAllowedEmailPatterns can't be generated
 
@@ -111,11 +123,6 @@ func (s *Saml2SecurityIntegrationModel) WithEnabled(enabled string) *Saml2Securi
 
 func (s *Saml2SecurityIntegrationModel) WithFullyQualifiedName(fullyQualifiedName string) *Saml2SecurityIntegrationModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return s
-}
-
-func (s *Saml2SecurityIntegrationModel) WithName(name string) *Saml2SecurityIntegrationModel {
-	s.Name = tfconfig.StringVariable(name)
 	return s
 }
 
@@ -183,6 +190,11 @@ func (s *Saml2SecurityIntegrationModel) WithSaml2X509Cert(saml2X509Cert string) 
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (s *Saml2SecurityIntegrationModel) WithNameValue(value tfconfig.Variable) *Saml2SecurityIntegrationModel {
+	s.Name = value
+	return s
+}
+
 func (s *Saml2SecurityIntegrationModel) WithAllowedEmailPatternsValue(value tfconfig.Variable) *Saml2SecurityIntegrationModel {
 	s.AllowedEmailPatterns = value
 	return s
@@ -205,11 +217,6 @@ func (s *Saml2SecurityIntegrationModel) WithEnabledValue(value tfconfig.Variable
 
 func (s *Saml2SecurityIntegrationModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *Saml2SecurityIntegrationModel {
 	s.FullyQualifiedName = value
-	return s
-}
-
-func (s *Saml2SecurityIntegrationModel) WithNameValue(value tfconfig.Variable) *Saml2SecurityIntegrationModel {
-	s.Name = value
 	return s
 }
 

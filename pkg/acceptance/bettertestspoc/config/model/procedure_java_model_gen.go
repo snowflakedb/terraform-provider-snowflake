@@ -12,9 +12,11 @@ import (
 )
 
 type ProcedureJavaModel struct {
+	Database                   tfconfig.Variable `json:"database,omitempty"`
+	Schema                     tfconfig.Variable `json:"schema,omitempty"`
+	Name                       tfconfig.Variable `json:"name,omitempty"`
 	Arguments                  tfconfig.Variable `json:"arguments,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
-	Database                   tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput        tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExecuteAs                  tfconfig.Variable `json:"execute_as,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
@@ -24,18 +26,18 @@ type ProcedureJavaModel struct {
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                       tfconfig.Variable `json:"name,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
 	Packages                   tfconfig.Variable `json:"packages,omitempty"`
 	ProcedureDefinition        tfconfig.Variable `json:"procedure_definition,omitempty"`
 	ProcedureLanguage          tfconfig.Variable `json:"procedure_language,omitempty"`
 	ReturnType                 tfconfig.Variable `json:"return_type,omitempty"`
 	RuntimeVersion             tfconfig.Variable `json:"runtime_version,omitempty"`
-	Schema                     tfconfig.Variable `json:"schema,omitempty"`
 	Secrets                    tfconfig.Variable `json:"secrets,omitempty"`
 	SnowparkPackage            tfconfig.Variable `json:"snowpark_package,omitempty"`
 	TargetPath                 tfconfig.Variable `json:"target_path,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -47,47 +49,47 @@ type ProcedureJavaModel struct {
 func ProcedureJava(
 	resourceName string,
 	database string,
-	handler string,
+	schema string,
 	name string,
+	handler string,
 	returnType string,
 	runtimeVersion string,
-	schema string,
 	snowparkPackage string,
 ) *ProcedureJavaModel {
 	p := &ProcedureJavaModel{ResourceModelMeta: config.Meta(resourceName, resources.ProcedureJava)}
 	p.WithDatabase(database)
-	p.WithHandler(handler)
+	p.WithSchema(schema)
 	p.WithName(name)
+	p.WithHandler(handler)
 	p.WithReturnType(returnType)
 	p.WithRuntimeVersion(runtimeVersion)
-	p.WithSchema(schema)
 	p.WithSnowparkPackage(snowparkPackage)
 	return p
 }
 
 func ProcedureJavaWithDefaultMeta(
 	database string,
-	handler string,
+	schema string,
 	name string,
+	handler string,
 	returnType string,
 	runtimeVersion string,
-	schema string,
 	snowparkPackage string,
 ) *ProcedureJavaModel {
 	p := &ProcedureJavaModel{ResourceModelMeta: config.DefaultMeta(resources.ProcedureJava)}
 	p.WithDatabase(database)
-	p.WithHandler(handler)
+	p.WithSchema(schema)
 	p.WithName(name)
+	p.WithHandler(handler)
 	p.WithReturnType(returnType)
 	p.WithRuntimeVersion(runtimeVersion)
-	p.WithSchema(schema)
 	p.WithSnowparkPackage(snowparkPackage)
 	return p
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (p *ProcedureJavaModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedureJavaModel
@@ -105,19 +107,34 @@ func (p *ProcedureJavaModel) WithDependsOn(values ...string) *ProcedureJavaModel
 	return p
 }
 
+func (p *ProcedureJavaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedureJavaModel {
+	p.DynamicBlock = dynamicBlock
+	return p
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (p *ProcedureJavaModel) WithDatabase(database string) *ProcedureJavaModel {
+	p.Database = tfconfig.StringVariable(database)
+	return p
+}
+
+func (p *ProcedureJavaModel) WithSchema(schema string) *ProcedureJavaModel {
+	p.Schema = tfconfig.StringVariable(schema)
+	return p
+}
+
+func (p *ProcedureJavaModel) WithName(name string) *ProcedureJavaModel {
+	p.Name = tfconfig.StringVariable(name)
+	return p
+}
 
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (p *ProcedureJavaModel) WithComment(comment string) *ProcedureJavaModel {
 	p.Comment = tfconfig.StringVariable(comment)
-	return p
-}
-
-func (p *ProcedureJavaModel) WithDatabase(database string) *ProcedureJavaModel {
-	p.Database = tfconfig.StringVariable(database)
 	return p
 }
 
@@ -160,11 +177,6 @@ func (p *ProcedureJavaModel) WithMetricLevel(metricLevel string) *ProcedureJavaM
 	return p
 }
 
-func (p *ProcedureJavaModel) WithName(name string) *ProcedureJavaModel {
-	p.Name = tfconfig.StringVariable(name)
-	return p
-}
-
 func (p *ProcedureJavaModel) WithNullInputBehavior(nullInputBehavior string) *ProcedureJavaModel {
 	p.NullInputBehavior = tfconfig.StringVariable(nullInputBehavior)
 	return p
@@ -192,11 +204,6 @@ func (p *ProcedureJavaModel) WithRuntimeVersion(runtimeVersion string) *Procedur
 	return p
 }
 
-func (p *ProcedureJavaModel) WithSchema(schema string) *ProcedureJavaModel {
-	p.Schema = tfconfig.StringVariable(schema)
-	return p
-}
-
 // secrets attribute type is not yet supported, so WithSecrets can't be generated
 
 func (p *ProcedureJavaModel) WithSnowparkPackage(snowparkPackage string) *ProcedureJavaModel {
@@ -215,6 +222,21 @@ func (p *ProcedureJavaModel) WithTraceLevel(traceLevel string) *ProcedureJavaMod
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (p *ProcedureJavaModel) WithDatabaseValue(value tfconfig.Variable) *ProcedureJavaModel {
+	p.Database = value
+	return p
+}
+
+func (p *ProcedureJavaModel) WithSchemaValue(value tfconfig.Variable) *ProcedureJavaModel {
+	p.Schema = value
+	return p
+}
+
+func (p *ProcedureJavaModel) WithNameValue(value tfconfig.Variable) *ProcedureJavaModel {
+	p.Name = value
+	return p
+}
+
 func (p *ProcedureJavaModel) WithArgumentsValue(value tfconfig.Variable) *ProcedureJavaModel {
 	p.Arguments = value
 	return p
@@ -222,11 +244,6 @@ func (p *ProcedureJavaModel) WithArgumentsValue(value tfconfig.Variable) *Proced
 
 func (p *ProcedureJavaModel) WithCommentValue(value tfconfig.Variable) *ProcedureJavaModel {
 	p.Comment = value
-	return p
-}
-
-func (p *ProcedureJavaModel) WithDatabaseValue(value tfconfig.Variable) *ProcedureJavaModel {
-	p.Database = value
 	return p
 }
 
@@ -275,11 +292,6 @@ func (p *ProcedureJavaModel) WithMetricLevelValue(value tfconfig.Variable) *Proc
 	return p
 }
 
-func (p *ProcedureJavaModel) WithNameValue(value tfconfig.Variable) *ProcedureJavaModel {
-	p.Name = value
-	return p
-}
-
 func (p *ProcedureJavaModel) WithNullInputBehaviorValue(value tfconfig.Variable) *ProcedureJavaModel {
 	p.NullInputBehavior = value
 	return p
@@ -307,11 +319,6 @@ func (p *ProcedureJavaModel) WithReturnTypeValue(value tfconfig.Variable) *Proce
 
 func (p *ProcedureJavaModel) WithRuntimeVersionValue(value tfconfig.Variable) *ProcedureJavaModel {
 	p.RuntimeVersion = value
-	return p
-}
-
-func (p *ProcedureJavaModel) WithSchemaValue(value tfconfig.Variable) *ProcedureJavaModel {
-	p.Schema = value
 	return p
 }
 
