@@ -316,6 +316,5 @@ func TestInt_ComputePools(t *testing.T) {
 			HasErrorCode("").
 			HasStatusMessage("Compute pool is starting for last 0 minutes"),
 		)
-		// Note that the value of updated_on may differ between both SHOW calls.
 	})
 }
