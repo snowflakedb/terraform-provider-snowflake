@@ -185,6 +185,62 @@ func TestInt_ComputePools(t *testing.T) {
 		)
 	})
 
+	t.Run("alter: suspend", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS).
+			WithInitiallySuspended(false)
+
+		computePool, cleanup := testClientHelper().ComputePool.CreateWithRequest(t, request)
+		t.Cleanup(cleanup)
+
+		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
+			HasName(id.Name()).
+			HasState(sdk.ComputePoolStateStarting),
+		)
+		err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSuspend(true))
+		require.NoError(t, err)
+
+		computePool, err = client.ComputePools.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
+			HasName(id.Name()).
+			HasState(sdk.ComputePoolStateSuspended),
+		)
+	})
+
+	t.Run("alter: resume", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS).
+			WithInitiallySuspended(true)
+
+		computePool, cleanup := testClientHelper().ComputePool.CreateWithRequest(t, request)
+		t.Cleanup(cleanup)
+
+		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
+			HasName(id.Name()).
+			HasState(sdk.ComputePoolStateSuspended),
+		)
+		err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithResume(true))
+		require.NoError(t, err)
+
+		computePool, err = client.ComputePools.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
+			HasName(id.Name()).
+			HasState(sdk.ComputePoolStateStarting),
+		)
+	})
+
+	t.Run("alter: stop all", func(t *testing.T) {
+		computePool, cleanup := testClientHelper().ComputePool.Create(t)
+		t.Cleanup(cleanup)
+
+		err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(computePool.ID()).WithStopAll(true))
+		require.NoError(t, err)
+		// TODO (SNOW-2081739): Add assertions to check that all services are stopped.
+	})
 	t.Run("describe", func(t *testing.T) {
 		computePool, funcCleanup := testClientHelper().ComputePool.Create(t)
 		t.Cleanup(funcCleanup)
@@ -237,8 +293,29 @@ func TestInt_ComputePools(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, 1, len(computePools))
 		require.NotNil(t, computePool)
-		require.Equal(t, computePool.Name, computePools[0].Name)
-		// TODO(next PR): Add more assertions, based on generated builders.
+		assertThatObject(t, objectassert.ComputePoolDetails(t, computePool.ID()).
+			HasName(computePool.ID().Name()).
+			HasState(sdk.ComputePoolStateStarting).
+			HasMinNodes(1).
+			HasMaxNodes(1).
+			HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
+			HasNumServices(0).
+			HasNumJobs(0).
+			HasAutoSuspendSecs(3600).
+			HasAutoResume(true).
+			HasActiveNodes(0).
+			HasIdleNodes(0).
+			HasTargetNodes(1).
+			HasCreatedOnNotEmpty().
+			HasResumedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasNoComment().
+			HasIsExclusive(false).
+			HasNoApplication().
+			HasErrorCode("").
+			HasStatusMessage("Compute pool is starting for last 0 minutes"),
+		)
 		// Note that the value of updated_on may differ between both SHOW calls.
 	})
 }
