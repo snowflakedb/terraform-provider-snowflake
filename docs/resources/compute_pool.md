@@ -9,6 +9,8 @@ description: |-
 
 -> **Note** Quoted names for special characters or case-sensitive names are not supported. This limitation in the provider follows the limitation in Snowflake (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool)). Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier).
 
+-> **Note** Managing compute pool state is limited. It is handled by `initially_suspended`, `auto_suspend_secs`, and `auto_resume` fields. The provider does not support managing the state of compute pools in Snowflake with `ALTER ... SUSPEND` and `ALTER ... RESUME`. See [Compute pool lifecycle documentation](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool#compute-pool-lifecycle) for more details.
+
 # snowflake_compute_pool (Resource)
 
 Resource used to manage compute pools. For more information, check [compute pools documentation](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool).
@@ -59,7 +61,7 @@ resource "snowflake_compute_pool" "complete" {
 - `auto_suspend_secs` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Number of seconds of inactivity after which you want Snowflake to automatically suspend the compute pool.
 - `comment` (String) Specifies a comment for the compute pool.
 - `for_application` (String) Specifies the Snowflake Native App name.
-- `initially_suspended` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the compute pool is created initially in the suspended state.
+- `initially_suspended` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the compute pool is created initially in the suspended state. This field is used only when creating a compute pool. Changes on this field are ignored after creation.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

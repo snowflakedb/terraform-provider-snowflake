@@ -67,7 +67,7 @@ var computePoolSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: validateBooleanString,
 		DiffSuppressFunc: IgnoreAfterCreation,
-		Description:      "Specifies whether the compute pool is created initially in the suspended state.",
+		Description:      "Specifies whether the compute pool is created initially in the suspended state. This field is used only when creating a compute pool. Changes on this field are ignored after creation.",
 		Default:          BooleanDefault,
 	},
 	"auto_suspend_secs": {
@@ -83,7 +83,6 @@ var computePoolSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the compute pool.",
 	},
-	// TODO: state?
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,

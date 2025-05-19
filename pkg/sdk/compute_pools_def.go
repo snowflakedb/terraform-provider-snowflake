@@ -60,6 +60,7 @@ func ToComputePoolInstanceFamily(s string) (ComputePoolInstanceFamily, error) {
 	return ComputePoolInstanceFamily(s), nil
 }
 
+// See https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool#compute-pool-lifecycle.
 type ComputePoolState string
 
 const (

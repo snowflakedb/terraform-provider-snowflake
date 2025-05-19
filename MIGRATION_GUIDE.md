@@ -23,6 +23,8 @@ across different versions.
 ### *(new feature)* snowflake_compute_pool resource
 Added a new preview resource for managing compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier). This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
+Managing compute pool state is limited. It is handled only by `initially_suspended`, `auto_suspend_secs`, and `auto_resume` fields. See the resource documentation for more details.
+
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_compute_pool_resource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* snowflake_image_repository resource
