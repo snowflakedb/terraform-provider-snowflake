@@ -18,7 +18,7 @@ type ComputePoolDetailsAssert struct {
 func ComputePoolDetails(t *testing.T, id sdk.AccountObjectIdentifier) *ComputePoolDetailsAssert {
 	t.Helper()
 	return &ComputePoolDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("PROCEDURE_DETAILS"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ComputePoolDetails, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("COMPUTE_POOL_DETAILS"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ComputePoolDetails, sdk.AccountObjectIdentifier] {
 			return testClient.ComputePool.Describe
 		}),
 	}
