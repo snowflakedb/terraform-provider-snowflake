@@ -26,7 +26,7 @@ func TestInt_ShowGrants_To_Users(t *testing.T) {
 
 		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.ObjectTypeUser, grants[0].GrantedTo)
-		assert.Equal(t, grants[0].GranteeName.FullyQualifiedName(), user.ID().FullyQualifiedName())
+		assert.Equal(t, user.ID().FullyQualifiedName(), grants[0].GranteeName.FullyQualifiedName())
 	})
 
 	t.Run("handles granteeName for database role granted to user", func(t *testing.T) {
@@ -42,6 +42,22 @@ func TestInt_ShowGrants_To_Users(t *testing.T) {
 
 		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.ObjectTypeUser, grants[0].GrantedTo)
-		assert.Equal(t, grants[0].GranteeName.FullyQualifiedName(), user.ID().FullyQualifiedName())
+		assert.Equal(t, user.ID().FullyQualifiedName(), grants[0].GranteeName.FullyQualifiedName())
+	})
+
+	t.Run("correctly parses a username with a prefix formed of U/S/E/R characters", func(t *testing.T) {
+		user, userCleanup := secondaryTestClientHelper().User.CreateUserWithPrefix(t, "USER")
+		t.Cleanup(userCleanup)
+
+		databaseRole, databaseRoleCleanup := secondaryTestClientHelper().DatabaseRole.CreateDatabaseRole(t)
+		t.Cleanup(databaseRoleCleanup)
+
+		secondaryTestClientHelper().Grant.GrantDatabaseRoleToUser(t, databaseRole.ID(), user.ID())
+		grants, err := secondaryTestClientHelper().Grant.ShowGrantsOfDatabaseRole(t, databaseRole.ID())
+		require.NoError(t, err)
+
+		assert.Len(t, grants, 1)
+		assert.Equal(t, sdk.ObjectTypeUser, grants[0].GrantedTo)
+		assert.Equal(t, user.ID().FullyQualifiedName(), grants[0].GranteeName.FullyQualifiedName())
 	})
 }

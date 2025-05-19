@@ -34,6 +34,11 @@ This feature will be marked as a stable feature in future releases. Breaking cha
 
 The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).
 
+### *(bugfix)* Fixed handling users' grants
+
+In v2.1.0, we introduced a fix in handling users' grants ([migration guide](#bugfix-fixed-snowflake_grant_database_role-resource)), which addressed changes in the `2025_02` bundle. The username was parsed incorrectly if it had a prefix formed of `U`, `S`, `E`, and `R` characters. The username returned from `SHOW GRANTS` was incorrect in this case. Now, such names should be handled correctly.
+No configuration changes are necessary.
+
 ## v2.0.0 ➞ v2.1.0
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource

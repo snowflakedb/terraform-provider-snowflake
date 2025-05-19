@@ -271,7 +271,7 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 			}
 			resultList[i].GranteeName = id
 		} else if grant.GrantedTo == ObjectTypeUser {
-			resultList[i].GranteeName = NewAccountObjectIdentifier(strings.TrimLeft(granteeNameRaw, "USER$"))
+			resultList[i].GranteeName = NewAccountObjectIdentifier(strings.TrimPrefix(granteeNameRaw, "USER$"))
 		} else {
 			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeNameRaw)
 		}
