@@ -1,14 +1,12 @@
 //go:build !account_level_tests
 
-package datasources_test
+package testacc
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
 	"testing"
-
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
@@ -17,7 +15,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -25,10 +22,7 @@ import (
 )
 
 func TestAcc_Users_PersonUser(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	pass := random.Password()
 	key1, key1Fp := random.GenerateRSAPublicKey(t)
@@ -61,12 +55,12 @@ func TestAcc_Users_PersonUser(t *testing.T) {
 		WithDependsOn(userModelAllAttributes.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.User),
+		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModelAllAttributes, usersModel),
@@ -195,10 +189,7 @@ func TestAcc_Users_PersonUser(t *testing.T) {
 }
 
 func TestAcc_Users_ServiceUser(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	key1, key1Fp := random.GenerateRSAPublicKey(t)
 	key2, key2Fp := random.GenerateRSAPublicKey(t)
@@ -223,12 +214,12 @@ func TestAcc_Users_ServiceUser(t *testing.T) {
 		WithDependsOn(userModelAllAttributes.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.ServiceUser),
+		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModelAllAttributes, usersModel),
@@ -357,10 +348,7 @@ func TestAcc_Users_ServiceUser(t *testing.T) {
 }
 
 func TestAcc_Users_LegacyServiceUser(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	pass := random.Password()
 	key1, key1Fp := random.GenerateRSAPublicKey(t)
@@ -388,12 +376,12 @@ func TestAcc_Users_LegacyServiceUser(t *testing.T) {
 		WithDependsOn(userModelAllAttributes.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.LegacyServiceUser),
+		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModelAllAttributes, usersModel),
@@ -522,13 +510,10 @@ func TestAcc_Users_LegacyServiceUser(t *testing.T) {
 }
 
 func TestAcc_Users_DifferentFiltering(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
 	prefix := random.AlphaN(4)
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
-	id2 := acc.TestClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
-	id3 := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	id2 := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	id3 := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModel := model.User("u", id.Name())
 	user2Model := model.User("u2", id2.Name())
@@ -545,12 +530,12 @@ func TestAcc_Users_DifferentFiltering(t *testing.T) {
 		WithDependsOn(userModel.ResourceReference(), user2Model.ResourceReference(), user3Model.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.User),
+		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel, user2Model, user3Model, usersModelLikeFirstOne),
@@ -576,14 +561,14 @@ func TestAcc_Users_DifferentFiltering(t *testing.T) {
 
 func TestAcc_Users_UserNotFound_WithPostConditions(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_Users/without_user"),
+				ConfigDirectory: ConfigurationDirectory("TestAcc_Users/without_user"),
 				ExpectError:     regexp.MustCompile("there should be at least one user"),
 			},
 		},

@@ -56,6 +56,7 @@ var (
 )
 
 func init() {
+	log.Println("[DEBUG] Running init from old acceptance tests setup")
 	testObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.TestObjectsSuffix))
 	requireTestObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.RequireTestObjectsSuffix))
 	if requireTestObjectSuffix != "" && testObjectSuffix == "" {
@@ -200,19 +201,19 @@ func TestAccPreCheck(t *testing.T) {
 		_, _ = SecondaryTestClient().Schema.CreateTestSchemaIfNotExists(t)
 		_, _ = SecondaryTestClient().Warehouse.CreateTestWarehouseIfNotExists(t)
 
-		if err := helpers.EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(atc.client, ctx); err != nil {
+		if err := TestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := helpers.EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(atc.secondaryClient, ctx); err != nil {
+		if err := SecondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := helpers.EnsureScimProvisionerRolesExist(atc.client, ctx); err != nil {
+		if err := TestClient().EnsureScimProvisionerRolesExist(ctx); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := helpers.EnsureScimProvisionerRolesExist(atc.secondaryClient, ctx); err != nil {
+		if err := SecondaryTestClient().EnsureScimProvisionerRolesExist(ctx); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -232,11 +233,6 @@ func ConfigurationDirectory(directory string) func(config.TestStepConfigRequest)
 	return func(req config.TestStepConfigRequest) string {
 		return filepath.Join("testdata", directory)
 	}
-}
-
-func DefaultConfig(t *testing.T) *gosnowflake.Config {
-	t.Helper()
-	return atc.config
 }
 
 func TestClient() *helpers.TestClient {

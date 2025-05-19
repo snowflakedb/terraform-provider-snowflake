@@ -1,6 +1,6 @@
 //go:build account_level_tests
 
-package resources_test
+package testacc
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -19,7 +18,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -28,11 +26,8 @@ import (
 )
 
 func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-	id2 := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	id2 := testClient().Ids.RandomAccountObjectIdentifier()
 
 	loginName := random.SensitiveAlphanumeric()
 	newLoginName := random.SensitiveAlphanumeric()
@@ -80,12 +75,12 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		CheckDestroy: acc.CheckDestroy(t, resources.ServiceUser),
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			// CREATE WITHOUT ATTRIBUTES
 			{
@@ -203,7 +198,7 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 			// CHANGE PROP TO THE CURRENT SNOWFLAKE VALUE
 			{
 				PreConfig: func() {
-					acc.TestClient().User.SetLoginName(t, id, loginName)
+					testClient().User.SetLoginName(t, id, loginName)
 				},
 				Config: config.FromModels(t, userModelAllAttributesChanged(loginName)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -242,13 +237,10 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 }
 
 func TestAcc_ServiceUser_AllParameters(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	networkPolicy, networkPolicyCleanup := acc.TestClient().NetworkPolicy.CreateNetworkPolicyNotEmpty(t)
+	networkPolicy, networkPolicyCleanup := testClient().NetworkPolicy.CreateNetworkPolicyNotEmpty(t)
 	t.Cleanup(networkPolicyCleanup)
 
-	userId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModel := model.ServiceUser("u", userId.Name())
 	userModelWithAllParametersSet := model.ServiceUser("u", userId.Name()).
@@ -312,12 +304,12 @@ func TestAcc_ServiceUser_AllParameters(t *testing.T) {
 		WithPreventUnloadToInternalStages(true)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		CheckDestroy: acc.CheckDestroy(t, resources.ServiceUser),
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters
 			{
@@ -545,20 +537,17 @@ func TestAcc_ServiceUser_AllParameters(t *testing.T) {
 }
 
 func TestAcc_ServiceUser_handleExternalTypeChange(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	userId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModel := model.ServiceUserWithDefaultMeta(userId.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		CheckDestroy: acc.CheckDestroy(t, resources.ServiceUser),
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
@@ -569,7 +558,7 @@ func TestAcc_ServiceUser_handleExternalTypeChange(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					acc.TestClient().User.SetType(t, userId, sdk.UserTypePerson)
+					testClient().User.SetType(t, userId, sdk.UserTypePerson)
 					objectassert.User(t, userId).HasType(string(sdk.UserTypePerson))
 				},
 				Config: config.FromModels(t, userModel),
@@ -585,7 +574,7 @@ func TestAcc_ServiceUser_handleExternalTypeChange(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					acc.TestClient().User.UnsetType(t, userId)
+					testClient().User.UnsetType(t, userId)
 					objectassert.User(t, userId).HasType("")
 				},
 				Config: config.FromModels(t, userModel),
@@ -604,18 +593,15 @@ func TestAcc_ServiceUser_handleExternalTypeChange(t *testing.T) {
 }
 
 func TestAcc_ServiceUser_setIncompatibleAttributes(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	userId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		CheckDestroy: acc.CheckDestroy(t, resources.ServiceUser),
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			{
 				Config:      serviceUserConfigWithIncompatibleAttribute(userId, "first_name", random.AlphaN(6)),

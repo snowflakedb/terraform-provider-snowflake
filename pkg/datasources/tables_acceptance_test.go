@@ -36,11 +36,17 @@ func TestAcc_Tables(t *testing.T) {
 			{
 				Config: tables(tableId, stageId, externalTableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_tables.t", "database", tableId.DatabaseName()),
-					resource.TestCheckResourceAttr("data.snowflake_tables.t", "schema", tableId.SchemaName()),
-					resource.TestCheckResourceAttrSet("data.snowflake_tables.t", "tables.#"),
-					resource.TestCheckResourceAttr("data.snowflake_tables.t", "tables.#", "1"),
-					resource.TestCheckResourceAttr("data.snowflake_tables.t", "tables.0.name", tableId.Name()),
+					resource.TestCheckResourceAttr("data.snowflake_tables.in_schema", "tables.#", "2"),
+					resource.TestCheckResourceAttr("data.snowflake_tables.in_schema", "tables.0.show_output.0.schema_name", tableId.SchemaName()),
+					resource.TestCheckResourceAttr("data.snowflake_tables.in_schema", "tables.0.show_output.0.name", externalTableId.Name()),
+					resource.TestCheckResourceAttr("data.snowflake_tables.in_schema", "tables.1.show_output.0.schema_name", tableId.SchemaName()),
+					resource.TestCheckResourceAttr("data.snowflake_tables.in_schema", "tables.1.show_output.0.name", tableId.Name()),
+					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "like", tableId.Name()),
+					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.#", "1"),
+					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.show_output.0.database_name", tableId.DatabaseName()),
+					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.show_output.0.name", tableId.Name()),
+					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.describe_output.*", "1"),
+					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.describe_output.0.name", "column2"),
 				),
 			},
 		},
@@ -79,10 +85,19 @@ func tables(tableId sdk.SchemaObjectIdentifier, stageId sdk.SchemaObjectIdentifi
 	    location = "@${snowflake_stage.s.fully_qualified_name}"
 	}
 
-	data snowflake_tables "t" {
-		database = "%[1]s"
-		schema = "%[2]s"
+	data snowflake_tables "in_schema" {
 		depends_on = [snowflake_table.t, snowflake_external_table.et]
+		in {
+			schema = "%[2]s"
+		}
+	}
+
+	data snowflake_tables "filtering" {
+		depends_on = [snowflake_table.t, snowflake_external_table.et]
+		in {
+			database = "%[1]s"
+		}
+		like = "%[3]s"
 	}
 	`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), stageId.Name(), externalTableId.Name())
 }
