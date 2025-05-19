@@ -33,7 +33,7 @@ const (
 	ComputePoolInstanceFamilyGpuNvSL      ComputePoolInstanceFamily = "GPU_NV_SL"
 )
 
-var allComputePoolInstanceFamilies = []ComputePoolInstanceFamily{
+var AllComputePoolInstanceFamilies = []ComputePoolInstanceFamily{
 	ComputePoolInstanceFamilyCpuX64XS,
 	ComputePoolInstanceFamilyCpuX64S,
 	ComputePoolInstanceFamilyCpuX64M,
@@ -54,7 +54,7 @@ var allComputePoolInstanceFamilies = []ComputePoolInstanceFamily{
 
 func ToComputePoolInstanceFamily(s string) (ComputePoolInstanceFamily, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(allComputePoolInstanceFamilies, ComputePoolInstanceFamily(s)) {
+	if !slices.Contains(AllComputePoolInstanceFamilies, ComputePoolInstanceFamily(s)) {
 		return "", fmt.Errorf("invalid compute pool instance family: %s", s)
 	}
 	return ComputePoolInstanceFamily(s), nil

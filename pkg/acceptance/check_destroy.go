@@ -112,6 +112,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.AuthenticationPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.AuthenticationPolicies.ShowByID)
 	},
+	resources.ComputePool: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ComputePools.ShowByID)
+	},
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
 	},
