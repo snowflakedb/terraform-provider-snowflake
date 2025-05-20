@@ -36,7 +36,7 @@ fmt: terraform-fmt ## Run terraform fmt and gofumpt
 terraform-fmt: ## Run terraform fmt
 	terraform fmt -recursive ./examples/
 	terraform fmt -recursive ./pkg/resources/testdata/
-	terraform fmt -recursive ./pkg/datasources/testdata/
+	terraform fmt -recursive ./pkg/testacc/testdata/
 
 help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-23s\033[0m %s\n", $$1, $$2}'
@@ -78,14 +78,14 @@ test-unit-tmp: ## run unit tests - temporary to prove it's working
 
 # TODO [next PRs]: this will be replaced by test-acceptance-tmp
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./pkg/resources ./pkg/datasources ./pkg/provider
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./pkg/resources ./pkg/provider
 
 test-acceptance-tmp: ## run acceptance tests - temporary to prove it's working
 	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./pkg/testacc
 
 # TODO [next PRs]: this will be replaced by test-account-level-features-tmp
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/resources ./pkg/datasources ./pkg/provider ./pkg/sdk/testint
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/resources ./pkg/provider ./pkg/sdk/testint
 
 test-account-level-features-tmp: ## run integration and acceptance test modifying account - temporary to prove it's working; add  ./pkg/sdk/testint later
 	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/testacc
