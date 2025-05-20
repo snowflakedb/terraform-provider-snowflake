@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAcc_CompleteUsageTracking(t *testing.T) {
+func TestAcc_CompleteUsageTracking_Resource(t *testing.T) {
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
 	comment := random.Comment()
 

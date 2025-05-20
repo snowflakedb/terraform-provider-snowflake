@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_CompleteUsageTracking(t *testing.T) {
+func TestAcc_CompleteUsageTracking_Datasource(t *testing.T) {
 	schemaId := testClient().Ids.RandomDatabaseObjectIdentifier()
 	schemaModel := model.Schema("test", schemaId.DatabaseName(), schemaId.Name())
 	schemasModel := datasourcemodel.Schemas("test").

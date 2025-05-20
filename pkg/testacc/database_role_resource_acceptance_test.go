@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_DatabaseRole(t *testing.T) {
+func TestAcc_DatabaseRole_Basic(t *testing.T) {
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
 	newId := testClient().Ids.RandomDatabaseObjectIdentifier()
 	comment := random.Comment()

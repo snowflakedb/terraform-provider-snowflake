@@ -5,6 +5,7 @@ package testacc
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -2048,4 +2049,67 @@ func TestAcc_GrantPrivileges_OnObject_HybridTable_ToAccountRole_Fails(t *testing
 			},
 		},
 	})
+}
+
+// queriedAccountRolePrivilegesEqualTo will check if all the privileges specified in the argument are granted in Snowflake.
+func queriedPrivilegesEqualTo(query func() ([]sdk.Grant, error), privileges ...string) func(s *terraform.State) error {
+	return func(s *terraform.State) error {
+		grants, err := query()
+		if err != nil {
+			return err
+		}
+		for _, grant := range grants {
+			if (grant.GrantTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole) && grant.Privilege == "USAGE" {
+				continue
+			}
+			if !slices.Contains(privileges, grant.Privilege) {
+				return fmt.Errorf("grant not expected, grant: %v, not in %v", grants, privileges)
+			}
+		}
+
+		return nil
+	}
+}
+
+// queriedAccountRolePrivilegesContainAtLeast will check if all the privileges specified in the argument are granted in Snowflake.
+// Any additional grants will be ignored.
+func queriedPrivilegesContainAtLeast(query func() ([]sdk.Grant, error), roleName sdk.ObjectIdentifier, privileges ...string) func(s *terraform.State) error {
+	return func(s *terraform.State) error {
+		grants, err := query()
+		if err != nil {
+			return err
+		}
+		var grantedPrivileges []string
+		for _, grant := range grants {
+			grantedPrivileges = append(grantedPrivileges, grant.Privilege)
+		}
+		notAllPrivilegesInGrantedPrivileges := slices.ContainsFunc(privileges, func(privilege string) bool {
+			return !slices.Contains(grantedPrivileges, privilege)
+		})
+		if notAllPrivilegesInGrantedPrivileges {
+			return fmt.Errorf("not every privilege from the list: %v was found in grant privileges: %v, for role name: %s", privileges, grantedPrivileges, roleName.FullyQualifiedName())
+		}
+
+		return nil
+	}
+}
+
+// queriedPrivilegesDoNotContain will check if all of the privileges specified in the argument are not granted in Snowflake.
+func queriedPrivilegesDoNotContain(query func() ([]sdk.Grant, error), privileges ...string) func(s *terraform.State) error {
+	return func(s *terraform.State) error {
+		grants, err := query()
+		if err != nil {
+			return err
+		}
+		for _, grant := range grants {
+			if (grant.GrantTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole) && grant.Privilege == "USAGE" {
+				continue
+			}
+			if slices.Contains(privileges, grant.Privilege) {
+				return fmt.Errorf("grant not expected, grants: %v should not contain any privilege from %v", grants, privileges)
+			}
+		}
+
+		return nil
+	}
 }
