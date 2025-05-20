@@ -1,12 +1,10 @@
 //go:build !account_level_tests
 
-package datasources_test
+package testacc
 
 import (
 	"fmt"
 	"testing"
-
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -21,11 +19,11 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
-	prefix := acc.TestClient().Ids.AlphaN(4)
+	prefix := testClient().Ids.AlphaN(4)
 
 	publicKey, _ := random.GenerateRSAPublicKey(t)
-	account, accountCleanup := acc.TestClient().Account.CreateWithRequest(t, acc.TestClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix), &sdk.CreateAccountOptions{
-		AdminName:         acc.TestClient().Ids.Alpha(),
+	account, accountCleanup := testClient().Account.CreateWithRequest(t, testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix), &sdk.CreateAccountOptions{
+		AdminName:         testClient().Ids.Alpha(),
 		AdminRSAPublicKey: &publicKey,
 		AdminUserType:     sdk.Pointer(sdk.UserTypeService),
 		Email:             "test@example.com",
@@ -33,8 +31,8 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 	})
 	t.Cleanup(accountCleanup)
 
-	_, account2Cleanup := acc.TestClient().Account.CreateWithRequest(t, acc.TestClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix), &sdk.CreateAccountOptions{
-		AdminName:         acc.TestClient().Ids.Alpha(),
+	_, account2Cleanup := testClient().Account.CreateWithRequest(t, testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix), &sdk.CreateAccountOptions{
+		AdminName:         testClient().Ids.Alpha(),
 		AdminRSAPublicKey: &publicKey,
 		AdminUserType:     sdk.Pointer(sdk.UserTypeService),
 		Email:             "test@example.com",
@@ -43,7 +41,7 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 	t.Cleanup(account2Cleanup)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
