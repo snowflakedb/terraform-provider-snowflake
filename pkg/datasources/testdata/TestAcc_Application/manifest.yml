@@ -1,0 +1,5 @@
+manifest_version: 1 # required
+version:
+  name: application_roles_test_app
+  label: "v1.0"
+  comment: "This application is used by Snowflake Terraform Provider for application role integration tests"
