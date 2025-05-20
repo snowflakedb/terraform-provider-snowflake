@@ -8,7 +8,7 @@ export CURRENT_OS := $(shell uname -s)
 export CURRENT_ARCH := $(shell arch)
 
 # TODO [next PRs]:  ./pkg/resources ./pkg/datasources ./pkg/provider will be removed when all the tests are transferred
-UNIT_TESTS_EXCLUDE_PACKAGES=./pkg/testacc ./pkg/sdk/testint ./pkg/resources ./pkg/datasources ./pkg/provider
+UNIT_TESTS_EXCLUDE_PACKAGES=./pkg/testacc ./pkg/sdk/testint ./pkg/resources ./pkg/provider
 UNIT_TESTS_EXCLUDE_PATTERN=$(shell echo $(UNIT_TESTS_EXCLUDE_PACKAGES) | sed 's/ /|/g')
 
 default: help
@@ -35,7 +35,6 @@ fmt: terraform-fmt ## Run terraform fmt and gofumpt
 
 terraform-fmt: ## Run terraform fmt
 	terraform fmt -recursive ./examples/
-	terraform fmt -recursive ./pkg/resources/testdata/
 	terraform fmt -recursive ./pkg/testacc/testdata/
 
 help:
