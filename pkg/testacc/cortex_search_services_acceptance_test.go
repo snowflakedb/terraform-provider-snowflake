@@ -1,27 +1,21 @@
 //go:build !account_level_tests
 
-package datasources_test
+package testacc
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAcc_CortexSearchServices_complete(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
 	dataSourceName := "data.snowflake_cortex_search_services.test"
-	tableId := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
-	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	m := func() map[string]config.Variable {
 		return map[string]config.Variable{
 			"database":  config.StringVariable(id.DatabaseName()),
@@ -29,7 +23,7 @@ func TestAcc_CortexSearchServices_complete(t *testing.T) {
 			"table":     config.StringVariable(tableId.Name()),
 			"name":      config.StringVariable(id.Name()),
 			"on":        config.StringVariable("SOME_TEXT"),
-			"warehouse": config.StringVariable(acc.TestWarehouseName),
+			"warehouse": config.StringVariable(TestWarehouseName),
 			"query":     config.StringVariable(fmt.Sprintf("select SOME_TEXT from %s", tableId.FullyQualifiedName())),
 			"comment":   config.StringVariable("Terraform acceptance test"),
 		}
@@ -37,8 +31,8 @@ func TestAcc_CortexSearchServices_complete(t *testing.T) {
 	variableSet1 := m()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -74,8 +68,8 @@ func TestAcc_CortexSearchServices_complete(t *testing.T) {
 
 func TestAcc_CortexSearchServices_badCombination(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -91,8 +85,8 @@ func TestAcc_CortexSearchServices_badCombination(t *testing.T) {
 
 func TestAcc_CortexSearchServices_emptyIn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -114,7 +108,7 @@ data "snowflake_cortex_search_services" "test" {
     schema   = "%s"
   }
 }
-`, acc.TestDatabaseName, acc.TestSchemaName)
+`, TestDatabaseName, TestSchemaName)
 }
 
 func cortexSearchServicesDatasourceEmptyIn() string {
