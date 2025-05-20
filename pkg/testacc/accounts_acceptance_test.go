@@ -16,7 +16,6 @@ import (
 )
 
 func TestAcc_Accounts_Complete(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	prefix := testClient().Ids.AlphaN(4)
