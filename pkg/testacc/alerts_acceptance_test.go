@@ -1,27 +1,22 @@
 //go:build !account_level_tests
 
-package datasources_test
+package testacc
 
 import (
 	"fmt"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAcc_Alerts(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-	alertId := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
+	alertId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -78,7 +73,7 @@ resource "snowflake_alert" "test_resource_alert" {
 		interval = "60"
 	}
 }
-`, alertId.Name(), alertId.DatabaseName(), alertId.SchemaName(), acc.TestWarehouseName)
+`, alertId.Name(), alertId.DatabaseName(), alertId.SchemaName(), TestWarehouseName)
 }
 
 func alertsDatasourceConfigNoOptionals() string {
