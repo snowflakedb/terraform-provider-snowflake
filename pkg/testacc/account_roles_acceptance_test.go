@@ -1,16 +1,13 @@
 //go:build !account_level_tests
 
-package datasources_test
+package testacc
 
 import (
 	"fmt"
 	"strconv"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -18,18 +15,15 @@ import (
 )
 
 func TestAcc_AccountRoles_Complete(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
 	accountRoleNamePrefix := random.AlphaN(10)
-	accountRoleName1 := acc.TestClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "1")
-	accountRoleName2 := acc.TestClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "2")
-	accountRoleName3 := acc.TestClient().Ids.Alpha()
-	dbRoleName := acc.TestClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "db")
+	accountRoleName1 := testClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "1")
+	accountRoleName2 := testClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "2")
+	accountRoleName3 := testClient().Ids.Alpha()
+	dbRoleName := testClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "db")
 	comment := random.Comment()
 
 	// Proof that database role with the same prefix is not in the output of SHOW ROLES.
-	dbRole, dbRoleCleanup := acc.TestClient().DatabaseRole.CreateDatabaseRoleWithName(t, dbRoleName)
+	dbRole, dbRoleCleanup := testClient().DatabaseRole.CreateDatabaseRoleWithName(t, dbRoleName)
 	t.Cleanup(dbRoleCleanup)
 
 	likeVariables := config.Variables{
@@ -41,7 +35,7 @@ func TestAcc_AccountRoles_Complete(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
