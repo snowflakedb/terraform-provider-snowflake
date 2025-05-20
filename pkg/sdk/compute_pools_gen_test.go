@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -70,9 +69,9 @@ func TestComputePools_Create(t *testing.T) {
 			},
 			Comment: &comment,
 		}
-		assertOptsValidAndSQLEquals(t, opts, fmt.Sprintf(`CREATE COMPUTE POOL IF NOT EXISTS %s FOR APPLICATION %s MIN_NODES = 2 MAX_NODES = 3`+
+		assertOptsValidAndSQLEquals(t, opts, `CREATE COMPUTE POOL IF NOT EXISTS %s FOR APPLICATION %s MIN_NODES = 2 MAX_NODES = 3`+
 			` INSTANCE_FAMILY = CPU_X64_XS AUTO_RESUME = true INITIALLY_SUSPENDED = true AUTO_SUSPEND_SECS = 42 TAG (%s = 'value1')`+
-			` COMMENT = '%s'`, id.FullyQualifiedName(), appId.FullyQualifiedName(), tagId.FullyQualifiedName(), comment))
+			` COMMENT = '%s'`, id.FullyQualifiedName(), appId.FullyQualifiedName(), tagId.FullyQualifiedName(), comment)
 	})
 }
 
