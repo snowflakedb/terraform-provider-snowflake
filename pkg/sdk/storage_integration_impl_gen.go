@@ -79,9 +79,10 @@ func (r *CreateStorageIntegrationRequest) toOpts() *CreateStorageIntegrationOpti
 	}
 	if r.S3StorageProviderParams != nil {
 		opts.S3StorageProviderParams = &S3StorageParams{
-			Protocol:            r.S3StorageProviderParams.Protocol,
-			StorageAwsRoleArn:   r.S3StorageProviderParams.StorageAwsRoleArn,
-			StorageAwsObjectAcl: r.S3StorageProviderParams.StorageAwsObjectAcl,
+			Protocol:             r.S3StorageProviderParams.Protocol,
+			StorageAwsRoleArn:    r.S3StorageProviderParams.StorageAwsRoleArn,
+			StorageAwsExternalId: r.S3StorageProviderParams.StorageAwsExternalId,
+			StorageAwsObjectAcl:  r.S3StorageProviderParams.StorageAwsObjectAcl,
 		}
 	}
 	if r.GCSStorageProviderParams != nil {
@@ -112,8 +113,9 @@ func (r *AlterStorageIntegrationRequest) toOpts() *AlterStorageIntegrationOption
 		}
 		if r.Set.S3Params != nil {
 			opts.Set.S3Params = &SetS3StorageParams{
-				StorageAwsRoleArn:   r.Set.S3Params.StorageAwsRoleArn,
-				StorageAwsObjectAcl: r.Set.S3Params.StorageAwsObjectAcl,
+				StorageAwsRoleArn:    r.Set.S3Params.StorageAwsRoleArn,
+				StorageAwsExternalId: r.Set.S3Params.StorageAwsExternalId,
+				StorageAwsObjectAcl:  r.Set.S3Params.StorageAwsObjectAcl,
 			}
 		}
 		if r.Set.AzureParams != nil {
@@ -124,6 +126,7 @@ func (r *AlterStorageIntegrationRequest) toOpts() *AlterStorageIntegrationOption
 	}
 	if r.Unset != nil {
 		opts.Unset = &StorageIntegrationUnset{
+			StorageAwsExternalId:    r.Unset.StorageAwsExternalId,
 			StorageAwsObjectAcl:     r.Unset.StorageAwsObjectAcl,
 			Enabled:                 r.Unset.Enabled,
 			StorageBlockedLocations: r.Unset.StorageBlockedLocations,
