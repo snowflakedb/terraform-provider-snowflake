@@ -619,7 +619,7 @@ func TestInt_Procedures(t *testing.T) {
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
 		}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, funcName).
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.9", packages, funcName).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithProcedureDefinitionWrapped(definition)
 
@@ -665,7 +665,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasImports(`[]`).
 			HasExactlyImportsNormalizedInAnyOrder().
 			HasHandler(funcName).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion("3.9").
 			HasPackages(`['snowflake-snowpark-python==1.14.0']`).
 			HasExactlyPackagesInAnyOrder().
 			HasSnowparkVersion("1.14.0").
@@ -697,7 +697,7 @@ func TestInt_Procedures(t *testing.T) {
 			*sdk.NewProcedurePackageRequest("absl-py==0.10.0"),
 		}
 
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, funcName).
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.9", packages, funcName).
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -755,7 +755,7 @@ func TestInt_Procedures(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(funcName).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion("3.9").
 			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.10.0']`).
 			HasExactlyPackagesInAnyOrder("absl-py==0.10.0").
 			HasSnowparkVersion("1.14.0").
@@ -782,7 +782,7 @@ func TestInt_Procedures(t *testing.T) {
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
 		}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, tmpPythonFunction.PythonHandler()).
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.9", packages, tmpPythonFunction.PythonHandler()).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithImports([]sdk.ProcedureImportRequest{*sdk.NewProcedureImportRequest(tmpPythonFunction.PythonModuleLocation())})
 
@@ -830,7 +830,7 @@ func TestInt_Procedures(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion("3.9").
 			HasPackages(`['snowflake-snowpark-python==1.14.0']`).
 			HasExactlyPackagesInAnyOrder().
 			HasSnowparkVersion("1.14.0").
@@ -860,7 +860,7 @@ func TestInt_Procedures(t *testing.T) {
 			*sdk.NewProcedurePackageRequest("absl-py==0.10.0"),
 		}
 
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, tmpPythonFunction.PythonHandler()).
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.9", packages, tmpPythonFunction.PythonHandler()).
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -917,7 +917,7 @@ func TestInt_Procedures(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion("3.9").
 			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.10.0']`).
 			HasExactlyPackagesInAnyOrder("absl-py==0.10.0").
 			HasSnowparkVersion("1.14.0").
@@ -1699,7 +1699,7 @@ def joblib_multiprocessing(session, i):
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python"),
 			*sdk.NewProcedurePackageRequest("joblib"),
 		}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, "joblib_multiprocessing").
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.9", packages, "joblib_multiprocessing").
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithProcedureDefinitionWrapped(definition)
@@ -1733,7 +1733,7 @@ def filter_by_role(session, table_name, role):
 		arg1 := sdk.NewProcedureArgumentRequest("table_name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, "filter_by_role").
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.9", packages, "filter_by_role").
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg1, *arg2}).
 			WithProcedureDefinitionWrapped(definition)
@@ -2280,7 +2280,7 @@ def filter_by_role(session, table_name, role):
 			err = client.Procedures.CreateForPython(ctx, sdk.NewCreateForPythonProcedureRequest(
 				idWithArguments.SchemaObjectId(),
 				*sdk.NewProcedureReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(dataType)),
-				"3.8",
+				"3.9",
 				packages,
 				procName,
 			).
@@ -2505,7 +2505,7 @@ def filter_by_role(session, name, role):
 		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, "filter_by_role").
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.9", packages, "filter_by_role").
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg1, *arg2}).
 			WithProcedureDefinitionWrapped(definition)
@@ -2674,7 +2674,7 @@ def filter_by_role(session, name, role):
 		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
 		ca := []string{fmt.Sprintf(`'%s'`, tid.FullyQualifiedName()), "'dev'"}
-		request := sdk.NewCreateAndCallForPythonProcedureRequest(name, *returns, "3.8", packages, "filter_by_role", name).
+		request := sdk.NewCreateAndCallForPythonProcedureRequest(name, *returns, "3.9", packages, "filter_by_role", name).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg1, *arg2}).
 			WithProcedureDefinition(definition).
 			WithCallArguments(ca)

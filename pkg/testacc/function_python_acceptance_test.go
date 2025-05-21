@@ -35,9 +35,9 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 
 	definition := testClient().Function.SamplePythonDefinition(t, funcName, argName)
 
-	functionModel := model.FunctionPythonBasicInline("test", id, "3.8", dataType, funcName, definition).
+	functionModel := model.FunctionPythonBasicInline("test", id, "3.9", dataType, funcName, definition).
 		WithArgument(argName, dataType)
-	functionModelRenamed := model.FunctionPythonBasicInline("test", idWithChangedNameButTheSameDataType, "3.8", dataType, funcName, definition).
+	functionModelRenamed := model.FunctionPythonBasicInline("test", idWithChangedNameButTheSameDataType, "3.9", dataType, funcName, definition).
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
@@ -56,7 +56,7 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanDefault).
 						HasCommentString(sdk.DefaultFunctionComment).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString("3.9").
 						HasFunctionDefinitionString(definition).
 						HasFunctionLanguageString("PYTHON").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -141,7 +141,7 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
 	definition := testClient().Function.SamplePythonDefinition(t, funcName, argName)
 
-	functionModel := model.FunctionPythonBasicInline("test", id, "3.8", dataType, funcName, definition).
+	functionModel := model.FunctionPythonBasicInline("test", id, "3.9", dataType, funcName, definition).
 		WithIsSecure(r.BooleanFalse).
 		WithArgument(argName, dataType).
 		WithNullInputBehavior(string(sdk.NullInputBehaviorCalledOnNullInput)).
@@ -158,7 +158,7 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 			"def": secretId2,
 		})
 
-	functionModelUpdateWithoutRecreation := model.FunctionPythonBasicInline("test", id, "3.8", dataType, funcName, definition).
+	functionModelUpdateWithoutRecreation := model.FunctionPythonBasicInline("test", id, "3.9", dataType, funcName, definition).
 		WithIsSecure(r.BooleanFalse).
 		WithArgument(argName, dataType).
 		WithNullInputBehavior(string(sdk.NullInputBehaviorCalledOnNullInput)).
@@ -189,7 +189,7 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString("3.9").
 						HasFunctionDefinitionString(definition).
 						HasCommentString("some comment").
 						HasFunctionLanguageString("PYTHON").
@@ -227,7 +227,7 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 					resourceassert.FunctionPythonResource(t, functionModelUpdateWithoutRecreation.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString("3.9").
 						HasFunctionDefinitionString(definition).
 						HasCommentString("some other comment").
 						HasFunctionLanguageString("PYTHON").

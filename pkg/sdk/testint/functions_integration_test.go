@@ -646,7 +646,7 @@ func TestInt_Functions(t *testing.T) {
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.8", funcName).
+		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", funcName).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithFunctionDefinitionWrapped(definition)
 
@@ -696,7 +696,7 @@ func TestInt_Functions(t *testing.T) {
 			HasImports(`[]`).
 			HasExactlyImportsNormalizedInAnyOrder().
 			HasHandler(funcName).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion("3.9").
 			HasPackages(`[]`).
 			HasExactlyPackagesInAnyOrder().
 			HasTargetPathNil().
@@ -721,7 +721,7 @@ func TestInt_Functions(t *testing.T) {
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.8", funcName).
+		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", funcName).
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -787,7 +787,7 @@ func TestInt_Functions(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(funcName).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion("3.9").
 			HasPackages(`['absl-py==0.10.0','about-time==4.2.1']`).
 			HasExactlyPackagesInAnyOrder("absl-py==0.10.0", "about-time==4.2.1").
 			HasTargetPathNil().
@@ -810,7 +810,7 @@ func TestInt_Functions(t *testing.T) {
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.8", tmpPythonFunction.PythonHandler()).
+		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", tmpPythonFunction.PythonHandler()).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())})
 
@@ -862,7 +862,7 @@ func TestInt_Functions(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion("3.9").
 			HasPackages(`[]`).
 			HasExactlyPackagesInAnyOrder().
 			HasTargetPathNil().
@@ -885,7 +885,7 @@ func TestInt_Functions(t *testing.T) {
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.8", tmpPythonFunction.PythonHandler()).
+		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", tmpPythonFunction.PythonHandler()).
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -950,7 +950,7 @@ func TestInt_Functions(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion("3.9").
 			HasPackages(`['absl-py==0.10.0','about-time==4.2.1']`).
 			HasExactlyPackagesInAnyOrder("about-time==4.2.1", "absl-py==0.10.0").
 			HasTargetPathNil().
@@ -1954,7 +1954,7 @@ func TestInt_Functions(t *testing.T) {
 		err := client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
 			id,
 			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVariant)),
-			"3.8",
+			"3.9",
 			"add",
 		).
 			WithArguments(args).
@@ -2023,7 +2023,7 @@ func TestInt_Functions(t *testing.T) {
 			err = client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
 				id,
 				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
-				"3.8",
+				"3.9",
 				funcName,
 			).
 				WithArguments(args).

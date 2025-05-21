@@ -145,7 +145,7 @@ func (c *TestClient) CreateSamplePythonFunctionAndModuleInLocation(t *testing.T,
 	returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 	definition := c.Function.SamplePythonDefinition(t, funcName, argName)
 
-	request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.8", funcName).
+	request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", funcName).
 		WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 		WithFunctionDefinitionWrapped(definition)
 
