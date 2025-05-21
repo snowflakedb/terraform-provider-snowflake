@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -646,7 +647,7 @@ func TestInt_Functions(t *testing.T) {
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", funcName).
+		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, funcName).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithFunctionDefinitionWrapped(definition)
 
@@ -696,7 +697,7 @@ func TestInt_Functions(t *testing.T) {
 			HasImports(`[]`).
 			HasExactlyImportsNormalizedInAnyOrder().
 			HasHandler(funcName).
-			HasRuntimeVersion("3.9").
+			HasRuntimeVersion(testvars.PythonRuntime).
 			HasPackages(`[]`).
 			HasExactlyPackagesInAnyOrder().
 			HasTargetPathNil().
@@ -721,7 +722,7 @@ func TestInt_Functions(t *testing.T) {
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", funcName).
+		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, funcName).
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -787,7 +788,7 @@ func TestInt_Functions(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(funcName).
-			HasRuntimeVersion("3.9").
+			HasRuntimeVersion(testvars.PythonRuntime).
 			HasPackages(`['absl-py==0.10.0','about-time==4.2.1']`).
 			HasExactlyPackagesInAnyOrder("absl-py==0.10.0", "about-time==4.2.1").
 			HasTargetPathNil().
@@ -810,7 +811,7 @@ func TestInt_Functions(t *testing.T) {
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", tmpPythonFunction.PythonHandler()).
+		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, tmpPythonFunction.PythonHandler()).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())})
 
@@ -862,7 +863,7 @@ func TestInt_Functions(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion("3.9").
+			HasRuntimeVersion(testvars.PythonRuntime).
 			HasPackages(`[]`).
 			HasExactlyPackagesInAnyOrder().
 			HasTargetPathNil().
@@ -885,7 +886,7 @@ func TestInt_Functions(t *testing.T) {
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, "3.9", tmpPythonFunction.PythonHandler()).
+		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, tmpPythonFunction.PythonHandler()).
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -950,7 +951,7 @@ func TestInt_Functions(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion("3.9").
+			HasRuntimeVersion(testvars.PythonRuntime).
 			HasPackages(`['absl-py==0.10.0','about-time==4.2.1']`).
 			HasExactlyPackagesInAnyOrder("about-time==4.2.1", "absl-py==0.10.0").
 			HasTargetPathNil().
@@ -1954,7 +1955,7 @@ func TestInt_Functions(t *testing.T) {
 		err := client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
 			id,
 			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVariant)),
-			"3.9",
+			testvars.PythonRuntime,
 			"add",
 		).
 			WithArguments(args).
@@ -2023,7 +2024,7 @@ func TestInt_Functions(t *testing.T) {
 			err = client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
 				id,
 				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
-				"3.9",
+				testvars.PythonRuntime,
 				funcName,
 			).
 				WithArguments(args).
