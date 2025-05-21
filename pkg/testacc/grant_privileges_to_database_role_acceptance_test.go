@@ -1478,16 +1478,6 @@ func TestAcc_GrantPrivileges_ToDatabaseRole_WithEmptyPrivileges(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
-	configVariables := config.Variables{
-		"name": config.StringVariable(databaseRole.ID().Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.AccountObjectPrivilegeUsage)),
-			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateSchema)),
-		),
-		"database":          config.StringVariable(TestDatabaseName),
-		"with_grant_option": config.BoolVariable(false),
-	}
-
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1498,43 +1488,60 @@ func TestAcc_GrantPrivileges_ToDatabaseRole_WithEmptyPrivileges(t *testing.T) {
 		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabase"),
-				ConfigVariables: configVariables,
+				Config: grantPrivilegesToDatabaseRole3690Config(databaseRole.ID(), sdk.AccountObjectPrivilegeUsage, sdk.AccountObjectPrivilegeCreateSchema),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().Name()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
 				),
 			},
-			// Previously, this would throw:
+			// {
+			//	ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
+			//	Config:            grantPrivilegesToDatabaseRole3690Config(databaseRole.ID()),
+			//	ExpectError:       regexp.MustCompile("Error: Failed to parse internal identifier"),
+			// },
+			//
+			// The step above fails with:
 			// │ Error: Failed to parse internal identifier
 			// ...
 			// │ Error: [grant_privileges_to_database_role_identifier.go:79] invalid Privileges value: , should be either a comma separated list of privileges or "ALL" / "ALL PRIVILEGES" for all
 			// │ privileges
 			//
-			// After that, the state file would be corrupted and only manual state manipulation would be able to fix it.
+			// and affects the next test steps
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabaseWithEmptyPrivileges"),
-				ConfigVariables: configVariables,
+				Config: grantPrivilegesToDatabaseRole3690Config(databaseRole.ID()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().Name()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
 				),
 				ExpectError: regexp.MustCompile("Error: Not enough list items"),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabase"),
-				ConfigVariables: configVariables,
+				Config: grantPrivilegesToDatabaseRole3690Config(databaseRole.ID(), sdk.AccountObjectPrivilegeUsage, sdk.AccountObjectPrivilegeCreateSchema),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().Name()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
 				),
 			},
 		},
 	})
+}
+
+func grantPrivilegesToDatabaseRole3690Config(databaseRoleId sdk.DatabaseObjectIdentifier, privileges ...sdk.AccountObjectPrivilege) string {
+	return fmt.Sprintf(`
+resource "snowflake_grant_privileges_to_database_role" "test" {
+	database_role_name = %s
+	privileges         = [ %s ]
+	on_database        = "%s"
+}
+`,
+		strconv.Quote(databaseRoleId.FullyQualifiedName()),
+		strings.Join(collections.Map(privileges, func(privilege sdk.AccountObjectPrivilege) string { return strconv.Quote(string(privilege)) }), ","),
+		databaseRoleId.DatabaseName(),
+	)
 }

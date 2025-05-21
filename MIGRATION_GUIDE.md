@@ -42,6 +42,16 @@ We added validation to prevent this from happening. Now, if you try to create or
 
 and the validation error will prevent the state file from changing, which means you will be able to normally adjust the resource and reapply the configuration.
 
+If you are experiencing this at the moment, you can fix it by running removing `snowflake_grant_privileges_to_database_role` from the state by running:
+```shell
+terraform state rm snowflake_grant_privileges_to_database_role.test # Replace `test` with the actual resource name
+```
+and apply it with the correct `privileges` list. If you don't want to apply the privileges again, make sure they are 
+revoked in Snowflake by running the corresponding [SHOW GRANTS](https://docs.snowflake.com/en/sql-reference/sql/show-grants) command
+and then corresponding [REVOKE <privileges>](https://docs.snowflake.com/en/sql-reference/sql/revoke-privilege) to remove unwanted privileges.
+
+Other than that, no changes to the configurations are necessary.
+
 Reference: [#3690](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3690).
 
 ### *(new feature)* snowflake_image_repository resource
