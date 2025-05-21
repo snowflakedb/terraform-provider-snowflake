@@ -15,9 +15,9 @@ func TestAcc_Tables(t *testing.T) {
 	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
 	t.Cleanup(schemaCleanup)
 
-	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 	stageId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-	externalTableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	externalTableId := testClient().Ids.RandomSchemaObjectIdentifierInSchemaWithPrefix("A", schema.ID())
+	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchemaWithPrefix("B", schema.ID())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -39,7 +39,7 @@ func TestAcc_Tables(t *testing.T) {
 					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.#", "1"),
 					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.show_output.0.database_name", tableId.DatabaseName()),
 					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.show_output.0.name", tableId.Name()),
-					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.describe_output.*", "1"),
+					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.describe_output.#", "1"),
 					resource.TestCheckResourceAttr("data.snowflake_tables.filtering", "tables.0.describe_output.0.name", "column2"),
 				),
 			},
@@ -82,7 +82,7 @@ func tables(tableId sdk.SchemaObjectIdentifier, stageId sdk.SchemaObjectIdentifi
 	data snowflake_tables "in_schema" {
 		depends_on = [snowflake_table.t, snowflake_external_table.et]
 		in {
-			schema = "%[2]s"
+			schema = "%[1]s.%[2]s"
 		}
 	}
 
