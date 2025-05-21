@@ -24,10 +24,6 @@ type CreateComputePoolRequest struct {
 	Comment            *string
 }
 
-func (r *CreateComputePoolRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 type AlterComputePoolRequest struct {
 	IfExists  *bool
 	name      AccountObjectIdentifier // required

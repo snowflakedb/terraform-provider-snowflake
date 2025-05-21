@@ -1,12 +1,13 @@
 //go:build !account_level_tests
 
-package resources_test
+package testacc
 
 import (
+	"regexp"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -16,7 +17,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -26,12 +26,9 @@ import (
 )
 
 func TestAcc_ComputePool_basic(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
 	application := createApp(t)
 
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
 
 	modelBasic := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 2, 1)
@@ -58,12 +55,12 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 		WithForApplication(application.ID().FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.ImageRepository),
+		CheckDestroy: CheckDestroy(t, resources.ComputePool),
 		Steps: []resource.TestStep{
 			// create with empty optionals
 			{
@@ -138,7 +135,48 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 					importchecks.TestCheckResourceAttrNotInInstanceState(helpers.EncodeResourceIdentifier(id), "initially_suspended"),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "auto_suspend_secs", "3600"),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", ""),
-					// TODO: show and desc output
+
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.name", id.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.state", string(sdk.ComputePoolStateStarting)),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.min_nodes", "1"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.max_nodes", "2"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.instance_family", string(sdk.ComputePoolInstanceFamilyCpuX64S)),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.num_services", "0"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.num_jobs", "0"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.auto_suspend_secs", "3600"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.auto_resume", "true"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.active_nodes", "0"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.idle_nodes", "0"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.target_nodes", "1"),
+					importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "show_output.0.created_on"),
+					importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "show_output.0.resumed_on"),
+					importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "show_output.0.updated_on"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.owner", snowflakeroles.Accountadmin.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.comment", ""),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.is_exclusive", "false"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.application", ""),
+
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.state", string(sdk.ComputePoolStateStarting)),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_nodes", "1"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.max_nodes", "2"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.instance_family", string(sdk.ComputePoolInstanceFamilyCpuX64S)),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.num_services", "0"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.num_jobs", "0"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.auto_suspend_secs", "3600"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.auto_resume", "true"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.active_nodes", "0"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.idle_nodes", "0"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_nodes", "1"),
+					importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.created_on"),
+					importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.resumed_on"),
+					importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.updated_on"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.owner", snowflakeroles.Accountadmin.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.comment", ""),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_exclusive", "false"),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.application", ""),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.error_code", ""),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.status_message", "Compute pool is starting for last 0 minutes"),
 				),
 			},
 			// set optionals
@@ -231,7 +269,7 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 			// change externally
 			{
 				PreConfig: func() {
-					acc.TestClient().ComputePool.Alter(t, sdk.NewAlterComputePoolRequest(id).WithSet(
+					testClient().ComputePool.Alter(t, sdk.NewAlterComputePoolRequest(id).WithSet(
 						*sdk.NewComputePoolSetRequest().
 							WithMinNodes(4).
 							WithMaxNodes(5).
@@ -284,10 +322,10 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				Check: assertThat(t,
-					resourceassert.ImageRepositoryResource(t, modelCompleteWithDifferentValues.ResourceReference()).
+					resourceassert.ComputePoolResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
-					resourceshowoutputassert.ImageRepositoryShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
+					resourceshowoutputassert.ComputePoolShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasComment(changedComment),
@@ -382,12 +420,9 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 }
 
 func TestAcc_ComputePool_complete(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
 	application := createApp(t)
 
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
 	modelComplete := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 2, 1).
@@ -398,12 +433,12 @@ func TestAcc_ComputePool_complete(t *testing.T) {
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.ComputePool),
+		CheckDestroy: CheckDestroy(t, resources.ComputePool),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
@@ -468,6 +503,61 @@ func TestAcc_ComputePool_complete(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"initially_suspended"},
+			},
+		},
+	})
+}
+
+func TestAcc_ComputePool_Validations(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	modelInvalidMinNodes := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 2, 0)
+	modelInvalidMaxNodes := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 0, 2)
+	modelInvalidInstanceFamily := model.ComputePool("test", id.Name(), "invalid", 2, 1)
+	modelInvalidAutoResume := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 1, 1).
+		WithAutoResume("invalid")
+	modelInvalidInitiallySuspended := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 1, 1).
+		WithInitiallySuspended("invalid")
+	modelInvalidAutoSuspendSecs := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 1, 1).
+		WithAutoSuspendSecs(-1)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ComputePool),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, modelInvalidMinNodes),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected min_nodes to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, modelInvalidMaxNodes),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected max_nodes to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, modelInvalidInstanceFamily),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid compute pool instance family: INVALID`),
+			},
+			{
+				Config:      config.FromModels(t, modelInvalidAutoResume),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected \[\{\{} auto_resume}] to be one of \["true" "false"], got invalid`),
+			},
+			{
+				Config:      config.FromModels(t, modelInvalidInitiallySuspended),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected \[\{\{} initially_suspended}] to be one of \["true" "false"], got invalid`),
+			},
+			{
+				Config:      config.FromModels(t, modelInvalidAutoSuspendSecs),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected auto_suspend_secs to be at least \(0\), got -1`),
 			},
 		},
 	})
