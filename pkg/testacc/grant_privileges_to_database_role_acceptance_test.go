@@ -1475,10 +1475,7 @@ func TestAcc_GrantPrivileges_OnObject_HybridTable_ToDatabaseRole_Fails(t *testin
 
 // proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3690 is fixed
 func TestAcc_GrantPrivileges_ToDatabaseRole_WithEmptyPrivileges(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	databaseRole, databaseRoleCleanup := acc.TestClient().DatabaseRole.CreateDatabaseRole(t)
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
 	configVariables := config.Variables{
@@ -1487,27 +1484,27 @@ func TestAcc_GrantPrivileges_ToDatabaseRole_WithEmptyPrivileges(t *testing.T) {
 			config.StringVariable(string(sdk.AccountObjectPrivilegeUsage)),
 			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateSchema)),
 		),
-		"database":          config.StringVariable(acc.TestDatabaseName),
+		"database":          config.StringVariable(TestDatabaseName),
 		"with_grant_option": config.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDatabaseRolePrivilegesRevoked(t),
+		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabase"),
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabase"),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "on_database", acc.TestClient().Ids.DatabaseId().FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), acc.TestClient().Ids.DatabaseId().FullyQualifiedName())),
+					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
 				),
 			},
 			// Previously, this would throw:
@@ -1518,24 +1515,24 @@ func TestAcc_GrantPrivileges_ToDatabaseRole_WithEmptyPrivileges(t *testing.T) {
 			//
 			// After that, the state file would be corrupted and only manual state manipulation would be able to fix it.
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabaseWithEmptyPrivileges"),
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabaseWithEmptyPrivileges"),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "on_database", acc.TestClient().Ids.DatabaseId().FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), acc.TestClient().Ids.DatabaseId().FullyQualifiedName())),
+					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
 				),
 				ExpectError: regexp.MustCompile("Error: Not enough list items"),
 			},
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabase"),
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnDatabase"),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "on_database", acc.TestClient().Ids.DatabaseId().FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), acc.TestClient().Ids.DatabaseId().FullyQualifiedName())),
+					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
 				),
 			},
 		},
