@@ -695,7 +695,7 @@ func TestInt_Procedures(t *testing.T) {
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
-			*sdk.NewProcedurePackageRequest("absl-py==0.10.0"),
+			*sdk.NewProcedurePackageRequest("absl-py==0.12.0"),
 		}
 
 		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, funcName).
@@ -757,8 +757,8 @@ func TestInt_Procedures(t *testing.T) {
 			}).
 			HasHandler(funcName).
 			HasRuntimeVersion(testvars.PythonRuntime).
-			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.10.0']`).
-			HasExactlyPackagesInAnyOrder("absl-py==0.10.0").
+			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.12.0']`).
+			HasExactlyPackagesInAnyOrder("absl-py==0.12.0").
 			HasSnowparkVersion("1.14.0").
 			HasTargetPathNil().
 			HasNormalizedTargetPathNil().
@@ -858,7 +858,7 @@ func TestInt_Procedures(t *testing.T) {
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
-			*sdk.NewProcedurePackageRequest("absl-py==0.10.0"),
+			*sdk.NewProcedurePackageRequest("absl-py==0.12.0"),
 		}
 
 		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, tmpPythonFunction.PythonHandler()).
@@ -919,8 +919,8 @@ func TestInt_Procedures(t *testing.T) {
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
 			HasRuntimeVersion(testvars.PythonRuntime).
-			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.10.0']`).
-			HasExactlyPackagesInAnyOrder("absl-py==0.10.0").
+			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.12.0']`).
+			HasExactlyPackagesInAnyOrder("absl-py==0.12.0").
 			HasSnowparkVersion("1.14.0").
 			HasTargetPathNil().
 			HasNormalizedTargetPathNil().

@@ -148,7 +148,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 			sdk.NormalizedPath{StageLocation: "~", PathOnStage: tmpPythonFunction2.PythonFileName()},
 		).
 		WithSnowparkPackage("1.14.0").
-		WithPackages("absl-py==0.10.0").
+		WithPackages("absl-py==0.12.0").
 		WithExternalAccessIntegrations(externalAccessIntegration, externalAccessIntegration2).
 		WithSecrets(map[string]sdk.SchemaObjectIdentifier{
 			"abc": secretId,
@@ -167,7 +167,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 			sdk.NormalizedPath{StageLocation: "~", PathOnStage: tmpPythonFunction2.PythonFileName()},
 		).
 		WithSnowparkPackage("1.14.0").
-		WithPackages("absl-py==0.10.0").
+		WithPackages("absl-py==0.12.0").
 		WithExternalAccessIntegrations(externalAccessIntegration).
 		WithSecrets(map[string]sdk.SchemaObjectIdentifier{
 			"def": secretId2,
@@ -203,7 +203,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "secrets.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "external_access_integrations.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "packages.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "packages.0", "absl-py==0.10.0")),
+					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "packages.0", "absl-py==0.12.0")),
 					resourceshowoutputassert.ProcedureShowOutput(t, procedureModel.ResourceReference()).
 						HasIsSecure(false),
 				),

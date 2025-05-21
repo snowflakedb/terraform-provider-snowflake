@@ -732,7 +732,7 @@ func TestInt_Functions(t *testing.T) {
 			WithComment("comment").
 			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("absl-py==0.10.0"),
+				*sdk.NewFunctionPackageRequest().WithPackage("absl-py==0.12.0"),
 				*sdk.NewFunctionPackageRequest().WithPackage("about-time==4.2.1"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
@@ -789,8 +789,8 @@ func TestInt_Functions(t *testing.T) {
 			}).
 			HasHandler(funcName).
 			HasRuntimeVersion(testvars.PythonRuntime).
-			HasPackages(`['absl-py==0.10.0','about-time==4.2.1']`).
-			HasExactlyPackagesInAnyOrder("absl-py==0.10.0", "about-time==4.2.1").
+			HasPackages(`['absl-py==0.12.0','about-time==4.2.1']`).
+			HasExactlyPackagesInAnyOrder("absl-py==0.12.0", "about-time==4.2.1").
 			HasTargetPathNil().
 			HasNormalizedTargetPathNil().
 			HasInstalledPackagesNotEmpty().
@@ -895,7 +895,7 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("absl-py==0.10.0"),
+				*sdk.NewFunctionPackageRequest().WithPackage("absl-py==0.12.0"),
 				*sdk.NewFunctionPackageRequest().WithPackage("about-time==4.2.1"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
@@ -952,8 +952,8 @@ func TestInt_Functions(t *testing.T) {
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
 			HasRuntimeVersion(testvars.PythonRuntime).
-			HasPackages(`['absl-py==0.10.0','about-time==4.2.1']`).
-			HasExactlyPackagesInAnyOrder("about-time==4.2.1", "absl-py==0.10.0").
+			HasPackages(`['absl-py==0.12.0','about-time==4.2.1']`).
+			HasExactlyPackagesInAnyOrder("about-time==4.2.1", "absl-py==0.12.0").
 			HasTargetPathNil().
 			HasNormalizedTargetPathNil().
 			HasInstalledPackagesNotEmpty().
