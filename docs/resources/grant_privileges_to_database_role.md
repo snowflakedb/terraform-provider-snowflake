@@ -10,6 +10,8 @@ description: |-
 
 ~> **Note** Manage grants on `HYBRID TABLE` by specifying `TABLE` or `TABLES` in `object_type` field. This applies to a single object, all objects, or future objects. This reflects the current behavior in Snowflake.
 
+~> **Note** Please, follow the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-considerations) for best practices on how to access control. The provider does not enforce any best practices, and it is up to the user to ensure that the privileges are managed correctly. Additionally, refer to [this link](https://docs.snowflake.com/en/user-guide/security-access-control-privileges) for a list of all available privileges in Snowflake.
+
 # snowflake_grant_privileges_to_database_role (Resource)
 
 

@@ -7,6 +7,8 @@ description: |-
 
 # snowflake_grant_privileges_to_share (Resource)
 
+~> **Note** Please, follow the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-considerations) for best practices on how to access control. The provider does not enforce any best practices, and it is up to the user to ensure that the privileges are managed correctly. Additionally, refer to [this link](https://docs.snowflake.com/en/user-guide/security-access-control-privileges) for a list of all available privileges in Snowflake.
+
 
 
 ## Example Usage
