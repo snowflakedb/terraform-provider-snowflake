@@ -40,6 +40,7 @@ var grantPrivilegesToShareSchema = map[string]*schema.Schema{
 		Required:    true,
 		Description: "The privileges to grant on the share. See available list of privileges: https://docs.snowflake.com/en/sql-reference/sql/grant-privilege-share#syntax",
 		Elem:        &schema.Schema{Type: schema.TypeString},
+		MinItems:    1,
 	},
 	"on_database": {
 		Type:             schema.TypeString,

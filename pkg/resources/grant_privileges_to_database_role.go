@@ -33,6 +33,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Optional:    true,
 		Description: "The privileges to grant on the database role.",
+		MinItems:    1,
 		ExactlyOneOf: []string{
 			"privileges",
 			"all_privileges",
