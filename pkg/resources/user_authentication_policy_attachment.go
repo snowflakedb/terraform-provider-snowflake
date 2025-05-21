@@ -113,7 +113,7 @@ func ReadUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Resou
 			diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  "Failed to find user's authentication policy. Marking the resource as removed.",
-				Detail:   fmt.Sprintf("User id: %s, Err: %s", userName.Name(), err),
+				Detail:   fmt.Sprintf("User id: %s", userName.Name()),
 			},
 		}
 	}
