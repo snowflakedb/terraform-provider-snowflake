@@ -18,17 +18,17 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.2.0 ➞ v2.2.1
+## v2.1.0 ➞ v2.2.0
 
-### *(bugfix)* snowflake_grant_privileges_to_account_role, snowflake_grant_privileges_to_database_role, and snowflake_grant_privileges_to_share resources
+### *(bugfix)* Fix the behavior for empty privileges list in snowflake_grant_privileges_to_account_role, snowflake_grant_privileges_to_database_role, and snowflake_grant_privileges_to_share resources
 
 Previously, it was possible to create `snowflake_grant_privileges_to_X` resources with an empty privilege list, which led to the following error:
 ```
 │ Error: Failed to parse internal identifier
 │ Error: [grant_privileges_to_database_role_identifier.go:79] invalid Privileges value: , should be either a comma separated list of privileges or "ALL" / "ALL PRIVILEGES" for all privileges
 ```
-After that, an identifier stored in state would be corrupted and only manual state manipulation would be able to fix it.
-We added validation to prevent this from happening. Now, if you try to create a resource with an empty privilege list, you will get the following error:
+After that, an identifier stored in state would be corrupted and only manual state manipulation would fix it.
+We added validation to prevent this from happening. Now, if you try to create or update a resource with an empty privilege list, you will get the following error:
 
 ```
 | Error: Not enough list items
@@ -43,8 +43,6 @@ We added validation to prevent this from happening. Now, if you try to create a 
 and the validation error will prevent the state file from changing, which means you will be able to normally adjust the resource and reapply the configuration.
 
 Reference: [#3690](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3690).
-
-## v2.1.0 ➞ v2.2.0
 
 ### *(new feature)* snowflake_image_repository resource
 Added a new preview resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier). The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
