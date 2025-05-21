@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -60,7 +61,7 @@ func CreateUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Res
 		},
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("error while creating authentication policy attachment, err = %w", err))
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(userName.FullyQualifiedName(), authenticationPolicy.FullyQualifiedName()))
@@ -80,6 +81,16 @@ func ReadUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Resou
 	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parts[0])
 	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(userName, sdk.PolicyEntityDomainUser))
 	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to user policies. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("User id: %s, Err: %s", userName.Name(), err),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
 
@@ -98,7 +109,13 @@ func ReadUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Resou
 	// Note: this means the resource has been deleted outside of Terraform.
 	if len(authenticationPolicyReferences) == 0 {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Failed to find user authentication policy. Marking the resource as removed.",
+				Detail:   fmt.Sprintf("User id: %s, Err: %s", userName.Name(), err),
+			},
+		}
 	}
 
 	if err := d.Set("user_name", userName.Name()); err != nil {
