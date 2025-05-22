@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.1.0...v2.1.1) (2025-05-22)
+
+
+### 🔧 **Misc**
+
+* Add new roadmap entry ([#3702](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3702)) ([5bdcd12](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5bdcd127d9288212b10ea7b138bebc0cb770c5b9))
+* Fix tests that run on secondary account profile ([#3666](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3666)) ([976b36c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/976b36c5702b5566eef7a1db04142f7920b7c188))
+
 ## [2.1.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.0.0...v2.1.0) (2025-05-12)
 
 
