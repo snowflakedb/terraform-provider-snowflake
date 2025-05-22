@@ -23,7 +23,7 @@ across different versions.
 ### *(bugfix)* Fix how snowflake_user_authentication_policy_attachment resource handles missing objects it depends on
 
 Previously, the `snowflake_user_authentication_policy_attachment` resource was not able to handle missing objects it depends on.
-This means, if a user or authentication policy was removed manually outside Terraform, the provider would produce a plans with errors like:
+This means, if a user or authentication policy was removed manually outside Terraform, the provider would produce plans with errors like:
 ```
 User 'XYZ' does not exist or not authorized
 ```
