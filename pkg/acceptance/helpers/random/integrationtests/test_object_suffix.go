@@ -3,7 +3,7 @@ package integrationtests
 import (
 	"log"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/acceptance/helpers/random"
 )
 
 // TODO [SNOW-1356199]: add generation tests

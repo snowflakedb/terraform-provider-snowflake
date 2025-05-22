@@ -1,7 +1,7 @@
 package sdk
 
 // imports added manually
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/datatypes"
 
 //go:generate go run ./dto-builder-generator/main.go
 

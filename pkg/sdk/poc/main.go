@@ -10,10 +10,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/example"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/internal/genhelpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/poc/example"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/poc/generator"
 )
 
 var definitionMapping = map[string]*generator.Interface{

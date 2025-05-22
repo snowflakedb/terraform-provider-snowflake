@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	i "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/issues"
+	i "github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/scripts/issues"
 )
 
 func main() {

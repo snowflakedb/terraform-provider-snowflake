@@ -3,7 +3,7 @@ package sdk
 import (
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk/datatypes"
 )
 
 // DataType is based on https://docs.snowflake.com/en/sql-reference/intro-summary-data-types.

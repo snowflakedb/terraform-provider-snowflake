@@ -3,8 +3,8 @@ package resources
 import (
 	"context"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/v2/pkg/sdk"
 )
 
 func v0_98_0_TagAssociationStateUpgrader(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
