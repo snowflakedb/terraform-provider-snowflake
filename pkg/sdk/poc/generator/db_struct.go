@@ -33,6 +33,10 @@ func (v *dbStruct) Time(dbName string) *dbStruct {
 	return v.Field(dbName, "time.Time")
 }
 
+func (v *dbStruct) OptionalTime(dbName string) *dbStruct {
+	return v.Field(dbName, "sql.NullTime")
+}
+
 func (v *dbStruct) OptionalText(dbName string) *dbStruct {
 	return v.Field(dbName, "sql.NullString")
 }

@@ -51,6 +51,7 @@ var definitionMapping = map[string]*generator.Interface{
 	"connections_def.go":                     sdk.ConnectionDef,
 	"image_repository_def.go":                sdk.ImageRepositoriesDef,
 	"compute_pools_def.go":                   sdk.ComputePoolsDef,
+	"services_def.go":                        sdk.ServicesDef,
 }
 
 func main() {

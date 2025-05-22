@@ -31,6 +31,11 @@ func (v *QueryStruct) Text(name string, transformer *KeywordTransformer) *QueryS
 	return v
 }
 
+func (v *QueryStruct) Any(name string, transformer *KeywordTransformer) *QueryStruct {
+	v.fields = append(v.fields, NewField(name, "any", Tags().Keyword(), transformer))
+	return v
+}
+
 func (v *QueryStruct) Number(name string, transformer *KeywordTransformer) *QueryStruct {
 	v.fields = append(v.fields, NewField(name, "int", Tags().Keyword(), transformer))
 	return v
@@ -108,6 +113,10 @@ func (v *QueryStruct) OptionalIn() *QueryStruct {
 
 func (v *QueryStruct) OptionalExtendedIn() *QueryStruct {
 	return v.PredefinedQueryStructField("In", "*ExtendedIn", KeywordOptions().SQL("IN"))
+}
+
+func (v *QueryStruct) OptionalServiceIn() *QueryStruct {
+	return v.PredefinedQueryStructField("In", "*ServiceIn", KeywordOptions().SQL("IN"))
 }
 
 func (v *QueryStruct) OptionalStartsWith() *QueryStruct {
