@@ -14,6 +14,7 @@ const (
 	ApiAuthenticationIntegrationWithJwtBearer              resource = "snowflake_api_authentication_integration_with_jwt_bearer"
 	ApiIntegration                                         resource = "snowflake_api_integration"
 	AuthenticationPolicy                                   resource = "snowflake_authentication_policy"
+	ComputePool                                            resource = "snowflake_compute_pool"
 	CortexSearchService                                    resource = "snowflake_cortex_search_service"
 	Database                                               resource = "snowflake_database"
 	DatabaseRole                                           resource = "snowflake_database_role"

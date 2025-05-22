@@ -65,3 +65,11 @@ func (c *ComputePoolClient) Describe(t *testing.T, id sdk.AccountObjectIdentifie
 
 	return c.client().Describe(ctx, id)
 }
+
+func (c *ComputePoolClient) Alter(t *testing.T, req *sdk.AlterComputePoolRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}

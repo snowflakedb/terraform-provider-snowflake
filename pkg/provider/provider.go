@@ -415,6 +415,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_api_authentication_integration_with_jwt_bearer":               resources.ApiAuthenticationIntegrationWithJwtBearer(),
 		"snowflake_api_integration":                                              resources.APIIntegration(),
 		"snowflake_authentication_policy":                                        resources.AuthenticationPolicy(),
+		"snowflake_compute_pool":                                                 resources.ComputePool(),
 		"snowflake_cortex_search_service":                                        resources.CortexSearchService(),
 		"snowflake_database":                                                     resources.Database(),
 		"snowflake_database_role":                                                resources.DatabaseRole(),
