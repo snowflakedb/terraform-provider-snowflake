@@ -65,6 +65,11 @@ type ExtendedIn struct {
 	ApplicationPackage AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
 }
 
+type ServiceIn struct {
+	In
+	ComputePool AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
+}
+
 type Like struct {
 	Pattern *string `ddl:"keyword,single_quotes"`
 }

@@ -36,7 +36,7 @@ Failed to find user authentication policy. Marking the resource as removed.
 Failed to get user policies. Marking the resource as removed.
 ```
 
-If you are encountering this issue, 
+If you are encountering this issue,
 either bump the provider version to at least `v2.2.0` or [remove the resource from the state manually](https://developer.hashicorp.com/terraform/cli/commands/state/rm).
 
 No configuration changes are needed.
