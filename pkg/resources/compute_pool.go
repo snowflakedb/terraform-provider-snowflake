@@ -226,8 +226,8 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, warehouseSchema, []string{
-			"application",
+		if err = setStateToValuesFromConfig(d, computePoolSchema, []string{
+			"for_application",
 			"auto_resume",
 			"auto_suspend_secs",
 		}); err != nil {
