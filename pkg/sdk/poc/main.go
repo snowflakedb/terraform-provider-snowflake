@@ -50,6 +50,7 @@ var definitionMapping = map[string]*generator.Interface{
 	"secrets_def.go":                         sdk.SecretsDef,
 	"connections_def.go":                     sdk.ConnectionDef,
 	"image_repository_def.go":                sdk.ImageRepositoriesDef,
+	"git_repository_def.go":                  sdk.GitRepositoriesDef,
 }
 
 func main() {
