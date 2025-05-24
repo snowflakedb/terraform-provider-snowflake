@@ -4,7 +4,7 @@ go 1.23.6
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.21.0
-	mvdan.cc/gofumpt v0.7.0
+	mvdan.cc/gofumpt v0.8.0
 )
 
 require (
