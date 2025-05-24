@@ -6,11 +6,13 @@ const (
 	awsAllowedPrefix    = "https://123456.execute-api.us-west-2.amazonaws.com/prod/"
 	azureAllowedPrefix  = "https://apim-hello-world.azure-api.net/"
 	googleAllowedPrefix = "https://gateway-id-123456.uc.gateway.dev/"
+	gitAllowedPrefix    = "https://github.com/user/repo"
 
 	apiAwsRoleArn        = "arn:aws:iam::000000000001:/role/test"
 	azureTenantId        = "00000000-0000-0000-0000-000000000000"
 	azureAdApplicationId = "11111111-1111-1111-1111-111111111111"
 	googleAudience       = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
+	gitSecretName        = "secret"
 )
 
 func TestApiIntegrations_Create(t *testing.T) {
@@ -54,6 +56,16 @@ func TestApiIntegrations_Create(t *testing.T) {
 		}
 	}
 
+	// Minimal valid CreateApiIntegrationOptions for Git
+	defaultOptsGit := func() *CreateApiIntegrationOptions {
+		return &CreateApiIntegrationOptions{
+			name:                 id,
+			GitApiProviderParams: &GitApiParams{},
+			ApiAllowedPrefixes:   []ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}},
+			Enabled:              true,
+		}
+	}
+
 	defaultOpts := defaultOptsAws
 
 	t.Run("validation: nil options", func(t *testing.T) {
@@ -74,16 +86,16 @@ func TestApiIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiIntegrationOptions", "IfNotExists", "OrReplace"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AwsApiProviderParams opts.AzureApiProviderParams opts.GoogleApiProviderParams] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AwsApiProviderParams opts.AzureApiProviderParams opts.GoogleApiProviderParams opts.GitApiProviderParams] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AwsApiProviderParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitApiProviderParams"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AwsApiProviderParams opts.AzureApiProviderParams opts.GoogleApiProviderParams] should be present - more present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AwsApiProviderParams opts.AzureApiProviderParams opts.GoogleApiProviderParams, opts.GitApiProviderParams] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AzureApiProviderParams = new(AzureApiParams)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitApiProviderParams"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -119,6 +131,16 @@ func TestApiIntegrations_Create(t *testing.T) {
 		opts.Enabled = false
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE API INTEGRATION IF NOT EXISTS %s API_PROVIDER = google_api_gateway GOOGLE_AUDIENCE = '%s' API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') ENABLED = false COMMENT = 'some comment'`, id.FullyQualifiedName(), googleAudience, googleAllowedPrefix, awsAllowedPrefix, azureAllowedPrefix)
+	})
+
+	t.Run("all options - git", func(t *testing.T) {
+		opts := defaultOptsGit()
+		opts.IfNotExists = Bool(true)
+		opts.ApiBlockedPrefixes = []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}, {Path: azureAllowedPrefix}}
+		opts.GitApiProviderParams.AllowedAuthenticationSecrets = &[]AllowedAuthenticationSecret{{Secret: gitSecretName}}
+		opts.Enabled = false
+		opts.Comment = String("some comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE API INTEGRATION IF NOT EXISTS %s API_PROVIDER = git_https_api ALLOWED_AUTHENTICATION_SECRETS = ('%s') API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') ENABLED = false COMMENT = 'some comment'`, id.FullyQualifiedName(), gitSecretName, gitAllowedPrefix, awsAllowedPrefix, azureAllowedPrefix)
 	})
 }
 
@@ -211,6 +233,14 @@ func TestApiIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set.AzureParams", "AzureTenantId", "AzureAdApplicationId", "ApiKey"))
 	})
 
+	t.Run("validation: at least one of the fields [opts.Set.GitParams.AllowedAuthenticationSecrets] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ApiIntegrationSet{
+			GitParams: &SetGitApiParams{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set.GitParams", "AllowedAuthenticationSecrets"))
+	})
+
 	t.Run("validation: at least one of the fields [opts.Unset.ApiKey opts.Unset.Enabled opts.Unset.ApiBlockedPrefixes opts.Unset.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &ApiIntegrationUnset{}
@@ -256,6 +286,20 @@ func TestApiIntegrations_Alter(t *testing.T) {
 			Comment:            String("comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s SET ENABLED = true API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') COMMENT = 'comment'", id.FullyQualifiedName(), googleAllowedPrefix, awsAllowedPrefix, azureAllowedPrefix)
+	})
+
+	t.Run("set - git", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ApiIntegrationSet{
+			GitParams: &SetGitApiParams{
+				AllowedAuthenticationSecrets: &[]AllowedAuthenticationSecret{{Secret: "secret"}},
+			},
+			Enabled:            Bool(true),
+			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}},
+			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}, {Path: azureAllowedPrefix}},
+			Comment:            String("comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s SET ALLOWED_AUTHENTICATION_SECRETS = ('%s') ENABLED = true API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') COMMENT = 'comment'", id.FullyQualifiedName(), gitSecretName, gitAllowedPrefix, awsAllowedPrefix, azureAllowedPrefix)
 	})
 
 	t.Run("unset single", func(t *testing.T) {

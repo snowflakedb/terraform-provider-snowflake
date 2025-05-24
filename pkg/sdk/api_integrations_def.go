@@ -13,7 +13,10 @@ var (
 	ApiIntegrationAwsGovPrivateApiGateway ApiIntegrationAwsApiProviderType = "aws_gov_private_api_gateway"
 )
 
-var ApiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
+var (
+	ApiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
+	AllowedAuthenticationSecretDef  = g.NewQueryStruct("AllowedAuthenticationSecret").Text("Secret", g.KeywordOptions().SingleQuotes().Required())
+)
 
 // TODO [SNOW-1016561]: all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
 var ApiIntegrationsDef = g.NewInterface(
@@ -53,14 +56,22 @@ var ApiIntegrationsDef = g.NewInterface(
 					TextAssignment("GOOGLE_AUDIENCE", g.ParameterOptions().SingleQuotes().Required()),
 				g.KeywordOptions(),
 			).
+			OptionalQueryStructField(
+				"GitApiProviderParams",
+				g.NewQueryStruct("GitApiParams").
+					PredefinedQueryStructField("apiProvider", "string", g.StaticOptions().SQL("API_PROVIDER = git_https_api")).
+					OptionalListAssignment("ALLOWED_AUTHENTICATION_SECRETS", "AllowedAuthenticationSecret", g.ParameterOptions().Parentheses()), // TODO: parethesesいらないかも
+				g.KeywordOptions(),
+			).
 			ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses().Required()).
 			ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
-			WithValidation(g.ExactlyOneValueSet, "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams"),
+			WithValidation(g.ExactlyOneValueSet, "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitApiProviderParams"),
 		ApiIntegrationEndpointPrefixDef,
+		AllowedAuthenticationSecretDef,
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-api-integration",
@@ -95,13 +106,20 @@ var ApiIntegrationsDef = g.NewInterface(
 							TextAssignment("GOOGLE_AUDIENCE", g.ParameterOptions().SingleQuotes().Required()),
 						g.KeywordOptions(),
 					).
+					OptionalQueryStructField(
+						"GitParams",
+						g.NewQueryStruct("SetGitApiParams").
+							OptionalListAssignment("ALLOWED_AUTHENTICATION_SECRETS", "AllowedAuthenticationSecret", g.ParameterOptions().Parentheses()).
+							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets"),
+						g.KeywordOptions(),
+					).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 					ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					OptionalComment().
 					// resulting validation changed to moreThanOneValueSet (not yet supported in the generator)
-					WithValidation(g.ConflictingFields, "AwsParams", "AzureParams", "GoogleParams").
-					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GoogleParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"),
+					WithValidation(g.ConflictingFields, "AwsParams", "AzureParams", "GoogleParams", "GitParams").
+					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GoogleParams", "GitParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).
 			OptionalQueryStructField(
