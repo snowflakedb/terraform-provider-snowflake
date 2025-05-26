@@ -132,7 +132,10 @@ func ComputePool() *schema.Resource {
 
 func ImportComputePool(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
 
 	computePool, err := client.ComputePools.ShowByID(ctx, id)
 	if err != nil {
