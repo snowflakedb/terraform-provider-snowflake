@@ -24,12 +24,12 @@ func (c *ServiceClient) client() sdk.Services {
 	return c.context.client.Services
 }
 
-func (c *ServiceClient) Create(t *testing.T) (*sdk.Service, func()) {
+func (c *ServiceClient) Create(t *testing.T, computePoolId sdk.AccountObjectIdentifier) (*sdk.Service, func()) {
 	t.Helper()
 	ctx := context.Background()
 
 	id := c.ids.RandomSchemaObjectIdentifier()
-	err := c.client().Create(ctx, sdk.NewCreateServiceRequest(id))
+	err := c.client().Create(ctx, sdk.NewCreateServiceRequest(id, computePoolId))
 	require.NoError(t, err)
 	service, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)

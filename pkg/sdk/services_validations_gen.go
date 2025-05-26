@@ -16,6 +16,9 @@ func (opts *CreateServiceOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !exactlyOneValueSet(opts.FromSpecification, opts.FromSpecificationTemplate) {
+		errs = append(errs, errExactlyOneOf("CreateServiceOptions", "FromSpecification", "FromSpecificationTemplate"))
+	}
 	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
@@ -61,8 +64,8 @@ func (opts *AlterServiceOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.ServiceFromSpecification, opts.ServiceFromSpecificationTemplate, opts.Restore, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "ServiceFromSpecification", "ServiceFromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
+	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.FromSpecification, opts.FromSpecificationTemplate, opts.Restore, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
 		// Validation added manually.

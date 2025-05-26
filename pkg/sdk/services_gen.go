@@ -23,9 +23,9 @@ type CreateServiceOptions struct {
 	service                           bool                               `ddl:"static" sql:"SERVICE"`
 	IfNotExists                       *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                              SchemaObjectIdentifier             `ddl:"identifier"`
-	InComputePool                     *AccountObjectIdentifier           `ddl:"identifier" sql:"IN COMPUTE POOL"`
-	ServiceFromSpecification          *ServiceFromSpecification          `ddl:"keyword"`
-	ServiceFromSpecificationTemplate  *ServiceFromSpecificationTemplate  `ddl:"keyword"`
+	InComputePool                     AccountObjectIdentifier            `ddl:"identifier" sql:"IN COMPUTE POOL"`
+	FromSpecification                 *ServiceFromSpecification          `ddl:"keyword"`
+	FromSpecificationTemplate         *ServiceFromSpecificationTemplate  `ddl:"keyword"`
 	AutoSuspendSecs                   *int                               `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
 	ServiceExternalAccessIntegrations *ServiceExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	AutoResume                        *bool                              `ddl:"parameter" sql:"AUTO_RESUME"`
@@ -48,43 +48,43 @@ type ListItem struct {
 }
 
 type ServiceFromSpecificationOnStage struct {
-	FromStage         *string `ddl:"parameter,no_equals" sql:"FROM"`
+	From              *string `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
 	SpecificationFile *string `ddl:"parameter,single_quotes" sql:"SPECIFICATION_FILE"`
 }
 
 type ServiceFromSpecification struct {
-	FromSpecificationFile           *string                          `ddl:"parameter,single_quotes" sql:"FROM SPECIFICATION_FILE"`
-	ServiceFromSpecificationOnStage *ServiceFromSpecificationOnStage `ddl:"keyword"`
-	FromSpecification               *string                          `ddl:"parameter,no_equals,single_quotes" sql:"FROM SPECIFICATION"`
+	FromSpecificationFile    *string                          `ddl:"parameter,single_quotes" sql:"FROM SPECIFICATION_FILE"`
+	FromSpecificationOnStage *ServiceFromSpecificationOnStage `ddl:"keyword"`
+	FromSpecification        *string                          `ddl:"parameter,single_quotes,no_equals" sql:"FROM SPECIFICATION"`
 }
 
 type ServiceFromSpecificationTemplateOnStage struct {
-	FromStage         *string `ddl:"parameter,no_equals" sql:"FROM"`
-	SpecificationFile *string `ddl:"parameter,single_quotes" sql:"SPECIFICATION_TEMPLATE_FILE"`
+	From                      *string `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
+	SpecificationTemplateFile *string `ddl:"parameter,single_quotes" sql:"SPECIFICATION_TEMPLATE_FILE"`
 }
 
 type ServiceFromSpecificationTemplate struct {
-	FromSpecificationFile           *string                                  `ddl:"parameter,single_quotes" sql:"FROM SPECIFICATION_TEMPLATE_FILE"`
-	ServiceFromSpecificationOnStage *ServiceFromSpecificationTemplateOnStage `ddl:"keyword"`
-	FromSpecification               *string                                  `ddl:"parameter,no_equals,single_quotes" sql:"FROM SPECIFICATION_TEMPLATE"`
-	Using                           []ListItem                               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
+	FromSpecificationTemplateFile *string                                  `ddl:"parameter,single_quotes" sql:"FROM SPECIFICATION_TEMPLATE_FILE"`
+	FromSpecificationOnStage      *ServiceFromSpecificationTemplateOnStage `ddl:"keyword"`
+	FromSpecificationTemplate     *string                                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM SPECIFICATION_TEMPLATE"`
+	Using                         []ListItem                               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
 }
 
 // AlterServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-service.
 type AlterServiceOptions struct {
-	alter                            bool                              `ddl:"static" sql:"ALTER"`
-	service                          bool                              `ddl:"static" sql:"SERVICE"`
-	IfExists                         *bool                             `ddl:"keyword" sql:"IF EXISTS"`
-	name                             SchemaObjectIdentifier            `ddl:"identifier"`
-	Resume                           *bool                             `ddl:"keyword" sql:"RESUME"`
-	Suspend                          *bool                             `ddl:"keyword" sql:"SUSPEND"`
-	ServiceFromSpecification         *ServiceFromSpecification         `ddl:"keyword"`
-	ServiceFromSpecificationTemplate *ServiceFromSpecificationTemplate `ddl:"keyword"`
-	Restore                          *Restore                          `ddl:"keyword" sql:"RESTORE"`
-	Set                              *ServiceSet                       `ddl:"keyword" sql:"SET"`
-	Unset                            *ServiceUnset                     `ddl:"list,no_parentheses" sql:"UNSET"`
-	SetTags                          []TagAssociation                  `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags                        []ObjectIdentifier                `ddl:"keyword" sql:"UNSET TAG"`
+	alter                     bool                              `ddl:"static" sql:"ALTER"`
+	service                   bool                              `ddl:"static" sql:"SERVICE"`
+	IfExists                  *bool                             `ddl:"keyword" sql:"IF EXISTS"`
+	name                      SchemaObjectIdentifier            `ddl:"identifier"`
+	Resume                    *bool                             `ddl:"keyword" sql:"RESUME"`
+	Suspend                   *bool                             `ddl:"keyword" sql:"SUSPEND"`
+	FromSpecification         *ServiceFromSpecification         `ddl:"keyword"`
+	FromSpecificationTemplate *ServiceFromSpecificationTemplate `ddl:"keyword"`
+	Restore                   *Restore                          `ddl:"keyword" sql:"RESTORE"`
+	Set                       *ServiceSet                       `ddl:"keyword" sql:"SET"`
+	Unset                     *ServiceUnset                     `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTags                   []TagAssociation                  `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags                 []ObjectIdentifier                `ddl:"keyword" sql:"UNSET TAG"`
 }
 
 type Restore struct {

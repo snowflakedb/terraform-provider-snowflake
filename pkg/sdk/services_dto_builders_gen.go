@@ -6,9 +6,11 @@ import ()
 
 func NewCreateServiceRequest(
 	name SchemaObjectIdentifier,
+	InComputePool AccountObjectIdentifier,
 ) *CreateServiceRequest {
 	s := CreateServiceRequest{}
 	s.name = name
+	s.InComputePool = InComputePool
 	return &s
 }
 
@@ -17,18 +19,13 @@ func (s *CreateServiceRequest) WithIfNotExists(IfNotExists bool) *CreateServiceR
 	return s
 }
 
-func (s *CreateServiceRequest) WithInComputePool(InComputePool AccountObjectIdentifier) *CreateServiceRequest {
-	s.InComputePool = &InComputePool
+func (s *CreateServiceRequest) WithFromSpecification(FromSpecification ServiceFromSpecification) *CreateServiceRequest {
+	s.FromSpecification = &FromSpecification
 	return s
 }
 
-func (s *CreateServiceRequest) WithServiceFromSpecification(ServiceFromSpecification ServiceFromSpecification) *CreateServiceRequest {
-	s.ServiceFromSpecification = &ServiceFromSpecification
-	return s
-}
-
-func (s *CreateServiceRequest) WithServiceFromSpecificationTemplate(ServiceFromSpecificationTemplate ServiceFromSpecificationTemplate) *CreateServiceRequest {
-	s.ServiceFromSpecificationTemplate = &ServiceFromSpecificationTemplate
+func (s *CreateServiceRequest) WithFromSpecificationTemplate(FromSpecificationTemplate ServiceFromSpecificationTemplate) *CreateServiceRequest {
+	s.FromSpecificationTemplate = &FromSpecificationTemplate
 	return s
 }
 
@@ -108,13 +105,13 @@ func (s *AlterServiceRequest) WithSuspend(Suspend bool) *AlterServiceRequest {
 	return s
 }
 
-func (s *AlterServiceRequest) WithServiceFromSpecification(ServiceFromSpecification ServiceFromSpecification) *AlterServiceRequest {
-	s.ServiceFromSpecification = &ServiceFromSpecification
+func (s *AlterServiceRequest) WithFromSpecification(FromSpecification ServiceFromSpecification) *AlterServiceRequest {
+	s.FromSpecification = &FromSpecification
 	return s
 }
 
-func (s *AlterServiceRequest) WithServiceFromSpecificationTemplate(ServiceFromSpecificationTemplate ServiceFromSpecificationTemplate) *AlterServiceRequest {
-	s.ServiceFromSpecificationTemplate = &ServiceFromSpecificationTemplate
+func (s *AlterServiceRequest) WithFromSpecificationTemplate(FromSpecificationTemplate ServiceFromSpecificationTemplate) *AlterServiceRequest {
+	s.FromSpecificationTemplate = &FromSpecificationTemplate
 	return s
 }
 

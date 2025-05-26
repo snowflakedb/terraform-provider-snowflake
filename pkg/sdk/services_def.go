@@ -46,27 +46,27 @@ var serviceExternalAccessIntegrationsDef = g.NewQueryStruct("ServiceExternalAcce
 	List("ServiceExternalAccessIntegrations", g.KindOfT[AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
 
 var listItemDef = g.NewQueryStruct("ListItem").
-	Text("Key", g.KeywordOptions().Required()).
+	Text("Key", g.KeywordOptions().Required().DoubleQuotes()).
 	SQLWithCustomFieldName("arrowEquals", "=>").
 	Any("Value", g.KeywordOptions().Required())
 
 var serviceFromSpecificationOnStageDef = g.NewQueryStruct("ServiceFromSpecificationOnStage").
-	OptionalTextAssignment("FROM", g.ParameterOptions().NoQuotes()).
+	OptionalTextAssignment("FROM", g.ParameterOptions().NoQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes())
 
 var serviceFromSpecificationDef = g.NewQueryStruct("ServiceFromSpecification").
 	OptionalTextAssignment("FROM SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
-	PredefinedQueryStructField("ServiceFromSpecificationOnStage", "*ServiceFromSpecificationOnStage", g.KeywordOptions()).
+	PredefinedQueryStructField("FromSpecificationOnStage", "*ServiceFromSpecificationOnStage", g.KeywordOptions()).
 	OptionalTextAssignment("FROM SPECIFICATION", g.ParameterOptions().NoEquals().SingleQuotes()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "StageSpecificationFile", "Specification")
 
 var serviceFromSpecificationTemplateOnStageDef = g.NewQueryStruct("ServiceFromSpecificationTemplateOnStage").
-	OptionalTextAssignment("FROM", g.ParameterOptions().NoQuotes()).
+	OptionalTextAssignment("FROM", g.ParameterOptions().NoQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes())
 
 var serviceFromSpecificationTemplateDef = g.NewQueryStruct("ServiceFromSpecificationTemplate").
 	OptionalTextAssignment("FROM SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
-	PredefinedQueryStructField("ServiceFromSpecificationOnStage", "*ServiceFromSpecificationTemplateOnStage", g.KeywordOptions()).
+	PredefinedQueryStructField("FromSpecificationOnStage", "*ServiceFromSpecificationTemplateOnStage", g.KeywordOptions()).
 	OptionalTextAssignment("FROM SPECIFICATION_TEMPLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "StageSpecificationFile", "SpecificationTemplate")
@@ -84,7 +84,7 @@ var ServicesDef = g.NewInterface(
 		// Note: Currently, OR REPLACE is not supported for services.
 		IfNotExists().
 		Name().
-		OptionalIdentifier("InComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL")).
+		Identifier("InComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
 		PredefinedQueryStructField("FromSpecification", "*ServiceFromSpecification", g.KeywordOptions()).
 		PredefinedQueryStructField("FromSpecificationTemplate", "*ServiceFromSpecificationTemplate", g.KeywordOptions()).
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
@@ -97,7 +97,7 @@ var ServicesDef = g.NewInterface(
 		OptionalTags().
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "").
+		WithValidation(g.ExactlyOneValueSet, "FromSpecification", "FromSpecificationTemplate").
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
 	serviceExternalAccessIntegrationsDef,
 	listItemDef,
@@ -114,8 +114,8 @@ var ServicesDef = g.NewInterface(
 		Name().
 		OptionalSQL("RESUME").
 		OptionalSQL("SUSPEND").
-		PredefinedQueryStructField("ServiceFromSpecification", "*ServiceFromSpecification", g.KeywordOptions()).
-		PredefinedQueryStructField("ServiceFromSpecificationTemplate", "*ServiceFromSpecificationTemplate", g.KeywordOptions()).
+		PredefinedQueryStructField("FromSpecification", "*ServiceFromSpecification", g.KeywordOptions()).
+		PredefinedQueryStructField("FromSpecificationTemplate", "*ServiceFromSpecificationTemplate", g.KeywordOptions()).
 		OptionalQueryStructField(
 			"Restore",
 			g.NewQueryStruct("Restore").

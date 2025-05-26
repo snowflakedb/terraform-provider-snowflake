@@ -14,7 +14,7 @@ func TestServices_Create(t *testing.T) {
 	defaultOpts := func() *CreateServiceOptions {
 		return &CreateServiceOptions{
 			name:          id,
-			InComputePool: &computePoolId,
+			InComputePool: computePoolId,
 		}
 	}
 
@@ -73,20 +73,29 @@ func TestServices_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "AutoSuspendSecs", IntErrGreaterOrEqual, 0))
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("validation: conflicting fields for [opts.ServiceFromSpecification opts.ServiceFromSpecificationTemplate]", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
+		opts.FromSpecification = &ServiceFromSpecification{
+			FromSpecification: String("{}"),
+		}
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			FromSpecificationTemplate: String("{}"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions", "FromSpecification", "FromSpecificationTemplate"))
 	})
 
 	t.Run("with if not exists", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
+		opts.FromSpecification = &ServiceFromSpecification{
+			FromSpecificationFile: String("spec.yaml"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
 	})
 
 	t.Run("from specification file", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ServiceFromSpecification = &ServiceFromSpecification{
+		opts.FromSpecification = &ServiceFromSpecification{
 			FromSpecificationFile: String("spec.yaml"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
@@ -95,9 +104,9 @@ func TestServices_Create(t *testing.T) {
 	t.Run("with specification file on stage", func(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
-		opts.ServiceFromSpecification = &ServiceFromSpecification{
-			ServiceFromSpecificationOnStage: &ServiceFromSpecificationOnStage{
-				FromStage:         Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+		opts.FromSpecification = &ServiceFromSpecification{
+			FromSpecificationOnStage: &ServiceFromSpecificationOnStage{
+				From:              Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
 				SpecificationFile: String("spec.yaml"),
 			},
 		}
@@ -107,7 +116,7 @@ func TestServices_Create(t *testing.T) {
 
 	t.Run("from specification", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ServiceFromSpecification = &ServiceFromSpecification{
+		opts.FromSpecification = &ServiceFromSpecification{
 			FromSpecification: String("{}"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION '{}'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
@@ -115,8 +124,8 @@ func TestServices_Create(t *testing.T) {
 
 	t.Run("from specification template file", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ServiceFromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationFile: String("spec.yaml"),
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			FromSpecificationTemplateFile: String("spec.yaml"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -138,10 +147,10 @@ func TestServices_Create(t *testing.T) {
 	t.Run("from specification template file on stage", func(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
-		opts.ServiceFromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			ServiceFromSpecificationOnStage: &ServiceFromSpecificationTemplateOnStage{
-				FromStage:         Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
-				SpecificationFile: String("spec.yaml"),
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			FromSpecificationOnStage: &ServiceFromSpecificationTemplateOnStage{
+				From:                      Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+				SpecificationTemplateFile: String("spec.yaml"),
 			},
 			Using: []ListItem{
 				{
@@ -156,8 +165,8 @@ func TestServices_Create(t *testing.T) {
 
 	t.Run("from specification template", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ServiceFromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecification: String("{}"),
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			FromSpecificationTemplate: String("{}"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -170,14 +179,12 @@ func TestServices_Create(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		warehouseId := NewAccountObjectIdentifier("my_warehouse")
-		poolId := NewAccountObjectIdentifier("test_pool")
 		integration1Id := NewAccountObjectIdentifier("integration1")
 		comment := random.Comment()
 
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
-		opts.InComputePool = &poolId
-		opts.ServiceFromSpecification = &ServiceFromSpecification{
+		opts.FromSpecification = &ServiceFromSpecification{
 			FromSpecification: String("{}"),
 		}
 		opts.AutoSuspendSecs = Pointer(600)
@@ -202,7 +209,7 @@ func TestServices_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s FROM SPECIFICATION '{}' AUTO_SUSPEND_SECS = 600 "+
 			"EXTERNAL_ACCESS_INTEGRATIONS = (%s) AUTO_RESUME = true MIN_INSTANCES = 1 MIN_READY_INSTANCES = 1 MAX_INSTANCES = 3 "+
 			"QUERY_WAREHOUSE = %s TAG (\"tag1\" = 'value1') COMMENT = '%s'",
-			id.FullyQualifiedName(), poolId.FullyQualifiedName(), integration1Id.FullyQualifiedName(),
+			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), integration1Id.FullyQualifiedName(),
 			warehouseId.FullyQualifiedName(), comment)
 	})
 }
@@ -228,7 +235,7 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("validation: exactly one property should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "ServiceFromSpecification", "ServiceFromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: min ready instances must be greater than 0", func(t *testing.T) {
@@ -323,7 +330,7 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("from specification file", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ServiceFromSpecification = &ServiceFromSpecification{
+		opts.FromSpecification = &ServiceFromSpecification{
 			FromSpecificationFile: String("spec.yaml"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName())
@@ -332,9 +339,9 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("from specification file on stage", func(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
-		opts.ServiceFromSpecification = &ServiceFromSpecification{
-			ServiceFromSpecificationOnStage: &ServiceFromSpecificationOnStage{
-				FromStage:         Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+		opts.FromSpecification = &ServiceFromSpecification{
+			FromSpecificationOnStage: &ServiceFromSpecificationOnStage{
+				From:              Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
 				SpecificationFile: String("spec.yaml"),
 			},
 		}
@@ -344,7 +351,7 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("from specification", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ServiceFromSpecification = &ServiceFromSpecification{
+		opts.FromSpecification = &ServiceFromSpecification{
 			FromSpecification: String("{}"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM SPECIFICATION '{}'", id.FullyQualifiedName())
@@ -352,8 +359,8 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("from specification template file", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ServiceFromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationFile: String("spec.yaml"),
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			FromSpecificationTemplateFile: String("spec.yaml"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -375,10 +382,10 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("with specification template file on stage", func(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
-		opts.ServiceFromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			ServiceFromSpecificationOnStage: &ServiceFromSpecificationTemplateOnStage{
-				FromStage:         Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
-				SpecificationFile: String("spec.yaml"),
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			FromSpecificationOnStage: &ServiceFromSpecificationTemplateOnStage{
+				From:                      Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+				SpecificationTemplateFile: String("spec.yaml"),
 			},
 			Using: []ListItem{
 				{
@@ -393,8 +400,8 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("from specification template", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ServiceFromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecification: String("{}"),
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			FromSpecificationTemplate: String("{}"),
 			Using: []ListItem{
 				{
 					Key:   "string",

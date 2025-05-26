@@ -70,12 +70,12 @@ func (v *services) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Se
 
 func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
 	opts := &CreateServiceOptions{
-		IfNotExists:                      r.IfNotExists,
-		name:                             r.name,
-		InComputePool:                    r.InComputePool,
-		ServiceFromSpecification:         r.ServiceFromSpecification,
-		ServiceFromSpecificationTemplate: r.ServiceFromSpecificationTemplate,
-		AutoSuspendSecs:                  r.AutoSuspendSecs,
+		IfNotExists:               r.IfNotExists,
+		name:                      r.name,
+		InComputePool:             r.InComputePool,
+		FromSpecification:         r.FromSpecification,
+		FromSpecificationTemplate: r.FromSpecificationTemplate,
+		AutoSuspendSecs:           r.AutoSuspendSecs,
 
 		AutoResume:        r.AutoResume,
 		MinInstances:      r.MinInstances,
@@ -95,12 +95,12 @@ func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
 
 func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 	opts := &AlterServiceOptions{
-		IfExists:                         r.IfExists,
-		name:                             r.name,
-		Resume:                           r.Resume,
-		Suspend:                          r.Suspend,
-		ServiceFromSpecification:         r.ServiceFromSpecification,
-		ServiceFromSpecificationTemplate: r.ServiceFromSpecificationTemplate,
+		IfExists:                  r.IfExists,
+		name:                      r.name,
+		Resume:                    r.Resume,
+		Suspend:                   r.Suspend,
+		FromSpecification:         r.FromSpecification,
+		FromSpecificationTemplate: r.FromSpecificationTemplate,
 
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,

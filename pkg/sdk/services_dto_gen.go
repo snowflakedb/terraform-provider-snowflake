@@ -12,10 +12,10 @@ var (
 
 type CreateServiceRequest struct {
 	IfNotExists                       *bool
-	name                              SchemaObjectIdentifier // required
-	InComputePool                     *AccountObjectIdentifier
-	ServiceFromSpecification          *ServiceFromSpecification
-	ServiceFromSpecificationTemplate  *ServiceFromSpecificationTemplate
+	name                              SchemaObjectIdentifier  // required
+	InComputePool                     AccountObjectIdentifier // required
+	FromSpecification                 *ServiceFromSpecification
+	FromSpecificationTemplate         *ServiceFromSpecificationTemplate
 	AutoSuspendSecs                   *int
 	ServiceExternalAccessIntegrations *ServiceExternalAccessIntegrationsRequest
 	AutoResume                        *bool
@@ -32,17 +32,17 @@ type ServiceExternalAccessIntegrationsRequest struct {
 }
 
 type AlterServiceRequest struct {
-	IfExists                         *bool
-	name                             SchemaObjectIdentifier // required
-	Resume                           *bool
-	Suspend                          *bool
-	ServiceFromSpecification         *ServiceFromSpecification
-	ServiceFromSpecificationTemplate *ServiceFromSpecificationTemplate
-	Restore                          *RestoreRequest
-	Set                              *ServiceSetRequest
-	Unset                            *ServiceUnsetRequest
-	SetTags                          []TagAssociation
-	UnsetTags                        []ObjectIdentifier
+	IfExists                  *bool
+	name                      SchemaObjectIdentifier // required
+	Resume                    *bool
+	Suspend                   *bool
+	FromSpecification         *ServiceFromSpecification
+	FromSpecificationTemplate *ServiceFromSpecificationTemplate
+	Restore                   *RestoreRequest
+	Set                       *ServiceSetRequest
+	Unset                     *ServiceUnsetRequest
+	SetTags                   []TagAssociation
+	UnsetTags                 []ObjectIdentifier
 }
 
 type RestoreRequest struct {
