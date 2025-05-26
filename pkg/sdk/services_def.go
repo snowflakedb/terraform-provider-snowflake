@@ -58,7 +58,7 @@ var serviceFromSpecificationDef = g.NewQueryStruct("ServiceFromSpecification").
 	OptionalTextAssignment("FROM SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
 	PredefinedQueryStructField("FromSpecificationOnStage", "*ServiceFromSpecificationOnStage", g.KeywordOptions()).
 	OptionalTextAssignment("FROM SPECIFICATION", g.ParameterOptions().NoEquals().SingleQuotes()).
-	WithValidation(g.ExactlyOneValueSet, "FromSpecificationFile", "FromStageSpecificationFile", "FromSpecification")
+	WithValidation(g.ExactlyOneValueSet, "FromSpecificationFile", "FromSpecificationOnStage", "FromSpecification")
 
 var serviceFromSpecificationTemplateOnStageDef = g.NewQueryStruct("ServiceFromSpecificationTemplateOnStage").
 	OptionalTextAssignment("FROM", g.ParameterOptions().NoQuotes().NoEquals()).
@@ -66,10 +66,10 @@ var serviceFromSpecificationTemplateOnStageDef = g.NewQueryStruct("ServiceFromSp
 
 var serviceFromSpecificationTemplateDef = g.NewQueryStruct("ServiceFromSpecificationTemplate").
 	OptionalTextAssignment("FROM SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
-	PredefinedQueryStructField("FromSpecificationOnStage", "*ServiceFromSpecificationTemplateOnStage", g.KeywordOptions()).
+	PredefinedQueryStructField("FromSpecificationTemplateOnStage", "*ServiceFromSpecificationTemplateOnStage", g.KeywordOptions()).
 	OptionalTextAssignment("FROM SPECIFICATION_TEMPLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses()).
-	WithValidation(g.ExactlyOneValueSet, "FromSpecificationFile", "FromStageSpecificationFile", "FromSpecificationTemplate")
+	WithValidation(g.ExactlyOneValueSet, "FromSpecificationTemplateFile", "FromSpecificationTemplateOnStage", "FromSpecificationTemplate")
 
 //go:generate go run ./poc/main.go
 var ServicesDef = g.NewInterface(

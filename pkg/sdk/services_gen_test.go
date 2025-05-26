@@ -148,7 +148,7 @@ func TestServices_Create(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationOnStage: &ServiceFromSpecificationTemplateOnStage{
+			FromSpecificationTemplateOnStage: &ServiceFromSpecificationTemplateOnStage{
 				From:                      Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
 				SpecificationTemplateFile: String("spec.yaml"),
 			},
@@ -383,7 +383,7 @@ func TestServices_Alter(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationOnStage: &ServiceFromSpecificationTemplateOnStage{
+			FromSpecificationTemplateOnStage: &ServiceFromSpecificationTemplateOnStage{
 				From:                      Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
 				SpecificationTemplateFile: String("spec.yaml"),
 			},

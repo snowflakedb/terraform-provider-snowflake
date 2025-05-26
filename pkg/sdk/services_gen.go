@@ -64,10 +64,10 @@ type ServiceFromSpecificationTemplateOnStage struct {
 }
 
 type ServiceFromSpecificationTemplate struct {
-	FromSpecificationTemplateFile *string                                  `ddl:"parameter,single_quotes" sql:"FROM SPECIFICATION_TEMPLATE_FILE"`
-	FromSpecificationOnStage      *ServiceFromSpecificationTemplateOnStage `ddl:"keyword"`
-	FromSpecificationTemplate     *string                                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM SPECIFICATION_TEMPLATE"`
-	Using                         []ListItem                               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
+	FromSpecificationTemplateFile    *string                                  `ddl:"parameter,single_quotes" sql:"FROM SPECIFICATION_TEMPLATE_FILE"`
+	FromSpecificationTemplateOnStage *ServiceFromSpecificationTemplateOnStage `ddl:"keyword"`
+	FromSpecificationTemplate        *string                                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM SPECIFICATION_TEMPLATE"`
+	Using                            []ListItem                               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
 }
 
 // AlterServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-service.
