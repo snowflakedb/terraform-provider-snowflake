@@ -239,6 +239,7 @@ var ServicesDef = g.NewInterface(
 		WithValidation(g.ConflictingFields, "Job", "ExcludeJobs"),
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
+	g.ShowByIDServiceInFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-service",

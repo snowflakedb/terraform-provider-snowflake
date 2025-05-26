@@ -44,6 +44,7 @@ func (v *services) Show(ctx context.Context, request *ShowServiceRequest) ([]Ser
 
 func (v *services) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Service, error) {
 	request := NewShowServiceRequest().
+		WithIn(ServiceIn{In: In{Schema: id.SchemaId()}}).
 		WithLike(Like{Pattern: String(id.Name())})
 	services, err := v.Show(ctx, request)
 	if err != nil {
