@@ -3,6 +3,7 @@ package model
 import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -15,7 +16,7 @@ func ProcedurePythonBasicInline(
 	handler string,
 	procedureDefinition string,
 ) *ProcedurePythonModel {
-	return ProcedurePython(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), "3.8", "1.14.0").
+	return ProcedurePython(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), testvars.PythonRuntime, "1.14.0").
 		WithProcedureDefinition(procedureDefinition)
 }
 

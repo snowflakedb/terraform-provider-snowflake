@@ -389,7 +389,7 @@ func TestProcedures_CreateForPython(t *testing.T) {
 	defaultOpts := func() *CreateForPythonProcedureOptions {
 		return &CreateForPythonProcedureOptions{
 			name:           id,
-			RuntimeVersion: "3.8",
+			RuntimeVersion: "3.9",
 			Packages: []ProcedurePackage{
 				{
 					Package: "numpy",
@@ -543,7 +543,7 @@ func TestProcedures_CreateForPython(t *testing.T) {
 				Null:              Bool(true),
 			},
 		}
-		opts.RuntimeVersion = "3.8"
+		opts.RuntimeVersion = "3.9"
 		opts.Packages = []ProcedurePackage{
 			{
 				Package: "numpy",
@@ -579,7 +579,7 @@ func TestProcedures_CreateForPython(t *testing.T) {
 		opts.Comment = String("test comment")
 		opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
 		opts.ProcedureDefinition = String("import numpy as np")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SECURE PROCEDURE %s ("i" int DEFAULT 1) COPY GRANTS RETURNS VARIANT NULL LANGUAGE PYTHON STRICT IMMUTABLE RUNTIME_VERSION = '3.8' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) COMMENT = 'test comment' EXECUTE AS CALLER AS import numpy as np`, id.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SECURE PROCEDURE %s ("i" int DEFAULT 1) COPY GRANTS RETURNS VARIANT NULL LANGUAGE PYTHON STRICT IMMUTABLE RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) COMMENT = 'test comment' EXECUTE AS CALLER AS import numpy as np`, id.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -600,7 +600,7 @@ func TestProcedures_CreateForPython(t *testing.T) {
 				Null:           Bool(true),
 			},
 		}
-		opts.RuntimeVersion = "3.8"
+		opts.RuntimeVersion = "3.9"
 		opts.Packages = []ProcedurePackage{
 			{
 				Package: "numpy",
@@ -636,7 +636,7 @@ func TestProcedures_CreateForPython(t *testing.T) {
 		opts.Comment = String("test comment")
 		opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
 		opts.ProcedureDefinition = String("import numpy as np")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SECURE PROCEDURE %s ("i" NUMBER(36, 2) DEFAULT 1) COPY GRANTS RETURNS VARIANT NULL LANGUAGE PYTHON STRICT IMMUTABLE RUNTIME_VERSION = '3.8' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) COMMENT = 'test comment' EXECUTE AS CALLER AS import numpy as np`, id.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SECURE PROCEDURE %s ("i" NUMBER(36, 2) DEFAULT 1) COPY GRANTS RETURNS VARIANT NULL LANGUAGE PYTHON STRICT IMMUTABLE RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) COMMENT = 'test comment' EXECUTE AS CALLER AS import numpy as np`, id.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
 	})
 }
 
@@ -1755,7 +1755,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 		opts.Returns = ProcedureReturns{
 			Table: &ProcedureReturnsTable{},
 		}
-		opts.RuntimeVersion = "3.8"
+		opts.RuntimeVersion = "3.9"
 		opts.Packages = []ProcedurePackage{
 			{
 				Package: "snowflake-snowpark-python",
@@ -1763,7 +1763,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 		}
 		opts.Handler = "udf"
 		opts.ProcedureName = id
-		assertOptsValidAndSQLEquals(t, opts, `WITH %s AS PROCEDURE () RETURNS TABLE () LANGUAGE PYTHON RUNTIME_VERSION = '3.8' PACKAGES = ('snowflake-snowpark-python') HANDLER = 'udf' CALL %s ()`, id.FullyQualifiedName(), id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `WITH %s AS PROCEDURE () RETURNS TABLE () LANGUAGE PYTHON RUNTIME_VERSION = '3.9' PACKAGES = ('snowflake-snowpark-python') HANDLER = 'udf' CALL %s ()`, id.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	// TODO [SNOW-1348106]: remove with old procedure removal for V1
@@ -1782,7 +1782,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 				Null:              Bool(true),
 			},
 		}
-		opts.RuntimeVersion = "3.8"
+		opts.RuntimeVersion = "3.9"
 		opts.Packages = []ProcedurePackage{
 			{
 				Package: "numpy",
@@ -1813,7 +1813,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 		opts.ProcedureName = id
 		opts.ScriptingVariable = String(":ret")
 		opts.CallArguments = []string{"1"}
-		assertOptsValidAndSQLEquals(t, opts, `WITH %s AS PROCEDURE ("i" int DEFAULT 1) RETURNS VARIANT NULL LANGUAGE PYTHON STRICT RUNTIME_VERSION = '3.8' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' AS 'import numpy as np' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`, id.FullyQualifiedName(), cte.FullyQualifiedName(), id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `WITH %s AS PROCEDURE ("i" int DEFAULT 1) RETURNS VARIANT NULL LANGUAGE PYTHON STRICT RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' AS 'import numpy as np' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`, id.FullyQualifiedName(), cte.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -1831,7 +1831,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 				Null:           Bool(true),
 			},
 		}
-		opts.RuntimeVersion = "3.8"
+		opts.RuntimeVersion = "3.9"
 		opts.Packages = []ProcedurePackage{
 			{
 				Package: "numpy",
@@ -1862,7 +1862,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 		opts.ProcedureName = id
 		opts.ScriptingVariable = String(":ret")
 		opts.CallArguments = []string{"1"}
-		assertOptsValidAndSQLEquals(t, opts, `WITH %s AS PROCEDURE ("i" NUMBER(36, 2) DEFAULT 1) RETURNS VARIANT NULL LANGUAGE PYTHON STRICT RUNTIME_VERSION = '3.8' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' AS 'import numpy as np' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`, id.FullyQualifiedName(), cte.FullyQualifiedName(), id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `WITH %s AS PROCEDURE ("i" NUMBER(36, 2) DEFAULT 1) RETURNS VARIANT NULL LANGUAGE PYTHON STRICT RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' AS 'import numpy as np' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`, id.FullyQualifiedName(), cte.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 }
 

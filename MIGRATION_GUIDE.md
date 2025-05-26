@@ -20,6 +20,29 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(bugfix)* Fix how snowflake_user_authentication_policy_attachment resource handles missing objects it depends on
+
+Previously, the `snowflake_user_authentication_policy_attachment` resource was not able to handle missing objects it depends on.
+This means, if a user or authentication policy was removed manually outside Terraform, the provider would produce plans with errors like:
+```
+User 'XYZ' does not exist or not authorized
+```
+and only manual state management would help you to remove the resource from the state.
+
+Now, the removal of the resource is handled properly and the resource is removed from the state automatically with the following warning:
+```
+Failed to find user authentication policy. Marking the resource as removed.
+### or ###
+Failed to get user policies. Marking the resource as removed.
+```
+
+If you are encountering this issue,
+either bump the provider version to at least `v2.2.0` or [remove the resource from the state manually](https://developer.hashicorp.com/terraform/cli/commands/state/rm).
+
+No configuration changes are needed.
+
+References: [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
+
 ### *(new feature)* snowflake_compute_pool resource
 Added a new preview resource for managing compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool). The limitation of this resource is that identifiers with special or lower-case characters are not supported. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
