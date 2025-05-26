@@ -3,7 +3,6 @@ package sdk
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -85,9 +84,9 @@ func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
 		Tag:               r.Tag,
 		Comment:           r.Comment,
 	}
-	if r.ServiceExternalAccessIntegrations != nil {
-		opts.ServiceExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
-			ServiceExternalAccessIntegrations: r.ServiceExternalAccessIntegrations.ServiceExternalAccessIntegrations,
+	if r.ExternalAccessIntegrations != nil {
+		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
+			ExternalAccessIntegrations: r.ExternalAccessIntegrations.ExternalAccessIntegrations,
 		}
 	}
 	return opts
@@ -123,9 +122,9 @@ func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 
 			Comment: r.Set.Comment,
 		}
-		if r.Set.ServiceExternalAccessIntegrations != nil {
-			opts.Set.ServiceExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
-				ServiceExternalAccessIntegrations: r.Set.ServiceExternalAccessIntegrations.ServiceExternalAccessIntegrations,
+		if r.Set.ExternalAccessIntegrations != nil {
+			opts.Set.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
+				ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations.ExternalAccessIntegrations,
 			}
 		}
 	}
@@ -256,8 +255,6 @@ func (r serviceDescRow) convert() *ServiceDetails {
 		AutoResume:        r.AutoResume,
 		CreatedOn:         r.CreatedOn,
 		UpdatedOn:         r.UpdatedOn,
-		ResumedOn:         &time.Time{},
-		SuspendedOn:       &time.Time{},
 		AutoSuspendSecs:   r.AutoSuspendSecs,
 		OwnerRoleType:     r.OwnerRoleType,
 		IsJob:             r.IsJob,

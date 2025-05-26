@@ -43,7 +43,7 @@ func ToServiceStatus(s string) (ServiceStatus, error) {
 }
 
 var serviceExternalAccessIntegrationsDef = g.NewQueryStruct("ServiceExternalAccessIntegrations").
-	List("ServiceExternalAccessIntegrations", g.KindOfT[AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
+	List("ExternalAccessIntegrations", g.KindOfT[AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
 
 var listItemDef = g.NewQueryStruct("ListItem").
 	Text("Key", g.KeywordOptions().Required().DoubleQuotes()).
@@ -88,7 +88,7 @@ var ServicesDef = g.NewInterface(
 		PredefinedQueryStructField("FromSpecification", "*ServiceFromSpecification", g.KeywordOptions()).
 		PredefinedQueryStructField("FromSpecificationTemplate", "*ServiceFromSpecificationTemplate", g.KeywordOptions()).
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
-		OptionalQueryStructField("ServiceExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
+		OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 		OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
 		OptionalNumberAssignment("MIN_INSTANCES", g.ParameterOptions()).
 		OptionalNumberAssignment("MIN_READY_INSTANCES", g.ParameterOptions()).
@@ -133,10 +133,10 @@ var ServicesDef = g.NewInterface(
 				OptionalNumberAssignment("MIN_READY_INSTANCES", g.ParameterOptions()).
 				OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
 				OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
-				OptionalQueryStructField("ServiceExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
+				OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalComment().
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
-				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ServiceExternalAccessIntegrations", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -156,7 +156,7 @@ var ServicesDef = g.NewInterface(
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "ServiceFromSpecification", "ServiceFromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"),
+		WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-service",
 	g.NewQueryStruct("DropService").

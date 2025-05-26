@@ -34,8 +34,8 @@ func (s *CreateServiceRequest) WithAutoSuspendSecs(AutoSuspendSecs int) *CreateS
 	return s
 }
 
-func (s *CreateServiceRequest) WithServiceExternalAccessIntegrations(ServiceExternalAccessIntegrations ServiceExternalAccessIntegrationsRequest) *CreateServiceRequest {
-	s.ServiceExternalAccessIntegrations = &ServiceExternalAccessIntegrations
+func (s *CreateServiceRequest) WithExternalAccessIntegrations(ExternalAccessIntegrations ServiceExternalAccessIntegrationsRequest) *CreateServiceRequest {
+	s.ExternalAccessIntegrations = &ExternalAccessIntegrations
 	return s
 }
 
@@ -75,10 +75,10 @@ func (s *CreateServiceRequest) WithComment(Comment string) *CreateServiceRequest
 }
 
 func NewServiceExternalAccessIntegrationsRequest(
-	ServiceExternalAccessIntegrations []AccountObjectIdentifier,
+	ExternalAccessIntegrations []AccountObjectIdentifier,
 ) *ServiceExternalAccessIntegrationsRequest {
 	s := ServiceExternalAccessIntegrationsRequest{}
-	s.ServiceExternalAccessIntegrations = ServiceExternalAccessIntegrations
+	s.ExternalAccessIntegrations = ExternalAccessIntegrations
 	return &s
 }
 
@@ -186,8 +186,8 @@ func (s *ServiceSetRequest) WithAutoResume(AutoResume bool) *ServiceSetRequest {
 	return s
 }
 
-func (s *ServiceSetRequest) WithServiceExternalAccessIntegrations(ServiceExternalAccessIntegrations ServiceExternalAccessIntegrationsRequest) *ServiceSetRequest {
-	s.ServiceExternalAccessIntegrations = &ServiceExternalAccessIntegrations
+func (s *ServiceSetRequest) WithExternalAccessIntegrations(ExternalAccessIntegrations ServiceExternalAccessIntegrationsRequest) *ServiceSetRequest {
+	s.ExternalAccessIntegrations = &ExternalAccessIntegrations
 	return s
 }
 

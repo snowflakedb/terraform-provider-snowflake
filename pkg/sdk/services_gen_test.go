@@ -188,8 +188,8 @@ func TestServices_Create(t *testing.T) {
 			FromSpecification: String("{}"),
 		}
 		opts.AutoSuspendSecs = Pointer(600)
-		opts.ServiceExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
-			ServiceExternalAccessIntegrations: []AccountObjectIdentifier{
+		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
+			ExternalAccessIntegrations: []AccountObjectIdentifier{
 				integration1Id,
 			},
 		}
@@ -300,7 +300,7 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("validation: at least one property should be set in Set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ServiceSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ServiceExternalAccessIntegrations", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
 	})
 
 	t.Run("validation: at least one property should be set in Unset", func(t *testing.T) {
@@ -435,8 +435,8 @@ func TestServices_Alter(t *testing.T) {
 			MinReadyInstances: Pointer(1),
 			QueryWarehouse:    Pointer(warehouseId),
 			AutoResume:        Bool(true),
-			ServiceExternalAccessIntegrations: &ServiceExternalAccessIntegrations{
-				ServiceExternalAccessIntegrations: []AccountObjectIdentifier{
+			ExternalAccessIntegrations: &ServiceExternalAccessIntegrations{
+				ExternalAccessIntegrations: []AccountObjectIdentifier{
 					integration1Id,
 					integration2Id,
 				},

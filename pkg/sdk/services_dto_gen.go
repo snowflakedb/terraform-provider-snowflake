@@ -11,24 +11,24 @@ var (
 )
 
 type CreateServiceRequest struct {
-	IfNotExists                       *bool
-	name                              SchemaObjectIdentifier  // required
-	InComputePool                     AccountObjectIdentifier // required
-	FromSpecification                 *ServiceFromSpecification
-	FromSpecificationTemplate         *ServiceFromSpecificationTemplate
-	AutoSuspendSecs                   *int
-	ServiceExternalAccessIntegrations *ServiceExternalAccessIntegrationsRequest
-	AutoResume                        *bool
-	MinInstances                      *int
-	MinReadyInstances                 *int
-	MaxInstances                      *int
-	QueryWarehouse                    *AccountObjectIdentifier
-	Tag                               []TagAssociation
-	Comment                           *string
+	IfNotExists                *bool
+	name                       SchemaObjectIdentifier  // required
+	InComputePool              AccountObjectIdentifier // required
+	FromSpecification          *ServiceFromSpecification
+	FromSpecificationTemplate  *ServiceFromSpecificationTemplate
+	AutoSuspendSecs            *int
+	ExternalAccessIntegrations *ServiceExternalAccessIntegrationsRequest
+	AutoResume                 *bool
+	MinInstances               *int
+	MinReadyInstances          *int
+	MaxInstances               *int
+	QueryWarehouse             *AccountObjectIdentifier
+	Tag                        []TagAssociation
+	Comment                    *string
 }
 
 type ServiceExternalAccessIntegrationsRequest struct {
-	ServiceExternalAccessIntegrations []AccountObjectIdentifier // required
+	ExternalAccessIntegrations []AccountObjectIdentifier // required
 }
 
 type AlterServiceRequest struct {
@@ -52,14 +52,14 @@ type RestoreRequest struct {
 }
 
 type ServiceSetRequest struct {
-	MinInstances                      *int
-	MaxInstances                      *int
-	AutoSuspendSecs                   *int
-	MinReadyInstances                 *int
-	QueryWarehouse                    *AccountObjectIdentifier
-	AutoResume                        *bool
-	ServiceExternalAccessIntegrations *ServiceExternalAccessIntegrationsRequest
-	Comment                           *string
+	MinInstances               *int
+	MaxInstances               *int
+	AutoSuspendSecs            *int
+	MinReadyInstances          *int
+	QueryWarehouse             *AccountObjectIdentifier
+	AutoResume                 *bool
+	ExternalAccessIntegrations *ServiceExternalAccessIntegrationsRequest
+	Comment                    *string
 }
 
 type ServiceUnsetRequest struct {
