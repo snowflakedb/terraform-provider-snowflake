@@ -14,7 +14,8 @@ var gitRepositoryDbRow = g.DbStruct("gitRepositoriesRow").
 	Text("git_credentials").
 	Text("owner").
 	Text("owner_role_type").
-	Text("comment")
+	Text("comment").
+	Time("last_fetched_at")
 
 var gitRepository = g.PlainStruct("GitRepository").
 	Time("CreatedOn").
@@ -26,7 +27,8 @@ var gitRepository = g.PlainStruct("GitRepository").
 	Text("GitCredentials").
 	Text("Owner").
 	Text("OwnerRoleType").
-	Text("Comment")
+	Text("Comment").
+	Time("LastFetchedAt")
 
 var apiIntegrationIdentifierOptions = g.IdentifierOptions().SQL("API_INTEGRATION =")
 var gitCredentialsIdentifierOptions = g.IdentifierOptions().SQL("GIT_CREDENTIALS =")

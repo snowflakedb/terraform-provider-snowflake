@@ -82,6 +82,7 @@ type gitRepositoriesRow struct {
 	Owner          string    `db:"owner"`
 	OwnerRoleType  string    `db:"owner_role_type"`
 	Comment        string    `db:"comment"`
+	LastFetchedAt  time.Time `db:"last_fetched_at"`
 }
 
 type GitRepository struct {
@@ -95,6 +96,7 @@ type GitRepository struct {
 	Owner          string
 	OwnerRoleType  string
 	Comment        string
+	LastFetchedAt  time.Time
 }
 
 // ShowGitRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-git-repositories.

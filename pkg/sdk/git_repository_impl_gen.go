@@ -153,6 +153,7 @@ func (r gitRepositoriesRow) convert() *GitRepository {
 		Owner:          r.Owner,
 		OwnerRoleType:  r.OwnerRoleType,
 		Comment:        r.Comment,
+		LastFetchedAt:  r.LastFetchedAt,
 	}
 }
 
