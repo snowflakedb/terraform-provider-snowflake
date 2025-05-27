@@ -48,8 +48,6 @@ Added a new preview resource for managing compute pools. See reference [docs](ht
 
 Managing compute pool state is limited. It is handled only by `initially_suspended`, `auto_suspend_secs`, and `auto_resume` fields. See the resource documentation for more details.
 
-Managing compute pool state is limited. It is handled only by `initially_suspended`, `auto_suspend_secs`, and `auto_resume` fields. See the resource documentation for more details.
-
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_compute_pool_resource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* snowflake_image_repository resource

@@ -1,6 +1,6 @@
 //go:build !account_level_tests
 
-package datasources_test
+package testacc
 
 import (
 	"regexp"
@@ -21,26 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
-
-// TODO [SNOW-1431726]: Move to helpers
-func createApp(t *testing.T) *sdk.Application {
-	t.Helper()
-
-	stage, cleanupStage := acc.TestClient().Stage.CreateStage(t)
-	t.Cleanup(cleanupStage)
-
-	acc.TestClient().Stage.PutOnStage(t, stage.ID(), "TestAcc_Application/manifest.yml")
-	acc.TestClient().Stage.PutOnStage(t, stage.ID(), "TestAcc_Application/setup.sql")
-
-	applicationPackage, cleanupApplicationPackage := acc.TestClient().ApplicationPackage.CreateApplicationPackage(t)
-	t.Cleanup(cleanupApplicationPackage)
-
-	acc.TestClient().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), "v1")
-
-	application, cleanupApplication := acc.TestClient().Application.CreateApplication(t, applicationPackage.ID(), "v1")
-	t.Cleanup(cleanupApplication)
-	return application
-}
 
 func TestAcc_ComputePools(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
