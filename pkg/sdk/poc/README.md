@@ -53,8 +53,8 @@ but if we add one case, or modify more cases this becomes more challenging)
 - add support for Enums
 - handle arrays
 - handle more validation types
-  - validating numbers in a given range
-  - validating relation in a number pair or a sequence
+  - validating numbers in a given range (e.g. `0 <= x <= 100`, `x != 0`, `x > 10`, `x >= 20`, `x < 50`, `x <= 75`)
+  - validating relation in a number pair or sequence (e.g. `x <= y <= z`, `x < y < z`)
 - write new `valueSet` function (see validations.go) that will have better defaults or more parameters that will determine
 checking behaviour which should get rid of edge cases that may cause bugs in the future
    - right now, we have `valueSet` function that doesn't take into consideration edge cases, e.g. with slice where sometimes
