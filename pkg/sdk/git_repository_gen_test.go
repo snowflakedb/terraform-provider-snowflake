@@ -3,7 +3,7 @@ package sdk
 import "testing"
 
 const (
-	origin = "https://github.com/user/repo"
+	gitRepositoryOrigin = "https://github.com/user/repo"
 )
 
 func TestGitRepositories_Create(t *testing.T) {
@@ -14,7 +14,7 @@ func TestGitRepositories_Create(t *testing.T) {
 	defaultOpts := func() *CreateGitRepositoryOptions {
 		return &CreateGitRepositoryOptions{
 			name:           id,
-			Origin:         origin,
+			Origin:         gitRepositoryOrigin,
 			ApiIntegration: apiIntegrationId,
 		}
 	}
@@ -40,15 +40,15 @@ func TestGitRepositories_Create(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE GIT REPOSITORY %s ORIGIN = '%s' API_INTEGRATION = %s", id.FullyQualifiedName(), origin, apiIntegrationId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE GIT REPOSITORY %s ORIGIN = '%s' API_INTEGRATION = %s", id.FullyQualifiedName(), gitRepositoryOrigin, apiIntegrationId.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		gitCredentialsId := randomAccountObjectIdentifier()
+		gitCredentialsId := randomSchemaObjectIdentifier()
 
 		opts.IfNotExists = Bool(true)
-		opts.Origin = origin
+		opts.Origin = gitRepositoryOrigin
 		opts.GitCredentials = &gitCredentialsId
 		opts.Comment = String("comment")
 		opts.Tag = []TagAssociation{
@@ -57,7 +57,7 @@ func TestGitRepositories_Create(t *testing.T) {
 				Value: "tag-value",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE GIT REPOSITORY IF NOT EXISTS %s ORIGIN = '%s' API_INTEGRATION = %s GIT_CREDENTIALS = %s COMMENT = '%s' TAG (\"tag-name\" = 'tag-value')", id.FullyQualifiedName(), origin, apiIntegrationId.FullyQualifiedName(), gitCredentialsId.FullyQualifiedName(), "comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE GIT REPOSITORY IF NOT EXISTS %s ORIGIN = '%s' API_INTEGRATION = %s GIT_CREDENTIALS = %s COMMENT = '%s' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName(), gitRepositoryOrigin, apiIntegrationId.FullyQualifiedName(), gitCredentialsId.FullyQualifiedName(), "comment")
 	})
 }
 
@@ -84,6 +84,8 @@ func TestGitRepositories_Alter(t *testing.T) {
 
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.Fetch] should be present", func(t *testing.T) {
 		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterGitRepositoryOptions", "Set", "Unset", "SetTags", "UnsetTags", "Fetch"))
+
 		opts.Set = &GitRepositorySet{
 			Comment: String("comment"),
 		}
@@ -91,14 +93,13 @@ func TestGitRepositories_Alter(t *testing.T) {
 		opts.Unset = &GitRepositoryUnset{
 			Comment: Bool(true),
 		}
-
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterGitRepositoryOptions", "Set", "Unset", "SetTags", "UnsetTags", "Fetch"))
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
 		opts := defaultOpts()
 		apiIntegrationId := randomAccountObjectIdentifier()
-		gitCredentialsId := randomAccountObjectIdentifier()
+		gitCredentialsId := randomSchemaObjectIdentifier()
 
 		opts.Set = &GitRepositorySet{
 			ApiIntegration: &apiIntegrationId,
@@ -109,28 +110,17 @@ func TestGitRepositories_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s SET API_INTEGRATION = %s GIT_CREDENTIALS = %s COMMENT = 'comment'", id.FullyQualifiedName(), apiIntegrationId.FullyQualifiedName(), gitCredentialsId.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
+	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
-
-		apiIntegrationId := randomAccountObjectIdentifier()
-		gitCredentialsId := randomAccountObjectIdentifier()
-
-		opts.Set = &GitRepositorySet{
-			ApiIntegration: &apiIntegrationId,
-			GitCredentials: &gitCredentialsId,
-			Comment:        String("comment"),
-		}
-
-		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s SET API_INTEGRATION = %s GIT_CREDENTIALS = %s COMMENT = 'comment'", id.FullyQualifiedName(), apiIntegrationId.FullyQualifiedName(), gitCredentialsId.FullyQualifiedName())
-
-		opts.Set = nil
 		opts.Unset = &GitRepositoryUnset{
 			GitCredentials: Bool(true),
 			Comment:        Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s UNSET GIT_CREDENTIALS, COMMENT", id.FullyQualifiedName())
+	})
 
-		opts.Unset = nil
+	t.Run("set tag", func(t *testing.T) {
+		opts := defaultOpts()
 		tag := []TagAssociation{
 			{
 				Name:  NewAccountObjectIdentifier("tag-name"),
@@ -138,15 +128,19 @@ func TestGitRepositories_Alter(t *testing.T) {
 			},
 		}
 		opts.SetTags = tag
-		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s SET TAG \"tag-name\" = 'tag-value'", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER GIT REPOSITORY %s SET TAG "tag-name" = 'tag-value'`, id.FullyQualifiedName())
+	})
 
-		opts.SetTags = nil
+	t.Run("unset tag", func(t *testing.T) {
+		opts := defaultOpts()
 		opts.UnsetTags = []ObjectIdentifier{
 			NewAccountObjectIdentifier("tag-name"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s UNSET TAG \"tag-name\"", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER GIT REPOSITORY %s UNSET TAG "tag-name"`, id.FullyQualifiedName())
+	})
 
-		opts.UnsetTags = nil
+	t.Run("fetch", func(t *testing.T) {
+		opts := defaultOpts()
 		opts.Fetch = Bool(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s FETCH", id.FullyQualifiedName())
 	})
@@ -237,7 +231,7 @@ func TestGitRepositories_Show(t *testing.T) {
 		opts.Limit = &LimitFrom{
 			Rows: Int(10),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT REPOSITORIES LIKE 'git-repository-name' IN DATABASE \"database-name\" LIMIT 10")
+		assertOptsValidAndSQLEquals(t, opts, `SHOW GIT REPOSITORIES LIKE 'git-repository-name' IN DATABASE "database-name" LIMIT 10`)
 	})
 }
 

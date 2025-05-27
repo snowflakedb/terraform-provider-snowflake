@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -142,19 +143,36 @@ func (r *DescribeGitRepositoryRequest) toOpts() *DescribeGitRepositoryOptions {
 }
 
 func (r gitRepositoriesRow) convert() *GitRepository {
-	return &GitRepository{
-		CreatedOn:      r.CreatedOn,
-		Name:           r.Name,
-		DatabaseName:   r.DatabaseName,
-		SchemaName:     r.SchemaName,
-		Origin:         r.Origin,
-		ApiIntegration: r.ApiIntegration,
-		GitCredentials: r.GitCredentials,
-		Owner:          r.Owner,
-		OwnerRoleType:  r.OwnerRoleType,
-		Comment:        r.Comment,
-		LastFetchedAt:  r.LastFetchedAt,
+	gitRepository := &GitRepository{
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		DatabaseName:  r.DatabaseName,
+		SchemaName:    r.SchemaName,
+		Origin:        r.Origin,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
+		LastFetchedAt: r.LastFetchedAt,
 	}
+	id, err := ParseAccountObjectIdentifier(r.ApiIntegration)
+	if err != nil {
+		log.Printf("[DEBUG] failed to parse api integration in git repository: %v", err)
+	} else {
+		gitRepository.ApiIntegration = &id
+	}
+
+	if r.GitCredentials.Valid {
+		id, err := ParseSchemaObjectIdentifier(r.GitCredentials.String)
+		if err != nil {
+			log.Printf("[DEBUG] failed to parse git credentials in git repository: %v", err)
+		} else {
+			gitRepository.GitCredentials = &id
+		}
+	}
+
+	if r.Comment.Valid {
+		gitRepository.Comment = &r.Comment.String
+	}
+	return gitRepository
 }
 
 func (r *ShowGitRepositoryRequest) toOpts() *ShowGitRepositoryOptions {

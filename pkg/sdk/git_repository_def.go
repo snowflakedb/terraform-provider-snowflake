@@ -11,10 +11,10 @@ var gitRepositoryDbRow = g.DbStruct("gitRepositoriesRow").
 	Text("schema_name").
 	Text("origin").
 	Text("api_integration").
-	Text("git_credentials").
+	OptionalText("git_credentials").
 	Text("owner").
 	Text("owner_role_type").
-	Text("comment").
+	OptionalText("comment").
 	Time("last_fetched_at")
 
 var gitRepository = g.PlainStruct("GitRepository").
@@ -23,15 +23,12 @@ var gitRepository = g.PlainStruct("GitRepository").
 	Text("DatabaseName").
 	Text("SchemaName").
 	Text("Origin").
-	Text("ApiIntegration").
-	Text("GitCredentials").
+	Field("ApiIntegration", "*AccountObjectIdentifier").
+	Field("GitCredentials", "*SchemaObjectIdentifier").
 	Text("Owner").
 	Text("OwnerRoleType").
-	Text("Comment").
+	OptionalText("Comment").
 	Time("LastFetchedAt")
-
-var apiIntegrationIdentifierOptions = g.IdentifierOptions().SQL("API_INTEGRATION =")
-var gitCredentialsIdentifierOptions = g.IdentifierOptions().SQL("GIT_CREDENTIALS =")
 
 var GitRepositoriesDef = g.NewInterface(
 	"GitRepositories",
@@ -46,8 +43,8 @@ var GitRepositoriesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		TextAssignment("ORIGIN", g.ParameterOptions().SingleQuotes()).
-		Identifier("ApiIntegration", g.KindOfT[AccountObjectIdentifier](), apiIntegrationIdentifierOptions.Required()).
-		OptionalIdentifier("GitCredentials", g.KindOfT[AccountObjectIdentifier](), gitCredentialsIdentifierOptions).
+		Identifier("ApiIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION").Equals().Required()).
+		OptionalIdentifier("GitCredentials", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("GIT_CREDENTIALS").Equals()).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
@@ -62,8 +59,8 @@ var GitRepositoriesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("GitRepositorySet").
-				OptionalIdentifier("ApiIntegration", g.KindOfT[AccountObjectIdentifier](), apiIntegrationIdentifierOptions).
-				OptionalIdentifier("GitCredentials", g.KindOfT[AccountObjectIdentifier](), gitCredentialsIdentifierOptions).
+				OptionalIdentifier("ApiIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION").Equals()).
+				OptionalIdentifier("GitCredentials", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("GIT_CREDENTIALS").Equals()).
 				OptionalComment(),
 			g.KeywordOptions().SQL("SET"),
 		).
@@ -124,8 +121,7 @@ var GitRepositoriesDef = g.NewInterface(
 		Text("Checkouts").
 		Text("CommitHash"),
 	g.NewQueryStruct("ShowGitBranches").
-		Show().
-		SQL("GIT BRANCHES").
+		SQL("SHOW GIT BRANCHES").
 		OptionalLike().
 		SQL("IN").
 		OptionalSQL("GIT REPOSITORY").
@@ -146,8 +142,7 @@ var GitRepositoriesDef = g.NewInterface(
 		Text("Author").
 		Text("Message"),
 	g.NewQueryStruct("ShowGitTags").
-		Show().
-		SQL("GIT TAGS").
+		SQL("SHOW GIT TAGS").
 		OptionalLike().
 		SQL("IN").
 		OptionalSQL("GIT REPOSITORY").

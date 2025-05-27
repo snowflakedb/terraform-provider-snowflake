@@ -26,7 +26,7 @@ func (s *CreateGitRepositoryRequest) WithIfNotExists(IfNotExists bool) *CreateGi
 	return s
 }
 
-func (s *CreateGitRepositoryRequest) WithGitCredentials(GitCredentials AccountObjectIdentifier) *CreateGitRepositoryRequest {
+func (s *CreateGitRepositoryRequest) WithGitCredentials(GitCredentials SchemaObjectIdentifier) *CreateGitRepositoryRequest {
 	s.GitCredentials = &GitCredentials
 	return s
 }
@@ -87,7 +87,7 @@ func NewGitRepositorySetRequest(
 	return &s
 }
 
-func (s *GitRepositorySetRequest) WithGitCredentials(GitCredentials AccountObjectIdentifier) *GitRepositorySetRequest {
+func (s *GitRepositorySetRequest) WithGitCredentials(GitCredentials SchemaObjectIdentifier) *GitRepositorySetRequest {
 	s.GitCredentials = &GitCredentials
 	return s
 }

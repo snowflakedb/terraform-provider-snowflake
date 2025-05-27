@@ -18,7 +18,7 @@ type CreateGitRepositoryRequest struct {
 	name           SchemaObjectIdentifier  // required
 	Origin         string                  // required
 	ApiIntegration AccountObjectIdentifier // required
-	GitCredentials *AccountObjectIdentifier
+	GitCredentials *SchemaObjectIdentifier
 	Comment        *string
 	Tag            []TagAssociation
 }
@@ -35,7 +35,7 @@ type AlterGitRepositoryRequest struct {
 
 type GitRepositorySetRequest struct {
 	ApiIntegration *AccountObjectIdentifier // required
-	GitCredentials *AccountObjectIdentifier
+	GitCredentials *SchemaObjectIdentifier
 	Comment        *string
 }
 
