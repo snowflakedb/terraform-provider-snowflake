@@ -3,11 +3,13 @@ package sdk
 //go:generate go run ./dto-builder-generator/main.go
 
 var (
-	_ optionsProvider[CreateGitRepositoryOptions]   = new(CreateGitRepositoryRequest)
-	_ optionsProvider[AlterGitRepositoryOptions]    = new(AlterGitRepositoryRequest)
-	_ optionsProvider[DropGitRepositoryOptions]     = new(DropGitRepositoryRequest)
-	_ optionsProvider[DescribeGitRepositoryOptions] = new(DescribeGitRepositoryRequest)
-	_ optionsProvider[ShowGitRepositoryOptions]     = new(ShowGitRepositoryRequest)
+	_ optionsProvider[CreateGitRepositoryOptions]          = new(CreateGitRepositoryRequest)
+	_ optionsProvider[AlterGitRepositoryOptions]           = new(AlterGitRepositoryRequest)
+	_ optionsProvider[DropGitRepositoryOptions]            = new(DropGitRepositoryRequest)
+	_ optionsProvider[DescribeGitRepositoryOptions]        = new(DescribeGitRepositoryRequest)
+	_ optionsProvider[ShowGitRepositoryOptions]            = new(ShowGitRepositoryRequest)
+	_ optionsProvider[ShowGitBranchesGitRepositoryOptions] = new(ShowGitBranchesGitRepositoryRequest)
+	_ optionsProvider[ShowGitTagsGitRepositoryOptions]     = new(ShowGitTagsGitRepositoryRequest)
 )
 
 type CreateGitRepositoryRequest struct {
@@ -54,4 +56,16 @@ type DescribeGitRepositoryRequest struct {
 type ShowGitRepositoryRequest struct {
 	Like *Like
 	In   *In
+}
+
+type ShowGitBranchesGitRepositoryRequest struct {
+	Like          *Like
+	GitRepository *bool
+	name          SchemaObjectIdentifier // required
+}
+
+type ShowGitTagsGitRepositoryRequest struct {
+	Like          *Like
+	GitRepository *bool
+	name          SchemaObjectIdentifier // required
 }

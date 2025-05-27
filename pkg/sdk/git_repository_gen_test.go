@@ -237,3 +237,63 @@ func TestGitRepositories_Show(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT REPOSITORIES LIKE 'git-repository-name' IN DATABASE \"database-name\"")
 	})
 }
+
+func TestGitRepositories_ShowGitBranches(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+
+	// Minimal valid ShowGitBranchesGitRepositoryOptions
+	defaultOpts := func() *ShowGitBranchesGitRepositoryOptions {
+		return &ShowGitBranchesGitRepositoryOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *ShowGitBranchesGitRepositoryOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT BRANCHES IN %s", id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Like = &Like{
+			Pattern: String("branch-name"),
+		}
+		opts.GitRepository = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT BRANCHES LIKE 'branch-name' IN GIT REPOSITORY %s", id.FullyQualifiedName())
+	})
+}
+
+func TestGitRepositories_ShowGitTags(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+
+	// Minimal valid ShowGitTagsGitRepositoryOptions
+	defaultOpts := func() *ShowGitTagsGitRepositoryOptions {
+		return &ShowGitTagsGitRepositoryOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *ShowGitTagsGitRepositoryOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT TAGS IN %s", id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Like = &Like{
+			Pattern: String("tag-name"),
+		}
+		opts.GitRepository = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT TAGS LIKE 'tag-name' IN GIT REPOSITORY %s", id.FullyQualifiedName())
+	})
+}

@@ -3,8 +3,8 @@
 {{ $impl := .NameLowerCased }}
 
 {{ range .Operations }}
-    {{ if and (eq .Name "Show") .ShowMapping }}
-        func (v *{{ $impl }}) Show(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error) {
+    {{ if and (hasPrefix .Name "Show") .ShowMapping }}
+        func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error) {
             opts := request.toOpts()
             dbRows, err := validateAndQuery[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
             if err != nil {

@@ -145,3 +145,39 @@ func (s *ShowGitRepositoryRequest) WithIn(In In) *ShowGitRepositoryRequest {
 	s.In = &In
 	return s
 }
+
+func NewShowGitBranchesGitRepositoryRequest(
+	name SchemaObjectIdentifier,
+) *ShowGitBranchesGitRepositoryRequest {
+	s := ShowGitBranchesGitRepositoryRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *ShowGitBranchesGitRepositoryRequest) WithLike(Like Like) *ShowGitBranchesGitRepositoryRequest {
+	s.Like = &Like
+	return s
+}
+
+func (s *ShowGitBranchesGitRepositoryRequest) WithGitRepository(GitRepository bool) *ShowGitBranchesGitRepositoryRequest {
+	s.GitRepository = &GitRepository
+	return s
+}
+
+func NewShowGitTagsGitRepositoryRequest(
+	name SchemaObjectIdentifier,
+) *ShowGitTagsGitRepositoryRequest {
+	s := ShowGitTagsGitRepositoryRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *ShowGitTagsGitRepositoryRequest) WithLike(Like Like) *ShowGitTagsGitRepositoryRequest {
+	s.Like = &Like
+	return s
+}
+
+func (s *ShowGitTagsGitRepositoryRequest) WithGitRepository(GitRepository bool) *ShowGitTagsGitRepositoryRequest {
+	s.GitRepository = &GitRepository
+	return s
+}

@@ -14,6 +14,8 @@ type GitRepositories interface {
 	Show(ctx context.Context, request *ShowGitRepositoryRequest) ([]GitRepository, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error)
+	ShowGitBranches(ctx context.Context, request *ShowGitBranchesGitRepositoryRequest) ([]GitBranch, error)
+	ShowGitTags(ctx context.Context, request *ShowGitTagsGitRepositoryRequest) ([]GitTag, error)
 }
 
 // CreateGitRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-git-repository.
@@ -108,4 +110,54 @@ func (v *GitRepository) ID() SchemaObjectIdentifier {
 }
 func (v *GitRepository) ObjectType() ObjectType {
 	return ObjectTypeGitRepository
+}
+
+// ShowGitBranchesGitRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-git-branches.
+type ShowGitBranchesGitRepositoryOptions struct {
+	show          bool                   `ddl:"static" sql:"SHOW"`
+	gitBranches   bool                   `ddl:"static" sql:"GIT BRANCHES"`
+	Like          *Like                  `ddl:"keyword" sql:"LIKE"`
+	in            bool                   `ddl:"static" sql:"IN"`
+	GitRepository *bool                  `ddl:"keyword" sql:"GIT REPOSITORY"`
+	name          SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type gitBranchesRow struct {
+	Name       string `db:"name"`
+	Path       string `db:"path"`
+	Checkouts  string `db:"checkouts"`
+	CommitHash string `db:"commit_hash"`
+}
+
+type GitBranch struct {
+	Name       string
+	Path       string
+	Checkouts  string
+	CommitHash string
+}
+
+// ShowGitTagsGitRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-git-tags.
+type ShowGitTagsGitRepositoryOptions struct {
+	show          bool                   `ddl:"static" sql:"SHOW"`
+	gitTags       bool                   `ddl:"static" sql:"GIT TAGS"`
+	Like          *Like                  `ddl:"keyword" sql:"LIKE"`
+	in            bool                   `ddl:"static" sql:"IN"`
+	GitRepository *bool                  `ddl:"keyword" sql:"GIT REPOSITORY"`
+	name          SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type gitTagsRow struct {
+	Name       string `db:"name"`
+	Path       string `db:"path"`
+	CommitHash string `db:"commit_hash"`
+	Author     string `db:"author"`
+	Message    string `db:"message"`
+}
+
+type GitTag struct {
+	Name       string
+	Path       string
+	CommitHash string
+	Author     string
+	Message    string
 }

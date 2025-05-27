@@ -78,7 +78,8 @@ var (
 
 func init() {
 	subTemplates := template.New("subTemplates").Funcs(template.FuncMap{
-		"deref": func(p *DescriptionMappingKind) string { return string(*p) },
+		"deref":     func(p *DescriptionMappingKind) string { return string(*p) },
+		"hasPrefix": func(str string, prefix string) bool { return strings.HasPrefix(str, prefix) },
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
 	subTemplates, _ = subTemplates.New("convert").Parse(convertTemplateContent)

@@ -109,7 +109,7 @@ var GitRepositoriesDef = g.NewInterface(
 	g.ShowByIDInFiltering,
 ).CustomShowOperation(
 	"ShowGitBranches",
-	"https://docs.snowflake.com/en/sql-reference/sql/show-branches",
+	"https://docs.snowflake.com/en/sql-reference/sql/show-git-branches",
 	g.DbStruct("gitBranchesRow").
 		Text("name").
 		Text("path").
@@ -123,6 +123,28 @@ var GitRepositoriesDef = g.NewInterface(
 	g.NewQueryStruct("ShowGitBranches").
 		Show().
 		SQL("GIT BRANCHES").
+		OptionalLike().
+		SQL("IN").
+		OptionalSQL("GIT REPOSITORY").
+		Name(),
+).CustomShowOperation(
+	"ShowGitTags",
+	"https://docs.snowflake.com/en/sql-reference/sql/show-git-tags",
+	g.DbStruct("gitTagsRow").
+		Text("name").
+		Text("path").
+		Text("commit_hash").
+		Text("author").
+		Text("message"),
+	g.PlainStruct("GitTag").
+		Text("Name").
+		Text("Path").
+		Text("CommitHash").
+		Text("Author").
+		Text("Message"),
+	g.NewQueryStruct("ShowGitTags").
+		Show().
+		SQL("GIT TAGS").
 		OptionalLike().
 		SQL("IN").
 		OptionalSQL("GIT REPOSITORY").

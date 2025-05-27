@@ -6,6 +6,8 @@ var (
 	_ validatable = new(DropGitRepositoryOptions)
 	_ validatable = new(DescribeGitRepositoryOptions)
 	_ validatable = new(ShowGitRepositoryOptions)
+	_ validatable = new(ShowGitBranchesGitRepositoryOptions)
+	_ validatable = new(ShowGitTagsGitRepositoryOptions)
 )
 
 func (opts *CreateGitRepositoryOptions) validate() error {
@@ -59,6 +61,22 @@ func (opts *DescribeGitRepositoryOptions) validate() error {
 }
 
 func (opts *ShowGitRepositoryOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowGitBranchesGitRepositoryOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowGitTagsGitRepositoryOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}

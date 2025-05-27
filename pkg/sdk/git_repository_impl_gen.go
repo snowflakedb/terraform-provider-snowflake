@@ -67,6 +67,26 @@ func (v *gitRepositories) ShowByIDSafely(ctx context.Context, id SchemaObjectIde
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
+func (v *gitRepositories) ShowGitBranches(ctx context.Context, request *ShowGitBranchesGitRepositoryRequest) ([]GitBranch, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[gitBranchesRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	resultList := convertRows[gitBranchesRow, GitBranch](dbRows)
+	return resultList, nil
+}
+
+func (v *gitRepositories) ShowGitTags(ctx context.Context, request *ShowGitTagsGitRepositoryRequest) ([]GitTag, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[gitTagsRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	resultList := convertRows[gitTagsRow, GitTag](dbRows)
+	return resultList, nil
+}
+
 func (r *CreateGitRepositoryRequest) toOpts() *CreateGitRepositoryOptions {
 	opts := &CreateGitRepositoryOptions{
 		OrReplace:      r.OrReplace,
@@ -122,18 +142,8 @@ func (r *DescribeGitRepositoryRequest) toOpts() *DescribeGitRepositoryOptions {
 }
 
 func (r gitRepositoriesRow) convert() *GitRepository {
-	return &GitRepository{
-		CreatedOn:      r.CreatedOn,
-		Name:           r.Name,
-		DatabaseName:   r.DatabaseName,
-		SchemaName:     r.SchemaName,
-		Origin:         r.Origin,
-		ApiIntegration: r.ApiIntegration,
-		GitCredentials: r.GitCredentials,
-		Owner:          r.Owner,
-		OwnerRoleType:  r.OwnerRoleType,
-		Comment:        r.Comment,
-	}
+	// TODO: Mapping
+	return &GitRepository{}
 }
 
 func (r *ShowGitRepositoryRequest) toOpts() *ShowGitRepositoryOptions {
@@ -142,4 +152,32 @@ func (r *ShowGitRepositoryRequest) toOpts() *ShowGitRepositoryOptions {
 		In:   r.In,
 	}
 	return opts
+}
+
+func (r *ShowGitBranchesGitRepositoryRequest) toOpts() *ShowGitBranchesGitRepositoryOptions {
+	opts := &ShowGitBranchesGitRepositoryOptions{
+		Like:          r.Like,
+		GitRepository: r.GitRepository,
+		name:          r.name,
+	}
+	return opts
+}
+
+func (r gitBranchesRow) convert() *GitBranch {
+	// TODO: Mapping
+	return &GitBranch{}
+}
+
+func (r *ShowGitTagsGitRepositoryRequest) toOpts() *ShowGitTagsGitRepositoryOptions {
+	opts := &ShowGitTagsGitRepositoryOptions{
+		Like:          r.Like,
+		GitRepository: r.GitRepository,
+		name:          r.name,
+	}
+	return opts
+}
+
+func (r gitTagsRow) convert() *GitTag {
+	// TODO: Mapping
+	return &GitTag{}
 }
