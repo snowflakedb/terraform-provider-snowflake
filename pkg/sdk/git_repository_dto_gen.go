@@ -54,8 +54,9 @@ type DescribeGitRepositoryRequest struct {
 }
 
 type ShowGitRepositoryRequest struct {
-	Like *Like
-	In   *In
+	Like  *Like
+	In    *In
+	Limit *LimitFrom
 }
 
 type ShowGitBranchesGitRepositoryRequest struct {

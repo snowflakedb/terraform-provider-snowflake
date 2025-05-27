@@ -142,14 +142,25 @@ func (r *DescribeGitRepositoryRequest) toOpts() *DescribeGitRepositoryOptions {
 }
 
 func (r gitRepositoriesRow) convert() *GitRepository {
-	// TODO: Mapping
-	return &GitRepository{}
+	return &GitRepository{
+		CreatedOn:      r.CreatedOn,
+		Name:           r.Name,
+		DatabaseName:   r.DatabaseName,
+		SchemaName:     r.SchemaName,
+		Origin:         r.Origin,
+		ApiIntegration: r.ApiIntegration,
+		GitCredentials: r.GitCredentials,
+		Owner:          r.Owner,
+		OwnerRoleType:  r.OwnerRoleType,
+		Comment:        r.Comment,
+	}
 }
 
 func (r *ShowGitRepositoryRequest) toOpts() *ShowGitRepositoryOptions {
 	opts := &ShowGitRepositoryOptions{
-		Like: r.Like,
-		In:   r.In,
+		Like:  r.Like,
+		In:    r.In,
+		Limit: r.Limit,
 	}
 	return opts
 }
@@ -164,8 +175,12 @@ func (r *ShowGitBranchesGitRepositoryRequest) toOpts() *ShowGitBranchesGitReposi
 }
 
 func (r gitBranchesRow) convert() *GitBranch {
-	// TODO: Mapping
-	return &GitBranch{}
+	return &GitBranch{
+		Name:       r.Name,
+		Path:       r.Path,
+		Checkouts:  r.Checkouts,
+		CommitHash: r.CommitHash,
+	}
 }
 
 func (r *ShowGitTagsGitRepositoryRequest) toOpts() *ShowGitTagsGitRepositoryOptions {
@@ -178,6 +193,11 @@ func (r *ShowGitTagsGitRepositoryRequest) toOpts() *ShowGitTagsGitRepositoryOpti
 }
 
 func (r gitTagsRow) convert() *GitTag {
-	// TODO: Mapping
-	return &GitTag{}
+	return &GitTag{
+		Name:       r.Name,
+		Path:       r.Path,
+		CommitHash: r.CommitHash,
+		Author:     r.Author,
+		Message:    r.Message,
+	}
 }

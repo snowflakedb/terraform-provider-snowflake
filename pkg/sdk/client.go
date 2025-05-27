@@ -49,8 +49,8 @@ type Client struct {
 	FailoverGroups               FailoverGroups
 	FileFormats                  FileFormats
 	Functions                    Functions
-	Grants                       Grants
 	GitRepositories              GitRepositories
+	Grants                       Grants
 	ImageRepositories            ImageRepositories
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies

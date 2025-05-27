@@ -99,10 +99,11 @@ type GitRepository struct {
 
 // ShowGitRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-git-repositories.
 type ShowGitRepositoryOptions struct {
-	show            bool  `ddl:"static" sql:"SHOW"`
-	gitRepositories bool  `ddl:"static" sql:"GIT REPOSITORIES"`
-	Like            *Like `ddl:"keyword" sql:"LIKE"`
-	In              *In   `ddl:"keyword" sql:"IN"`
+	show            bool       `ddl:"static" sql:"SHOW"`
+	gitRepositories bool       `ddl:"static" sql:"GIT REPOSITORIES"`
+	Like            *Like      `ddl:"keyword" sql:"LIKE"`
+	In              *In        `ddl:"keyword" sql:"IN"`
+	Limit           *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 func (v *GitRepository) ID() SchemaObjectIdentifier {

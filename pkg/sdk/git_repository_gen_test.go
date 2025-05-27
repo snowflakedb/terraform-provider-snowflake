@@ -234,7 +234,10 @@ func TestGitRepositories_Show(t *testing.T) {
 		opts.In = &In{
 			Database: NewAccountObjectIdentifier("database-name"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT REPOSITORIES LIKE 'git-repository-name' IN DATABASE \"database-name\"")
+		opts.Limit = &LimitFrom{
+			Rows: Int(10),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT REPOSITORIES LIKE 'git-repository-name' IN DATABASE \"database-name\" LIMIT 10")
 	})
 }
 

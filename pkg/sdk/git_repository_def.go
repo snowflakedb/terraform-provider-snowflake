@@ -103,7 +103,8 @@ var GitRepositoriesDef = g.NewInterface(
 		Show().
 		SQL("GIT REPOSITORIES").
 		OptionalLike().
-		OptionalIn(),
+		OptionalIn().
+		OptionalLimit(),
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,

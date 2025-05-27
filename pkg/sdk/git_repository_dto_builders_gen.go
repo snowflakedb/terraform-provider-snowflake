@@ -146,6 +146,11 @@ func (s *ShowGitRepositoryRequest) WithIn(In In) *ShowGitRepositoryRequest {
 	return s
 }
 
+func (s *ShowGitRepositoryRequest) WithLimit(Limit LimitFrom) *ShowGitRepositoryRequest {
+	s.Limit = &Limit
+	return s
+}
+
 func NewShowGitBranchesGitRepositoryRequest(
 	name SchemaObjectIdentifier,
 ) *ShowGitBranchesGitRepositoryRequest {
