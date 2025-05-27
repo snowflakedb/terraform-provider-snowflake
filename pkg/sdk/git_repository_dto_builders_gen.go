@@ -16,6 +16,10 @@ func NewCreateGitRepositoryRequest(
 	return &s
 }
 
+func (r *CreateGitRepositoryRequest) GetName() SchemaObjectIdentifier {
+	return r.name
+}
+
 func (s *CreateGitRepositoryRequest) WithOrReplace(OrReplace bool) *CreateGitRepositoryRequest {
 	s.OrReplace = &OrReplace
 	return s
