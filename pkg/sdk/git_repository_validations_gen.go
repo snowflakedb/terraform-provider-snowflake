@@ -41,6 +41,14 @@ func (opts *AlterGitRepositoryOptions) validate() error {
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.Fetch) {
 		errs = append(errs, errExactlyOneOf("AlterGitRepositoryOptions", "Set", "Unset", "SetTags", "UnsetTags", "Fetch"))
 	}
+	if valueSet(opts.Set) {
+		if opts.Set.ApiIntegration != nil && !ValidObjectIdentifier(opts.Set.ApiIntegration) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+		if opts.Set.GitCredentials != nil && !ValidObjectIdentifier(opts.Set.GitCredentials) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+	}
 	return JoinErrors(errs...)
 }
 

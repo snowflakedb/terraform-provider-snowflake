@@ -63,7 +63,9 @@ var GitRepositoriesDef = g.NewInterface(
 			g.NewQueryStruct("GitRepositorySet").
 				OptionalIdentifier("ApiIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION").Equals()).
 				OptionalIdentifier("GitCredentials", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("GIT_CREDENTIALS").Equals()).
-				OptionalComment(),
+				OptionalComment().
+				WithValidation(g.ValidIdentifierIfSet, "ApiIntegration").
+				WithValidation(g.ValidIdentifierIfSet, "GitCredentials"),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(

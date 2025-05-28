@@ -36,6 +36,12 @@ func TestGitRepositories_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: valid identifier for [opts.Set.GitCredentials] if set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.GitCredentials = &emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
 	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
@@ -85,6 +91,22 @@ func TestGitRepositories_Alter(t *testing.T) {
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.Set.ApiIntegration] if set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &GitRepositorySet{
+			ApiIntegration: &emptyAccountObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.Set.GitCredentials] if set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &GitRepositorySet{
+			GitCredentials: &emptySchemaObjectIdentifier,
+		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
