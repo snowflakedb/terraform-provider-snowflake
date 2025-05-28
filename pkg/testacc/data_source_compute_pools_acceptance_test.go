@@ -127,7 +127,7 @@ func TestAcc_ComputePools(t *testing.T) {
 						HasComment(comment).
 						HasIsExclusive(true).
 						HasApplication(application.ID()),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModelWithoutOptionals.DatasourceReference(), "compute_pools.0.describe.output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(dataSourceModelWithoutOptionals.DatasourceReference(), "compute_pools.0.describe_output.#", "0")),
 				),
 			},
 		},
