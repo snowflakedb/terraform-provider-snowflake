@@ -79,12 +79,13 @@ func (s *AlterGitRepositoryRequest) WithUnsetTags(UnsetTags []ObjectIdentifier) 
 	return s
 }
 
-func NewGitRepositorySetRequest(
-	ApiIntegration *AccountObjectIdentifier,
-) *GitRepositorySetRequest {
-	s := GitRepositorySetRequest{}
-	s.ApiIntegration = ApiIntegration
-	return &s
+func NewGitRepositorySetRequest() *GitRepositorySetRequest {
+	return &GitRepositorySetRequest{}
+}
+
+func (s *GitRepositorySetRequest) WithApiIntegration(ApiIntegration AccountObjectIdentifier) *GitRepositorySetRequest {
+	s.ApiIntegration = &ApiIntegration
+	return s
 }
 
 func (s *GitRepositorySetRequest) WithGitCredentials(GitCredentials SchemaObjectIdentifier) *GitRepositorySetRequest {

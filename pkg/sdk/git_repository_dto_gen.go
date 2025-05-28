@@ -34,7 +34,7 @@ type AlterGitRepositoryRequest struct {
 }
 
 type GitRepositorySetRequest struct {
-	ApiIntegration *AccountObjectIdentifier // required
+	ApiIntegration *AccountObjectIdentifier
 	GitCredentials *SchemaObjectIdentifier
 	Comment        *string
 }

@@ -48,6 +48,8 @@ var GitRepositoriesDef = g.NewInterface(
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "ApiIntegration").
+		WithValidation(g.ValidIdentifierIfSet, "GitCredentials").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-git-repository",

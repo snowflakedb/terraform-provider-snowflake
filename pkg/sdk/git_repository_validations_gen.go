@@ -18,6 +18,12 @@ func (opts *CreateGitRepositoryOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !ValidObjectIdentifier(opts.ApiIntegration) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.GitCredentials != nil && !ValidObjectIdentifier(opts.GitCredentials) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateGitRepositoryOptions", "IfNotExists", "OrReplace"))
 	}

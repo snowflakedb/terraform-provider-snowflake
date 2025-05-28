@@ -30,6 +30,12 @@ func TestGitRepositories_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: valid identifier for [opts.ApiIntegration]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ApiIntegration = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
 	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
