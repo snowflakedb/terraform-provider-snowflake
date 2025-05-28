@@ -151,7 +151,6 @@ func (r gitRepositoriesRow) convert() *GitRepository {
 		Origin:        r.Origin,
 		Owner:         r.Owner,
 		OwnerRoleType: r.OwnerRoleType,
-		LastFetchedAt: r.LastFetchedAt,
 	}
 	id, err := ParseAccountObjectIdentifier(r.ApiIntegration)
 	if err != nil {
@@ -172,6 +171,11 @@ func (r gitRepositoriesRow) convert() *GitRepository {
 	if r.Comment.Valid {
 		gitRepository.Comment = &r.Comment.String
 	}
+
+	if r.LastFetchedAt.Valid {
+		gitRepository.LastFetchedAt = &r.LastFetchedAt.Time
+	}
+
 	return gitRepository
 }
 

@@ -15,7 +15,7 @@ var gitRepositoryDbRow = g.DbStruct("gitRepositoriesRow").
 	Text("owner").
 	Text("owner_role_type").
 	OptionalText("comment").
-	Time("last_fetched_at")
+	OptionalTime("last_fetched_at")
 
 var gitRepository = g.PlainStruct("GitRepository").
 	Time("CreatedOn").
@@ -28,7 +28,7 @@ var gitRepository = g.PlainStruct("GitRepository").
 	Text("Owner").
 	Text("OwnerRoleType").
 	OptionalText("Comment").
-	Time("LastFetchedAt")
+	OptionalTime("LastFetchedAt")
 
 var GitRepositoriesDef = g.NewInterface(
 	"GitRepositories",
