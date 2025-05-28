@@ -173,13 +173,13 @@ func TestAcc_ComputePools_Filtering(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, cpModel1, cpModel2, cpModel3, computePoolsWithStartsWithModel),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(computePoolsWithLikeModel.DatasourceReference(), "compute_pools.#", "2"),
+					resource.TestCheckResourceAttr(computePoolsWithStartsWithModel.DatasourceReference(), "compute_pools.#", "2"),
 				),
 			},
 			{
 				Config: accconfig.FromModels(t, cpModel1, cpModel2, cpModel3, computePoolsWithLimitModel),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(computePoolsWithLikeModel.DatasourceReference(), "compute_pools.#", "1"),
+					resource.TestCheckResourceAttr(computePoolsWithLimitModel.DatasourceReference(), "compute_pools.#", "1"),
 				),
 			},
 		},
