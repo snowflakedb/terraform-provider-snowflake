@@ -70,12 +70,11 @@ func (v *services) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Se
 
 func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
 	opts := &CreateServiceOptions{
-		IfNotExists:               r.IfNotExists,
-		name:                      r.name,
-		InComputePool:             r.InComputePool,
-		FromSpecification:         r.FromSpecification,
-		FromSpecificationTemplate: r.FromSpecificationTemplate,
-		AutoSuspendSecs:           r.AutoSuspendSecs,
+		IfNotExists:   r.IfNotExists,
+		name:          r.name,
+		InComputePool: r.InComputePool,
+
+		AutoSuspendSecs: r.AutoSuspendSecs,
 
 		AutoResume:        r.AutoResume,
 		MinInstances:      r.MinInstances,
@@ -84,6 +83,21 @@ func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
 		QueryWarehouse:    r.QueryWarehouse,
 		Tag:               r.Tag,
 		Comment:           r.Comment,
+	}
+	if r.FromSpecification != nil {
+		opts.FromSpecification = &ServiceFromSpecification{
+			Stage:             r.FromSpecification.Stage,
+			SpecificationFile: r.FromSpecification.SpecificationFile,
+			Specification:     r.FromSpecification.Specification,
+		}
+	}
+	if r.FromSpecificationTemplate != nil {
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			Stage:                     r.FromSpecificationTemplate.Stage,
+			SpecificationTemplateFile: r.FromSpecificationTemplate.SpecificationTemplateFile,
+			SpecificationTemplate:     r.FromSpecificationTemplate.SpecificationTemplate,
+			Using:                     r.FromSpecificationTemplate.Using,
+		}
 	}
 	if r.ExternalAccessIntegrations != nil {
 		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
@@ -95,15 +109,28 @@ func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
 
 func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 	opts := &AlterServiceOptions{
-		IfExists:                  r.IfExists,
-		name:                      r.name,
-		Resume:                    r.Resume,
-		Suspend:                   r.Suspend,
-		FromSpecification:         r.FromSpecification,
-		FromSpecificationTemplate: r.FromSpecificationTemplate,
+		IfExists: r.IfExists,
+		name:     r.name,
+		Resume:   r.Resume,
+		Suspend:  r.Suspend,
 
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,
+	}
+	if r.FromSpecification != nil {
+		opts.FromSpecification = &ServiceFromSpecification{
+			Stage:             r.FromSpecification.Stage,
+			SpecificationFile: r.FromSpecification.SpecificationFile,
+			Specification:     r.FromSpecification.Specification,
+		}
+	}
+	if r.FromSpecificationTemplate != nil {
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			Stage:                     r.FromSpecificationTemplate.Stage,
+			SpecificationTemplateFile: r.FromSpecificationTemplate.SpecificationTemplateFile,
+			SpecificationTemplate:     r.FromSpecificationTemplate.SpecificationTemplate,
+			Using:                     r.FromSpecificationTemplate.Using,
+		}
 	}
 	if r.Restore != nil {
 		opts.Restore = &Restore{

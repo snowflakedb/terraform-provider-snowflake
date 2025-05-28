@@ -22,6 +22,22 @@ func (opts *CreateServiceOptions) validate() error {
 	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if valueSet(opts.FromSpecification) {
+		if !exactlyOneValueSet(opts.FromSpecification.SpecificationFile, opts.FromSpecification.Specification) {
+			errs = append(errs, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+		}
+		if everyValueSet(opts.FromSpecification.Stage, opts.FromSpecification.Specification) {
+			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecification", "Stage", "Specification"))
+		}
+	}
+	if valueSet(opts.FromSpecificationTemplate) {
+		if !exactlyOneValueSet(opts.FromSpecificationTemplate.SpecificationTemplateFile, opts.FromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+		}
+		if everyValueSet(opts.FromSpecificationTemplate.Stage, opts.FromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecificationTemplate", "Stage", "SpecificationTemplate"))
+		}
+	}
 	// Validation added manually.
 	if valueSet(opts.MinReadyInstances) {
 		if !validateIntGreaterThan(*opts.MinReadyInstances, 0) {
@@ -53,6 +69,7 @@ func (opts *CreateServiceOptions) validate() error {
 	if valueSet(opts.AutoSuspendSecs) && !validateIntGreaterThanOrEqual(*opts.AutoSuspendSecs, 0) {
 		errs = append(errs, errIntValue("CreateServiceOptions", "AutoSuspendSecs", IntErrGreaterOrEqual, 0))
 	}
+
 	return JoinErrors(errs...)
 }
 
@@ -67,7 +84,29 @@ func (opts *AlterServiceOptions) validate() error {
 	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.FromSpecification, opts.FromSpecificationTemplate, opts.Restore, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
+	if valueSet(opts.FromSpecification) {
+		if !exactlyOneValueSet(opts.FromSpecification.SpecificationFile, opts.FromSpecification.Specification) {
+			errs = append(errs, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+		}
+		if everyValueSet(opts.FromSpecification.Stage, opts.FromSpecification.Specification) {
+			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecification", "Stage", "Specification"))
+		}
+	}
+	if valueSet(opts.FromSpecificationTemplate) {
+		if !exactlyOneValueSet(opts.FromSpecificationTemplate.SpecificationTemplateFile, opts.FromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+		}
+		if everyValueSet(opts.FromSpecificationTemplate.Stage, opts.FromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecificationTemplate", "Stage", "SpecificationTemplate"))
+		}
+	}
 	if valueSet(opts.Set) {
+		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+		if !anyValueSet(opts.Set.MinInstances, opts.Set.MaxInstances, opts.Set.AutoSuspendSecs, opts.Set.MinReadyInstances, opts.Set.QueryWarehouse, opts.Set.AutoResume, opts.Set.ExternalAccessIntegrations, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
+		}
 		// Validation added manually.
 		if valueSet(opts.Set.MinReadyInstances) {
 			if !validateIntGreaterThan(*opts.Set.MinReadyInstances, 0) {
@@ -98,12 +137,6 @@ func (opts *AlterServiceOptions) validate() error {
 		// Validation added manually.
 		if valueSet(opts.Set.AutoSuspendSecs) && !validateIntGreaterThanOrEqual(*opts.Set.AutoSuspendSecs, 0) {
 			errs = append(errs, errIntValue("AlterServiceOptions.Set", "AutoSuspendSecs", IntErrGreaterOrEqual, 0))
-		}
-		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
-		}
-		if !anyValueSet(opts.Set.MinInstances, opts.Set.MaxInstances, opts.Set.AutoSuspendSecs, opts.Set.MinReadyInstances, opts.Set.QueryWarehouse, opts.Set.AutoResume, opts.Set.ExternalAccessIntegrations, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {

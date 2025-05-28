@@ -14,8 +14,8 @@ type CreateServiceRequest struct {
 	IfNotExists                *bool
 	name                       SchemaObjectIdentifier  // required
 	InComputePool              AccountObjectIdentifier // required
-	FromSpecification          *ServiceFromSpecification
-	FromSpecificationTemplate  *ServiceFromSpecificationTemplate
+	FromSpecification          *ServiceFromSpecificationRequest
+	FromSpecificationTemplate  *ServiceFromSpecificationTemplateRequest
 	AutoSuspendSecs            *int
 	ExternalAccessIntegrations *ServiceExternalAccessIntegrationsRequest
 	AutoResume                 *bool
@@ -27,6 +27,19 @@ type CreateServiceRequest struct {
 	Comment                    *string
 }
 
+type ServiceFromSpecificationRequest struct {
+	Stage             *string
+	SpecificationFile *string
+	Specification     *string
+}
+
+type ServiceFromSpecificationTemplateRequest struct {
+	Stage                     *string
+	SpecificationTemplateFile *string
+	SpecificationTemplate     *string
+	Using                     []ListItem
+}
+
 type ServiceExternalAccessIntegrationsRequest struct {
 	ExternalAccessIntegrations []AccountObjectIdentifier // required
 }
@@ -36,8 +49,8 @@ type AlterServiceRequest struct {
 	name                      SchemaObjectIdentifier // required
 	Resume                    *bool
 	Suspend                   *bool
-	FromSpecification         *ServiceFromSpecification
-	FromSpecificationTemplate *ServiceFromSpecificationTemplate
+	FromSpecification         *ServiceFromSpecificationRequest
+	FromSpecificationTemplate *ServiceFromSpecificationTemplateRequest
 	Restore                   *RestoreRequest
 	Set                       *ServiceSetRequest
 	Unset                     *ServiceUnsetRequest
@@ -47,7 +60,7 @@ type AlterServiceRequest struct {
 
 type RestoreRequest struct {
 	Volume       string // required
-	Instances    string // required
+	Instances    []int  // required
 	FromSnapshot string // required
 }
 

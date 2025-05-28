@@ -47,27 +47,19 @@ type ListItem struct {
 	Value       any    `ddl:"keyword"`
 }
 
-type ServiceFromSpecificationOnStage struct {
-	From              *string `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
-	SpecificationFile *string `ddl:"parameter,single_quotes" sql:"SPECIFICATION_FILE"`
-}
-
 type ServiceFromSpecification struct {
-	FromSpecificationFile    *string                          `ddl:"parameter,single_quotes" sql:"FROM SPECIFICATION_FILE"`
-	FromSpecificationOnStage *ServiceFromSpecificationOnStage `ddl:"keyword"`
-	FromSpecification        *string                          `ddl:"parameter,single_quotes,no_equals" sql:"FROM SPECIFICATION"`
-}
-
-type ServiceFromSpecificationTemplateOnStage struct {
-	From                      *string `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
-	SpecificationTemplateFile *string `ddl:"parameter,single_quotes" sql:"SPECIFICATION_TEMPLATE_FILE"`
+	from              bool    `ddl:"static" sql:"FROM"`
+	Stage             *string `ddl:"keyword"`
+	SpecificationFile *string `ddl:"parameter,single_quotes" sql:"SPECIFICATION_FILE"`
+	Specification     *string `ddl:"parameter,single_quotes,no_equals" sql:"SPECIFICATION"`
 }
 
 type ServiceFromSpecificationTemplate struct {
-	FromSpecificationTemplateFile    *string                                  `ddl:"parameter,single_quotes" sql:"FROM SPECIFICATION_TEMPLATE_FILE"`
-	FromSpecificationTemplateOnStage *ServiceFromSpecificationTemplateOnStage `ddl:"keyword"`
-	FromSpecificationTemplate        *string                                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM SPECIFICATION_TEMPLATE"`
-	Using                            []ListItem                               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
+	from                      bool       `ddl:"static" sql:"FROM"`
+	Stage                     *string    `ddl:"keyword"`
+	SpecificationTemplateFile *string    `ddl:"parameter,single_quotes" sql:"SPECIFICATION_TEMPLATE_FILE"`
+	SpecificationTemplate     *string    `ddl:"parameter,single_quotes,no_equals" sql:"SPECIFICATION_TEMPLATE"`
+	Using                     []ListItem `ddl:"parameter,parentheses,no_equals" sql:"USING"`
 }
 
 // AlterServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-service.
@@ -88,9 +80,9 @@ type AlterServiceOptions struct {
 }
 
 type Restore struct {
-	Volume       string `ddl:"parameter,double_quotes" sql:"VOLUME"`
-	Instances    string `ddl:"parameter,double_quotes" sql:"INSTANCES"`
-	FromSnapshot string `ddl:"parameter,double_quotes" sql:"FROM SNAPSHOT"`
+	Volume       string `ddl:"parameter,double_quotes,no_equals" sql:"VOLUME"`
+	Instances    []int  `ddl:"keyword" sql:"INSTANCES"`
+	FromSnapshot string `ddl:"parameter,double_quotes,no_equals" sql:"FROM SNAPSHOT"`
 }
 
 type ServiceSet struct {

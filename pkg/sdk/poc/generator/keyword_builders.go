@@ -5,8 +5,8 @@ func (v *QueryStruct) OptionalSQL(sql string) *QueryStruct {
 	return v
 }
 
-func (v *QueryStruct) NamedList(sql string, itemKind string) *QueryStruct {
-	v.fields = append(v.fields, NewField(sqlToFieldName(sql, true), KindOfSlice(itemKind), Tags().Keyword().SQL(sql), nil))
+func (v *QueryStruct) NamedList(sql string, itemKind string, transformer *KeywordTransformer) *QueryStruct {
+	v.fields = append(v.fields, NewField(sqlToFieldName(sql, true), KindOfSlice(itemKind), Tags().Keyword().SQL(sql), transformer))
 	return v
 }
 

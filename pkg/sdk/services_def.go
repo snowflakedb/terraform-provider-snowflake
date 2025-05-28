@@ -50,26 +50,22 @@ var listItemDef = g.NewQueryStruct("ListItem").
 	SQLWithCustomFieldName("arrowEquals", "=>").
 	Any("Value", g.KeywordOptions().Required())
 
-var serviceFromSpecificationOnStageDef = g.NewQueryStruct("ServiceFromSpecificationOnStage").
-	OptionalTextAssignment("FROM", g.ParameterOptions().NoQuotes().NoEquals()).
-	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes())
-
 var serviceFromSpecificationDef = g.NewQueryStruct("ServiceFromSpecification").
-	OptionalTextAssignment("FROM SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
-	PredefinedQueryStructField("FromSpecificationOnStage", "*ServiceFromSpecificationOnStage", g.KeywordOptions()).
-	OptionalTextAssignment("FROM SPECIFICATION", g.ParameterOptions().NoEquals().SingleQuotes()).
-	WithValidation(g.ExactlyOneValueSet, "FromSpecificationFile", "FromSpecificationOnStage", "FromSpecification")
-
-var serviceFromSpecificationTemplateOnStageDef = g.NewQueryStruct("ServiceFromSpecificationTemplateOnStage").
-	OptionalTextAssignment("FROM", g.ParameterOptions().NoQuotes().NoEquals()).
-	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes())
+	SQL("FROM").
+	OptionalText("Stage", g.KeywordOptions()).
+	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
+	OptionalTextAssignment("SPECIFICATION", g.ParameterOptions().NoEquals().SingleQuotes()).
+	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "Specification").
+	WithValidation(g.ConflictingFields, "Stage", "Specification")
 
 var serviceFromSpecificationTemplateDef = g.NewQueryStruct("ServiceFromSpecificationTemplate").
-	OptionalTextAssignment("FROM SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
-	PredefinedQueryStructField("FromSpecificationTemplateOnStage", "*ServiceFromSpecificationTemplateOnStage", g.KeywordOptions()).
-	OptionalTextAssignment("FROM SPECIFICATION_TEMPLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
+	SQL("FROM").
+	OptionalText("Stage", g.KeywordOptions()).
+	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
+	OptionalTextAssignment("SPECIFICATION_TEMPLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses()).
-	WithValidation(g.ExactlyOneValueSet, "FromSpecificationTemplateFile", "FromSpecificationTemplateOnStage", "FromSpecificationTemplate")
+	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
+	WithValidation(g.ConflictingFields, "Stage", "SpecificationTemplate")
 
 //go:generate go run ./poc/main.go
 var ServicesDef = g.NewInterface(
@@ -85,8 +81,8 @@ var ServicesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		Identifier("InComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
-		PredefinedQueryStructField("FromSpecification", "*ServiceFromSpecification", g.KeywordOptions()).
-		PredefinedQueryStructField("FromSpecificationTemplate", "*ServiceFromSpecificationTemplate", g.KeywordOptions()).
+		OptionalQueryStructField("FromSpecification", serviceFromSpecificationDef, g.KeywordOptions()).
+		OptionalQueryStructField("FromSpecificationTemplate", serviceFromSpecificationTemplateDef, g.KeywordOptions()).
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
 		OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 		OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
@@ -101,9 +97,7 @@ var ServicesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
 	serviceExternalAccessIntegrationsDef,
 	listItemDef,
-	serviceFromSpecificationOnStageDef,
 	serviceFromSpecificationDef,
-	serviceFromSpecificationTemplateOnStageDef,
 	serviceFromSpecificationTemplateDef,
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-service",
@@ -114,14 +108,14 @@ var ServicesDef = g.NewInterface(
 		Name().
 		OptionalSQL("RESUME").
 		OptionalSQL("SUSPEND").
-		PredefinedQueryStructField("FromSpecification", "*ServiceFromSpecification", g.KeywordOptions()).
-		PredefinedQueryStructField("FromSpecificationTemplate", "*ServiceFromSpecificationTemplate", g.KeywordOptions()).
+		OptionalQueryStructField("FromSpecification", serviceFromSpecificationDef, g.KeywordOptions()).
+		OptionalQueryStructField("FromSpecificationTemplate", serviceFromSpecificationTemplateDef, g.KeywordOptions()).
 		OptionalQueryStructField(
 			"Restore",
 			g.NewQueryStruct("Restore").
-				TextAssignment("VOLUME", g.ParameterOptions().DoubleQuotes().Required()).
-				TextAssignment("INSTANCES", g.ParameterOptions().DoubleQuotes().Required()).
-				TextAssignment("FROM SNAPSHOT", g.ParameterOptions().DoubleQuotes().Required()),
+				TextAssignment("VOLUME", g.ParameterOptions().DoubleQuotes().Required().NoEquals()).
+				NamedList("INSTANCES", "int", g.KeywordOptions().Required()).
+				TextAssignment("FROM SNAPSHOT", g.ParameterOptions().DoubleQuotes().Required().NoEquals()),
 			g.KeywordOptions().SQL("RESTORE"),
 		).
 		OptionalQueryStructField(

@@ -19,12 +19,12 @@ func (s *CreateServiceRequest) WithIfNotExists(IfNotExists bool) *CreateServiceR
 	return s
 }
 
-func (s *CreateServiceRequest) WithFromSpecification(FromSpecification ServiceFromSpecification) *CreateServiceRequest {
+func (s *CreateServiceRequest) WithFromSpecification(FromSpecification ServiceFromSpecificationRequest) *CreateServiceRequest {
 	s.FromSpecification = &FromSpecification
 	return s
 }
 
-func (s *CreateServiceRequest) WithFromSpecificationTemplate(FromSpecificationTemplate ServiceFromSpecificationTemplate) *CreateServiceRequest {
+func (s *CreateServiceRequest) WithFromSpecificationTemplate(FromSpecificationTemplate ServiceFromSpecificationTemplateRequest) *CreateServiceRequest {
 	s.FromSpecificationTemplate = &FromSpecificationTemplate
 	return s
 }
@@ -74,6 +74,49 @@ func (s *CreateServiceRequest) WithComment(Comment string) *CreateServiceRequest
 	return s
 }
 
+func NewServiceFromSpecificationRequest() *ServiceFromSpecificationRequest {
+	return &ServiceFromSpecificationRequest{}
+}
+
+func (s *ServiceFromSpecificationRequest) WithStage(Stage string) *ServiceFromSpecificationRequest {
+	s.Stage = &Stage
+	return s
+}
+
+func (s *ServiceFromSpecificationRequest) WithSpecificationFile(SpecificationFile string) *ServiceFromSpecificationRequest {
+	s.SpecificationFile = &SpecificationFile
+	return s
+}
+
+func (s *ServiceFromSpecificationRequest) WithSpecification(Specification string) *ServiceFromSpecificationRequest {
+	s.Specification = &Specification
+	return s
+}
+
+func NewServiceFromSpecificationTemplateRequest() *ServiceFromSpecificationTemplateRequest {
+	return &ServiceFromSpecificationTemplateRequest{}
+}
+
+func (s *ServiceFromSpecificationTemplateRequest) WithStage(Stage string) *ServiceFromSpecificationTemplateRequest {
+	s.Stage = &Stage
+	return s
+}
+
+func (s *ServiceFromSpecificationTemplateRequest) WithSpecificationTemplateFile(SpecificationTemplateFile string) *ServiceFromSpecificationTemplateRequest {
+	s.SpecificationTemplateFile = &SpecificationTemplateFile
+	return s
+}
+
+func (s *ServiceFromSpecificationTemplateRequest) WithSpecificationTemplate(SpecificationTemplate string) *ServiceFromSpecificationTemplateRequest {
+	s.SpecificationTemplate = &SpecificationTemplate
+	return s
+}
+
+func (s *ServiceFromSpecificationTemplateRequest) WithUsing(Using []ListItem) *ServiceFromSpecificationTemplateRequest {
+	s.Using = Using
+	return s
+}
+
 func NewServiceExternalAccessIntegrationsRequest(
 	ExternalAccessIntegrations []AccountObjectIdentifier,
 ) *ServiceExternalAccessIntegrationsRequest {
@@ -105,12 +148,12 @@ func (s *AlterServiceRequest) WithSuspend(Suspend bool) *AlterServiceRequest {
 	return s
 }
 
-func (s *AlterServiceRequest) WithFromSpecification(FromSpecification ServiceFromSpecification) *AlterServiceRequest {
+func (s *AlterServiceRequest) WithFromSpecification(FromSpecification ServiceFromSpecificationRequest) *AlterServiceRequest {
 	s.FromSpecification = &FromSpecification
 	return s
 }
 
-func (s *AlterServiceRequest) WithFromSpecificationTemplate(FromSpecificationTemplate ServiceFromSpecificationTemplate) *AlterServiceRequest {
+func (s *AlterServiceRequest) WithFromSpecificationTemplate(FromSpecificationTemplate ServiceFromSpecificationTemplateRequest) *AlterServiceRequest {
 	s.FromSpecificationTemplate = &FromSpecificationTemplate
 	return s
 }
@@ -142,7 +185,7 @@ func (s *AlterServiceRequest) WithUnsetTags(UnsetTags []ObjectIdentifier) *Alter
 
 func NewRestoreRequest(
 	Volume string,
-	Instances string,
+	Instances []int,
 	FromSnapshot string,
 ) *RestoreRequest {
 	s := RestoreRequest{}

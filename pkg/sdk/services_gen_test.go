@@ -73,22 +73,88 @@ func TestServices_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "AutoSuspendSecs", IntErrGreaterOrEqual, 0))
 	})
 
-	t.Run("validation: conflicting fields for [opts.ServiceFromSpecification opts.ServiceFromSpecificationTemplate]", func(t *testing.T) {
+	t.Run("validation: conflicting fields for [opts.FromSpecification opts.FromSpecificationTemplate]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecification: String("{}"),
+			Specification: String("{}"),
 		}
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationTemplate: String("{}"),
+			SpecificationTemplate: String("{}"),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions", "FromSpecification", "FromSpecificationTemplate"))
+	})
+
+	t.Run("validation: empty opts.FromSpecification", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.FromSpecification.Stage opts.FromSpecification.Specification]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{
+			Specification:     String("{}"),
+			SpecificationFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: stage present without specification", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{
+			Stage: Pointer("@stage"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: all specification fields present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{
+			Stage:             Pointer("@stage"),
+			Specification:     String("{}"),
+			SpecificationFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: empty opts.FromSpecificationTemplate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.FromSpecificationTemplate.Stage opts.FromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			SpecificationTemplate:     String("{}"),
+			SpecificationTemplateFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: stage present without specification template", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			Stage: Pointer("@stage"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: all specification template fields present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			Stage:                     Pointer("@stage"),
+			SpecificationTemplate:     String("{}"),
+			SpecificationTemplateFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 	})
 
 	t.Run("with if not exists", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecificationFile: String("spec.yaml"),
+			SpecificationFile: String("spec.yaml"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
 	})
@@ -96,7 +162,7 @@ func TestServices_Create(t *testing.T) {
 	t.Run("from specification file", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecificationFile: String("spec.yaml"),
+			SpecificationFile: String("spec.yaml"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
 	})
@@ -105,10 +171,8 @@ func TestServices_Create(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecificationOnStage: &ServiceFromSpecificationOnStage{
-				From:              Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
-				SpecificationFile: String("spec.yaml"),
-			},
+			Stage:             Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+			SpecificationFile: String("spec.yaml"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM @%s SPECIFICATION_FILE = 'spec.yaml'",
 			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), stageId.FullyQualifiedName())
@@ -117,7 +181,7 @@ func TestServices_Create(t *testing.T) {
 	t.Run("from specification", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecification: String("{}"),
+			Specification: String("{}"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION '{}'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
 	})
@@ -125,7 +189,7 @@ func TestServices_Create(t *testing.T) {
 	t.Run("from specification template file", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationTemplateFile: String("spec.yaml"),
+			SpecificationTemplateFile: String("spec.yaml"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -148,10 +212,8 @@ func TestServices_Create(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationTemplateOnStage: &ServiceFromSpecificationTemplateOnStage{
-				From:                      Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
-				SpecificationTemplateFile: String("spec.yaml"),
-			},
+			Stage:                     Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+			SpecificationTemplateFile: String("spec.yaml"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -166,7 +228,7 @@ func TestServices_Create(t *testing.T) {
 	t.Run("from specification template", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationTemplate: String("{}"),
+			SpecificationTemplate: String("{}"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -185,7 +247,7 @@ func TestServices_Create(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecification: String("{}"),
+			Specification: String("{}"),
 		}
 		opts.AutoSuspendSecs = Pointer(600)
 		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
@@ -309,6 +371,82 @@ func TestServices_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterServiceOptions.Unset", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.FromSpecification opts.FromSpecificationTemplate]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{
+			Specification: String("{}"),
+		}
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			SpecificationTemplate: String("{}"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
+	})
+
+	t.Run("validation: empty opts.FromSpecification", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.FromSpecification.Stage opts.FromSpecification.Specification]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{
+			Specification:     String("{}"),
+			SpecificationFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: stage present without specification", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{
+			Stage: Pointer("@stage"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: all specification fields present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{
+			Stage:             Pointer("@stage"),
+			Specification:     String("{}"),
+			SpecificationFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: empty opts.FromSpecificationTemplate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.FromSpecificationTemplate.Stage opts.FromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			SpecificationTemplate:     String("{}"),
+			SpecificationTemplateFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: stage present without specification template", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			Stage: Pointer("@stage"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: all specification template fields present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			Stage:                     Pointer("@stage"),
+			SpecificationTemplate:     String("{}"),
+			SpecificationTemplateFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
 	t.Run("suspend", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Suspend = Bool(true)
@@ -331,7 +469,7 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("from specification file", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecificationFile: String("spec.yaml"),
+			SpecificationFile: String("spec.yaml"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName())
 	})
@@ -340,10 +478,8 @@ func TestServices_Alter(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecificationOnStage: &ServiceFromSpecificationOnStage{
-				From:              Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
-				SpecificationFile: String("spec.yaml"),
-			},
+			Stage:             Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+			SpecificationFile: String("spec.yaml"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM @%s SPECIFICATION_FILE = 'spec.yaml'",
 			id.FullyQualifiedName(), stageId.FullyQualifiedName())
@@ -352,7 +488,7 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("from specification", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			FromSpecification: String("{}"),
+			Specification: String("{}"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM SPECIFICATION '{}'", id.FullyQualifiedName())
 	})
@@ -360,7 +496,7 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("from specification template file", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationTemplateFile: String("spec.yaml"),
+			SpecificationTemplateFile: String("spec.yaml"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -383,10 +519,8 @@ func TestServices_Alter(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationTemplateOnStage: &ServiceFromSpecificationTemplateOnStage{
-				From:                      Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
-				SpecificationTemplateFile: String("spec.yaml"),
-			},
+			Stage:                     Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+			SpecificationTemplateFile: String("spec.yaml"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -401,7 +535,7 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("from specification template", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			FromSpecificationTemplate: String("{}"),
+			SpecificationTemplate: String("{}"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -416,10 +550,10 @@ func TestServices_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Restore = &Restore{
 			Volume:       "vol1",
-			Instances:    "inst1",
+			Instances:    []int{0, 1},
 			FromSnapshot: "snap1",
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s RESTORE VOLUME = \"vol1\" INSTANCES = \"inst1\" FROM SNAPSHOT = \"snap1\"", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s RESTORE VOLUME "vol1" INSTANCES 0, 1 FROM SNAPSHOT "snap1"`, id.FullyQualifiedName())
 	})
 
 	t.Run("with set", func(t *testing.T) {
