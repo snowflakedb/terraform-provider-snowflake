@@ -198,10 +198,7 @@ clean-provider-model-builders: ## Clean provider model builders
 	rm -f ./pkg/acceptance/bettertestspoc/config/providermodel/*_gen.go
 
 generate-toml-model-builders: ## Generate toml model builders
-	go generate ./pkg/acceptance/bettertestspoc/config/tomlconfigmodel/generate.go
-
-clean-toml-model-builders: ## Clean toml model builders
-	rm -f ./pkg/acceptance/bettertestspoc/config/tomlconfigmodel/*_gen.go
+	go generate ./pkg/sdk/config_dto.go
 
 generate-datasource-model-builders: ## Generate datasource model builders
 	go generate ./pkg/acceptance/bettertestspoc/config/datasourcemodel/generate.go
