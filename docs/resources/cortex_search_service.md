@@ -77,11 +77,13 @@ resource "snowflake_cortex_search_service" "test" {
 
 - `attributes` (Set of String) Specifies the list of columns in the base table to enable filtering on when issuing queries to the service.
 - `comment` (String) Specifies a comment for the Cortex search service.
+- `embedding_model` (String) (Default: `snowflake-arctic-embed-m-v1.5`) Specifies the embedding model to use for the Cortex search service.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `created_on` (String) Creation date for the given Cortex search service.
+- `describe_output` (List of Object) Outputs the result of `DESCRIBE CORTEX SEARCH SERVICE` for the given cortex search service. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 
@@ -94,6 +96,30 @@ Optional:
 - `delete` (String)
 - `read` (String)
 - `update` (String)
+
+
+<a id="nestedatt--describe_output"></a>
+### Nested Schema for `describe_output`
+
+Read-Only:
+
+- `attribute_columns` (List of String)
+- `columns` (List of String)
+- `comment` (String)
+- `created_on` (String)
+- `data_timestamp` (String)
+- `database_name` (String)
+- `definition` (String)
+- `embedding_model` (String)
+- `indexing_error` (String)
+- `indexing_state` (String)
+- `name` (String)
+- `schema_name` (String)
+- `search_column` (String)
+- `service_query_url` (String)
+- `source_data_num_rows` (Number)
+- `target_lag` (String)
+- `warehouse` (String)
 
 ## Import
 

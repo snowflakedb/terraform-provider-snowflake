@@ -49,7 +49,8 @@ func TestInt_CortexSearchServices(t *testing.T) {
 
 		name := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
-		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(name, on, testClientHelper().Ids.WarehouseId(), targetLag, buildQuery(table.ID())).WithOrReplace(true).WithComment(comment))
+		embeddingModel := "snowflake-arctic-embed-m-v1.5"
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(name, on, testClientHelper().Ids.WarehouseId(), targetLag, buildQuery(table.ID())).WithOrReplace(true).WithComment(comment).WithEmbeddingModel(embeddingModel))
 		require.NoError(t, err)
 		t.Cleanup(func() {
 			err = client.CortexSearchServices.Drop(ctx, sdk.NewDropCortexSearchServiceRequest(name))
@@ -62,14 +63,15 @@ func TestInt_CortexSearchServices(t *testing.T) {
 		entity := entities[0]
 		require.Equal(t, name.Name(), entity.Name)
 
-		cortexSearchServiceById, err := client.CortexSearchServices.ShowByID(ctx, name)
+		cortexSearchServiceDetails, err := client.CortexSearchServices.Describe(ctx, name)
 		require.NoError(t, err)
-		require.NotNil(t, cortexSearchServiceById)
-		require.NotEmpty(t, cortexSearchServiceById.CreatedOn)
-		require.Equal(t, name.Name(), cortexSearchServiceById.Name)
-		require.Equal(t, name.DatabaseName(), cortexSearchServiceById.DatabaseName)
-		require.Equal(t, name.SchemaName(), cortexSearchServiceById.SchemaName)
-		require.Equal(t, comment, cortexSearchServiceById.Comment)
+		require.NotNil(t, cortexSearchServiceDetails)
+		require.NotEmpty(t, cortexSearchServiceDetails.CreatedOn)
+		require.Equal(t, name.Name(), cortexSearchServiceDetails.Name)
+		require.Equal(t, name.DatabaseName(), cortexSearchServiceDetails.DatabaseName)
+		require.Equal(t, name.SchemaName(), cortexSearchServiceDetails.SchemaName)
+		require.Equal(t, comment, cortexSearchServiceDetails.Comment)
+		require.Equal(t, embeddingModel, cortexSearchServiceDetails.EmbeddingModel)
 	})
 
 	t.Run("describe: when cortex search service exists", func(t *testing.T) {

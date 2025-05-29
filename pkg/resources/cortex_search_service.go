@@ -60,6 +60,13 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 		Required:    true,
 		Description: "Specifies the maximum target lag time for the Cortex search service.",
 	},
+	"embedding_model": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		ForceNew:    true,
+		Default:     "snowflake-arctic-embed-m-v1.5",
+		Description: "Specifies the embedding model to use for the Cortex search service.",
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -76,6 +83,14 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "Creation date for the given Cortex search service.",
+	},
+	DescribeOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `DESCRIBE CORTEX SEARCH SERVICE` for the given cortex search service.",
+		Elem: &schema.Resource{
+			Schema: schemas.DescribeCortexSearchServiceSchema,
+		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
@@ -94,6 +109,10 @@ func CortexSearchService() *schema.Resource {
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingUpdateWrapper(resources.CortexSearchService, UpdateCortexSearchService)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingDeleteWrapper(resources.CortexSearchService, deleteFunc)),
 
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.CortexSearchService,
+			ComputedIfAnyAttributeChanged(cortexSearchServiceSchema, DescribeOutputAttributeName, "embedding_model"),
+		),
+
 		Schema: cortexSearchServiceSchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -107,46 +126,80 @@ func CortexSearchService() *schema.Resource {
 	}
 }
 
-// ReadCortexSearchServicee implements schema.ReadFunc.
-func ReadCortexSearchService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+func GetReadCortexSearchServiceFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-	cortexSearchService, err := client.CortexSearchServices.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			log.Printf("[DEBUG] cortex search service (%s) not found", d.Id())
-			d.SetId("")
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query cortex search service. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Cortex search service id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
+		id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+		cortexSearchService, err := client.CortexSearchServices.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				log.Printf("[DEBUG] cortex search service (%s) not found", d.Id())
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query cortex search service. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Cortex search service id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
+		}
+
+		if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("name", cortexSearchService.Name); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("database", cortexSearchService.DatabaseName); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("schema", cortexSearchService.SchemaName); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("comment", cortexSearchService.Comment); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("created_on", cortexSearchService.CreatedOn.String()); err != nil {
+			return diag.FromErr(err)
+		}
+
+		cortexSearchServiceDetails, err := client.CortexSearchServices.Describe(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CortexSearchServiceDetailsToSchema(cortexSearchServiceDetails)}); err != nil {
+			return diag.FromErr(err)
+		}
+
+		if withExternalChangesMarking {
+			var embeddingModel string
+			if cortexSearchServiceDetails.EmbeddingModel != nil {
+				embeddingModel = *cortexSearchServiceDetails.EmbeddingModel
+			}
+			if err = handleExternalChangesToObjectInFlatDescribe(d,
+				outputMapping{"embedding_model", "embedding_model", embeddingModel, embeddingModel, nil},
+			); err != nil {
+				return diag.FromErr(err)
 			}
 		}
-		return diag.FromErr(err)
-	}
-	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("name", cortexSearchService.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("database", cortexSearchService.DatabaseName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("schema", cortexSearchService.SchemaName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("comment", cortexSearchService.Comment); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("created_on", cortexSearchService.CreatedOn.String()); err != nil {
-		return diag.FromErr(err)
-	}
 
-	return nil
+		if err = setStateToValuesFromConfig(d, cortexSearchServiceSchema, []string{
+			"embedding_model",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
+
+		return nil
+	}
+}
+
+// ReadCortexSearchServicee implements schema.ReadFunc.
+func ReadCortexSearchService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	return GetReadCortexSearchServiceFunc(true)(ctx, d, meta)
 }
 
 // CreateCortexSearchService implements schema.CreateFunc.
@@ -167,6 +220,9 @@ func CreateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 	if v, ok := d.GetOk("comment"); ok {
 		request.WithComment(v.(string))
 	}
+	if v, ok := d.GetOk("embedding_model"); ok {
+		request.WithEmbeddingModel(v.(string))
+	}
 	if v, ok := d.GetOk("attributes"); ok && len(v.(*schema.Set).List()) > 0 {
 		attributes := sdk.AttributesRequest{
 			Columns: expandStringList(v.(*schema.Set).List()),
@@ -179,7 +235,7 @@ func CreateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 	}
 	d.SetId(helpers.EncodeSnowflakeID(id))
 
-	return append(diags, ReadCortexSearchService(ctx, d, meta)...)
+	return append(diags, GetReadCortexSearchServiceFunc(false)(ctx, d, meta)...)
 }
 
 // UpdateCortexSearchService implements schema.UpdateFunc.
@@ -212,5 +268,5 @@ func UpdateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 
-	return append(diags, ReadCortexSearchService(ctx, d, meta)...)
+	return append(diags, GetReadCortexSearchServiceFunc(false)(ctx, d, meta)...)
 }

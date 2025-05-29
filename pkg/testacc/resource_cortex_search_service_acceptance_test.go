@@ -34,6 +34,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 	variableSet2["warehouse"] = config.StringVariable(newWarehouseId.Name())
 	variableSet2["comment"] = config.StringVariable("Terraform acceptance test - updated")
 	variableSet2["query"] = config.StringVariable(fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()))
+	variableSet2["embedding_model"] = config.StringVariable("snowflake-arctic-embed-m-v1.5")
 
 	resourceName := "snowflake_cortex_search_service.css"
 	resource.Test(t, resource.TestCase{
@@ -86,6 +87,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "target_lag", "2 minutes"),
 					resource.TestCheckResourceAttr(resourceName, "comment", "Terraform acceptance test - updated"),
 					resource.TestCheckResourceAttr(resourceName, "query", fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName())),
+					resource.TestCheckResourceAttr(resourceName, "embedding_model", "snowflake-arctic-embed-m-v1.5"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_on"),
 				),
 			},
