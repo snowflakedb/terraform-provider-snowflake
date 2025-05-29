@@ -32,6 +32,11 @@ func ImportedPrimaryConnectionResource(t *testing.T, id string) *PrimaryConnecti
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (p *PrimaryConnectionResourceAssert) HasNameString(expected string) *PrimaryConnectionResourceAssert {
+	p.AddAssertion(assert.ValueSet("name", expected))
+	return p
+}
+
 func (p *PrimaryConnectionResourceAssert) HasCommentString(expected string) *PrimaryConnectionResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
 	return p
@@ -47,8 +52,8 @@ func (p *PrimaryConnectionResourceAssert) HasFullyQualifiedNameString(expected s
 	return p
 }
 
-func (p *PrimaryConnectionResourceAssert) HasNameString(expected string) *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
+func (p *PrimaryConnectionResourceAssert) HasIsPrimaryString(expected string) *PrimaryConnectionResourceAssert {
+	p.AddAssertion(assert.ValueSet("is_primary", expected))
 	return p
 }
 
@@ -56,24 +61,28 @@ func (p *PrimaryConnectionResourceAssert) HasNameString(expected string) *Primar
 // Attribute empty checks //
 ////////////////////////////
 
+func (p *PrimaryConnectionResourceAssert) HasNoName() *PrimaryConnectionResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("name"))
+	return p
+}
+
 func (p *PrimaryConnectionResourceAssert) HasNoComment() *PrimaryConnectionResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
 	return p
 }
 
-/*
-func (p *PrimaryConnectionResourceAssert) HasNoEnableFailoverToAccounts() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("enable_failover_to_accounts"))
-	return p
-}
-*/
+// commented out manually
+// func (p *PrimaryConnectionResourceAssert) HasNoEnableFailoverToAccounts() *PrimaryConnectionResourceAssert {
+//	 p.AddAssertion(assert.ValueNotSet("enable_failover_to_accounts"))
+//	 return p
+// }
 
 func (p *PrimaryConnectionResourceAssert) HasNoFullyQualifiedName() *PrimaryConnectionResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return p
 }
 
-func (p *PrimaryConnectionResourceAssert) HasNoName() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
+func (p *PrimaryConnectionResourceAssert) HasNoIsPrimary() *PrimaryConnectionResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("is_primary"))
 	return p
 }

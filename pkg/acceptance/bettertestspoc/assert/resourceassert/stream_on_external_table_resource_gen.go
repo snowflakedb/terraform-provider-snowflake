@@ -32,6 +32,21 @@ func ImportedStreamOnExternalTableResource(t *testing.T, id string) *StreamOnExt
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (s *StreamOnExternalTableResourceAssert) HasDatabaseString(expected string) *StreamOnExternalTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("database", expected))
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasSchemaString(expected string) *StreamOnExternalTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("schema", expected))
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasNameString(expected string) *StreamOnExternalTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("name", expected))
+	return s
+}
+
 func (s *StreamOnExternalTableResourceAssert) HasAtString(expected string) *StreamOnExternalTableResourceAssert {
 	s.AddAssertion(assert.ValueSet("at", expected))
 	return s
@@ -52,11 +67,6 @@ func (s *StreamOnExternalTableResourceAssert) HasCopyGrantsString(expected strin
 	return s
 }
 
-func (s *StreamOnExternalTableResourceAssert) HasDatabaseString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
-	return s
-}
-
 func (s *StreamOnExternalTableResourceAssert) HasExternalTableString(expected string) *StreamOnExternalTableResourceAssert {
 	s.AddAssertion(assert.ValueSet("external_table", expected))
 	return s
@@ -72,24 +82,34 @@ func (s *StreamOnExternalTableResourceAssert) HasInsertOnlyString(expected strin
 	return s
 }
 
-func (s *StreamOnExternalTableResourceAssert) HasNameString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
-	return s
-}
-
-func (s *StreamOnExternalTableResourceAssert) HasSchemaString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
-	return s
-}
-
 func (s *StreamOnExternalTableResourceAssert) HasStaleString(expected string) *StreamOnExternalTableResourceAssert {
 	s.AddAssertion(assert.ValueSet("stale", expected))
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasStreamTypeString(expected string) *StreamOnExternalTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("stream_type", expected))
 	return s
 }
 
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (s *StreamOnExternalTableResourceAssert) HasNoDatabase() *StreamOnExternalTableResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("database"))
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasNoSchema() *StreamOnExternalTableResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("schema"))
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasNoName() *StreamOnExternalTableResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("name"))
+	return s
+}
 
 func (s *StreamOnExternalTableResourceAssert) HasNoAt() *StreamOnExternalTableResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("at"))
@@ -111,11 +131,6 @@ func (s *StreamOnExternalTableResourceAssert) HasNoCopyGrants() *StreamOnExterna
 	return s
 }
 
-func (s *StreamOnExternalTableResourceAssert) HasNoDatabase() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
-	return s
-}
-
 func (s *StreamOnExternalTableResourceAssert) HasNoExternalTable() *StreamOnExternalTableResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("external_table"))
 	return s
@@ -131,22 +146,12 @@ func (s *StreamOnExternalTableResourceAssert) HasNoInsertOnly() *StreamOnExterna
 	return s
 }
 
-func (s *StreamOnExternalTableResourceAssert) HasNoName() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
-	return s
-}
-
-func (s *StreamOnExternalTableResourceAssert) HasNoSchema() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
-	return s
-}
-
 func (s *StreamOnExternalTableResourceAssert) HasNoStale() *StreamOnExternalTableResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("stale"))
 	return s
 }
 
-func (s *StreamOnExternalTableResourceAssert) HasStreamTypeString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stream_type", expected))
+func (s *StreamOnExternalTableResourceAssert) HasNoStreamType() *StreamOnExternalTableResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("stream_type"))
 	return s
 }

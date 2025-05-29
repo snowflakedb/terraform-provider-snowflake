@@ -32,18 +32,13 @@ func ImportedSecretWithGenericStringResource(t *testing.T, id string) *SecretWit
 // Attribute value string checks //
 ///////////////////////////////////
 
-func (s *SecretWithGenericStringResourceAssert) HasCommentString(expected string) *SecretWithGenericStringResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
-	return s
-}
-
 func (s *SecretWithGenericStringResourceAssert) HasDatabaseString(expected string) *SecretWithGenericStringResourceAssert {
 	s.AddAssertion(assert.ValueSet("database", expected))
 	return s
 }
 
-func (s *SecretWithGenericStringResourceAssert) HasFullyQualifiedNameString(expected string) *SecretWithGenericStringResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+func (s *SecretWithGenericStringResourceAssert) HasSchemaString(expected string) *SecretWithGenericStringResourceAssert {
+	s.AddAssertion(assert.ValueSet("schema", expected))
 	return s
 }
 
@@ -52,8 +47,13 @@ func (s *SecretWithGenericStringResourceAssert) HasNameString(expected string) *
 	return s
 }
 
-func (s *SecretWithGenericStringResourceAssert) HasSchemaString(expected string) *SecretWithGenericStringResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+func (s *SecretWithGenericStringResourceAssert) HasCommentString(expected string) *SecretWithGenericStringResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", expected))
+	return s
+}
+
+func (s *SecretWithGenericStringResourceAssert) HasFullyQualifiedNameString(expected string) *SecretWithGenericStringResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
 }
 
@@ -71,18 +71,13 @@ func (s *SecretWithGenericStringResourceAssert) HasSecretTypeString(expected str
 // Attribute empty checks //
 ////////////////////////////
 
-func (s *SecretWithGenericStringResourceAssert) HasNoComment() *SecretWithGenericStringResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
-	return s
-}
-
 func (s *SecretWithGenericStringResourceAssert) HasNoDatabase() *SecretWithGenericStringResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("database"))
 	return s
 }
 
-func (s *SecretWithGenericStringResourceAssert) HasNoFullyQualifiedName() *SecretWithGenericStringResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+func (s *SecretWithGenericStringResourceAssert) HasNoSchema() *SecretWithGenericStringResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("schema"))
 	return s
 }
 
@@ -91,8 +86,13 @@ func (s *SecretWithGenericStringResourceAssert) HasNoName() *SecretWithGenericSt
 	return s
 }
 
-func (s *SecretWithGenericStringResourceAssert) HasNoSchema() *SecretWithGenericStringResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+func (s *SecretWithGenericStringResourceAssert) HasNoComment() *SecretWithGenericStringResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("comment"))
+	return s
+}
+
+func (s *SecretWithGenericStringResourceAssert) HasNoFullyQualifiedName() *SecretWithGenericStringResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
 }
 
