@@ -20,21 +20,21 @@ type MaskingPolicyShowOutputAssert struct {
 func MaskingPolicyShowOutput(t *testing.T, name string) *MaskingPolicyShowOutputAssert {
 	t.Helper()
 
-	maskingPolicyAssert := MaskingPolicyShowOutputAssert{
+	m := MaskingPolicyShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	maskingPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &maskingPolicyAssert
+	m.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &m
 }
 
 func ImportedMaskingPolicyShowOutput(t *testing.T, id string) *MaskingPolicyShowOutputAssert {
 	t.Helper()
 
-	maskingPolicyAssert := MaskingPolicyShowOutputAssert{
+	m := MaskingPolicyShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	maskingPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &maskingPolicyAssert
+	m.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &m
 }
 
 ////////////////////////////
@@ -83,54 +83,5 @@ func (m *MaskingPolicyShowOutputAssert) HasExemptOtherPolicies(expected bool) *M
 
 func (m *MaskingPolicyShowOutputAssert) HasOwnerRoleType(expected string) *MaskingPolicyShowOutputAssert {
 	m.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
-	return m
-}
-
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
-
-func (m *MaskingPolicyShowOutputAssert) HasNoCreatedOn() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoName() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoDatabaseName() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoSchemaName() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoKind() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoOwner() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoComment() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoExemptOtherPolicies() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("exempt_other_policies"))
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoOwnerRoleType() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
 	return m
 }

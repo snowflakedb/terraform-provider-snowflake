@@ -20,21 +20,21 @@ type SecretShowOutputAssert struct {
 func SecretShowOutput(t *testing.T, name string) *SecretShowOutputAssert {
 	t.Helper()
 
-	secretAssert := SecretShowOutputAssert{
+	s := SecretShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	secretAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &secretAssert
+	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &s
 }
 
 func ImportedSecretShowOutput(t *testing.T, id string) *SecretShowOutputAssert {
 	t.Helper()
 
-	secretAssert := SecretShowOutputAssert{
+	s := SecretShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	secretAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &secretAssert
+	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &s
 }
 
 ////////////////////////////
@@ -78,54 +78,5 @@ func (s *SecretShowOutputAssert) HasSecretType(expected string) *SecretShowOutpu
 
 func (s *SecretShowOutputAssert) HasOwnerRoleType(expected string) *SecretShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
-	return s
-}
-
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
-
-func (s *SecretShowOutputAssert) HasNoCreatedOn() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
-	return s
-}
-
-func (s *SecretShowOutputAssert) HasNoName() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
-	return s
-}
-
-func (s *SecretShowOutputAssert) HasNoSchemaName() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
-	return s
-}
-
-func (s *SecretShowOutputAssert) HasNoDatabaseName() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
-	return s
-}
-
-func (s *SecretShowOutputAssert) HasNoOwner() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
-	return s
-}
-
-func (s *SecretShowOutputAssert) HasNoComment() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
-	return s
-}
-
-func (s *SecretShowOutputAssert) HasNoSecretType() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("secret_type"))
-	return s
-}
-
-func (s *SecretShowOutputAssert) HasNoOauthScopes() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("oauth_scopes.#", "0"))
-	return s
-}
-
-func (s *SecretShowOutputAssert) HasNoOwnerRoleType() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
 	return s
 }

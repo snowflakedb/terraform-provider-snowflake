@@ -20,21 +20,21 @@ type ConnectionShowOutputAssert struct {
 func ConnectionShowOutput(t *testing.T, name string) *ConnectionShowOutputAssert {
 	t.Helper()
 
-	connectionAssert := ConnectionShowOutputAssert{
+	c := ConnectionShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	connectionAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &connectionAssert
+	c.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &c
 }
 
 func ImportedConnectionShowOutput(t *testing.T, id string) *ConnectionShowOutputAssert {
 	t.Helper()
 
-	connectionAssert := ConnectionShowOutputAssert{
+	c := ConnectionShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	connectionAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &connectionAssert
+	c.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &c
 }
 
 ////////////////////////////
@@ -76,10 +76,17 @@ func (c *ConnectionShowOutputAssert) HasIsPrimary(expected bool) *ConnectionShow
 	return c
 }
 
-func (c *ConnectionShowOutputAssert) HasPrimary(expected sdk.ExternalObjectIdentifier) *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("primary", expected.FullyQualifiedName()))
+func (c *ConnectionShowOutputAssert) HasPrimary(expected string) *ConnectionShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputValueSet("primary", expected))
 	return c
 }
+
+/*
+func (c *ConnectionShowOutputAssert) HasFailoverAllowedToAccounts(expected []string) *ConnectionShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputValueSet("failover_allowed_to_accounts", expected))
+	return c
+}
+*/
 
 func (c *ConnectionShowOutputAssert) HasConnectionUrl(expected string) *ConnectionShowOutputAssert {
 	c.AddAssertion(assert.ResourceShowOutputValueSet("connection_url", expected))
@@ -93,69 +100,5 @@ func (c *ConnectionShowOutputAssert) HasOrganizationName(expected string) *Conne
 
 func (c *ConnectionShowOutputAssert) HasAccountLocator(expected string) *ConnectionShowOutputAssert {
 	c.AddAssertion(assert.ResourceShowOutputValueSet("account_locator", expected))
-	return c
-}
-
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
-
-func (c *ConnectionShowOutputAssert) HasNoRegionGroup() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("region_group"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoSnowflakeRegion() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("snowflake_region"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoCreatedOn() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoAccountName() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("account_name"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoName() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoComment() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoIsPrimary() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_primary"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoPrimary() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("primary"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoFailoverAllowedToAccounts() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("failover_allowed_to_accounts.#", "0"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoConnectionUrl() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("connection_url"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoOrganizationName() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_name"))
-	return c
-}
-
-func (c *ConnectionShowOutputAssert) HasNoAccountLocator() *ConnectionShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("account_locator"))
 	return c
 }

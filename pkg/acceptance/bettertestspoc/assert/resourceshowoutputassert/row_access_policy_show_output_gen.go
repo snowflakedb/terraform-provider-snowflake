@@ -19,21 +19,21 @@ type RowAccessPolicyShowOutputAssert struct {
 func RowAccessPolicyShowOutput(t *testing.T, name string) *RowAccessPolicyShowOutputAssert {
 	t.Helper()
 
-	rowAccessPolicyAssert := RowAccessPolicyShowOutputAssert{
+	r := RowAccessPolicyShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	rowAccessPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &rowAccessPolicyAssert
+	r.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &r
 }
 
 func ImportedRowAccessPolicyShowOutput(t *testing.T, id string) *RowAccessPolicyShowOutputAssert {
 	t.Helper()
 
-	rowAccessPolicyAssert := RowAccessPolicyShowOutputAssert{
+	r := RowAccessPolicyShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	rowAccessPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &rowAccessPolicyAssert
+	r.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &r
 }
 
 ////////////////////////////
@@ -82,54 +82,5 @@ func (r *RowAccessPolicyShowOutputAssert) HasOptions(expected string) *RowAccess
 
 func (r *RowAccessPolicyShowOutputAssert) HasOwnerRoleType(expected string) *RowAccessPolicyShowOutputAssert {
 	r.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
-	return r
-}
-
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoCreatedOn() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
-	return r
-}
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoName() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
-	return r
-}
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoDatabaseName() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
-	return r
-}
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoSchemaName() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
-	return r
-}
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoKind() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
-	return r
-}
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoOwner() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
-	return r
-}
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoComment() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
-	return r
-}
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoOptions() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
-	return r
-}
-
-func (r *RowAccessPolicyShowOutputAssert) HasNoOwnerRoleType() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
 	return r
 }

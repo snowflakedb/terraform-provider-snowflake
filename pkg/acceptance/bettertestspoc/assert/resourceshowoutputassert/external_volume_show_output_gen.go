@@ -19,21 +19,21 @@ type ExternalVolumeShowOutputAssert struct {
 func ExternalVolumeShowOutput(t *testing.T, name string) *ExternalVolumeShowOutputAssert {
 	t.Helper()
 
-	externalVolumeAssert := ExternalVolumeShowOutputAssert{
+	e := ExternalVolumeShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	externalVolumeAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &externalVolumeAssert
+	e.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &e
 }
 
 func ImportedExternalVolumeShowOutput(t *testing.T, id string) *ExternalVolumeShowOutputAssert {
 	t.Helper()
 
-	externalVolumeAssert := ExternalVolumeShowOutputAssert{
+	e := ExternalVolumeShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	externalVolumeAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &externalVolumeAssert
+	e.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &e
 }
 
 ////////////////////////////
@@ -45,31 +45,12 @@ func (e *ExternalVolumeShowOutputAssert) HasName(expected string) *ExternalVolum
 	return e
 }
 
-func (e *ExternalVolumeShowOutputAssert) HasAllowWrites(expected bool) *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputBoolValueSet("allow_writes", expected))
+func (e *ExternalVolumeShowOutputAssert) HasAllowWrites(expected string) *ExternalVolumeShowOutputAssert {
+	e.AddAssertion(assert.ResourceShowOutputValueSet("allow_writes", expected))
 	return e
 }
 
 func (e *ExternalVolumeShowOutputAssert) HasComment(expected string) *ExternalVolumeShowOutputAssert {
 	e.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
-	return e
-}
-
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
-
-func (e *ExternalVolumeShowOutputAssert) HasNoName() *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
-	return e
-}
-
-func (e *ExternalVolumeShowOutputAssert) HasNoAllowWrites() *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("allow_writes"))
-	return e
-}
-
-func (e *ExternalVolumeShowOutputAssert) HasNoComment() *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
 	return e
 }

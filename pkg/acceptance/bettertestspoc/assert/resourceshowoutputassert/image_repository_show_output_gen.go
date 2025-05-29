@@ -20,21 +20,21 @@ type ImageRepositoryShowOutputAssert struct {
 func ImageRepositoryShowOutput(t *testing.T, name string) *ImageRepositoryShowOutputAssert {
 	t.Helper()
 
-	imageRepositoryAssert := ImageRepositoryShowOutputAssert{
+	i := ImageRepositoryShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	imageRepositoryAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &imageRepositoryAssert
+	i.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &i
 }
 
 func ImportedImageRepositoryShowOutput(t *testing.T, id string) *ImageRepositoryShowOutputAssert {
 	t.Helper()
 
-	imageRepositoryAssert := ImageRepositoryShowOutputAssert{
+	i := ImageRepositoryShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	imageRepositoryAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &imageRepositoryAssert
+	i.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &i
 }
 
 ////////////////////////////
@@ -83,54 +83,5 @@ func (i *ImageRepositoryShowOutputAssert) HasComment(expected string) *ImageRepo
 
 func (i *ImageRepositoryShowOutputAssert) HasPrivatelinkRepositoryUrl(expected string) *ImageRepositoryShowOutputAssert {
 	i.AddAssertion(assert.ResourceShowOutputValueSet("privatelink_repository_url", expected))
-	return i
-}
-
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
-
-func (i *ImageRepositoryShowOutputAssert) HasNoCreatedOn() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
-	return i
-}
-
-func (i *ImageRepositoryShowOutputAssert) HasNoName() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
-	return i
-}
-
-func (i *ImageRepositoryShowOutputAssert) HasNoDatabaseName() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
-	return i
-}
-
-func (i *ImageRepositoryShowOutputAssert) HasNoSchemaName() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
-	return i
-}
-
-func (i *ImageRepositoryShowOutputAssert) HasNoRepositoryUrl() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("repository_url"))
-	return i
-}
-
-func (i *ImageRepositoryShowOutputAssert) HasNoOwner() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
-	return i
-}
-
-func (i *ImageRepositoryShowOutputAssert) HasNoOwnerRoleType() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
-	return i
-}
-
-func (i *ImageRepositoryShowOutputAssert) HasNoComment() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
-	return i
-}
-
-func (i *ImageRepositoryShowOutputAssert) HasNoPrivatelinkRepositoryUrl() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("privatelink_repository_url"))
 	return i
 }
