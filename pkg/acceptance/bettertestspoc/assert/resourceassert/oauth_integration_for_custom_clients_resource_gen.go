@@ -117,9 +117,9 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasRelatedParametersStr
 	return o
 }
 
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoName() *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueNotSet("name"))
@@ -127,7 +127,7 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoName() *OauthInteg
 }
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoBlockedRolesList() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("blocked_roles_list.#", "0"))
+	o.AddAssertion(assert.ValueNotSet("blocked_roles_list"))
 	return o
 }
 
@@ -197,154 +197,11 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoOauthUseSecondaryR
 }
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoPreAuthorizedRolesList() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("pre_authorized_roles_list.#", "0"))
+	o.AddAssertion(assert.ValueNotSet("pre_authorized_roles_list"))
 	return o
 }
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoRelatedParameters() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("related_parameters.#", "0"))
-	return o
-}
-
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasCommentEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("comment", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasEnabledEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("enabled", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasFullyQualifiedNameEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasNetworkPolicyEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("network_policy", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthAllowNonTlsRedirectUriEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("oauth_allow_non_tls_redirect_uri", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthClientRsaPublicKeyEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("oauth_client_rsa_public_key", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthClientRsaPublicKey2Empty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("oauth_client_rsa_public_key_2", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthEnforcePkceEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("oauth_enforce_pkce", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthIssueRefreshTokensEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("oauth_issue_refresh_tokens", ""))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthUseSecondaryRolesEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("oauth_use_secondary_roles", ""))
-	return o
-}
-
-///////////////////////////////
-// Attribute presence checks //
-///////////////////////////////
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasNameNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("name"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasBlockedRolesListNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("blocked_roles_list"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasCommentNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("comment"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasEnabledNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("enabled"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasFullyQualifiedNameNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("fully_qualified_name"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasNetworkPolicyNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("network_policy"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthAllowNonTlsRedirectUriNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_allow_non_tls_redirect_uri"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthClientRsaPublicKeyNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_client_rsa_public_key"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthClientRsaPublicKey2NotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_client_rsa_public_key_2"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthClientTypeNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_client_type"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthEnforcePkceNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_enforce_pkce"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthIssueRefreshTokensNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_issue_refresh_tokens"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthRedirectUriNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_redirect_uri"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthRefreshTokenValidityNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_refresh_token_validity"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthUseSecondaryRolesNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("oauth_use_secondary_roles"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesListNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("pre_authorized_roles_list"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasRelatedParametersNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValuePresent("related_parameters"))
+	o.AddAssertion(assert.ValueNotSet("related_parameters"))
 	return o
 }

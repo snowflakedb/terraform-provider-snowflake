@@ -112,9 +112,9 @@ func (p *ProcedureSqlResourceAssert) HasTraceLevelString(expected string) *Proce
 	return p
 }
 
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
 
 func (p *ProcedureSqlResourceAssert) HasNoDatabase() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("database"))
@@ -132,7 +132,7 @@ func (p *ProcedureSqlResourceAssert) HasNoName() *ProcedureSqlResourceAssert {
 }
 
 func (p *ProcedureSqlResourceAssert) HasNoArguments() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	p.AddAssertion(assert.ValueNotSet("arguments"))
 	return p
 }
 
@@ -193,138 +193,5 @@ func (p *ProcedureSqlResourceAssert) HasNoReturnType() *ProcedureSqlResourceAsse
 
 func (p *ProcedureSqlResourceAssert) HasNoTraceLevel() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("trace_level"))
-	return p
-}
-
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
-
-func (p *ProcedureSqlResourceAssert) HasCommentEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", ""))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasExecuteAsEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("execute_as", ""))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasFullyQualifiedNameEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasIsSecureEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("is_secure", ""))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasLogLevelEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_level", ""))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasMetricLevelEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("metric_level", ""))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasNullInputBehaviorEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("null_input_behavior", ""))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasProcedureLanguageEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("procedure_language", ""))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasTraceLevelEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("trace_level", ""))
-	return p
-}
-
-///////////////////////////////
-// Attribute presence checks //
-///////////////////////////////
-
-func (p *ProcedureSqlResourceAssert) HasDatabaseNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("database"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasSchemaNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("schema"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasNameNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("name"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasArgumentsNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("arguments"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasCommentNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("comment"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasEnableConsoleOutputNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("enable_console_output"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasExecuteAsNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("execute_as"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasFullyQualifiedNameNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasIsSecureNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("is_secure"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasLogLevelNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("log_level"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasMetricLevelNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("metric_level"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasNullInputBehaviorNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("null_input_behavior"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasProcedureDefinitionNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("procedure_definition"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasProcedureLanguageNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("procedure_language"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasReturnTypeNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("return_type"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasTraceLevelNotEmpty() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValuePresent("trace_level"))
 	return p
 }

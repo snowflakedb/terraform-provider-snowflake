@@ -87,9 +87,9 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOau
 	return a
 }
 
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasNoName() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("name"))
@@ -117,7 +117,7 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasNoO
 }
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasNoOauthAllowedScopes() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_allowed_scopes.#", "0"))
+	a.AddAssertion(assert.ValueNotSet("oauth_allowed_scopes"))
 	return a
 }
 
@@ -143,88 +143,5 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasNoO
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasNoOauthTokenEndpoint() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("oauth_token_endpoint"))
-	return a
-}
-
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasCommentEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasFullyQualifiedNameEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthClientAuthMethodEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_auth_method", ""))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthTokenEndpointEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_token_endpoint", ""))
-	return a
-}
-
-///////////////////////////////
-// Attribute presence checks //
-///////////////////////////////
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasNameNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasCommentNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasEnabledNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("enabled"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthAccessTokenValidityNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_access_token_validity"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthAllowedScopesNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_allowed_scopes"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthClientAuthMethodNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_auth_method"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthClientIdNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_id"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthClientSecretNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_secret"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthRefreshTokenValidityNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_refresh_token_validity"))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthTokenEndpointNotEmpty() *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_token_endpoint"))
 	return a
 }

@@ -47,9 +47,9 @@ func (a *AccountRoleResourceAssert) HasFullyQualifiedNameString(expected string)
 	return a
 }
 
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
 
 func (a *AccountRoleResourceAssert) HasNoName() *AccountRoleResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("name"))
@@ -63,38 +63,5 @@ func (a *AccountRoleResourceAssert) HasNoComment() *AccountRoleResourceAssert {
 
 func (a *AccountRoleResourceAssert) HasNoFullyQualifiedName() *AccountRoleResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
-	return a
-}
-
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
-
-func (a *AccountRoleResourceAssert) HasCommentEmpty() *AccountRoleResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
-	return a
-}
-
-func (a *AccountRoleResourceAssert) HasFullyQualifiedNameEmpty() *AccountRoleResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
-	return a
-}
-
-///////////////////////////////
-// Attribute presence checks //
-///////////////////////////////
-
-func (a *AccountRoleResourceAssert) HasNameNotEmpty() *AccountRoleResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
-	return a
-}
-
-func (a *AccountRoleResourceAssert) HasCommentNotEmpty() *AccountRoleResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
-	return a
-}
-
-func (a *AccountRoleResourceAssert) HasFullyQualifiedNameNotEmpty() *AccountRoleResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
 	return a
 }
