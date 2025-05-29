@@ -26,14 +26,14 @@ func (s *AlterServiceRequest) WithSpecificationTemplateFileWrapped(spec string, 
 	return s
 }
 
-func (s *ServiceFromSpecificationRequest) WithStageWrapped(Stage string) *ServiceFromSpecificationRequest {
-	Stage = fmt.Sprintf(`@%s`, Stage)
-	s.Stage = &Stage
+func (s *ServiceFromSpecificationRequest) WithStageWrapped(stage string) *ServiceFromSpecificationRequest {
+	stage = fmt.Sprintf(`@%s`, stage)
+	s.Stage = &stage
 	return s
 }
 
-func (s *ServiceFromSpecificationTemplateRequest) WithStageWrapped(Stage string) *ServiceFromSpecificationTemplateRequest {
-	Stage = fmt.Sprintf(`@%s`, Stage)
-	s.Stage = &Stage
+func (s *ServiceFromSpecificationTemplateRequest) WithStageWrapped(stage string) *ServiceFromSpecificationTemplateRequest {
+	stage = fmt.Sprintf(`@%s`, stage)
+	s.Stage = &stage
 	return s
 }
