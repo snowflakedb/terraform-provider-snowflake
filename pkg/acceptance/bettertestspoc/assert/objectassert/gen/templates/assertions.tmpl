@@ -13,8 +13,8 @@
                 return fmt.Errorf("expected {{ CamelToWords .Name }} to have value; got: nil")
             }
             {{ end -}}
-            if {{ if .IsOriginalTypePointer }}*{{ end }}{{ RunMapper .Mapper "o." .Name }} != {{ RunMapper .Mapper "expected" }} {
-                return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", {{ RunMapper .Mapper "expected" }}, {{ if .IsOriginalTypePointer }}*{{ end }}{{ RunMapper .Mapper "o." .Name }})
+            if {{ RunMapper .Mapper "o." .Name }} != {{ RunMapper .ExpectedValueMapper "expected" }} {
+                return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", {{ RunMapper .ExpectedValueMapper "expected" }}, {{ RunMapper .Mapper "o." .Name }})
             }
             return nil
         })

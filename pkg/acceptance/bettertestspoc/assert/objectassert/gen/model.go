@@ -29,6 +29,7 @@ type SnowflakeObjectFieldAssertion struct {
 	ConcreteType          string
 	IsOriginalTypePointer bool
 	Mapper                genhelpers.Mapper
+	ExpectedValueMapper   genhelpers.Mapper
 }
 
 func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) SnowflakeObjectAssertionsModel {
@@ -54,10 +55,21 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) SnowflakeO
 func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectFieldAssertion {
 	concreteTypeWithoutPtr, _ := strings.CutPrefix(field.ConcreteType, "*")
 
-	// TODO [SNOW-1501905]: handle other mappings if needed
 	mapper := genhelpers.Identity
+	if field.IsPointer() {
+		mapper = genhelpers.Dereference
+	}
+	expectedValueMapper := genhelpers.Identity
+
+	// TODO [SNOW-1501905]: handle other mappings if needed
 	if concreteTypeWithoutPtr == "sdk.AccountObjectIdentifier" {
 		mapper = genhelpers.Name
+		if field.IsPointer() {
+			mapper = func(s string) string {
+				return genhelpers.Name(genhelpers.Parentheses(genhelpers.Dereference(s)))
+			}
+		}
+		expectedValueMapper = genhelpers.Name
 	}
 
 	return SnowflakeObjectFieldAssertion{
@@ -65,5 +77,6 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 		ConcreteType:          field.ConcreteType,
 		IsOriginalTypePointer: field.IsPointer(),
 		Mapper:                mapper,
+		ExpectedValueMapper:   expectedValueMapper,
 	}
 }
