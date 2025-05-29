@@ -39,8 +39,8 @@
 {{ range .Attributes -}}
     {{ if and (eq .AttributeType "TypeString") (not .IsRequired) -}}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}Empty() *{{ $assertName }} {
-        {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", ""))
-        return {{ $assertVar }}
+            {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", ""))
+            return {{ $assertVar }}
         }
     {{ end }}
 
@@ -52,8 +52,8 @@
 
 {{ range .Attributes -}}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}NotEmpty() *{{ $assertName }} {
-    {{ $assertVar }}.AddAssertion(assert.ValuePresent("{{ .Name }}"))
-    return {{ $assertVar }}
+        {{ $assertVar }}.AddAssertion(assert.ValuePresent("{{ .Name }}"))
+        return {{ $assertVar }}
     }
 
 {{ end -}}
