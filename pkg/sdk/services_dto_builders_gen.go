@@ -78,8 +78,8 @@ func NewServiceFromSpecificationRequest() *ServiceFromSpecificationRequest {
 	return &ServiceFromSpecificationRequest{}
 }
 
-func (s *ServiceFromSpecificationRequest) WithLocation(Location LocationIdentifier) *ServiceFromSpecificationRequest {
-	s.Location = &Location
+func (s *ServiceFromSpecificationRequest) WithLocation(Location Location) *ServiceFromSpecificationRequest {
+	s.Location = Location
 	return s
 }
 
@@ -101,8 +101,8 @@ func NewServiceFromSpecificationTemplateRequest(
 	return &s
 }
 
-func (s *ServiceFromSpecificationTemplateRequest) WithLocation(Location LocationIdentifier) *ServiceFromSpecificationTemplateRequest {
-	s.Location = &Location
+func (s *ServiceFromSpecificationTemplateRequest) WithLocation(Location Location) *ServiceFromSpecificationTemplateRequest {
+	s.Location = Location
 	return s
 }
 

@@ -52,7 +52,7 @@ var listItemDef = g.NewQueryStruct("ListItem").
 
 var serviceFromSpecificationDef = g.NewQueryStruct("ServiceFromSpecification").
 	SQL("FROM").
-	OptionalIdentifier("Location", g.KindOfT[LocationIdentifier](), g.IdentifierOptions()).
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SPECIFICATION", g.ParameterOptions().NoEquals()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "Specification").
@@ -60,7 +60,7 @@ var serviceFromSpecificationDef = g.NewQueryStruct("ServiceFromSpecification").
 
 var serviceFromSpecificationTemplateDef = g.NewQueryStruct("ServiceFromSpecificationTemplate").
 	SQL("FROM").
-	OptionalIdentifier("Location", g.KindOfT[LocationIdentifier](), g.IdentifierOptions()).
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE", g.ParameterOptions().NoEquals()).
 	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses().Required()).

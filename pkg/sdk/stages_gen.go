@@ -379,5 +379,5 @@ func (s *Stage) ObjectType() ObjectType {
 }
 
 func (s *Stage) Location() string {
-	return NewLocationIdentifier(s.ID(), "").FullyQualifiedName()
+	return NewStageLocation(s.ID(), "").ToSql()
 }
