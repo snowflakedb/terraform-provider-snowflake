@@ -15,7 +15,7 @@ func (c *PrimaryConnectionResourceAssert) HasExactlyFailoverToAccountsInOrder(ex
 	return c
 }
 
-func (c *PrimaryConnectionResourceAssert) HasNoEnableFailoverToAccounts() *PrimaryConnectionResourceAssert {
+func (c *PrimaryConnectionResourceAssert) HasEnableFailoverToAccountsEmpty() *PrimaryConnectionResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_failover_to_accounts.#", "0"))
 	return c
 }

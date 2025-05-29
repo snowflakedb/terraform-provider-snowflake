@@ -71,11 +71,10 @@ func (p *PrimaryConnectionResourceAssert) HasNoComment() *PrimaryConnectionResou
 	return p
 }
 
-// commented out manually
-// func (p *PrimaryConnectionResourceAssert) HasNoEnableFailoverToAccounts() *PrimaryConnectionResourceAssert {
-//	 p.AddAssertion(assert.ValueNotSet("enable_failover_to_accounts"))
-//	 return p
-// }
+func (p *PrimaryConnectionResourceAssert) HasNoEnableFailoverToAccounts() *PrimaryConnectionResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("enable_failover_to_accounts"))
+	return p
+}
 
 func (p *PrimaryConnectionResourceAssert) HasNoFullyQualifiedName() *PrimaryConnectionResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
