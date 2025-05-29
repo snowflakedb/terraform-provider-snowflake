@@ -118,7 +118,7 @@ func ReadCortexSearchService(ctx context.Context, d *schema.ResourceData, meta a
 	client := meta.(*provider.Context).Client
 
 	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
-	cortexSearchService, err := client.CortexSearchServices.ShowByIDSafely(ctx, id)
+	cortexSearchServiceDetails, err := client.CortexSearchServices.Describe(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			log.Printf("[DEBUG] cortex search service (%s) not found", d.Id())
@@ -136,20 +136,28 @@ func ReadCortexSearchService(ctx context.Context, d *schema.ResourceData, meta a
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("name", cortexSearchService.Name); err != nil {
+	if err := d.Set("name", cortexSearchServiceDetails.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("database", cortexSearchService.DatabaseName); err != nil {
+	if err := d.Set("database", cortexSearchServiceDetails.DatabaseName); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("schema", cortexSearchService.SchemaName); err != nil {
+	if err := d.Set("schema", cortexSearchServiceDetails.SchemaName); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("comment", cortexSearchService.Comment); err != nil {
+	if cortexSearchServiceDetails.Comment != nil {
+		if err := d.Set("comment", *cortexSearchServiceDetails.Comment); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if err := d.Set("created_on", cortexSearchServiceDetails.CreatedOn); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("created_on", cortexSearchService.CreatedOn.String()); err != nil {
-		return diag.FromErr(err)
+
+	if cortexSearchServiceDetails.EmbeddingModel != nil {
+		if err := d.Set("embedding_model", *cortexSearchServiceDetails.EmbeddingModel); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return nil

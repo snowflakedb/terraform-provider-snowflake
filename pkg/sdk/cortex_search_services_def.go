@@ -100,7 +100,8 @@ var CortexSearchServiceDef = g.NewInterface(
 		Text("data_timestamp").
 		Number("source_data_num_rows").
 		Text("indexing_state").
-		OptionalText("indexing_error"),
+		OptionalText("indexing_error").
+		OptionalText("embedding_model"),
 	g.PlainStruct("CortexSearchServiceDetails").
 		Text("CreatedOn").
 		Text("Name").
@@ -117,7 +118,8 @@ var CortexSearchServiceDef = g.NewInterface(
 		Text("DataTimestamp").
 		Number("SourceDataNumRows").
 		Text("IndexingState").
-		OptionalText("IndexingError"),
+		OptionalText("IndexingError").
+		OptionalText("EmbeddingModel"),
 	g.NewQueryStruct("DescribeCortexSearchService").
 		Describe().
 		SQL("CORTEX SEARCH SERVICE").

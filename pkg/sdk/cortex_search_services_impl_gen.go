@@ -169,6 +169,9 @@ func (r cortexSearchServiceDetailsRow) convert() *CortexSearchServiceDetails {
 	if r.IndexingError.Valid {
 		row.IndexingError = String(r.IndexingError.String)
 	}
+	if r.EmbeddingModel.Valid {
+		row.EmbeddingModel = String(r.EmbeddingModel.String)
+	}
 
 	return row
 }

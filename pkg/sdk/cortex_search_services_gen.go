@@ -102,6 +102,8 @@ type cortexSearchServiceDetailsRow struct {
 	SourceDataNumRows int            `db:"source_data_num_rows"`
 	IndexingState     string         `db:"indexing_state"`
 	IndexingError     sql.NullString `db:"indexing_error"`
+	ServingState      string         `db:"serving_state"`
+	EmbeddingModel    sql.NullString `db:"embedding_model"`
 }
 type CortexSearchServiceDetails struct {
 	CreatedOn         string
@@ -120,6 +122,8 @@ type CortexSearchServiceDetails struct {
 	SourceDataNumRows int
 	IndexingState     string
 	IndexingError     *string
+	ServingState      string
+	EmbeddingModel    *string
 }
 
 // DropCortexSearchServiceOptions is based on https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/drop-cortex-search.
