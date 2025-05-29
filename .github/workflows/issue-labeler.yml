@@ -19,14 +19,14 @@ jobs:
             
             const splitBody = issue.body.split('\n\n')
             
-            let category = '';
+            let category = [];
             let objectTypes = [];
             
             for (let i = 0; i < splitBody.length; i++) {
-              if (splitBody[i].startsWith('### Category')) {
-                category = splitBody[i + 1]
+              if (splitBody[i].startsWith('### Category') && !splitBody[i + 1].startsWith('_No response_')) {
+                category = splitBody[i + 1].split(", ")
               }
-              if (splitBody[i].startsWith('### Object type(s)')) {
+              if (splitBody[i].startsWith('### Object type(s)') && !splitBody[i + 1].startsWith('_No response_')) {
                 objectTypes = splitBody[i + 1].split(", ")
               }
             }
@@ -39,6 +39,6 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                labels: [category, ...objectTypes]
+                labels: [...category, ...objectTypes]
               });
             }
