@@ -100,6 +100,11 @@ func (opts *AlterServiceOptions) validate() error {
 			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecificationTemplate", "Stage", "SpecificationTemplate"))
 		}
 	}
+	if valueSet(opts.Restore) {
+		if !ValidObjectIdentifier(opts.Restore.FromSnapshot) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+	}
 	if valueSet(opts.Set) {
 		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
 			errs = append(errs, ErrInvalidObjectIdentifier)

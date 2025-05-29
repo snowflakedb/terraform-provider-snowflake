@@ -51,14 +51,14 @@ type ServiceFromSpecification struct {
 	from              bool    `ddl:"static" sql:"FROM"`
 	Stage             *string `ddl:"keyword"`
 	SpecificationFile *string `ddl:"parameter,single_quotes" sql:"SPECIFICATION_FILE"`
-	Specification     *string `ddl:"parameter,single_quotes,no_equals" sql:"SPECIFICATION"`
+	Specification     *string `ddl:"parameter,no_equals" sql:"SPECIFICATION"`
 }
 
 type ServiceFromSpecificationTemplate struct {
 	from                      bool       `ddl:"static" sql:"FROM"`
 	Stage                     *string    `ddl:"keyword"`
 	SpecificationTemplateFile *string    `ddl:"parameter,single_quotes" sql:"SPECIFICATION_TEMPLATE_FILE"`
-	SpecificationTemplate     *string    `ddl:"parameter,single_quotes,no_equals" sql:"SPECIFICATION_TEMPLATE"`
+	SpecificationTemplate     *string    `ddl:"parameter,no_equals" sql:"SPECIFICATION_TEMPLATE"`
 	Using                     []ListItem `ddl:"parameter,parentheses,no_equals" sql:"USING"`
 }
 
@@ -80,9 +80,9 @@ type AlterServiceOptions struct {
 }
 
 type Restore struct {
-	Volume       string `ddl:"parameter,double_quotes,no_equals" sql:"VOLUME"`
-	Instances    []int  `ddl:"keyword" sql:"INSTANCES"`
-	FromSnapshot string `ddl:"parameter,double_quotes,no_equals" sql:"FROM SNAPSHOT"`
+	Volume       string                 `ddl:"parameter,double_quotes,no_equals" sql:"VOLUME"`
+	Instances    []int                  `ddl:"keyword" sql:"INSTANCES"`
+	FromSnapshot SchemaObjectIdentifier `ddl:"identifier" sql:"FROM SNAPSHOT"`
 }
 
 type ServiceSet struct {

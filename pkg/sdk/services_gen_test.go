@@ -181,9 +181,9 @@ func TestServices_Create(t *testing.T) {
 	t.Run("from specification", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("{}"),
+			Specification: String("$$SPEC$$"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION '{}'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION $$SPEC$$", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
 	})
 
 	t.Run("from specification template file", func(t *testing.T) {
@@ -228,7 +228,7 @@ func TestServices_Create(t *testing.T) {
 	t.Run("from specification template", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("{}"),
+			SpecificationTemplate: String("$$SPEC$$"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -236,7 +236,7 @@ func TestServices_Create(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION_TEMPLATE '{}' USING ("string" => "bar")`, id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION_TEMPLATE $$SPEC$$ USING ("string" => "bar")`, id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -247,7 +247,7 @@ func TestServices_Create(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("{}"),
+			Specification: String("$$SPEC$$"),
 		}
 		opts.AutoSuspendSecs = Pointer(600)
 		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
@@ -268,7 +268,7 @@ func TestServices_Create(t *testing.T) {
 		}
 		opts.Comment = &comment
 
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s FROM SPECIFICATION '{}' AUTO_SUSPEND_SECS = 600 "+
+		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s FROM SPECIFICATION $$SPEC$$ AUTO_SUSPEND_SECS = 600 "+
 			"EXTERNAL_ACCESS_INTEGRATIONS = (%s) AUTO_RESUME = true MIN_INSTANCES = 1 MIN_READY_INSTANCES = 1 MAX_INSTANCES = 3 "+
 			"QUERY_WAREHOUSE = %s TAG (\"tag1\" = 'value1') COMMENT = '%s'",
 			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), integration1Id.FullyQualifiedName(),
@@ -447,6 +447,15 @@ func TestServices_Alter(t *testing.T) {
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 	})
+
+	t.Run("validation: invalid restore from snapshot", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Restore = &Restore{
+			FromSnapshot: emptySchemaObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
 	t.Run("suspend", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Suspend = Bool(true)
@@ -488,9 +497,9 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("from specification", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("{}"),
+			Specification: String("$$SPEC$$"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM SPECIFICATION '{}'", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM SPECIFICATION $$SPEC$$", id.FullyQualifiedName())
 	})
 
 	t.Run("from specification template file", func(t *testing.T) {
@@ -535,7 +544,7 @@ func TestServices_Alter(t *testing.T) {
 	t.Run("from specification template", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("{}"),
+			SpecificationTemplate: String("$$SPEC$$"),
 			Using: []ListItem{
 				{
 					Key:   "string",
@@ -543,17 +552,18 @@ func TestServices_Alter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM SPECIFICATION_TEMPLATE '{}' USING ("string" => "bar")`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM SPECIFICATION_TEMPLATE $$SPEC$$ USING ("string" => "bar")`, id.FullyQualifiedName())
 	})
 
 	t.Run("with restore", func(t *testing.T) {
 		opts := defaultOpts()
+		snapshotId := randomSchemaObjectIdentifier()
 		opts.Restore = &Restore{
 			Volume:       "vol1",
 			Instances:    []int{0, 1},
-			FromSnapshot: "snap1",
+			FromSnapshot: snapshotId,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s RESTORE VOLUME "vol1" INSTANCES 0, 1 FROM SNAPSHOT "snap1"`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s RESTORE VOLUME "vol1" INSTANCES 0, 1 FROM SNAPSHOT %s`, id.FullyQualifiedName(), snapshotId.FullyQualifiedName())
 	})
 
 	t.Run("with set", func(t *testing.T) {

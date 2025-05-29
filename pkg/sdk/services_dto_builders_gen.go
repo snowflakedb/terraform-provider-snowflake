@@ -93,8 +93,12 @@ func (s *ServiceFromSpecificationRequest) WithSpecification(Specification string
 	return s
 }
 
-func NewServiceFromSpecificationTemplateRequest() *ServiceFromSpecificationTemplateRequest {
-	return &ServiceFromSpecificationTemplateRequest{}
+func NewServiceFromSpecificationTemplateRequest(
+	Using []ListItem,
+) *ServiceFromSpecificationTemplateRequest {
+	s := ServiceFromSpecificationTemplateRequest{}
+	s.Using = Using
+	return &s
 }
 
 func (s *ServiceFromSpecificationTemplateRequest) WithStage(Stage string) *ServiceFromSpecificationTemplateRequest {
@@ -109,11 +113,6 @@ func (s *ServiceFromSpecificationTemplateRequest) WithSpecificationTemplateFile(
 
 func (s *ServiceFromSpecificationTemplateRequest) WithSpecificationTemplate(SpecificationTemplate string) *ServiceFromSpecificationTemplateRequest {
 	s.SpecificationTemplate = &SpecificationTemplate
-	return s
-}
-
-func (s *ServiceFromSpecificationTemplateRequest) WithUsing(Using []ListItem) *ServiceFromSpecificationTemplateRequest {
-	s.Using = Using
 	return s
 }
 
@@ -186,7 +185,7 @@ func (s *AlterServiceRequest) WithUnsetTags(UnsetTags []ObjectIdentifier) *Alter
 func NewRestoreRequest(
 	Volume string,
 	Instances []int,
-	FromSnapshot string,
+	FromSnapshot SchemaObjectIdentifier,
 ) *RestoreRequest {
 	s := RestoreRequest{}
 	s.Volume = Volume

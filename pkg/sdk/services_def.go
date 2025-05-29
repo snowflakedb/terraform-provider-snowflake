@@ -54,7 +54,7 @@ var serviceFromSpecificationDef = g.NewQueryStruct("ServiceFromSpecification").
 	SQL("FROM").
 	OptionalText("Stage", g.KeywordOptions()).
 	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
-	OptionalTextAssignment("SPECIFICATION", g.ParameterOptions().NoEquals().SingleQuotes()).
+	OptionalTextAssignment("SPECIFICATION", g.ParameterOptions().NoEquals()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "Specification").
 	WithValidation(g.ConflictingFields, "Stage", "Specification")
 
@@ -62,8 +62,8 @@ var serviceFromSpecificationTemplateDef = g.NewQueryStruct("ServiceFromSpecifica
 	SQL("FROM").
 	OptionalText("Stage", g.KeywordOptions()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
-	OptionalTextAssignment("SPECIFICATION_TEMPLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
-	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses()).
+	OptionalTextAssignment("SPECIFICATION_TEMPLATE", g.ParameterOptions().NoEquals()).
+	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses().Required()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
 	WithValidation(g.ConflictingFields, "Stage", "SpecificationTemplate")
 
@@ -115,7 +115,8 @@ var ServicesDef = g.NewInterface(
 			g.NewQueryStruct("Restore").
 				TextAssignment("VOLUME", g.ParameterOptions().DoubleQuotes().Required().NoEquals()).
 				NamedList("INSTANCES", "int", g.KeywordOptions().Required()).
-				TextAssignment("FROM SNAPSHOT", g.ParameterOptions().DoubleQuotes().Required().NoEquals()),
+				Identifier("FromSnapshot", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FROM SNAPSHOT").Required()).
+				WithValidation(g.ValidIdentifier, "FromSnapshot"),
 			g.KeywordOptions().SQL("RESTORE"),
 		).
 		OptionalQueryStructField(

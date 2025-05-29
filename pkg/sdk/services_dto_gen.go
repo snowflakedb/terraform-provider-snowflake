@@ -37,7 +37,7 @@ type ServiceFromSpecificationTemplateRequest struct {
 	Stage                     *string
 	SpecificationTemplateFile *string
 	SpecificationTemplate     *string
-	Using                     []ListItem
+	Using                     []ListItem // required
 }
 
 type ServiceExternalAccessIntegrationsRequest struct {
@@ -59,9 +59,9 @@ type AlterServiceRequest struct {
 }
 
 type RestoreRequest struct {
-	Volume       string // required
-	Instances    []int  // required
-	FromSnapshot string // required
+	Volume       string                 // required
+	Instances    []int                  // required
+	FromSnapshot SchemaObjectIdentifier // required
 }
 
 type ServiceSetRequest struct {
