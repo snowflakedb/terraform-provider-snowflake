@@ -32,6 +32,21 @@ func ImportedTaskResource(t *testing.T, id string) *TaskResourceAssert {
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (t *TaskResourceAssert) HasDatabaseString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("database", expected))
+	return t
+}
+
+func (t *TaskResourceAssert) HasSchemaString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("schema", expected))
+	return t
+}
+
+func (t *TaskResourceAssert) HasNameString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("name", expected))
+	return t
+}
+
 func (t *TaskResourceAssert) HasAbortDetachedQueryString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("abort_detached_query", expected))
 	return t
@@ -109,11 +124,6 @@ func (t *TaskResourceAssert) HasCommentString(expected string) *TaskResourceAsse
 
 func (t *TaskResourceAssert) HasConfigString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("config", expected))
-	return t
-}
-
-func (t *TaskResourceAssert) HasDatabaseString(expected string) *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("database", expected))
 	return t
 }
 
@@ -197,11 +207,6 @@ func (t *TaskResourceAssert) HasMultiStatementCountString(expected string) *Task
 	return t
 }
 
-func (t *TaskResourceAssert) HasNameString(expected string) *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("name", expected))
-	return t
-}
-
 func (t *TaskResourceAssert) HasNoorderSequenceAsDefaultString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("noorder_sequence_as_default", expected))
 	return t
@@ -234,11 +239,6 @@ func (t *TaskResourceAssert) HasS3StageVpceDnsNameString(expected string) *TaskR
 
 func (t *TaskResourceAssert) HasScheduleString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("schedule", expected))
-	return t
-}
-
-func (t *TaskResourceAssert) HasSchemaString(expected string) *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("schema", expected))
 	return t
 }
 
@@ -401,6 +401,21 @@ func (t *TaskResourceAssert) HasWhenString(expected string) *TaskResourceAssert 
 // Attribute empty checks //
 ////////////////////////////
 
+func (t *TaskResourceAssert) HasNoDatabase() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("database"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasNoSchema() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("schema"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasNoName() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("name"))
+	return t
+}
+
 func (t *TaskResourceAssert) HasNoAbortDetachedQuery() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("abort_detached_query"))
 	return t
@@ -478,11 +493,6 @@ func (t *TaskResourceAssert) HasNoComment() *TaskResourceAssert {
 
 func (t *TaskResourceAssert) HasNoConfig() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("config"))
-	return t
-}
-
-func (t *TaskResourceAssert) HasNoDatabase() *TaskResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("database"))
 	return t
 }
 
@@ -566,11 +576,6 @@ func (t *TaskResourceAssert) HasNoMultiStatementCount() *TaskResourceAssert {
 	return t
 }
 
-func (t *TaskResourceAssert) HasNoName() *TaskResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("name"))
-	return t
-}
-
 func (t *TaskResourceAssert) HasNoNoorderSequenceAsDefault() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("noorder_sequence_as_default"))
 	return t
@@ -603,11 +608,6 @@ func (t *TaskResourceAssert) HasNoS3StageVpceDnsName() *TaskResourceAssert {
 
 func (t *TaskResourceAssert) HasNoSchedule() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("schedule"))
-	return t
-}
-
-func (t *TaskResourceAssert) HasNoSchema() *TaskResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("schema"))
 	return t
 }
 

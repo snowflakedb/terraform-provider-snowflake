@@ -32,6 +32,21 @@ func ImportedSecretWithClientCredentialsResource(t *testing.T, id string) *Secre
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (s *SecretWithClientCredentialsResourceAssert) HasDatabaseString(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.AddAssertion(assert.ValueSet("database", expected))
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasSchemaString(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.AddAssertion(assert.ValueSet("schema", expected))
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasNameString(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.AddAssertion(assert.ValueSet("name", expected))
+	return s
+}
+
 func (s *SecretWithClientCredentialsResourceAssert) HasApiAuthenticationString(expected string) *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueSet("api_authentication", expected))
 	return s
@@ -42,28 +57,13 @@ func (s *SecretWithClientCredentialsResourceAssert) HasCommentString(expected st
 	return s
 }
 
-func (s *SecretWithClientCredentialsResourceAssert) HasDatabaseString(expected string) *SecretWithClientCredentialsResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
-	return s
-}
-
 func (s *SecretWithClientCredentialsResourceAssert) HasFullyQualifiedNameString(expected string) *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
 }
 
-func (s *SecretWithClientCredentialsResourceAssert) HasNameString(expected string) *SecretWithClientCredentialsResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
-	return s
-}
-
 func (s *SecretWithClientCredentialsResourceAssert) HasOauthScopesString(expected string) *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueSet("oauth_scopes", expected))
-	return s
-}
-
-func (s *SecretWithClientCredentialsResourceAssert) HasSchemaString(expected string) *SecretWithClientCredentialsResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
 	return s
 }
 
@@ -76,6 +76,21 @@ func (s *SecretWithClientCredentialsResourceAssert) HasSecretTypeString(expected
 // Attribute empty checks //
 ////////////////////////////
 
+func (s *SecretWithClientCredentialsResourceAssert) HasNoDatabase() *SecretWithClientCredentialsResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("database"))
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasNoSchema() *SecretWithClientCredentialsResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("schema"))
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasNoName() *SecretWithClientCredentialsResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("name"))
+	return s
+}
+
 func (s *SecretWithClientCredentialsResourceAssert) HasNoApiAuthentication() *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("api_authentication"))
 	return s
@@ -86,28 +101,13 @@ func (s *SecretWithClientCredentialsResourceAssert) HasNoComment() *SecretWithCl
 	return s
 }
 
-func (s *SecretWithClientCredentialsResourceAssert) HasNoDatabase() *SecretWithClientCredentialsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
-	return s
-}
-
 func (s *SecretWithClientCredentialsResourceAssert) HasNoFullyQualifiedName() *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
 }
 
-func (s *SecretWithClientCredentialsResourceAssert) HasNoName() *SecretWithClientCredentialsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
-	return s
-}
-
 func (s *SecretWithClientCredentialsResourceAssert) HasNoOauthScopes() *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("oauth_scopes"))
-	return s
-}
-
-func (s *SecretWithClientCredentialsResourceAssert) HasNoSchema() *SecretWithClientCredentialsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
 	return s
 }
 

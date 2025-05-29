@@ -32,6 +32,11 @@ func ImportedServiceUserResource(t *testing.T, id string) *ServiceUserResourceAs
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (s *ServiceUserResourceAssert) HasNameString(expected string) *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("name", expected))
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasAbortDetachedQueryString(expected string) *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueSet("abort_detached_query", expected))
 	return s
@@ -227,11 +232,6 @@ func (s *ServiceUserResourceAssert) HasMultiStatementCountString(expected string
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasNameString(expected string) *ServiceUserResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasNetworkPolicyString(expected string) *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueSet("network_policy", expected))
 	return s
@@ -405,6 +405,11 @@ func (s *ServiceUserResourceAssert) HasWeekStartString(expected string) *Service
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (s *ServiceUserResourceAssert) HasNoName() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("name"))
+	return s
+}
 
 func (s *ServiceUserResourceAssert) HasNoAbortDetachedQuery() *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("abort_detached_query"))
@@ -598,11 +603,6 @@ func (s *ServiceUserResourceAssert) HasNoMinsToUnlock() *ServiceUserResourceAsse
 
 func (s *ServiceUserResourceAssert) HasNoMultiStatementCount() *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("multi_statement_count"))
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasNoName() *ServiceUserResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
 

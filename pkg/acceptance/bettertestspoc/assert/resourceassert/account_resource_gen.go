@@ -32,6 +32,11 @@ func ImportedAccountResource(t *testing.T, id string) *AccountResourceAssert {
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (a *AccountResourceAssert) HasNameString(expected string) *AccountResourceAssert {
+	a.AddAssertion(assert.ValueSet("name", expected))
+	return a
+}
+
 func (a *AccountResourceAssert) HasAdminNameString(expected string) *AccountResourceAssert {
 	a.AddAssertion(assert.ValueSet("admin_name", expected))
 	return a
@@ -97,11 +102,6 @@ func (a *AccountResourceAssert) HasMustChangePasswordString(expected string) *Ac
 	return a
 }
 
-func (a *AccountResourceAssert) HasNameString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
-	return a
-}
-
 func (a *AccountResourceAssert) HasRegionString(expected string) *AccountResourceAssert {
 	a.AddAssertion(assert.ValueSet("region", expected))
 	return a
@@ -115,6 +115,11 @@ func (a *AccountResourceAssert) HasRegionGroupString(expected string) *AccountRe
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (a *AccountResourceAssert) HasNoName() *AccountResourceAssert {
+	a.AddAssertion(assert.ValueNotSet("name"))
+	return a
+}
 
 func (a *AccountResourceAssert) HasNoAdminName() *AccountResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("admin_name"))
@@ -178,11 +183,6 @@ func (a *AccountResourceAssert) HasNoLastName() *AccountResourceAssert {
 
 func (a *AccountResourceAssert) HasNoMustChangePassword() *AccountResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("must_change_password"))
-	return a
-}
-
-func (a *AccountResourceAssert) HasNoName() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
 	return a
 }
 
