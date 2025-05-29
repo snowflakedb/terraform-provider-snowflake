@@ -34,6 +34,15 @@ func intAttributeUpdate(d *schema.ResourceData, key string, setField **int, unse
 	return nil
 }
 
+func intAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **int) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			*setField = sdk.Int(v.(int))
+		}
+	}
+	return nil
+}
+
 func intAttributeWithSpecialDefaultUpdate(d *schema.ResourceData, key string, setField **int, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(int); v != IntDefault {

@@ -29,16 +29,16 @@ func (v *plainStruct) Text(name string) *plainStruct {
 	return v.Field(name, "string")
 }
 
+func (v *plainStruct) OptionalText(name string) *plainStruct {
+	return v.Field(name, "*string")
+}
+
 func (v *plainStruct) Time(name string) *plainStruct {
 	return v.Field(name, "time.Time")
 }
 
 func (v *plainStruct) OptionalTime(name string) *plainStruct {
 	return v.Field(name, "*time.Time")
-}
-
-func (v *plainStruct) OptionalText(name string) *plainStruct {
-	return v.Field(name, "*string")
 }
 
 func (v *plainStruct) Bool(name string) *plainStruct {

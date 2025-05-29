@@ -29,16 +29,16 @@ func (v *dbStruct) Text(dbName string) *dbStruct {
 	return v.Field(dbName, "string")
 }
 
+func (v *dbStruct) OptionalText(dbName string) *dbStruct {
+	return v.Field(dbName, "sql.NullString")
+}
+
 func (v *dbStruct) Time(dbName string) *dbStruct {
 	return v.Field(dbName, "time.Time")
 }
 
 func (v *dbStruct) OptionalTime(dbName string) *dbStruct {
 	return v.Field(dbName, "sql.NullTime")
-}
-
-func (v *dbStruct) OptionalText(dbName string) *dbStruct {
-	return v.Field(dbName, "sql.NullString")
 }
 
 func (v *dbStruct) Bool(dbName string) *dbStruct {

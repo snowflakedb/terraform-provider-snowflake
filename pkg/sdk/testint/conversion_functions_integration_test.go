@@ -16,7 +16,7 @@ func TestInt_ToTimestampLTZ(t *testing.T) {
 	ctx := testContext(t)
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 		Set: &sdk.AccountSet{
-			Parameters: &sdk.AccountLevelParameters{
+			LegacyParameters: &sdk.AccountLevelParameters{
 				SessionParameters: &sdk.SessionParameters{
 					TimestampTypeMapping: sdk.Pointer(sdk.TimestampTypeMappingLtz),
 					Timezone:             sdk.String("UTC"),
@@ -55,7 +55,7 @@ func TestInt_ToTimestampNTZ(t *testing.T) {
 	ctx := testContext(t)
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 		Set: &sdk.AccountSet{
-			Parameters: &sdk.AccountLevelParameters{
+			LegacyParameters: &sdk.AccountLevelParameters{
 				SessionParameters: &sdk.SessionParameters{
 					TimestampTypeMapping: sdk.Pointer(sdk.TimestampTypeMappingLtz),
 					Timezone:             sdk.String("UTC"),

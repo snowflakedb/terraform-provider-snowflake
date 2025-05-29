@@ -49,6 +49,7 @@ type Client struct {
 	FailoverGroups               FailoverGroups
 	FileFormats                  FileFormats
 	Functions                    Functions
+	GitRepositories              GitRepositories
 	Grants                       Grants
 	ImageRepositories            ImageRepositories
 	ManagedAccounts              ManagedAccounts
@@ -180,6 +181,7 @@ func (c *Client) initialize() {
 	c.FailoverGroups = &failoverGroups{client: c}
 	c.FileFormats = &fileFormats{client: c}
 	c.Functions = &functions{client: c}
+	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}

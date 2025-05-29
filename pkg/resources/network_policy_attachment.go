@@ -207,7 +207,7 @@ func setOnAccount(ctx context.Context, d *schema.ResourceData, meta any) error {
 
 	policyName := d.Get("network_policy_name").(string)
 
-	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{Parameters: &sdk.AccountLevelParameters{ObjectParameters: &sdk.ObjectParameters{NetworkPolicy: sdk.String(policyName)}}}})
+	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{LegacyParameters: &sdk.AccountLevelParameters{ObjectParameters: &sdk.ObjectParameters{NetworkPolicy: sdk.String(policyName)}}}})
 	if err != nil {
 		return fmt.Errorf("error setting network policy %v on account err = %w", policyName, err)
 	}
