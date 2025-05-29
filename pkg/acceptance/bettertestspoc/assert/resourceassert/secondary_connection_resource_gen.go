@@ -57,9 +57,9 @@ func (s *SecondaryConnectionResourceAssert) HasIsPrimaryString(expected string) 
 	return s
 }
 
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
 
 func (s *SecondaryConnectionResourceAssert) HasNoName() *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("name"))
@@ -83,48 +83,5 @@ func (s *SecondaryConnectionResourceAssert) HasNoFullyQualifiedName() *Secondary
 
 func (s *SecondaryConnectionResourceAssert) HasNoIsPrimary() *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("is_primary"))
-	return s
-}
-
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
-
-func (s *SecondaryConnectionResourceAssert) HasCommentEmpty() *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
-	return s
-}
-
-func (s *SecondaryConnectionResourceAssert) HasFullyQualifiedNameEmpty() *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
-	return s
-}
-
-///////////////////////////////
-// Attribute presence checks //
-///////////////////////////////
-
-func (s *SecondaryConnectionResourceAssert) HasNameNotEmpty() *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
-	return s
-}
-
-func (s *SecondaryConnectionResourceAssert) HasAsReplicaOfNotEmpty() *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValuePresent("as_replica_of"))
-	return s
-}
-
-func (s *SecondaryConnectionResourceAssert) HasCommentNotEmpty() *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
-	return s
-}
-
-func (s *SecondaryConnectionResourceAssert) HasFullyQualifiedNameNotEmpty() *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
-	return s
-}
-
-func (s *SecondaryConnectionResourceAssert) HasIsPrimaryNotEmpty() *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValuePresent("is_primary"))
 	return s
 }

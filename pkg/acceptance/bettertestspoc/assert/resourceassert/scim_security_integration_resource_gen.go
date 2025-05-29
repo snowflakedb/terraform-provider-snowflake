@@ -72,9 +72,9 @@ func (s *ScimSecurityIntegrationResourceAssert) HasSyncPasswordString(expected s
 	return s
 }
 
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
 
 func (s *ScimSecurityIntegrationResourceAssert) HasNoName() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("name"))
@@ -113,73 +113,5 @@ func (s *ScimSecurityIntegrationResourceAssert) HasNoScimClient() *ScimSecurityI
 
 func (s *ScimSecurityIntegrationResourceAssert) HasNoSyncPassword() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("sync_password"))
-	return s
-}
-
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
-
-func (s *ScimSecurityIntegrationResourceAssert) HasCommentEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasFullyQualifiedNameEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasNetworkPolicyEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValueSet("network_policy", ""))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasSyncPasswordEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValueSet("sync_password", ""))
-	return s
-}
-
-///////////////////////////////
-// Attribute presence checks //
-///////////////////////////////
-
-func (s *ScimSecurityIntegrationResourceAssert) HasNameNotEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasCommentNotEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasEnabledNotEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValuePresent("enabled"))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasFullyQualifiedNameNotEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasNetworkPolicyNotEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValuePresent("network_policy"))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasRunAsRoleNotEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValuePresent("run_as_role"))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasScimClientNotEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValuePresent("scim_client"))
-	return s
-}
-
-func (s *ScimSecurityIntegrationResourceAssert) HasSyncPasswordNotEmpty() *ScimSecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValuePresent("sync_password"))
 	return s
 }
