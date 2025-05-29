@@ -17,16 +17,18 @@ jobs:
             const issue = context.payload.issue;
             if (!issue.body) return;
             
+            // GitHub api returns issue body split sections by two newlines
+            // Note: text areas in issue forms can also be split by two newlines, but that shouldn't be a problem
             const splitBody = issue.body.split('\n\n')
             
             let category = [];
             let objectTypes = [];
             
-            for (let i = 0; i < splitBody.length; i++) {
-              if (splitBody[i].startsWith('### Category') && !splitBody[i + 1].startsWith('_No response_')) {
+            for (let i = 0; i < splitBody.length-1; i++) {
+              if (splitBody[i].startsWith('### Category') && splitBody[i + 1].startsWith('category:')) {
                 category = splitBody[i + 1].split(", ")
               }
-              if (splitBody[i].startsWith('### Object type(s)') && !splitBody[i + 1].startsWith('_No response_')) {
+              if (splitBody[i].startsWith('### Object type(s)') && (splitBody[i + 1].startsWith('resource:') || splitBody[i + 1].startsWith('data_source:'))) {
                 objectTypes = splitBody[i + 1].split(", ")
               }
             }
