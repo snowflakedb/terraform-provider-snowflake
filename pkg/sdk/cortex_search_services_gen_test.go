@@ -60,14 +60,21 @@ func TestCortexSearchServices_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
 	})
 
+	t.Run("with embedding model", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.EmbeddingModel = String("snowflake-arctic-embed-m-v1.5")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' EMBEDDING_MODEL = 'snowflake-arctic-embed-m-v1.5' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
+	})
+
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.Attributes = &Attributes{
 			Columns: []string{"product_id", "product_name"},
 		}
+		opts.EmbeddingModel = String("snowflake-arctic-embed-l-v2.0")
 		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE IF NOT EXISTS %s ON searchable_text ATTRIBUTES product_id, product_name WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' COMMENT = 'comment' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE IF NOT EXISTS %s ON searchable_text ATTRIBUTES product_id, product_name WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' EMBEDDING_MODEL = 'snowflake-arctic-embed-l-v2.0' COMMENT = 'comment' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
 	})
 }
 

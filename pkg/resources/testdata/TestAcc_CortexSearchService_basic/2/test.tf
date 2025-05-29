@@ -26,14 +26,15 @@ resource "snowflake_table" "t" {
 }
 
 resource "snowflake_cortex_search_service" "css" {
-  depends_on = [snowflake_table.t, snowflake_warehouse.t]
-  on         = var.on
-  attributes = var.attributes
-  name       = var.name
-  database   = var.database
-  schema     = var.schema
-  target_lag = "2 minutes"
-  warehouse  = var.warehouse
-  query      = var.query
-  comment    = var.comment
+  depends_on      = [snowflake_table.t, snowflake_warehouse.t]
+  on              = var.on
+  attributes      = var.attributes
+  name            = var.name
+  database        = var.database
+  schema          = var.schema
+  target_lag      = "2 minutes"
+  warehouse       = var.warehouse
+  query           = var.query
+  comment         = var.comment
+  embedding_model = var.embedding_model
 }

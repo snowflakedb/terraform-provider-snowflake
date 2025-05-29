@@ -77,6 +77,7 @@ resource "snowflake_cortex_search_service" "test" {
 
 - `attributes` (Set of String) Specifies the list of columns in the base table to enable filtering on when issuing queries to the service.
 - `comment` (String) Specifies a comment for the Cortex search service.
+- `embedding_model` (String) Specifies the embedding model to use for the Cortex search service.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
