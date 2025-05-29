@@ -40,6 +40,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 	variableSet2["warehouse"] = config.StringVariable(newWarehouseId.Name())
 	variableSet2["comment"] = config.StringVariable("Terraform acceptance test - updated")
 	variableSet2["query"] = config.StringVariable(fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()))
+	variableSet2["embedding_model"] = config.StringVariable("snowflake-arctic-embed-m-v1.5")
 
 	resourceName := "snowflake_cortex_search_service.css"
 	resource.Test(t, resource.TestCase{
@@ -92,6 +93,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "target_lag", "2 minutes"),
 					resource.TestCheckResourceAttr(resourceName, "comment", "Terraform acceptance test - updated"),
 					resource.TestCheckResourceAttr(resourceName, "query", fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName())),
+					resource.TestCheckResourceAttr(resourceName, "embedding_model", "snowflake-arctic-embed-m-v1.5"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_on"),
 				),
 			},
@@ -104,61 +106,6 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 				ImportStateVerify: true,
 				// currently not set in read because the early implementation on Snowflake side did not return these values on SHOW/DESCRIBE
 				ImportStateVerifyIgnore: []string{"attributes", "on", "query", "target_lag", "warehouse"},
-			},
-		},
-	})
-}
-
-func TestAcc_CortexSearchService_withEmbeddingModel(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
-	id := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
-	tableId := acc.TestClient().Ids.RandomSchemaObjectIdentifier()
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":            config.StringVariable(id.Name()),
-			"on":              config.StringVariable("SOME_TEXT"),
-			"database":        config.StringVariable(acc.TestDatabaseName),
-			"schema":          config.StringVariable(acc.TestSchemaName),
-			"warehouse":       config.StringVariable(acc.TestWarehouseName),
-			"query":           config.StringVariable(fmt.Sprintf("select SOME_TEXT from %s", tableId.FullyQualifiedName())),
-			"comment":         config.StringVariable("Terraform acceptance test with embedding model"),
-			"table_name":      config.StringVariable(tableId.Name()),
-			"embedding_model": config.StringVariable("snowflake-arctic-embed-m-v1.5"),
-		}
-	}
-
-	resourceName := "snowflake_cortex_search_service.css"
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: acc.CheckDestroy(t, resources.CortexSearchService),
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
-					},
-				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
-					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "database", acc.TestDatabaseName),
-					resource.TestCheckResourceAttr(resourceName, "schema", acc.TestSchemaName),
-					resource.TestCheckResourceAttr(resourceName, "on", "SOME_TEXT"),
-					resource.TestCheckResourceAttr(resourceName, "warehouse", acc.TestWarehouseName),
-					resource.TestCheckResourceAttr(resourceName, "target_lag", "2 minutes"),
-					resource.TestCheckResourceAttr(resourceName, "embedding_model", "snowflake-arctic-embed-m-v1.5"),
-					resource.TestCheckResourceAttr(resourceName, "comment", "Terraform acceptance test with embedding model"),
-					resource.TestCheckResourceAttr(resourceName, "query", fmt.Sprintf("select SOME_TEXT from %s", tableId.FullyQualifiedName())),
-					resource.TestCheckResourceAttrSet(resourceName, "created_on"),
-				),
 			},
 		},
 	})

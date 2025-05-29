@@ -36,4 +36,5 @@ resource "snowflake_cortex_search_service" "css" {
   warehouse  = var.warehouse
   query      = var.query
   comment    = var.comment
+  embedding_model = var.embedding_model
 }
