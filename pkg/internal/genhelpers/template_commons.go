@@ -29,6 +29,11 @@ func TypeWithoutPointer(t string) string {
 	return without
 }
 
+func IsTypeSlice(t string) bool {
+	_, ok := strings.CutPrefix(t, "[]")
+	return ok
+}
+
 func SnakeCase(name string) string {
 	return ToSnakeCase(name)
 }

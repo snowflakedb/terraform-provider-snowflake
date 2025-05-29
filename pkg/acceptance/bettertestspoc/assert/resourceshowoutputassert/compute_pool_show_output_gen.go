@@ -20,21 +20,21 @@ type ComputePoolShowOutputAssert struct {
 func ComputePoolShowOutput(t *testing.T, name string) *ComputePoolShowOutputAssert {
 	t.Helper()
 
-	c := ComputePoolShowOutputAssert{
+	computePoolAssert := ComputePoolShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	c.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &c
+	computePoolAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &computePoolAssert
 }
 
 func ImportedComputePoolShowOutput(t *testing.T, id string) *ComputePoolShowOutputAssert {
 	t.Helper()
 
-	c := ComputePoolShowOutputAssert{
+	computePoolAssert := ComputePoolShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	c.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &c
+	computePoolAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &computePoolAssert
 }
 
 ////////////////////////////
@@ -133,5 +133,104 @@ func (c *ComputePoolShowOutputAssert) HasIsExclusive(expected bool) *ComputePool
 
 func (c *ComputePoolShowOutputAssert) HasApplication(expected sdk.AccountObjectIdentifier) *ComputePoolShowOutputAssert {
 	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("application", expected.Name()))
+	return c
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (c *ComputePoolShowOutputAssert) HasNoName() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoState() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoMinNodes() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_nodes"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoMaxNodes() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_nodes"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoInstanceFamily() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("instance_family"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoNumServices() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("num_services"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoNumJobs() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("num_jobs"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoAutoSuspendSecs() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("auto_suspend_secs"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoAutoResume() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("auto_resume"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoActiveNodes() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("active_nodes"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoIdleNodes() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("idle_nodes"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoTargetNodes() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("target_nodes"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoCreatedOn() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoResumedOn() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputValueNotSet("resumed_on"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoUpdatedOn() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoOwner() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoComment() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoIsExclusive() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_exclusive"))
+	return c
+}
+
+func (c *ComputePoolShowOutputAssert) HasNoApplication() *ComputePoolShowOutputAssert {
+	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("application"))
 	return c
 }

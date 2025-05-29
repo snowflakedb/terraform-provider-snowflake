@@ -112,6 +112,7 @@ type ShowGitRepositoryOptions struct {
 func (v *GitRepository) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
+
 func (v *GitRepository) ObjectType() ObjectType {
 	return ObjectTypeGitRepository
 }
