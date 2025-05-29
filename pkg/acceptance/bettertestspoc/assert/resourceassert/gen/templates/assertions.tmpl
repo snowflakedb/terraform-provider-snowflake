@@ -12,7 +12,6 @@
         {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", expected))
         return {{ $assertVar }}
     }
-
 {{ end -}}
 
 ///////////////////////////////
@@ -20,16 +19,12 @@
 ///////////////////////////////
 
 {{ range .Attributes -}}
+    {{ if not .IsCollection -}}
     func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ SnakeCaseToCamel .Name }}() *{{ $assertName }} {
-    {{ if or (eq .AttributeType "TypeList") (eq .AttributeType "TypeSet") -}}
-        {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}.#", "0"))
-        return {{ $assertVar }}
-    {{ else -}}
         {{ $assertVar }}.AddAssertion(assert.ValueNotSet("{{ .Name }}"))
         return {{ $assertVar }}
-    {{ end -}}
     }
-
+    {{ end -}}
 {{ end -}}
 
 ////////////////////////////
@@ -37,13 +32,17 @@
 ////////////////////////////
 
 {{ range .Attributes -}}
-    {{ if and (eq .AttributeType "TypeString") (not .IsRequired) -}}
+    {{ if not .IsRequired }}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}Empty() *{{ $assertName }} {
-            {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", ""))
-            return {{ $assertVar }}
+            {{ if .IsCollection }}
+                {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}.#", "0"))
+                return {{ $assertVar }}
+            {{ else }}
+                {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", ""))
+                return {{ $assertVar }}
+            {{ end }}
         }
     {{ end }}
-
 {{ end -}}
 
 ///////////////////////////////
@@ -51,9 +50,11 @@
 ///////////////////////////////
 
 {{ range .Attributes -}}
-    func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}NotEmpty() *{{ $assertName }} {
-        {{ $assertVar }}.AddAssertion(assert.ValuePresent("{{ .Name }}"))
-        return {{ $assertVar }}
-    }
-
+    {{ if not .IsCollection }}
+        func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}NotEmpty() *{{ $assertName }} {
+            {{ $assertVar }}.AddAssertion(assert.ValuePresent("{{ .Name }}"))
+            return {{ $assertVar }}
+        }
+    {{ end }}
+    {{/* TODO(SNOW-1501905): Implement custom asserttion for not-empty collections */}}
 {{ end -}}

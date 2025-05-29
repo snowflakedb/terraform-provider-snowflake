@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 	"slices"
 
@@ -26,6 +27,7 @@ func (m ResourceAssertionsModel) SomeFunc() {
 type ResourceAttributeAssertionModel struct {
 	Name          string
 	AttributeType string
+	IsCollection  bool
 	IsRequired    bool
 }
 
@@ -36,8 +38,10 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 			continue
 		}
 		attributes = append(attributes, ResourceAttributeAssertionModel{
-			Name:          attr.Name,
-			AttributeType: attr.AttributeType.String(),
+			Name: attr.Name,
+			// TODO [SNOW-1501905]: add attribute type logic; allow type safe assertions
+			AttributeType: "string",
+			IsCollection:  attr.AttributeType == schema.TypeList || attr.AttributeType == schema.TypeSet,
 			IsRequired:    attr.Required,
 		})
 	}
