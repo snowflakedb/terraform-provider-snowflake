@@ -62,34 +62,22 @@ func (t *TaskAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskAssert {
 	return t
 }
 
-func (t *TaskAssert) HasWarehouse(expected *sdk.AccountObjectIdentifier) *TaskAssert {
+func (t *TaskAssert) HasWarehouseNil() *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
-		if o.Warehouse == nil && expected != nil {
-			return fmt.Errorf("expected warehouse to have value; got: nil")
-		}
-		if o.Warehouse != nil && expected == nil {
-			return fmt.Errorf("expected warehouse to no have value; got: %s", o.Warehouse.Name())
-		}
-		if o.Warehouse != nil && expected != nil && o.Warehouse.Name() != expected.Name() {
-			return fmt.Errorf("expected warehouse: %v; got: %v", expected.Name(), o.Warehouse.Name())
+		if o.Warehouse != nil {
+			return fmt.Errorf("expected warehouse to have no value; got: %s", o.Warehouse.Name())
 		}
 		return nil
 	})
 	return t
 }
 
-func (t *TaskAssert) HasErrorIntegration(expected *sdk.AccountObjectIdentifier) *TaskAssert {
+func (t *TaskAssert) HasErrorIntegrationNil() *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
-		if o.ErrorIntegration == nil && expected != nil {
-			return fmt.Errorf("expected error integration to have value; got: nil")
-		}
-		if o.ErrorIntegration != nil && expected == nil {
+		if o.ErrorIntegration != nil {
 			return fmt.Errorf("expected error integration to have no value; got: %s", o.ErrorIntegration.Name())
-		}
-		if o.ErrorIntegration != nil && expected != nil && o.ErrorIntegration.Name() != expected.Name() {
-			return fmt.Errorf("expected error integration: %v; got: %v", expected.Name(), o.ErrorIntegration.Name())
 		}
 		return nil
 	})
