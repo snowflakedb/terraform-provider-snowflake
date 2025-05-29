@@ -54,6 +54,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.DatabaseRole().Schema,
 	},
 	{
+		name:   "ExternalVolume",
+		schema: resources.ExternalVolume().Schema,
+	},
+	{
 		name:   "ImageRepository",
 		schema: resources.ImageRepository().Schema,
 	},
