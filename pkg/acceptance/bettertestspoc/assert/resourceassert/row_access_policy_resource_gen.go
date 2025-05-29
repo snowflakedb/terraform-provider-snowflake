@@ -67,9 +67,9 @@ func (r *RowAccessPolicyResourceAssert) HasFullyQualifiedNameString(expected str
 	return r
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (r *RowAccessPolicyResourceAssert) HasNoDatabase() *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("database"))
@@ -87,7 +87,7 @@ func (r *RowAccessPolicyResourceAssert) HasNoName() *RowAccessPolicyResourceAsse
 }
 
 func (r *RowAccessPolicyResourceAssert) HasNoArgument() *RowAccessPolicyResourceAssert {
-	r.AddAssertion(assert.ValueNotSet("argument"))
+	r.AddAssertion(assert.ValueSet("argument.#", "0"))
 	return r
 }
 
@@ -103,5 +103,58 @@ func (r *RowAccessPolicyResourceAssert) HasNoComment() *RowAccessPolicyResourceA
 
 func (r *RowAccessPolicyResourceAssert) HasNoFullyQualifiedName() *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	return r
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (r *RowAccessPolicyResourceAssert) HasCommentEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValueSet("comment", ""))
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasFullyQualifiedNameEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return r
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (r *RowAccessPolicyResourceAssert) HasDatabaseNotEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValuePresent("database"))
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasSchemaNotEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValuePresent("schema"))
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasNameNotEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValuePresent("name"))
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasArgumentNotEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValuePresent("argument"))
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasBodyNotEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValuePresent("body"))
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasCommentNotEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValuePresent("comment"))
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *RowAccessPolicyResourceAssert {
+	r.AddAssertion(assert.ValuePresent("fully_qualified_name"))
 	return r
 }

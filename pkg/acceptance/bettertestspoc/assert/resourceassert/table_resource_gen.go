@@ -92,9 +92,9 @@ func (t *TableResourceAssert) HasTagString(expected string) *TableResourceAssert
 	return t
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (t *TableResourceAssert) HasNoDatabase() *TableResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("database"))
@@ -117,12 +117,12 @@ func (t *TableResourceAssert) HasNoChangeTracking() *TableResourceAssert {
 }
 
 func (t *TableResourceAssert) HasNoClusterBy() *TableResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("cluster_by"))
+	t.AddAssertion(assert.ValueSet("cluster_by.#", "0"))
 	return t
 }
 
 func (t *TableResourceAssert) HasNoColumn() *TableResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("column"))
+	t.AddAssertion(assert.ValueSet("column.#", "0"))
 	return t
 }
 
@@ -147,11 +147,94 @@ func (t *TableResourceAssert) HasNoOwner() *TableResourceAssert {
 }
 
 func (t *TableResourceAssert) HasNoPrimaryKey() *TableResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("primary_key"))
+	t.AddAssertion(assert.ValueSet("primary_key.#", "0"))
 	return t
 }
 
 func (t *TableResourceAssert) HasNoTag() *TableResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("tag"))
+	t.AddAssertion(assert.ValueSet("tag.#", "0"))
+	return t
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (t *TableResourceAssert) HasCommentEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValueSet("comment", ""))
+	return t
+}
+
+func (t *TableResourceAssert) HasFullyQualifiedNameEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return t
+}
+
+func (t *TableResourceAssert) HasOwnerEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValueSet("owner", ""))
+	return t
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (t *TableResourceAssert) HasDatabaseNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("database"))
+	return t
+}
+
+func (t *TableResourceAssert) HasSchemaNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("schema"))
+	return t
+}
+
+func (t *TableResourceAssert) HasNameNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("name"))
+	return t
+}
+
+func (t *TableResourceAssert) HasChangeTrackingNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("change_tracking"))
+	return t
+}
+
+func (t *TableResourceAssert) HasClusterByNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("cluster_by"))
+	return t
+}
+
+func (t *TableResourceAssert) HasColumnNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("column"))
+	return t
+}
+
+func (t *TableResourceAssert) HasCommentNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("comment"))
+	return t
+}
+
+func (t *TableResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("data_retention_time_in_days"))
+	return t
+}
+
+func (t *TableResourceAssert) HasFullyQualifiedNameNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return t
+}
+
+func (t *TableResourceAssert) HasOwnerNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("owner"))
+	return t
+}
+
+func (t *TableResourceAssert) HasPrimaryKeyNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("primary_key"))
+	return t
+}
+
+func (t *TableResourceAssert) HasTagNotEmpty() *TableResourceAssert {
+	t.AddAssertion(assert.ValuePresent("tag"))
 	return t
 }

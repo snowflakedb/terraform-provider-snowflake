@@ -402,9 +402,9 @@ func (s *ServiceUserResourceAssert) HasWeekStartString(expected string) *Service
 	return s
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (s *ServiceUserResourceAssert) HasNoName() *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("name"))
@@ -773,5 +773,573 @@ func (s *ServiceUserResourceAssert) HasNoWeekOfYearPolicy() *ServiceUserResource
 
 func (s *ServiceUserResourceAssert) HasNoWeekStart() *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("week_start"))
+	return s
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *ServiceUserResourceAssert) HasBinaryInputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("binary_input_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasBinaryOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("binary_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientTimestampTypeMappingEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("client_timestamp_type_mapping", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasCommentEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDateInputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("date_input_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDateOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("date_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultNamespaceEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("default_namespace", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultRoleEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("default_role", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultSecondaryRolesOptionEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("default_secondary_roles_option", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultWarehouseEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("default_warehouse", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDisabledEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("disabled", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDisplayNameEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("display_name", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasEmailEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("email", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasFullyQualifiedNameEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasGeographyOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("geography_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasGeometryOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("geometry_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLogLevelEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_level", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLoginNameEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("login_name", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNetworkPolicyEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("network_policy", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasQueryTagEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("query_tag", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("rsa_public_key", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2Empty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("rsa_public_key_2", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasS3StageVpceDnsNameEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("s3_stage_vpce_dns_name", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasSearchPathEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("search_path", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasSimulatedDataSharingConsumerEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("simulated_data_sharing_consumer", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimeInputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("time_input_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimeOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("time_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampInputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("timestamp_input_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampLtzOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("timestamp_ltz_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampNtzOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("timestamp_ntz_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("timestamp_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampTypeMappingEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("timestamp_type_mapping", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampTzOutputFormatEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("timestamp_tz_output_format", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimezoneEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("timezone", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTraceLevelEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("trace_level", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTransactionDefaultIsolationLevelEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("transaction_default_isolation_level", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasUnsupportedDdlActionEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("unsupported_ddl_action", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasUserTypeEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("user_type", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *ServiceUserResourceAssert) HasNameNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasAbortDetachedQueryNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("abort_detached_query"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasAutocommitNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("autocommit"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasBinaryInputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("binary_input_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasBinaryOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("binary_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientMemoryLimitNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("client_memory_limit"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtxNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("client_metadata_request_use_connection_ctx"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientPrefetchThreadsNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("client_prefetch_threads"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientResultChunkSizeNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("client_result_chunk_size"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientResultColumnCaseInsensitiveNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("client_result_column_case_insensitive"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientSessionKeepAliveNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("client_session_keep_alive"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientSessionKeepAliveHeartbeatFrequencyNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("client_session_keep_alive_heartbeat_frequency"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientTimestampTypeMappingNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("client_timestamp_type_mapping"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasCommentNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDateInputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("date_input_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDateOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("date_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDaysToExpiryNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("days_to_expiry"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultNamespaceNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("default_namespace"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultRoleNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("default_role"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultSecondaryRolesOptionNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("default_secondary_roles_option"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultWarehouseNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("default_warehouse"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDisabledNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("disabled"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDisplayNameNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("display_name"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasEmailNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("email"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("enable_unload_physical_type_optimization"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasEnableUnredactedQuerySyntaxErrorNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("enable_unredacted_query_syntax_error"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasErrorOnNondeterministicMergeNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("error_on_nondeterministic_merge"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasErrorOnNondeterministicUpdateNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("error_on_nondeterministic_update"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasFullyQualifiedNameNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasGeographyOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("geography_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasGeometryOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("geometry_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasJdbcTreatDecimalAsIntNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("jdbc_treat_decimal_as_int"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtcNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("jdbc_treat_timestamp_ntz_as_utc"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasJdbcUseSessionTimezoneNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("jdbc_use_session_timezone"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasJsonIndentNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("json_indent"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLockTimeoutNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("lock_timeout"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLogLevelNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("log_level"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLoginNameNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("login_name"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasMinsToUnlockNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("mins_to_unlock"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasMultiStatementCountNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("multi_statement_count"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNetworkPolicyNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("network_policy"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNoorderSequenceAsDefaultNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("noorder_sequence_as_default"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasOdbcTreatDecimalAsIntNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("odbc_treat_decimal_as_int"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasPreventUnloadToInternalStagesNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("prevent_unload_to_internal_stages"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasQueryTagNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("query_tag"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("quoted_identifiers_ignore_case"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRowsPerResultsetNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("rows_per_resultset"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("rsa_public_key"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2NotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("rsa_public_key_2"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasS3StageVpceDnsNameNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("s3_stage_vpce_dns_name"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasSearchPathNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("search_path"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasSimulatedDataSharingConsumerNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("simulated_data_sharing_consumer"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasStatementQueuedTimeoutInSecondsNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("statement_queued_timeout_in_seconds"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasStatementTimeoutInSecondsNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("statement_timeout_in_seconds"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasStrictJsonOutputNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("strict_json_output"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimeInputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("time_input_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimeOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("time_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampDayIsAlways24hNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("timestamp_day_is_always_24h"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampInputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("timestamp_input_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampLtzOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("timestamp_ltz_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampNtzOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("timestamp_ntz_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("timestamp_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampTypeMappingNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("timestamp_type_mapping"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampTzOutputFormatNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("timestamp_tz_output_format"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimezoneNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("timezone"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTraceLevelNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("trace_level"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTransactionAbortOnErrorNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("transaction_abort_on_error"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTransactionDefaultIsolationLevelNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("transaction_default_isolation_level"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTwoDigitCenturyStartNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("two_digit_century_start"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasUnsupportedDdlActionNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("unsupported_ddl_action"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasUseCachedResultNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("use_cached_result"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasUserTypeNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("user_type"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasWeekOfYearPolicyNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("week_of_year_policy"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasWeekStartNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("week_start"))
 	return s
 }
