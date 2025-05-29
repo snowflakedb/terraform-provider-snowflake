@@ -85,6 +85,9 @@ func AdditionalStandardImports(fields []Field) []string {
 		if isImportedType {
 			imports[additionalImport] = struct{}{}
 		}
+		if field.IsSlice() {
+			imports["slices"] = struct{}{}
+		}
 	}
 	additionalImports := make([]string, 0)
 	for k := range imports {

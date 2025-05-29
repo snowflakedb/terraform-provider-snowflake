@@ -2,7 +2,6 @@
 
 package objectassert
 
-// imports edited manually
 import (
 	"fmt"
 	"slices"
@@ -121,10 +120,9 @@ func (p *ProcedureAssert) HasMaxNumArguments(expected int) *ProcedureAssert {
 	return p
 }
 
-func (p *ProcedureAssert) HasArgumentsOld(expected []sdk.DataType) *ProcedureAssert {
+func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
-		// edited manually
 		if !slices.Equal(o.ArgumentsOld, expected) {
 			return fmt.Errorf("expected arguments old: %v; got: %v", expected, o.ArgumentsOld)
 		}

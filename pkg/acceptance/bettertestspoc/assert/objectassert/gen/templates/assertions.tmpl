@@ -5,9 +5,14 @@
 {{ $nameLowerCase := FirstLetterLowercase .Name }}
 {{ $assertVar := FirstLetter $nameLowerCase }}
 {{- range .Fields }}
-    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ TypeWithoutPointer .ConcreteType }}) *{{ $assertName }} {
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ if .IsOriginalTypeSlice }}...{{ end }}{{ TypeWithoutPointerAndBrackets .ConcreteType }}) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
             t.Helper()
+            {{ if .IsOriginalTypeSlice -}}
+            if !slices.Equal(o.{{ .Name }}, expected) {
+                return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", expected, o.{{ .Name }})
+            }
+            {{ else -}}
             {{ if .IsOriginalTypePointer -}}
             if o.{{ .Name }} == nil {
                 return fmt.Errorf("expected {{ CamelToWords .Name }} to have value; got: nil")
@@ -16,6 +21,7 @@
             if {{ RunMapper .Mapper "o." .Name }} != {{ RunMapper .ExpectedValueMapper "expected" }} {
                 return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", {{ RunMapper .ExpectedValueMapper "expected" }}, {{ RunMapper .Mapper "o." .Name }})
             }
+            {{ end -}}
             return nil
         })
         return {{ $assertVar }}

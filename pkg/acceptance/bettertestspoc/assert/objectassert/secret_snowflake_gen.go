@@ -113,7 +113,7 @@ func (s *SecretAssert) HasSecretType(expected string) *SecretAssert {
 	return s
 }
 
-func (s *SecretAssert) HasOauthScopes(expected []string) *SecretAssert {
+func (s *SecretAssert) HasOauthScopes(expected ...string) *SecretAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
 		t.Helper()
 		if !slices.Equal(o.OauthScopes, expected) {

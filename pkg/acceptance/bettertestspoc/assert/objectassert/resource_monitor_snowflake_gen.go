@@ -124,7 +124,7 @@ func (r *ResourceMonitorAssert) HasEndTime(expected string) *ResourceMonitorAsse
 	return r
 }
 
-func (r *ResourceMonitorAssert) HasNotifyAt(expected []int) *ResourceMonitorAssert {
+func (r *ResourceMonitorAssert) HasNotifyAt(expected ...int) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
 		if !slices.Equal(o.NotifyAt, expected) {
@@ -196,7 +196,7 @@ func (r *ResourceMonitorAssert) HasComment(expected string) *ResourceMonitorAsse
 	return r
 }
 
-func (r *ResourceMonitorAssert) HasNotifyUsers(expected []string) *ResourceMonitorAssert {
+func (r *ResourceMonitorAssert) HasNotifyUsers(expected ...string) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
 		if !slices.Equal(o.NotifyUsers, expected) {

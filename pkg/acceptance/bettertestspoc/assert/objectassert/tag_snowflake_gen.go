@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -92,6 +93,17 @@ func (t *TagAssert) HasComment(expected string) *TagAssert {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagAssert) HasAllowedValues(expected ...string) *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if !slices.Equal(o.AllowedValues, expected) {
+			return fmt.Errorf("expected allowed values: %v; got: %v", expected, o.AllowedValues)
 		}
 		return nil
 	})

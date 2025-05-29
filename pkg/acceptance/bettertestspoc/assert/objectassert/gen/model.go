@@ -28,6 +28,7 @@ type SnowflakeObjectFieldAssertion struct {
 	Name                  string
 	ConcreteType          string
 	IsOriginalTypePointer bool
+	IsOriginalTypeSlice   bool
 	Mapper                genhelpers.Mapper
 	ExpectedValueMapper   genhelpers.Mapper
 }
@@ -76,6 +77,7 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 		Name:                  field.Name,
 		ConcreteType:          field.ConcreteType,
 		IsOriginalTypePointer: field.IsPointer(),
+		IsOriginalTypeSlice:   field.IsSlice(),
 		Mapper:                mapper,
 		ExpectedValueMapper:   expectedValueMapper,
 	}

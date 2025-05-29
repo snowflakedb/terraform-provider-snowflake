@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -120,6 +121,17 @@ func (c *ConnectionAssert) HasPrimary(expected sdk.ExternalObjectIdentifier) *Co
 		t.Helper()
 		if o.Primary != expected {
 			return fmt.Errorf("expected primary: %v; got: %v", expected, o.Primary)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *ConnectionAssert) HasFailoverAllowedToAccounts(expected ...sdk.AccountIdentifier) *ConnectionAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
+		t.Helper()
+		if !slices.Equal(o.FailoverAllowedToAccounts, expected) {
+			return fmt.Errorf("expected failover allowed to accounts: %v; got: %v", expected, o.FailoverAllowedToAccounts)
 		}
 		return nil
 	})

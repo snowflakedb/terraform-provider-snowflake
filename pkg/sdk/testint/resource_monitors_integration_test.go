@@ -105,7 +105,7 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 				HasCreditQuota(float64(creditQuota)).
 				HasNonEmptyStartTime().
 				HasNonEmptyEndTime().
-				HasNotifyAt([]int{100}).
+				HasNotifyAt(100).
 				HasSuspendAt(30).
 				HasSuspendImmediateAt(50),
 		)
@@ -166,8 +166,8 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 				HasNonEmptyStartTime().
 				HasCreditQuota(0).
 				HasEndTime("").
-				HasNotifyUsers([]string{}).
-				HasNotifyAt([]int{}).
+				HasNotifyUsers().
+				HasNotifyAt().
 				HasSuspendAtNil().
 				HasSuspendImmediateAtNil(),
 		)
@@ -332,8 +332,8 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		assertThatObject(t,
 			objectassert.ResourceMonitor(t, resourceMonitor.ID()).
 				HasCreditQuota(float64(creditQuota)).
-				HasNotifyUsers([]string{"JAN_CIESLAK"}).
-				HasNotifyAt([]int{30}),
+				HasNotifyUsers("JAN_CIESLAK").
+				HasNotifyAt(30),
 		)
 	})
 }
