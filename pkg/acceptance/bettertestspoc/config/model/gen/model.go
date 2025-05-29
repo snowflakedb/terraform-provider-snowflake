@@ -1,8 +1,10 @@
 package gen
 
 import (
+	"log"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -107,4 +109,48 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 			AdditionalImports:         additionalImports,
 		},
 	}
+}
+
+// handleAttributeTypeForListsAndSets handles model preparation for list and set attributes.
+// For simple types it's handled seamlessly.
+// For complex types, we need to define override in complexListAttributesOverrides.
+// Also, we need to import package (usually sdk) containing the type representing the given object.
+func handleAttributeTypeForListsAndSets(attr genhelpers.SchemaAttribute, resourceName string) (attributeType string, additionalImport string) {
+	switch attr.AttributeSubType {
+	case schema.TypeBool:
+		attributeType = "[]bool"
+	case schema.TypeInt:
+		attributeType = "[]int"
+	case schema.TypeFloat:
+		attributeType = "[]float"
+	case schema.TypeString:
+		attributeType, additionalImport = handleListTypeOverrides(resourceName, attr.Name)
+		if attributeType == "" {
+			attributeType = "[]string"
+		}
+	case schema.TypeMap:
+		attributeType, additionalImport = handleListTypeOverrides(resourceName, attr.Name)
+	default:
+		log.Printf("[WARN] Attribute's %s sub type could not be determined", attr.Name)
+	}
+	return
+}
+
+// TODO [SNOW-1501905]: handle attribute overriding in one place
+func handleListTypeOverrides(resourceName string, attrName string) (attributeType string, additionalImport string) {
+	if v, ok := complexListAttributesOverrides[resourceName]; ok {
+		if t, ok := v[attrName]; ok {
+			attributeType = "[]" + t
+			if v, ok := genhelpers.PredefinedImports[strings.Split(t, ".")[0]]; ok {
+				additionalImport = v
+			} else {
+				log.Printf("[WARN] No predefined import found for type %s", t)
+			}
+		} else {
+			log.Printf("[WARN] No complex list attribute override found for resource's %s attribute %s", resourceName, attrName)
+		}
+	} else {
+		log.Printf("[WARN] No complex list attribute overrides found for resource %s", resourceName)
+	}
+	return
 }

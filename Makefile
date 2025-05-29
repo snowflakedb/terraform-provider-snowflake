@@ -197,19 +197,9 @@ generate-provider-model-builders: ## Generate provider model builders
 clean-provider-model-builders: ## Clean provider model builders
 	rm -f ./pkg/acceptance/bettertestspoc/config/providermodel/*_gen.go
 
-<<<<<<< HEAD
 generate-toml-model-builders: ## Generate toml model builders
 	go generate ./pkg/sdk/config_dto.go
 
-||||||| 9899e9ce (Add method builders)
-generate-toml-model-builders: ## Generate toml model builders
-	go generate ./pkg/acceptance/bettertestspoc/config/tomlconfigmodel/generate.go
-
-clean-toml-model-builders: ## Clean toml model builders
-	rm -f ./pkg/acceptance/bettertestspoc/config/tomlconfigmodel/*_gen.go
-
-=======
->>>>>>> parent of 9899e9ce (Add method builders)
 generate-datasource-model-builders: ## Generate datasource model builders
 	go generate ./pkg/acceptance/bettertestspoc/config/datasourcemodel/generate.go
 
