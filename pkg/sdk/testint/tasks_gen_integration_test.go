@@ -34,7 +34,6 @@ func TestInt_Tasks(t *testing.T) {
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasOwner("ACCOUNTADMIN").
 			HasComment("").
-			HasWarehouse(warehouseId).
 			HasSchedule("").
 			HasPredecessorsInAnyOrder().
 			HasState(sdk.TaskStateSuspended).

@@ -103,7 +103,7 @@ func getAdditionalImports(fields []genhelpers.Field) []string {
 		}
 	}
 	additionalImports := make([]string, 0)
-	for k, _ := range imports {
+	for k := range imports {
 		if v, ok := genhelpers.PredefinedImports[k]; ok {
 			additionalImports = append(additionalImports, v)
 		} else {
