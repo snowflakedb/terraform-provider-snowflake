@@ -1,0 +1,44 @@
+name: Issue Labeler
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add-category-labels:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Add labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            if (!issue.body) return;
+            
+            const splitBody = issue.body.split('\n\n')
+            
+            let category = '';
+            let objectTypes = [];
+            
+            for (let i = 0; i < splitBody.length; i++) {
+              if (splitBody[i].startsWith('### Category')) {
+                category = splitBody[i + 1]
+              }
+              if (splitBody[i].startsWith('### Object type(s)')) {
+                objectTypes = splitBody[i + 1].split(", ")
+              }
+            }
+
+            console.log('Category:', category)
+            console.log('Object Types:', objectTypes)
+
+            if (category.length > 0 || objectTypes.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: [category, ...objectTypes]
+              });
+            }
