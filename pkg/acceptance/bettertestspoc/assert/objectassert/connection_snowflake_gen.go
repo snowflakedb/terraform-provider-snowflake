@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -130,7 +131,9 @@ func (c *ConnectionAssert) HasPrimary(expected sdk.ExternalObjectIdentifier) *Co
 func (c *ConnectionAssert) HasFailoverAllowedToAccounts(expected ...sdk.AccountIdentifier) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
-		if !slices.Equal(o.FailoverAllowedToAccounts, expected) {
+		mapped := collections.Map(o.FailoverAllowedToAccounts, func(item sdk.AccountIdentifier) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.AccountIdentifier) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected failover allowed to accounts: %v; got: %v", expected, o.FailoverAllowedToAccounts)
 		}
 		return nil

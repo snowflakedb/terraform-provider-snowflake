@@ -5,11 +5,14 @@
 {{ $nameLowerCase := FirstLetterLowercase .Name }}
 {{ $assertVar := FirstLetter $nameLowerCase }}
 {{- range .Fields }}
-    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ if .IsOriginalTypeSlice }}...{{ end }}{{ TypeWithoutPointerAndBrackets .ConcreteType }}) *{{ $assertName }} {
+    {{ $itemType := TypeWithoutPointerAndBrackets .ConcreteType }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ if .IsOriginalTypeSlice }}...{{ end }}{{ $itemType }}) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
             t.Helper()
             {{ if .IsOriginalTypeSlice -}}
-            if !slices.Equal(o.{{ .Name }}, expected) {
+            mapped := collections.Map(o.{{ .Name }}, func(item {{ $itemType }}) any { return {{ RunMapper .Mapper "item" }} })
+            mappedExpected := collections.Map(expected, func(item {{ $itemType }}) any { return {{ RunMapper .ExpectedValueMapper "item" }} })
+            if !slices.Equal(mapped, mappedExpected) {
                 return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", expected, o.{{ .Name }})
             }
             {{ else -}}

@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"log"
 	"os"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 type PreambleModel struct {
 	PackageName               string
 	AdditionalStandardImports []string
+	AdditionalImports         []string
 }
 
 type SnowflakeObjectAssertionsModel struct {
@@ -49,12 +51,13 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) SnowflakeO
 		PreambleModel: PreambleModel{
 			PackageName:               packageWithGenerateDirective,
 			AdditionalStandardImports: genhelpers.AdditionalStandardImports(sdkObject.Fields),
+			AdditionalImports:         getAdditionalImports(sdkObject.Fields),
 		},
 	}
 }
 
 func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectFieldAssertion {
-	concreteTypeWithoutPtr, _ := strings.CutPrefix(field.ConcreteType, "*")
+	concreteTypeWithoutPtrAndSlice := strings.TrimLeft(field.ConcreteType, "*[]")
 
 	mapper := genhelpers.Identity
 	if field.IsPointer() {
@@ -63,7 +66,7 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 	expectedValueMapper := genhelpers.Identity
 
 	// TODO [SNOW-1501905]: handle other mappings if needed
-	if concreteTypeWithoutPtr == "sdk.AccountObjectIdentifier" {
+	if concreteTypeWithoutPtrAndSlice == "sdk.AccountObjectIdentifier" {
 		mapper = genhelpers.Name
 		if field.IsPointer() {
 			mapper = func(s string) string {
@@ -71,6 +74,15 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 			}
 		}
 		expectedValueMapper = genhelpers.Name
+	}
+	if concreteTypeWithoutPtrAndSlice == "sdk.SchemaObjectIdentifier" {
+		mapper = genhelpers.FullyQualifiedName
+		if field.IsPointer() {
+			mapper = func(s string) string {
+				return genhelpers.FullyQualifiedName(genhelpers.Parentheses(genhelpers.Dereference(s)))
+			}
+		}
+		expectedValueMapper = genhelpers.FullyQualifiedName
 	}
 
 	return SnowflakeObjectFieldAssertion{
@@ -81,4 +93,22 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 		Mapper:                mapper,
 		ExpectedValueMapper:   expectedValueMapper,
 	}
+}
+
+func getAdditionalImports(fields []genhelpers.Field) []string {
+	imports := make(map[string]struct{})
+	for _, field := range fields {
+		if field.IsSlice() {
+			imports["collections"] = struct{}{}
+		}
+	}
+	additionalImports := make([]string, 0)
+	for k, _ := range imports {
+		if v, ok := genhelpers.PredefinedImports[k]; ok {
+			additionalImports = append(additionalImports, v)
+		} else {
+			log.Printf("[WARN] No predefined import found for %s", k)
+		}
+	}
+	return additionalImports
 }

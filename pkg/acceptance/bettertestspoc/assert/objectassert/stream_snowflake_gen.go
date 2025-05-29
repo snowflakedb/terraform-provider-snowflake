@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -136,7 +137,9 @@ func (s *StreamAssert) HasSourceType(expected sdk.StreamSourceType) *StreamAsser
 func (s *StreamAssert) HasBaseTables(expected ...string) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
-		if !slices.Equal(o.BaseTables, expected) {
+		mapped := collections.Map(o.BaseTables, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected base tables: %v; got: %v", expected, o.BaseTables)
 		}
 		return nil

@@ -9,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -123,7 +124,9 @@ func (p *ProcedureAssert) HasMaxNumArguments(expected int) *ProcedureAssert {
 func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
-		if !slices.Equal(o.ArgumentsOld, expected) {
+		mapped := collections.Map(o.ArgumentsOld, func(item sdk.DataType) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.DataType) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected arguments old: %v; got: %v", expected, o.ArgumentsOld)
 		}
 		return nil

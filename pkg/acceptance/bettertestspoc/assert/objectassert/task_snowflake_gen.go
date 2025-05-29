@@ -4,10 +4,12 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -133,6 +135,19 @@ func (t *TaskAssert) HasSchedule(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasPredecessors(expected ...sdk.SchemaObjectIdentifier) *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		mapped := collections.Map(o.Predecessors, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
+		mappedExpected := collections.Map(expected, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
+		if !slices.Equal(mapped, mappedExpected) {
+			return fmt.Errorf("expected predecessors: %v; got: %v", expected, o.Predecessors)
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasState(expected sdk.TaskState) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
@@ -245,6 +260,18 @@ func (t *TaskAssert) HasBudget(expected string) *TaskAssert {
 	})
 	return t
 }
+
+// commented out manually
+// func (t *TaskAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskAssert {
+//	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+//		t.Helper()
+//		if o.TaskRelations != expected {
+//			return fmt.Errorf("expected task relations: %v; got: %v", expected, o.TaskRelations)
+//		}
+//		return nil
+//	})
+//	return t
+// }
 
 func (t *TaskAssert) HasLastSuspendedReason(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
