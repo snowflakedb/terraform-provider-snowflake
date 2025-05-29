@@ -32,6 +32,11 @@ func ImportedLegacyServiceUserResource(t *testing.T, id string) *LegacyServiceUs
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (l *LegacyServiceUserResourceAssert) HasNameString(expected string) *LegacyServiceUserResourceAssert {
+	l.AddAssertion(assert.ValueSet("name", expected))
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasAbortDetachedQueryString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("abort_detached_query", expected))
 	return l
@@ -232,11 +237,6 @@ func (l *LegacyServiceUserResourceAssert) HasMustChangePasswordString(expected s
 	return l
 }
 
-func (l *LegacyServiceUserResourceAssert) HasNameString(expected string) *LegacyServiceUserResourceAssert {
-	l.AddAssertion(assert.ValueSet("name", expected))
-	return l
-}
-
 func (l *LegacyServiceUserResourceAssert) HasNetworkPolicyString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("network_policy", expected))
 	return l
@@ -415,6 +415,11 @@ func (l *LegacyServiceUserResourceAssert) HasWeekStartString(expected string) *L
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (l *LegacyServiceUserResourceAssert) HasNoName() *LegacyServiceUserResourceAssert {
+	l.AddAssertion(assert.ValueNotSet("name"))
+	return l
+}
 
 func (l *LegacyServiceUserResourceAssert) HasNoAbortDetachedQuery() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("abort_detached_query"))
@@ -613,11 +618,6 @@ func (l *LegacyServiceUserResourceAssert) HasNoMultiStatementCount() *LegacyServ
 
 func (l *LegacyServiceUserResourceAssert) HasNoMustChangePassword() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("must_change_password"))
-	return l
-}
-
-func (l *LegacyServiceUserResourceAssert) HasNoName() *LegacyServiceUserResourceAssert {
-	l.AddAssertion(assert.ValueNotSet("name"))
 	return l
 }
 

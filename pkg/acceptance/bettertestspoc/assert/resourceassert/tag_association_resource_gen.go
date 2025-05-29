@@ -37,11 +37,6 @@ func (t *TagAssociationResourceAssert) HasObjectIdentifiersString(expected strin
 	return t
 }
 
-func (t *TagAssociationResourceAssert) HasObjectNameString(expected string) *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueSet("object_name", expected))
-	return t
-}
-
 func (t *TagAssociationResourceAssert) HasObjectTypeString(expected string) *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueSet("object_type", expected))
 	return t
@@ -68,11 +63,6 @@ func (t *TagAssociationResourceAssert) HasTagValueString(expected string) *TagAs
 
 func (t *TagAssociationResourceAssert) HasNoObjectIdentifiers() *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("object_identifiers"))
-	return t
-}
-
-func (t *TagAssociationResourceAssert) HasNoObjectName() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("object_name"))
 	return t
 }
 

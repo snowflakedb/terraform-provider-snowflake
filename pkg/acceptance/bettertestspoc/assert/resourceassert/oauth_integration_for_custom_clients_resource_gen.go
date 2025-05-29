@@ -32,6 +32,11 @@ func ImportedOauthIntegrationForCustomClientsResource(t *testing.T, id string) *
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasNameString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.AddAssertion(assert.ValueSet("name", expected))
+	return o
+}
+
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasBlockedRolesListString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueSet("blocked_roles_list", expected))
 	return o
@@ -49,11 +54,6 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasEnabledString(expect
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasFullyQualifiedNameString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasNameString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("name", expected))
 	return o
 }
 
@@ -112,9 +112,19 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesLi
 	return o
 }
 
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasRelatedParametersString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.AddAssertion(assert.ValueSet("related_parameters", expected))
+	return o
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoName() *OauthIntegrationForCustomClientsResourceAssert {
+	o.AddAssertion(assert.ValueNotSet("name"))
+	return o
+}
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoBlockedRolesList() *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueNotSet("blocked_roles_list"))
@@ -133,11 +143,6 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoEnabled() *OauthIn
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoFullyQualifiedName() *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoName() *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("name"))
 	return o
 }
 
@@ -193,5 +198,10 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoOauthUseSecondaryR
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoPreAuthorizedRolesList() *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueNotSet("pre_authorized_roles_list"))
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoRelatedParameters() *OauthIntegrationForCustomClientsResourceAssert {
+	o.AddAssertion(assert.ValueNotSet("related_parameters"))
 	return o
 }

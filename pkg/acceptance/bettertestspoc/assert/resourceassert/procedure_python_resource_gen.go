@@ -32,6 +32,21 @@ func ImportedProcedurePythonResource(t *testing.T, id string) *ProcedurePythonRe
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (p *ProcedurePythonResourceAssert) HasDatabaseString(expected string) *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueSet("database", expected))
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasSchemaString(expected string) *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueSet("schema", expected))
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasNameString(expected string) *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueSet("name", expected))
+	return p
+}
+
 func (p *ProcedurePythonResourceAssert) HasArgumentsString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
@@ -39,11 +54,6 @@ func (p *ProcedurePythonResourceAssert) HasArgumentsString(expected string) *Pro
 
 func (p *ProcedurePythonResourceAssert) HasCommentString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
-	return p
-}
-
-func (p *ProcedurePythonResourceAssert) HasDatabaseString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
 	return p
 }
 
@@ -92,11 +102,6 @@ func (p *ProcedurePythonResourceAssert) HasMetricLevelString(expected string) *P
 	return p
 }
 
-func (p *ProcedurePythonResourceAssert) HasNameString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
-	return p
-}
-
 func (p *ProcedurePythonResourceAssert) HasNullInputBehaviorString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return p
@@ -127,11 +132,6 @@ func (p *ProcedurePythonResourceAssert) HasRuntimeVersionString(expected string)
 	return p
 }
 
-func (p *ProcedurePythonResourceAssert) HasSchemaString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
-	return p
-}
-
 func (p *ProcedurePythonResourceAssert) HasSecretsString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("secrets", expected))
 	return p
@@ -151,6 +151,21 @@ func (p *ProcedurePythonResourceAssert) HasTraceLevelString(expected string) *Pr
 // Attribute empty checks //
 ////////////////////////////
 
+func (p *ProcedurePythonResourceAssert) HasNoDatabase() *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("database"))
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasNoSchema() *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("schema"))
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasNoName() *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("name"))
+	return p
+}
+
 func (p *ProcedurePythonResourceAssert) HasNoArguments() *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("arguments"))
 	return p
@@ -158,11 +173,6 @@ func (p *ProcedurePythonResourceAssert) HasNoArguments() *ProcedurePythonResourc
 
 func (p *ProcedurePythonResourceAssert) HasNoComment() *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
-	return p
-}
-
-func (p *ProcedurePythonResourceAssert) HasNoDatabase() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
 	return p
 }
 
@@ -211,11 +221,6 @@ func (p *ProcedurePythonResourceAssert) HasNoMetricLevel() *ProcedurePythonResou
 	return p
 }
 
-func (p *ProcedurePythonResourceAssert) HasNoName() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
-	return p
-}
-
 func (p *ProcedurePythonResourceAssert) HasNoNullInputBehavior() *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
 	return p
@@ -243,11 +248,6 @@ func (p *ProcedurePythonResourceAssert) HasNoReturnType() *ProcedurePythonResour
 
 func (p *ProcedurePythonResourceAssert) HasNoRuntimeVersion() *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("runtime_version"))
-	return p
-}
-
-func (p *ProcedurePythonResourceAssert) HasNoSchema() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
 	return p
 }
 
