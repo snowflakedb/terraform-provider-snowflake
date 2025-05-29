@@ -158,7 +158,7 @@ func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.Acc
 		WithWarehouse(warehouseId.Name()).
 		WithAuthenticator("SNOWFLAKE")
 	cfg := sdk.NewConfigFile().WithProfiles(map[string]sdk.ConfigDTO{profile: *config})
-	bytes, err := cfg.Marshal()
+	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
 	return string(bytes)
 }
