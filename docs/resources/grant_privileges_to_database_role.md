@@ -10,8 +10,7 @@ description: |-
 
 ~> **Note** Manage grants on `HYBRID TABLE` by specifying `TABLE` or `TABLES` in `object_type` field. This applies to a single object, all objects, or future objects. This reflects the current behavior in Snowflake.
 
-<!-- TODO(SNOW-1844996): Remove this note.-->
--> **Note** Granting on future Streamlits is currently missing. It will be added in the future. Use [execute](./execute) resource instead.
+~> **Note** Please, follow the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-considerations) for best practices on access control. The provider does not enforce any specific methodology, so it is essential for users to choose the appropriate strategy for seamless privilege management. Additionally, refer to [this link](https://docs.snowflake.com/en/user-guide/security-access-control-privileges) for a list of all available privileges in Snowflake.
 
 # snowflake_grant_privileges_to_database_role (Resource)
 

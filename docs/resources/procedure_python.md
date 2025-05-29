@@ -27,6 +27,8 @@ description: |-
 
 -> **Note** Limit the use of special characters (`.`, `'`, `/`, `"`, `(`, `)`, `[`, `]`, `{`, `}`, ` `) in argument names, stage ids, and secret ids. It's best to limit to only alphanumeric and underscores. There is a lot of parsing of SHOW/DESCRIBE outputs involved and using special characters may limit the possibility to achieve the correct results.
 
+-> **Note** Diff suppression for `import.stage_location` is currently not implemented. Make sure you are using the fully qualified stage name (with all the double quotes), e.g. `"\"database_name\".\"schema_name\".\"stage_name\""`.
+
 ~> **Required warehouse** This resource may require active warehouse. Please, make sure you have either set a DEFAULT_WAREHOUSE for the user, or specified a warehouse in the provider configuration.
 
 # snowflake_procedure_python (Resource)
@@ -53,7 +55,7 @@ resource "snowflake_procedure_python" "w" {
     result += x
   return result
 EOT
-  runtime_version      = "3.8"
+  runtime_version      = "3.9"
   snowpark_package     = "1.14.0"
 }
 ```

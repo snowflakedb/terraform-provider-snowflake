@@ -5,5 +5,5 @@ import (
 )
 
 func StreamOnViewBase(resourceName string, id sdk.SchemaObjectIdentifier, viewId sdk.SchemaObjectIdentifier) *StreamOnViewModel {
-	return StreamOnView(resourceName, id.DatabaseName(), id.Name(), id.SchemaName(), viewId.FullyQualifiedName())
+	return StreamOnView(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), viewId.FullyQualifiedName())
 }

@@ -12,9 +12,11 @@ import (
 )
 
 type FunctionPythonModel struct {
+	Database                   tfconfig.Variable `json:"database,omitempty"`
+	Schema                     tfconfig.Variable `json:"schema,omitempty"`
+	Name                       tfconfig.Variable `json:"name,omitempty"`
 	Arguments                  tfconfig.Variable `json:"arguments,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
-	Database                   tfconfig.Variable `json:"database,omitempty"`
 	EnableConsoleOutput        tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -26,15 +28,15 @@ type FunctionPythonModel struct {
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
-	Name                       tfconfig.Variable `json:"name,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
 	Packages                   tfconfig.Variable `json:"packages,omitempty"`
 	ReturnResultsBehavior      tfconfig.Variable `json:"return_results_behavior,omitempty"`
 	ReturnType                 tfconfig.Variable `json:"return_type,omitempty"`
 	RuntimeVersion             tfconfig.Variable `json:"runtime_version,omitempty"`
-	Schema                     tfconfig.Variable `json:"schema,omitempty"`
 	Secrets                    tfconfig.Variable `json:"secrets,omitempty"`
 	TraceLevel                 tfconfig.Variable `json:"trace_level,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -46,43 +48,43 @@ type FunctionPythonModel struct {
 func FunctionPython(
 	resourceName string,
 	database string,
-	handler string,
+	schema string,
 	name string,
+	handler string,
 	returnType string,
 	runtimeVersion string,
-	schema string,
 ) *FunctionPythonModel {
 	f := &FunctionPythonModel{ResourceModelMeta: config.Meta(resourceName, resources.FunctionPython)}
 	f.WithDatabase(database)
-	f.WithHandler(handler)
+	f.WithSchema(schema)
 	f.WithName(name)
+	f.WithHandler(handler)
 	f.WithReturnType(returnType)
 	f.WithRuntimeVersion(runtimeVersion)
-	f.WithSchema(schema)
 	return f
 }
 
 func FunctionPythonWithDefaultMeta(
 	database string,
-	handler string,
+	schema string,
 	name string,
+	handler string,
 	returnType string,
 	runtimeVersion string,
-	schema string,
 ) *FunctionPythonModel {
 	f := &FunctionPythonModel{ResourceModelMeta: config.DefaultMeta(resources.FunctionPython)}
 	f.WithDatabase(database)
-	f.WithHandler(handler)
+	f.WithSchema(schema)
 	f.WithName(name)
+	f.WithHandler(handler)
 	f.WithReturnType(returnType)
 	f.WithRuntimeVersion(runtimeVersion)
-	f.WithSchema(schema)
 	return f
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (f *FunctionPythonModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionPythonModel
@@ -100,19 +102,34 @@ func (f *FunctionPythonModel) WithDependsOn(values ...string) *FunctionPythonMod
 	return f
 }
 
+func (f *FunctionPythonModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionPythonModel {
+	f.DynamicBlock = dynamicBlock
+	return f
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (f *FunctionPythonModel) WithDatabase(database string) *FunctionPythonModel {
+	f.Database = tfconfig.StringVariable(database)
+	return f
+}
+
+func (f *FunctionPythonModel) WithSchema(schema string) *FunctionPythonModel {
+	f.Schema = tfconfig.StringVariable(schema)
+	return f
+}
+
+func (f *FunctionPythonModel) WithName(name string) *FunctionPythonModel {
+	f.Name = tfconfig.StringVariable(name)
+	return f
+}
 
 // arguments attribute type is not yet supported, so WithArguments can't be generated
 
 func (f *FunctionPythonModel) WithComment(comment string) *FunctionPythonModel {
 	f.Comment = tfconfig.StringVariable(comment)
-	return f
-}
-
-func (f *FunctionPythonModel) WithDatabase(database string) *FunctionPythonModel {
-	f.Database = tfconfig.StringVariable(database)
 	return f
 }
 
@@ -165,11 +182,6 @@ func (f *FunctionPythonModel) WithMetricLevel(metricLevel string) *FunctionPytho
 	return f
 }
 
-func (f *FunctionPythonModel) WithName(name string) *FunctionPythonModel {
-	f.Name = tfconfig.StringVariable(name)
-	return f
-}
-
 func (f *FunctionPythonModel) WithNullInputBehavior(nullInputBehavior string) *FunctionPythonModel {
 	f.NullInputBehavior = tfconfig.StringVariable(nullInputBehavior)
 	return f
@@ -192,11 +204,6 @@ func (f *FunctionPythonModel) WithRuntimeVersion(runtimeVersion string) *Functio
 	return f
 }
 
-func (f *FunctionPythonModel) WithSchema(schema string) *FunctionPythonModel {
-	f.Schema = tfconfig.StringVariable(schema)
-	return f
-}
-
 // secrets attribute type is not yet supported, so WithSecrets can't be generated
 
 func (f *FunctionPythonModel) WithTraceLevel(traceLevel string) *FunctionPythonModel {
@@ -208,6 +215,21 @@ func (f *FunctionPythonModel) WithTraceLevel(traceLevel string) *FunctionPythonM
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (f *FunctionPythonModel) WithDatabaseValue(value tfconfig.Variable) *FunctionPythonModel {
+	f.Database = value
+	return f
+}
+
+func (f *FunctionPythonModel) WithSchemaValue(value tfconfig.Variable) *FunctionPythonModel {
+	f.Schema = value
+	return f
+}
+
+func (f *FunctionPythonModel) WithNameValue(value tfconfig.Variable) *FunctionPythonModel {
+	f.Name = value
+	return f
+}
+
 func (f *FunctionPythonModel) WithArgumentsValue(value tfconfig.Variable) *FunctionPythonModel {
 	f.Arguments = value
 	return f
@@ -215,11 +237,6 @@ func (f *FunctionPythonModel) WithArgumentsValue(value tfconfig.Variable) *Funct
 
 func (f *FunctionPythonModel) WithCommentValue(value tfconfig.Variable) *FunctionPythonModel {
 	f.Comment = value
-	return f
-}
-
-func (f *FunctionPythonModel) WithDatabaseValue(value tfconfig.Variable) *FunctionPythonModel {
-	f.Database = value
 	return f
 }
 
@@ -278,11 +295,6 @@ func (f *FunctionPythonModel) WithMetricLevelValue(value tfconfig.Variable) *Fun
 	return f
 }
 
-func (f *FunctionPythonModel) WithNameValue(value tfconfig.Variable) *FunctionPythonModel {
-	f.Name = value
-	return f
-}
-
 func (f *FunctionPythonModel) WithNullInputBehaviorValue(value tfconfig.Variable) *FunctionPythonModel {
 	f.NullInputBehavior = value
 	return f
@@ -305,11 +317,6 @@ func (f *FunctionPythonModel) WithReturnTypeValue(value tfconfig.Variable) *Func
 
 func (f *FunctionPythonModel) WithRuntimeVersionValue(value tfconfig.Variable) *FunctionPythonModel {
 	f.RuntimeVersion = value
-	return f
-}
-
-func (f *FunctionPythonModel) WithSchemaValue(value tfconfig.Variable) *FunctionPythonModel {
-	f.Schema = value
 	return f
 }
 

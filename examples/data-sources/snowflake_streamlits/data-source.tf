@@ -68,7 +68,7 @@ data "snowflake_streamlits" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of streamlits is equal to at exactly one element (with the use of check block)
+# Ensure the number of streamlits is equal to exactly one element (with the use of check block)
 check "streamlit_check" {
   data "snowflake_streamlits" "assert_with_check_block" {
     like = "streamlit-name"

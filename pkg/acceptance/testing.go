@@ -56,6 +56,7 @@ var (
 )
 
 func init() {
+	log.Println("[DEBUG] Running init from old acceptance tests setup")
 	testObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.TestObjectsSuffix))
 	requireTestObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.RequireTestObjectsSuffix))
 	if requireTestObjectSuffix != "" && testObjectSuffix == "" {
@@ -83,8 +84,7 @@ func init() {
 	}
 	_ = testAccProtoV6ProviderFactoriesNew
 
-	// TODO [SNOW-2054383]: Use the new TOML format.
-	defaultConfig, err := sdk.ProfileConfig(testprofiles.Default, sdk.WithUseLegacyTomlFormat(true))
+	defaultConfig, err := sdk.ProfileConfig(testprofiles.Default)
 	if err != nil {
 		log.Panicf("Could not read configuration from profile: %v", err)
 	}
@@ -99,8 +99,7 @@ func init() {
 	}
 	atc.client = client
 
-	// TODO [SNOW-2054383]: Use the new TOML format.
-	cfg, err := sdk.ProfileConfig(testprofiles.Secondary, sdk.WithUseLegacyTomlFormat(true))
+	cfg, err := sdk.ProfileConfig(testprofiles.Secondary)
 	if err != nil {
 		log.Panicf("Config for the secondary client is needed to run acceptance tests, err: %v", err)
 	}
@@ -202,19 +201,19 @@ func TestAccPreCheck(t *testing.T) {
 		_, _ = SecondaryTestClient().Schema.CreateTestSchemaIfNotExists(t)
 		_, _ = SecondaryTestClient().Warehouse.CreateTestWarehouseIfNotExists(t)
 
-		if err := helpers.EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(atc.client, ctx); err != nil {
+		if err := TestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := helpers.EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(atc.secondaryClient, ctx); err != nil {
+		if err := SecondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := helpers.EnsureScimProvisionerRolesExist(atc.client, ctx); err != nil {
+		if err := TestClient().EnsureScimProvisionerRolesExist(ctx); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := helpers.EnsureScimProvisionerRolesExist(atc.secondaryClient, ctx); err != nil {
+		if err := SecondaryTestClient().EnsureScimProvisionerRolesExist(ctx); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -234,11 +233,6 @@ func ConfigurationDirectory(directory string) func(config.TestStepConfigRequest)
 	return func(req config.TestStepConfigRequest) string {
 		return filepath.Join("testdata", directory)
 	}
-}
-
-func DefaultConfig(t *testing.T) *gosnowflake.Config {
-	t.Helper()
-	return atc.config
 }
 
 func TestClient() *helpers.TestClient {
@@ -265,6 +259,15 @@ func SetV097CompatibleConfigPathEnv(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 	configPath := filepath.Join(home, ".snowflake", "config_v097_compatible")
+	t.Setenv(snowflakeenvs.ConfigPath, configPath)
+}
+
+// SetLegacyConfigPathEnv sets a new config path in a relevant env variable for a file that uses the legacy format.
+func SetLegacyConfigPathEnv(t *testing.T) {
+	t.Helper()
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+	configPath := filepath.Join(home, ".snowflake", "config_legacy")
 	t.Setenv(snowflakeenvs.ConfigPath, configPath)
 }
 

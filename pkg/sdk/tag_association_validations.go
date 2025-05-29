@@ -11,6 +11,7 @@ var (
 		// account level
 		ObjectTypeApplication,
 		ObjectTypeApplicationPackage,
+		ObjectTypeComputePool,
 		ObjectTypeDatabase,
 		ObjectTypeFailoverGroup,
 		ObjectTypeIntegration,
@@ -32,6 +33,7 @@ var (
 		ObjectTypeExternalFunction,
 		ObjectTypeExternalTable,
 		ObjectTypeFunction,
+		ObjectTypeImageRepository,
 		ObjectTypeGitRepository,
 		ObjectTypeIcebergTable,
 		ObjectTypeMaterializedView,

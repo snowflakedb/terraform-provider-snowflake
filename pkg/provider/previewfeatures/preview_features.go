@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type feature string
@@ -16,6 +18,7 @@ const (
 	AlertsDatasource                              feature = "snowflake_alerts_datasource"
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
 	AuthenticationPolicyResource                  feature = "snowflake_authentication_policy_resource"
+	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
 	CortexSearchServicesDatasource                feature = "snowflake_cortex_search_services_datasource"
 	DatabaseDatasource                            feature = "snowflake_database_datasource"
@@ -37,6 +40,8 @@ const (
 	FunctionScalaResource                         feature = "snowflake_function_scala_resource"
 	FunctionSqlResource                           feature = "snowflake_function_sql_resource"
 	FunctionsDatasource                           feature = "snowflake_functions_datasource"
+	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
+	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
@@ -85,6 +90,7 @@ var allPreviewFeatures = []feature{
 	AlertsDatasource,
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
+	ComputePoolResource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	DatabaseDatasource,
@@ -106,6 +112,8 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
+	ImageRepositoryResource,
+	ImageRepositoriesDatasource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
@@ -145,13 +153,7 @@ var allPreviewFeatures = []feature{
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
 }
-var AllPreviewFeatures = make([]string, len(allPreviewFeatures))
-
-func init() {
-	for i, v := range allPreviewFeatures {
-		AllPreviewFeatures[i] = string(v)
-	}
-}
+var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 
 func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 	if !slices.ContainsFunc(enabledFeatures, func(s string) bool {

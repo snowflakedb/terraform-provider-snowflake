@@ -12,6 +12,7 @@ import (
 )
 
 type ExternalOauthSecurityIntegrationModel struct {
+	Name                                       tfconfig.Variable `json:"name,omitempty"`
 	Comment                                    tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                                    tfconfig.Variable `json:"enabled,omitempty"`
 	ExternalOauthAllowedRolesList              tfconfig.Variable `json:"external_oauth_allowed_roles_list,omitempty"`
@@ -28,8 +29,9 @@ type ExternalOauthSecurityIntegrationModel struct {
 	ExternalOauthTokenUserMappingClaim         tfconfig.Variable `json:"external_oauth_token_user_mapping_claim,omitempty"`
 	ExternalOauthType                          tfconfig.Variable `json:"external_oauth_type,omitempty"`
 	FullyQualifiedName                         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                                       tfconfig.Variable `json:"name,omitempty"`
 	RelatedParameters                          tfconfig.Variable `json:"related_parameters,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -40,44 +42,44 @@ type ExternalOauthSecurityIntegrationModel struct {
 
 func ExternalOauthSecurityIntegration(
 	resourceName string,
+	name string,
 	enabled bool,
 	externalOauthIssuer string,
 	externalOauthSnowflakeUserMappingAttribute string,
-	externalOauthTokenUserMappingClaim,
+	externalOauthTokenUserMappingClaim []string,
 	externalOauthType string,
-	name string,
 ) *ExternalOauthSecurityIntegrationModel {
 	e := &ExternalOauthSecurityIntegrationModel{ResourceModelMeta: config.Meta(resourceName, resources.ExternalOauthSecurityIntegration)}
+	e.WithName(name)
 	e.WithEnabled(enabled)
 	e.WithExternalOauthIssuer(externalOauthIssuer)
 	e.WithExternalOauthSnowflakeUserMappingAttribute(externalOauthSnowflakeUserMappingAttribute)
 	e.WithExternalOauthTokenUserMappingClaim(externalOauthTokenUserMappingClaim)
 	e.WithExternalOauthType(externalOauthType)
-	e.WithName(name)
 	return e
 }
 
 func ExternalOauthSecurityIntegrationWithDefaultMeta(
+	name string,
 	enabled bool,
 	externalOauthIssuer string,
 	externalOauthSnowflakeUserMappingAttribute string,
-	externalOauthTokenUserMappingClaim,
+	externalOauthTokenUserMappingClaim []string,
 	externalOauthType string,
-	name string,
 ) *ExternalOauthSecurityIntegrationModel {
 	e := &ExternalOauthSecurityIntegrationModel{ResourceModelMeta: config.DefaultMeta(resources.ExternalOauthSecurityIntegration)}
+	e.WithName(name)
 	e.WithEnabled(enabled)
 	e.WithExternalOauthIssuer(externalOauthIssuer)
 	e.WithExternalOauthSnowflakeUserMappingAttribute(externalOauthSnowflakeUserMappingAttribute)
 	e.WithExternalOauthTokenUserMappingClaim(externalOauthTokenUserMappingClaim)
 	e.WithExternalOauthType(externalOauthType)
-	e.WithName(name)
 	return e
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (e *ExternalOauthSecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias ExternalOauthSecurityIntegrationModel
@@ -95,9 +97,19 @@ func (e *ExternalOauthSecurityIntegrationModel) WithDependsOn(values ...string) 
 	return e
 }
 
+func (e *ExternalOauthSecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalOauthSecurityIntegrationModel {
+	e.DynamicBlock = dynamicBlock
+	return e
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (e *ExternalOauthSecurityIntegrationModel) WithName(name string) *ExternalOauthSecurityIntegrationModel {
+	e.Name = tfconfig.StringVariable(name)
+	return e
+}
 
 func (e *ExternalOauthSecurityIntegrationModel) WithComment(comment string) *ExternalOauthSecurityIntegrationModel {
 	e.Comment = tfconfig.StringVariable(comment)
@@ -164,16 +176,16 @@ func (e *ExternalOauthSecurityIntegrationModel) WithFullyQualifiedName(fullyQual
 	return e
 }
 
-func (e *ExternalOauthSecurityIntegrationModel) WithName(name string) *ExternalOauthSecurityIntegrationModel {
-	e.Name = tfconfig.StringVariable(name)
-	return e
-}
-
 // related_parameters attribute type is not yet supported, so WithRelatedParameters can't be generated
 
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (e *ExternalOauthSecurityIntegrationModel) WithNameValue(value tfconfig.Variable) *ExternalOauthSecurityIntegrationModel {
+	e.Name = value
+	return e
+}
 
 func (e *ExternalOauthSecurityIntegrationModel) WithCommentValue(value tfconfig.Variable) *ExternalOauthSecurityIntegrationModel {
 	e.Comment = value
@@ -252,11 +264,6 @@ func (e *ExternalOauthSecurityIntegrationModel) WithExternalOauthTypeValue(value
 
 func (e *ExternalOauthSecurityIntegrationModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ExternalOauthSecurityIntegrationModel {
 	e.FullyQualifiedName = value
-	return e
-}
-
-func (e *ExternalOauthSecurityIntegrationModel) WithNameValue(value tfconfig.Variable) *ExternalOauthSecurityIntegrationModel {
-	e.Name = value
 	return e
 }
 

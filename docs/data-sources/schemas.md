@@ -87,7 +87,7 @@ data "snowflake_schemas" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of schemas is equal to at exactly one element (with the use of check block)
+# Ensure the number of schemas is equal to exactly one element (with the use of check block)
 check "schema_check" {
   data "snowflake_schemas" "assert_with_check_block" {
     like = "schema-name"

@@ -18,7 +18,7 @@ func FunctionScalaBasicInline(
 	handler string,
 	functionDefinition string,
 ) *FunctionScalaModel {
-	return FunctionScala(resourceName, id.DatabaseName(), handler, id.Name(), returnType.ToSql(), runtimeVersion, id.SchemaName()).WithFunctionDefinition(functionDefinition)
+	return FunctionScala(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), handler, returnType.ToSql(), runtimeVersion).WithFunctionDefinition(functionDefinition)
 }
 
 func (f *FunctionScalaModel) WithArgument(argName string, argDataType datatypes.DataType) *FunctionScalaModel {

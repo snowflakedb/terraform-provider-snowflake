@@ -113,6 +113,22 @@ func (c *StageClient) PutOnUserStageWithContent(t *testing.T, filename string, c
 	return path
 }
 
+func (c *StageClient) PutInLocationWithContent(t *testing.T, stageLocation string, filename string, content string) string {
+	t.Helper()
+	ctx := context.Background()
+
+	filePath := testhelpers.TestFile(t, filename, []byte(content))
+
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s %s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, stageLocation))
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf(`REMOVE %s/%s`, stageLocation, filename))
+		require.NoError(t, err)
+	})
+
+	return filePath
+}
+
 func (c *StageClient) RemoveFromUserStage(t *testing.T, pathOnStage string) {
 	t.Helper()
 	ctx := context.Background()

@@ -12,19 +12,21 @@ import (
 )
 
 type StreamOnViewModel struct {
+	Database           tfconfig.Variable `json:"database,omitempty"`
+	Schema             tfconfig.Variable `json:"schema,omitempty"`
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	AppendOnly         tfconfig.Variable `json:"append_only,omitempty"`
 	At                 tfconfig.Variable `json:"at,omitempty"`
 	Before             tfconfig.Variable `json:"before,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	CopyGrants         tfconfig.Variable `json:"copy_grants,omitempty"`
-	Database           tfconfig.Variable `json:"database,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	ShowInitialRows    tfconfig.Variable `json:"show_initial_rows,omitempty"`
 	Stale              tfconfig.Variable `json:"stale,omitempty"`
 	StreamType         tfconfig.Variable `json:"stream_type,omitempty"`
 	View               tfconfig.Variable `json:"view,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -36,35 +38,35 @@ type StreamOnViewModel struct {
 func StreamOnView(
 	resourceName string,
 	database string,
-	name string,
 	schema string,
+	name string,
 	view string,
 ) *StreamOnViewModel {
 	s := &StreamOnViewModel{ResourceModelMeta: config.Meta(resourceName, resources.StreamOnView)}
 	s.WithDatabase(database)
-	s.WithName(name)
 	s.WithSchema(schema)
+	s.WithName(name)
 	s.WithView(view)
 	return s
 }
 
 func StreamOnViewWithDefaultMeta(
 	database string,
-	name string,
 	schema string,
+	name string,
 	view string,
 ) *StreamOnViewModel {
 	s := &StreamOnViewModel{ResourceModelMeta: config.DefaultMeta(resources.StreamOnView)}
 	s.WithDatabase(database)
-	s.WithName(name)
 	s.WithSchema(schema)
+	s.WithName(name)
 	s.WithView(view)
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *StreamOnViewModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnViewModel
@@ -82,9 +84,29 @@ func (s *StreamOnViewModel) WithDependsOn(values ...string) *StreamOnViewModel {
 	return s
 }
 
+func (s *StreamOnViewModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StreamOnViewModel {
+	s.DynamicBlock = dynamicBlock
+	return s
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (s *StreamOnViewModel) WithDatabase(database string) *StreamOnViewModel {
+	s.Database = tfconfig.StringVariable(database)
+	return s
+}
+
+func (s *StreamOnViewModel) WithSchema(schema string) *StreamOnViewModel {
+	s.Schema = tfconfig.StringVariable(schema)
+	return s
+}
+
+func (s *StreamOnViewModel) WithName(name string) *StreamOnViewModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
 
 func (s *StreamOnViewModel) WithAppendOnly(appendOnly string) *StreamOnViewModel {
 	s.AppendOnly = tfconfig.StringVariable(appendOnly)
@@ -105,23 +127,8 @@ func (s *StreamOnViewModel) WithCopyGrants(copyGrants bool) *StreamOnViewModel {
 	return s
 }
 
-func (s *StreamOnViewModel) WithDatabase(database string) *StreamOnViewModel {
-	s.Database = tfconfig.StringVariable(database)
-	return s
-}
-
 func (s *StreamOnViewModel) WithFullyQualifiedName(fullyQualifiedName string) *StreamOnViewModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return s
-}
-
-func (s *StreamOnViewModel) WithName(name string) *StreamOnViewModel {
-	s.Name = tfconfig.StringVariable(name)
-	return s
-}
-
-func (s *StreamOnViewModel) WithSchema(schema string) *StreamOnViewModel {
-	s.Schema = tfconfig.StringVariable(schema)
 	return s
 }
 
@@ -149,6 +156,21 @@ func (s *StreamOnViewModel) WithView(view string) *StreamOnViewModel {
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (s *StreamOnViewModel) WithDatabaseValue(value tfconfig.Variable) *StreamOnViewModel {
+	s.Database = value
+	return s
+}
+
+func (s *StreamOnViewModel) WithSchemaValue(value tfconfig.Variable) *StreamOnViewModel {
+	s.Schema = value
+	return s
+}
+
+func (s *StreamOnViewModel) WithNameValue(value tfconfig.Variable) *StreamOnViewModel {
+	s.Name = value
+	return s
+}
+
 func (s *StreamOnViewModel) WithAppendOnlyValue(value tfconfig.Variable) *StreamOnViewModel {
 	s.AppendOnly = value
 	return s
@@ -174,23 +196,8 @@ func (s *StreamOnViewModel) WithCopyGrantsValue(value tfconfig.Variable) *Stream
 	return s
 }
 
-func (s *StreamOnViewModel) WithDatabaseValue(value tfconfig.Variable) *StreamOnViewModel {
-	s.Database = value
-	return s
-}
-
 func (s *StreamOnViewModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *StreamOnViewModel {
 	s.FullyQualifiedName = value
-	return s
-}
-
-func (s *StreamOnViewModel) WithNameValue(value tfconfig.Variable) *StreamOnViewModel {
-	s.Name = value
-	return s
-}
-
-func (s *StreamOnViewModel) WithSchemaValue(value tfconfig.Variable) *StreamOnViewModel {
-	s.Schema = value
 	return s
 }
 

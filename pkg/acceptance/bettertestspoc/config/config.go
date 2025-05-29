@@ -90,6 +90,8 @@ func FromModels(t *testing.T, models ...any) string {
 			sb.WriteString(DatasourceFromModel(t, m))
 		case ProviderModel:
 			sb.WriteString(ProviderFromModel(t, m))
+		case TerraformBlockModel:
+			sb.WriteString(VariableFromModel(t, m))
 		default:
 			t.Fatalf("unknown model: %T", model)
 		}

@@ -12,17 +12,19 @@ import (
 )
 
 type OauthIntegrationForPartnerApplicationsModel struct {
+	Name                      tfconfig.Variable `json:"name,omitempty"`
 	BlockedRolesList          tfconfig.Variable `json:"blocked_roles_list,omitempty"`
 	Comment                   tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                   tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName        tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                      tfconfig.Variable `json:"name,omitempty"`
 	OauthClient               tfconfig.Variable `json:"oauth_client,omitempty"`
 	OauthIssueRefreshTokens   tfconfig.Variable `json:"oauth_issue_refresh_tokens,omitempty"`
 	OauthRedirectUri          tfconfig.Variable `json:"oauth_redirect_uri,omitempty"`
 	OauthRefreshTokenValidity tfconfig.Variable `json:"oauth_refresh_token_validity,omitempty"`
 	OauthUseSecondaryRoles    tfconfig.Variable `json:"oauth_use_secondary_roles,omitempty"`
 	RelatedParameters         tfconfig.Variable `json:"related_parameters,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -52,9 +54,9 @@ func OauthIntegrationForPartnerApplicationsWithDefaultMeta(
 	return o
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (o *OauthIntegrationForPartnerApplicationsModel) MarshalJSON() ([]byte, error) {
 	type Alias OauthIntegrationForPartnerApplicationsModel
@@ -72,9 +74,19 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithDependsOn(values ...st
 	return o
 }
 
+func (o *OauthIntegrationForPartnerApplicationsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *OauthIntegrationForPartnerApplicationsModel {
+	o.DynamicBlock = dynamicBlock
+	return o
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (o *OauthIntegrationForPartnerApplicationsModel) WithName(name string) *OauthIntegrationForPartnerApplicationsModel {
+	o.Name = tfconfig.StringVariable(name)
+	return o
+}
 
 // blocked_roles_list attribute type is not yet supported, so WithBlockedRolesList can't be generated
 
@@ -90,11 +102,6 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithEnabled(enabled string
 
 func (o *OauthIntegrationForPartnerApplicationsModel) WithFullyQualifiedName(fullyQualifiedName string) *OauthIntegrationForPartnerApplicationsModel {
 	o.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsModel) WithName(name string) *OauthIntegrationForPartnerApplicationsModel {
-	o.Name = tfconfig.StringVariable(name)
 	return o
 }
 
@@ -129,6 +136,11 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithOauthUseSecondaryRoles
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (o *OauthIntegrationForPartnerApplicationsModel) WithNameValue(value tfconfig.Variable) *OauthIntegrationForPartnerApplicationsModel {
+	o.Name = value
+	return o
+}
+
 func (o *OauthIntegrationForPartnerApplicationsModel) WithBlockedRolesListValue(value tfconfig.Variable) *OauthIntegrationForPartnerApplicationsModel {
 	o.BlockedRolesList = value
 	return o
@@ -146,11 +158,6 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithEnabledValue(value tfc
 
 func (o *OauthIntegrationForPartnerApplicationsModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *OauthIntegrationForPartnerApplicationsModel {
 	o.FullyQualifiedName = value
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsModel) WithNameValue(value tfconfig.Variable) *OauthIntegrationForPartnerApplicationsModel {
-	o.Name = value
 	return o
 }
 

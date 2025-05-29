@@ -116,7 +116,7 @@ data "snowflake_streams" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of streams is equal to at exactly one element (with the use of check block)
+# Ensure the number of streams is equal to exactly one element (with the use of check block)
 check "stream_check" {
   data "snowflake_streams" "assert_with_check_block" {
     like = "stream-name"

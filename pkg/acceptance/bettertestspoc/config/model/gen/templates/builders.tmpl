@@ -10,7 +10,7 @@
 {{ range .Attributes -}}
     {{- $attributeNameCamel := SnakeCaseToCamel .Name -}}
     {{- $attributeNameWithoutForbiddenAttributeNameSuffix := RemoveForbiddenAttributeNameSuffix $attributeNameCamel -}}
-    {{ if .AttributeType }}
+    {{ if ShouldGenerateWithForAttributeType .OriginalType }}
         func ({{ $modelVar }} *{{ $modelName }}) With{{ $attributeNameWithoutForbiddenAttributeNameSuffix }}({{ FirstLetterLowercase $attributeNameCamel }} {{ .AttributeType }}) *{{ $modelName }} {
             {{ $modelVar }}.{{ $attributeNameCamel }} = {{ .MethodImport }}.{{ .VariableMethod }}({{ FirstLetterLowercase $attributeNameCamel }})
             return {{ $modelVar }}

@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tracking"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/snowflakedb/gosnowflake"
@@ -27,6 +27,11 @@ import (
 // TODO [SNOW-2054366]: Use dedicated users for these tests.
 func TestInt_Client_NewClient(t *testing.T) {
 	t.Run("with default config (legacy)", func(t *testing.T) {
+		tmpServiceUser := testClientHelper().SetUpTemporaryServiceUser(t)
+		tmpServiceUserConfig := testClientHelper().StoreTempTomlConfigWithProfile(t, testprofiles.Default, func(profile string) string {
+			return helpers.FullLegacyTomlConfigForServiceUser(t, profile, tmpServiceUser.UserId, tmpServiceUser.RoleId, tmpServiceUser.WarehouseId, tmpServiceUser.AccountId, tmpServiceUser.PrivateKey)
+		})
+		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 		config := sdk.DefaultConfig(sdk.WithUseLegacyTomlFormat(true))
 		_, err := sdk.NewClient(config)
 		require.NoError(t, err)
@@ -74,7 +79,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 
-		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithUseLegacyTomlFormat(true))
+		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile)
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
@@ -118,7 +123,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 
-		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithVerifyPermissions(false), sdk.WithUseLegacyTomlFormat(true))
+		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithVerifyPermissions(false))
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
@@ -127,7 +132,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 	})
 
 	t.Run("with missing config - should not care about correct env variables", func(t *testing.T) {
-		config, err := sdk.ProfileConfig(testprofiles.Default, sdk.WithUseLegacyTomlFormat(true))
+		config, err := sdk.ProfileConfig(testprofiles.Default)
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
@@ -146,7 +151,7 @@ func TestInt_Client_NewClient(t *testing.T) {
 	})
 
 	t.Run("registers snowflake driver", func(t *testing.T) {
-		config := sdk.DefaultConfig(sdk.WithUseLegacyTomlFormat(true))
+		config := sdk.DefaultConfig()
 		_, err := sdk.NewClient(config)
 		require.NoError(t, err)
 

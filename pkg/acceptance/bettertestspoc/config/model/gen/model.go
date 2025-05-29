@@ -13,6 +13,7 @@ import (
 type PreambleModel struct {
 	PackageName               string
 	AdditionalStandardImports []string
+	AdditionalImports         []string
 }
 
 type ResourceConfigBuilderModel struct {
@@ -31,9 +32,11 @@ type ResourceConfigBuilderAttributeModel struct {
 	Required       bool
 	VariableMethod string
 	MethodImport   string
+	OriginalType   schema.ValueType
 }
 
 func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails) ResourceConfigBuilderModel {
+	additionalImports := make([]string, 0)
 	attributes := make([]ResourceConfigBuilderAttributeModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
 		if slices.Contains([]string{resources.ShowOutputAttributeName, resources.ParametersAttributeName, resources.DescribeOutputAttributeName}, attr.Name) {
@@ -50,6 +53,7 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 				Required:       attr.Required,
 				VariableMethod: "MultilineWrapperVariable",
 				MethodImport:   "config",
+				OriginalType:   attr.AttributeType,
 			})
 			continue
 		}
@@ -70,6 +74,16 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		case schema.TypeString:
 			attributeType = "string"
 			variableMethod = "StringVariable"
+		case schema.TypeList, schema.TypeSet:
+			// We only run it for the required attributes because the `With` methods are not yet generated; we don't need to set the `variableMethod`.
+			// For now, the `With` method for complex object will still need to be added to _ext file.
+			if attr.Required {
+				attrType, additionalImport := handleAttributeTypeForListsAndSets(attr, resourceSchemaDetails.Name)
+				attributeType = attrType
+				if additionalImport != "" {
+					additionalImports = append(additionalImports, additionalImport)
+				}
+			}
 		}
 
 		attributes = append(attributes, ResourceConfigBuilderAttributeModel{
@@ -79,6 +93,7 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 			Required:       attr.Required,
 			VariableMethod: variableMethod,
 			MethodImport:   "tfconfig",
+			OriginalType:   attr.AttributeType,
 		})
 	}
 
@@ -89,6 +104,7 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		PreambleModel: PreambleModel{
 			PackageName:               packageWithGenerateDirective,
 			AdditionalStandardImports: []string{"encoding/json"},
+			AdditionalImports:         additionalImports,
 		},
 	}
 }

@@ -12,14 +12,16 @@ import (
 )
 
 type SecretWithClientCredentialsModel struct {
+	Database           tfconfig.Variable `json:"database,omitempty"`
+	Schema             tfconfig.Variable `json:"schema,omitempty"`
+	Name               tfconfig.Variable `json:"name,omitempty"`
 	ApiAuthentication  tfconfig.Variable `json:"api_authentication,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	Database           tfconfig.Variable `json:"database,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
 	OauthScopes        tfconfig.Variable `json:"oauth_scopes,omitempty"`
-	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	SecretType         tfconfig.Variable `json:"secret_type,omitempty"`
+
+	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
 }
@@ -30,40 +32,40 @@ type SecretWithClientCredentialsModel struct {
 
 func SecretWithClientCredentials(
 	resourceName string,
-	apiAuthentication string,
 	database string,
 	schema string,
 	name string,
+	apiAuthentication string,
 	oauthScopes []string,
 ) *SecretWithClientCredentialsModel {
 	s := &SecretWithClientCredentialsModel{ResourceModelMeta: config.Meta(resourceName, resources.SecretWithClientCredentials)}
-	s.WithApiAuthentication(apiAuthentication)
 	s.WithDatabase(database)
-	s.WithName(name)
-	s.WithOauthScopes(oauthScopes)
 	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithApiAuthentication(apiAuthentication)
+	s.WithOauthScopes(oauthScopes)
 	return s
 }
 
 func SecretWithClientCredentialsWithDefaultMeta(
-	apiAuthentication string,
 	database string,
-	name string,
-	oauthScopes []string,
 	schema string,
+	name string,
+	apiAuthentication string,
+	oauthScopes []string,
 ) *SecretWithClientCredentialsModel {
 	s := &SecretWithClientCredentialsModel{ResourceModelMeta: config.DefaultMeta(resources.SecretWithClientCredentials)}
-	s.WithApiAuthentication(apiAuthentication)
 	s.WithDatabase(database)
-	s.WithName(name)
-	s.WithOauthScopes(oauthScopes)
 	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithApiAuthentication(apiAuthentication)
+	s.WithOauthScopes(oauthScopes)
 	return s
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (s *SecretWithClientCredentialsModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithClientCredentialsModel
@@ -81,9 +83,29 @@ func (s *SecretWithClientCredentialsModel) WithDependsOn(values ...string) *Secr
 	return s
 }
 
+func (s *SecretWithClientCredentialsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecretWithClientCredentialsModel {
+	s.DynamicBlock = dynamicBlock
+	return s
+}
+
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (s *SecretWithClientCredentialsModel) WithDatabase(database string) *SecretWithClientCredentialsModel {
+	s.Database = tfconfig.StringVariable(database)
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithSchema(schema string) *SecretWithClientCredentialsModel {
+	s.Schema = tfconfig.StringVariable(schema)
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithName(name string) *SecretWithClientCredentialsModel {
+	s.Name = tfconfig.StringVariable(name)
+	return s
+}
 
 func (s *SecretWithClientCredentialsModel) WithApiAuthentication(apiAuthentication string) *SecretWithClientCredentialsModel {
 	s.ApiAuthentication = tfconfig.StringVariable(apiAuthentication)
@@ -95,27 +117,12 @@ func (s *SecretWithClientCredentialsModel) WithComment(comment string) *SecretWi
 	return s
 }
 
-func (s *SecretWithClientCredentialsModel) WithDatabase(database string) *SecretWithClientCredentialsModel {
-	s.Database = tfconfig.StringVariable(database)
-	return s
-}
-
 func (s *SecretWithClientCredentialsModel) WithFullyQualifiedName(fullyQualifiedName string) *SecretWithClientCredentialsModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return s
 }
 
-func (s *SecretWithClientCredentialsModel) WithName(name string) *SecretWithClientCredentialsModel {
-	s.Name = tfconfig.StringVariable(name)
-	return s
-}
-
 // oauth_scopes attribute type is not yet supported, so WithOauthScopes can't be generated
-
-func (s *SecretWithClientCredentialsModel) WithSchema(schema string) *SecretWithClientCredentialsModel {
-	s.Schema = tfconfig.StringVariable(schema)
-	return s
-}
 
 func (s *SecretWithClientCredentialsModel) WithSecretType(secretType string) *SecretWithClientCredentialsModel {
 	s.SecretType = tfconfig.StringVariable(secretType)
@@ -125,6 +132,21 @@ func (s *SecretWithClientCredentialsModel) WithSecretType(secretType string) *Se
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (s *SecretWithClientCredentialsModel) WithDatabaseValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
+	s.Database = value
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithSchemaValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
+	s.Schema = value
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithNameValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
+	s.Name = value
+	return s
+}
 
 func (s *SecretWithClientCredentialsModel) WithApiAuthenticationValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
 	s.ApiAuthentication = value
@@ -136,28 +158,13 @@ func (s *SecretWithClientCredentialsModel) WithCommentValue(value tfconfig.Varia
 	return s
 }
 
-func (s *SecretWithClientCredentialsModel) WithDatabaseValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
-	s.Database = value
-	return s
-}
-
 func (s *SecretWithClientCredentialsModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
 	s.FullyQualifiedName = value
 	return s
 }
 
-func (s *SecretWithClientCredentialsModel) WithNameValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
-	s.Name = value
-	return s
-}
-
 func (s *SecretWithClientCredentialsModel) WithOauthScopesValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
 	s.OauthScopes = value
-	return s
-}
-
-func (s *SecretWithClientCredentialsModel) WithSchemaValue(value tfconfig.Variable) *SecretWithClientCredentialsModel {
-	s.Schema = value
 	return s
 }
 

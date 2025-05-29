@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // TODO [SNOW-1501905]: describe all methods in this file
@@ -51,6 +53,15 @@ func SnakeCaseToCamel(snake string) string {
 
 func RemoveForbiddenAttributeNameSuffix(input string) string {
 	return strings.TrimRight(input, forbiddenAttributeNameSuffix)
+}
+
+func ShouldGenerateWithForAttributeType(valueType schema.ValueType) bool {
+	switch valueType {
+	case schema.TypeBool, schema.TypeInt, schema.TypeFloat, schema.TypeString:
+		return true
+	default:
+		return false
+	}
 }
 
 func IsLastItem(itemIdx int, collectionLength int) bool {

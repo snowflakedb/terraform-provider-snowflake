@@ -3,6 +3,13 @@ export TEST_SF_TF_SKIP_MANAGED_ACCOUNT_TEST=true
 export BASE_BINARY_NAME=terraform-provider-snowflake
 export TERRAFORM_PLUGINS_DIR=$(HOME)/.terraform.d/plugins
 export TERRAFORM_PLUGIN_LOCAL_INSTALL=$(TERRAFORM_PLUGINS_DIR)/$(BASE_BINARY_NAME)
+export LATEST_GIT_TAG=$(shell git tag --sort=-version:refname | head -n 1)
+export CURRENT_OS := $(shell uname -s)
+export CURRENT_ARCH := $(shell arch)
+
+# TODO [next PRs]:  ./pkg/resources ./pkg/datasources ./pkg/provider will be removed when all the tests are transferred
+UNIT_TESTS_EXCLUDE_PACKAGES=./pkg/testacc ./pkg/sdk/testint ./pkg/resources ./pkg/provider
+UNIT_TESTS_EXCLUDE_PATTERN=$(shell echo $(UNIT_TESTS_EXCLUDE_PACKAGES) | sed 's/ /|/g')
 
 default: help
 
@@ -28,8 +35,7 @@ fmt: terraform-fmt ## Run terraform fmt and gofumpt
 
 terraform-fmt: ## Run terraform fmt
 	terraform fmt -recursive ./examples/
-	terraform fmt -recursive ./pkg/resources/testdata/
-	terraform fmt -recursive ./pkg/datasources/testdata/
+	terraform fmt -recursive ./pkg/testacc/testdata/
 
 help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-23s\033[0m %s\n", $$1, $$2}'
@@ -49,7 +55,7 @@ mod: ## add missing and remove unused modules
 mod-check: mod ## check if there are any missing/unused modules
 	git diff --exit-code -- go.mod go.sum
 
-pre-push: mod fmt generate-docs-additional-files docs lint test-architecture ## Run a few checks before pushing a change (docs, fmt, mod, etc.)
+pre-push: generate-all-config-model-builders-check mod fmt generate-docs-additional-files docs lint test-architecture ## Run a few checks before pushing a change (docs, fmt, mod, etc.)
 
 pre-push-check: pre-push mod-check generate-docs-additional-files-check docs-check ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
@@ -62,17 +68,29 @@ sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 			else echo "Aborting..."; \
 		fi;
 
+# TODO [next PRs]: this will be replaced by test-unit-tmp
 test: ## run unit and integration tests
 	go test -v -cover -timeout=60m ./...
 
-test-acceptance: ## run acceptance tests
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true SNOWFLAKE_USE_LEGACY_TOML_FILE=true go test -run "^TestAcc_" -v -cover -timeout=120m ./...
+test-unit-tmp: ## run unit tests - temporary to prove it's working
+	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)")
 
+# TODO [next PRs]: this will be replaced by test-acceptance-tmp
+test-acceptance: ## run acceptance tests
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./pkg/resources ./pkg/provider
+
+test-acceptance-tmp: ## run acceptance tests - temporary to prove it's working
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./pkg/testacc
+
+# TODO [next PRs]: this will be replaced by test-account-level-features-tmp
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true SNOWFLAKE_USE_LEGACY_TOML_FILE=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./...
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/resources ./pkg/provider ./pkg/sdk/testint
+
+test-account-level-features-tmp: ## run integration and acceptance test modifying account - temporary to prove it's working; add  ./pkg/sdk/testint later
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/testacc
 
 test-integration: ## run SDK integration tests
-	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./...
+	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint
 
 test-architecture: ## check architecture constraints between packages
 	go test ./pkg/architests/... -v
@@ -89,6 +107,16 @@ build-local: ## build the binary locally
 install-tf: build-local ## installs plugin where terraform can find it
 	mkdir -p $(TERRAFORM_PLUGINS_DIR)
 	cp ./$(BASE_BINARY_NAME) $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
+
+release-local: ## use GoReleaser to build the binary locally for the current OS and ARCH
+	goreleaser build --clean --skip=validate --single-target
+
+release-local-all: ## use GoReleaser to build the binary locally
+	goreleaser build --clean --skip=validate
+
+install-locally-released-tf: release-local ## installs plugin (built by the GoReleaser) where terraform can find it
+	mkdir -p $(TERRAFORM_PLUGINS_DIR)
+	cp ./dist/terraform-provider-snowflake_$(CURRENT_OS)_$(CURRENT_ARCH)/terraform-provider-snowflake_$(LATEST_GIT_TAG) $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
 uninstall-tf: ## uninstalls plugin from where terraform can find it
 	rm -f $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
@@ -180,6 +208,15 @@ generate-datasource-model-builders: ## Generate datasource model builders
 
 clean-datasource-model-builders: ## Clean datasource model builders
 	rm -f ./pkg/acceptance/bettertestspoc/config/datasourcemodel/*_gen.go
+
+clean-all-config-model-builders: clean-resource-model-builders clean-datasource-model-builders clean-provider-model-builders ## clean all generated config model builders
+
+generate-all-config-model-builders: generate-resource-model-builders generate-datasource-model-builders generate-provider-model-builders ## generate all config model builders
+
+generate-all-config-model-builders-check: clean-all-config-model-builders generate-all-config-model-builders ## check that generated config model builders are up-to-date
+	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/model
+	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/datasourcemodel
+	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/providelmodel
 
 clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-snowflake-object-parameters-assertions clean-resource-assertions clean-resource-parameters-assertions clean-resource-show-output-assertions clean-resource-model-builders clean-provider-model-builders clean-datasource-model-builders ## clean all generated assertions and config models
 

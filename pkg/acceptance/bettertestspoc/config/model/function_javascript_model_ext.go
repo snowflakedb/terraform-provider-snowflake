@@ -8,7 +8,7 @@ import (
 )
 
 func FunctionJavascriptInline(resourceName string, id sdk.SchemaObjectIdentifierWithArguments, functionDefinition string, returnType string) *FunctionJavascriptModel {
-	return FunctionJavascript(resourceName, id.DatabaseName(), functionDefinition, id.Name(), returnType, id.SchemaName())
+	return FunctionJavascript(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), functionDefinition, returnType)
 }
 
 func (f *FunctionJavascriptModel) WithArgument(argName string, argDataType datatypes.DataType) *FunctionJavascriptModel {

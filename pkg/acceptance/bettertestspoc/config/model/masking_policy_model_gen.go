@@ -13,17 +13,16 @@ import (
 )
 
 type MaskingPolicyModel struct {
+	Database            tfconfig.Variable `json:"database,omitempty"`
+	Schema              tfconfig.Variable `json:"schema,omitempty"`
+	Name                tfconfig.Variable `json:"name,omitempty"`
 	Argument            tfconfig.Variable `json:"argument,omitempty"`
 	Body                tfconfig.Variable `json:"body,omitempty"`
 	Comment             tfconfig.Variable `json:"comment,omitempty"`
-	Database            tfconfig.Variable `json:"database,omitempty"`
 	ExemptOtherPolicies tfconfig.Variable `json:"exempt_other_policies,omitempty"`
 	FullyQualifiedName  tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Name                tfconfig.Variable `json:"name,omitempty"`
 	ReturnDataType      tfconfig.Variable `json:"return_data_type,omitempty"`
-	Schema              tfconfig.Variable `json:"schema,omitempty"`
 
-	// added manually as a PoC
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
 	*config.ResourceModelMeta
@@ -35,44 +34,44 @@ type MaskingPolicyModel struct {
 
 func MaskingPolicy(
 	resourceName string,
+	database string,
+	schema string,
+	name string,
 	argument []sdk.TableColumnSignature,
 	body string,
-	database string,
-	name string,
 	returnDataType string,
-	schema string,
 ) *MaskingPolicyModel {
 	m := &MaskingPolicyModel{ResourceModelMeta: config.Meta(resourceName, resources.MaskingPolicy)}
+	m.WithDatabase(database)
+	m.WithSchema(schema)
+	m.WithName(name)
 	m.WithArgument(argument)
 	m.WithBody(body)
-	m.WithDatabase(database)
-	m.WithName(name)
 	m.WithReturnDataType(returnDataType)
-	m.WithSchema(schema)
 	return m
 }
 
 func MaskingPolicyWithDefaultMeta(
+	database string,
+	schema string,
+	name string,
 	argument []sdk.TableColumnSignature,
 	body string,
-	database string,
-	name string,
 	returnDataType string,
-	schema string,
 ) *MaskingPolicyModel {
 	m := &MaskingPolicyModel{ResourceModelMeta: config.DefaultMeta(resources.MaskingPolicy)}
+	m.WithDatabase(database)
+	m.WithSchema(schema)
+	m.WithName(name)
 	m.WithArgument(argument)
 	m.WithBody(body)
-	m.WithDatabase(database)
-	m.WithName(name)
 	m.WithReturnDataType(returnDataType)
-	m.WithSchema(schema)
 	return m
 }
 
-///////////////////////////////////////////////////////
-// set proper json marshalling and handle depends on //
-///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
 
 func (m *MaskingPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias MaskingPolicyModel
@@ -90,7 +89,6 @@ func (m *MaskingPolicyModel) WithDependsOn(values ...string) *MaskingPolicyModel
 	return m
 }
 
-// added manually as a PoC
 func (m *MaskingPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *MaskingPolicyModel {
 	m.DynamicBlock = dynamicBlock
 	return m
@@ -99,6 +97,21 @@ func (m *MaskingPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock)
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (m *MaskingPolicyModel) WithDatabase(database string) *MaskingPolicyModel {
+	m.Database = tfconfig.StringVariable(database)
+	return m
+}
+
+func (m *MaskingPolicyModel) WithSchema(schema string) *MaskingPolicyModel {
+	m.Schema = tfconfig.StringVariable(schema)
+	return m
+}
+
+func (m *MaskingPolicyModel) WithName(name string) *MaskingPolicyModel {
+	m.Name = tfconfig.StringVariable(name)
+	return m
+}
 
 // argument attribute type is not yet supported, so WithArgument can't be generated
 
@@ -112,11 +125,6 @@ func (m *MaskingPolicyModel) WithComment(comment string) *MaskingPolicyModel {
 	return m
 }
 
-func (m *MaskingPolicyModel) WithDatabase(database string) *MaskingPolicyModel {
-	m.Database = tfconfig.StringVariable(database)
-	return m
-}
-
 func (m *MaskingPolicyModel) WithExemptOtherPolicies(exemptOtherPolicies string) *MaskingPolicyModel {
 	m.ExemptOtherPolicies = tfconfig.StringVariable(exemptOtherPolicies)
 	return m
@@ -127,24 +135,29 @@ func (m *MaskingPolicyModel) WithFullyQualifiedName(fullyQualifiedName string) *
 	return m
 }
 
-func (m *MaskingPolicyModel) WithName(name string) *MaskingPolicyModel {
-	m.Name = tfconfig.StringVariable(name)
-	return m
-}
-
 func (m *MaskingPolicyModel) WithReturnDataType(returnDataType string) *MaskingPolicyModel {
 	m.ReturnDataType = tfconfig.StringVariable(returnDataType)
-	return m
-}
-
-func (m *MaskingPolicyModel) WithSchema(schema string) *MaskingPolicyModel {
-	m.Schema = tfconfig.StringVariable(schema)
 	return m
 }
 
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (m *MaskingPolicyModel) WithDatabaseValue(value tfconfig.Variable) *MaskingPolicyModel {
+	m.Database = value
+	return m
+}
+
+func (m *MaskingPolicyModel) WithSchemaValue(value tfconfig.Variable) *MaskingPolicyModel {
+	m.Schema = value
+	return m
+}
+
+func (m *MaskingPolicyModel) WithNameValue(value tfconfig.Variable) *MaskingPolicyModel {
+	m.Name = value
+	return m
+}
 
 func (m *MaskingPolicyModel) WithArgumentValue(value tfconfig.Variable) *MaskingPolicyModel {
 	m.Argument = value
@@ -161,11 +174,6 @@ func (m *MaskingPolicyModel) WithCommentValue(value tfconfig.Variable) *MaskingP
 	return m
 }
 
-func (m *MaskingPolicyModel) WithDatabaseValue(value tfconfig.Variable) *MaskingPolicyModel {
-	m.Database = value
-	return m
-}
-
 func (m *MaskingPolicyModel) WithExemptOtherPoliciesValue(value tfconfig.Variable) *MaskingPolicyModel {
 	m.ExemptOtherPolicies = value
 	return m
@@ -176,17 +184,7 @@ func (m *MaskingPolicyModel) WithFullyQualifiedNameValue(value tfconfig.Variable
 	return m
 }
 
-func (m *MaskingPolicyModel) WithNameValue(value tfconfig.Variable) *MaskingPolicyModel {
-	m.Name = value
-	return m
-}
-
 func (m *MaskingPolicyModel) WithReturnDataTypeValue(value tfconfig.Variable) *MaskingPolicyModel {
 	m.ReturnDataType = value
-	return m
-}
-
-func (m *MaskingPolicyModel) WithSchemaValue(value tfconfig.Variable) *MaskingPolicyModel {
-	m.Schema = value
 	return m
 }

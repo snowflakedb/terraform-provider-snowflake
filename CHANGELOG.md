@@ -1,5 +1,52 @@
 # Changelog
 
+## [2.1.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.0.0...v2.1.0) (2025-05-12)
+
+
+### 🎉 **What's new:**
+
+* Add image repositories to SDK ([#3628](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3628)) ([ffdb1ee](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ffdb1ee7b6add7d4a3bef7d03623b3dd4149ffc7))
+
+
+### 🔧 **Misc**
+
+* Add a holiday notice ([#3635](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3635)) ([f202704](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f202704766ccf68fa214a60a6aa1566b96671ab3))
+* Change date format DD.MM.YYYY to YYYY-MM-DD ([#3621](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3621)) ([d0fa668](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d0fa6688bc0cf52a12cf2587b9f2c3574ea3821d))
+* Document deprecated grant resource mapping ([#3643](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3643)) ([7090b9f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7090b9f35b4fb31ea53f52a9f382fb9e09807ca5))
+* Ensure no changes to generated model builders in pre push ([#3649](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3649)) ([25a9e17](https://github.com/snowflakedb/terraform-provider-snowflake/commit/25a9e17f7131f5fd1c29e14164b7970d6638fe3e))
+* Fix ordering in all model builders ([#3618](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3618)) ([d5218ef](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d5218efed65ad2e0be7d1c6a9ea2188a609dc36f))
+* Fix ordering in resource model builder constructors ([#3615](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3615)) ([5724340](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5724340e7dba887c3e05ab42b64ed617ab5e5193))
+* Fix tests that will fail once 02_2025 is enabled ([#3650](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3650)) ([b39c8fd](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b39c8fd4374f4c7fefb41752cab819a1d06671a9))
+* Generate stable and preview resources in docs ([#3616](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3616)) ([3005841](https://github.com/snowflakedb/terraform-provider-snowflake/commit/30058419f3c7b376baf48c1aa74eac4d4c8fcc0f))
+* Handle forbidden attribute names in resource model builder generation ([#3613](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3613)) ([87caec3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/87caec3575f2cd9ad5d25a8d724298256e788c7c))
+* Handle slices in resource model builder generation ([#3614](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3614)) ([b480fbf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b480fbfa04af484c405fb098f3f5955ef8d8c3ad))
+* Injecting provider version ([#3612](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3612)) ([d14d8ab](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d14d8ab5f162e2f51ee00a117a234d0e0a02d583))
+* Manually imported gpg key ([#3653](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3653)) ([f732ec5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f732ec5b4036dd124c83f86e54e21c70d7a4ab67))
+* Masking random values ([#3583](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3583)) ([3216df2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3216df2f3cf0236a765d038bcfda355efac90022))
+* Minor fixes after v2 release ([#3606](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3606)) ([99a28b4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/99a28b45e76c4393dbca00573b988a6442f55425))
+* Minor fixes and documentation adjustment ([#3607](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3607)) ([1daabaf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1daabaf693aa5138693f11b385e665dae0b64137))
+* remove note regarding future Streamlits ([#3611](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3611)) ([8de216c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8de216c55e8ef8b15faf65fd549fe092f5f01e82)), closes [#3423](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3423) [#3569](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3569)
+* Remove the holiday note ([#3644](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3644)) ([11b3848](https://github.com/snowflakedb/terraform-provider-snowflake/commit/11b384852862d75cd5a4d68520a44b058eaafe18))
+* Update migration guide ([#3665](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3665)) ([c1426f2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c1426f22c849c92a1fc186a1e6d5e17e49cc7e4c))
+* Upgrade GoSnowflake driver ([#3634](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3634)) ([aaebce5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/aaebce52f07677235f3c1e570e076d0d4095c16d))
+* Use proper envs for providing config files in pipelines ([#3625](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3625)) ([26a9a06](https://github.com/snowflakedb/terraform-provider-snowflake/commit/26a9a062bfb878fb424cbcb945203caaec773c27))
+* Use the new TOML format in pipelines ([#3608](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3608)) ([4f56f31](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4f56f316cdf438488c47cb353aa9b25d5ca1235e))
+
+
+### 🐛 **Bug fixes:**
+
+* 3622 issue ([#3626](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3626)) ([4b2f8c6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4b2f8c6a31771d273f5acb56cdfefe8631d45035))
+* Add missing DISABLE_USER_PRIVILEGE_GRANTS parameter ([#3652](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3652)) ([eb7ef76](https://github.com/snowflakedb/terraform-provider-snowflake/commit/eb7ef76f64834dacdfa94a9bd77d0f4f2888b62b)), closes [#3639](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3639)
+* Adjust tag association model builder ([#3642](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3642)) ([e80f4c9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e80f4c9c5ed1ab2f151ad39022c1e1ba66c00288))
+* Bring back account retry functionality ([#3645](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3645)) ([8a63774](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8a6377444964b7384052327ff07245b2d8427570))
+* Generate dynamic blocks for all resource model builders ([#3648](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3648)) ([6bb868a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6bb868aa8e735e7f5442e3ae57569ab6e70be3b7))
+* issue 3629 ([#3633](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3633)) ([010946e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/010946e807854dff8e6e205fb4f7a69f57076967))
+* object tracking ([#3627](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3627)) ([e73cd77](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e73cd772599d23a7424fe309ab9f68cadf50affd))
+* Prove import diff suppression problem in procedure resources ([#3656](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3656)) ([8e5f55e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8e5f55ec959b80ed240f3dd76ff4a3d8e499cdf3)), closes [#3401](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3401)
+* remove tautological err == nil check in network policy attachment test ([#3631](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3631)) ([24de0b7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/24de0b7a1657f98517d6f401fc48876479b68dd3))
+* Set value into correct field for field transformers ([#3646](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3646)) ([1da734f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1da734f7c298a85c14c4e1b1ec889e83817d3ccf))
+* Suppress diff for network policy in user resources ([#3657](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3657)) ([b4900c6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b4900c6665e86208564762b4a5adc1765ad202d5)), closes [#3655](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3655)
+
 ## [2.0.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.1...v2.0.0) (2025-04-23)
 
 

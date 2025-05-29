@@ -7,6 +7,8 @@ description: |-
 
 !> **Sensitive values** This datasource's `describe_output.redirect_uri` field is not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
 
+~> **Missing fields** The `saml2_snowflake_x509_cert` and `saml2_x509_cert` fields are not present in the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
+
 # snowflake_security_integrations (Data Source)
 
 Data source used to get details of filtered security integrations. Filtering is aligned with the current possibilities for [SHOW SECURITY INTEGRATIONS](https://docs.snowflake.com/en/sql-reference/sql/show-integrations) query (only `like` is supported). The results of SHOW and DESCRIBE are encapsulated in one output collection `security_integrations`.
@@ -61,7 +63,7 @@ data "snowflake_security_integrations" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of security_integrations is equal to at exactly one element (with the use of check block)
+# Ensure the number of security_integrations is equal to exactly one element (with the use of check block)
 check "security_integration_check" {
   data "snowflake_security_integrations" "assert_with_check_block" {
     like = "security-integration-name"

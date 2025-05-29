@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tracking"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/snowflakedb/gosnowflake"
 )
@@ -34,6 +35,7 @@ type Client struct {
 	Applications                 Applications
 	AuthenticationPolicies       AuthenticationPolicies
 	Comments                     Comments
+	ComputePools                 ComputePools
 	Connections                  Connections
 	CortexSearchServices         CortexSearchServices
 	DatabaseRoles                DatabaseRoles
@@ -47,7 +49,9 @@ type Client struct {
 	FailoverGroups               FailoverGroups
 	FileFormats                  FileFormats
 	Functions                    Functions
+	GitRepositories              GitRepositories
 	Grants                       Grants
+	ImageRepositories            ImageRepositories
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
@@ -160,6 +164,7 @@ func (c *Client) initialize() {
 	c.Applications = &applications{client: c}
 	c.AuthenticationPolicies = &authenticationPolicies{client: c}
 	c.Comments = &comments{client: c}
+	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
 	c.ConversionFunctions = &conversionFunctions{client: c}
@@ -175,7 +180,9 @@ func (c *Client) initialize() {
 	c.FailoverGroups = &failoverGroups{client: c}
 	c.FileFormats = &fileFormats{client: c}
 	c.Functions = &functions{client: c}
+	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
+	c.ImageRepositories = &imageRepositories{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}

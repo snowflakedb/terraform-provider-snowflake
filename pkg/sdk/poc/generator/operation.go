@@ -166,6 +166,11 @@ func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resour
 	return i
 }
 
+func (i *Interface) CustomShowOperation(operationName string, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
+	i.newOperationWithDBMapping(operationName, doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
+	return i
+}
+
 // ShowByIdOperationWithNoFiltering adds a ShowByID operation to the interface without any filtering. Should be used for objects that do not implement any filtering options.
 func (i *Interface) ShowByIdOperationWithNoFiltering() *Interface {
 	op := newNoSqlOperation(string(OperationKindShowByID))

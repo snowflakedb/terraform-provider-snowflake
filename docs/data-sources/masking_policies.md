@@ -84,7 +84,7 @@ data "snowflake_masking_policies" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of masking policies is equal to at exactly one element (with the use of check block)
+# Ensure the number of masking policies is equal to exactly one element (with the use of check block)
 check "masking_policy_check" {
   data "snowflake_masking_policies" "assert_with_check_block" {
     like = "masking-policy-name"

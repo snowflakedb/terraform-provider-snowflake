@@ -30,14 +30,24 @@ checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
   algorithm: sha256
 
+# More on signing through GoReleaser: https://goreleaser.com/customization/sign/
 signs:
   - artifacts: checksum
     args:
+      # This option tells GPG to run in non-interactive mode.
       - "--batch"
+      # Specifies which key to use.
       - "--local-user"
       - "{{ .Env.GPG_FINGERPRINT }}"
+      # The pinentry loopback mode in GPG allows the passphrase to be provided programmatically (e.g., via the command line or a script) instead of requiring user interaction through a graphical or terminal-based pinentry prompt.
+      - "--pinentry-mode"
+      - "loopback"
+      - "--passphrase"
+      - "{{ .Env.GPG_PASSPHRASE }}"
+      # Signature file name output.
       - "--output"
       - "${signature}"
+      # Path to the artifact that will be signed.
       - "--detach-sign"
       - "${artifact}"
 
