@@ -453,3 +453,30 @@ func (i TableColumnIdentifier) FullyQualifiedName() string {
 func (i TableColumnIdentifier) SchemaObjectId() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(i.databaseName, i.schemaName, i.tableName)
 }
+
+type LocationIdentifier struct {
+	stage SchemaObjectIdentifier
+	path  string
+}
+
+func NewLocationIdentifier(stage SchemaObjectIdentifier, path string) LocationIdentifier {
+	return LocationIdentifier{
+		stage: stage,
+		path:  path,
+	}
+}
+
+func (i LocationIdentifier) Stage() SchemaObjectIdentifier {
+	return i.stage
+}
+
+func (i LocationIdentifier) Name() string {
+	return i.path
+}
+
+func (i LocationIdentifier) FullyQualifiedName() string {
+	if i.stage.FullyQualifiedName() == "" && i.path == "" {
+		return ""
+	}
+	return fmt.Sprintf(`@%v%v`, i.stage.FullyQualifiedName(), i.path)
+}

@@ -82,3 +82,27 @@ func TestDatabaseObjectIdentifier(t *testing.T) {
 		assert.Equal(t, `"aaa"."bbb"`, identifier.FullyQualifiedName())
 	})
 }
+
+func TestLocationIdentifier(t *testing.T) {
+	t.Run("create from stage and path", func(t *testing.T) {
+		stage := NewSchemaObjectIdentifier("db", "schema", "stage")
+		identifier := NewLocationIdentifier(stage, "/path/to/file")
+
+		assert.Equal(t, stage, identifier.Stage())
+		assert.Equal(t, "/path/to/file", identifier.Name())
+	})
+
+	t.Run("get fully qualified name", func(t *testing.T) {
+		stage := NewSchemaObjectIdentifier("db", "schema", "stage")
+		identifier := NewLocationIdentifier(stage, "/path/to/file")
+
+		assert.Equal(t, `@"db"."schema"."stage"/path/to/file`, identifier.FullyQualifiedName())
+	})
+
+	t.Run("empty stage and path returns empty fully qualified name", func(t *testing.T) {
+		stage := NewSchemaObjectIdentifier("", "", "")
+		identifier := NewLocationIdentifier(stage, "")
+
+		assert.Equal(t, "", identifier.FullyQualifiedName())
+	})
+}

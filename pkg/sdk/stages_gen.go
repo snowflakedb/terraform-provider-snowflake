@@ -379,5 +379,5 @@ func (s *Stage) ObjectType() ObjectType {
 }
 
 func (s *Stage) Location() string {
-	return "@" + s.ID().FullyQualifiedName()
+	return NewLocationIdentifier(s.ID(), "").FullyQualifiedName()
 }

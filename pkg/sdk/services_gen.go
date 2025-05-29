@@ -48,18 +48,18 @@ type ListItem struct {
 }
 
 type ServiceFromSpecification struct {
-	from              bool    `ddl:"static" sql:"FROM"`
-	Stage             *string `ddl:"keyword"`
-	SpecificationFile *string `ddl:"parameter,single_quotes" sql:"SPECIFICATION_FILE"`
-	Specification     *string `ddl:"parameter,no_equals" sql:"SPECIFICATION"`
+	from              bool                `ddl:"static" sql:"FROM"`
+	Location          *LocationIdentifier `ddl:"identifier"`
+	SpecificationFile *string             `ddl:"parameter,single_quotes" sql:"SPECIFICATION_FILE"`
+	Specification     *string             `ddl:"parameter,no_equals" sql:"SPECIFICATION"`
 }
 
 type ServiceFromSpecificationTemplate struct {
-	from                      bool       `ddl:"static" sql:"FROM"`
-	Stage                     *string    `ddl:"keyword"`
-	SpecificationTemplateFile *string    `ddl:"parameter,single_quotes" sql:"SPECIFICATION_TEMPLATE_FILE"`
-	SpecificationTemplate     *string    `ddl:"parameter,no_equals" sql:"SPECIFICATION_TEMPLATE"`
-	Using                     []ListItem `ddl:"parameter,parentheses,no_equals" sql:"USING"`
+	from                      bool                `ddl:"static" sql:"FROM"`
+	Location                  *LocationIdentifier `ddl:"identifier"`
+	SpecificationTemplateFile *string             `ddl:"parameter,single_quotes" sql:"SPECIFICATION_TEMPLATE_FILE"`
+	SpecificationTemplate     *string             `ddl:"parameter,no_equals" sql:"SPECIFICATION_TEMPLATE"`
+	Using                     []ListItem          `ddl:"parameter,parentheses,no_equals" sql:"USING"`
 }
 
 // AlterServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-service.
