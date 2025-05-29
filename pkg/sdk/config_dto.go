@@ -1,14 +1,14 @@
 package sdk
 
-import "github.com/BurntSushi/toml"
+import "github.com/pelletier/go-toml/v2"
 
 //go:generate go run ./dto-builder-generator/main.go
 
 type ConfigFile struct {
-	Profiles map[string]ConfigDTO `toml:"inline"`
+	Profiles map[string]ConfigDTO
 }
 
-func (c *ConfigFile) Marshal() ([]byte, error) {
+func (c *ConfigFile) MarshalToml() ([]byte, error) {
 	return toml.Marshal(c.Profiles)
 }
 
