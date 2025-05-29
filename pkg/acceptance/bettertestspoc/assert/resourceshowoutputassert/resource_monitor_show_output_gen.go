@@ -20,21 +20,21 @@ type ResourceMonitorShowOutputAssert struct {
 func ResourceMonitorShowOutput(t *testing.T, name string) *ResourceMonitorShowOutputAssert {
 	t.Helper()
 
-	r := ResourceMonitorShowOutputAssert{
+	resourceMonitorAssert := ResourceMonitorShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	r.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &r
+	resourceMonitorAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &resourceMonitorAssert
 }
 
 func ImportedResourceMonitorShowOutput(t *testing.T, id string) *ResourceMonitorShowOutputAssert {
 	t.Helper()
 
-	r := ResourceMonitorShowOutputAssert{
+	resourceMonitorAssert := ResourceMonitorShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	r.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &r
+	resourceMonitorAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &resourceMonitorAssert
 }
 
 ////////////////////////////
@@ -103,5 +103,84 @@ func (r *ResourceMonitorShowOutputAssert) HasOwner(expected string) *ResourceMon
 
 func (r *ResourceMonitorShowOutputAssert) HasComment(expected string) *ResourceMonitorShowOutputAssert {
 	r.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	return r
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (r *ResourceMonitorShowOutputAssert) HasNoName() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoCreditQuota() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("credit_quota"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoUsedCredits() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("used_credits"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoRemainingCredits() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("remaining_credits"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoLevel() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("level"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoFrequency() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("frequency"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoStartTime() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputValueNotSet("start_time"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoEndTime() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputValueNotSet("end_time"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoNotifyAt() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputValueSet("notify_at.#", "0"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoSuspendAt() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputIntValueNotSet("suspend_at"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoSuspendImmediateAt() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputIntValueNotSet("suspend_immediate_at"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoCreatedOn() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoOwner() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoComment() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return r
+}
+
+func (r *ResourceMonitorShowOutputAssert) HasNoNotifyUsers() *ResourceMonitorShowOutputAssert {
+	r.AddAssertion(assert.ResourceShowOutputValueSet("notify_users.#", "0"))
 	return r
 }

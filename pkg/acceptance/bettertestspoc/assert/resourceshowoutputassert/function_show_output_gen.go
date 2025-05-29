@@ -20,21 +20,21 @@ type FunctionShowOutputAssert struct {
 func FunctionShowOutput(t *testing.T, name string) *FunctionShowOutputAssert {
 	t.Helper()
 
-	f := FunctionShowOutputAssert{
+	functionAssert := FunctionShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	f.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &f
+	functionAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &functionAssert
 }
 
 func ImportedFunctionShowOutput(t *testing.T, id string) *FunctionShowOutputAssert {
 	t.Helper()
 
-	f := FunctionShowOutputAssert{
+	functionAssert := FunctionShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	f.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &f
+	functionAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &functionAssert
 }
 
 ////////////////////////////
@@ -80,8 +80,6 @@ func (f *FunctionShowOutputAssert) HasMaxNumArguments(expected int) *FunctionSho
 	f.AddAssertion(assert.ResourceShowOutputIntValueSet("max_num_arguments", expected))
 	return f
 }
-
-// HasArgumentsOld removed manually
 
 func (f *FunctionShowOutputAssert) HasArgumentsRaw(expected string) *FunctionShowOutputAssert {
 	f.AddAssertion(assert.ResourceShowOutputValueSet("arguments_raw", expected))
@@ -140,5 +138,114 @@ func (f *FunctionShowOutputAssert) HasIsMemoizable(expected bool) *FunctionShowO
 
 func (f *FunctionShowOutputAssert) HasIsDataMetric(expected bool) *FunctionShowOutputAssert {
 	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_data_metric", expected))
+	return f
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (f *FunctionShowOutputAssert) HasNoCreatedOn() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoName() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoSchemaName() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoIsBuiltin() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_builtin"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoIsAggregate() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_aggregate"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoIsAnsi() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_ansi"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoMinNumArguments() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_num_arguments"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoMaxNumArguments() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_num_arguments"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoArgumentsOld() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueSet("arguments_old.#", "0"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoArgumentsRaw() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("arguments_raw"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoDescription() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("description"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoCatalogName() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("catalog_name"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoIsTableFunction() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_table_function"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoValidForClustering() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("valid_for_clustering"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoIsSecure() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_secure"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoSecrets() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("secrets"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoExternalAccessIntegrations() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("external_access_integrations"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoIsExternalFunction() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_external_function"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoLanguage() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputValueNotSet("language"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoIsMemoizable() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_memoizable"))
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoIsDataMetric() *FunctionShowOutputAssert {
+	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_data_metric"))
 	return f
 }

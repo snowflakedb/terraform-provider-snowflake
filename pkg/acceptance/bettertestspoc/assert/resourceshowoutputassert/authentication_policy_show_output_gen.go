@@ -19,21 +19,21 @@ type AuthenticationPolicyShowOutputAssert struct {
 func AuthenticationPolicyShowOutput(t *testing.T, name string) *AuthenticationPolicyShowOutputAssert {
 	t.Helper()
 
-	a := AuthenticationPolicyShowOutputAssert{
+	authenticationPolicyAssert := AuthenticationPolicyShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	a.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &a
+	authenticationPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &authenticationPolicyAssert
 }
 
 func ImportedAuthenticationPolicyShowOutput(t *testing.T, id string) *AuthenticationPolicyShowOutputAssert {
 	t.Helper()
 
-	a := AuthenticationPolicyShowOutputAssert{
+	authenticationPolicyAssert := AuthenticationPolicyShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	a.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &a
+	authenticationPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &authenticationPolicyAssert
 }
 
 ////////////////////////////
@@ -77,5 +77,49 @@ func (a *AuthenticationPolicyShowOutputAssert) HasOwnerRoleType(expected string)
 
 func (a *AuthenticationPolicyShowOutputAssert) HasOptions(expected string) *AuthenticationPolicyShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("options", expected))
+	return a
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoCreatedOn() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoName() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoComment() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoDatabaseName() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoSchemaName() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoOwner() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoOwnerRoleType() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoOptions() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
 	return a
 }
