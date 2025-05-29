@@ -87,9 +87,9 @@ func (m *ManagedAccountResourceAssert) HasUrlString(expected string) *ManagedAcc
 	return m
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (m *ManagedAccountResourceAssert) HasNoName() *ManagedAccountResourceAssert {
 	m.AddAssertion(assert.ValueNotSet("name"))
@@ -143,5 +143,108 @@ func (m *ManagedAccountResourceAssert) HasNoType() *ManagedAccountResourceAssert
 
 func (m *ManagedAccountResourceAssert) HasNoUrl() *ManagedAccountResourceAssert {
 	m.AddAssertion(assert.ValueNotSet("url"))
+	return m
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (m *ManagedAccountResourceAssert) HasCloudEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValueSet("cloud", ""))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasCommentEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValueSet("comment", ""))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasCreatedOnEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValueSet("created_on", ""))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasFullyQualifiedNameEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasLocatorEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValueSet("locator", ""))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasRegionEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValueSet("region", ""))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasTypeEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValueSet("type", ""))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasUrlEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValueSet("url", ""))
+	return m
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (m *ManagedAccountResourceAssert) HasNameNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("name"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasAdminNameNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("admin_name"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasAdminPasswordNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("admin_password"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasCloudNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("cloud"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasCommentNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("comment"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasCreatedOnNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("created_on"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasFullyQualifiedNameNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasLocatorNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("locator"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasRegionNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("region"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasTypeNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("type"))
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasUrlNotEmpty() *ManagedAccountResourceAssert {
+	m.AddAssertion(assert.ValuePresent("url"))
 	return m
 }

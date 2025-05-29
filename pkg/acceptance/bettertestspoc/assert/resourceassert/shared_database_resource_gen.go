@@ -122,9 +122,9 @@ func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMsString(expected strin
 	return s
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (s *SharedDatabaseResourceAssert) HasNoName() *SharedDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("name"))
@@ -213,5 +213,148 @@ func (s *SharedDatabaseResourceAssert) HasNoUserTaskMinimumTriggerIntervalInSeco
 
 func (s *SharedDatabaseResourceAssert) HasNoUserTaskTimeoutMs() *SharedDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("user_task_timeout_ms"))
+	return s
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *SharedDatabaseResourceAssert) HasCatalogEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("catalog", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasCommentEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollationEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("default_ddl_collation", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasExternalVolumeEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("external_volume", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasFullyQualifiedNameEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasLogLevelEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_level", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasStorageSerializationPolicyEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("storage_serialization_policy", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasTraceLevelEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("trace_level", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSizeEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *SharedDatabaseResourceAssert) HasNameNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasCatalogNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("catalog"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasCommentNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollationNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("default_ddl_collation"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasEnableConsoleOutputNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("enable_console_output"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasExternalVolumeNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("external_volume"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasFromShareNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("from_share"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasFullyQualifiedNameNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasLogLevelNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("log_level"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("quoted_identifiers_ignore_case"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharactersNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("replace_invalid_characters"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasStorageSerializationPolicyNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("storage_serialization_policy"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasSuspendTaskAfterNumFailuresNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("suspend_task_after_num_failures"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasTaskAutoRetryAttemptsNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("task_auto_retry_attempts"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasTraceLevelNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("trace_level"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSizeNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("user_task_managed_initial_warehouse_size"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("user_task_minimum_trigger_interval_in_seconds"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMsNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("user_task_timeout_ms"))
 	return s
 }
