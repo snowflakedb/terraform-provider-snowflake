@@ -65,16 +65,6 @@ func ProviderFromModel(t *testing.T, model ProviderModel) string {
 	return hcl
 }
 
-// ProviderTomlFromModel should be used for generating TOML configurations for the provider.
-func ProviderTomlFromModel(t *testing.T, model ProviderModel) string {
-	t.Helper()
-
-	toml, err := DefaultTomlConfigProvider.ProviderTomlFromModel(model)
-	require.NoError(t, err)
-
-	return string(toml)
-}
-
 // FromModels should be used in terraform acceptance tests for Config attribute to get string config from all models.
 // FromModels allows to combine multiple model types.
 // TODO [SNOW-1501905]: introduce some common interface for all three existing models (ResourceModel, DatasourceModel, and ProviderModel)
