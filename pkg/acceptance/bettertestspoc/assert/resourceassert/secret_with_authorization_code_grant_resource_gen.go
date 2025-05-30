@@ -77,9 +77,9 @@ func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasSecretTypeString(exp
 	return s
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasNoDatabase() *SecretWithAuthorizationCodeGrantResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("database"))
@@ -123,5 +123,73 @@ func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasNoOauthRefreshTokenE
 
 func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasNoSecretType() *SecretWithAuthorizationCodeGrantResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("secret_type"))
+	return s
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasCommentEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasFullyQualifiedNameEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasSecretTypeEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValueSet("secret_type", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasDatabaseNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("database"))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasSchemaNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("schema"))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasNameNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasApiAuthenticationNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("api_authentication"))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasCommentNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasFullyQualifiedNameNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasOauthRefreshTokenNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("oauth_refresh_token"))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasOauthRefreshTokenExpiryTimeNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("oauth_refresh_token_expiry_time"))
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasSecretTypeNotEmpty() *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.AddAssertion(assert.ValuePresent("secret_type"))
 	return s
 }

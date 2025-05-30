@@ -57,9 +57,9 @@ func (i *ImageRepositoryResourceAssert) HasFullyQualifiedNameString(expected str
 	return i
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (i *ImageRepositoryResourceAssert) HasNoDatabase() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueNotSet("database"))
@@ -83,5 +83,48 @@ func (i *ImageRepositoryResourceAssert) HasNoComment() *ImageRepositoryResourceA
 
 func (i *ImageRepositoryResourceAssert) HasNoFullyQualifiedName() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	return i
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (i *ImageRepositoryResourceAssert) HasCommentEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValueSet("comment", ""))
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasFullyQualifiedNameEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return i
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (i *ImageRepositoryResourceAssert) HasDatabaseNotEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValuePresent("database"))
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasSchemaNotEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValuePresent("schema"))
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasNameNotEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValuePresent("name"))
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasCommentNotEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValuePresent("comment"))
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasFullyQualifiedNameNotEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValuePresent("fully_qualified_name"))
 	return i
 }

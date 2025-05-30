@@ -42,9 +42,9 @@ func (a *AccountParameterResourceAssert) HasValueString(expected string) *Accoun
 	return a
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (a *AccountParameterResourceAssert) HasNoKey() *AccountParameterResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("key"))
@@ -53,5 +53,23 @@ func (a *AccountParameterResourceAssert) HasNoKey() *AccountParameterResourceAss
 
 func (a *AccountParameterResourceAssert) HasNoValue() *AccountParameterResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("value"))
+	return a
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (a *AccountParameterResourceAssert) HasKeyNotEmpty() *AccountParameterResourceAssert {
+	a.AddAssertion(assert.ValuePresent("key"))
+	return a
+}
+
+func (a *AccountParameterResourceAssert) HasValueNotEmpty() *AccountParameterResourceAssert {
+	a.AddAssertion(assert.ValuePresent("value"))
 	return a
 }

@@ -82,9 +82,9 @@ func (c *ComputePoolResourceAssert) HasMinNodesString(expected string) *ComputeP
 	return c
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (c *ComputePoolResourceAssert) HasNoName() *ComputePoolResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("name"))
@@ -133,5 +133,88 @@ func (c *ComputePoolResourceAssert) HasNoMaxNodes() *ComputePoolResourceAssert {
 
 func (c *ComputePoolResourceAssert) HasNoMinNodes() *ComputePoolResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("min_nodes"))
+	return c
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (c *ComputePoolResourceAssert) HasAutoResumeEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValueSet("auto_resume", ""))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasCommentEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValueSet("comment", ""))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasForApplicationEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValueSet("for_application", ""))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasFullyQualifiedNameEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasInitiallySuspendedEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValueSet("initially_suspended", ""))
+	return c
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (c *ComputePoolResourceAssert) HasNameNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("name"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasAutoResumeNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("auto_resume"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasAutoSuspendSecsNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("auto_suspend_secs"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasCommentNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("comment"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasForApplicationNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("for_application"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasFullyQualifiedNameNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasInitiallySuspendedNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("initially_suspended"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasInstanceFamilyNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("instance_family"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasMaxNodesNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("max_nodes"))
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasMinNodesNotEmpty() *ComputePoolResourceAssert {
+	c.AddAssertion(assert.ValuePresent("min_nodes"))
 	return c
 }

@@ -67,9 +67,9 @@ func (t *TagResourceAssert) HasMaskingPoliciesString(expected string) *TagResour
 	return t
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (t *TagResourceAssert) HasNoDatabase() *TagResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("database"))
@@ -87,7 +87,7 @@ func (t *TagResourceAssert) HasNoName() *TagResourceAssert {
 }
 
 func (t *TagResourceAssert) HasNoAllowedValues() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("allowed_values"))
+	t.AddAssertion(assert.ValueSet("allowed_values.#", "0"))
 	return t
 }
 
@@ -102,6 +102,59 @@ func (t *TagResourceAssert) HasNoFullyQualifiedName() *TagResourceAssert {
 }
 
 func (t *TagResourceAssert) HasNoMaskingPolicies() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("masking_policies"))
+	t.AddAssertion(assert.ValueSet("masking_policies.#", "0"))
+	return t
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (t *TagResourceAssert) HasCommentEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("comment", ""))
+	return t
+}
+
+func (t *TagResourceAssert) HasFullyQualifiedNameEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return t
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (t *TagResourceAssert) HasDatabaseNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("database"))
+	return t
+}
+
+func (t *TagResourceAssert) HasSchemaNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("schema"))
+	return t
+}
+
+func (t *TagResourceAssert) HasNameNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("name"))
+	return t
+}
+
+func (t *TagResourceAssert) HasAllowedValuesNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("allowed_values"))
+	return t
+}
+
+func (t *TagResourceAssert) HasCommentNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("comment"))
+	return t
+}
+
+func (t *TagResourceAssert) HasFullyQualifiedNameNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return t
+}
+
+func (t *TagResourceAssert) HasMaskingPoliciesNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("masking_policies"))
 	return t
 }

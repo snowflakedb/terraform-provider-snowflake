@@ -97,9 +97,9 @@ func (s *StreamOnTableResourceAssert) HasTableString(expected string) *StreamOnT
 	return s
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (s *StreamOnTableResourceAssert) HasNoDatabase() *StreamOnTableResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("database"))
@@ -122,12 +122,12 @@ func (s *StreamOnTableResourceAssert) HasNoAppendOnly() *StreamOnTableResourceAs
 }
 
 func (s *StreamOnTableResourceAssert) HasNoAt() *StreamOnTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("at"))
+	s.AddAssertion(assert.ValueSet("at.#", "0"))
 	return s
 }
 
 func (s *StreamOnTableResourceAssert) HasNoBefore() *StreamOnTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("before"))
+	s.AddAssertion(assert.ValueSet("before.#", "0"))
 	return s
 }
 
@@ -163,5 +163,103 @@ func (s *StreamOnTableResourceAssert) HasNoStreamType() *StreamOnTableResourceAs
 
 func (s *StreamOnTableResourceAssert) HasNoTable() *StreamOnTableResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("table"))
+	return s
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *StreamOnTableResourceAssert) HasAppendOnlyEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("append_only", ""))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasCommentEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasFullyQualifiedNameEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasShowInitialRowsEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("show_initial_rows", ""))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasStreamTypeEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValueSet("stream_type", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *StreamOnTableResourceAssert) HasDatabaseNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("database"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasSchemaNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("schema"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasNameNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasAppendOnlyNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("append_only"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasAtNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("at"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasBeforeNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("before"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasCommentNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasCopyGrantsNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("copy_grants"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasFullyQualifiedNameNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasShowInitialRowsNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("show_initial_rows"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasStaleNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("stale"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasStreamTypeNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("stream_type"))
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasTableNotEmpty() *StreamOnTableResourceAssert {
+	s.AddAssertion(assert.ValuePresent("table"))
 	return s
 }
