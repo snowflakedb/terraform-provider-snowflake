@@ -658,6 +658,12 @@ func (v sqlParameterClause) String() string {
 		}
 		value = dataType.ToSql()
 	}
+	if location, ok := value.(Location); ok {
+		if location == nil {
+			return s
+		}
+		value = location.ToSql()
+	}
 	// key = "value"
 	s += v.qm.Modify(value)
 	return s

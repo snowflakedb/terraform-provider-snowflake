@@ -78,8 +78,8 @@ func NewServiceFromSpecificationRequest() *ServiceFromSpecificationRequest {
 	return &ServiceFromSpecificationRequest{}
 }
 
-func (s *ServiceFromSpecificationRequest) WithStage(Stage string) *ServiceFromSpecificationRequest {
-	s.Stage = &Stage
+func (s *ServiceFromSpecificationRequest) WithLocation(Location Location) *ServiceFromSpecificationRequest {
+	s.Location = Location
 	return s
 }
 
@@ -101,8 +101,8 @@ func NewServiceFromSpecificationTemplateRequest(
 	return &s
 }
 
-func (s *ServiceFromSpecificationTemplateRequest) WithStage(Stage string) *ServiceFromSpecificationTemplateRequest {
-	s.Stage = &Stage
+func (s *ServiceFromSpecificationTemplateRequest) WithLocation(Location Location) *ServiceFromSpecificationTemplateRequest {
+	s.Location = Location
 	return s
 }
 

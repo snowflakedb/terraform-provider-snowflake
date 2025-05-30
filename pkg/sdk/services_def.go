@@ -52,20 +52,20 @@ var listItemDef = g.NewQueryStruct("ListItem").
 
 var serviceFromSpecificationDef = g.NewQueryStruct("ServiceFromSpecification").
 	SQL("FROM").
-	OptionalText("Stage", g.KeywordOptions()).
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SPECIFICATION", g.ParameterOptions().DoubleDollarQuotes().NoEquals()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "Specification").
-	WithValidation(g.ConflictingFields, "Stage", "Specification")
+	WithValidation(g.ConflictingFields, "Location", "Specification")
 
 var serviceFromSpecificationTemplateDef = g.NewQueryStruct("ServiceFromSpecificationTemplate").
 	SQL("FROM").
-	OptionalText("Stage", g.KeywordOptions()).
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE", g.ParameterOptions().DoubleDollarQuotes().NoEquals()).
 	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses().Required()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
-	WithValidation(g.ConflictingFields, "Stage", "SpecificationTemplate")
+	WithValidation(g.ConflictingFields, "Location", "SpecificationTemplate")
 
 //go:generate go run ./poc/main.go
 var ServicesDef = g.NewInterface(

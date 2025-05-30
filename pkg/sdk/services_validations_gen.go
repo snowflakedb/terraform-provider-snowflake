@@ -26,16 +26,16 @@ func (opts *CreateServiceOptions) validate() error {
 		if !exactlyOneValueSet(opts.FromSpecification.SpecificationFile, opts.FromSpecification.Specification) {
 			errs = append(errs, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
 		}
-		if everyValueSet(opts.FromSpecification.Stage, opts.FromSpecification.Specification) {
-			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecification", "Stage", "Specification"))
+		if everyValueSet(opts.FromSpecification.Location, opts.FromSpecification.Specification) {
+			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecification", "Location", "Specification"))
 		}
 	}
 	if valueSet(opts.FromSpecificationTemplate) {
 		if !exactlyOneValueSet(opts.FromSpecificationTemplate.SpecificationTemplateFile, opts.FromSpecificationTemplate.SpecificationTemplate) {
 			errs = append(errs, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 		}
-		if everyValueSet(opts.FromSpecificationTemplate.Stage, opts.FromSpecificationTemplate.SpecificationTemplate) {
-			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecificationTemplate", "Stage", "SpecificationTemplate"))
+		if everyValueSet(opts.FromSpecificationTemplate.Location, opts.FromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"))
 		}
 	}
 	// Validation added manually.
@@ -88,16 +88,16 @@ func (opts *AlterServiceOptions) validate() error {
 		if !exactlyOneValueSet(opts.FromSpecification.SpecificationFile, opts.FromSpecification.Specification) {
 			errs = append(errs, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
 		}
-		if everyValueSet(opts.FromSpecification.Stage, opts.FromSpecification.Specification) {
-			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecification", "Stage", "Specification"))
+		if everyValueSet(opts.FromSpecification.Location, opts.FromSpecification.Specification) {
+			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecification", "Location", "Specification"))
 		}
 	}
 	if valueSet(opts.FromSpecificationTemplate) {
 		if !exactlyOneValueSet(opts.FromSpecificationTemplate.SpecificationTemplateFile, opts.FromSpecificationTemplate.SpecificationTemplate) {
 			errs = append(errs, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 		}
-		if everyValueSet(opts.FromSpecificationTemplate.Stage, opts.FromSpecificationTemplate.SpecificationTemplate) {
-			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecificationTemplate", "Stage", "SpecificationTemplate"))
+		if everyValueSet(opts.FromSpecificationTemplate.Location, opts.FromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"))
 		}
 	}
 	if valueSet(opts.Restore) {

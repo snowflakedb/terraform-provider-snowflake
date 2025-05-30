@@ -470,3 +470,31 @@ var AllAutoEventLoggings = []AutoEventLogging{
 type StringAllowEmpty struct {
 	Value string `ddl:"keyword,single_quotes"`
 }
+
+// Location allows implementation of custom SQL structs.
+type Location interface {
+	ToSql() string
+}
+
+type StageLocation struct {
+	stage SchemaObjectIdentifier
+	path  string
+}
+
+func NewStageLocation(stage SchemaObjectIdentifier, path string) StageLocation {
+	return StageLocation{
+		stage: stage,
+		path:  path,
+	}
+}
+
+func (s StageLocation) ToSql() string {
+	if s.stage.FullyQualifiedName() == "" && s.path == "" {
+		return ""
+	}
+	stageFqn := fmt.Sprintf(`@%v`, s.stage.FullyQualifiedName())
+	if s.path != "" {
+		return fmt.Sprintf(`%v/%v`, stageFqn, s.path)
+	}
+	return stageFqn
+}

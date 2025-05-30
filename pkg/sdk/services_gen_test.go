@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -101,16 +100,20 @@ func TestServices_Create(t *testing.T) {
 
 	t.Run("validation: stage present without specification", func(t *testing.T) {
 		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts.FromSpecification = &ServiceFromSpecification{
-			Stage: Pointer("@stage"),
+			Location: &location,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
 	})
 
 	t.Run("validation: all specification fields present", func(t *testing.T) {
 		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts.FromSpecification = &ServiceFromSpecification{
-			Stage:             Pointer("@stage"),
+			Location:          &location,
 			Specification:     String("{}"),
 			SpecificationFile: String("spec.yaml"),
 		}
@@ -134,16 +137,20 @@ func TestServices_Create(t *testing.T) {
 
 	t.Run("validation: stage present without specification template", func(t *testing.T) {
 		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Stage: Pointer("@stage"),
+			Location: &location,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 	})
 
 	t.Run("validation: all specification template fields present", func(t *testing.T) {
 		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Stage:                     Pointer("@stage"),
+			Location:                  &location,
 			SpecificationTemplate:     String("{}"),
 			SpecificationTemplateFile: String("spec.yaml"),
 		}
@@ -169,13 +176,14 @@ func TestServices_Create(t *testing.T) {
 
 	t.Run("with specification file on stage", func(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			Stage:             Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+			Location:          &location,
 			SpecificationFile: String("spec.yaml"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM @%s SPECIFICATION_FILE = 'spec.yaml'",
-			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM %s SPECIFICATION_FILE = 'spec.yaml'",
+			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), location.ToSql())
 	})
 
 	t.Run("from specification", func(t *testing.T) {
@@ -210,9 +218,10 @@ func TestServices_Create(t *testing.T) {
 
 	t.Run("from specification template file on stage", func(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Stage:                     Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+			Location:                  &location,
 			SpecificationTemplateFile: String("spec.yaml"),
 			Using: []ListItem{
 				{
@@ -221,8 +230,8 @@ func TestServices_Create(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM @%s SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
-			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM %s SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
+			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), location.ToSql())
 	})
 
 	t.Run("from specification template", func(t *testing.T) {
@@ -399,16 +408,20 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("validation: stage present without specification", func(t *testing.T) {
 		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts.FromSpecification = &ServiceFromSpecification{
-			Stage: Pointer("@stage"),
+			Location: &location,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
 	})
 
 	t.Run("validation: all specification fields present", func(t *testing.T) {
 		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts.FromSpecification = &ServiceFromSpecification{
-			Stage:             Pointer("@stage"),
+			Location:          &location,
 			Specification:     String("{}"),
 			SpecificationFile: String("spec.yaml"),
 		}
@@ -432,16 +445,20 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("validation: stage present without specification template", func(t *testing.T) {
 		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Stage: Pointer("@stage"),
+			Location: &location,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 	})
 
 	t.Run("validation: all specification template fields present", func(t *testing.T) {
 		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Stage:                     Pointer("@stage"),
+			Location:                  &location,
 			SpecificationTemplate:     String("{}"),
 			SpecificationTemplateFile: String("spec.yaml"),
 		}
@@ -485,13 +502,14 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("from specification file on stage", func(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{
-			Stage:             Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+			Location:          &location,
 			SpecificationFile: String("spec.yaml"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM @%s SPECIFICATION_FILE = 'spec.yaml'",
-			id.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM %s SPECIFICATION_FILE = 'spec.yaml'",
+			id.FullyQualifiedName(), location.ToSql())
 	})
 
 	t.Run("from specification", func(t *testing.T) {
@@ -526,9 +544,10 @@ func TestServices_Alter(t *testing.T) {
 
 	t.Run("with specification template file on stage", func(t *testing.T) {
 		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
 		opts := defaultOpts()
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Stage:                     Pointer(fmt.Sprintf("@%s", stageId.FullyQualifiedName())),
+			Location:                  &location,
 			SpecificationTemplateFile: String("spec.yaml"),
 			Using: []ListItem{
 				{
@@ -537,8 +556,8 @@ func TestServices_Alter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM @%s SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
-			id.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM %s SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
+			id.FullyQualifiedName(), location.ToSql())
 	})
 
 	t.Run("from specification template", func(t *testing.T) {

@@ -28,13 +28,13 @@ type CreateServiceRequest struct {
 }
 
 type ServiceFromSpecificationRequest struct {
-	Stage             *string
+	Location          Location
 	SpecificationFile *string
 	Specification     *string
 }
 
 type ServiceFromSpecificationTemplateRequest struct {
-	Stage                     *string
+	Location                  Location
 	SpecificationTemplateFile *string
 	SpecificationTemplate     *string
 	Using                     []ListItem // required

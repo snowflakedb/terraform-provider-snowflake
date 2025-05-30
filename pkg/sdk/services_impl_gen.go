@@ -86,14 +86,14 @@ func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
 	}
 	if r.FromSpecification != nil {
 		opts.FromSpecification = &ServiceFromSpecification{
-			Stage:             r.FromSpecification.Stage,
+			Location:          r.FromSpecification.Location,
 			SpecificationFile: r.FromSpecification.SpecificationFile,
 			Specification:     r.FromSpecification.Specification,
 		}
 	}
 	if r.FromSpecificationTemplate != nil {
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Stage:                     r.FromSpecificationTemplate.Stage,
+			Location:                  r.FromSpecificationTemplate.Location,
 			SpecificationTemplateFile: r.FromSpecificationTemplate.SpecificationTemplateFile,
 			SpecificationTemplate:     r.FromSpecificationTemplate.SpecificationTemplate,
 			Using:                     r.FromSpecificationTemplate.Using,
@@ -119,14 +119,14 @@ func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 	}
 	if r.FromSpecification != nil {
 		opts.FromSpecification = &ServiceFromSpecification{
-			Stage:             r.FromSpecification.Stage,
+			Location:          r.FromSpecification.Location,
 			SpecificationFile: r.FromSpecification.SpecificationFile,
 			Specification:     r.FromSpecification.Specification,
 		}
 	}
 	if r.FromSpecificationTemplate != nil {
 		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Stage:                     r.FromSpecificationTemplate.Stage,
+			Location:                  r.FromSpecificationTemplate.Location,
 			SpecificationTemplateFile: r.FromSpecificationTemplate.SpecificationTemplateFile,
 			SpecificationTemplate:     r.FromSpecificationTemplate.SpecificationTemplate,
 			Using:                     r.FromSpecificationTemplate.Using,

@@ -459,3 +459,26 @@ func Test_ToAutoEventLogging(t *testing.T) {
 		})
 	}
 }
+
+func TestStageLocation(t *testing.T) {
+	t.Run("get stage sql", func(t *testing.T) {
+		stage := NewSchemaObjectIdentifier("db", "schema", "stage")
+		identifier := NewStageLocation(stage, "path/to/file")
+
+		assert.Equal(t, `@"db"."schema"."stage"/path/to/file`, identifier.ToSql())
+	})
+
+	t.Run("get stage and path sql", func(t *testing.T) {
+		stage := NewSchemaObjectIdentifier("db", "schema", "stage")
+		identifier := NewStageLocation(stage, "")
+
+		assert.Equal(t, `@"db"."schema"."stage"`, identifier.ToSql())
+	})
+
+	t.Run("empty stage and path returns empty sql", func(t *testing.T) {
+		stage := NewSchemaObjectIdentifier("", "", "")
+		identifier := NewStageLocation(stage, "")
+
+		assert.Equal(t, "", identifier.ToSql())
+	})
+}
