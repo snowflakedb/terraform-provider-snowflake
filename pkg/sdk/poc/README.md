@@ -110,8 +110,6 @@ find a better solution to solve the issue (add more logic to the templates ?)
   - more clear definition of lists that can be empty vs cannot be empty
 - add empty ids in generated tests (TODO in random_test.go)
 - add optional imports (currently they have to be added manually, e.g. `datatypes.DataType`)
-- add fourth type of quotes - double dollars ($$..$$) -> used for functions, procedures, and tasks
-- add an option to specify identifiers starting with `@`, like stage references
 
 ##### Known issues
 - generating two converts when Show and Desc use the same data structure
