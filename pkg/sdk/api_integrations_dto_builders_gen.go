@@ -41,6 +41,11 @@ func (s *CreateApiIntegrationRequest) WithGoogleApiProviderParams(GoogleApiProvi
 	return s
 }
 
+func (s *CreateApiIntegrationRequest) WithGitApiProviderParams(GitApiProviderParams *GitApiParamsRequest) *CreateApiIntegrationRequest {
+	s.GitApiProviderParams = GitApiProviderParams
+	return s
+}
+
 func (s *CreateApiIntegrationRequest) WithApiBlockedPrefixes(ApiBlockedPrefixes []ApiIntegrationEndpointPrefix) *CreateApiIntegrationRequest {
 	s.ApiBlockedPrefixes = ApiBlockedPrefixes
 	return s
@@ -87,6 +92,15 @@ func NewGoogleApiParamsRequest(
 	s := GoogleApiParamsRequest{}
 	s.GoogleAudience = GoogleAudience
 	return &s
+}
+
+func NewGitApiParamsRequest() *GitApiParamsRequest {
+	return &GitApiParamsRequest{}
+}
+
+func (s *GitApiParamsRequest) WithAllowedAuthenticationSecrets(AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret) *GitApiParamsRequest {
+	s.AllowedAuthenticationSecrets = AllowedAuthenticationSecrets
+	return s
 }
 
 func NewAlterApiIntegrationRequest(
@@ -138,6 +152,11 @@ func (s *ApiIntegrationSetRequest) WithAzureParams(AzureParams *SetAzureApiParam
 
 func (s *ApiIntegrationSetRequest) WithGoogleParams(GoogleParams *SetGoogleApiParamsRequest) *ApiIntegrationSetRequest {
 	s.GoogleParams = GoogleParams
+	return s
+}
+
+func (s *ApiIntegrationSetRequest) WithGitParams(GitParams *SetGitApiParamsRequest) *ApiIntegrationSetRequest {
+	s.GitParams = GitParams
 	return s
 }
 
@@ -200,6 +219,15 @@ func NewSetGoogleApiParamsRequest(
 	s := SetGoogleApiParamsRequest{}
 	s.GoogleAudience = GoogleAudience
 	return &s
+}
+
+func NewSetGitApiParamsRequest() *SetGitApiParamsRequest {
+	return &SetGitApiParamsRequest{}
+}
+
+func (s *SetGitApiParamsRequest) WithAllowedAuthenticationSecrets(AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret) *SetGitApiParamsRequest {
+	s.AllowedAuthenticationSecrets = AllowedAuthenticationSecrets
+	return s
 }
 
 func NewApiIntegrationUnsetRequest() *ApiIntegrationUnsetRequest {

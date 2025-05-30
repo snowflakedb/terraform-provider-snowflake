@@ -96,6 +96,11 @@ func (r *CreateApiIntegrationRequest) toOpts() *CreateApiIntegrationOptions {
 			GoogleAudience: r.GoogleApiProviderParams.GoogleAudience,
 		}
 	}
+	if r.GitApiProviderParams != nil {
+		opts.GitApiProviderParams = &GitApiParams{
+			AllowedAuthenticationSecrets: r.GitApiProviderParams.AllowedAuthenticationSecrets,
+		}
+	}
 	return opts
 }
 
@@ -130,6 +135,11 @@ func (r *AlterApiIntegrationRequest) toOpts() *AlterApiIntegrationOptions {
 		if r.Set.GoogleParams != nil {
 			opts.Set.GoogleParams = &SetGoogleApiParams{
 				GoogleAudience: r.Set.GoogleParams.GoogleAudience,
+			}
+		}
+		if r.Set.GitParams != nil {
+			opts.Set.GitParams = &SetGitApiParams{
+				AllowedAuthenticationSecrets: r.Set.GitParams.AllowedAuthenticationSecrets,
 			}
 		}
 	}
