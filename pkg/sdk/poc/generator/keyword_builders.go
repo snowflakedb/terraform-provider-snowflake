@@ -5,8 +5,8 @@ func (v *QueryStruct) OptionalSQL(sql string) *QueryStruct {
 	return v
 }
 
-func (v *QueryStruct) NamedList(sql string, itemKind string) *QueryStruct {
-	v.fields = append(v.fields, NewField(sqlToFieldName(sql, true), KindOfSlice(itemKind), Tags().Keyword().SQL(sql), nil))
+func (v *QueryStruct) NamedList(sql string, itemKind string, transformer *KeywordTransformer) *QueryStruct {
+	v.fields = append(v.fields, NewField(sqlToFieldName(sql, true), KindOfSlice(itemKind), Tags().Keyword().SQL(sql), transformer))
 	return v
 }
 
@@ -28,6 +28,11 @@ func (v *QueryStruct) Terse() *QueryStruct {
 
 func (v *QueryStruct) Text(name string, transformer *KeywordTransformer) *QueryStruct {
 	v.fields = append(v.fields, NewField(name, "string", Tags().Keyword(), transformer))
+	return v
+}
+
+func (v *QueryStruct) Any(name string, transformer *KeywordTransformer) *QueryStruct {
+	v.fields = append(v.fields, NewField(name, "any", Tags().Keyword(), transformer))
 	return v
 }
 
@@ -108,6 +113,10 @@ func (v *QueryStruct) OptionalIn() *QueryStruct {
 
 func (v *QueryStruct) OptionalExtendedIn() *QueryStruct {
 	return v.PredefinedQueryStructField("In", "*ExtendedIn", KeywordOptions().SQL("IN"))
+}
+
+func (v *QueryStruct) OptionalServiceIn() *QueryStruct {
+	return v.PredefinedQueryStructField("In", "*ServiceIn", KeywordOptions().SQL("IN"))
 }
 
 func (v *QueryStruct) OptionalStartsWith() *QueryStruct {

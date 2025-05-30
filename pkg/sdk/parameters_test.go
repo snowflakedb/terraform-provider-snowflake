@@ -58,7 +58,7 @@ func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
 	opts := &AlterAccountOptions{
 		Set: &AccountSet{
-			Parameters: &AccountLevelParameters{
+			LegacyParameters: &AccountLevelParameters{
 				AccountParameters: &AccountParameters{
 					EnforceNetworkRulesForInternalStages: Bool(true),
 				},

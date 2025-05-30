@@ -4,7 +4,7 @@ import "context"
 
 type {{ .Name }} interface {
 	{{- range .Operations }}
-		{{- if and (eq .Name "Show") .ShowMapping }}
+		{{- if and (hasPrefix .Name "Show") .ShowMapping }}
 			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error)
 		{{- else if eq .Name "ShowByID" }}
 			{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)

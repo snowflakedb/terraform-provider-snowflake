@@ -32,6 +32,21 @@ func ImportedProcedureScalaResource(t *testing.T, id string) *ProcedureScalaReso
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (p *ProcedureScalaResourceAssert) HasDatabaseString(expected string) *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("database", expected))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasSchemaString(expected string) *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("schema", expected))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNameString(expected string) *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("name", expected))
+	return p
+}
+
 func (p *ProcedureScalaResourceAssert) HasArgumentsString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
@@ -39,11 +54,6 @@ func (p *ProcedureScalaResourceAssert) HasArgumentsString(expected string) *Proc
 
 func (p *ProcedureScalaResourceAssert) HasCommentString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasDatabaseString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
 	return p
 }
 
@@ -92,11 +102,6 @@ func (p *ProcedureScalaResourceAssert) HasMetricLevelString(expected string) *Pr
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasNameString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasNullInputBehaviorString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return p
@@ -127,11 +132,6 @@ func (p *ProcedureScalaResourceAssert) HasRuntimeVersionString(expected string) 
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasSchemaString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasSecretsString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("secrets", expected))
 	return p
@@ -156,6 +156,21 @@ func (p *ProcedureScalaResourceAssert) HasTraceLevelString(expected string) *Pro
 // Attribute empty checks //
 ////////////////////////////
 
+func (p *ProcedureScalaResourceAssert) HasNoDatabase() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("database"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNoSchema() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("schema"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNoName() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("name"))
+	return p
+}
+
 func (p *ProcedureScalaResourceAssert) HasNoArguments() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("arguments"))
 	return p
@@ -163,11 +178,6 @@ func (p *ProcedureScalaResourceAssert) HasNoArguments() *ProcedureScalaResourceA
 
 func (p *ProcedureScalaResourceAssert) HasNoComment() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasNoDatabase() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
 	return p
 }
 
@@ -216,11 +226,6 @@ func (p *ProcedureScalaResourceAssert) HasNoMetricLevel() *ProcedureScalaResourc
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasNoName() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasNoNullInputBehavior() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
 	return p
@@ -248,11 +253,6 @@ func (p *ProcedureScalaResourceAssert) HasNoReturnType() *ProcedureScalaResource
 
 func (p *ProcedureScalaResourceAssert) HasNoRuntimeVersion() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("runtime_version"))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasNoSchema() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
 	return p
 }
 

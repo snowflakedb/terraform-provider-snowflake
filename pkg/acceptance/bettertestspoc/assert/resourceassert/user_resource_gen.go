@@ -32,6 +32,11 @@ func ImportedUserResource(t *testing.T, id string) *UserResourceAssert {
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (u *UserResourceAssert) HasNameString(expected string) *UserResourceAssert {
+	u.AddAssertion(assert.ValueSet("name", expected))
+	return u
+}
+
 func (u *UserResourceAssert) HasAbortDetachedQueryString(expected string) *UserResourceAssert {
 	u.AddAssertion(assert.ValueSet("abort_detached_query", expected))
 	return u
@@ -257,11 +262,6 @@ func (u *UserResourceAssert) HasMustChangePasswordString(expected string) *UserR
 	return u
 }
 
-func (u *UserResourceAssert) HasNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("name", expected))
-	return u
-}
-
 func (u *UserResourceAssert) HasNetworkPolicyString(expected string) *UserResourceAssert {
 	u.AddAssertion(assert.ValueSet("network_policy", expected))
 	return u
@@ -440,6 +440,11 @@ func (u *UserResourceAssert) HasWeekStartString(expected string) *UserResourceAs
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (u *UserResourceAssert) HasNoName() *UserResourceAssert {
+	u.AddAssertion(assert.ValueNotSet("name"))
+	return u
+}
 
 func (u *UserResourceAssert) HasNoAbortDetachedQuery() *UserResourceAssert {
 	u.AddAssertion(assert.ValueNotSet("abort_detached_query"))
@@ -663,11 +668,6 @@ func (u *UserResourceAssert) HasNoMultiStatementCount() *UserResourceAssert {
 
 func (u *UserResourceAssert) HasNoMustChangePassword() *UserResourceAssert {
 	u.AddAssertion(assert.ValueNotSet("must_change_password"))
-	return u
-}
-
-func (u *UserResourceAssert) HasNoName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("name"))
 	return u
 }
 
