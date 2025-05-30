@@ -24,7 +24,6 @@ func TestAcc_Provider_OktaAuth(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -44,9 +43,6 @@ func TestAcc_Provider_UsernamePasswordMfaAuth(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableManual)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			acc.TestAccPreCheck(t)
-		},
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -68,9 +64,6 @@ func TestAcc_Provider_UsernamePasswordMfaAuthWithPasscode(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableManual)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			acc.TestAccPreCheck(t)
-		},
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

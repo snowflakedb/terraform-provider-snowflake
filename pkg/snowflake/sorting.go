@@ -4,15 +4,6 @@ import (
 	"sort"
 )
 
-func sortInterfaceStrings(strs map[string]interface{}) []string {
-	sortedStringProperties := []string{}
-	for k := range strs {
-		sortedStringProperties = append(sortedStringProperties, k)
-	}
-	sort.Strings(sortedStringProperties)
-	return sortedStringProperties
-}
-
 func sortStrings(strs map[string]string) []string {
 	sortedStringProperties := []string{}
 	for k := range strs {

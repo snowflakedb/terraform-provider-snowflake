@@ -24,7 +24,6 @@ import (
 // TODO [SNOW-2054208]: merge setups/test cases with TestAcc_TestResource_DataTypeDiffHandling during the package cleanup.
 func TestAcc_TestResource_DataTypeDiffHandlingList(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	envName := fmt.Sprintf("%s_%s", testenvs.TestResourceDataTypeDiffHandlingEnv, strings.ToUpper(random.AlphaN(10)))
 	resourceType := "snowflake_test_resource_data_type_diff_handling_list"

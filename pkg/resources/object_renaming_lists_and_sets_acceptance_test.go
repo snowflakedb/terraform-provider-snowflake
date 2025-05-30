@@ -25,7 +25,6 @@ import (
 func TestAcc_BasicListFlow(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -388,7 +387,6 @@ func TestAcc_BasicListFlow(t *testing.T) {
 func TestAcc_ListNameUpdate(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -441,7 +439,6 @@ func TestAcc_ListNameUpdate(t *testing.T) {
 func TestAcc_ListsWithDuplicatedItems(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	// Fails, because the SuppressDiffFunc works on the hash of individual items.
 	// To correctly suppress such changes, the number of repeated hashes should be counted.
@@ -536,7 +533,6 @@ func assertObjectRenamingDatabaseChangelogAndClearIt(changelog resources.ObjectR
 func TestAcc_SupportedActions(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -796,7 +792,6 @@ func TestAcc_SupportedActions(t *testing.T) {
 func TestAcc_UnsupportedActions_AddItemsNotAtTheEnd(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -873,7 +868,6 @@ func TestAcc_UnsupportedActions_AddItemsNotAtTheEnd(t *testing.T) {
 func TestAcc_UnsupportedActions_ChangeItemTypeToIncompatibleOne(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -946,7 +940,6 @@ func TestAcc_UnsupportedActions_ChangeItemTypeToIncompatibleOne(t *testing.T) {
 func TestAcc_UnsupportedActions_ExternalChange_AddNewItem(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -1029,7 +1022,6 @@ func TestAcc_UnsupportedActions_ExternalChange_AddNewItem(t *testing.T) {
 func TestAcc_UnsupportedActions_ExternalChange_RemoveItem(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
@@ -1127,7 +1119,6 @@ func TestAcc_UnsupportedActions_ExternalChange_RemoveItem(t *testing.T) {
 func TestAcc_UnsupportedActions_ChangingTheOrderOfItem(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	acc.TestAccPreCheck(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
