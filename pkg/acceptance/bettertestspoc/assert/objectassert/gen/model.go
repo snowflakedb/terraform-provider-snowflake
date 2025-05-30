@@ -57,7 +57,7 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) SnowflakeO
 }
 
 func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectFieldAssertion {
-	TypeWithoutPointerAndBrackets := strings.TrimLeft(field.ConcreteType, "*[]")
+	concreteTypeWithoutPtrAndBrackets := field.ConcreteTypeNoPointerNoArray()
 
 	mapper := genhelpers.Identity
 	if field.IsPointer() {
@@ -66,7 +66,7 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 	expectedValueMapper := genhelpers.Identity
 
 	// TODO [SNOW-1501905]: handle other mappings if needed
-	if TypeWithoutPointerAndBrackets == "sdk.AccountObjectIdentifier" {
+	if concreteTypeWithoutPtrAndBrackets == "sdk.AccountObjectIdentifier" {
 		mapper = genhelpers.Name
 		if field.IsPointer() {
 			mapper = func(s string) string {
@@ -75,7 +75,7 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 		}
 		expectedValueMapper = genhelpers.Name
 	}
-	if TypeWithoutPointerAndBrackets == "sdk.SchemaObjectIdentifier" {
+	if concreteTypeWithoutPtrAndBrackets == "sdk.SchemaObjectIdentifier" {
 		mapper = genhelpers.FullyQualifiedName
 		if field.IsPointer() {
 			mapper = func(s string) string {

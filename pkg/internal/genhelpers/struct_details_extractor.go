@@ -35,7 +35,7 @@ func (f *Field) ConcreteTypeNoPointer() string {
 }
 
 func (f *Field) ConcreteTypeNoPointerNoArray() string {
-	concreteTypeNoPtrNoArr := strings.TrimLeft(f.ConcreteType, "*[]")
+	concreteTypeNoPtrNoArr := TypeWithoutPointerAndBrackets(f.ConcreteType)
 	return concreteTypeNoPtrNoArr
 }
 
