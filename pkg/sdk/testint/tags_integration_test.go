@@ -784,6 +784,33 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 		},
 		{
+			name:       "GitRepository",
+			objectType: sdk.ObjectTypeGitRepository,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				origin := "https://github.com/octocat/hello-world"
+
+				gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+				apiIntegrationId, apiIntegrationCleanup :=
+					testClientHelper().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+
+				repo, repoCleanup :=
+					testClientHelper().GitRepository.Create(t, gitRepositoryId, origin, apiIntegrationId)
+
+				cleanup := func() {
+					repoCleanup()
+					apiIntegrationCleanup()
+				}
+				return repo, cleanup
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.GitRepositories.Alter(ctx, sdk.NewAlterGitRepositoryRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.GitRepositories.Alter(ctx, sdk.NewAlterGitRepositoryRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
 			name:       "MaterializedView",
 			objectType: sdk.ObjectTypeMaterializedView,
 			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {

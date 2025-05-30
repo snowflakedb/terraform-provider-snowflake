@@ -112,6 +112,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeComputePool,
 		ObjectStruct: sdk.ComputePool{},
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeGitRepository,
+		ObjectStruct: sdk.GitRepository{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

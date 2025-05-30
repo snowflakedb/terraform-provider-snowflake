@@ -23,7 +23,7 @@ func (a *ImageRepositoryAssert) HasRepositoryUrlNotEmpty() *ImageRepositoryAsser
 	a.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
 		t.Helper()
 		if o.RepositoryUrl == "" {
-			return fmt.Errorf("expected created_on to be not empty")
+			return fmt.Errorf("expected repository_url to be not empty")
 		}
 		return nil
 	})
