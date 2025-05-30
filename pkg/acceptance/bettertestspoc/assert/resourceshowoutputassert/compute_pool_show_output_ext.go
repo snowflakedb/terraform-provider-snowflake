@@ -16,8 +16,3 @@ func (c *ComputePoolShowOutputAssert) HasUpdatedOnNotEmpty() *ComputePoolShowOut
 	c.AddAssertion(assert.ResourceShowOutputValuePresent("updated_on"))
 	return c
 }
-
-func (c *ComputePoolShowOutputAssert) HasNoApplication() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("application", ""))
-	return c
-}

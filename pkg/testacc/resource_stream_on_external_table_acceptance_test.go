@@ -90,7 +90,7 @@ func TestAcc_StreamOnExternalTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeInsertOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -152,7 +152,7 @@ func TestAcc_StreamOnExternalTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeInsertOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -204,7 +204,7 @@ func TestAcc_StreamOnExternalTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeInsertOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -253,7 +253,7 @@ func TestAcc_StreamOnExternalTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeInsertOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -302,7 +302,7 @@ func TestAcc_StreamOnExternalTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeInsertOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -689,7 +689,7 @@ func TestAcc_StreamOnExternalTable_At(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeInsertOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -776,7 +776,7 @@ func TestAcc_StreamOnExternalTable_Before(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeInsertOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").

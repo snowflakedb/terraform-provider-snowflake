@@ -41,11 +41,6 @@ func (a *AccountShowOutputAssert) HasConsumptionBillingEntityNameNotEmpty() *Acc
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoOrganizationOldUrl() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_old_url"))
-	return a
-}
-
 func (a *AccountShowOutputAssert) HasOrganizationOldUrlEmpty() *AccountShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("organization_old_url", ""))
 	return a
@@ -56,18 +51,8 @@ func (a *AccountShowOutputAssert) HasMarketplaceProviderBillingEntityNameNotEmpt
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoAccountOldUrlSavedOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("account_old_url_saved_on"))
-	return a
-}
-
 func (a *AccountShowOutputAssert) HasAccountOldUrlSavedOnEmpty() *AccountShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("account_old_url_saved_on", ""))
-	return a
-}
-
-func (a *AccountShowOutputAssert) HasNoAccountOldUrlLastUsed() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("account_old_url_last_used"))
 	return a
 }
 
@@ -76,18 +61,8 @@ func (a *AccountShowOutputAssert) HasAccountOldUrlLastUsedEmpty() *AccountShowOu
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoOrganizationOldUrlSavedOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_old_url_saved_on"))
-	return a
-}
-
 func (a *AccountShowOutputAssert) HasOrganizationOldUrlSavedOnEmpty() *AccountShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("organization_old_url_saved_on", ""))
-	return a
-}
-
-func (a *AccountShowOutputAssert) HasNoOrganizationOldUrlLastUsed() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_old_url_last_used"))
 	return a
 }
 
@@ -96,18 +71,8 @@ func (a *AccountShowOutputAssert) HasOrganizationOldUrlLastUsedEmpty() *AccountS
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoDroppedOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("dropped_on"))
-	return a
-}
-
 func (a *AccountShowOutputAssert) HasDroppedOnEmpty() *AccountShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("dropped_on", ""))
-	return a
-}
-
-func (a *AccountShowOutputAssert) HasNoScheduledDeletionTime() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("scheduled_deletion_time"))
 	return a
 }
 
@@ -116,18 +81,8 @@ func (a *AccountShowOutputAssert) HasScheduledDeletionTimeEmpty() *AccountShowOu
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoRestoredOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("restored_on"))
-	return a
-}
-
 func (a *AccountShowOutputAssert) HasRestoredOnEmpty() *AccountShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("restored_on", ""))
-	return a
-}
-
-func (a *AccountShowOutputAssert) HasNoMovedToOrganization() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("moved_to_organization"))
 	return a
 }
 
@@ -141,28 +96,13 @@ func (a *AccountShowOutputAssert) HasMovedOnEmpty() *AccountShowOutputAssert {
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoOrganizationUrlExpirationOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_url_expiration_on"))
-	return a
-}
-
 func (a *AccountShowOutputAssert) HasOrganizationUrlExpirationOnEmpty() *AccountShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("organization_url_expiration_on", ""))
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoIsEventsAccount() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("is_events_account"))
-	return a
-}
-
 func (a *AccountShowOutputAssert) HasIsEventsAccountEmpty() *AccountShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("is_events_account", ""))
-	return a
-}
-
-func (a *AccountShowOutputAssert) HasNoIsOrganizationAccount() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("is_organization_account"))
 	return a
 }
 

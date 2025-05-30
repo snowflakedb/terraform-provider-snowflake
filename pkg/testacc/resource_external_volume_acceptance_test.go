@@ -120,8 +120,10 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 	resourceId := helpers.EncodeResourceIdentifier(id)
 	comment := random.Comment()
 	comment2 := random.Comment()
-	allowWritesTrue := "true"
-	allowWritesFalse := "false"
+	allowWritesTrue := true
+	allowWritesFalse := false
+	allowWritesTrueString := "true"
+	allowWritesFalseString := "false"
 	s3StorageLocationName := "s3Test"
 	s3StorageLocationName2 := "s3Test2"
 	s3StorageProvider := "S3"
@@ -188,12 +190,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// set external volume optionals
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -215,7 +217,7 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// import - with external volume optionals
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables:   externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -223,12 +225,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// add second storage location without s3 optionals
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -260,7 +262,7 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// import - 2 storage locations without all s3 optionals set
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables:   externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrueString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -268,12 +270,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// update comment and change back to 1 storage location
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -295,12 +297,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// update allowWrites
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -322,12 +324,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// add none encryption
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -349,12 +351,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// add AWS_SSE_S3 encryption
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationSseEncryption), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationSseEncryption), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -376,12 +378,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// add AWS_SSE_KMS encryption
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationKmsEncryption), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationKmsEncryption), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -403,12 +405,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// update kms key
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationKmsEncryptionUpdatedKey), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationKmsEncryptionUpdatedKey), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -430,7 +432,7 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// import - all optional s3 storage location optionals set
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(s3StorageLocationKmsEncryption), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables:   externalVolume(config.ListVariable(s3StorageLocationKmsEncryption), externalVolumeName, comment2, allowWritesFalseString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -438,12 +440,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// add second storage location with all s3 optionals set
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationKmsEncryptionUpdatedKey, s3StorageLocationKmsEncryptionUpdatedName), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationKmsEncryptionUpdatedKey, s3StorageLocationKmsEncryptionUpdatedName), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -475,7 +477,7 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// import - 2 s3 storage locations, with all s3 optionals set
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(s3StorageLocationKmsEncryptionUpdatedKey, s3StorageLocationKmsEncryptionUpdatedName), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables:   externalVolume(config.ListVariable(s3StorageLocationKmsEncryptionUpdatedKey, s3StorageLocationKmsEncryptionUpdatedName), externalVolumeName, comment2, allowWritesFalseString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -483,12 +485,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// change back to AWS_SSE_S3 encryption with 1 s3 storage location
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationSseEncryption), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationSseEncryption), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -510,12 +512,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// change back to none encryption
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -537,12 +539,12 @@ func TestAcc_External_Volume_S3(t *testing.T) {
 			// change back to no encryption
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -599,8 +601,10 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 	resourceId := helpers.EncodeResourceIdentifier(id)
 	comment := random.Comment()
 	comment2 := random.Comment()
-	allowWritesTrue := "true"
-	allowWritesFalse := "false"
+	allowWritesTrue := true
+	allowWritesFalse := false
+	allowWritesTrueString := "true"
+	allowWritesFalseString := "false"
 	gcsStorageLocationName := "gcsTest"
 	gcsStorageLocationName2 := "gcsTest2"
 	gcsStorageProvider := "GCS"
@@ -664,12 +668,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// set external volume optionals
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -691,7 +695,7 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// import - with external volume optionals
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -699,12 +703,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// add second storage location without gcs optionals
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation, gcsStorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation, gcsStorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -736,7 +740,7 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// import - 2 storage locations without all gcs optionals set
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocation, gcsStorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocation, gcsStorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrueString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -744,12 +748,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// update comment and change back to 1 storage location
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -771,12 +775,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// update allowWrites
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -798,12 +802,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// add none encryption
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -825,12 +829,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// add GCS_SSE_KMS encryption
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationKmsEncryption), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationKmsEncryption), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -852,12 +856,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// update kms key
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationKmsEncryptionUpdatedKey), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationKmsEncryptionUpdatedKey), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -879,7 +883,7 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// import - all gcs storage location optionals set
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocationKmsEncryption), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocationKmsEncryption), externalVolumeName, comment2, allowWritesFalseString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -887,12 +891,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// add second storage location with all gcs optionals set
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationKmsEncryptionUpdatedKey, gcsStorageLocationKmsEncryptionUpdatedName), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationKmsEncryptionUpdatedKey, gcsStorageLocationKmsEncryptionUpdatedName), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -924,7 +928,7 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// import - 2 gcs storage locations, with all gcs optionals set
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocationKmsEncryptionUpdatedKey, gcsStorageLocationKmsEncryptionUpdatedName), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocationKmsEncryptionUpdatedKey, gcsStorageLocationKmsEncryptionUpdatedName), externalVolumeName, comment2, allowWritesFalseString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -932,12 +936,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// change back to none encryption with 1 gcs storage location
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -959,12 +963,12 @@ func TestAcc_External_Volume_GCS(t *testing.T) {
 			// change back to no encryption
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -1021,8 +1025,10 @@ func TestAcc_External_Volume_Azure(t *testing.T) {
 	resourceId := helpers.EncodeResourceIdentifier(id)
 	comment := random.Comment()
 	comment2 := random.Comment()
-	allowWritesTrue := "true"
-	allowWritesFalse := "false"
+	allowWritesTrue := true
+	allowWritesFalse := false
+	allowWritesTrueString := "true"
+	allowWritesFalseString := "false"
 	azureStorageLocationName := "azureTest"
 	azureStorageLocationName2 := "azureTest2"
 	azureStorageProvider := "AZURE"
@@ -1081,12 +1087,12 @@ func TestAcc_External_Volume_Azure(t *testing.T) {
 			// set external volume optionals
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -1108,7 +1114,7 @@ func TestAcc_External_Volume_Azure(t *testing.T) {
 			// import - with external volume optionals
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables:   externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1116,12 +1122,12 @@ func TestAcc_External_Volume_Azure(t *testing.T) {
 			// add second storage location
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation, azureStorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation, azureStorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -1153,7 +1159,7 @@ func TestAcc_External_Volume_Azure(t *testing.T) {
 			// import - 2 storage locations
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables:   externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1161,12 +1167,12 @@ func TestAcc_External_Volume_Azure(t *testing.T) {
 			// update comment and change back to 1 storage location
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment2, allowWritesTrue),
+				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment2, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -1188,12 +1194,12 @@ func TestAcc_External_Volume_Azure(t *testing.T) {
 			// update allowWrites
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment2, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment2, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment2).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
 							0,
@@ -1249,7 +1255,8 @@ func TestAcc_External_Volume_All_Options(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	externalVolumeName := id.Name()
 	comment := random.Comment()
-	allowWritesFalse := "false"
+	allowWritesFalse := false
+	allowWritesFalseString := "false"
 
 	s3StorageLocationName := "s3Test"
 	s3StorageProvider := "S3"
@@ -1283,12 +1290,12 @@ func TestAcc_External_Volume_All_Options(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesFalse),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1329,7 +1336,7 @@ func TestAcc_External_Volume_All_Options(t *testing.T) {
 			},
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables:   externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesFalse),
+				ConfigVariables:   externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesFalseString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1344,7 +1351,8 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	externalVolumeName := id.Name()
 	comment := random.Comment()
-	allowWritesTrue := "true"
+	allowWritesTrue := true
+	allowWritesTrueString := "true"
 	s3StorageLocationName := "s3Test"
 	s3StorageLocationName2 := "s3Test2"
 	s3StorageProvider := "S3"
@@ -1388,12 +1396,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// one location of each provider
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1435,7 +1443,7 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// import
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables:   externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables:   externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				ResourceName:      "snowflake_external_volume.complete",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1443,12 +1451,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// change the s3 base url at position 0
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocationUpdatedBaseUrl), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocationUpdatedBaseUrl), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1490,12 +1498,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// change back the s3 base url at position 0
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1537,12 +1545,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// add new s3 storage location to position 0
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocationUpdatedName, s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocationUpdatedName, s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(4).
 						HasStorageLocationAtIndex(
 							0,
@@ -1594,12 +1602,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// remove s3 storage location at position 0
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1641,12 +1649,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// change the base url of the gcs storage location at position 1
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocationUpdatedBaseUrl), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocationUpdatedBaseUrl), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1688,12 +1696,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// change back the encryption type of the gcs storage location at position 1
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1735,12 +1743,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// add new s3 storage location to position 1
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(4).
 						HasStorageLocationAtIndex(
 							0,
@@ -1792,12 +1800,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// remove s3 storage location at position 1
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1839,12 +1847,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// change the tenant id of the azure storage location at position 2
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocationUpdatedTenantId), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocationUpdatedTenantId), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1886,12 +1894,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// change back the tenant id of the azure storage location at position 2
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -1933,12 +1941,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// add new gcs storage location to position 2
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation, gcsStorageLocationUpdatedName), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation, gcsStorageLocationUpdatedName), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(4).
 						HasStorageLocationAtIndex(
 							0,
@@ -1990,12 +1998,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// remove gcs storage location at position 2
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -2037,12 +2045,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// add new azure storage location to position 3
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation, azureStorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation, azureStorageLocationUpdatedName), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(4).
 						HasStorageLocationAtIndex(
 							0,
@@ -2094,12 +2102,12 @@ func TestAcc_External_Volume_Multiple(t *testing.T) {
 			// remove azure storage location from position 3
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrue),
+				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, allowWritesTrueString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesTrue).
+						HasAllowWritesString(allowWritesTrueString).
 						HasStorageLocationLength(3).
 						HasStorageLocationAtIndex(
 							0,
@@ -2148,7 +2156,8 @@ func TestAcc_External_Volume_External_Changes(t *testing.T) {
 	externalVolumeName := id.Name()
 	comment := random.Comment()
 	comment2 := random.Comment()
-	allowWritesFalse := "false"
+	allowWritesFalse := false
+	allowWritesFalseString := "false"
 	s3StorageLocationName := "s3Test"
 	s3StorageLocationName2 := "s3Test2"
 	s3StorageProvider := "S3"
@@ -2169,12 +2178,12 @@ func TestAcc_External_Volume_External_Changes(t *testing.T) {
 			// create volume with 2 s3 storage locations
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -2209,12 +2218,12 @@ func TestAcc_External_Volume_External_Changes(t *testing.T) {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(s3StorageLocationName))
 				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -2257,12 +2266,12 @@ func TestAcc_External_Volume_External_Changes(t *testing.T) {
 					)
 				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -2297,12 +2306,12 @@ func TestAcc_External_Volume_External_Changes(t *testing.T) {
 					testClient().ExternalVolume.DropFunc(t, id)
 				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -2339,12 +2348,12 @@ func TestAcc_External_Volume_External_Changes(t *testing.T) {
 					))
 				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,
@@ -2381,12 +2390,12 @@ func TestAcc_External_Volume_External_Changes(t *testing.T) {
 					))
 				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalse),
+				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation, s3StorageLocationUpdatedName), externalVolumeName, comment, allowWritesFalseString),
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
 						HasNameString(externalVolumeName).
 						HasCommentString(comment).
-						HasAllowWritesString(allowWritesFalse).
+						HasAllowWritesString(allowWritesFalseString).
 						HasStorageLocationLength(2).
 						HasStorageLocationAtIndex(
 							0,

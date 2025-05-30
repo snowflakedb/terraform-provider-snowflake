@@ -63,7 +63,7 @@ func TestAcc_Streams(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeAppendOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -101,7 +101,7 @@ func TestAcc_Streams(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeAppendOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -149,7 +149,7 @@ func TestAcc_StreamOnTable(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeAppendOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -213,7 +213,7 @@ func TestAcc_StreamOnExternalTable(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeInsertOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -273,7 +273,7 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeStage).
 						HasBaseTablesPartiallyQualified(stage.ID().Name()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeDefault).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -338,7 +338,7 @@ func TestAcc_StreamOnView(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeView).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeAppendOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").

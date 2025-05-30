@@ -31,8 +31,3 @@ func (s *TagShowOutputAssert) HasAllowedValues(expected ...string) *TagShowOutpu
 	}
 	return s
 }
-
-func (s *TagShowOutputAssert) HasNoAllowedValues(expected ...string) *TagShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("allowed_values.#", "0"))
-	return s
-}

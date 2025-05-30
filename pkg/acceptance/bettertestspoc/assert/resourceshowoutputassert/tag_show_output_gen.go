@@ -20,21 +20,21 @@ type TagShowOutputAssert struct {
 func TagShowOutput(t *testing.T, name string) *TagShowOutputAssert {
 	t.Helper()
 
-	tt := TagShowOutputAssert{
+	tagAssert := TagShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	tt.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &tt
+	tagAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &tagAssert
 }
 
 func ImportedTagShowOutput(t *testing.T, id string) *TagShowOutputAssert {
 	t.Helper()
 
-	tt := TagShowOutputAssert{
+	tagAssert := TagShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	tt.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &tt
+	tagAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &tagAssert
 }
 
 ////////////////////////////
@@ -73,5 +73,49 @@ func (t *TagShowOutputAssert) HasComment(expected string) *TagShowOutputAssert {
 
 func (t *TagShowOutputAssert) HasOwnerRoleType(expected string) *TagShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	return t
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (t *TagShowOutputAssert) HasNoCreatedOn() *TagShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoName() *TagShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoDatabaseName() *TagShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoSchemaName() *TagShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoOwner() *TagShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoComment() *TagShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoAllowedValues() *TagShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("allowed_values.#", "0"))
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoOwnerRoleType() *TagShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
 	return t
 }
