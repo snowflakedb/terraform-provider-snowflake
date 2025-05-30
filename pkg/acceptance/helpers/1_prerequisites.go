@@ -48,6 +48,16 @@ func (c *TestClient) EnsureScimProvisionerRolesExist(ctx context.Context) error 
 	return nil
 }
 
+func (c *TestClient) EnsureImageRepositoryExist(ctx context.Context) error {
+	id := sdk.NewSchemaObjectIdentifier("SNOWFLAKE", "IMAGES", "SNOWFLAKE_IMAGES")
+	log.Printf("[DEBUG] Making sure %s image repository exist", id.FullyQualifiedName())
+	_, err := c.context.client.ImageRepositories.ShowByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func hasGranteeName(grants []sdk.Grant, role sdk.AccountObjectIdentifier) bool {
 	for _, grant := range grants {
 		if grant.GranteeName == role {

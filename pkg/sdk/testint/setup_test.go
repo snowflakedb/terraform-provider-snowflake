@@ -229,6 +229,15 @@ func (itc *integrationTestContext) initialize() error {
 				return err
 			}
 		}
+
+		err = testClientHelper().EnsureImageRepositoryExist(itc.ctx)
+		if err != nil {
+			return err
+		}
+		err = secondaryTestClientHelper().EnsureImageRepositoryExist(itc.secondaryCtx)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
