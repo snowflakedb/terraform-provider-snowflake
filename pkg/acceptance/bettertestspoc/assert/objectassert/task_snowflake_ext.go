@@ -62,7 +62,7 @@ func (t *TaskAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskAssert {
 	return t
 }
 
-func (t *TaskAssert) HasWarehouseNil() *TaskAssert {
+func (t *TaskAssert) HasNoWarehouse() *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.Warehouse != nil {
@@ -73,7 +73,7 @@ func (t *TaskAssert) HasWarehouseNil() *TaskAssert {
 	return t
 }
 
-func (t *TaskAssert) HasErrorIntegrationNil() *TaskAssert {
+func (t *TaskAssert) HasNoErrorIntegration() *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.ErrorIntegration != nil {

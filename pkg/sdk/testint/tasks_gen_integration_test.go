@@ -40,7 +40,7 @@ func TestInt_Tasks(t *testing.T) {
 			HasDefinition(sql).
 			HasCondition("").
 			HasAllowOverlappingExecution(false).
-			HasErrorIntegrationNil().
+			HasNoErrorIntegration().
 			HasLastCommittedOn("").
 			HasLastSuspendedOn("").
 			HasOwnerRoleType("ROLE").
@@ -52,7 +52,7 @@ func TestInt_Tasks(t *testing.T) {
 		if warehouseId != nil {
 			asserts.HasWarehouse(*warehouseId)
 		} else {
-			asserts.HasWarehouseNil()
+			asserts.HasNoWarehouse()
 		}
 
 		assertThatObject(t, asserts)
@@ -94,13 +94,13 @@ func TestInt_Tasks(t *testing.T) {
 		if errorIntegrationName != nil {
 			asserts.HasErrorIntegration(*errorIntegrationName)
 		} else {
-			asserts.HasErrorIntegrationNil()
+			asserts.HasNoErrorIntegration()
 		}
 
 		if warehouse != nil {
 			asserts.HasWarehouse(*warehouse)
 		} else {
-			asserts.HasWarehouseNil()
+			asserts.HasNoWarehouse()
 		}
 
 		assertThatObject(t, asserts)
@@ -118,13 +118,13 @@ func TestInt_Tasks(t *testing.T) {
 			HasId("").
 			HasOwner("").
 			HasComment("").
-			HasWarehouseNil().
+			HasNoWarehouse().
 			HasPredecessorsInAnyOrder().
 			HasState("").
 			HasDefinition("").
 			HasCondition("").
 			HasAllowOverlappingExecution(false).
-			HasErrorIntegrationNil().
+			HasNoErrorIntegration().
 			HasLastCommittedOn("").
 			HasLastSuspendedOn("").
 			HasOwnerRoleType("").
@@ -588,7 +588,7 @@ func TestInt_Tasks(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.TaskFromObject(t, alteredTask).
-			HasWarehouseNil().
+			HasNoWarehouse().
 			HasSchedule("").
 			HasConfig("").
 			HasAllowOverlappingExecution(false).
@@ -728,7 +728,7 @@ func TestInt_Tasks(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasErrorIntegrationNil().
+			HasNoErrorIntegration().
 			HasSchedule("").
 			HasConfig("").
 			HasAllowOverlappingExecution(false).
