@@ -7,16 +7,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
 
-func (r *ResourceMonitorResourceAssert) HasStartTimestampNotEmpty() *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValuePresent("start_timestamp"))
-	return r
-}
-
-func (r *ResourceMonitorResourceAssert) HasEndTimestampNotEmpty() *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValuePresent("end_timestamp"))
-	return r
-}
-
 func (r *ResourceMonitorResourceAssert) HasNotifyUsersLen(len int) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("notify_users.#", strconv.FormatInt(int64(len), 10)))
 	return r
