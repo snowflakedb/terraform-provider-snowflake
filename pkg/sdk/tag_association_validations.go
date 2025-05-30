@@ -44,6 +44,7 @@ var (
 		ObjectTypeSessionPolicy,
 		ObjectTypePrivacyPolicy,
 		ObjectTypeProcedure,
+		ObjectTypeService,
 		ObjectTypeStage,
 		ObjectTypeStream,
 		ObjectTypeTable,
