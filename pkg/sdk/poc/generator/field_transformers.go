@@ -88,6 +88,7 @@ type ParameterTransformer struct {
 	quotes      string
 	parentheses string
 	equals      string
+	key         string
 }
 
 func ParameterOptions() *ParameterTransformer {
@@ -149,6 +150,11 @@ func (v *ParameterTransformer) MustParentheses() *ParameterTransformer {
 	return v
 }
 
+func (v *ParameterTransformer) NoKey() *ParameterTransformer {
+	v.key = "no_key"
+	return v
+}
+
 func (v *ParameterTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "ddl", "parameter")
 	if v.required {
@@ -158,6 +164,7 @@ func (v *ParameterTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "ddl", v.quotes)
 	addTagIfMissing(f.Tags, "ddl", v.parentheses)
 	addTagIfMissing(f.Tags, "ddl", v.equals)
+	addTagIfMissing(f.Tags, "ddl", v.key)
 	return f
 }
 

@@ -24,10 +24,6 @@ type CreateApiIntegrationRequest struct {
 	Comment                 *string
 }
 
-func (r *CreateApiIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 type AwsApiParamsRequest struct {
 	ApiProvider   ApiIntegrationAwsApiProviderType // required
 	ApiAwsRoleArn string                           // required
@@ -45,7 +41,12 @@ type GoogleApiParamsRequest struct {
 }
 
 type GitApiParamsRequest struct {
-	AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret
+	AllowedAuthenticationSecret *AllowedAuthenticationSecretRequest
+}
+
+type AllowedAuthenticationSecretRequest struct {
+	AllowedAuthenticationSecretList   *[]AllowedAuthenticationSecretListItems
+	AllowedAuthenticationSecretOption *string
 }
 
 type AlterApiIntegrationRequest struct {
@@ -84,7 +85,7 @@ type SetGoogleApiParamsRequest struct {
 }
 
 type SetGitApiParamsRequest struct {
-	AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret
+	AllowedAuthenticationSecret AllowedAuthenticationSecretRequest
 }
 
 type ApiIntegrationUnsetRequest struct {

@@ -1,10 +1,6 @@
 package sdk
 
-import (
-	"context"
-	"database/sql"
-	"time"
-)
+import "context"
 
 type ApiIntegrations interface {
 	Create(ctx context.Context, request *CreateApiIntegrationRequest) error
@@ -39,7 +35,8 @@ type ApiIntegrationEndpointPrefix struct {
 }
 
 type AllowedAuthenticationSecret struct {
-	Secret string `ddl:"keyword,single_quotes"`
+	Allowedauthenticationsecretlist   *[]AllowedAuthenticationSecretListItems `ddl:"parameter,no_quotes,no_key" sql:"AllowedAuthenticationSecretList"`
+	Allowedauthenticationsecretoption *string                                 `ddl:"parameter,no_quotes,no_key" sql:"AllowedAuthenticationSecretOption"`
 }
 
 type AwsApiParams struct {
@@ -61,8 +58,8 @@ type GoogleApiParams struct {
 }
 
 type GitApiParams struct {
-	apiProvider                  string                         `ddl:"static" sql:"API_PROVIDER = git_https_api"`
-	AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret `ddl:"parameter,parentheses" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
+	apiProvider                 string                       `ddl:"static" sql:"API_PROVIDER = git_https_api"`
+	AllowedAuthenticationSecret *AllowedAuthenticationSecret `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS = "`
 }
 
 // AlterApiIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-api-integration.
@@ -104,7 +101,7 @@ type SetGoogleApiParams struct {
 }
 
 type SetGitApiParams struct {
-	AllowedAuthenticationSecrets *[]AllowedAuthenticationSecret `ddl:"parameter,parentheses" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
+	AllowedAuthenticationSecret AllowedAuthenticationSecret `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS = "`
 }
 
 type ApiIntegrationUnset struct {
@@ -149,6 +146,9 @@ type ApiIntegration struct {
 
 func (v *ApiIntegration) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
+}
+func (v *ApiIntegration) ObjectType() ObjectType {
+	return ObjectTypeApiIntegration
 }
 
 // DescribeApiIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-integration.

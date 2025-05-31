@@ -13,9 +13,15 @@ var (
 	ApiIntegrationAwsGovPrivateApiGateway ApiIntegrationAwsApiProviderType = "aws_gov_private_api_gateway"
 )
 
+type AllowedAuthenticationSecretOption string
+
 var (
-	ApiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
-	AllowedAuthenticationSecretDef  = g.NewQueryStruct("AllowedAuthenticationSecret").Text("Secret", g.KeywordOptions().SingleQuotes().Required())
+	ApiIntegrationEndpointPrefixDef         = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
+	AllowedAuthenticationSecretListItemsDef = g.NewQueryStruct("AllowedAuthenticationSecretListItems").Text("Secret", g.KeywordOptions().SingleQuotes().Required())
+	AllowedAuthenticationSecretDef          = g.NewQueryStruct("AllowedAuthenticationSecret").
+						OptionalListAssignment("AllowedAuthenticationSecretList", "AllowedAuthenticationSecretListItems", g.ParameterOptions().NoKey().NoQuotes()).
+						OptionalTextAssignment("AllowedAuthenticationSecretOption", g.ParameterOptions().NoKey().NoQuotes()).
+						WithValidation(g.ExactlyOneValueSet, "AllowedAuthenticationSecretList", "AllowedAuthenticationSecretOption")
 )
 
 // TODO [SNOW-1016561]: all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
@@ -60,7 +66,7 @@ var ApiIntegrationsDef = g.NewInterface(
 				"GitApiProviderParams",
 				g.NewQueryStruct("GitApiParams").
 					PredefinedQueryStructField("apiProvider", "string", g.StaticOptions().SQL("API_PROVIDER = git_https_api")).
-					OptionalListAssignment("ALLOWED_AUTHENTICATION_SECRETS", "AllowedAuthenticationSecret", g.ParameterOptions().Parentheses()), // TODO: parethesesいらないかも
+					OptionalQueryStructField("AllowedAuthenticationSecret", AllowedAuthenticationSecretDef, g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS = ")),
 				g.KeywordOptions(),
 			).
 			ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses().Required()).
@@ -109,8 +115,7 @@ var ApiIntegrationsDef = g.NewInterface(
 					OptionalQueryStructField(
 						"GitParams",
 						g.NewQueryStruct("SetGitApiParams").
-							OptionalListAssignment("ALLOWED_AUTHENTICATION_SECRETS", "AllowedAuthenticationSecret", g.ParameterOptions().Parentheses()).
-							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets"),
+							QueryStructField("AllowedAuthenticationSecret", AllowedAuthenticationSecretDef, g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS = ")),
 						g.KeywordOptions(),
 					).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).

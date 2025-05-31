@@ -18,6 +18,7 @@ const (
 	commaModifierType   modifierType = "comma"
 	reverseModifierType modifierType = "reverse"
 	equalsModifierType  modifierType = "equals"
+	keyModifierType     modifierType = "key"
 )
 
 type modifier interface {
@@ -163,6 +164,17 @@ func (em equalsModifier) Modify(v any) string {
 	return strings.TrimLeft(fmt.Sprintf("%v ", v), " ")
 }
 
+type keyModifier string
+
+const (
+	WithKey keyModifier = "with_key"
+	NoKey   keyModifier = "no_key"
+)
+
+func (km keyModifier) Modify(v any) string {
+	return fmt.Sprintf("%v", v)
+}
+
 func (b *sqlBuilder) getModifier(tag reflect.StructTag, tagName string, modType modifierType, defaultMod modifier) modifier {
 	tagValue := strings.ToLower(tag.Get(tagName))
 	if tagValue == "" {
@@ -183,6 +195,8 @@ func (b *sqlBuilder) getModifier(tag reflect.StructTag, tagName string, modType 
 				return reverseModifier(trimmedS)
 			case commaModifierType:
 				return commaModifier(trimmedS)
+			case keyModifierType:
+				return keyModifier(trimmedS)
 			}
 		}
 	}
@@ -236,6 +250,7 @@ func (b sqlBuilder) parseInterface(v interface{}, tag reflect.StructTag) (sqlCla
 			qm:    b.getModifier(tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 			em:    b.getModifier(tag, "ddl", equalsModifierType, Equals).(equalsModifier),
 			rm:    b.getModifier(tag, "ddl", reverseModifierType, NoReverse).(reverseModifier),
+			km:    b.getModifier(tag, "ddl", keyModifierType, WithKey).(keyModifier),
 		}, nil
 	case "keyword":
 		return sqlKeywordClause{
@@ -373,6 +388,7 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 					qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 					em:    b.getModifier(field.Tag, "ddl", equalsModifierType, Equals).(equalsModifier),
 					rm:    b.getModifier(field.Tag, "ddl", reverseModifierType, NoReverse).(reverseModifier),
+					km:    b.getModifier(field.Tag, "ddl", keyModifierType, WithKey).(keyModifier),
 				})
 				return b.renderStaticClause(clauses...), nil
 			}
@@ -465,6 +481,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 			em:    b.getModifier(field.Tag, "ddl", equalsModifierType, Equals).(equalsModifier),
 			rm:    b.getModifier(field.Tag, "ddl", reverseModifierType, NoReverse).(reverseModifier),
+			km:    b.getModifier(field.Tag, "ddl", keyModifierType, WithKey).(keyModifier),
 		}, nil
 	case "keyword":
 		return b.renderStaticClause(sqlKeywordClause{
@@ -548,6 +565,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 			em:    b.getModifier(field.Tag, "ddl", equalsModifierType, Equals).(equalsModifier),
 			qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 			rm:    b.getModifier(field.Tag, "ddl", reverseModifierType, NoReverse).(reverseModifier),
+			km:    b.getModifier(field.Tag, "ddl", keyModifierType, WithKey).(keyModifier),
 		}
 	default:
 		return nil, nil
@@ -631,6 +649,7 @@ type sqlParameterClause struct {
 	qm quoteModifier
 	em equalsModifier
 	rm reverseModifier
+	km keyModifier
 }
 
 func (v sqlParameterClause) String() string {
@@ -639,7 +658,24 @@ func (v sqlParameterClause) String() string {
 		// "value" key
 		return v.rm.Modify([]string{v.key, v.qm.Modify(v.value)})
 	}
-	// key =
+
+	// If key modifier is NoKey, only return the value
+	if v.km == NoKey {
+		if v.value == nil {
+			return ""
+		}
+		value := v.value
+		if dataType, ok := value.(datatypes.DataType); ok {
+			// We check like this and not by `dataType == nil` because for e.g. `var *datatypes.ArrayDataType` return false in a normal nil check
+			if reflect.ValueOf(dataType).IsZero() {
+				return ""
+			}
+			value = dataType.ToSql()
+		}
+		return v.qm.Modify(value)
+	}
+
+	// key = "value"
 	s := v.em.Modify(v.key)
 	if v.value == nil {
 		return s
@@ -652,7 +688,6 @@ func (v sqlParameterClause) String() string {
 		}
 		value = dataType.ToSql()
 	}
-	// key = "value"
 	s += v.qm.Modify(value)
 	return s
 }
