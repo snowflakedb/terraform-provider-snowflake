@@ -11,23 +11,36 @@ description: |-
 
 ~> **Note** Right now, changes for the `integration` field are not detected. This will be resolved in the [upcoming refactoring](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#preparing-essential-ga-objects-for-the-provider-v1). For now, please try to use the [replace_triggered_by](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#replace_triggered_by) HCL meta-argument.
 
-
-
 ## Example Usage
 
 ```terraform
+resource "snowflake_stage" "inbound" {
+  name                = "stage"
+  url                 = "s3://com.example.bucket/prefix"
+  database            = "db"
+  schema              = "schema"
+  storage_integration = "storage_integration"
+}
+
 resource "snowflake_pipe" "pipe" {
-  database = "db"
-  schema   = "schema"
+  database = snowflake_stage.inbound.database
+  schema   = snowflake_stage.inbound.schema
   name     = "pipe"
 
   comment = "A pipe."
 
-  copy_statement = "copy into mytable from @mystage"
+  copy_statement = "copy into mytable from @${snowflake_stage.inbound.name}"
   auto_ingest    = false
 
   aws_sns_topic_arn    = "..."
   notification_channel = "..."
+
+  lifecycle {
+    replace_triggered_by = [
+      # https://docs.snowflake.com/en/user-guide/data-load-snowpipe-manage#changing-the-cloud-parameters-of-the-referenced-stage
+      snowflake_stage.inbound,
+    ]
+  }
 }
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
