@@ -142,7 +142,7 @@ func TestAcc_FunctionSql_InlineFull(t *testing.T) {
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
 						HasCommentString(comment).
-						HasReturnBehaviorString(string(sdk.ReturnResultsBehaviorVolatile)).
+						HasReturnResultsBehaviorString(string(sdk.ReturnResultsBehaviorVolatile)).
 						HasFunctionDefinitionString(definition).
 						HasFunctionLanguageString("SQL").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),

@@ -56,6 +56,13 @@ func (c *ExternalVolumeClient) Create(t *testing.T) (sdk.AccountObjectIdentifier
 	return id, c.DropFunc(t, id)
 }
 
+func (c *ExternalVolumeClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ExternalVolume, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByID(ctx, id)
+}
+
 func (c *ExternalVolumeClient) Alter(t *testing.T, req *sdk.AlterExternalVolumeRequest) {
 	t.Helper()
 	ctx := context.Background()

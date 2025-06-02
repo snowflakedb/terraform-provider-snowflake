@@ -32,6 +32,21 @@ func ImportedFunctionJavaResource(t *testing.T, id string) *FunctionJavaResource
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (f *FunctionJavaResourceAssert) HasDatabaseString(expected string) *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueSet("database", expected))
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasSchemaString(expected string) *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueSet("schema", expected))
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasNameString(expected string) *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueSet("name", expected))
+	return f
+}
+
 func (f *FunctionJavaResourceAssert) HasArgumentsString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("arguments", expected))
 	return f
@@ -39,11 +54,6 @@ func (f *FunctionJavaResourceAssert) HasArgumentsString(expected string) *Functi
 
 func (f *FunctionJavaResourceAssert) HasCommentString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("comment", expected))
-	return f
-}
-
-func (f *FunctionJavaResourceAssert) HasDatabaseString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("database", expected))
 	return f
 }
 
@@ -97,11 +107,6 @@ func (f *FunctionJavaResourceAssert) HasMetricLevelString(expected string) *Func
 	return f
 }
 
-func (f *FunctionJavaResourceAssert) HasNameString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("name", expected))
-	return f
-}
-
 func (f *FunctionJavaResourceAssert) HasNullInputBehaviorString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return f
@@ -112,8 +117,8 @@ func (f *FunctionJavaResourceAssert) HasPackagesString(expected string) *Functio
 	return f
 }
 
-func (f *FunctionJavaResourceAssert) HasReturnBehaviorString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_behavior", expected))
+func (f *FunctionJavaResourceAssert) HasReturnResultsBehaviorString(expected string) *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueSet("return_results_behavior", expected))
 	return f
 }
 
@@ -124,11 +129,6 @@ func (f *FunctionJavaResourceAssert) HasReturnTypeString(expected string) *Funct
 
 func (f *FunctionJavaResourceAssert) HasRuntimeVersionString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("runtime_version", expected))
-	return f
-}
-
-func (f *FunctionJavaResourceAssert) HasSchemaString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("schema", expected))
 	return f
 }
 
@@ -151,6 +151,21 @@ func (f *FunctionJavaResourceAssert) HasTraceLevelString(expected string) *Funct
 // Attribute empty checks //
 ////////////////////////////
 
+func (f *FunctionJavaResourceAssert) HasNoDatabase() *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("database"))
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasNoSchema() *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("schema"))
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasNoName() *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("name"))
+	return f
+}
+
 func (f *FunctionJavaResourceAssert) HasNoArguments() *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("arguments"))
 	return f
@@ -158,11 +173,6 @@ func (f *FunctionJavaResourceAssert) HasNoArguments() *FunctionJavaResourceAsser
 
 func (f *FunctionJavaResourceAssert) HasNoComment() *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("comment"))
-	return f
-}
-
-func (f *FunctionJavaResourceAssert) HasNoDatabase() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("database"))
 	return f
 }
 
@@ -216,11 +226,6 @@ func (f *FunctionJavaResourceAssert) HasNoMetricLevel() *FunctionJavaResourceAss
 	return f
 }
 
-func (f *FunctionJavaResourceAssert) HasNoName() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("name"))
-	return f
-}
-
 func (f *FunctionJavaResourceAssert) HasNoNullInputBehavior() *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("null_input_behavior"))
 	return f
@@ -231,8 +236,8 @@ func (f *FunctionJavaResourceAssert) HasNoPackages() *FunctionJavaResourceAssert
 	return f
 }
 
-func (f *FunctionJavaResourceAssert) HasNoReturnBehavior() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("return_behavior"))
+func (f *FunctionJavaResourceAssert) HasNoReturnResultsBehavior() *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("return_results_behavior"))
 	return f
 }
 
@@ -243,11 +248,6 @@ func (f *FunctionJavaResourceAssert) HasNoReturnType() *FunctionJavaResourceAsse
 
 func (f *FunctionJavaResourceAssert) HasNoRuntimeVersion() *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("runtime_version"))
-	return f
-}
-
-func (f *FunctionJavaResourceAssert) HasNoSchema() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("schema"))
 	return f
 }
 

@@ -32,6 +32,11 @@ func ImportedDatabaseResource(t *testing.T, id string) *DatabaseResourceAssert {
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (d *DatabaseResourceAssert) HasNameString(expected string) *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("name", expected))
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasCatalogString(expected string) *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueSet("catalog", expected))
 	return d
@@ -84,11 +89,6 @@ func (d *DatabaseResourceAssert) HasLogLevelString(expected string) *DatabaseRes
 
 func (d *DatabaseResourceAssert) HasMaxDataExtensionTimeInDaysString(expected string) *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", expected))
-	return d
-}
-
-func (d *DatabaseResourceAssert) HasNameString(expected string) *DatabaseResourceAssert {
-	d.AddAssertion(assert.ValueSet("name", expected))
 	return d
 }
 
@@ -146,6 +146,11 @@ func (d *DatabaseResourceAssert) HasUserTaskTimeoutMsString(expected string) *Da
 // Attribute empty checks //
 ////////////////////////////
 
+func (d *DatabaseResourceAssert) HasNoName() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueNotSet("name"))
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasNoCatalog() *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueNotSet("catalog"))
 	return d
@@ -198,11 +203,6 @@ func (d *DatabaseResourceAssert) HasNoLogLevel() *DatabaseResourceAssert {
 
 func (d *DatabaseResourceAssert) HasNoMaxDataExtensionTimeInDays() *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueNotSet("max_data_extension_time_in_days"))
-	return d
-}
-
-func (d *DatabaseResourceAssert) HasNoName() *DatabaseResourceAssert {
-	d.AddAssertion(assert.ValueNotSet("name"))
 	return d
 }
 

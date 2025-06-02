@@ -55,7 +55,7 @@ func TestAcc_PrimaryConnection_Basic(t *testing.T) {
 						resourceassert.PrimaryConnectionResource(t, connectionModel.ResourceReference()).
 							HasNameString(id.Name()).
 							HasFullyQualifiedNameString(id.FullyQualifiedName()).
-							HasNoEnableFailoverToAccounts().
+							HasEnableFailoverToAccountsEmpty().
 							HasCommentString(""),
 
 						resourceshowoutputassert.ConnectionShowOutput(t, connectionModel.ResourceReference()).
@@ -82,7 +82,7 @@ func TestAcc_PrimaryConnection_Basic(t *testing.T) {
 						resourceassert.PrimaryConnectionResource(t, connectionModelWithComment.ResourceReference()).
 							HasNameString(id.Name()).
 							HasFullyQualifiedNameString(id.FullyQualifiedName()).
-							HasNoEnableFailoverToAccounts().
+							HasEnableFailoverToAccountsEmpty().
 							HasCommentString(comment),
 
 						resourceshowoutputassert.ConnectionShowOutput(t, connectionModelWithComment.ResourceReference()).
@@ -137,7 +137,7 @@ func TestAcc_PrimaryConnection_Basic(t *testing.T) {
 						resourceassert.PrimaryConnectionResource(t, connectionModel.ResourceReference()).
 							HasNameString(id.Name()).
 							HasFullyQualifiedNameString(id.FullyQualifiedName()).
-							HasNoEnableFailoverToAccounts().
+							HasEnableFailoverToAccountsEmpty().
 							HasCommentString(""),
 
 						resourceshowoutputassert.ConnectionShowOutput(t, connectionModel.ResourceReference()).
@@ -177,7 +177,7 @@ func TestAcc_PrimaryConnection_ExternalChanges(t *testing.T) {
 						resourceassert.PrimaryConnectionResource(t, connectionModel.ResourceReference()).
 							HasNameString(id.Name()).
 							HasFullyQualifiedNameString(id.FullyQualifiedName()).
-							HasNoEnableFailoverToAccounts().
+							HasEnableFailoverToAccountsEmpty().
 							HasCommentString("config comment"),
 
 						resourceshowoutputassert.ConnectionShowOutput(t, connectionModel.ResourceReference()).
@@ -240,7 +240,7 @@ func TestAcc_PrimaryConnection_ExternalChanges(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					assertThat(t,
 						resourceassert.PrimaryConnectionResource(t, connectionModel.ResourceReference()).
-							HasNoEnableFailoverToAccounts(),
+							HasEnableFailoverToAccountsEmpty(),
 						resourceshowoutputassert.ConnectionShowOutput(t, connectionModel.ResourceReference()).
 							HasFailoverAllowedToAccounts(accountId),
 					),

@@ -32,6 +32,16 @@ func ImportedSchemaResource(t *testing.T, id string) *SchemaResourceAssert {
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (s *SchemaResourceAssert) HasDatabaseString(expected string) *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("database", expected))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasNameString(expected string) *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("name", expected))
+	return s
+}
+
 func (s *SchemaResourceAssert) HasCatalogString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("catalog", expected))
 	return s
@@ -44,11 +54,6 @@ func (s *SchemaResourceAssert) HasCommentString(expected string) *SchemaResource
 
 func (s *SchemaResourceAssert) HasDataRetentionTimeInDaysString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("data_retention_time_in_days", expected))
-	return s
-}
-
-func (s *SchemaResourceAssert) HasDatabaseString(expected string) *SchemaResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
 	return s
 }
 
@@ -84,11 +89,6 @@ func (s *SchemaResourceAssert) HasLogLevelString(expected string) *SchemaResourc
 
 func (s *SchemaResourceAssert) HasMaxDataExtensionTimeInDaysString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", expected))
-	return s
-}
-
-func (s *SchemaResourceAssert) HasNameString(expected string) *SchemaResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
 	return s
 }
 
@@ -151,6 +151,16 @@ func (s *SchemaResourceAssert) HasWithManagedAccessString(expected string) *Sche
 // Attribute empty checks //
 ////////////////////////////
 
+func (s *SchemaResourceAssert) HasNoDatabase() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("database"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasNoName() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("name"))
+	return s
+}
+
 func (s *SchemaResourceAssert) HasNoCatalog() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("catalog"))
 	return s
@@ -163,11 +173,6 @@ func (s *SchemaResourceAssert) HasNoComment() *SchemaResourceAssert {
 
 func (s *SchemaResourceAssert) HasNoDataRetentionTimeInDays() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("data_retention_time_in_days"))
-	return s
-}
-
-func (s *SchemaResourceAssert) HasNoDatabase() *SchemaResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
 	return s
 }
 
@@ -203,11 +208,6 @@ func (s *SchemaResourceAssert) HasNoLogLevel() *SchemaResourceAssert {
 
 func (s *SchemaResourceAssert) HasNoMaxDataExtensionTimeInDays() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("max_data_extension_time_in_days"))
-	return s
-}
-
-func (s *SchemaResourceAssert) HasNoName() *SchemaResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
 
