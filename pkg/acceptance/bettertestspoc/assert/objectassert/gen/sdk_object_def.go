@@ -68,7 +68,7 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Task{},
 	},
 	{
-		IdType:       "sdk.ExternalVolumeObjectIdentifier",
+		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeExternalVolume,
 		ObjectStruct: sdk.ExternalVolume{},
 	},

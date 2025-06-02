@@ -46,9 +46,10 @@ func (cm commaModifier) Modify(v any) string {
 type quoteModifier string
 
 const (
-	NoQuotes     quoteModifier = "no_quotes"
-	DoubleQuotes quoteModifier = "double_quotes"
-	SingleQuotes quoteModifier = "single_quotes"
+	NoQuotes           quoteModifier = "no_quotes"
+	DoubleQuotes       quoteModifier = "double_quotes"
+	SingleQuotes       quoteModifier = "single_quotes"
+	DoubleDollarQuotes quoteModifier = "double_dollar_quotes"
 )
 
 // cf. https://docs.snowflake.com/en/sql-reference/data-types-text#single-quoted-string-constants
@@ -75,6 +76,9 @@ func (qm quoteModifier) Modify(v any) string {
 	case DoubleQuotes:
 		escapedString := strings.ReplaceAll(s, qm.String(), qm.String()+qm.String())
 		return fmt.Sprintf(`%v%v%v`, qm.String(), escapedString, qm.String())
+	case DoubleDollarQuotes:
+		escapedString := strings.ReplaceAll(s, qm.String(), `\$\$`)
+		return fmt.Sprintf(`%v%v%v`, qm.String(), escapedString, qm.String())
 	case SingleQuotes:
 		for _, pair := range singleQuoteEscapes {
 			s = strings.ReplaceAll(s, pair.original, pair.replacement)
@@ -91,6 +95,8 @@ func (qm quoteModifier) String() string {
 		return ""
 	case DoubleQuotes:
 		return `"`
+	case DoubleDollarQuotes:
+		return `$$`
 	case SingleQuotes:
 		return `'`
 	default:
@@ -651,6 +657,12 @@ func (v sqlParameterClause) String() string {
 			return s
 		}
 		value = dataType.ToSql()
+	}
+	if location, ok := value.(Location); ok {
+		if location == nil {
+			return s
+		}
+		value = location.ToSql()
 	}
 	// key = "value"
 	s += v.qm.Modify(value)

@@ -76,7 +76,7 @@ func TestInt_Secrets(t *testing.T) {
 				HasName(id.Name()).
 				HasComment("a").
 				HasSecretType(string(sdk.SecretTypeOAuth2)).
-				HasOauthScopes([]string{"foo", "bar"}).
+				HasOauthScopes("foo", "bar").
 				HasDatabaseName(id.DatabaseName()).
 				HasSchemaName(id.SchemaName()),
 		)
@@ -131,7 +131,7 @@ func TestInt_Secrets(t *testing.T) {
 		assertThatObject(t,
 			objectassert.Secret(t, id).
 				HasName(id.Name()).
-				HasOauthScopes([]string{}).
+				HasOauthScopes().
 				HasDatabaseName(id.DatabaseName()).
 				HasSchemaName(id.SchemaName()),
 		)

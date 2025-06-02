@@ -30,7 +30,7 @@ func TestInt_Tags(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(expectedComment).
-			HasAllowedValues(expectedAllowedValues...).
+			HasAllowedValuesUnordered(expectedAllowedValues...).
 			HasOwnerRoleType("ROLE"),
 		)
 	}

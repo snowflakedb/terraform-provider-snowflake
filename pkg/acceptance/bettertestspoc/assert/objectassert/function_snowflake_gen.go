@@ -2,7 +2,6 @@
 
 package objectassert
 
-// imports modified manually
 import (
 	"fmt"
 	"slices"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -121,11 +121,12 @@ func (f *FunctionAssert) HasMaxNumArguments(expected int) *FunctionAssert {
 	return f
 }
 
-func (f *FunctionAssert) HasArgumentsOld(expected []sdk.DataType) *FunctionAssert {
+func (f *FunctionAssert) HasArgumentsOld(expected ...sdk.DataType) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
-		// edited manually
-		if !slices.Equal(o.ArgumentsOld, expected) {
+		mapped := collections.Map(o.ArgumentsOld, func(item sdk.DataType) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.DataType) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected arguments old: %v; got: %v", expected, o.ArgumentsOld)
 		}
 		return nil

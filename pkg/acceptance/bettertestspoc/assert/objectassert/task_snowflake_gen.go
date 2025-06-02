@@ -4,10 +4,12 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -108,11 +110,38 @@ func (t *TaskAssert) HasComment(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Warehouse == nil {
+			return fmt.Errorf("expected warehouse to have value; got: nil")
+		}
+		if (*o.Warehouse).Name() != expected.Name() {
+			return fmt.Errorf("expected warehouse: %v; got: %v", expected.Name(), (*o.Warehouse).Name())
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasSchedule(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.Schedule != expected {
 			return fmt.Errorf("expected schedule: %v; got: %v", expected, o.Schedule)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasPredecessors(expected ...sdk.SchemaObjectIdentifier) *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		mapped := collections.Map(o.Predecessors, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
+		mappedExpected := collections.Map(expected, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
+		if !slices.Equal(mapped, mappedExpected) {
+			return fmt.Errorf("expected predecessors: %v; got: %v", expected, o.Predecessors)
 		}
 		return nil
 	})
@@ -157,6 +186,20 @@ func (t *TaskAssert) HasAllowOverlappingExecution(expected bool) *TaskAssert {
 		t.Helper()
 		if o.AllowOverlappingExecution != expected {
 			return fmt.Errorf("expected allow overlapping execution: %v; got: %v", expected, o.AllowOverlappingExecution)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.ErrorIntegration == nil {
+			return fmt.Errorf("expected error integration to have value; got: nil")
+		}
+		if (*o.ErrorIntegration).Name() != expected.Name() {
+			return fmt.Errorf("expected error integration: %v; got: %v", expected.Name(), (*o.ErrorIntegration).Name())
 		}
 		return nil
 	})
@@ -217,6 +260,18 @@ func (t *TaskAssert) HasBudget(expected string) *TaskAssert {
 	})
 	return t
 }
+
+// commented out manually
+// func (t *TaskAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskAssert {
+//	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+//		t.Helper()
+//		if o.TaskRelations != expected {
+//			return fmt.Errorf("expected task relations: %v; got: %v", expected, o.TaskRelations)
+//		}
+//		return nil
+//	})
+//	return t
+// }
 
 func (t *TaskAssert) HasLastSuspendedReason(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {

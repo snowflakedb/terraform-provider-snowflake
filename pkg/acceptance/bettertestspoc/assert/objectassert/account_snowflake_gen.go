@@ -146,7 +146,7 @@ func (a *AccountAssert) HasAccountLocator(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasAccountLocatorURL(expected string) *AccountAssert {
+func (a *AccountAssert) HasAccountLocatorUrl(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
 		if o.AccountLocatorUrl == nil {
