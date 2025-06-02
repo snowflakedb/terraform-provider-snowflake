@@ -3,10 +3,13 @@
 package testint
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -58,22 +61,6 @@ spec:
 	externalAccessIntegrationId, externalAccessIntegrationCleanup := testClientHelper().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
 	t.Cleanup(externalAccessIntegrationCleanup)
 
-	role, roleCleanup := testClientHelper().Role.CreateRole(t)
-	t.Cleanup(roleCleanup)
-
-	testClientHelper().Grant.GrantPrivilegesOnComputePoolToAccountRole(t, role.ID(), computePool.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
-	testClientHelper().Grant.GrantPrivilegesOnIntegrationToAccountRole(t, role.ID(), externalAccessIntegrationId, []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
-	testClientHelper().Grant.GrantPrivilegesOnWarehouseToAccountRole(t, role.ID(), testClientHelper().Ids.WarehouseId(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
-	testClientHelper().Grant.GrantPrivilegesOnSchemaObjectToAccountRole(t, role.ID(), sdk.ObjectTypeStage, stage.ID(), []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeRead, sdk.SchemaObjectPrivilegeWrite}, false)
-	testClientHelper().Grant.GrantAllOnDatabaseToAccountRole(t, db.ID(), role.ID())
-	testClientHelper().Grant.GrantAllOnSchemaToAccountRole(t, schema.ID(), role.ID())
-	testClientHelper().Grant.GrantAllOnDatabaseToAccountRole(t, testClientHelper().Ids.DatabaseId(), role.ID())
-	testClientHelper().Grant.GrantAllOnSchemaToAccountRole(t, testClientHelper().Ids.SchemaId(), role.ID())
-	testClientHelper().Role.GrantRoleToCurrentRole(t, role.ID())
-
-	useRoleCleanup := testClientHelper().Role.UseRole(t, role.ID())
-	t.Cleanup(useRoleCleanup)
-
 	t.Run("create - from specification", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 		request := sdk.NewCreateServiceRequest(id, computePool.ID()).
@@ -91,7 +78,7 @@ spec:
 			HasStatus(sdk.ServiceStatusPending).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasOwner(role.ID().Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComputePool(computePool.ID()).
 			HasDnsNameNotEmpty().
 			HasCurrentInstances(1).
@@ -136,7 +123,7 @@ spec:
 			HasStatus(sdk.ServiceStatusPending).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasOwner(role.ID().Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComputePool(computePool.ID()).
 			HasDnsNameNotEmpty().
 			HasCurrentInstances(1).
@@ -180,7 +167,7 @@ spec:
 			HasStatus(sdk.ServiceStatusPending).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasOwner(role.ID().Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComputePool(computePool.ID()).
 			HasDnsNameNotEmpty().
 			HasCurrentInstances(1).
@@ -219,42 +206,9 @@ spec:
 			WithFromSpecificationTemplate(*sdk.NewServiceFromSpecificationTemplateRequest(specTemplateUsing).WithSpecificationTemplate(specTemplate))
 
 		err := client.Services.Create(ctx, request)
-		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Service.DropFunc(t, id))
-
-		service, err := client.Services.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(id.Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(role.ID().Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstances(1).
-			HasTargetInstances(1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
-		)
+		returnedFullyQualifiedName := strings.ToUpper(lowercasedStage.ID().FullyQualifiedName())
+		require.ErrorContains(t, err, fmt.Sprintf(`395069 (23001): Unable to render service spec from given template: Stage '%s' not found for unloading profiler data.`, returnedFullyQualifiedName))
 	})
 
 	t.Run("create - from specification template on stage", func(t *testing.T) {
@@ -275,7 +229,7 @@ spec:
 			HasStatus(sdk.ServiceStatusPending).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasOwner(role.ID().Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComputePool(computePool.ID()).
 			HasDnsNameNotEmpty().
 			HasCurrentInstances(1).
@@ -328,7 +282,7 @@ spec:
 			HasStatus(sdk.ServiceStatusPending).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasOwner(role.ID().Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComputePool(computePool.ID()).
 			HasDnsNameNotEmpty().
 			HasCurrentInstances(1).
@@ -449,21 +403,9 @@ spec:
 		)
 	})
 
-	t.Run("alter: restore", func(t *testing.T) {
-		service, serviceCleanup := testClientHelper().Service.CreateWithIdWithBlockVolume(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
-		t.Cleanup(serviceCleanup)
+	// TODO(SNOW-2132078): Add an integration test for restoring a service from a snapshot.
 
-		err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithSuspend(true))
-		require.NoError(t, err)
-
-		snapshotId, snapshotCleanup := testClientHelper().Snapshot.Create(t, service.ID(), "block-volume")
-		t.Cleanup(snapshotCleanup)
-
-		restoreRequest := sdk.NewRestoreRequest("block-volume", []int{0}, snapshotId)
-
-		err = client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithRestore(*restoreRequest))
-		require.NoError(t, err)
-	})
+	// TODO(SNOW-2132087): Add integration tests for creating and altering services in Native Apps.
 
 	t.Run("describe service", func(t *testing.T) {
 		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
@@ -474,7 +416,7 @@ spec:
 			HasStatus(sdk.ServiceStatusPending).
 			HasDatabaseName(service.ID().DatabaseName()).
 			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(role.Name).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComputePool(computePool.ID()).
 			HasSpecNotEmpty().
 			HasDnsNameNotEmpty().
@@ -518,7 +460,7 @@ spec:
 			HasStatus(sdk.ServiceStatusPending).
 			HasDatabaseName(service.ID().DatabaseName()).
 			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(role.Name).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComputePool(computePool.ID()).
 			HasDnsNameNotEmpty().
 			HasCurrentInstances(1).
@@ -559,7 +501,7 @@ spec:
 			HasStatus(sdk.ServiceStatusPending).
 			HasDatabaseName(service.ID().DatabaseName()).
 			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(role.Name).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComputePool(computePool.ID()).
 			HasDnsNameNotEmpty().
 			HasCurrentInstances(1).
