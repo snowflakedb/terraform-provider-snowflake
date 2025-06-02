@@ -32,6 +32,21 @@ func ImportedProcedureSqlResource(t *testing.T, id string) *ProcedureSqlResource
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (p *ProcedureSqlResourceAssert) HasDatabaseString(expected string) *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueSet("database", expected))
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasSchemaString(expected string) *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueSet("schema", expected))
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasNameString(expected string) *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueSet("name", expected))
+	return p
+}
+
 func (p *ProcedureSqlResourceAssert) HasArgumentsString(expected string) *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
@@ -39,11 +54,6 @@ func (p *ProcedureSqlResourceAssert) HasArgumentsString(expected string) *Proced
 
 func (p *ProcedureSqlResourceAssert) HasCommentString(expected string) *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasDatabaseString(expected string) *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
 	return p
 }
 
@@ -77,11 +87,6 @@ func (p *ProcedureSqlResourceAssert) HasMetricLevelString(expected string) *Proc
 	return p
 }
 
-func (p *ProcedureSqlResourceAssert) HasNameString(expected string) *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
-	return p
-}
-
 func (p *ProcedureSqlResourceAssert) HasNullInputBehaviorString(expected string) *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return p
@@ -102,11 +107,6 @@ func (p *ProcedureSqlResourceAssert) HasReturnTypeString(expected string) *Proce
 	return p
 }
 
-func (p *ProcedureSqlResourceAssert) HasSchemaString(expected string) *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
-	return p
-}
-
 func (p *ProcedureSqlResourceAssert) HasTraceLevelString(expected string) *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueSet("trace_level", expected))
 	return p
@@ -116,6 +116,21 @@ func (p *ProcedureSqlResourceAssert) HasTraceLevelString(expected string) *Proce
 // Attribute empty checks //
 ////////////////////////////
 
+func (p *ProcedureSqlResourceAssert) HasNoDatabase() *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("database"))
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasNoSchema() *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("schema"))
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasNoName() *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("name"))
+	return p
+}
+
 func (p *ProcedureSqlResourceAssert) HasNoArguments() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("arguments"))
 	return p
@@ -123,11 +138,6 @@ func (p *ProcedureSqlResourceAssert) HasNoArguments() *ProcedureSqlResourceAsser
 
 func (p *ProcedureSqlResourceAssert) HasNoComment() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasNoDatabase() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
 	return p
 }
 
@@ -161,11 +171,6 @@ func (p *ProcedureSqlResourceAssert) HasNoMetricLevel() *ProcedureSqlResourceAss
 	return p
 }
 
-func (p *ProcedureSqlResourceAssert) HasNoName() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
-	return p
-}
-
 func (p *ProcedureSqlResourceAssert) HasNoNullInputBehavior() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
 	return p
@@ -183,11 +188,6 @@ func (p *ProcedureSqlResourceAssert) HasNoProcedureLanguage() *ProcedureSqlResou
 
 func (p *ProcedureSqlResourceAssert) HasNoReturnType() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("return_type"))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasNoSchema() *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
 	return p
 }
 

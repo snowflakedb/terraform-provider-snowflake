@@ -16,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -56,7 +57,7 @@ func TestAcc_ProcedurePython_InlineBasic(t *testing.T) {
 						HasIsSecureString(r.BooleanDefault).
 						HasCommentString(sdk.DefaultProcedureComment).
 						HasImportsLength(0).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString(testvars.PythonRuntime).
 						HasProcedureDefinitionString(definition).
 						HasProcedureLanguageString("PYTHON").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -147,13 +148,13 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 			sdk.NormalizedPath{StageLocation: "~", PathOnStage: tmpPythonFunction2.PythonFileName()},
 		).
 		WithSnowparkPackage("1.14.0").
-		WithPackages("absl-py==0.10.0").
+		WithPackages("absl-py==0.12.0").
 		WithExternalAccessIntegrations(externalAccessIntegration, externalAccessIntegration2).
 		WithSecrets(map[string]sdk.SchemaObjectIdentifier{
 			"abc": secretId,
 			"def": secretId2,
 		}).
-		WithRuntimeVersion("3.8").
+		WithRuntimeVersion(testvars.PythonRuntime).
 		WithIsSecure("false").
 		WithNullInputBehavior(string(sdk.NullInputBehaviorCalledOnNullInput)).
 		WithExecuteAs(string(sdk.ExecuteAsCaller)).
@@ -166,12 +167,12 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 			sdk.NormalizedPath{StageLocation: "~", PathOnStage: tmpPythonFunction2.PythonFileName()},
 		).
 		WithSnowparkPackage("1.14.0").
-		WithPackages("absl-py==0.10.0").
+		WithPackages("absl-py==0.12.0").
 		WithExternalAccessIntegrations(externalAccessIntegration).
 		WithSecrets(map[string]sdk.SchemaObjectIdentifier{
 			"def": secretId2,
 		}).
-		WithRuntimeVersion("3.8").
+		WithRuntimeVersion(testvars.PythonRuntime).
 		WithIsSecure("false").
 		WithNullInputBehavior(string(sdk.NullInputBehaviorCalledOnNullInput)).
 		WithExecuteAs(string(sdk.ExecuteAsOwner)).
@@ -193,7 +194,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
 						HasImportsLength(2).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString(testvars.PythonRuntime).
 						HasProcedureDefinitionString(definition).
 						HasCommentString("some comment").
 						HasProcedureLanguageString("PYTHON").
@@ -202,7 +203,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "secrets.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "external_access_integrations.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "packages.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "packages.0", "absl-py==0.10.0")),
+					assert.Check(resource.TestCheckResourceAttr(procedureModel.ResourceReference(), "packages.0", "absl-py==0.12.0")),
 					resourceshowoutputassert.ProcedureShowOutput(t, procedureModel.ResourceReference()).
 						HasIsSecure(false),
 				),
@@ -234,7 +235,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
 						HasImportsLength(2).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString(testvars.PythonRuntime).
 						HasProcedureDefinitionString(definition).
 						HasCommentString("some other comment").
 						HasProcedureLanguageString("PYTHON").
@@ -285,7 +286,7 @@ func TestAcc_ProcedurePython_ImportsDiffSuppression(t *testing.T) {
 			sdk.NormalizedPath{StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpPythonFunction2.PythonFileName()},
 		).
 		WithSnowparkPackage("1.14.0").
-		WithRuntimeVersion("3.8").
+		WithRuntimeVersion(testvars.PythonRuntime).
 		WithIsSecure("false")
 
 	resource.Test(t, resource.TestCase{
@@ -303,7 +304,7 @@ func TestAcc_ProcedurePython_ImportsDiffSuppression(t *testing.T) {
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
 						HasImportsLength(2).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString(testvars.PythonRuntime).
 						HasProcedureDefinitionString(definition).
 						HasProcedureLanguageString("PYTHON").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -375,14 +376,14 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 		WithArgument(argName, dataType).
 		WithImports(importsBefore...).
 		WithSnowparkPackage("1.14.0").
-		WithRuntimeVersion("3.8").
+		WithRuntimeVersion(testvars.PythonRuntime).
 		WithIsSecure("false")
 
 	procedureModelWithUpdatedImports := model.ProcedurePythonBasicInline("w", id, dataType, funcName, definition).
 		WithArgument(argName, dataType).
 		WithImports(importsAfter...).
 		WithSnowparkPackage("1.14.0").
-		WithRuntimeVersion("3.8").
+		WithRuntimeVersion(testvars.PythonRuntime).
 		WithIsSecure("false")
 
 	resource.Test(t, resource.TestCase{
@@ -400,7 +401,7 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
 						HasImportsLength(2).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString(testvars.PythonRuntime).
 						HasProcedureDefinitionString(definition).
 						HasProcedureLanguageString("PYTHON").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -422,7 +423,7 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
 						HasImportsLength(2).
-						HasRuntimeVersionString("3.8").
+						HasRuntimeVersionString(testvars.PythonRuntime).
 						HasProcedureDefinitionString(definition).
 						HasProcedureLanguageString("PYTHON").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),

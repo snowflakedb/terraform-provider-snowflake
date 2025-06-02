@@ -32,6 +32,11 @@ func ImportedResourceMonitorResource(t *testing.T, id string) *ResourceMonitorRe
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (r *ResourceMonitorResourceAssert) HasNameString(expected string) *ResourceMonitorResourceAssert {
+	r.AddAssertion(assert.ValueSet("name", expected))
+	return r
+}
+
 func (r *ResourceMonitorResourceAssert) HasCreditQuotaString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("credit_quota", expected))
 	return r
@@ -49,11 +54,6 @@ func (r *ResourceMonitorResourceAssert) HasFrequencyString(expected string) *Res
 
 func (r *ResourceMonitorResourceAssert) HasFullyQualifiedNameString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return r
-}
-
-func (r *ResourceMonitorResourceAssert) HasNameString(expected string) *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValueSet("name", expected))
 	return r
 }
 
@@ -86,6 +86,11 @@ func (r *ResourceMonitorResourceAssert) HasSuspendTriggerString(expected string)
 // Attribute empty checks //
 ////////////////////////////
 
+func (r *ResourceMonitorResourceAssert) HasNoName() *ResourceMonitorResourceAssert {
+	r.AddAssertion(assert.ValueNotSet("name"))
+	return r
+}
+
 func (r *ResourceMonitorResourceAssert) HasNoCreditQuota() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("credit_quota"))
 	return r
@@ -103,11 +108,6 @@ func (r *ResourceMonitorResourceAssert) HasNoFrequency() *ResourceMonitorResourc
 
 func (r *ResourceMonitorResourceAssert) HasNoFullyQualifiedName() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
-	return r
-}
-
-func (r *ResourceMonitorResourceAssert) HasNoName() *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValueNotSet("name"))
 	return r
 }
 

@@ -33,6 +33,13 @@ func intAttributeWithSpecialDefaultCreate(d *schema.ResourceData, key string, cr
 	return nil
 }
 
+func intAttributeWithSpecialDefaultCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(int) T) error {
+	if v := d.Get(key).(int); v != IntDefault {
+		setValue(v)
+	}
+	return nil
+}
+
 func booleanStringAttributeCreate(d *schema.ResourceData, key string, createField **bool) error {
 	if v := d.Get(key).(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)

@@ -32,6 +32,21 @@ func ImportedProcedureJavascriptResource(t *testing.T, id string) *ProcedureJava
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (p *ProcedureJavascriptResourceAssert) HasDatabaseString(expected string) *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueSet("database", expected))
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasSchemaString(expected string) *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueSet("schema", expected))
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasNameString(expected string) *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueSet("name", expected))
+	return p
+}
+
 func (p *ProcedureJavascriptResourceAssert) HasArgumentsString(expected string) *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
@@ -39,11 +54,6 @@ func (p *ProcedureJavascriptResourceAssert) HasArgumentsString(expected string) 
 
 func (p *ProcedureJavascriptResourceAssert) HasCommentString(expected string) *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
-	return p
-}
-
-func (p *ProcedureJavascriptResourceAssert) HasDatabaseString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
 	return p
 }
 
@@ -77,11 +87,6 @@ func (p *ProcedureJavascriptResourceAssert) HasMetricLevelString(expected string
 	return p
 }
 
-func (p *ProcedureJavascriptResourceAssert) HasNameString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
-	return p
-}
-
 func (p *ProcedureJavascriptResourceAssert) HasNullInputBehaviorString(expected string) *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return p
@@ -102,11 +107,6 @@ func (p *ProcedureJavascriptResourceAssert) HasReturnTypeString(expected string)
 	return p
 }
 
-func (p *ProcedureJavascriptResourceAssert) HasSchemaString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
-	return p
-}
-
 func (p *ProcedureJavascriptResourceAssert) HasTraceLevelString(expected string) *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueSet("trace_level", expected))
 	return p
@@ -116,6 +116,21 @@ func (p *ProcedureJavascriptResourceAssert) HasTraceLevelString(expected string)
 // Attribute empty checks //
 ////////////////////////////
 
+func (p *ProcedureJavascriptResourceAssert) HasNoDatabase() *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("database"))
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasNoSchema() *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("schema"))
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasNoName() *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("name"))
+	return p
+}
+
 func (p *ProcedureJavascriptResourceAssert) HasNoArguments() *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("arguments"))
 	return p
@@ -123,11 +138,6 @@ func (p *ProcedureJavascriptResourceAssert) HasNoArguments() *ProcedureJavascrip
 
 func (p *ProcedureJavascriptResourceAssert) HasNoComment() *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
-	return p
-}
-
-func (p *ProcedureJavascriptResourceAssert) HasNoDatabase() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
 	return p
 }
 
@@ -161,11 +171,6 @@ func (p *ProcedureJavascriptResourceAssert) HasNoMetricLevel() *ProcedureJavascr
 	return p
 }
 
-func (p *ProcedureJavascriptResourceAssert) HasNoName() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
-	return p
-}
-
 func (p *ProcedureJavascriptResourceAssert) HasNoNullInputBehavior() *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
 	return p
@@ -183,11 +188,6 @@ func (p *ProcedureJavascriptResourceAssert) HasNoProcedureLanguage() *ProcedureJ
 
 func (p *ProcedureJavascriptResourceAssert) HasNoReturnType() *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("return_type"))
-	return p
-}
-
-func (p *ProcedureJavascriptResourceAssert) HasNoSchema() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
 	return p
 }
 

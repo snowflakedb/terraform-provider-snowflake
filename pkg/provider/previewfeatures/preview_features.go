@@ -18,6 +18,8 @@ const (
 	AlertsDatasource                              feature = "snowflake_alerts_datasource"
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
 	AuthenticationPolicyResource                  feature = "snowflake_authentication_policy_resource"
+	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
+	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
 	CortexSearchServicesDatasource                feature = "snowflake_cortex_search_services_datasource"
 	DatabaseDatasource                            feature = "snowflake_database_datasource"
@@ -89,6 +91,8 @@ var allPreviewFeatures = []feature{
 	AlertsDatasource,
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
+	ComputePoolResource,
+	ComputePoolsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	DatabaseDatasource,

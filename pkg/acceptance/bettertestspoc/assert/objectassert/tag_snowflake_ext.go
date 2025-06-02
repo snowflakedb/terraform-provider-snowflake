@@ -9,7 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (s *TagAssert) HasAllowedValues(expected ...string) *TagAssert {
+func (s *TagAssert) HasAllowedValuesUnordered(expected ...string) *TagAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
 		t.Helper()
 		if len(o.AllowedValues) != len(expected) {

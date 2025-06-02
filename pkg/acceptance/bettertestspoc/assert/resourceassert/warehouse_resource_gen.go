@@ -32,6 +32,11 @@ func ImportedWarehouseResource(t *testing.T, id string) *WarehouseResourceAssert
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (w *WarehouseResourceAssert) HasNameString(expected string) *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueSet("name", expected))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasAutoResumeString(expected string) *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("auto_resume", expected))
 	return w
@@ -77,11 +82,6 @@ func (w *WarehouseResourceAssert) HasMinClusterCountString(expected string) *War
 	return w
 }
 
-func (w *WarehouseResourceAssert) HasNameString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("name", expected))
-	return w
-}
-
 func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactorString(expected string) *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("query_acceleration_max_scale_factor", expected))
 	return w
@@ -120,6 +120,11 @@ func (w *WarehouseResourceAssert) HasWarehouseTypeString(expected string) *Wareh
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (w *WarehouseResourceAssert) HasNoName() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("name"))
+	return w
+}
 
 func (w *WarehouseResourceAssert) HasNoAutoResume() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueNotSet("auto_resume"))
@@ -163,11 +168,6 @@ func (w *WarehouseResourceAssert) HasNoMaxConcurrencyLevel() *WarehouseResourceA
 
 func (w *WarehouseResourceAssert) HasNoMinClusterCount() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueNotSet("min_cluster_count"))
-	return w
-}
-
-func (w *WarehouseResourceAssert) HasNoName() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("name"))
 	return w
 }
 

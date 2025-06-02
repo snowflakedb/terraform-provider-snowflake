@@ -20,6 +20,36 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(bugfix)* Fix how snowflake_user_authentication_policy_attachment resource handles missing objects it depends on
+
+Previously, the `snowflake_user_authentication_policy_attachment` resource was not able to handle missing objects it depends on.
+This means, if a user or authentication policy was removed manually outside Terraform, the provider would produce plans with errors like:
+```
+User 'XYZ' does not exist or not authorized
+```
+and only manual state management would help you to remove the resource from the state.
+
+Now, the removal of the resource is handled properly and the resource is removed from the state automatically with the following warning:
+```
+Failed to find user authentication policy. Marking the resource as removed.
+### or ###
+Failed to get user policies. Marking the resource as removed.
+```
+
+If you are encountering this issue,
+either bump the provider version to at least `v2.2.0` or [remove the resource from the state manually](https://developer.hashicorp.com/terraform/cli/commands/state/rm).
+
+No configuration changes are needed.
+
+References: [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
+
+### *(new feature)* snowflake_compute_pool resource
+Added a new preview resource for managing compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool). The limitation of this resource is that identifiers with special or lower-case characters are not supported. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
+
+Managing compute pool state is limited. It is handled only by `initially_suspended`, `auto_suspend_secs`, and `auto_resume` fields. See the resource documentation for more details.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_compute_pool_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(bugfix)* Fix the behavior for empty privileges list in snowflake_grant_privileges_to_account_role, snowflake_grant_privileges_to_database_role, and snowflake_grant_privileges_to_share resources
 
 Previously, it was possible to create `snowflake_grant_privileges_to_X` resources with an empty privilege list, which led to the following error:
@@ -58,6 +88,11 @@ Reference: [#3690](https://github.com/snowflakedb/terraform-provider-snowflake/i
 Added a new preview resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier). The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repository_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_compute_pools data source
+Added a new preview data source for compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_compute_pools_datasource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* snowflake_image_repositories data source
 Added a new preview data source for image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-image-repositories).

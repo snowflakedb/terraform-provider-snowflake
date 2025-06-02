@@ -32,6 +32,21 @@ func ImportedProcedureJavaResource(t *testing.T, id string) *ProcedureJavaResour
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (p *ProcedureJavaResourceAssert) HasDatabaseString(expected string) *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("database", expected))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasSchemaString(expected string) *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("schema", expected))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasNameString(expected string) *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("name", expected))
+	return p
+}
+
 func (p *ProcedureJavaResourceAssert) HasArgumentsString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
@@ -39,11 +54,6 @@ func (p *ProcedureJavaResourceAssert) HasArgumentsString(expected string) *Proce
 
 func (p *ProcedureJavaResourceAssert) HasCommentString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasDatabaseString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
 	return p
 }
 
@@ -92,11 +102,6 @@ func (p *ProcedureJavaResourceAssert) HasMetricLevelString(expected string) *Pro
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasNameString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNullInputBehaviorString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return p
@@ -127,11 +132,6 @@ func (p *ProcedureJavaResourceAssert) HasRuntimeVersionString(expected string) *
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasSchemaString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasSecretsString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("secrets", expected))
 	return p
@@ -156,6 +156,21 @@ func (p *ProcedureJavaResourceAssert) HasTraceLevelString(expected string) *Proc
 // Attribute empty checks //
 ////////////////////////////
 
+func (p *ProcedureJavaResourceAssert) HasNoDatabase() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("database"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasNoSchema() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("schema"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasNoName() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("name"))
+	return p
+}
+
 func (p *ProcedureJavaResourceAssert) HasNoArguments() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("arguments"))
 	return p
@@ -163,11 +178,6 @@ func (p *ProcedureJavaResourceAssert) HasNoArguments() *ProcedureJavaResourceAss
 
 func (p *ProcedureJavaResourceAssert) HasNoComment() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasNoDatabase() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
 	return p
 }
 
@@ -216,11 +226,6 @@ func (p *ProcedureJavaResourceAssert) HasNoMetricLevel() *ProcedureJavaResourceA
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasNoName() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoNullInputBehavior() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
 	return p
@@ -248,11 +253,6 @@ func (p *ProcedureJavaResourceAssert) HasNoReturnType() *ProcedureJavaResourceAs
 
 func (p *ProcedureJavaResourceAssert) HasNoRuntimeVersion() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("runtime_version"))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasNoSchema() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
 	return p
 }
 

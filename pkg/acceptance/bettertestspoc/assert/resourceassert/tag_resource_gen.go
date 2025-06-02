@@ -32,6 +32,21 @@ func ImportedTagResource(t *testing.T, id string) *TagResourceAssert {
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (t *TagResourceAssert) HasDatabaseString(expected string) *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("database", expected))
+	return t
+}
+
+func (t *TagResourceAssert) HasSchemaString(expected string) *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("schema", expected))
+	return t
+}
+
+func (t *TagResourceAssert) HasNameString(expected string) *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("name", expected))
+	return t
+}
+
 func (t *TagResourceAssert) HasAllowedValuesString(expected string) *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("allowed_values", expected))
 	return t
@@ -39,11 +54,6 @@ func (t *TagResourceAssert) HasAllowedValuesString(expected string) *TagResource
 
 func (t *TagResourceAssert) HasCommentString(expected string) *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("comment", expected))
-	return t
-}
-
-func (t *TagResourceAssert) HasDatabaseString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("database", expected))
 	return t
 }
 
@@ -57,19 +67,24 @@ func (t *TagResourceAssert) HasMaskingPoliciesString(expected string) *TagResour
 	return t
 }
 
-func (t *TagResourceAssert) HasNameString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("name", expected))
-	return t
-}
-
-func (t *TagResourceAssert) HasSchemaString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("schema", expected))
-	return t
-}
-
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (t *TagResourceAssert) HasNoDatabase() *TagResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("database"))
+	return t
+}
+
+func (t *TagResourceAssert) HasNoSchema() *TagResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("schema"))
+	return t
+}
+
+func (t *TagResourceAssert) HasNoName() *TagResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("name"))
+	return t
+}
 
 func (t *TagResourceAssert) HasNoAllowedValues() *TagResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("allowed_values"))
@@ -81,11 +96,6 @@ func (t *TagResourceAssert) HasNoComment() *TagResourceAssert {
 	return t
 }
 
-func (t *TagResourceAssert) HasNoDatabase() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("database"))
-	return t
-}
-
 func (t *TagResourceAssert) HasNoFullyQualifiedName() *TagResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return t
@@ -93,15 +103,5 @@ func (t *TagResourceAssert) HasNoFullyQualifiedName() *TagResourceAssert {
 
 func (t *TagResourceAssert) HasNoMaskingPolicies() *TagResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("masking_policies"))
-	return t
-}
-
-func (t *TagResourceAssert) HasNoName() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("name"))
-	return t
-}
-
-func (t *TagResourceAssert) HasNoSchema() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("schema"))
 	return t
 }

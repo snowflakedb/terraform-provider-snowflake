@@ -34,8 +34,13 @@ func (f *Field) ConcreteTypeNoPointer() string {
 	return concreteTypeNoPtr
 }
 
+func (f *Field) ConcreteTypeNoPointerNoArray() string {
+	concreteTypeNoPtrNoArr := TypeWithoutPointerAndBrackets(f.ConcreteType)
+	return concreteTypeNoPtrNoArr
+}
+
 func (f *Field) GetImportedType() (string, bool) {
-	parts := strings.Split(f.ConcreteTypeNoPointer(), ".")
+	parts := strings.Split(f.ConcreteTypeNoPointerNoArray(), ".")
 	return parts[0], len(parts) > 1
 }
 
@@ -79,6 +84,9 @@ func AdditionalStandardImports(fields []Field) []string {
 		additionalImport, isImportedType := field.GetImportedType()
 		if isImportedType {
 			imports[additionalImport] = struct{}{}
+		}
+		if field.IsSlice() {
+			imports["slices"] = struct{}{}
 		}
 	}
 	additionalImports := make([]string, 0)

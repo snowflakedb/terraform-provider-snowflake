@@ -32,6 +32,21 @@ func ImportedViewResource(t *testing.T, id string) *ViewResourceAssert {
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (v *ViewResourceAssert) HasDatabaseString(expected string) *ViewResourceAssert {
+	v.AddAssertion(assert.ValueSet("database", expected))
+	return v
+}
+
+func (v *ViewResourceAssert) HasSchemaString(expected string) *ViewResourceAssert {
+	v.AddAssertion(assert.ValueSet("schema", expected))
+	return v
+}
+
+func (v *ViewResourceAssert) HasNameString(expected string) *ViewResourceAssert {
+	v.AddAssertion(assert.ValueSet("name", expected))
+	return v
+}
+
 func (v *ViewResourceAssert) HasAggregationPolicyString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("aggregation_policy", expected))
 	return v
@@ -67,11 +82,6 @@ func (v *ViewResourceAssert) HasDataMetricScheduleString(expected string) *ViewR
 	return v
 }
 
-func (v *ViewResourceAssert) HasDatabaseString(expected string) *ViewResourceAssert {
-	v.AddAssertion(assert.ValueSet("database", expected))
-	return v
-}
-
 func (v *ViewResourceAssert) HasFullyQualifiedNameString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return v
@@ -92,18 +102,8 @@ func (v *ViewResourceAssert) HasIsTemporaryString(expected string) *ViewResource
 	return v
 }
 
-func (v *ViewResourceAssert) HasNameString(expected string) *ViewResourceAssert {
-	v.AddAssertion(assert.ValueSet("name", expected))
-	return v
-}
-
 func (v *ViewResourceAssert) HasRowAccessPolicyString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("row_access_policy", expected))
-	return v
-}
-
-func (v *ViewResourceAssert) HasSchemaString(expected string) *ViewResourceAssert {
-	v.AddAssertion(assert.ValueSet("schema", expected))
 	return v
 }
 
@@ -115,6 +115,21 @@ func (v *ViewResourceAssert) HasStatementString(expected string) *ViewResourceAs
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (v *ViewResourceAssert) HasNoDatabase() *ViewResourceAssert {
+	v.AddAssertion(assert.ValueNotSet("database"))
+	return v
+}
+
+func (v *ViewResourceAssert) HasNoSchema() *ViewResourceAssert {
+	v.AddAssertion(assert.ValueNotSet("schema"))
+	return v
+}
+
+func (v *ViewResourceAssert) HasNoName() *ViewResourceAssert {
+	v.AddAssertion(assert.ValueNotSet("name"))
+	return v
+}
 
 func (v *ViewResourceAssert) HasNoAggregationPolicy() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("aggregation_policy"))
@@ -151,11 +166,6 @@ func (v *ViewResourceAssert) HasNoDataMetricSchedule() *ViewResourceAssert {
 	return v
 }
 
-func (v *ViewResourceAssert) HasNoDatabase() *ViewResourceAssert {
-	v.AddAssertion(assert.ValueNotSet("database"))
-	return v
-}
-
 func (v *ViewResourceAssert) HasNoFullyQualifiedName() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return v
@@ -176,18 +186,8 @@ func (v *ViewResourceAssert) HasNoIsTemporary() *ViewResourceAssert {
 	return v
 }
 
-func (v *ViewResourceAssert) HasNoName() *ViewResourceAssert {
-	v.AddAssertion(assert.ValueNotSet("name"))
-	return v
-}
-
 func (v *ViewResourceAssert) HasNoRowAccessPolicy() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("row_access_policy"))
-	return v
-}
-
-func (v *ViewResourceAssert) HasNoSchema() *ViewResourceAssert {
-	v.AddAssertion(assert.ValueNotSet("schema"))
 	return v
 }
 

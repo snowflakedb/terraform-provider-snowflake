@@ -32,6 +32,11 @@ func ImportedOauthIntegrationForPartnerApplicationsResource(t *testing.T, id str
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNameString(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("name", expected))
+	return o
+}
+
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasBlockedRolesListString(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.AddAssertion(assert.ValueSet("blocked_roles_list", expected))
 	return o
@@ -49,11 +54,6 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasEnabledString(
 
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasFullyQualifiedNameString(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNameString(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
-	o.AddAssertion(assert.ValueSet("name", expected))
 	return o
 }
 
@@ -91,6 +91,11 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasRelatedParamet
 // Attribute empty checks //
 ////////////////////////////
 
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoName() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueNotSet("name"))
+	return o
+}
+
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoBlockedRolesList() *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.AddAssertion(assert.ValueNotSet("blocked_roles_list"))
 	return o
@@ -108,11 +113,6 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoEnabled() *O
 
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoFullyQualifiedName() *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoName() *OauthIntegrationForPartnerApplicationsResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("name"))
 	return o
 }
 

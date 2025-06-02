@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -124,10 +125,12 @@ func (r *ResourceMonitorAssert) HasEndTime(expected string) *ResourceMonitorAsse
 	return r
 }
 
-func (r *ResourceMonitorAssert) HasNotifyAt(expected []int) *ResourceMonitorAssert {
+func (r *ResourceMonitorAssert) HasNotifyAt(expected ...int) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
-		if !slices.Equal(o.NotifyAt, expected) {
+		mapped := collections.Map(o.NotifyAt, func(item int) any { return item })
+		mappedExpected := collections.Map(expected, func(item int) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected notify at: %v; got: %v", expected, o.NotifyAt)
 		}
 		return nil
@@ -196,10 +199,12 @@ func (r *ResourceMonitorAssert) HasComment(expected string) *ResourceMonitorAsse
 	return r
 }
 
-func (r *ResourceMonitorAssert) HasNotifyUsers(expected []string) *ResourceMonitorAssert {
+func (r *ResourceMonitorAssert) HasNotifyUsers(expected ...string) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
-		if !slices.Equal(o.NotifyUsers, expected) {
+		mapped := collections.Map(o.NotifyUsers, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected notify users: %v; got: %v", expected, o.NotifyUsers)
 		}
 		return nil

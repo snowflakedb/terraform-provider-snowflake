@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -113,10 +114,12 @@ func (s *SecretAssert) HasSecretType(expected string) *SecretAssert {
 	return s
 }
 
-func (s *SecretAssert) HasOauthScopes(expected []string) *SecretAssert {
+func (s *SecretAssert) HasOauthScopes(expected ...string) *SecretAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
 		t.Helper()
-		if !slices.Equal(o.OauthScopes, expected) {
+		mapped := collections.Map(o.OauthScopes, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected oauth scopes: %v; got: %v", expected, o.OauthScopes)
 		}
 		return nil

@@ -270,21 +270,6 @@ func TestInt_ComputePools(t *testing.T) {
 		)
 	})
 
-	t.Run("drop: when an object already exists", func(t *testing.T) {
-		computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
-		t.Cleanup(computePoolCleanup)
-		id := computePool.ID()
-		err := client.ComputePools.Drop(ctx, sdk.NewDropComputePoolRequest(id))
-		require.NoError(t, err)
-		_, err = client.ComputePools.Describe(ctx, id)
-		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
-	})
-
-	t.Run("drop: when an object does not exist", func(t *testing.T) {
-		err := client.ComputePools.Drop(ctx, sdk.NewDropComputePoolRequest(NonExistingAccountObjectIdentifier))
-		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
-	})
-
 	t.Run("show: with like", func(t *testing.T) {
 		computePool, funcCleanup := testClientHelper().ComputePool.Create(t)
 		t.Cleanup(funcCleanup)
@@ -316,5 +301,20 @@ func TestInt_ComputePools(t *testing.T) {
 			HasErrorCode("").
 			HasStatusMessage("Compute pool is starting for last 0 minutes"),
 		)
+	})
+
+	t.Run("drop: when an object already exists", func(t *testing.T) {
+		computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
+		t.Cleanup(computePoolCleanup)
+		id := computePool.ID()
+		err := client.ComputePools.Drop(ctx, sdk.NewDropComputePoolRequest(id))
+		require.NoError(t, err)
+		_, err = client.ComputePools.Describe(ctx, id)
+		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+
+	t.Run("drop: when an object does not exist", func(t *testing.T) {
+		err := client.ComputePools.Drop(ctx, sdk.NewDropComputePoolRequest(NonExistingAccountObjectIdentifier))
+		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }

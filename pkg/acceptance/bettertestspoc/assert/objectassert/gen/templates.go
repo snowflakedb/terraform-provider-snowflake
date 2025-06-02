@@ -24,7 +24,7 @@ var (
 	AssertionsTemplate, _     = template.New("assertionsTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
 		genhelpers.FirstLetterLowercase,
 		genhelpers.FirstLetter,
-		genhelpers.TypeWithoutPointer,
+		genhelpers.TypeWithoutPointerAndBrackets,
 		genhelpers.CamelToWords,
 		genhelpers.RunMapper,
 	)).Parse(assertionsTemplateContent)

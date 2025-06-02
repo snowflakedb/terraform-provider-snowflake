@@ -49,6 +49,7 @@ type Client struct {
 	FailoverGroups               FailoverGroups
 	FileFormats                  FileFormats
 	Functions                    Functions
+	GitRepositories              GitRepositories
 	Grants                       Grants
 	ImageRepositories            ImageRepositories
 	ManagedAccounts              ManagedAccounts
@@ -68,6 +69,7 @@ type Client struct {
 	Schemas                      Schemas
 	Secrets                      Secrets
 	SecurityIntegrations         SecurityIntegrations
+	Services                     Services
 	Sequences                    Sequences
 	SessionPolicies              SessionPolicies
 	Sessions                     Sessions
@@ -179,6 +181,7 @@ func (c *Client) initialize() {
 	c.FailoverGroups = &failoverGroups{client: c}
 	c.FileFormats = &fileFormats{client: c}
 	c.Functions = &functions{client: c}
+	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
@@ -200,6 +203,7 @@ func (c *Client) initialize() {
 	c.Secrets = &secrets{client: c}
 	c.SecurityIntegrations = &securityIntegrations{client: c}
 	c.Sequences = &sequences{client: c}
+	c.Services = &services{client: c}
 	c.SessionPolicies = &sessionPolicies{client: c}
 	c.Sessions = &sessions{client: c}
 	c.Shares = &shares{client: c}
