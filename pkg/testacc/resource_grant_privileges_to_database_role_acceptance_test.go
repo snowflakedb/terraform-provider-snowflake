@@ -1510,13 +1510,7 @@ func TestAcc_GrantPrivileges_ToDatabaseRole_WithEmptyPrivileges(t *testing.T) {
 			//
 			// and affects the next test steps
 			{
-				Config: grantPrivilegesToDatabaseRole3690Config(databaseRole.ID()),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().Name()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
-				),
+				Config:      grantPrivilegesToDatabaseRole3690Config(databaseRole.ID()),
 				ExpectError: regexp.MustCompile("Error: Not enough list items"),
 			},
 			{
