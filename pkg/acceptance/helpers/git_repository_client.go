@@ -25,11 +25,6 @@ func (c *GitRepositoryClient) client() sdk.GitRepositories {
 	return c.context.client.GitRepositories
 }
 
-func (c *GitRepositoryClient) CreatWithSecretAndComment(t *testing.T, name sdk.SchemaObjectIdentifier, origin string, apiIntegration sdk.AccountObjectIdentifier, gitCredentials sdk.SchemaObjectIdentifier, comment string) (*sdk.GitRepository, func()) {
-	t.Helper()
-	return c.CreateWithRequest(t, sdk.NewCreateGitRepositoryRequest(name, origin, apiIntegration).WithGitCredentials(gitCredentials).WithComment(comment))
-}
-
 func (c *GitRepositoryClient) Create(t *testing.T, name sdk.SchemaObjectIdentifier, origin string, apiIntegration sdk.AccountObjectIdentifier) (*sdk.GitRepository, func()) {
 	t.Helper()
 	return c.CreateWithRequest(t, sdk.NewCreateGitRepositoryRequest(name, origin, apiIntegration))
@@ -43,10 +38,10 @@ func (c *GitRepositoryClient) CreateWithRequest(t *testing.T, req *sdk.CreateGit
 	require.NoError(t, err)
 	gitRepository, err := c.client().ShowByID(ctx, req.GetName())
 	require.NoError(t, err)
-	return gitRepository, c.DropGitRepositoryFunc(t, req.GetName())
+	return gitRepository, c.DropFunc(t, req.GetName())
 }
 
-func (c *GitRepositoryClient) DropGitRepositoryFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
+func (c *GitRepositoryClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
 

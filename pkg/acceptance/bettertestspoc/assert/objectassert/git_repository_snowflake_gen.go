@@ -93,8 +93,8 @@ func (g *GitRepositoryAssert) HasApiIntegration(expected sdk.AccountObjectIdenti
 		if o.ApiIntegration == nil {
 			return fmt.Errorf("expected api integration to have value; got: nil")
 		}
-		if *o.ApiIntegration != expected {
-			return fmt.Errorf("expected api integration: %v; got: %v", expected.Name(), o.ApiIntegration.Name())
+		if (*o.ApiIntegration).Name() != expected.Name() {
+			return fmt.Errorf("expected api integration: %v; got: %v", expected.Name(), (*o.ApiIntegration).Name())
 		}
 		return nil
 	})
@@ -107,9 +107,8 @@ func (g *GitRepositoryAssert) HasGitCredentials(expected sdk.SchemaObjectIdentif
 		if o.GitCredentials == nil {
 			return fmt.Errorf("expected git credentials to have value; got: nil")
 		}
-		// Manually ajusted, because SchemaObjectIdentifier does not have operator != defined
-		if o.GitCredentials.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected git credentials: %v; got: %v", expected.FullyQualifiedName(), o.GitCredentials.FullyQualifiedName())
+		if (*o.GitCredentials).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected git credentials: %v; got: %v", expected.FullyQualifiedName(), (*o.GitCredentials).FullyQualifiedName())
 		}
 		return nil
 	})

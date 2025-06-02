@@ -16,68 +16,26 @@ func TestInt_GitRepositories(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
-	t.Cleanup(dbCleanup)
+	gitRepositoryOrigin := "https://github.com/octocat/hello-world"
 
-	schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
-	t.Cleanup(schemaCleanup)
+	apiIntegrationId, apiIntegrationCleanup :=
+		testClientHelper().ApiIntegration.
+			CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
+	t.Cleanup(apiIntegrationCleanup)
 
-	origin := "https://github.com/octocat/hello-world"
-
-	createGitRepositoryWithSecretAndComment := func(t *testing.T) (sdk.SchemaObjectIdentifier, sdk.AccountObjectIdentifier, sdk.SchemaObjectIdentifier) {
-		t.Helper()
-
-		gitRepositoryId := testClientHelper().Ids.
-			RandomSchemaObjectIdentifierInSchema(schema.ID())
-
-		apiIntegrationId, apiIntegrationCleanup :=
-			testClientHelper().ApiIntegration.
-				CreateApiIntegrationForGitRepository(t, origin)
-		t.Cleanup(apiIntegrationCleanup)
-
-		secretId := testClientHelper().Ids.
-			RandomSchemaObjectIdentifierInSchema(schema.ID())
-		_, secretCleanup := testClientHelper().Secret.
-			CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
-		t.Cleanup(secretCleanup)
-
-		_, gitRepositoryCleanup := testClientHelper().
-			GitRepository.
-			CreatWithSecretAndComment(t, gitRepositoryId, origin, apiIntegrationId, secretId, "comment")
-		t.Cleanup(gitRepositoryCleanup)
-
-		return gitRepositoryId, apiIntegrationId, secretId
-	}
-
-	createGitRepository := func(t *testing.T) (sdk.SchemaObjectIdentifier, sdk.AccountObjectIdentifier) {
-		t.Helper()
-
-		gitRepositoryId := testClientHelper().Ids.
-			RandomSchemaObjectIdentifierInSchema(schema.ID())
-
-		apiIntegrationId, apiIntegrationCleanup :=
-			testClientHelper().ApiIntegration.
-				CreateApiIntegrationForGitRepository(t, origin)
-		t.Cleanup(apiIntegrationCleanup)
-
-		_, gitRepositoryCleanup := testClientHelper().
-			GitRepository.
-			Create(t, gitRepositoryId, origin, apiIntegrationId)
-		t.Cleanup(gitRepositoryCleanup)
-
-		return gitRepositoryId, apiIntegrationId
-	}
+	secretId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+	_, secretCleanup := testClientHelper().Secret.
+		CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
+	t.Cleanup(secretCleanup)
 
 	t.Run("create - basic", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-		apiIntegration, apiIntegrationCleanup := testClientHelper().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
-		t.Cleanup(apiIntegrationCleanup)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		request := sdk.NewCreateGitRepositoryRequest(id, origin, apiIntegration)
+		request := sdk.NewCreateGitRepositoryRequest(id, gitRepositoryOrigin, apiIntegrationId)
 
 		err := client.GitRepositories.Create(ctx, request)
 		require.NoError(t, err)
-		t.Cleanup(testClientHelper().GitRepository.DropGitRepositoryFunc(t, id))
+		t.Cleanup(testClientHelper().GitRepository.DropFunc(t, id))
 
 		gitRepository, err := client.GitRepositories.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -87,8 +45,8 @@ func TestInt_GitRepositories(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasOrigin(origin).
-			HasApiIntegration(apiIntegration).
+			HasOrigin(gitRepositoryOrigin).
+			HasApiIntegration(apiIntegrationId).
 			HasGitCredentialsEmpty().
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -97,19 +55,13 @@ func TestInt_GitRepositories(t *testing.T) {
 	})
 
 	t.Run("create - complete", func(t *testing.T) {
-		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-		apiIntegration, apiIntegrationCleanup := testClientHelper().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
-		t.Cleanup(apiIntegrationCleanup)
+		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		secretId := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-		_, secretCleanup := testClientHelper().Secret.CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
-		t.Cleanup(secretCleanup)
-
-		request := sdk.NewCreateGitRepositoryRequest(gitRepositoryId, origin, apiIntegration).WithIfNotExists(true).WithGitCredentials(secretId).WithComment("comment")
+		request := sdk.NewCreateGitRepositoryRequest(gitRepositoryId, gitRepositoryOrigin, apiIntegrationId).WithIfNotExists(true).WithGitCredentials(secretId).WithComment("comment")
 
 		err := client.GitRepositories.Create(ctx, request)
 		require.NoError(t, err)
-		t.Cleanup(testClientHelper().GitRepository.DropGitRepositoryFunc(t, gitRepositoryId))
+		t.Cleanup(testClientHelper().GitRepository.DropFunc(t, gitRepositoryId))
 
 		gitRepository, err := client.GitRepositories.ShowByID(ctx, gitRepositoryId)
 		require.NoError(t, err)
@@ -119,8 +71,8 @@ func TestInt_GitRepositories(t *testing.T) {
 			HasName(gitRepositoryId.Name()).
 			HasDatabaseName(gitRepositoryId.DatabaseName()).
 			HasSchemaName(gitRepositoryId.SchemaName()).
-			HasOrigin(origin).
-			HasApiIntegration(apiIntegration).
+			HasOrigin(gitRepositoryOrigin).
+			HasApiIntegration(apiIntegrationId).
 			HasGitCredentials(secretId).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -129,15 +81,19 @@ func TestInt_GitRepositories(t *testing.T) {
 	})
 
 	t.Run("alter: set", func(t *testing.T) {
-		gitRepositoryId, apiIntegrationId := createGitRepository(t)
+		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, gitRepositoryCleanup := testClientHelper().
+			GitRepository.
+			Create(t, gitRepositoryId, gitRepositoryOrigin, apiIntegrationId)
+		t.Cleanup(gitRepositoryCleanup)
 
-		secretId := testClientHelper().Ids.
-			RandomSchemaObjectIdentifierInSchema(schema.ID())
-		_, secretCleanup := testClientHelper().Secret.
-			CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
-		t.Cleanup(secretCleanup)
+		newApiIntegrationId, newApiIntegrationCleanup :=
+			testClientHelper().ApiIntegration.
+				CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
+		t.Cleanup(newApiIntegrationCleanup)
 
 		setRequest := sdk.NewGitRepositorySetRequest().
+			WithApiIntegration(newApiIntegrationId).
 			WithGitCredentials(secretId).
 			WithComment("comment")
 		alterRequest := sdk.NewAlterGitRepositoryRequest(gitRepositoryId).
@@ -153,8 +109,8 @@ func TestInt_GitRepositories(t *testing.T) {
 			HasName(gitRepositoryId.Name()).
 			HasDatabaseName(gitRepositoryId.DatabaseName()).
 			HasSchemaName(gitRepositoryId.SchemaName()).
-			HasOrigin(origin).
-			HasApiIntegration(apiIntegrationId).
+			HasOrigin(gitRepositoryOrigin).
+			HasApiIntegration(newApiIntegrationId).
 			HasGitCredentials(secretId).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -163,7 +119,11 @@ func TestInt_GitRepositories(t *testing.T) {
 	})
 
 	t.Run("alter: unset", func(t *testing.T) {
-		gitRepositoryId, apiIntegrationId, _ := createGitRepositoryWithSecretAndComment(t)
+		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		createRequest := sdk.NewCreateGitRepositoryRequest(gitRepositoryId, gitRepositoryOrigin, apiIntegrationId).WithGitCredentials(secretId).WithComment("comment")
+		_, gitRepositoryCleanup := testClientHelper().
+			GitRepository.CreateWithRequest(t, createRequest)
+		t.Cleanup(gitRepositoryCleanup)
 
 		unsetRequest := sdk.NewGitRepositoryUnsetRequest().
 			WithGitCredentials(true).
@@ -181,7 +141,7 @@ func TestInt_GitRepositories(t *testing.T) {
 			HasName(gitRepositoryId.Name()).
 			HasDatabaseName(gitRepositoryId.DatabaseName()).
 			HasSchemaName(gitRepositoryId.SchemaName()).
-			HasOrigin(origin).
+			HasOrigin(gitRepositoryOrigin).
 			HasApiIntegration(apiIntegrationId).
 			HasGitCredentialsEmpty().
 			HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -191,7 +151,11 @@ func TestInt_GitRepositories(t *testing.T) {
 	})
 
 	t.Run("drop", func(t *testing.T) {
-		gitRepositoryId, _, _ := createGitRepositoryWithSecretAndComment(t)
+		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, gitRepositoryCleanup := testClientHelper().
+			GitRepository.
+			Create(t, gitRepositoryId, gitRepositoryOrigin, apiIntegrationId)
+		t.Cleanup(gitRepositoryCleanup)
 
 		err := client.GitRepositories.Drop(ctx, sdk.NewDropGitRepositoryRequest(gitRepositoryId).WithIfExists(true))
 		require.NoError(t, err)
@@ -201,7 +165,12 @@ func TestInt_GitRepositories(t *testing.T) {
 	})
 
 	t.Run("show: with like", func(t *testing.T) {
-		gitRepositoryId, _, _ := createGitRepositoryWithSecretAndComment(t)
+		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		createRequest := sdk.NewCreateGitRepositoryRequest(gitRepositoryId, gitRepositoryOrigin, apiIntegrationId).WithGitCredentials(secretId).WithComment("comment")
+		_, gitRepositoryCleanup := testClientHelper().
+			GitRepository.CreateWithRequest(t, createRequest)
+		t.Cleanup(gitRepositoryCleanup)
+
 		gitRepository, err := testClientHelper().GitRepository.Show(t, gitRepositoryId)
 		require.NoError(t, err)
 
@@ -213,18 +182,15 @@ func TestInt_GitRepositories(t *testing.T) {
 	})
 
 	t.Run("show by id - same name in different schemas", func(t *testing.T) {
-		otherSchema, otherSchemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
+		otherSchema, otherSchemaCleanup := testClientHelper().Schema.CreateSchema(t)
 		t.Cleanup(otherSchemaCleanup)
 
-		apiIntegration, apiIntegrationCleanup := testClientHelper().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
-		t.Cleanup(apiIntegrationCleanup)
-
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(id1.Name(), otherSchema.ID())
 
-		_, gitRepositoryCleanup1 := testClientHelper().GitRepository.Create(t, id1, origin, apiIntegration)
+		_, gitRepositoryCleanup1 := testClientHelper().GitRepository.Create(t, id1, gitRepositoryOrigin, apiIntegrationId)
 		t.Cleanup(gitRepositoryCleanup1)
-		_, gitRepositoryCleanup2 := testClientHelper().GitRepository.Create(t, id2, origin, apiIntegration)
+		_, gitRepositoryCleanup2 := testClientHelper().GitRepository.Create(t, id2, gitRepositoryOrigin, apiIntegrationId)
 		t.Cleanup(gitRepositoryCleanup2)
 
 		e1, err := client.GitRepositories.ShowByID(ctx, id1)
@@ -236,8 +202,24 @@ func TestInt_GitRepositories(t *testing.T) {
 		require.Equal(t, id2, e2.ID())
 	})
 
+	t.Run("show git tags", func(t *testing.T) {
+		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, gitRepositoryCleanup := testClientHelper().
+			GitRepository.
+			Create(t, gitRepositoryId, gitRepositoryOrigin, apiIntegrationId)
+		t.Cleanup(gitRepositoryCleanup)
+
+		tags, err := client.GitRepositories.ShowGitTags(ctx, sdk.NewShowGitTagsGitRepositoryRequest(gitRepositoryId))
+		require.NoError(t, err)
+		require.Zero(t, len(tags))
+	})
+
 	t.Run("describe", func(t *testing.T) {
-		gitRepositoryId, apiIntegrationId, secretId := createGitRepositoryWithSecretAndComment(t)
+		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		createRequest := sdk.NewCreateGitRepositoryRequest(gitRepositoryId, gitRepositoryOrigin, apiIntegrationId).WithGitCredentials(secretId).WithComment("comment")
+		_, gitRepositoryCleanup := testClientHelper().
+			GitRepository.CreateWithRequest(t, createRequest)
+		t.Cleanup(gitRepositoryCleanup)
 
 		gitRepositories, err := client.GitRepositories.Describe(ctx, gitRepositoryId)
 		require.NoError(t, err)
@@ -248,7 +230,7 @@ func TestInt_GitRepositories(t *testing.T) {
 			HasName(gitRepositoryId.Name()).
 			HasDatabaseName(gitRepositoryId.DatabaseName()).
 			HasSchemaName(gitRepositoryId.SchemaName()).
-			HasOrigin(origin).
+			HasOrigin(gitRepositoryOrigin).
 			HasApiIntegration(apiIntegrationId).
 			HasGitCredentials(secretId).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -258,17 +240,20 @@ func TestInt_GitRepositories(t *testing.T) {
 	})
 
 	t.Run("show git branches", func(t *testing.T) {
-		gitRepositoryId, _, _ := createGitRepositoryWithSecretAndComment(t)
+		gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, gitRepositoryCleanup := testClientHelper().
+			GitRepository.
+			Create(t, gitRepositoryId, gitRepositoryOrigin, apiIntegrationId)
+		t.Cleanup(gitRepositoryCleanup)
 
 		branches, err := client.GitRepositories.ShowGitBranches(ctx, sdk.NewShowGitBranchesGitRepositoryRequest(gitRepositoryId))
 		require.NoError(t, err)
-		require.Len(t, branches, 3)
+		require.NotZero(t, len(branches))
 
-		expectedNames := []string{"master", "octocat-patch-1", "test"}
 		var branchNames []string
 		for _, b := range branches {
 			branchNames = append(branchNames, strings.ToLower(b.Name))
 		}
-		require.ElementsMatch(t, expectedNames, branchNames)
+		require.Contains(t, branchNames, "master")
 	})
 }

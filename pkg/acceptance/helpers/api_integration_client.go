@@ -43,6 +43,7 @@ func (c *ApiIntegrationClient) CreateApiIntegration(t *testing.T) (*sdk.ApiInteg
 	return apiIntegration, c.DropApiIntegrationFunc(t, id)
 }
 
+// TODO(SNOW-1348334): change raw sqls to proper client
 func (c *ApiIntegrationClient) CreateApiIntegrationForGitRepository(t *testing.T, origin string) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
 	ctx := context.Background()
