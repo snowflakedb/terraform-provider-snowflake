@@ -310,7 +310,6 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
 		assert.Equal(t, true, config.DisableQueryContextCache)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
-		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 	})
 
@@ -582,4 +581,75 @@ func Test_Provider_toDriverLogLevel(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func Test_ConfigFile_Marshal(t *testing.T) {
+	t.Run("empty config", func(t *testing.T) {
+		file := NewConfigFile()
+		bytes, err := file.MarshalToml()
+		require.NoError(t, err)
+		require.Equal(t, "", string(bytes))
+	})
+
+	t.Run("single profile", func(t *testing.T) {
+		file := NewConfigFile().WithProfiles(map[string]ConfigDTO{
+			"default": *NewConfigDTO().
+				WithAccountName("test_account").
+				WithOrganizationName("test_org").
+				WithUser("test_user").
+				WithPassword("test_password").
+				WithRole("test_role"),
+		})
+		bytes, err := file.MarshalToml()
+		require.NoError(t, err)
+		require.Equal(t, `[default]
+account_name = 'test_account'
+organization_name = 'test_org'
+user = 'test_user'
+password = 'test_password'
+role = 'test_role'
+`, string(bytes))
+	})
+
+	t.Run("multiple profiles", func(t *testing.T) {
+		file := NewConfigFile().WithProfiles(map[string]ConfigDTO{
+			"default": *NewConfigDTO().
+				WithAccountName("test_account").
+				WithOrganizationName("test_org").
+				WithUser("test_user"),
+			"other": *NewConfigDTO().
+				WithAccountName("other_account").
+				WithOrganizationName("other_org").
+				WithUser("other_user"),
+		})
+		bytes, err := file.MarshalToml()
+		require.NoError(t, err)
+		require.Equal(t, `[default]
+account_name = 'test_account'
+organization_name = 'test_org'
+user = 'test_user'
+
+[other]
+account_name = 'other_account'
+organization_name = 'other_org'
+user = 'other_user'
+`, string(bytes))
+	})
+
+	t.Run("with multiline private key", func(t *testing.T) {
+		file := NewConfigFile().WithProfiles(map[string]ConfigDTO{
+			"default": *NewConfigDTO().
+				WithAccountName("test_account").
+				WithPrivateKey("line1\nline2\nline3"),
+		})
+		bytes, err := file.MarshalToml()
+		require.NoError(t, err)
+		require.Equal(t, `[default]
+account_name = 'test_account'
+private_key = """
+line1
+line2
+line3"""
+`, string(bytes))
+	})
 }
