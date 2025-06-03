@@ -1,0 +1,1 @@
+terraform import snowflake_git_repository.example '"<git_repository_name>"'

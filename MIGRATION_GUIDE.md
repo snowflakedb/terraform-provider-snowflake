@@ -43,6 +43,11 @@ No configuration changes are needed.
 
 References: [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
 
+### *(new feature)* snowflake_git_repository resource
+Added a new preview resource for managing git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository). The limitation of this resource is that currently we do not support creating `snowflake_api_integration_resource` with `git_https_api` type so it is not possible to create this object using only Terraform.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_git_repository_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* snowflake_compute_pool resource
 Added a new preview resource for managing compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool). The limitation of this resource is that identifiers with special or lower-case characters are not supported. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
