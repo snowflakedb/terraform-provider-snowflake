@@ -3,8 +3,6 @@
 package testint
 
 import (
-	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -207,8 +205,10 @@ spec:
 
 		err := client.Services.Create(ctx, request)
 		t.Cleanup(testClientHelper().Service.DropFunc(t, id))
-		returnedFullyQualifiedName := strings.ToUpper(lowercasedStage.ID().FullyQualifiedName())
-		require.ErrorContains(t, err, fmt.Sprintf(`395069 (23001): Unable to render service spec from given template: Stage '%s' not found for unloading profiler data.`, returnedFullyQualifiedName))
+		// TODO(SNOW-2129575): When we set a stage with lowercase characters, we get the following error:
+		// 395069 (23001): Unable to render service spec from given template: Stage '\"INT_TEST_DB_IT_51244746_D66C_B4C5_3632_636F292BB1FB\".\"INT_TEST_SC_IT_51244746_D66C_B4C5_3632_636F292BB1FB\".\"JXRIVBIT_51244746_D66C_B4C5_3632_636F292BB1FB\"' not found for unloading profiler data
+		// However, this behavior does not seem to be consistent across accounts. In accounts used in pipelines, it gives no error. Both of the accounts have QUOTED_IDENTIFIERS_IGNORE_CASE set to false.
+		require.NoError(t, err)
 	})
 
 	t.Run("create - from specification template on stage", func(t *testing.T) {
