@@ -203,66 +203,66 @@ func (parameters *parameters) SetAccountParameter(ctx context.Context, parameter
 func (parameters *parameters) UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error {
 	opts := AlterAccountOptions{
 		Unset: &AccountUnset{
-			Parameters: &AccountLevelParametersUnset{
+			LegacyParameters: &AccountLevelParametersUnset{
 				AccountParameters: &AccountParametersUnset{},
 			},
 		},
 	}
 	switch parameter {
 	case AccountParameterAllowClientMFACaching:
-		opts.Unset.Parameters.AccountParameters.AllowClientMFACaching = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.AllowClientMFACaching = Pointer(true)
 	case AccountParameterAllowIDToken:
-		opts.Unset.Parameters.AccountParameters.AllowIDToken = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.AllowIDToken = Pointer(true)
 	case AccountParameterClientEncryptionKeySize:
-		opts.Unset.Parameters.AccountParameters.ClientEncryptionKeySize = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.ClientEncryptionKeySize = Pointer(true)
 	case AccountParameterCortexEnabledCrossRegion:
-		opts.Unset.Parameters.AccountParameters.CortexEnabledCrossRegion = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.CortexEnabledCrossRegion = Pointer(true)
 	case AccountParameterDisableUserPrivilegeGrants:
-		opts.Unset.Parameters.AccountParameters.DisableUserPrivilegeGrants = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.DisableUserPrivilegeGrants = Pointer(true)
 	case AccountParameterEnableIdentifierFirstLogin:
-		opts.Unset.Parameters.AccountParameters.EnableIdentifierFirstLogin = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableIdentifierFirstLogin = Pointer(true)
 	case AccountParameterEnableInternalStagesPrivatelink:
-		opts.Unset.Parameters.AccountParameters.EnableInternalStagesPrivatelink = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableInternalStagesPrivatelink = Pointer(true)
 	case AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository:
-		opts.Unset.Parameters.AccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = Pointer(true)
 	case AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage:
-		opts.Unset.Parameters.AccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = Pointer(true)
 	case AccountParameterEnablePersonalDatabase:
-		opts.Unset.Parameters.AccountParameters.EnablePersonalDatabase = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnablePersonalDatabase = Pointer(true)
 	case AccountParameterEnableUnhandledExceptionsReporting:
-		opts.Unset.Parameters.AccountParameters.EnableUnhandledExceptionsReporting = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableUnhandledExceptionsReporting = Pointer(true)
 	case AccountParameterEnableUnredactedQuerySyntaxError:
-		opts.Unset.Parameters.AccountParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
 	case AccountParameterEnforceNetworkRulesForInternalStages:
-		opts.Unset.Parameters.AccountParameters.EnforceNetworkRulesForInternalStages = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnforceNetworkRulesForInternalStages = Pointer(true)
 	case AccountParameterEventTable:
-		opts.Unset.Parameters.AccountParameters.EventTable = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EventTable = Pointer(true)
 	case AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList:
-		opts.Unset.Parameters.AccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = Pointer(true)
 	case AccountParameterInitialReplicationSizeLimitInTB:
-		opts.Unset.Parameters.AccountParameters.InitialReplicationSizeLimitInTB = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.InitialReplicationSizeLimitInTB = Pointer(true)
 	case AccountParameterMinDataRetentionTimeInDays:
-		opts.Unset.Parameters.AccountParameters.MinDataRetentionTimeInDays = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.MinDataRetentionTimeInDays = Pointer(true)
 	case AccountParameterMetricLevel:
-		opts.Unset.Parameters.AccountParameters.MetricLevel = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.MetricLevel = Pointer(true)
 	case AccountParameterNetworkPolicy:
-		opts.Unset.Parameters.AccountParameters.NetworkPolicy = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.NetworkPolicy = Pointer(true)
 	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:
-		opts.Unset.Parameters.AccountParameters.OAuthAddPrivilegedRolesToBlockedList = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.OAuthAddPrivilegedRolesToBlockedList = Pointer(true)
 	case AccountParameterPeriodicDataRekeying:
-		opts.Unset.Parameters.AccountParameters.PeriodicDataRekeying = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.PeriodicDataRekeying = Pointer(true)
 	case AccountParameterPreventLoadFromInlineURL:
-		opts.Unset.Parameters.AccountParameters.PreventLoadFromInlineURL = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.PreventLoadFromInlineURL = Pointer(true)
 	case AccountParameterPreventUnloadToInlineURL:
-		opts.Unset.Parameters.AccountParameters.PreventUnloadToInlineURL = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.PreventUnloadToInlineURL = Pointer(true)
 	case AccountParameterPreventUnloadToInternalStages:
-		opts.Unset.Parameters.AccountParameters.PreventUnloadToInternalStages = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.PreventUnloadToInternalStages = Pointer(true)
 	case AccountParameterRequireStorageIntegrationForStageCreation:
-		opts.Unset.Parameters.AccountParameters.RequireStorageIntegrationForStageCreation = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageCreation = Pointer(true)
 	case AccountParameterRequireStorageIntegrationForStageOperation:
-		opts.Unset.Parameters.AccountParameters.RequireStorageIntegrationForStageOperation = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageOperation = Pointer(true)
 	case AccountParameterSSOLoginPage:
-		opts.Unset.Parameters.AccountParameters.SSOLoginPage = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.SSOLoginPage = Pointer(true)
 	default:
 		return parameters.UnsetSessionParameterOnAccount(ctx, SessionParameter(parameter))
 	}
@@ -291,7 +291,7 @@ func (parameters *parameters) UnsetSessionParameterOnAccount(ctx context.Context
 	sp := &SessionParametersUnset{}
 	err := sp.setParam(parameter)
 	if err == nil {
-		opts := AlterAccountOptions{Unset: &AccountUnset{Parameters: &AccountLevelParametersUnset{SessionParameters: sp}}}
+		opts := AlterAccountOptions{Unset: &AccountUnset{LegacyParameters: &AccountLevelParametersUnset{SessionParameters: sp}}}
 		err = parameters.client.Accounts.Alter(ctx, &opts)
 		if err != nil {
 			return err
@@ -419,46 +419,46 @@ func (parameters *parameters) SetObjectParameterOnAccount(ctx context.Context, p
 }
 
 func (parameters *parameters) UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error {
-	opts := AlterAccountOptions{Unset: &AccountUnset{Parameters: &AccountLevelParametersUnset{ObjectParameters: &ObjectParametersUnset{}}}}
+	opts := AlterAccountOptions{Unset: &AccountUnset{LegacyParameters: &AccountLevelParametersUnset{ObjectParameters: &ObjectParametersUnset{}}}}
 	switch parameter {
 	case ObjectParameterCatalog:
-		opts.Unset.Parameters.ObjectParameters.Catalog = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.Catalog = Pointer(true)
 	case ObjectParameterDataRetentionTimeInDays:
-		opts.Unset.Parameters.ObjectParameters.DataRetentionTimeInDays = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.DataRetentionTimeInDays = Pointer(true)
 	case ObjectParameterDefaultDDLCollation:
-		opts.Unset.Parameters.ObjectParameters.DefaultDDLCollation = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.DefaultDDLCollation = Pointer(true)
 	case ObjectParameterLogLevel:
-		opts.Unset.Parameters.ObjectParameters.LogLevel = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.LogLevel = Pointer(true)
 	case ObjectParameterMaxConcurrencyLevel:
-		opts.Unset.Parameters.ObjectParameters.MaxConcurrencyLevel = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.MaxConcurrencyLevel = Pointer(true)
 	case ObjectParameterMaxDataExtensionTimeInDays:
-		opts.Unset.Parameters.ObjectParameters.MaxDataExtensionTimeInDays = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.MaxDataExtensionTimeInDays = Pointer(true)
 	case ObjectParameterPipeExecutionPaused:
-		opts.Unset.Parameters.ObjectParameters.PipeExecutionPaused = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.PipeExecutionPaused = Pointer(true)
 	case ObjectParameterPreventUnloadToInternalStages:
-		opts.Unset.Parameters.ObjectParameters.PreventUnloadToInternalStages = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.PreventUnloadToInternalStages = Pointer(true)
 	case ObjectParameterStatementQueuedTimeoutInSeconds:
-		opts.Unset.Parameters.ObjectParameters.StatementQueuedTimeoutInSeconds = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.StatementQueuedTimeoutInSeconds = Pointer(true)
 	case ObjectParameterStatementTimeoutInSeconds:
-		opts.Unset.Parameters.ObjectParameters.StatementTimeoutInSeconds = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.StatementTimeoutInSeconds = Pointer(true)
 	case ObjectParameterNetworkPolicy:
-		opts.Unset.Parameters.ObjectParameters.NetworkPolicy = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.NetworkPolicy = Pointer(true)
 	case ObjectParameterShareRestrictions:
-		opts.Unset.Parameters.ObjectParameters.ShareRestrictions = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.ShareRestrictions = Pointer(true)
 	case ObjectParameterStorageSerializationPolicy:
-		opts.Unset.Parameters.ObjectParameters.StorageSerializationPolicy = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.StorageSerializationPolicy = Pointer(true)
 	case ObjectParameterSuspendTaskAfterNumFailures:
-		opts.Unset.Parameters.ObjectParameters.SuspendTaskAfterNumFailures = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.SuspendTaskAfterNumFailures = Pointer(true)
 	case ObjectParameterTaskAutoRetryAttempts:
-		opts.Unset.Parameters.ObjectParameters.TaskAutoRetryAttempts = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.TaskAutoRetryAttempts = Pointer(true)
 	case ObjectParameterTraceLevel:
-		opts.Unset.Parameters.ObjectParameters.TraceLevel = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.TraceLevel = Pointer(true)
 	case ObjectParameterUserTaskManagedInitialWarehouseSize:
-		opts.Unset.Parameters.ObjectParameters.UserTaskManagedInitialWarehouseSize = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.UserTaskManagedInitialWarehouseSize = Pointer(true)
 	case ObjectParameterUserTaskTimeoutMs:
-		opts.Unset.Parameters.ObjectParameters.UserTaskTimeoutMs = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.UserTaskTimeoutMs = Pointer(true)
 	case ObjectParameterEnableUnredactedQuerySyntaxError:
-		opts.Unset.Parameters.ObjectParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
 	default:
 		return fmt.Errorf("invalid object parameter: %v", string(parameter))
 	}

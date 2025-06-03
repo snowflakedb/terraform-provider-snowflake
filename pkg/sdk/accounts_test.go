@@ -125,7 +125,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with unset params", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				Parameters: &AccountLevelParametersUnset{
+				LegacyParameters: &AccountLevelParametersUnset{
 					AccountParameters: &AccountParametersUnset{
 						InitialReplicationSizeLimitInTB: Bool(true),
 						SSOLoginPage:                    Bool(true),

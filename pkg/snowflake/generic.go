@@ -9,10 +9,6 @@ import (
 
 type EntityType string
 
-const (
-	SecurityIntegrationType EntityType = "SECURITY INTEGRATION"
-)
-
 type Builder struct {
 	entityType EntityType
 	name       string

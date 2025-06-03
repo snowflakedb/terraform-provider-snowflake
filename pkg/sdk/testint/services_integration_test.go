@@ -342,7 +342,20 @@ spec:
 	})
 
 	t.Run("alter: unset", func(t *testing.T) {
-		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
+		comment := random.Comment()
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		request := sdk.NewCreateServiceRequest(id, computePool.ID()).
+			WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)).
+			WithAutoResume(true).
+			WithMinInstances(2).
+			WithMaxInstances(3).
+			WithQueryWarehouse(testClientHelper().Ids.WarehouseId()).
+			WithExternalAccessIntegrations(*sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId})).
+			WithComment(comment).
+			WithAutoSuspendSecs(3600).
+			WithMinReadyInstances(1)
+
+		service, serviceCleanup := testClientHelper().Service.CreateWithRequest(t, request)
 		t.Cleanup(serviceCleanup)
 
 		err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithUnset(sdk.ServiceUnsetRequest{
@@ -372,9 +385,15 @@ spec:
 		)
 	})
 
-	t.Run("alter: suspend", func(t *testing.T) {
+	t.Run("alter: suspend and resume", func(t *testing.T) {
 		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
 		t.Cleanup(serviceCleanup)
+
+		assertThatObject(t, objectassert.ServiceFromObject(t, service).
+			HasStatus(sdk.ServiceStatusPending).
+			HasNoResumedOn().
+			HasNoSuspendedOn(),
+		)
 
 		err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithSuspend(true))
 		require.NoError(t, err)
@@ -384,22 +403,20 @@ spec:
 
 		assertThatObject(t, objectassert.ServiceFromObject(t, service).
 			HasStatus(sdk.ServiceStatusSuspending).
+			HasNoResumedOn().
 			HasSuspendedOnNotEmpty(),
 		)
-	})
 
-	t.Run("alter: resume", func(t *testing.T) {
-		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
-		t.Cleanup(serviceCleanup)
-
-		err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithResume(true))
+		err = client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithResume(true))
 		require.NoError(t, err)
 
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasStatus(sdk.ServiceStatusPending),
+			HasStatus(sdk.ServiceStatusPending).
+			HasResumedOnNotEmpty().
+			HasSuspendedOnNotEmpty(),
 		)
 	})
 
@@ -527,5 +544,5 @@ spec:
 			HasNoManagingObjectName(),
 		)
 	})
-	// TODO (next PRs): add a test for EXCLUDE JOBS
+	// TODO (next PRs): add a test for SHOW JOB SERVICES
 }
