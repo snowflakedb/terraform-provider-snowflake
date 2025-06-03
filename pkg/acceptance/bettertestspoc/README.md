@@ -382,6 +382,7 @@ func (w *WarehouseDatasourceShowOutputAssert) IsEmpty() {
     w.assertions = append(w.assertions, valueSet("show_output.#", "0"))
 }
 ```
+- add an assertion method or helper method that would be better at checking for missing complex types (like Lists, Sets, Maps, etc.), currently ValueSet with `.#` is used
 - support other mappings if needed (TODO left in `assert/objectassert/gen/model.go`)
 - consider extracting preamble model to commons (TODOs left in `assert/objectassert/gen/model.go` and in `assert/objectparametersassert/gen/model.go`)
 - get a runtime name for the assertion creator (TODOs left in `assert/objectparametersassert/gen/model.go`)
