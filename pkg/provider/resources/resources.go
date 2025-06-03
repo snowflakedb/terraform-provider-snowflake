@@ -74,6 +74,7 @@ const (
 	SecretWithGenericString                                resource = "snowflake_secret_with_generic_string"
 	SessionParameter                                       resource = "snowflake_session_parameter"
 	Sequence                                               resource = "snowflake_sequence"
+	Service                                                resource = "snowflake_service"
 	ServiceUser                                            resource = "snowflake_service_user"
 	Share                                                  resource = "snowflake_share"
 	SharedDatabase                                         resource = "snowflake_shared_database"

@@ -309,6 +309,7 @@ spec:
 		)
 	})
 
+	// TODO: add alter
 	t.Run("alter: set", func(t *testing.T) {
 		comment := random.Comment()
 		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))

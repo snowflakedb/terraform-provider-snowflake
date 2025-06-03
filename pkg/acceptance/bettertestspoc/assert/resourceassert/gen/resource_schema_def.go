@@ -178,6 +178,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.SecretWithGenericString().Schema,
 	},
 	{
+		name:   "Service",
+		schema: resources.Service().Schema,
+	},
+	{
 		name:   "ServiceUser",
 		schema: resources.ServiceUser().Schema,
 	},
