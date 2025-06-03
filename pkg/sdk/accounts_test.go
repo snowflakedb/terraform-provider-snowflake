@@ -70,7 +70,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
 	})
 
 	t.Run("validation: exactly one value set in AccountSet - multiple set", func(t *testing.T) {
@@ -81,14 +81,14 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: randomSchemaObjectIdentifier(),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - multiple set", func(t *testing.T) {
@@ -99,10 +99,10 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
 	})
 
-	t.Run("with set params", func(t *testing.T) {
+	t.Run("with legacy set params", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
 				LegacyParameters: &AccountLevelParameters{
@@ -122,13 +122,26 @@ func TestAccountAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET CLIENT_ENCRYPTION_KEY_SIZE = 128, PREVENT_UNLOAD_TO_INTERNAL_STAGES = true, JSON_INDENT = 16, MAX_DATA_EXTENSION_TIME_IN_DAYS = 30`)
 	})
 
-	t.Run("with unset params", func(t *testing.T) {
+	t.Run("with set params", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				Parameters: &AccountParameters{
+					SearchPath:       String("/search-path"),
+					StrictJsonOutput: Bool(true),
+					WeekStart:        Int(2),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET SEARCH_PATH = "/search-path", STRICT_JSON_OUTPUT = true, WEEK_START = 2`)
+	})
+
+	t.Run("with legacy unset params", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
 				LegacyParameters: &AccountLevelParametersUnset{
 					AccountParameters: &AccountParametersUnset{
 						InitialReplicationSizeLimitInTB: Bool(true),
-						SSOLoginPage:                    Bool(true),
+						SsoLoginPage:                    Bool(true),
 					},
 					SessionParameters: &SessionParametersUnset{
 						SimulatedDataSharingConsumer: Bool(true),
@@ -141,6 +154,21 @@ func TestAccountAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET INITIAL_REPLICATION_SIZE_LIMIT_IN_TB, SSO_LOGIN_PAGE, SIMULATED_DATA_SHARING_CONSUMER, TIMEZONE, DEFAULT_DDL_COLLATION`)
+	})
+
+	t.Run("with unset params", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				Parameters: &AccountParametersUnset{
+					DefaultDDLCollation:             Bool(true),
+					InitialReplicationSizeLimitInTB: Bool(true),
+					SimulatedDataSharingConsumer:    Bool(true),
+					SsoLoginPage:                    Bool(true),
+					Timezone:                        Bool(true),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET DEFAULT_DDL_COLLATION, INITIAL_REPLICATION_SIZE_LIMIT_IN_TB, SIMULATED_DATA_SHARING_CONSUMER, SSO_LOGIN_PAGE, TIMEZONE`)
 	})
 
 	t.Run("with set resource monitor", func(t *testing.T) {

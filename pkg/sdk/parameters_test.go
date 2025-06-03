@@ -104,7 +104,7 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "PREVENT_UNLOAD_TO_INLINE_URL", want: AccountParameterPreventUnloadToInlineURL},
 		{input: "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION", want: AccountParameterRequireStorageIntegrationForStageCreation},
 		{input: "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION", want: AccountParameterRequireStorageIntegrationForStageOperation},
-		{input: "SSO_LOGIN_PAGE", want: AccountParameterSSOLoginPage},
+		{input: "SSO_LOGIN_PAGE", want: AccountParameterSsoLoginPage},
 
 		// Session Parameters (inherited)
 		{input: "ABORT_DETACHED_QUERY", want: AccountParameterAbortDetachedQuery},

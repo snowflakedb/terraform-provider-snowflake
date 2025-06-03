@@ -423,7 +423,7 @@ func TestInt_Account(t *testing.T) {
 }
 
 func TestInt_Account_SelfAlter(t *testing.T) {
-	t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
+	//t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
 	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	// This client should be operating on a different account than the "main" one (because it will be altered here).
@@ -436,7 +436,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	assertParameterIsDefault := func(t *testing.T, parameters []*sdk.Parameter, parameterKey string) {
 		t.Helper()
 		param, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == parameterKey })
-		require.NoError(t, err)
+		require.NoError(t, err, "parameter %v not found", parameterKey)
 		require.NotNil(t, param)
 		require.Equal(t, (*param).Default, (*param).Value)
 		require.Equal(t, sdk.ParameterType(""), (*param).Level)
@@ -451,7 +451,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		require.Equal(t, sdk.ParameterTypeAccount, (*param).Level)
 	}
 
-	t.Run("set / unset parameters", func(t *testing.T) {
+	t.Run("set / unset legacy parameters", func(t *testing.T) {
 		parameters, err := client.Accounts.ShowParameters(ctx)
 		require.NoError(t, err)
 		require.NotEmpty(t, parameters)
@@ -518,6 +518,158 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterJsonIndent))
 		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs))
 		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError))
+	})
+
+	t.Run("set / unset parameters", func(t *testing.T) {
+		parameters, err := client.Accounts.ShowParameters(ctx)
+		require.NoError(t, err)
+		require.NotEmpty(t, parameters)
+
+		for _, parameter := range sdk.AllAccountParameters {
+			assertParameterIsDefault(t, parameters, string(parameter))
+		}
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Set: &sdk.AccountSet{
+				Parameters: &sdk.AccountParameters{
+					AbortDetachedQuery:                               sdk.Bool(true),
+					AllowClientMFACaching:                            sdk.Bool(true),
+					AllowIDToken:                                     sdk.Bool(true),
+					Autocommit:                                       sdk.Bool(false),
+					BinaryInputFormat:                                sdk.String("BASE64"),
+					BinaryOutputFormat:                               sdk.String("BASE64"),
+					ClientEnableLogInfoStatementParameters:           sdk.Bool(true),
+					ClientEncryptionKeySize:                          sdk.Int(256),
+					ClientMemoryLimit:                                sdk.Int(1540),
+					ClientMetadataRequestUseConnectionCtx:            sdk.Bool(true),
+					ClientMetadataUseSessionDatabase:                 sdk.Bool(true),
+					ClientPrefetchThreads:                            sdk.Int(5),
+					ClientResultChunkSize:                            sdk.Int(159),
+					ClientResultColumnCaseInsensitive:                sdk.Bool(true),
+					ClientSessionKeepAlive:                           sdk.Bool(true),
+					ClientSessionKeepAliveHeartbeatFrequency:         sdk.Int(3599),
+					ClientTimestampTypeMapping:                       sdk.String("TIMESTAMP_NTZ"),
+					CortexEnabledCrossRegion:                         sdk.String("ANY_REGION"),
+					CortexModelsAllowlist:                            sdk.String("All"),
+					DataRetentionTimeInDays:                          sdk.Int(2),
+					DefaultNullOrdering:                              sdk.String("FIRST"),
+					DisableUiDownloadButton:                          sdk.Bool(true),
+					DisableUserPrivilegeGrants:                       sdk.Bool(true),
+					EnableAutomaticSensitiveDataClassificationLog:    sdk.Bool(false),
+					EnableConsoleOutput:                              sdk.Bool(false), // TODO
+					EnableEgressCostOptimizer:                        sdk.Bool(false),
+					EnableIdentifierFirstLogin:                       sdk.Bool(false),
+					EnablePersonalDatabase:                           sdk.Bool(true), // TODO
+					EnableTriSecretAndRekeyOptOutForImageRepository:  sdk.Bool(true),
+					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: sdk.Bool(true),
+					EnableUnhandledExceptionsReporting:               sdk.Bool(false),
+					EnableUnloadPhysicalTypeOptimization:             sdk.Bool(false),
+					EnableUnredactedQuerySyntaxError:                 sdk.Bool(true),
+					EnableUnredactedSecureObjectError:                sdk.Bool(true),
+					EnforceNetworkRulesForInternalStages:             sdk.Bool(true),
+					ErrorOnNondeterministicMerge:                     sdk.Bool(false),
+					ErrorOnNondeterministicUpdate:                    sdk.Bool(true),
+					ExternalOAuthAddPrivilegedRolesToBlockedList:     sdk.Bool(false),
+				},
+			},
+		})
+		require.NoError(t, err)
+
+		parameters, err = client.Accounts.ShowParameters(ctx)
+		require.NoError(t, err)
+		require.NotEmpty(t, parameters)
+
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAbortDetachedQuery), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAllowClientMFACaching), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAllowIDToken), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAutocommit), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterBinaryInputFormat), "BASE64")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterBinaryOutputFormat), "BASE64")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientEnableLogInfoStatementParameters), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientEncryptionKeySize), "256")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientMemoryLimit), "1540")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientMetadataRequestUseConnectionCtx), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientMetadataUseSessionDatabase), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientPrefetchThreads), "5")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientResultChunkSize), "159")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientResultColumnCaseInsensitive), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientSessionKeepAlive), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency), "3599")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientTimestampTypeMapping), "TIMESTAMP_NTZ")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterCortexEnabledCrossRegion), "ANY_REGION")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterCortexModelsAllowlist), "All")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDataRetentionTimeInDays), "2")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultNullOrdering), "FIRST")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDisableUiDownloadButton), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDisableUserPrivilegeGrants), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableEgressCostOptimizer), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableIdentifierFirstLogin), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnablePersonalDatabase), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnhandledExceptionsReporting), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnredactedSecureObjectError), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnforceNetworkRulesForInternalStages), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterErrorOnNondeterministicMerge), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterErrorOnNondeterministicUpdate), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList), "false")
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Unset: &sdk.AccountUnset{
+				Parameters: &sdk.AccountParametersUnset{
+					AbortDetachedQuery:                               sdk.Bool(true),
+					AllowClientMFACaching:                            sdk.Bool(true),
+					AllowIDToken:                                     sdk.Bool(true),
+					Autocommit:                                       sdk.Bool(true),
+					BinaryInputFormat:                                sdk.Bool(true),
+					BinaryOutputFormat:                               sdk.Bool(true),
+					ClientEnableLogInfoStatementParameters:           sdk.Bool(true),
+					ClientEncryptionKeySize:                          sdk.Bool(true),
+					ClientMemoryLimit:                                sdk.Bool(true),
+					ClientMetadataRequestUseConnectionCtx:            sdk.Bool(true),
+					ClientMetadataUseSessionDatabase:                 sdk.Bool(true),
+					ClientPrefetchThreads:                            sdk.Bool(true),
+					ClientResultChunkSize:                            sdk.Bool(true),
+					ClientResultColumnCaseInsensitive:                sdk.Bool(true),
+					ClientSessionKeepAlive:                           sdk.Bool(true),
+					ClientSessionKeepAliveHeartbeatFrequency:         sdk.Bool(true),
+					ClientTimestampTypeMapping:                       sdk.Bool(true),
+					CortexEnabledCrossRegion:                         sdk.Bool(true),
+					CortexModelsAllowlist:                            sdk.Bool(true),
+					DataRetentionTimeInDays:                          sdk.Bool(true),
+					DefaultNullOrdering:                              sdk.Bool(true),
+					DisableUiDownloadButton:                          sdk.Bool(true),
+					DisableUserPrivilegeGrants:                       sdk.Bool(true),
+					EnableAutomaticSensitiveDataClassificationLog:    sdk.Bool(true),
+					EnableConsoleOutput:                              sdk.Bool(true),
+					EnableEgressCostOptimizer:                        sdk.Bool(true),
+					EnableIdentifierFirstLogin:                       sdk.Bool(true),
+					EnablePersonalDatabase:                           sdk.Bool(true),
+					EnableTriSecretAndRekeyOptOutForImageRepository:  sdk.Bool(true),
+					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: sdk.Bool(true),
+					EnableUnhandledExceptionsReporting:               sdk.Bool(true),
+					EnableUnloadPhysicalTypeOptimization:             sdk.Bool(true),
+					EnableUnredactedQuerySyntaxError:                 sdk.Bool(true),
+					EnableUnredactedSecureObjectError:                sdk.Bool(true),
+					EnforceNetworkRulesForInternalStages:             sdk.Bool(true),
+					ErrorOnNondeterministicMerge:                     sdk.Bool(true),
+					ErrorOnNondeterministicUpdate:                    sdk.Bool(true),
+					ExternalOAuthAddPrivilegedRolesToBlockedList:     sdk.Bool(true),
+				},
+			},
+		})
+		require.NoError(t, err)
+
+		parameters, err = client.Accounts.ShowParameters(ctx)
+		require.NoError(t, err)
+		require.NotEmpty(t, parameters)
+
+		for _, parameter := range sdk.AllAccountParameters {
+			assertParameterIsDefault(t, parameters, string(parameter))
+		}
 	})
 
 	assertPolicySet := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
