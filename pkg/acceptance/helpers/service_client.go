@@ -31,25 +31,17 @@ func (c *ServiceClient) Create(t *testing.T, computePoolId sdk.AccountObjectIden
 
 func (c *ServiceClient) CreateWithId(t *testing.T, computePoolId sdk.AccountObjectIdentifier, id sdk.SchemaObjectIdentifier) (*sdk.Service, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	spec := `
 spec:
   containers:
   - name: example-container
     image: /snowflake/images/snowflake_images/exampleimage:latest
 `
-	err := c.client().Create(ctx, sdk.NewCreateServiceRequest(id, computePoolId).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)))
-	require.NoError(t, err)
-	service, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-	return service, c.DropFunc(t, id)
+	return c.CreateWithRequest(t, sdk.NewCreateServiceRequest(id, computePoolId).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)))
 }
 
 func (c *ServiceClient) CreateWithIdWithBlockVolume(t *testing.T, computePoolId sdk.AccountObjectIdentifier, id sdk.SchemaObjectIdentifier) (*sdk.Service, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	spec := `
 spec:
   containers:
@@ -60,11 +52,18 @@ spec:
     source: block
     size: 1Gi
 `
-	err := c.client().Create(ctx, sdk.NewCreateServiceRequest(id, computePoolId).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)))
+	return c.CreateWithRequest(t, sdk.NewCreateServiceRequest(id, computePoolId).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)))
+}
+
+func (c *ServiceClient) CreateWithRequest(t *testing.T, req *sdk.CreateServiceRequest) (*sdk.Service, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Create(ctx, req)
 	require.NoError(t, err)
-	service, err := c.client().ShowByID(ctx, id)
+	service, err := c.client().ShowByID(ctx, req.GetName())
 	require.NoError(t, err)
-	return service, c.DropFunc(t, id)
+	return service, c.DropFunc(t, req.GetName())
 }
 
 func (c *ServiceClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
