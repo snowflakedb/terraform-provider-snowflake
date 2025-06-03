@@ -114,6 +114,11 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeGitRepository,
+		ObjectStruct: sdk.GitRepository{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeService,
 		ObjectStruct: sdk.Service{},
 	},

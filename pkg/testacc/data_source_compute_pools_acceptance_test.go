@@ -6,29 +6,24 @@ import (
 	"regexp"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAcc_ComputePools(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
 	application := createApp(t)
 
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
 	computePoolModel := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 2, 1).
@@ -48,8 +43,8 @@ func TestAcc_ComputePools(t *testing.T) {
 		WithDependsOn(computePoolModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -135,13 +130,10 @@ func TestAcc_ComputePools(t *testing.T) {
 }
 
 func TestAcc_ComputePools_Filtering(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
-
 	prefix := random.AlphaUpperN(4)
-	idOne := acc.TestClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
-	idTwo := acc.TestClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
-	idThree := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	idOne := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	idTwo := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	idThree := testClient().Ids.RandomAccountObjectIdentifier()
 
 	cpModel1 := model.ComputePool("test", idOne.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64XS), 1, 1)
 	cpModel2 := model.ComputePool("test1", idTwo.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64XS), 1, 1)
@@ -157,12 +149,12 @@ func TestAcc_ComputePools_Filtering(t *testing.T) {
 		WithDependsOn(cpModel1.ResourceReference(), cpModel2.ResourceReference(), cpModel3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.ComputePool),
+		CheckDestroy: CheckDestroy(t, resources.ComputePool),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, cpModel1, cpModel2, cpModel3, computePoolsWithLikeModel),
@@ -188,13 +180,13 @@ func TestAcc_ComputePools_Filtering(t *testing.T) {
 
 func TestAcc_ComputePools_NotFound_WithPostConditions(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_ComputePools/non_existing"),
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ComputePools/non_existing"),
 				ExpectError:     regexp.MustCompile("there should be at least one compute pool"),
 			},
 		},
