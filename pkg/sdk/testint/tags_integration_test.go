@@ -791,11 +791,9 @@ func TestInt_TagsAssociations(t *testing.T) {
 
 				gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-				apiIntegrationId, apiIntegrationCleanup :=
-					testClientHelper().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+				apiIntegrationId, apiIntegrationCleanup := testClientHelper().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
 
-				repo, repoCleanup :=
-					testClientHelper().GitRepository.Create(t, gitRepositoryId, origin, apiIntegrationId)
+				repo, repoCleanup := testClientHelper().GitRepository.Create(t, gitRepositoryId, origin, apiIntegrationId)
 
 				cleanup := func() {
 					repoCleanup()
