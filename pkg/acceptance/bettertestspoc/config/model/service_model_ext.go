@@ -48,31 +48,6 @@ func ServiceWithDefaultSpecOnStage(
 	return s
 }
 
-func ServiceWithDefaultSpecTemplate(
-	resourceName string,
-	database string,
-	schema string,
-	name string,
-	computePool string,
-) *ServiceModel {
-	spec := `
-spec:
-  containers:
-  - name: {{ container_name }}
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
-	s := &ServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.Service)}
-	s.WithDatabase(database)
-	s.WithSchema(schema)
-	s.WithName(name)
-	s.WithComputePool(computePool)
-	s.WithFromSpecificationTemplate(spec, map[string]tfconfig.Variable{
-		"key":             tfconfig.StringVariable("container_name"),
-		"value_in_quotes": tfconfig.StringVariable("example"),
-	})
-	return s
-}
-
 func (s *ServiceModel) WithFromSpecification(spec string) *ServiceModel {
 	s.WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"text": config.MultilineWrapperVariable(spec),
@@ -84,14 +59,6 @@ func (s *ServiceModel) WithFromSpecificationOnStage(stageId sdk.SchemaObjectIden
 	s.WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
 		"file":  tfconfig.StringVariable(fileName),
-	}))
-	return s
-}
-
-func (s *ServiceModel) WithFromSpecificationTemplate(spec string, using map[string]tfconfig.Variable) *ServiceModel {
-	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-		"text":  config.MultilineWrapperVariable(spec),
-		"using": tfconfig.ObjectVariable(using),
 	}))
 	return s
 }

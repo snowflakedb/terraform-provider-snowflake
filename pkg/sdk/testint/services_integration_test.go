@@ -40,6 +40,7 @@ spec:
 
 	stage, stageCleanup := testClientHelper().Stage.CreateStageInSchema(t, schema.ID())
 	t.Cleanup(stageCleanup)
+	location := sdk.NewStageLocation(stage.ID(), "")
 
 	revertParameter := testClientHelper().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterPythonProfilerTargetStage, stage.ID().FullyQualifiedName())
 	t.Cleanup(revertParameter)
@@ -213,7 +214,6 @@ spec:
 
 	t.Run("create - from specification template on stage", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-		location := sdk.NewStageLocation(stage.ID(), "")
 		request := sdk.NewCreateServiceRequest(id, computePool.ID()).
 			WithFromSpecificationTemplate(*sdk.NewServiceFromSpecificationTemplateRequest(specTemplateUsing).WithLocation(location).WithSpecificationTemplateFile(specTemplateFileName))
 
@@ -309,7 +309,59 @@ spec:
 		)
 	})
 
-	// TODO: add alter
+	t.Run("alter: change spec", func(t *testing.T) {
+		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
+		t.Cleanup(serviceCleanup)
+
+		// specification
+		err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)))
+		require.NoError(t, err)
+
+		service, err = client.Services.ShowByID(ctx, service.ID())
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
+			HasName(service.ID().Name()).
+			HasSpecNotEmpty(),
+		)
+
+		// specification on stage
+		err = client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithLocation(location).WithSpecificationFile(specFileName)))
+		require.NoError(t, err)
+
+		service, err = client.Services.ShowByID(ctx, service.ID())
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
+			HasName(service.ID().Name()).
+			HasSpecNotEmpty(),
+		)
+
+		// specification template
+		err = client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithFromSpecificationTemplate(*sdk.NewServiceFromSpecificationTemplateRequest(specTemplateUsing).WithSpecificationTemplate(specTemplate)))
+		require.NoError(t, err)
+
+		service, err = client.Services.ShowByID(ctx, service.ID())
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
+			HasName(service.ID().Name()).
+			HasSpecNotEmpty(),
+		)
+
+		// specification template on stage
+		err = client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithFromSpecificationTemplate(*sdk.NewServiceFromSpecificationTemplateRequest(specTemplateUsing).WithLocation(location).WithSpecificationTemplateFile(specTemplateFileName)))
+		require.NoError(t, err)
+
+		service, err = client.Services.ShowByID(ctx, service.ID())
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
+			HasName(service.ID().Name()).
+			HasSpecNotEmpty(),
+		)
+	})
+
 	t.Run("alter: set", func(t *testing.T) {
 		comment := random.Comment()
 		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))

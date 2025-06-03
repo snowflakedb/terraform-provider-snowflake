@@ -51,7 +51,6 @@ func readFunctionOrProcedureImports(d *schema.ResourceData, imports []sdk.Normal
 	return d.Set("imports", imps)
 }
 
-// TODO: extract?
 func readFunctionOrProcedureExternalAccessIntegrations(d *schema.ResourceData, externalAccessIntegrations []sdk.AccountObjectIdentifier) error {
 	return d.Set("external_access_integrations", collections.Map(externalAccessIntegrations, func(id sdk.AccountObjectIdentifier) string { return id.Name() }))
 }

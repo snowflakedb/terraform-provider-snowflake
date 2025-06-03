@@ -21,7 +21,6 @@ type ServiceModel struct {
 	ComputePool                tfconfig.Variable `json:"compute_pool,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
 	FromSpecification          tfconfig.Variable `json:"from_specification,omitempty"`
-	FromSpecificationTemplate  tfconfig.Variable `json:"from_specification_template,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MaxInstances               tfconfig.Variable `json:"max_instances,omitempty"`
 	MinInstances               tfconfig.Variable `json:"min_instances,omitempty"`
@@ -134,8 +133,6 @@ func (s *ServiceModel) WithComputePool(computePool string) *ServiceModel {
 
 // from_specification attribute type is not yet supported, so WithFromSpecification can't be generated
 
-// from_specification_template attribute type is not yet supported, so WithFromSpecificationTemplate can't be generated
-
 func (s *ServiceModel) WithFullyQualifiedName(fullyQualifiedName string) *ServiceModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return s
@@ -207,11 +204,6 @@ func (s *ServiceModel) WithExternalAccessIntegrationsValue(value tfconfig.Variab
 
 func (s *ServiceModel) WithFromSpecificationValue(value tfconfig.Variable) *ServiceModel {
 	s.FromSpecification = value
-	return s
-}
-
-func (s *ServiceModel) WithFromSpecificationTemplateValue(value tfconfig.Variable) *ServiceModel {
-	s.FromSpecificationTemplate = value
 	return s
 }
 
