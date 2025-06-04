@@ -67,6 +67,23 @@ var serviceFromSpecificationTemplateDef = g.NewQueryStruct("ServiceFromSpecifica
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
 	WithValidation(g.ConflictingFields, "Location", "SpecificationTemplate")
 
+var jobServiceFromSpecificationDef = g.NewQueryStruct("JobServiceFromSpecification").
+	SQL("FROM").
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
+	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
+	OptionalTextAssignment("SPECIFICATION", g.ParameterOptions().DoubleDollarQuotes().NoEquals()).
+	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "Specification").
+	WithValidation(g.ExactlyOneValueSet, "Location", "Specification")
+
+var jobServiceFromSpecificationTemplateDef = g.NewQueryStruct("JobServiceFromSpecificationTemplate").
+	SQL("FROM").
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
+	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
+	OptionalTextAssignment("SPECIFICATION_TEMPLATE", g.ParameterOptions().DoubleDollarQuotes().NoEquals()).
+	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses().Required()).
+	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
+	WithValidation(g.ExactlyOneValueSet, "Location", "SpecificationTemplate")
+
 //go:generate go run ./poc/main.go
 var ServicesDef = g.NewInterface(
 	"Services",
@@ -152,6 +169,24 @@ var ServicesDef = g.NewInterface(
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"),
+).CustomOperation(
+	"ExecuteJobService",
+	"https://docs.snowflake.com/en/sql-reference/sql/execute-job-service",
+	g.NewQueryStruct("ExecuteJobService").
+		SQL("EXECUTE JOB SERVICE").
+		Identifier("InComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
+		Identifier("Name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("NAME").Equals().Required()).
+		OptionalBooleanAssignment("ASYNC", g.ParameterOptions()).
+		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
+		OptionalComment().
+		OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
+		OptionalQueryStructField("JobServiceFromSpecification", jobServiceFromSpecificationDef, g.KeywordOptions()).
+		OptionalQueryStructField("JobServiceFromSpecificationTemplate", jobServiceFromSpecificationTemplateDef, g.KeywordOptions()).
+		OptionalTags().
+		WithValidation(g.ValidIdentifier, "Name").
+		WithValidation(g.ExactlyOneValueSet, "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate").
+		WithValidation(g.ValidIdentifier, "InComputePool").
+		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-service",
 	g.NewQueryStruct("DropService").
@@ -192,7 +227,6 @@ var ServicesDef = g.NewInterface(
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
 		OptionalText("managing_object_name"),
-
 	g.PlainStruct("Service").
 		Text("Name").
 		Field("Status", "ServiceStatus").

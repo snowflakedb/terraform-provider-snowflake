@@ -646,6 +646,194 @@ func TestServices_Alter(t *testing.T) {
 	})
 }
 
+func TestServices_ExecuteJobService(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	computePoolId := randomAccountObjectIdentifier()
+	// Minimal valid CreateServiceOptions
+	defaultOpts := func() *ExecuteJobServiceServiceOptions {
+		return &ExecuteJobServiceServiceOptions{
+			Name:          id,
+			InComputePool: computePoolId,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *ExecuteJobServiceServiceOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+	t.Run("validation: valid identifier for [opts.Name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: conflicting fields for [opts.FromSpecification opts.FromSpecificationTemplate]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Specification: String("{}"),
+		}
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
+			SpecificationTemplate: String("{}"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"))
+	})
+
+	t.Run("validation: empty opts.FromSpecification", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.FromSpecification.Stage opts.FromSpecification.Specification]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Specification:     String("{}"),
+			SpecificationFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: stage present without specification", func(t *testing.T) {
+		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Location: &location,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: all specification fields present", func(t *testing.T) {
+		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Location:          &location,
+			Specification:     String("{}"),
+			SpecificationFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+	})
+
+	t.Run("validation: empty opts.FromSpecificationTemplate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.FromSpecificationTemplate.Stage opts.FromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
+			SpecificationTemplate:     String("{}"),
+			SpecificationTemplateFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: stage present without specification template", func(t *testing.T) {
+		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
+			Location: &location,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("validation: all specification template fields present", func(t *testing.T) {
+		opts := defaultOpts()
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
+			Location:                  &location,
+			SpecificationTemplate:     String("{}"),
+			SpecificationTemplateFile: String("spec.yaml"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+	})
+
+	t.Run("with specification file on stage", func(t *testing.T) {
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
+		opts := defaultOpts()
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Location:          &location,
+			SpecificationFile: String("spec.yaml"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM %s SPECIFICATION_FILE = 'spec.yaml'",
+			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), location.ToSql())
+	})
+
+	t.Run("from specification", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Specification: String("SPEC"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM SPECIFICATION $$SPEC$$", computePoolId.FullyQualifiedName(), id.FullyQualifiedName())
+	})
+
+	t.Run("from specification template file on stage", func(t *testing.T) {
+		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
+		location := NewStageLocation(stageId, "/path/to/spec")
+		opts := defaultOpts()
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
+			Location:                  &location,
+			SpecificationTemplateFile: String("spec.yaml"),
+			Using: []ListItem{
+				{
+					Key:   "string",
+					Value: `"bar"`,
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM %s SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
+			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), location.ToSql())
+	})
+
+	t.Run("from specification template", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
+			SpecificationTemplate: String("SPEC"),
+			Using: []ListItem{
+				{
+					Key:   "string",
+					Value: `"bar"`,
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM SPECIFICATION_TEMPLATE $$SPEC$$ USING ("string" => "bar")`, computePoolId.FullyQualifiedName(), id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		warehouseId := NewAccountObjectIdentifier("my_warehouse")
+		integration1Id := NewAccountObjectIdentifier("integration1")
+		comment := random.Comment()
+
+		opts := defaultOpts()
+		opts.Async = Bool(true)
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Specification: String("SPEC"),
+		}
+		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
+			ExternalAccessIntegrations: []AccountObjectIdentifier{
+				integration1Id,
+			},
+		}
+		opts.QueryWarehouse = &warehouseId
+		opts.Tag = []TagAssociation{
+			{
+				Name:  NewAccountObjectIdentifier("tag1"),
+				Value: "value1",
+			},
+		}
+		opts.Comment = &comment
+
+		assertOptsValidAndSQLEquals(t, opts, "EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s ASYNC = true QUERY_WAREHOUSE = %s COMMENT = '%s' "+
+			"EXTERNAL_ACCESS_INTEGRATIONS = (%s) FROM SPECIFICATION $$SPEC$$ TAG (\"tag1\" = 'value1')",
+			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), comment, integration1Id.FullyQualifiedName())
+	})
+}
+
 func TestServices_Drop(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid DropServiceOptions

@@ -3,6 +3,7 @@ package sdk
 var (
 	_ validatable = new(CreateServiceOptions)
 	_ validatable = new(AlterServiceOptions)
+	_ validatable = new(ExecuteJobServiceServiceOptions)
 	_ validatable = new(DropServiceOptions)
 	_ validatable = new(ShowServiceOptions)
 	_ validatable = new(DescribeServiceOptions)
@@ -147,6 +148,42 @@ func (opts *AlterServiceOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.MinInstances, opts.Unset.AutoSuspendSecs, opts.Unset.MaxInstances, opts.Unset.MinReadyInstances, opts.Unset.QueryWarehouse, opts.Unset.AutoResume, opts.Unset.ExternalAccessIntegrations, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Unset", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ExecuteJobServiceServiceOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.Name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.JobServiceFromSpecification, opts.JobServiceFromSpecificationTemplate) {
+		errs = append(errs, errExactlyOneOf("ExecuteJobServiceServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"))
+	}
+	if !ValidObjectIdentifier(opts.InComputePool) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.JobServiceFromSpecification) {
+		if !exactlyOneValueSet(opts.JobServiceFromSpecification.SpecificationFile, opts.JobServiceFromSpecification.Specification) {
+			errs = append(errs, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+		}
+		if !exactlyOneValueSet(opts.JobServiceFromSpecification.Location, opts.JobServiceFromSpecification.Specification) {
+			errs = append(errs, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "Location", "Specification"))
+		}
+	}
+	if valueSet(opts.JobServiceFromSpecificationTemplate) {
+		if !exactlyOneValueSet(opts.JobServiceFromSpecificationTemplate.SpecificationTemplateFile, opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+		}
+		if !exactlyOneValueSet(opts.JobServiceFromSpecificationTemplate.Location, opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "Location", "SpecificationTemplate"))
 		}
 	}
 	return JoinErrors(errs...)

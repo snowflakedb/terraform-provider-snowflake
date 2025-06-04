@@ -66,6 +66,24 @@ func (c *ServiceClient) CreateWithRequest(t *testing.T, req *sdk.CreateServiceRe
 	return service, c.DropFunc(t, req.GetName())
 }
 
+func (c *ServiceClient) ExecuteJobService(t *testing.T, computePoolId sdk.AccountObjectIdentifier, id sdk.SchemaObjectIdentifier) (*sdk.Service, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	spec := `
+spec:
+  containers:
+  - name: example-container
+    image: /snowflake/images/snowflake_images/exampleimage:latest
+`
+	req := sdk.NewExecuteJobServiceServiceRequest(computePoolId, id).WithJobServiceFromSpecification(*sdk.NewJobServiceFromSpecificationRequest().WithSpecification(spec)).WithAsync(true)
+	err := c.client().ExecuteJobService(ctx, req)
+	require.NoError(t, err)
+	service, err := c.client().ShowByID(ctx, req.GetName())
+	require.NoError(t, err)
+	return service, c.DropFunc(t, req.GetName())
+}
+
 func (c *ServiceClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

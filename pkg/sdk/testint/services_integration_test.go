@@ -106,7 +106,6 @@ spec:
 
 	t.Run("create - from specification on stage", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-		location := sdk.NewStageLocation(stage.ID(), "")
 		request := sdk.NewCreateServiceRequest(id, computePool.ID()).
 			WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithLocation(location).WithSpecificationFile(specFileName))
 
@@ -473,6 +472,145 @@ spec:
 		)
 	})
 
+	t.Run("execute job service - from specification template on stage", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		request := sdk.NewExecuteJobServiceServiceRequest(computePool.ID(), id).
+			WithJobServiceFromSpecificationTemplate(*sdk.NewJobServiceFromSpecificationTemplateRequest(specTemplateUsing).WithLocation(location).WithSpecificationTemplateFile(specTemplateFileName)).
+			WithAsync(true)
+
+		err := client.Services.ExecuteJobService(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Service.DropFunc(t, id))
+
+		service, err := client.Services.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ServiceFromObject(t, service).
+			HasName(id.Name()).
+			HasStatus(sdk.ServiceStatusPending).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComputePool(computePool.ID()).
+			HasDnsNameNotEmpty().
+			HasCurrentInstances(0).
+			HasTargetInstances(1).
+			HasMinReadyInstances(1).
+			HasMinInstances(1).
+			HasMaxInstances(1).
+			HasAutoResume(true).
+			HasNoExternalAccessIntegrations().
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasNoResumedOn().
+			HasNoSuspendedOn().
+			HasAutoSuspendSecs(0).
+			HasNoComment().
+			HasOwnerRoleType("ROLE").
+			HasNoQueryWarehouse().
+			HasIsJob(true).
+			HasIsAsyncJob(true).
+			HasSpecDigestNotEmpty().
+			HasIsUpgrading(false).
+			HasNoManagingObjectDomain().
+			HasNoManagingObjectName(),
+		)
+	})
+
+	t.Run("execute job service - basic, from stage", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		request := sdk.NewExecuteJobServiceServiceRequest(computePool.ID(), id).
+			WithJobServiceFromSpecification(*sdk.NewJobServiceFromSpecificationRequest().WithLocation(location).WithSpecificationFile(specFileName)).
+			WithAsync(true)
+
+		err := client.Services.ExecuteJobService(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Service.DropFunc(t, id))
+
+		service, err := client.Services.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ServiceFromObject(t, service).
+			HasName(service.ID().Name()).
+			HasStatus(sdk.ServiceStatusPending).
+			HasDatabaseName(service.ID().DatabaseName()).
+			HasSchemaName(service.ID().SchemaName()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComputePool(computePool.ID()).
+			HasDnsNameNotEmpty().
+			HasCurrentInstances(0).
+			HasTargetInstances(1).
+			HasMinReadyInstances(1).
+			HasMinInstances(1).
+			HasMaxInstances(1).
+			HasAutoResume(true).
+			HasNoExternalAccessIntegrations().
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasNoResumedOn().
+			HasNoSuspendedOn().
+			HasAutoSuspendSecs(0).
+			HasNoComment().
+			HasOwnerRoleType("ROLE").
+			HasNoQueryWarehouse().
+			HasIsJob(true).
+			HasIsAsyncJob(true).
+			HasSpecDigestNotEmpty().
+			HasIsUpgrading(false).
+			HasNoManagingObjectDomain().
+			HasNoManagingObjectName(),
+		)
+	})
+
+	t.Run("execute job service - complete", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		comment := random.Comment()
+		request := sdk.NewExecuteJobServiceServiceRequest(computePool.ID(), id).
+			WithJobServiceFromSpecification(*sdk.NewJobServiceFromSpecificationRequest().WithSpecification(spec)).
+			WithAsync(true).
+			WithExternalAccessIntegrations(*sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId})).
+			WithQueryWarehouse(testClientHelper().Ids.WarehouseId()).
+			WithComment(comment)
+
+		err := client.Services.ExecuteJobService(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Service.DropFunc(t, id))
+
+		service, err := client.Services.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ServiceFromObject(t, service).
+			HasName(service.ID().Name()).
+			HasStatus(sdk.ServiceStatusPending).
+			HasDatabaseName(service.ID().DatabaseName()).
+			HasSchemaName(service.ID().SchemaName()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComputePool(computePool.ID()).
+			HasDnsNameNotEmpty().
+			HasCurrentInstances(0).
+			HasTargetInstances(1).
+			HasMinReadyInstances(1).
+			HasMinInstances(1).
+			HasMaxInstances(1).
+			HasAutoResume(true).
+			HasExternalAccessIntegrations(externalAccessIntegrationId).
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasNoResumedOn().
+			HasNoSuspendedOn().
+			HasAutoSuspendSecs(0).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE").
+			HasQueryWarehouse(testClientHelper().Ids.WarehouseId()).
+			HasIsJob(true).
+			HasIsAsyncJob(true).
+			HasSpecDigestNotEmpty().
+			HasIsUpgrading(false).
+			HasNoManagingObjectDomain().
+			HasNoManagingObjectName(),
+		)
+	})
+
 	// TODO(SNOW-2132078): Add an integration test for restoring a service from a snapshot.
 
 	// TODO(SNOW-2132087): Add integration tests for creating and altering services in Native Apps.
@@ -557,6 +695,49 @@ spec:
 		)
 	})
 
+	t.Run("show: with like, only jobs", func(t *testing.T) {
+		service, serviceCleanup := testClientHelper().Service.ExecuteJobService(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
+		t.Cleanup(serviceCleanup)
+
+		services, err := client.Services.Show(ctx, sdk.NewShowServiceRequest().
+			WithLike(sdk.Like{Pattern: sdk.Pointer(service.ID().Name())}).
+			WithJob(true),
+		)
+		require.NoError(t, err)
+		require.Equal(t, 1, len(services))
+
+		assertThatObject(t, objectassert.ServiceFromObject(t, &services[0]).
+			HasName(service.ID().Name()).
+			HasStatus(sdk.ServiceStatusPending).
+			HasDatabaseName(service.ID().DatabaseName()).
+			HasSchemaName(service.ID().SchemaName()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComputePool(computePool.ID()).
+			HasDnsNameNotEmpty().
+			HasCurrentInstances(0).
+			HasTargetInstances(1).
+			HasMinReadyInstances(1).
+			HasMinInstances(1).
+			HasMaxInstances(1).
+			HasAutoResume(true).
+			HasNoExternalAccessIntegrations().
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasNoResumedOn().
+			HasNoSuspendedOn().
+			HasAutoSuspendSecs(0).
+			HasNoComment().
+			HasOwnerRoleType("ROLE").
+			HasNoQueryWarehouse().
+			HasIsJob(false).
+			HasIsAsyncJob(true).
+			HasSpecDigestNotEmpty().
+			HasIsUpgrading(false).
+			HasNoManagingObjectDomain().
+			HasNoManagingObjectName(),
+		)
+	})
+
 	t.Run("show: in compute pool", func(t *testing.T) {
 		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
 		t.Cleanup(serviceCleanup)
@@ -597,5 +778,4 @@ spec:
 			HasNoManagingObjectName(),
 		)
 	})
-	// TODO (next PRs): add a test for SHOW JOB SERVICES
 }

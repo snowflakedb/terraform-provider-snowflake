@@ -282,6 +282,93 @@ func (s *ServiceUnsetRequest) WithComment(Comment bool) *ServiceUnsetRequest {
 	return s
 }
 
+func NewExecuteJobServiceServiceRequest(
+	InComputePool AccountObjectIdentifier,
+	Name SchemaObjectIdentifier,
+) *ExecuteJobServiceServiceRequest {
+	s := ExecuteJobServiceServiceRequest{}
+	s.InComputePool = InComputePool
+	s.Name = Name
+	return &s
+}
+
+func (s *ExecuteJobServiceServiceRequest) WithAsync(Async bool) *ExecuteJobServiceServiceRequest {
+	s.Async = &Async
+	return s
+}
+
+func (s *ExecuteJobServiceServiceRequest) WithQueryWarehouse(QueryWarehouse AccountObjectIdentifier) *ExecuteJobServiceServiceRequest {
+	s.QueryWarehouse = &QueryWarehouse
+	return s
+}
+
+func (s *ExecuteJobServiceServiceRequest) WithComment(Comment string) *ExecuteJobServiceServiceRequest {
+	s.Comment = &Comment
+	return s
+}
+
+func (s *ExecuteJobServiceServiceRequest) WithExternalAccessIntegrations(ExternalAccessIntegrations ServiceExternalAccessIntegrationsRequest) *ExecuteJobServiceServiceRequest {
+	s.ExternalAccessIntegrations = &ExternalAccessIntegrations
+	return s
+}
+
+func (s *ExecuteJobServiceServiceRequest) WithJobServiceFromSpecification(JobServiceFromSpecification JobServiceFromSpecificationRequest) *ExecuteJobServiceServiceRequest {
+	s.JobServiceFromSpecification = &JobServiceFromSpecification
+	return s
+}
+
+func (s *ExecuteJobServiceServiceRequest) WithJobServiceFromSpecificationTemplate(JobServiceFromSpecificationTemplate JobServiceFromSpecificationTemplateRequest) *ExecuteJobServiceServiceRequest {
+	s.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate
+	return s
+}
+
+func (s *ExecuteJobServiceServiceRequest) WithTag(Tag []TagAssociation) *ExecuteJobServiceServiceRequest {
+	s.Tag = Tag
+	return s
+}
+
+func NewJobServiceFromSpecificationRequest() *JobServiceFromSpecificationRequest {
+	return &JobServiceFromSpecificationRequest{}
+}
+
+func (s *JobServiceFromSpecificationRequest) WithLocation(Location Location) *JobServiceFromSpecificationRequest {
+	s.Location = Location
+	return s
+}
+
+func (s *JobServiceFromSpecificationRequest) WithSpecificationFile(SpecificationFile string) *JobServiceFromSpecificationRequest {
+	s.SpecificationFile = &SpecificationFile
+	return s
+}
+
+func (s *JobServiceFromSpecificationRequest) WithSpecification(Specification string) *JobServiceFromSpecificationRequest {
+	s.Specification = &Specification
+	return s
+}
+
+func NewJobServiceFromSpecificationTemplateRequest(
+	Using []ListItem,
+) *JobServiceFromSpecificationTemplateRequest {
+	s := JobServiceFromSpecificationTemplateRequest{}
+	s.Using = Using
+	return &s
+}
+
+func (s *JobServiceFromSpecificationTemplateRequest) WithLocation(Location Location) *JobServiceFromSpecificationTemplateRequest {
+	s.Location = Location
+	return s
+}
+
+func (s *JobServiceFromSpecificationTemplateRequest) WithSpecificationTemplateFile(SpecificationTemplateFile string) *JobServiceFromSpecificationTemplateRequest {
+	s.SpecificationTemplateFile = &SpecificationTemplateFile
+	return s
+}
+
+func (s *JobServiceFromSpecificationTemplateRequest) WithSpecificationTemplate(SpecificationTemplate string) *JobServiceFromSpecificationTemplateRequest {
+	s.SpecificationTemplate = &SpecificationTemplate
+	return s
+}
+
 func NewDropServiceRequest(
 	name SchemaObjectIdentifier,
 ) *DropServiceRequest {
