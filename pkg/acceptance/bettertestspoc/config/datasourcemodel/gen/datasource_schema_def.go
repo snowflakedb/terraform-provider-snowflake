@@ -27,6 +27,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Accounts().Schema,
 	},
 	{
+		name:   "ComputePools",
+		schema: datasources.ComputePools().Schema,
+	},
+	{
 		name:   "Database",
 		schema: datasources.Database().Schema,
 	},

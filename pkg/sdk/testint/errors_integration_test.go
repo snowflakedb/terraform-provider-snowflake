@@ -58,6 +58,9 @@ func TestInt_ShowSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeStreamlit, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).Streamlits.ShowByID)},
 		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).NetworkRules.ShowByID)},
 		{ObjectType: sdk.ObjectTypeAuthenticationPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).AuthenticationPolicies.ShowByID)},
+		{ObjectType: sdk.ObjectTypeImageRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).ImageRepositories.ShowByID)},
+		{ObjectType: sdk.ObjectTypeService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).Services.ShowByID)},
+		{ObjectType: sdk.ObjectTypeGitRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).GitRepositories.ShowByID)},
 	}
 
 	for _, tt := range testCases {
@@ -115,6 +118,9 @@ func TestInt_ShowSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeStreamlit, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).Streamlits.ShowByID)},
 		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).NetworkRules.ShowByID)},
 		{ObjectType: sdk.ObjectTypeAuthenticationPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).AuthenticationPolicies.ShowByID)},
+		{ObjectType: sdk.ObjectTypeImageRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).ImageRepositories.ShowByID)},
+		{ObjectType: sdk.ObjectTypeService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).Services.ShowByID)},
+		{ObjectType: sdk.ObjectTypeGitRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).GitRepositories.ShowByID)},
 	}
 
 	for _, tt := range testCases {
@@ -183,6 +189,9 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeStreamlit, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streamlits.Drop, sdk.NewDropStreamlitRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).NetworkRules.Drop, sdk.NewDropNetworkRuleRequest(id).WithIfExists(sdk.Bool(true)))},
 		{ObjectType: sdk.ObjectTypeAuthenticationPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).AuthenticationPolicies.Drop, sdk.NewDropAuthenticationPolicyRequest(id).WithIfExists(true))},
+		{ObjectType: sdk.ObjectTypeImageRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).ImageRepositories.Drop, sdk.NewDropImageRepositoryRequest(id).WithIfExists(true))},
+		{ObjectType: sdk.ObjectTypeService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Services.Drop, sdk.NewDropServiceRequest(id).WithIfExists(true))},
+		{ObjectType: sdk.ObjectTypeGitRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).GitRepositories.Drop, sdk.NewDropGitRepositoryRequest(id).WithIfExists(true))},
 	}
 
 	for _, tt := range testCases {
@@ -256,6 +265,9 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeStreamlit, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streamlits.Drop, sdk.NewDropStreamlitRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).NetworkRules.Drop, sdk.NewDropNetworkRuleRequest(id).WithIfExists(sdk.Bool(true)))},
 		{ObjectType: sdk.ObjectTypeAuthenticationPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).AuthenticationPolicies.Drop, sdk.NewDropAuthenticationPolicyRequest(id).WithIfExists(true))},
+		{ObjectType: sdk.ObjectTypeImageRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).ImageRepositories.Drop, sdk.NewDropImageRepositoryRequest(id).WithIfExists(true))},
+		{ObjectType: sdk.ObjectTypeService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Services.Drop, sdk.NewDropServiceRequest(id).WithIfExists(true))},
+		{ObjectType: sdk.ObjectTypeGitRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).GitRepositories.Drop, sdk.NewDropGitRepositoryRequest(id).WithIfExists(true))},
 	}
 
 	for _, tt := range testCases {

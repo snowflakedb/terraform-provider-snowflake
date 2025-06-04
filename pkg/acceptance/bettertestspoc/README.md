@@ -38,6 +38,15 @@ func (w *WarehouseResourceAssert) HasDefaultMaxConcurrencyLevel() *WarehouseReso
 }
 ```
 
+### Generated resource assertions
+The generated resource assertions are available in the `assert/resourceassert/gen` package.
+The generated assertions provide a set of methods that can be used to assert the state of the resource.
+Here's a short description of every generated assertion:
+- HasX methods check that a field is set with the provided value. 
+- HasNoX methods check that a field is not set (not present in state or is empty in case of lists/sets).
+- HasXEmpty methods are generated only for string type fields and are checking if a given field is set to empty string.
+- HasXNotEmpty methods check that a field is set with any value. 
+
 ### Adding new resource show output assertions
 Resource show output assertions can be generated automatically. For object `abc` do the following:
 - add object you want to generate to `allResourceSchemaDefs` slice in the `assert/objectassert/gen/sdk_object_def.go`
@@ -373,6 +382,7 @@ func (w *WarehouseDatasourceShowOutputAssert) IsEmpty() {
     w.assertions = append(w.assertions, valueSet("show_output.#", "0"))
 }
 ```
+- add an assertion method or helper method that would be better at checking for missing complex types (like Lists, Sets, Maps, etc.), currently ValueSet with `.#` is used
 - support other mappings if needed (TODO left in `assert/objectassert/gen/model.go`)
 - consider extracting preamble model to commons (TODOs left in `assert/objectassert/gen/model.go` and in `assert/objectparametersassert/gen/model.go`)
 - get a runtime name for the assertion creator (TODOs left in `assert/objectparametersassert/gen/model.go`)
@@ -406,6 +416,7 @@ func (w *WarehouseDatasourceShowOutputAssert) IsEmpty() {
 - support asserting resource id in `assert/resourceassert/*_gen.go`
 - add possibility for object parameter assert not take any identifier (currently there's a workaround in `account_parameters_snowflake_gen.go`, because `SHOW PARAMETERS FOR ACCOUNT` don't take any identifiers)
 - SNOW-2048330: add possibility to override the default value (and optionally default level) used in HasAllDefaults -> HasDefaultParameterValueOnLevel parameter assertions (it's required for cases like asserting `NETWORK_POLICY` which is predefined for our testing environments and causes test failures)
+- `Mapper` is just a `func(string) string`, so there is no easy way inside the template to know what mapper is being applied. Because of that, we have the `Identity` mapper which just returns the input string which leads to easier template logic applicable both to cases needed the mapping and not needing it. It leads to more unnecessary code (like for collections comparison in object asserts), so it would be great to change the logic, e.g. by handling the list of mappers (logic allowing the emptiness check, easier piping).
 
 ## Known limitations
 - generating provider config may misbehave when used only with one object/map paramter (like `params`), e.g.:

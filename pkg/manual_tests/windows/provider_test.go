@@ -25,7 +25,6 @@ func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
 	if !oswrapper.IsRunningOnWindows() {
 		t.Skip("checking file permissions on other platforms is currently done in the provider package")
 	}
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	permissions := fs.FileMode(0o755)
@@ -50,5 +49,5 @@ func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
 }
 
 func datasourceModel() config.DatasourceModel {
-	return datasourcemodel.Database("t", acc.TestDatabaseName)
+	return datasourcemodel.Database("t", "SNOWFLAKE")
 }

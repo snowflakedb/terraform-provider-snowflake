@@ -50,18 +50,57 @@ Managing compute pool state is limited. It is handled only by `initially_suspend
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_compute_pool_resource` to `preview_features_enabled` field in the provider configuration.
 
+### *(bugfix)* Fix the behavior for empty privileges list in snowflake_grant_privileges_to_account_role, snowflake_grant_privileges_to_database_role, and snowflake_grant_privileges_to_share resources
+
+Previously, it was possible to create `snowflake_grant_privileges_to_X` resources with an empty privilege list, which led to the following error:
+```
+│ Error: Failed to parse internal identifier
+│ Error: [grant_privileges_to_database_role_identifier.go:79] invalid Privileges value: , should be either a comma separated list of privileges or "ALL" / "ALL PRIVILEGES" for all privileges
+```
+After that, an identifier stored in state would be corrupted and only manual state manipulation would fix it.
+We added validation to prevent this from happening. Now, if you try to create or update a resource with an empty privilege list, you will get the following error:
+
+```
+| Error: Not enough list items
+| 
+|   with snowflake_grant_privileges_to_database_role.test,
+|   on test.tf line 3, in resource "snowflake_grant_privileges_to_database_role" "test":
+|    3:   privileges         = []
+| 
+| Attribute privileges requires 1 item minimum, but config has only 0 declared.
+```
+
+and the validation error will prevent the state file from changing, which means you will be able to normally adjust the resource and reapply the configuration.
+
+If you are experiencing this at the moment, you can fix it by running removing `snowflake_grant_privileges_to_database_role` from the state by running:
+```shell
+terraform state rm snowflake_grant_privileges_to_database_role.test # Replace `test` with the actual resource name
+```
+and apply it with the correct `privileges` list. If you don't want to apply the privileges again, make sure they are 
+revoked in Snowflake by running the corresponding [SHOW GRANTS](https://docs.snowflake.com/en/sql-reference/sql/show-grants) command
+and then corresponding [REVOKE <privileges>](https://docs.snowflake.com/en/sql-reference/sql/revoke-privilege) to remove unwanted privileges.
+
+Other than that, no changes to the configurations are necessary.
+
+Reference: [#3690](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3690).
+
 ### *(new feature)* snowflake_image_repository resource
 Added a new preview resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier). The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repository_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_compute_pools data source
+Added a new preview data source for compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_compute_pools_datasource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* snowflake_image_repositories data source
 Added a new preview data source for image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-image-repositories).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repositories_datasource` to `preview_features_enabled` field in the provider configuration.
 
-### *(new feature)* Managing tags for image repositories and compute pools
-The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository) and [compute pools](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool).
+### *(new feature)* Managing tags for image repositories, compute pools and git repositories
+The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository), [compute pools](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool) and [git repositories](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository).
 
 ### *(bugfix)* Fixed handling users' grants
 

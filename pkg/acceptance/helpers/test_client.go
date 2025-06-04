@@ -35,6 +35,7 @@ type TestClient struct {
 	FailoverGroup                *FailoverGroupClient
 	FileFormat                   *FileFormatClient
 	Function                     *FunctionClient
+	GitRepository                *GitRepositoryClient
 	Grant                        *GrantClient
 	HybridTable                  *HybridTableClient
 	ImageRepository              *ImageRepositoryClient
@@ -57,6 +58,7 @@ type TestClient struct {
 	Schema                       *SchemaClient
 	Secret                       *SecretClient
 	SecurityIntegration          *SecurityIntegrationClient
+	Service                      *ServiceClient
 	Sequence                     *SequenceClient
 	SessionPolicy                *SessionPolicyClient
 	Share                        *ShareClient
@@ -112,6 +114,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		FailoverGroup:                NewFailoverGroupClient(context, idsGenerator),
 		FileFormat:                   NewFileFormatClient(context, idsGenerator),
 		Function:                     NewFunctionClient(context, idsGenerator),
+		GitRepository:                NewGitRepositoryClient(context, idsGenerator),
 		Grant:                        NewGrantClient(context, idsGenerator),
 		HybridTable:                  NewHybridTableClient(context, idsGenerator),
 		ImageRepository:              NewImageRepositoryClient(context, idsGenerator),
@@ -134,6 +137,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		Schema:                       NewSchemaClient(context, idsGenerator),
 		Secret:                       NewSecretClient(context, idsGenerator),
 		SecurityIntegration:          NewSecurityIntegrationClient(context, idsGenerator),
+		Service:                      NewServiceClient(context, idsGenerator),
 		Sequence:                     NewSequenceClient(context, idsGenerator),
 		SessionPolicy:                NewSessionPolicyClient(context, idsGenerator),
 		Share:                        NewShareClient(context, idsGenerator),

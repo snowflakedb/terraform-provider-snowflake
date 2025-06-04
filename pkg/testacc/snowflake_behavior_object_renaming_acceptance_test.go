@@ -1,6 +1,6 @@
 //go:build !account_level_tests
 
-package resources_test
+package testacc
 
 import (
 	"fmt"
@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -24,7 +22,9 @@ import (
 /*
 The following tests are showing the behavior of the provider in cases where objects higher in the hierarchy
 like database or schema are renamed when the objects lower in the hierarchy are in the Terraform configuration.
-For more information check TODO(SNOW-1672319): link public document.
+For more information check:
+- https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_research_summary
+- https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide
 
 Shallow hierarchy (database + schema)
 - is in config - renamed internally - with implicit dependency (works)
@@ -141,8 +141,6 @@ const (
 
 func TestAcc_ShallowHierarchy_IsInConfig_RenamedInternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		Dependency                             DependencyType
@@ -159,9 +157,9 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedInternally(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("TestAcc_ dependency: %s", testCase.Dependency), func(t *testing.T) {
-			databaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			newDatabaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			schemaName := acc.TestClient().Ids.Alpha()
+			databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			schemaName := testClient().Ids.Alpha()
 
 			databaseConfigModel := model.DatabaseWithParametersSet("test", databaseId.Name())
 			databaseConfigModelWithNewId := model.DatabaseWithParametersSet("test", newDatabaseId.Name())
@@ -193,11 +191,11 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedInternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Schema),
+				CheckDestroy: CheckDestroy(t, resources.Schema),
 				Steps: []resource.TestStep{
 					{
 						Config: config.FromModels(t, databaseConfigModel) + configSchemaWithReferences(t, databaseConfigModel.ResourceReference(), testCase.Dependency, databaseId.Name(), schemaName),
@@ -216,8 +214,6 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedInternally(t *testing.T) {
 
 func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		Dependency                                       DependencyType
@@ -241,9 +237,9 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("TestAcc_ dependency: %s, is using new database name in dataabse resource: %t, in schema resource: %t", testCase.Dependency, testCase.IsRenamedDatabaseReferencedAfterRenameInDatabase, testCase.IsRenamedDatabaseReferencedAfterRenameInSchema), func(t *testing.T) {
-			databaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			newDatabaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			schemaName := acc.TestClient().Ids.Alpha()
+			databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			schemaName := testClient().Ids.Alpha()
 
 			databaseConfigModel := model.DatabaseWithParametersSet("test", databaseId.Name())
 			databaseConfigModelWithNewId := model.DatabaseWithParametersSet("test", newDatabaseId.Name())
@@ -269,21 +265,21 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Schema),
+				CheckDestroy: CheckDestroy(t, resources.Schema),
 				Steps: []resource.TestStep{
 					{
 						Config: config.FromModels(t, databaseConfigModel) + configSchemaWithDatabaseReference(databaseConfigModel.ResourceReference(), schemaName),
 					},
 					{
 						PreConfig: func() {
-							acc.TestClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{
+							testClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{
 								NewName: &newDatabaseId,
 							})
-							t.Cleanup(acc.TestClient().Database.DropDatabaseFunc(t, newDatabaseId))
+							t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 						},
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
@@ -304,21 +300,19 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally(t *testing.T) {
 func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally_WithoutDependency_AfterRenameDatabaseReferencingOldNameAndSchemaReferencingOldDatabaseName(t *testing.T) {
 	t.Skip("Test results are inconsistent because Terraform execution order is non-deterministic")
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
-	databaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-	schemaName := acc.TestClient().Ids.Alpha()
+	databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+	schemaName := testClient().Ids.Alpha()
 
 	databaseConfigModel := model.DatabaseWithParametersSet("test", databaseId.Name())
 	schemaModelConfig := model.Schema("test", databaseId.Name(), schemaName)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.Schema),
+		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, databaseConfigModel, schemaModelConfig),
@@ -326,9 +320,9 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally_WithoutDependency_Aft
 			{
 				// This step has inconsistent results, and it depends on the Terraform execution order which seems to be non-deterministic in this case
 				PreConfig: func() {
-					newDatabaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-					acc.TestClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{NewName: &newDatabaseId})
-					t.Cleanup(acc.TestClient().Database.DropDatabaseFunc(t, newDatabaseId))
+					newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
+					testClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{NewName: &newDatabaseId})
+					t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -348,30 +342,28 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally_WithoutDependency_Aft
 	t.Skip("Test results are inconsistent because Terraform execution order is non-deterministic")
 	// Although the above applies, it seems to be consistently failing on delete operation after the test (because the database is dropped before schema).
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
-	databaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-	schemaName := acc.TestClient().Ids.Alpha()
+	databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+	schemaName := testClient().Ids.Alpha()
 
 	databaseConfigModel := model.DatabaseWithParametersSet("test", databaseId.Name())
 	schemaModelConfig := model.Schema("test", databaseId.Name(), schemaName)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.Schema),
+		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, schemaModelConfig, databaseConfigModel),
 			},
 			{
 				PreConfig: func() {
-					newDatabaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-					acc.TestClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{NewName: &newDatabaseId})
-					t.Cleanup(acc.TestClient().Database.DropDatabaseFunc(t, newDatabaseId))
+					newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
+					testClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{NewName: &newDatabaseId})
+					t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -388,8 +380,6 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally_WithoutDependency_Aft
 
 func TestAcc_ShallowHierarchy_IsNotInConfig_RenamedExternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		IsReferencingNewDatabaseName bool
@@ -400,13 +390,13 @@ func TestAcc_ShallowHierarchy_IsNotInConfig_RenamedExternally(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		database, databaseCleanup := acc.TestClient().Database.CreateDatabaseWithParametersSet(t)
+		database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 		t.Cleanup(databaseCleanup)
 
 		t.Run(fmt.Sprintf("TestAcc_ referencing new database name: %t", testCase.IsReferencingNewDatabaseName), func(t *testing.T) {
 			databaseId := database.ID()
-			newDatabaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			schemaName := acc.TestClient().Ids.Alpha()
+			newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			schemaName := testClient().Ids.Alpha()
 			schemaModelConfig := model.Schema("test", databaseId.Name(), schemaName)
 
 			var schemaConfigAfterRename string
@@ -417,19 +407,19 @@ func TestAcc_ShallowHierarchy_IsNotInConfig_RenamedExternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Schema),
+				CheckDestroy: CheckDestroy(t, resources.Schema),
 				Steps: []resource.TestStep{
 					{
 						Config: config.FromModels(t, schemaModelConfig),
 					},
 					{
 						PreConfig: func() {
-							acc.TestClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{NewName: &newDatabaseId})
-							t.Cleanup(acc.TestClient().Database.DropDatabaseFunc(t, newDatabaseId))
+							testClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{NewName: &newDatabaseId})
+							t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 						},
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
@@ -456,8 +446,6 @@ resource "snowflake_schema" "test" {
 
 func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedInternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		DatabaseDependency         DependencyType
@@ -488,10 +476,10 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedInternally(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("TestAcc_ database dependency: %s, schema dependency: %s, database in schema dependency: %s", testCase.DatabaseDependency, testCase.SchemaDependency, testCase.DatabaseInSchemaDependency), func(t *testing.T) {
-			databaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			newDatabaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			schemaName := acc.TestClient().Ids.Alpha()
-			tableName := acc.TestClient().Ids.Alpha()
+			databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			schemaName := testClient().Ids.Alpha()
+			tableName := testClient().Ids.Alpha()
 
 			databaseConfigModel := model.DatabaseWithParametersSet("test", databaseId.Name())
 			databaseConfigModelWithNewId := model.DatabaseWithParametersSet("test", newDatabaseId.Name())
@@ -523,11 +511,11 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedInternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Table),
+				CheckDestroy: CheckDestroy(t, resources.Table),
 				Steps:        testSteps,
 			})
 		})
@@ -536,8 +524,6 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedInternally(t *testing.T) {
 
 func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedInternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		DatabaseDependency     DependencyType
@@ -559,10 +545,10 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedInternally(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("TestAcc_ database dependency: %s, schema dependency: %s", testCase.DatabaseDependency, testCase.SchemaDependency), func(t *testing.T) {
-			databaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			schemaName := acc.TestClient().Ids.Alpha()
-			newSchemaName := acc.TestClient().Ids.Alpha()
-			tableName := acc.TestClient().Ids.Alpha()
+			databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			schemaName := testClient().Ids.Alpha()
+			newSchemaName := testClient().Ids.Alpha()
+			tableName := testClient().Ids.Alpha()
 
 			databaseConfigModel := model.DatabaseWithParametersSet("test", databaseId.Name())
 
@@ -593,11 +579,11 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedInternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Table),
+				CheckDestroy: CheckDestroy(t, resources.Table),
 				Steps:        testSteps,
 			})
 		})
@@ -606,8 +592,6 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedInternally(t *testing.T) {
 
 func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedExternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		DatabaseDependency         DependencyType
@@ -631,10 +615,10 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedExternally(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("TestAcc_ database dependency: %s, schema dependency: %s, database in schema dependency: %s", testCase.DatabaseDependency, testCase.SchemaDependency, testCase.DatabaseInSchemaDependency), func(t *testing.T) {
-			databaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			newDatabaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			schemaName := acc.TestClient().Ids.Alpha()
-			tableName := acc.TestClient().Ids.Alpha()
+			databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			schemaName := testClient().Ids.Alpha()
+			tableName := testClient().Ids.Alpha()
 
 			databaseConfigModel := model.DatabaseWithParametersSet("test", databaseId.Name())
 			databaseConfigModelWithNewId := model.DatabaseWithParametersSet("test", newDatabaseId.Name())
@@ -651,7 +635,7 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedExternally(t *testing.T) {
 			if testCase.ExpectedFirstStepError == nil {
 				testSteps = append(testSteps, resource.TestStep{
 					PreConfig: func() {
-						acc.TestClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{
+						testClient().Database.Alter(t, databaseId, &sdk.AlterDatabaseOptions{
 							NewName: &newDatabaseId,
 						})
 					},
@@ -664,11 +648,11 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedExternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Table),
+				CheckDestroy: CheckDestroy(t, resources.Table),
 				Steps:        testSteps,
 			})
 		})
@@ -677,8 +661,6 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedExternally(t *testing.T) {
 
 func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		DatabaseDependency         DependencyType
@@ -702,10 +684,10 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("TestAcc_ database dependency: %s, schema dependency: %s, database in schema dependency: %s", testCase.DatabaseDependency, testCase.SchemaDependency, testCase.DatabaseInSchemaDependency), func(t *testing.T) {
-			databaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			schemaId := acc.TestClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
-			newSchemaId := acc.TestClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
-			tableName := acc.TestClient().Ids.Alpha()
+			databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
+			newSchemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
+			tableName := testClient().Ids.Alpha()
 
 			databaseConfigModel := model.DatabaseWithParametersSet("test", databaseId.Name())
 
@@ -721,7 +703,7 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 			if testCase.ExpectedFirstStepError == nil {
 				testSteps = append(testSteps, resource.TestStep{
 					PreConfig: func() {
-						acc.TestClient().Schema.Alter(t, schemaId, &sdk.AlterSchemaOptions{
+						testClient().Schema.Alter(t, schemaId, &sdk.AlterSchemaOptions{
 							NewName: &newSchemaId,
 						})
 					},
@@ -734,11 +716,11 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Table),
+				CheckDestroy: CheckDestroy(t, resources.Table),
 				Steps:        testSteps,
 			})
 		})
@@ -747,8 +729,6 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 
 func TestAcc_DeepHierarchy_AreNotInConfig_DatabaseRenamedExternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		UseNewDatabaseNameAfterRename bool
@@ -760,14 +740,14 @@ func TestAcc_DeepHierarchy_AreNotInConfig_DatabaseRenamedExternally(t *testing.T
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("TestAcc_ use new database after rename: %t", testCase.UseNewDatabaseNameAfterRename), func(t *testing.T) {
-			newDatabaseId := acc.TestClient().Ids.RandomAccountObjectIdentifier()
-			tableName := acc.TestClient().Ids.Alpha()
+			newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
+			tableName := testClient().Ids.Alpha()
 
-			database, databaseCleanup := acc.TestClient().Database.CreateDatabaseWithParametersSet(t)
+			database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 			t.Cleanup(databaseCleanup)
 
 			// not cleaning up, because the schema will be dropped with the database anyway
-			schema, _ := acc.TestClient().Schema.CreateSchemaInDatabase(t, database.ID())
+			schema, _ := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
 
 			var secondStepDatabaseName string
 			if testCase.UseNewDatabaseNameAfterRename {
@@ -777,21 +757,21 @@ func TestAcc_DeepHierarchy_AreNotInConfig_DatabaseRenamedExternally(t *testing.T
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Table),
+				CheckDestroy: CheckDestroy(t, resources.Table),
 				Steps: []resource.TestStep{
 					{
 						Config: configTableWithReferences(t, "", NoDependency, "", NoDependency, database.ID().Name(), schema.ID().Name(), tableName),
 					},
 					{
 						PreConfig: func() {
-							acc.TestClient().Database.Alter(t, database.ID(), &sdk.AlterDatabaseOptions{
+							testClient().Database.Alter(t, database.ID(), &sdk.AlterDatabaseOptions{
 								NewName: &newDatabaseId,
 							})
-							t.Cleanup(acc.TestClient().Database.DropDatabaseFunc(t, newDatabaseId))
+							t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 						},
 						Config:      configTableWithReferences(t, "", NoDependency, "", NoDependency, secondStepDatabaseName, schema.ID().Name(), tableName),
 						ExpectError: testCase.ExpectedSecondStepError,
@@ -804,8 +784,6 @@ func TestAcc_DeepHierarchy_AreNotInConfig_DatabaseRenamedExternally(t *testing.T
 
 func TestAcc_DeepHierarchy_AreNotInConfig_SchemaRenamedExternally(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 
 	testCases := []struct {
 		UseNewSchemaNameAfterRename bool
@@ -817,14 +795,14 @@ func TestAcc_DeepHierarchy_AreNotInConfig_SchemaRenamedExternally(t *testing.T) 
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("TestAcc_ use new database after rename: %t", testCase.UseNewSchemaNameAfterRename), func(t *testing.T) {
-			database, databaseCleanup := acc.TestClient().Database.CreateDatabaseWithParametersSet(t)
+			database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 			t.Cleanup(databaseCleanup)
 
-			newSchemaId := acc.TestClient().Ids.RandomDatabaseObjectIdentifierInDatabase(database.ID())
-			tableName := acc.TestClient().Ids.Alpha()
+			newSchemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(database.ID())
+			tableName := testClient().Ids.Alpha()
 
 			// not cleaning up, because the schema will be dropped with the database anyway
-			schema, _ := acc.TestClient().Schema.CreateSchemaInDatabase(t, database.ID())
+			schema, _ := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
 
 			var secondStepSchemaName string
 			if testCase.UseNewSchemaNameAfterRename {
@@ -834,18 +812,18 @@ func TestAcc_DeepHierarchy_AreNotInConfig_SchemaRenamedExternally(t *testing.T) 
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
-				CheckDestroy: acc.CheckDestroy(t, resources.Table),
+				CheckDestroy: CheckDestroy(t, resources.Table),
 				Steps: []resource.TestStep{
 					{
 						Config: configTableWithReferences(t, "", NoDependency, "", NoDependency, database.ID().Name(), schema.ID().Name(), tableName),
 					},
 					{
 						PreConfig: func() {
-							acc.TestClient().Schema.Alter(t, schema.ID(), &sdk.AlterSchemaOptions{
+							testClient().Schema.Alter(t, schema.ID(), &sdk.AlterSchemaOptions{
 								NewName: &newSchemaId,
 							})
 						},
