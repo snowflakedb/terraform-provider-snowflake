@@ -423,7 +423,7 @@ func TestInt_Account(t *testing.T) {
 }
 
 func TestInt_Account_SelfAlter(t *testing.T) {
-	t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
+	//t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
 	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	// This client should be operating on a different account than the "main" one (because it will be altered here).
@@ -521,13 +521,30 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	})
 
 	t.Run("set / unset parameters", func(t *testing.T) {
+		warehouseId := testClientHelper().Ids.WarehouseId()
+
+		eventTable, eventTableCleanup := testClientHelper().EventTable.Create(t)
+		t.Cleanup(eventTableCleanup)
+
+		externalVolumeId, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
+		t.Cleanup(externalVolumeCleanup)
+
+		createNetworkPolicyRequest := sdk.NewCreateNetworkPolicyRequest(testClientHelper().Ids.RandomAccountObjectIdentifier()).WithAllowedIpList([]sdk.IPRequest{*sdk.NewIPRequest("0.0.0.0/0")})
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, createNetworkPolicyRequest)
+		t.Cleanup(networkPolicyCleanup)
+
+		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
+		t.Cleanup(stageCleanup)
+
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
 				Parameters: &sdk.AccountParameters{
-					AbortDetachedQuery:                               sdk.Bool(true),
+					AbortDetachedQuery: sdk.Bool(true),
+					// TODO: ActivePythonProfiler:                     sdk.Pointer(sdk.ActivePythonProfilerMemory),
 					AllowClientMFACaching:                            sdk.Bool(true),
 					AllowIDToken:                                     sdk.Bool(true),
 					Autocommit:                                       sdk.Bool(false),
+					BaseLocationPrefix:                               sdk.String("STORAGE_BASE_URL/"),
 					BinaryInputFormat:                                sdk.Pointer(sdk.BinaryInputFormatBase64),
 					BinaryOutputFormat:                               sdk.Pointer(sdk.BinaryOutputFormatBase64),
 					Catalog:                                          sdk.String("SNOWFLAKE"),
@@ -549,7 +566,10 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					DateInputFormat:                                  sdk.String("YYYY-MM-DD"),
 					DateOutputFormat:                                 sdk.String("YYYY-MM-DD"),
 					DefaultDDLCollation:                              sdk.String("en-cs"),
+					DefaultNotebookComputePoolCpu:                    sdk.String("CPU_X64_S"),
+					DefaultNotebookComputePoolGpu:                    sdk.String("GPU_NV_S"),
 					DefaultNullOrdering:                              sdk.Pointer(sdk.DefaultNullOrderingFirst),
+					DefaultStreamlitNotebookWarehouse:                sdk.Pointer(warehouseId),
 					DisableUiDownloadButton:                          sdk.Bool(true),
 					DisableUserPrivilegeGrants:                       sdk.Bool(true),
 					EnableAutomaticSensitiveDataClassificationLog:    sdk.Bool(false),
@@ -564,7 +584,9 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					EnforceNetworkRulesForInternalStages:             sdk.Bool(true),
 					ErrorOnNondeterministicMerge:                     sdk.Bool(false),
 					ErrorOnNondeterministicUpdate:                    sdk.Bool(true),
+					EventTable:                                       sdk.Pointer(eventTable.ID()),
 					ExternalOAuthAddPrivilegedRolesToBlockedList:     sdk.Bool(false),
+					ExternalVolume:                                   sdk.Pointer(externalVolumeId),
 					GeographyOutputFormat:                            sdk.Pointer(sdk.GeographyOutputFormatWKT),
 					GeometryOutputFormat:                             sdk.Pointer(sdk.GeometryOutputFormatWKT),
 					HybridTableLockTimeout:                           sdk.Int(3599),
@@ -579,8 +601,10 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					LogLevel:                                         sdk.Pointer(sdk.LogLevelInfo),
 					MaxConcurrencyLevel:                              sdk.Int(7),
 					MaxDataExtensionTimeInDays:                       sdk.Int(13),
+					MetricLevel:                                      sdk.Pointer(sdk.MetricLevelAll),
 					MinDataRetentionTimeInDays:                       sdk.Int(1),
 					MultiStatementCount:                              sdk.Int(0),
+					NetworkPolicy:                                    sdk.Pointer(networkPolicy.ID()),
 					NoorderSequenceAsDefault:                         sdk.Bool(false),
 					OAuthAddPrivilegedRolesToBlockedList:             sdk.Bool(false),
 					OdbcTreatDecimalAsInt:                            sdk.Bool(true),
@@ -588,41 +612,45 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					PipeExecutionPaused:                              sdk.Bool(true),
 					PreventUnloadToInlineURL:                         sdk.Bool(true),
 					PreventUnloadToInternalStages:                    sdk.Bool(true),
-					QueryTag:                                         sdk.String("test-query-tag"),
-					QuotedIdentifiersIgnoreCase:                      sdk.Bool(true),
-					ReplaceInvalidCharacters:                         sdk.Bool(true),
-					RequireStorageIntegrationForStageCreation:        sdk.Bool(true),
-					RequireStorageIntegrationForStageOperation:       sdk.Bool(true),
-					RowsPerResultset:                                 sdk.Int(1000),
-					ServerlessTaskMaxStatementSize:                   sdk.Pointer(sdk.WarehouseSizeXLarge),
-					ServerlessTaskMinStatementSize:                   sdk.Pointer(sdk.WarehouseSizeSmall),
-					SsoLoginPage:                                     sdk.Bool(true),
-					StatementQueuedTimeoutInSeconds:                  sdk.Int(1),
-					StatementTimeoutInSeconds:                        sdk.Int(1),
-					StrictJsonOutput:                                 sdk.Bool(true),
-					SuspendTaskAfterNumFailures:                      sdk.Int(3),
-					TaskAutoRetryAttempts:                            sdk.Int(3),
-					TimestampDayIsAlways24h:                          sdk.Bool(true),
-					TimestampInputFormat:                             sdk.String("YYYY-MM-DD"),
-					TimestampLtzOutputFormat:                         sdk.String("YYYY-MM-DD"),
-					TimestampNtzOutputFormat:                         sdk.String("YYYY-MM-DD"),
-					TimestampOutputFormat:                            sdk.String("YYYY-MM-DD"),
-					TimestampTypeMapping:                             sdk.Pointer(sdk.TimestampTypeMappingLtz),
-					TimestampTzOutputFormat:                          sdk.String("YYYY-MM-DD"),
-					Timezone:                                         sdk.String("Europe/London"),
-					TimeInputFormat:                                  sdk.String("YYYY-MM-DD"),
-					TimeOutputFormat:                                 sdk.String("YYYY-MM-DD"),
-					TraceLevel:                                       sdk.Pointer(sdk.TraceLevelPropagate),
-					TransactionAbortOnError:                          sdk.Bool(true),
-					TransactionDefaultIsolationLevel:                 sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
-					TwoDigitCenturyStart:                             sdk.Int(1971),
-					UnsupportedDdlAction:                             sdk.Pointer(sdk.UnsupportedDDLActionFail),
-					UserTaskManagedInitialWarehouseSize:              sdk.Pointer(sdk.WarehouseSizeSmall),
-					UserTaskMinimumTriggerIntervalInSeconds:          sdk.Int(10),
-					UserTaskTimeoutMs:                                sdk.Int(10),
-					UseCachedResult:                                  sdk.Bool(false),
-					WeekOfYearPolicy:                                 sdk.Int(1),
-					WeekStart:                                        sdk.Int(1),
+					PythonProfilerTargetStage:                        sdk.Pointer(stage.ID()),
+					// TODO: PythonProfilerTargetStage:                  sdk.Pointer(stage.ID()),
+					QueryTag:                                   sdk.String("test-query-tag"),
+					QuotedIdentifiersIgnoreCase:                sdk.Bool(true),
+					ReplaceInvalidCharacters:                   sdk.Bool(true),
+					RequireStorageIntegrationForStageCreation:  sdk.Bool(true),
+					RequireStorageIntegrationForStageOperation: sdk.Bool(true),
+					RowsPerResultset:                           sdk.Int(1000),
+					SearchPath:                                 sdk.String("$current, $public"),
+					ServerlessTaskMaxStatementSize:             sdk.Pointer(sdk.WarehouseSizeXLarge),
+					ServerlessTaskMinStatementSize:             sdk.Pointer(sdk.WarehouseSizeSmall),
+					SsoLoginPage:                               sdk.Bool(true),
+					StatementQueuedTimeoutInSeconds:            sdk.Int(1),
+					StatementTimeoutInSeconds:                  sdk.Int(1),
+					StorageSerializationPolicy:                 sdk.Pointer(sdk.StorageSerializationPolicyOptimized),
+					StrictJsonOutput:                           sdk.Bool(true),
+					SuspendTaskAfterNumFailures:                sdk.Int(3),
+					TaskAutoRetryAttempts:                      sdk.Int(3),
+					TimestampDayIsAlways24h:                    sdk.Bool(true),
+					TimestampInputFormat:                       sdk.String("YYYY-MM-DD"),
+					TimestampLtzOutputFormat:                   sdk.String("YYYY-MM-DD"),
+					TimestampNtzOutputFormat:                   sdk.String("YYYY-MM-DD"),
+					TimestampOutputFormat:                      sdk.String("YYYY-MM-DD"),
+					TimestampTypeMapping:                       sdk.Pointer(sdk.TimestampTypeMappingLtz),
+					TimestampTzOutputFormat:                    sdk.String("YYYY-MM-DD"),
+					Timezone:                                   sdk.String("Europe/London"),
+					TimeInputFormat:                            sdk.String("YYYY-MM-DD"),
+					TimeOutputFormat:                           sdk.String("YYYY-MM-DD"),
+					TraceLevel:                                 sdk.Pointer(sdk.TraceLevelPropagate),
+					TransactionAbortOnError:                    sdk.Bool(true),
+					TransactionDefaultIsolationLevel:           sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
+					TwoDigitCenturyStart:                       sdk.Int(1971),
+					UnsupportedDdlAction:                       sdk.Pointer(sdk.UnsupportedDDLActionFail),
+					UserTaskManagedInitialWarehouseSize:        sdk.Pointer(sdk.WarehouseSizeSmall),
+					UserTaskMinimumTriggerIntervalInSeconds:    sdk.Int(10),
+					UserTaskTimeoutMs:                          sdk.Int(10),
+					UseCachedResult:                            sdk.Bool(false),
+					WeekOfYearPolicy:                           sdk.Int(1),
+					WeekStart:                                  sdk.Int(1),
 				},
 			},
 		})
@@ -633,9 +661,11 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		require.NotEmpty(t, parameters)
 
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAbortDetachedQuery), "true")
+		//assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterActivePythonProfiler), string(sdk.ActivePythonProfilerMemory))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAllowClientMFACaching), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAllowIDToken), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAutocommit), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterBaseLocationPrefix), "STORAGE_BASE_URL/")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterBinaryInputFormat), string(sdk.BinaryInputFormatBase64))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterBinaryOutputFormat), string(sdk.BinaryOutputFormatBase64))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterCatalog), "SNOWFLAKE")
@@ -657,7 +687,10 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDateInputFormat), "YYYY-MM-DD")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDateOutputFormat), "YYYY-MM-DD")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultDDLCollation), "en-cs")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultNotebookComputePoolCpu), "CPU_X64_S")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultNotebookComputePoolGpu), "GPU_NV_S")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultNullOrdering), string(sdk.AccountParameterAutocommit))
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultStreamlitNotebookWarehouse), warehouseId.FullyQualifiedName())
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDisableUiDownloadButton), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDisableUserPrivilegeGrants), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog), "false")
@@ -672,7 +705,9 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnforceNetworkRulesForInternalStages), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterErrorOnNondeterministicMerge), "false")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterErrorOnNondeterministicUpdate), "true")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEventTable), eventTable.ID().FullyQualifiedName())
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList), "false")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterExternalVolume), externalVolumeId.FullyQualifiedName())
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterGeographyOutputFormat), string(sdk.GeographyOutputFormatWKT))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterGeometryOutputFormat), string(sdk.GeometryOutputFormatWKT))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterHybridTableLockTimeout), "3599")
@@ -687,8 +722,10 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterLogLevel), string(sdk.LogLevelInfo))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMaxConcurrencyLevel), "7")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMaxDataExtensionTimeInDays), "13")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMetricLevel), string(sdk.MetricLevelAll))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMinDataRetentionTimeInDays), "1")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMultiStatementCount), "0")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterNetworkPolicy), networkPolicy.ID().FullyQualifiedName())
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterNoorderSequenceAsDefault), "false")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList), "false")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterOdbcTreatDecimalAsInt), "true")
@@ -696,17 +733,20 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterPipeExecutionPaused), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterPreventUnloadToInlineURL), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterPreventUnloadToInternalStages), "true")
+		//assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterPythonProfilerTargetStage), stage.ID().FullyQualifiedName())
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterQueryTag), "test-query-tag")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterQuotedIdentifiersIgnoreCase), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterReplaceInvalidCharacters), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRequireStorageIntegrationForStageCreation), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRequireStorageIntegrationForStageOperation), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRowsPerResultset), "1000")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSearchPath), "$current, $public")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMaxStatementSize), string(sdk.WarehouseSizeXLarge))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMinStatementSize), string(sdk.WarehouseSizeSmall))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSsoLoginPage), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStatementQueuedTimeoutInSeconds), "1")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStatementTimeoutInSeconds), "1")
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStorageSerializationPolicy), string(sdk.StorageSerializationPolicyOptimized))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStrictJsonOutput), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSuspendTaskAfterNumFailures), "3")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTaskAutoRetryAttempts), "3")
