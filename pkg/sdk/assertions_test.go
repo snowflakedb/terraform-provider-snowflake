@@ -53,7 +53,8 @@ func assertSQLEquals(t *testing.T, opts any, format string, args ...any) {
 	t.Helper()
 	actual, err := structToSQL(opts)
 	require.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf(format, args...), actual)
+	ex := fmt.Sprintf(format, args...)
+	assert.Equal(t, ex, actual)
 }
 
 // assertOptsValidAndSQLEquals could be reused in tests for other interfaces in sdk package.
