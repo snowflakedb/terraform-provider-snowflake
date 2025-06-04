@@ -423,7 +423,7 @@ func TestInt_Account(t *testing.T) {
 }
 
 func TestInt_Account_SelfAlter(t *testing.T) {
-	//t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
+	t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
 	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	// This client should be operating on a different account than the "main" one (because it will be altered here).
@@ -523,7 +523,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	t.Run("set / unset parameters", func(t *testing.T) {
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
-				Parameters: &sdk.AccountParameters2{
+				Parameters: &sdk.NewAccountParameters{
 					AbortDetachedQuery:                               sdk.Bool(true),
 					AllowClientMFACaching:                            sdk.Bool(true),
 					AllowIDToken:                                     sdk.Bool(true),
@@ -734,7 +734,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{
-				Parameters: &sdk.AccountParametersUnset2{
+				Parameters: &sdk.NewAccountParametersUnset{
 					AbortDetachedQuery:                               sdk.Bool(true),
 					ActivePythonProfiler:                             sdk.Bool(true),
 					AllowClientMFACaching:                            sdk.Bool(true),
