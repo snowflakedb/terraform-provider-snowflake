@@ -12,7 +12,19 @@
         {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", expected))
         return {{ $assertVar }}
     }
+{{ end -}}
 
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+{{ range .Attributes -}}
+    {{ if not .IsCollection -}}
+    func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ SnakeCaseToCamel .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(assert.ValueNotSet("{{ .Name }}"))
+        return {{ $assertVar }}
+    }
+    {{ end -}}
 {{ end -}}
 
 ////////////////////////////
@@ -20,9 +32,29 @@
 ////////////////////////////
 
 {{ range .Attributes -}}
-    func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ SnakeCaseToCamel .Name }}() *{{ $assertName }} {
-        {{ $assertVar }}.AddAssertion(assert.ValueNotSet("{{ .Name }}"))
-        return {{ $assertVar }}
-    }
+    {{ if not .IsRequired }}
+        func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}Empty() *{{ $assertName }} {
+            {{ if .IsCollection }}
+                {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}.#", "0"))
+                return {{ $assertVar }}
+            {{ else }}
+                {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", ""))
+                return {{ $assertVar }}
+            {{ end }}
+        }
+    {{ end }}
+{{ end -}}
 
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+{{ range .Attributes -}}
+    {{ if not .IsCollection }}
+        func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}NotEmpty() *{{ $assertName }} {
+            {{ $assertVar }}.AddAssertion(assert.ValuePresent("{{ .Name }}"))
+            return {{ $assertVar }}
+        }
+    {{ end }}
+    {{/* TODO(SNOW-1501905): Implement custom assertion for not-empty collections */}}
 {{ end -}}
