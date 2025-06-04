@@ -18,9 +18,8 @@ func TestInt_GitRepositories(t *testing.T) {
 
 	gitRepositoryOrigin := "https://github.com/octocat/hello-world"
 
-	apiIntegrationId, apiIntegrationCleanup :=
-		testClientHelper().ApiIntegration.
-			CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
+	apiIntegrationId, apiIntegrationCleanup := testClientHelper().ApiIntegration.
+		CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
 	t.Cleanup(apiIntegrationCleanup)
 
 	secretId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
@@ -87,9 +86,8 @@ func TestInt_GitRepositories(t *testing.T) {
 			Create(t, gitRepositoryId, gitRepositoryOrigin, apiIntegrationId)
 		t.Cleanup(gitRepositoryCleanup)
 
-		newApiIntegrationId, newApiIntegrationCleanup :=
-			testClientHelper().ApiIntegration.
-				CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
+		newApiIntegrationId, newApiIntegrationCleanup := testClientHelper().ApiIntegration.
+			CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
 		t.Cleanup(newApiIntegrationCleanup)
 
 		setRequest := sdk.NewGitRepositorySetRequest().
