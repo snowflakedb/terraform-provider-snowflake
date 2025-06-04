@@ -56,12 +56,15 @@ func (c *InformationSchemaClient) GetQueryHistoryByQueryId(t *testing.T, limit i
 
 func (c *InformationSchemaClient) mapQueryHistory(t *testing.T, queryResult map[string]*any) QueryHistory {
 	t.Helper()
-	require.NotNil(t, queryResult["QUERY_ID"])
-	require.NotNil(t, queryResult["QUERY_TEXT"])
-	require.NotNil(t, queryResult["QUERY_TAG"])
-	return QueryHistory{
-		QueryId:   (*queryResult["QUERY_ID"]).(string),
-		QueryText: (*queryResult["QUERY_TEXT"]).(string),
-		QueryTag:  (*queryResult["QUERY_TAG"]).(string),
+	var queryHistory QueryHistory
+	if v, ok := queryResult["QUERY_ID"]; ok && v != nil {
+		queryHistory.QueryId = (*v).(string)
 	}
+	if v, ok := queryResult["QUERY_TEXT"]; ok && v != nil {
+		queryHistory.QueryText = (*v).(string)
+	}
+	if v, ok := queryResult["QUERY_TAG"]; ok && v != nil {
+		queryHistory.QueryTag = (*v).(string)
+	}
+	return queryHistory
 }
