@@ -111,16 +111,6 @@ func (r *ResourceMonitorResourceAssert) HasNoFullyQualifiedName() *ResourceMonit
 	return r
 }
 
-func (r *ResourceMonitorResourceAssert) HasNoNotifyTriggers() *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValueSet("notify_triggers.#", "0"))
-	return r
-}
-
-func (r *ResourceMonitorResourceAssert) HasNoNotifyUsers() *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValueSet("notify_users.#", "0"))
-	return r
-}
-
 func (r *ResourceMonitorResourceAssert) HasNoStartTimestamp() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("start_timestamp"))
 	return r
@@ -140,6 +130,11 @@ func (r *ResourceMonitorResourceAssert) HasNoSuspendTrigger() *ResourceMonitorRe
 // Attribute empty checks //
 ////////////////////////////
 
+func (r *ResourceMonitorResourceAssert) HasCreditQuotaEmpty() *ResourceMonitorResourceAssert {
+	r.AddAssertion(assert.ValueSet("credit_quota", ""))
+	return r
+}
+
 func (r *ResourceMonitorResourceAssert) HasEndTimestampEmpty() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("end_timestamp", ""))
 	return r
@@ -155,8 +150,28 @@ func (r *ResourceMonitorResourceAssert) HasFullyQualifiedNameEmpty() *ResourceMo
 	return r
 }
 
+func (r *ResourceMonitorResourceAssert) HasNotifyTriggersEmpty() *ResourceMonitorResourceAssert {
+	r.AddAssertion(assert.ValueSet("notify_triggers.#", "0"))
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasNotifyUsersEmpty() *ResourceMonitorResourceAssert {
+	r.AddAssertion(assert.ValueSet("notify_users.#", "0"))
+	return r
+}
+
 func (r *ResourceMonitorResourceAssert) HasStartTimestampEmpty() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("start_timestamp", ""))
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasSuspendImmediateTriggerEmpty() *ResourceMonitorResourceAssert {
+	r.AddAssertion(assert.ValueSet("suspend_immediate_trigger", ""))
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasSuspendTriggerEmpty() *ResourceMonitorResourceAssert {
+	r.AddAssertion(assert.ValueSet("suspend_trigger", ""))
 	return r
 }
 
@@ -186,16 +201,6 @@ func (r *ResourceMonitorResourceAssert) HasFrequencyNotEmpty() *ResourceMonitorR
 
 func (r *ResourceMonitorResourceAssert) HasFullyQualifiedNameNotEmpty() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValuePresent("fully_qualified_name"))
-	return r
-}
-
-func (r *ResourceMonitorResourceAssert) HasNotifyTriggersNotEmpty() *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValuePresent("notify_triggers"))
-	return r
-}
-
-func (r *ResourceMonitorResourceAssert) HasNotifyUsersNotEmpty() *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValuePresent("notify_users"))
 	return r
 }
 

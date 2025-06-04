@@ -147,9 +147,9 @@ func (s *SchemaResourceAssert) HasWithManagedAccessString(expected string) *Sche
 	return s
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (s *SchemaResourceAssert) HasNoDatabase() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("database"))
@@ -263,5 +263,233 @@ func (s *SchemaResourceAssert) HasNoUserTaskTimeoutMs() *SchemaResourceAssert {
 
 func (s *SchemaResourceAssert) HasNoWithManagedAccess() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("with_managed_access"))
+	return s
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *SchemaResourceAssert) HasCatalogEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("catalog", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasCommentEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasDataRetentionTimeInDaysEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("data_retention_time_in_days", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasDefaultDdlCollationEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("default_ddl_collation", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasEnableConsoleOutputEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasExternalVolumeEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("external_volume", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasFullyQualifiedNameEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasIsTransientEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("is_transient", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasLogLevelEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_level", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasPipeExecutionPausedEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("pipe_execution_paused", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasReplaceInvalidCharactersEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("replace_invalid_characters", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasStorageSerializationPolicyEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("storage_serialization_policy", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasSuspendTaskAfterNumFailuresEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasTaskAutoRetryAttemptsEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("task_auto_retry_attempts", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasTraceLevelEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("trace_level", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskManagedInitialWarehouseSizeEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskTimeoutMsEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("user_task_timeout_ms", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasWithManagedAccessEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("with_managed_access", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *SchemaResourceAssert) HasDatabaseNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("database"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasNameNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasCatalogNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("catalog"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasCommentNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("data_retention_time_in_days"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasDefaultDdlCollationNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("default_ddl_collation"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasEnableConsoleOutputNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("enable_console_output"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasExternalVolumeNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("external_volume"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasFullyQualifiedNameNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasIsTransientNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("is_transient"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasLogLevelNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("log_level"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasMaxDataExtensionTimeInDaysNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("max_data_extension_time_in_days"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasPipeExecutionPausedNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("pipe_execution_paused"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("quoted_identifiers_ignore_case"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasReplaceInvalidCharactersNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("replace_invalid_characters"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasStorageSerializationPolicyNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("storage_serialization_policy"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasSuspendTaskAfterNumFailuresNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("suspend_task_after_num_failures"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasTaskAutoRetryAttemptsNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("task_auto_retry_attempts"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasTraceLevelNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("trace_level"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskManagedInitialWarehouseSizeNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("user_task_managed_initial_warehouse_size"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("user_task_minimum_trigger_interval_in_seconds"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskTimeoutMsNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("user_task_timeout_ms"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasWithManagedAccessNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("with_managed_access"))
 	return s
 }

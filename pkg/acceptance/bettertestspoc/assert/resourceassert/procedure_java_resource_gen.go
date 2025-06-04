@@ -152,9 +152,9 @@ func (p *ProcedureJavaResourceAssert) HasTraceLevelString(expected string) *Proc
 	return p
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (p *ProcedureJavaResourceAssert) HasNoDatabase() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("database"))
@@ -168,11 +168,6 @@ func (p *ProcedureJavaResourceAssert) HasNoSchema() *ProcedureJavaResourceAssert
 
 func (p *ProcedureJavaResourceAssert) HasNoName() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("name"))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasNoArguments() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("arguments"))
 	return p
 }
 
@@ -191,11 +186,6 @@ func (p *ProcedureJavaResourceAssert) HasNoExecuteAs() *ProcedureJavaResourceAss
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasNoExternalAccessIntegrations() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("external_access_integrations"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoFullyQualifiedName() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return p
@@ -203,11 +193,6 @@ func (p *ProcedureJavaResourceAssert) HasNoFullyQualifiedName() *ProcedureJavaRe
 
 func (p *ProcedureJavaResourceAssert) HasNoHandler() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("handler"))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasNoImports() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("imports"))
 	return p
 }
 
@@ -231,11 +216,6 @@ func (p *ProcedureJavaResourceAssert) HasNoNullInputBehavior() *ProcedureJavaRes
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasNoPackages() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("packages"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoProcedureDefinition() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("procedure_definition"))
 	return p
@@ -256,22 +236,195 @@ func (p *ProcedureJavaResourceAssert) HasNoRuntimeVersion() *ProcedureJavaResour
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasNoSecrets() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("secrets"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoSnowparkPackage() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("snowpark_package"))
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasNoTargetPath() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("target_path"))
+func (p *ProcedureJavaResourceAssert) HasNoTraceLevel() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("trace_level"))
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasNoTraceLevel() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("trace_level"))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (p *ProcedureJavaResourceAssert) HasArgumentsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasCommentEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("comment", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasEnableConsoleOutputEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasExecuteAsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("execute_as", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasExternalAccessIntegrationsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasFullyQualifiedNameEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasImportsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("imports.#", "0"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasIsSecureEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("is_secure", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasLogLevelEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_level", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasMetricLevelEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("metric_level", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasNullInputBehaviorEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("null_input_behavior", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasPackagesEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("packages.#", "0"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasProcedureDefinitionEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("procedure_definition", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasProcedureLanguageEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("procedure_language", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasSecretsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("secrets.#", "0"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasTargetPathEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("target_path.#", "0"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasTraceLevelEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("trace_level", ""))
+	return p
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (p *ProcedureJavaResourceAssert) HasDatabaseNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("database"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasSchemaNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("schema"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasNameNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("name"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasCommentNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("comment"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasEnableConsoleOutputNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("enable_console_output"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasExecuteAsNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("execute_as"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasFullyQualifiedNameNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasHandlerNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("handler"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasIsSecureNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("is_secure"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasLogLevelNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("log_level"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasMetricLevelNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("metric_level"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasNullInputBehaviorNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("null_input_behavior"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasProcedureDefinitionNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("procedure_definition"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasProcedureLanguageNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("procedure_language"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasReturnTypeNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("return_type"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasRuntimeVersionNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("runtime_version"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasSnowparkPackageNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("snowpark_package"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasTraceLevelNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("trace_level"))
 	return p
 }

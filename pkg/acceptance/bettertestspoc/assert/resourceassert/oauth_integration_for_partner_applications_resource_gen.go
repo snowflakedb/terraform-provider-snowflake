@@ -87,17 +87,12 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasRelatedParamet
 	return o
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoName() *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.AddAssertion(assert.ValueNotSet("name"))
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoBlockedRolesList() *OauthIntegrationForPartnerApplicationsResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("blocked_roles_list"))
 	return o
 }
 
@@ -141,7 +136,100 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoOauthUseSeco
 	return o
 }
 
-func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoRelatedParameters() *OauthIntegrationForPartnerApplicationsResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("related_parameters"))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasBlockedRolesListEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("blocked_roles_list.#", "0"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasCommentEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("comment", ""))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasEnabledEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("enabled", ""))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasFullyQualifiedNameEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthIssueRefreshTokensEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("oauth_issue_refresh_tokens", ""))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthRedirectUriEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("oauth_redirect_uri", ""))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthRefreshTokenValidityEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("oauth_refresh_token_validity", ""))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthUseSecondaryRolesEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("oauth_use_secondary_roles", ""))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasRelatedParametersEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValueSet("related_parameters.#", "0"))
+	return o
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNameNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("name"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasCommentNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("comment"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasEnabledNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("enabled"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasFullyQualifiedNameNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthClientNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("oauth_client"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthIssueRefreshTokensNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("oauth_issue_refresh_tokens"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthRedirectUriNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("oauth_redirect_uri"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthRefreshTokenValidityNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("oauth_refresh_token_validity"))
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthUseSecondaryRolesNotEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.AddAssertion(assert.ValuePresent("oauth_use_secondary_roles"))
 	return o
 }

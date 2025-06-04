@@ -57,9 +57,9 @@ func (e *ExternalVolumeResourceAssert) HasStorageLocationString(expected string)
 	return e
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (e *ExternalVolumeResourceAssert) HasNoName() *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("name"))
@@ -81,7 +81,45 @@ func (e *ExternalVolumeResourceAssert) HasNoFullyQualifiedName() *ExternalVolume
 	return e
 }
 
-func (e *ExternalVolumeResourceAssert) HasNoStorageLocation() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("storage_location"))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (e *ExternalVolumeResourceAssert) HasAllowWritesEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValueSet("allow_writes", ""))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasCommentEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValueSet("comment", ""))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return e
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (e *ExternalVolumeResourceAssert) HasNameNotEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValuePresent("name"))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasAllowWritesNotEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValuePresent("allow_writes"))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasCommentNotEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValuePresent("comment"))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameNotEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValuePresent("fully_qualified_name"))
 	return e
 }
