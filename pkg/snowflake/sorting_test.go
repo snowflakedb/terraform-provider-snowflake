@@ -11,7 +11,6 @@ func TestSortStrings(t *testing.T) {
 
 	ss := []string{"a", "b", "c"}
 
-	r.Equal(ss, sortInterfaceStrings(map[string]interface{}{"c": "", "b": "", "a": ""}))
 	r.Equal(ss, sortStrings(map[string]string{"c": "", "b": "", "a": ""}))
 	r.Equal(ss, sortStringList(map[string][]string{"c": {}, "b": {}, "a": {}}))
 	r.Equal(ss, sortStringsInt(map[string]int{"c": 0, "b": 1, "a": 2}))

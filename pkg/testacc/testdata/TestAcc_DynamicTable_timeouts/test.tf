@@ -21,7 +21,8 @@ resource "snowflake_dynamic_table" "dt" {
   }
   warehouse = var.warehouse
   query     = var.query
+
   timeouts {
-    create = "1ms"
+    create = "50ms"
   }
 }

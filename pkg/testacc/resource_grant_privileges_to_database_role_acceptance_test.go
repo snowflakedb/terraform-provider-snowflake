@@ -1472,3 +1472,70 @@ func TestAcc_GrantPrivileges_OnObject_HybridTable_ToDatabaseRole_Fails(t *testin
 		},
 	})
 }
+
+// proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3690 is fixed
+func TestAcc_GrantPrivileges_ToDatabaseRole_WithEmptyPrivileges(t *testing.T) {
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	resourceName := "snowflake_grant_privileges_to_database_role.test"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config: grantPrivilegesToDatabaseRole3690Config(databaseRole.ID(), sdk.AccountObjectPrivilegeUsage, sdk.AccountObjectPrivilegeCreateSchema),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().Name()),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
+				),
+			},
+			// {
+			//	ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
+			//	Config:            grantPrivilegesToDatabaseRole3690Config(databaseRole.ID()),
+			//	ExpectError:       regexp.MustCompile("Error: Failed to parse internal identifier"),
+			// },
+			//
+			// The step above fails with:
+			// │ Error: Failed to parse internal identifier
+			// ...
+			// │ Error: [grant_privileges_to_database_role_identifier.go:79] invalid Privileges value: , should be either a comma separated list of privileges or "ALL" / "ALL PRIVILEGES" for all
+			// │ privileges
+			//
+			// and affects the next test steps
+			{
+				Config:      grantPrivilegesToDatabaseRole3690Config(databaseRole.ID()),
+				ExpectError: regexp.MustCompile("Error: Not enough list items"),
+			},
+			{
+				Config: grantPrivilegesToDatabaseRole3690Config(databaseRole.ID(), sdk.AccountObjectPrivilegeUsage, sdk.AccountObjectPrivilegeCreateSchema),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "on_database", testClient().Ids.DatabaseId().Name()),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE SCHEMA,USAGE|OnDatabase|%s", databaseRole.ID().FullyQualifiedName(), testClient().Ids.DatabaseId().FullyQualifiedName())),
+				),
+			},
+		},
+	})
+}
+
+func grantPrivilegesToDatabaseRole3690Config(databaseRoleId sdk.DatabaseObjectIdentifier, privileges ...sdk.AccountObjectPrivilege) string {
+	return fmt.Sprintf(`
+resource "snowflake_grant_privileges_to_database_role" "test" {
+	database_role_name = %s
+	privileges         = [ %s ]
+	on_database        = "%s"
+}
+`,
+		strconv.Quote(databaseRoleId.FullyQualifiedName()),
+		strings.Join(collections.Map(privileges, func(privilege sdk.AccountObjectPrivilege) string { return strconv.Quote(string(privilege)) }), ","),
+		databaseRoleId.DatabaseName(),
+	)
+}
