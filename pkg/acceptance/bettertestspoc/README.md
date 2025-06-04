@@ -351,6 +351,7 @@ it will result in:
 ```
 
 ## Planned improvements
+- Unify assertions (resource, resource_show, resource_parameters, etc.), so that the assertions, generated methods, and helper methods used inside them are consistent across assertion types
 - Test all the utilities for assertion/model construction (public interfaces, methods, functions).
 - Verify if all the config types are supported.
 - Consider a better implementation for the model conversion to config (TODO left in `config/config.go`).

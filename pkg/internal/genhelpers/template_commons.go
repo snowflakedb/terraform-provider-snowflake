@@ -35,8 +35,7 @@ func TypeWithoutPointerAndBrackets(t string) string {
 }
 
 func IsTypeSlice(t string) bool {
-	_, ok := strings.CutPrefix(t, "[]")
-	return ok
+	return strings.HasPrefix(t, "[]")
 }
 
 func SnakeCase(name string) string {
