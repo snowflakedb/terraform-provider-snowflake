@@ -180,11 +180,45 @@ func Service() *schema.Resource {
 
 		Schema: serviceSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.Service, ImportName[sdk.SchemaObjectIdentifier]),
+			StateContext: TrackingImportWrapper(resources.Service, ImportService),
 		},
 
 		Timeouts: defaultTimeouts,
 	}
+}
+
+func ImportService(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	client := meta.(*provider.Context).Client
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	service, err := client.Services.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if service.QueryWarehouse != nil {
+		if err := d.Set("query_warehouse", service.QueryWarehouse.FullyQualifiedName()); err != nil {
+			return nil, err
+		}
+	}
+
+	errs := errors.Join(
+		d.Set("name", service.Name),
+		d.Set("schema", service.SchemaName),
+		d.Set("database", service.DatabaseName),
+		d.Set("max_instances", service.MaxInstances),
+		d.Set("min_instances", service.MinInstances),
+		d.Set("min_ready_instances", service.MinReadyInstances),
+		d.Set("auto_resume", booleanStringFromBool(service.AutoResume)),
+		d.Set("auto_suspend_secs", service.AutoSuspendSecs),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return []*schema.ResourceData{d}, nil
 }
 
 func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

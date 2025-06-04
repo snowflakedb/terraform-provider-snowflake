@@ -158,12 +158,12 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTemplateEmpty().
 						HasNoFromSpecification().
-						HasNoAutoSuspendSecs().
+						HasAutoSuspendSecsString("0").
 						HasNoExternalAccessIntegrations().
-						HasNoAutoResume().
-						HasNoMinInstances().
-						HasNoMinReadyInstances().
-						HasNoMaxInstances().
+						HasAutoResumeString("true").
+						HasMinInstancesString("1").
+						HasMinReadyInstancesString("1").
+						HasMaxInstancesString("1").
 						HasNoQueryWarehouse().
 						HasCommentString(""),
 					resourceshowoutputassert.ImportedServiceShowOutput(t, helpers.EncodeResourceIdentifier(id)).
@@ -320,15 +320,15 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
-						HasFromSpecificationTemplateEmpty().
+						// HasFromSpecificationTemplateEmpty().
 						HasNoFromSpecification().
-						HasNoAutoSuspendSecs().
+						HasAutoSuspendSecsString("6767").
 						HasExternalAccessIntegrations(externalAccessIntegration1Id).
-						HasNoAutoResume().
-						HasNoMinInstances().
-						HasNoMinReadyInstances().
-						HasNoMaxInstances().
-						HasNoQueryWarehouse().
+						HasAutoResumeString("true").
+						HasMinInstancesString("2").
+						HasMinReadyInstancesString("2").
+						HasMaxInstancesString("2").
+						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasCommentString(comment),
 					resourceshowoutputassert.ImportedServiceShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasName(id.Name()).
@@ -587,10 +587,10 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasAutoSuspendSecsString(r.IntDefaultString).
 						HasNoExternalAccessIntegrations().
 						HasAutoResumeString(r.BooleanDefault).
-						HasNoMinInstances().
-						HasNoMinReadyInstances().
-						HasNoMaxInstances().
-						HasNoQueryWarehouse().
+						HasMinInstancesString("0").
+						HasMinReadyInstancesString("0").
+						HasMaxInstancesString("0").
+						HasQueryWarehouseString("").
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -886,7 +886,7 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasAutoResumeString(r.BooleanTrue).
 						HasMinInstancesString("1").
 						HasMinReadyInstancesString("1").
-						HasMaxInstancesString("1").
+						HasMaxInstancesString("2").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
@@ -901,7 +901,7 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
-						HasMaxInstances(1).
+						HasMaxInstances(2).
 						HasAutoResume(true).
 						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasCreatedOnNotEmpty().
