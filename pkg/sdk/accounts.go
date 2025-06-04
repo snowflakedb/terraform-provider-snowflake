@@ -205,10 +205,10 @@ func (opts *AlterAccountOptions) validate() error {
 }
 
 type AccountLevelParameters struct {
-	AccountParameters *AccountParameters `ddl:"list,no_parentheses"`
-	SessionParameters *SessionParameters `ddl:"list,no_parentheses"`
-	ObjectParameters  *ObjectParameters  `ddl:"list,no_parentheses"`
-	UserParameters    *UserParameters    `ddl:"list,no_parentheses"`
+	AccountParameters *LegacyAccountParameters `ddl:"list,no_parentheses"`
+	SessionParameters *SessionParameters       `ddl:"list,no_parentheses"`
+	ObjectParameters  *ObjectParameters        `ddl:"list,no_parentheses"`
+	UserParameters    *UserParameters          `ddl:"list,no_parentheses"`
 }
 
 func (opts *AccountLevelParameters) validate() error {
@@ -237,7 +237,7 @@ func (opts *AccountLevelParameters) validate() error {
 }
 
 type AccountSet struct {
-	Parameters           *NewAccountParameters   `ddl:"list,no_parentheses"`
+	Parameters           *AccountParameters      `ddl:"list,no_parentheses"`
 	LegacyParameters     *AccountLevelParameters `ddl:"list,no_parentheses"`
 	ResourceMonitor      AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	PackagesPolicy       SchemaObjectIdentifier  `ddl:"identifier" sql:"PACKAGES POLICY"`
@@ -264,21 +264,21 @@ func (opts *AccountSet) validate() error {
 }
 
 type AccountLevelParametersUnset struct {
-	AccountParameters *AccountParametersUnset `ddl:"list,no_parentheses"`
-	SessionParameters *SessionParametersUnset `ddl:"list,no_parentheses"`
-	ObjectParameters  *ObjectParametersUnset  `ddl:"list,no_parentheses"`
-	UserParameters    *UserParametersUnset    `ddl:"list,no_parentheses"`
+	AccountParameters *LegacyAccountParametersUnset `ddl:"list,no_parentheses"`
+	SessionParameters *SessionParametersUnset       `ddl:"list,no_parentheses"`
+	ObjectParameters  *ObjectParametersUnset        `ddl:"list,no_parentheses"`
+	UserParameters    *UserParametersUnset          `ddl:"list,no_parentheses"`
 }
 
 func (opts *AccountLevelParametersUnset) validate() error {
 	if !anyValueSet(opts.AccountParameters, opts.SessionParameters, opts.ObjectParameters, opts.UserParameters) {
-		return errAtLeastOneOf("AccountLevelParametersUnset", "AccountParameters", "SessionParameters", "ObjectParameters", "UserParameters")
+		return errAtLeastOneOf("AccountLevelParametersUnset", "LegacyAccountParameters", "SessionParameters", "ObjectParameters", "UserParameters")
 	}
 	return nil
 }
 
 type AccountUnset struct {
-	Parameters           *NewAccountParametersUnset   `ddl:"list,no_parentheses"`
+	Parameters           *AccountParametersUnset      `ddl:"list,no_parentheses"`
 	LegacyParameters     *AccountLevelParametersUnset `ddl:"list,no_parentheses"`
 	PackagesPolicy       *bool                        `ddl:"keyword" sql:"PACKAGES POLICY"`
 	PasswordPolicy       *bool                        `ddl:"keyword" sql:"PASSWORD POLICY"`

@@ -12,7 +12,7 @@ import (
 
 var (
 	_ validatable = new(ShowParametersOptions)
-	_ validatable = new(AccountParameters)
+	_ validatable = new(LegacyAccountParameters)
 	_ validatable = new(SessionParameters)
 	_ validatable = new(ObjectParameters)
 	_ validatable = new(UserParameters)
@@ -43,7 +43,7 @@ func (parameters *parameters) SetAccountParameter(ctx context.Context, parameter
 	opts := AlterAccountOptions{
 		Set: &AccountSet{
 			LegacyParameters: &AccountLevelParameters{
-				AccountParameters: &AccountParameters{},
+				AccountParameters: &LegacyAccountParameters{},
 			},
 		},
 	}
@@ -204,7 +204,7 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 	opts := AlterAccountOptions{
 		Unset: &AccountUnset{
 			LegacyParameters: &AccountLevelParametersUnset{
-				AccountParameters: &AccountParametersUnset{},
+				AccountParameters: &LegacyAccountParametersUnset{},
 			},
 		},
 	}
@@ -1196,8 +1196,8 @@ var AllProcedureParameters = []ProcedureParameter{
 	ProcedureParameterTraceLevel,
 }
 
-// AccountParameters is based on https://docs.snowflake.com/en/sql-reference/parameters.
-type AccountParameters struct {
+// LegacyAccountParameters is based on https://docs.snowflake.com/en/sql-reference/parameters.
+type LegacyAccountParameters struct {
 	// Account Parameters
 	AllowClientMFACaching                            *bool   `ddl:"parameter" sql:"ALLOW_CLIENT_MFA_CACHING"`
 	AllowIDToken                                     *bool   `ddl:"parameter" sql:"ALLOW_ID_TOKEN"`
@@ -1230,7 +1230,7 @@ type AccountParameters struct {
 	SSOLoginPage                               *bool        `ddl:"parameter" sql:"SSO_LOGIN_PAGE"`
 }
 
-func (v *AccountParameters) validate() error {
+func (v *LegacyAccountParameters) validate() error {
 	var errs []error
 	if valueSet(v.ClientEncryptionKeySize) {
 		if !slices.Contains([]int{128, 256}, *v.ClientEncryptionKeySize) {
@@ -1245,13 +1245,13 @@ func (v *AccountParameters) validate() error {
 	}
 	if valueSet(v.MinDataRetentionTimeInDays) {
 		if !validateIntInRangeInclusive(*v.MinDataRetentionTimeInDays, 0, 90) {
-			errs = append(errs, errIntBetween("AccountParameters", "MinDataRetentionTimeInDays", 0, 90))
+			errs = append(errs, errIntBetween("LegacyAccountParameters", "MinDataRetentionTimeInDays", 0, 90))
 		}
 	}
 	return errors.Join(errs...)
 }
 
-type NewAccountParameters struct {
+type AccountParameters struct {
 	AbortDetachedQuery                               *bool                       `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
 	ActivePythonProfiler                             *ActivePythonProfiler       `ddl:"parameter,double_quotes" sql:"ACTIVE_PYTHON_PROFILER"`
 	AllowClientMFACaching                            *bool                       `ddl:"parameter" sql:"ALLOW_CLIENT_MFA_CACHING"`
@@ -1374,7 +1374,7 @@ type NewAccountParameters struct {
 	WeekStart                                  *int                              `ddl:"parameter" sql:"WEEK_START"`
 }
 
-type AccountParametersUnset struct {
+type LegacyAccountParametersUnset struct {
 	AllowClientMFACaching                            *bool `ddl:"keyword" sql:"ALLOW_CLIENT_MFA_CACHING"`
 	AllowIDToken                                     *bool `ddl:"keyword" sql:"ALLOW_ID_TOKEN"`
 	ClientEncryptionKeySize                          *bool `ddl:"keyword" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
@@ -1404,7 +1404,7 @@ type AccountParametersUnset struct {
 	SSOLoginPage                                     *bool `ddl:"keyword" sql:"SSO_LOGIN_PAGE"`
 }
 
-type NewAccountParametersUnset struct {
+type AccountParametersUnset struct {
 	AbortDetachedQuery                               *bool `ddl:"keyword" sql:"ABORT_DETACHED_QUERY"`
 	ActivePythonProfiler                             *bool `ddl:"keyword" sql:"ACTIVE_PYTHON_PROFILER"`
 	AllowClientMFACaching                            *bool `ddl:"keyword" sql:"ALLOW_CLIENT_MFA_CACHING"`

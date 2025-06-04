@@ -464,7 +464,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
 				LegacyParameters: &sdk.AccountLevelParameters{
-					AccountParameters: &sdk.AccountParameters{
+					AccountParameters: &sdk.LegacyAccountParameters{
 						MinDataRetentionTimeInDays: sdk.Int(15), // default is 0
 					},
 					SessionParameters: &sdk.SessionParameters{
@@ -493,7 +493,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{
 				LegacyParameters: &sdk.AccountLevelParametersUnset{
-					AccountParameters: &sdk.AccountParametersUnset{
+					AccountParameters: &sdk.LegacyAccountParametersUnset{
 						MinDataRetentionTimeInDays: sdk.Bool(true),
 					},
 					SessionParameters: &sdk.SessionParametersUnset{
@@ -523,7 +523,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	t.Run("set / unset parameters", func(t *testing.T) {
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
-				Parameters: &sdk.NewAccountParameters{
+				Parameters: &sdk.AccountParameters{
 					AbortDetachedQuery:                               sdk.Bool(true),
 					AllowClientMFACaching:                            sdk.Bool(true),
 					AllowIDToken:                                     sdk.Bool(true),
@@ -734,7 +734,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{
-				Parameters: &sdk.NewAccountParametersUnset{
+				Parameters: &sdk.AccountParametersUnset{
 					AbortDetachedQuery:                               sdk.Bool(true),
 					ActivePythonProfiler:                             sdk.Bool(true),
 					AllowClientMFACaching:                            sdk.Bool(true),

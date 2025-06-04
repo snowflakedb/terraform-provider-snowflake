@@ -59,7 +59,7 @@ func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
 	opts := &AlterAccountOptions{
 		Set: &AccountSet{
 			LegacyParameters: &AccountLevelParameters{
-				AccountParameters: &AccountParameters{
+				AccountParameters: &LegacyAccountParameters{
 					EnforceNetworkRulesForInternalStages: Bool(true),
 				},
 			},

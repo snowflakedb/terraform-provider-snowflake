@@ -106,7 +106,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
 				LegacyParameters: &AccountLevelParameters{
-					AccountParameters: &AccountParameters{
+					AccountParameters: &LegacyAccountParameters{
 						ClientEncryptionKeySize:       Int(128),
 						PreventUnloadToInternalStages: Bool(true),
 					},
@@ -139,9 +139,9 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
 				LegacyParameters: &AccountLevelParametersUnset{
-					AccountParameters: &AccountParametersUnset{
+					AccountParameters: &LegacyAccountParametersUnset{
 						InitialReplicationSizeLimitInTB: Bool(true),
-						SsoLoginPage:                    Bool(true),
+						SSOLoginPage:                    Bool(true),
 					},
 					SessionParameters: &SessionParametersUnset{
 						SimulatedDataSharingConsumer: Bool(true),
