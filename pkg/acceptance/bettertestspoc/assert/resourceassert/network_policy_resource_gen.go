@@ -36,32 +36,26 @@ func (n *NetworkPolicyResourceAssert) HasNameString(expected string) *NetworkPol
 	n.AddAssertion(assert.ValueSet("name", expected))
 	return n
 }
-
 func (n *NetworkPolicyResourceAssert) HasAllowedIpListString(expected string) *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("allowed_ip_list", expected))
 	return n
 }
-
 func (n *NetworkPolicyResourceAssert) HasAllowedNetworkRuleListString(expected string) *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("allowed_network_rule_list", expected))
 	return n
 }
-
 func (n *NetworkPolicyResourceAssert) HasBlockedIpListString(expected string) *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("blocked_ip_list", expected))
 	return n
 }
-
 func (n *NetworkPolicyResourceAssert) HasBlockedNetworkRuleListString(expected string) *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("blocked_network_rule_list", expected))
 	return n
 }
-
 func (n *NetworkPolicyResourceAssert) HasCommentString(expected string) *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("comment", expected))
 	return n
 }
-
 func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameString(expected string) *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return n
@@ -75,32 +69,10 @@ func (n *NetworkPolicyResourceAssert) HasNoName() *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueNotSet("name"))
 	return n
 }
-
-func (n *NetworkPolicyResourceAssert) HasNoAllowedIpList() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("allowed_ip_list.#", "0"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasNoAllowedNetworkRuleList() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("allowed_network_rule_list.#", "0"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasNoBlockedIpList() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("blocked_ip_list.#", "0"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasNoBlockedNetworkRuleList() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("blocked_network_rule_list.#", "0"))
-	return n
-}
-
 func (n *NetworkPolicyResourceAssert) HasNoComment() *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueNotSet("comment"))
 	return n
 }
-
 func (n *NetworkPolicyResourceAssert) HasNoFullyQualifiedName() *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return n
@@ -109,6 +81,26 @@ func (n *NetworkPolicyResourceAssert) HasNoFullyQualifiedName() *NetworkPolicyRe
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (n *NetworkPolicyResourceAssert) HasAllowedIpListEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("allowed_ip_list.#", "0"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasAllowedNetworkRuleListEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("allowed_network_rule_list.#", "0"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasBlockedIpListEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("blocked_ip_list.#", "0"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasBlockedNetworkRuleListEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("blocked_network_rule_list.#", "0"))
+	return n
+}
 
 func (n *NetworkPolicyResourceAssert) HasCommentEmpty() *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("comment", ""))
@@ -126,26 +118,6 @@ func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameEmpty() *NetworkPolic
 
 func (n *NetworkPolicyResourceAssert) HasNameNotEmpty() *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValuePresent("name"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasAllowedIpListNotEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValuePresent("allowed_ip_list"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasAllowedNetworkRuleListNotEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValuePresent("allowed_network_rule_list"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasBlockedIpListNotEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValuePresent("blocked_ip_list"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasBlockedNetworkRuleListNotEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValuePresent("blocked_network_rule_list"))
 	return n
 }
 

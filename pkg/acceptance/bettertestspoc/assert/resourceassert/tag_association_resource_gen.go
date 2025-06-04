@@ -36,22 +36,18 @@ func (t *TagAssociationResourceAssert) HasObjectIdentifiersString(expected strin
 	t.AddAssertion(assert.ValueSet("object_identifiers", expected))
 	return t
 }
-
 func (t *TagAssociationResourceAssert) HasObjectTypeString(expected string) *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueSet("object_type", expected))
 	return t
 }
-
 func (t *TagAssociationResourceAssert) HasSkipValidationString(expected string) *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueSet("skip_validation", expected))
 	return t
 }
-
 func (t *TagAssociationResourceAssert) HasTagIdString(expected string) *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueSet("tag_id", expected))
 	return t
 }
-
 func (t *TagAssociationResourceAssert) HasTagValueString(expected string) *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueSet("tag_value", expected))
 	return t
@@ -61,26 +57,18 @@ func (t *TagAssociationResourceAssert) HasTagValueString(expected string) *TagAs
 // Attribute no value checks //
 ///////////////////////////////
 
-func (t *TagAssociationResourceAssert) HasNoObjectIdentifiers() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueSet("object_identifiers.#", "0"))
-	return t
-}
-
 func (t *TagAssociationResourceAssert) HasNoObjectType() *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("object_type"))
 	return t
 }
-
 func (t *TagAssociationResourceAssert) HasNoSkipValidation() *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("skip_validation"))
 	return t
 }
-
 func (t *TagAssociationResourceAssert) HasNoTagId() *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("tag_id"))
 	return t
 }
-
 func (t *TagAssociationResourceAssert) HasNoTagValue() *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("tag_value"))
 	return t
@@ -90,14 +78,14 @@ func (t *TagAssociationResourceAssert) HasNoTagValue() *TagAssociationResourceAs
 // Attribute empty checks //
 ////////////////////////////
 
+func (t *TagAssociationResourceAssert) HasSkipValidationEmpty() *TagAssociationResourceAssert {
+	t.AddAssertion(assert.ValueSet("skip_validation", ""))
+	return t
+}
+
 ///////////////////////////////
 // Attribute presence checks //
 ///////////////////////////////
-
-func (t *TagAssociationResourceAssert) HasObjectIdentifiersNotEmpty() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValuePresent("object_identifiers"))
-	return t
-}
 
 func (t *TagAssociationResourceAssert) HasObjectTypeNotEmpty() *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValuePresent("object_type"))

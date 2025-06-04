@@ -36,112 +36,90 @@ func (s *SchemaResourceAssert) HasDatabaseString(expected string) *SchemaResourc
 	s.AddAssertion(assert.ValueSet("database", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNameString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("name", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasCatalogString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("catalog", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasCommentString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("comment", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasDataRetentionTimeInDaysString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("data_retention_time_in_days", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasDefaultDdlCollationString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("default_ddl_collation", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasEnableConsoleOutputString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("enable_console_output", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasExternalVolumeString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("external_volume", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasFullyQualifiedNameString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasIsTransientString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("is_transient", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasLogLevelString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("log_level", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasMaxDataExtensionTimeInDaysString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasPipeExecutionPausedString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("pipe_execution_paused", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasReplaceInvalidCharactersString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("replace_invalid_characters", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasStorageSerializationPolicyString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_serialization_policy", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasSuspendTaskAfterNumFailuresString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasTaskAutoRetryAttemptsString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("task_auto_retry_attempts", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasTraceLevelString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("trace_level", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasUserTaskManagedInitialWarehouseSizeString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasUserTaskTimeoutMsString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("user_task_timeout_ms", expected))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasWithManagedAccessString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("with_managed_access", expected))
 	return s
@@ -155,112 +133,90 @@ func (s *SchemaResourceAssert) HasNoDatabase() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("database"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoName() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoCatalog() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("catalog"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoComment() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("comment"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoDataRetentionTimeInDays() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("data_retention_time_in_days"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoDefaultDdlCollation() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("default_ddl_collation"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoEnableConsoleOutput() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("enable_console_output"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoExternalVolume() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("external_volume"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoFullyQualifiedName() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoIsTransient() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("is_transient"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoLogLevel() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("log_level"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoMaxDataExtensionTimeInDays() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("max_data_extension_time_in_days"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoPipeExecutionPaused() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("pipe_execution_paused"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("quoted_identifiers_ignore_case"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoReplaceInvalidCharacters() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("replace_invalid_characters"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoStorageSerializationPolicy() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("storage_serialization_policy"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoSuspendTaskAfterNumFailures() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("suspend_task_after_num_failures"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoTaskAutoRetryAttempts() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("task_auto_retry_attempts"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoTraceLevel() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("trace_level"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoUserTaskManagedInitialWarehouseSize() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("user_task_managed_initial_warehouse_size"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoUserTaskMinimumTriggerIntervalInSeconds() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("user_task_minimum_trigger_interval_in_seconds"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoUserTaskTimeoutMs() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("user_task_timeout_ms"))
 	return s
 }
-
 func (s *SchemaResourceAssert) HasNoWithManagedAccess() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("with_managed_access"))
 	return s
@@ -280,8 +236,18 @@ func (s *SchemaResourceAssert) HasCommentEmpty() *SchemaResourceAssert {
 	return s
 }
 
+func (s *SchemaResourceAssert) HasDataRetentionTimeInDaysEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("data_retention_time_in_days", ""))
+	return s
+}
+
 func (s *SchemaResourceAssert) HasDefaultDdlCollationEmpty() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("default_ddl_collation", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasEnableConsoleOutputEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("enable_console_output", ""))
 	return s
 }
 
@@ -305,8 +271,38 @@ func (s *SchemaResourceAssert) HasLogLevelEmpty() *SchemaResourceAssert {
 	return s
 }
 
+func (s *SchemaResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasPipeExecutionPausedEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("pipe_execution_paused", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasReplaceInvalidCharactersEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("replace_invalid_characters", ""))
+	return s
+}
+
 func (s *SchemaResourceAssert) HasStorageSerializationPolicyEmpty() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_serialization_policy", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasSuspendTaskAfterNumFailuresEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasTaskAutoRetryAttemptsEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("task_auto_retry_attempts", ""))
 	return s
 }
 
@@ -317,6 +313,16 @@ func (s *SchemaResourceAssert) HasTraceLevelEmpty() *SchemaResourceAssert {
 
 func (s *SchemaResourceAssert) HasUserTaskManagedInitialWarehouseSizeEmpty() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskTimeoutMsEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("user_task_timeout_ms", ""))
 	return s
 }
 

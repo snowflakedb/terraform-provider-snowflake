@@ -34,13 +34,13 @@
 {{ range .Attributes -}}
     {{ if not .IsRequired }}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}Empty() *{{ $assertName }} {
-            {{ if .IsCollection }}
+            {{ if .IsCollection -}}
                 {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}.#", "0"))
                 return {{ $assertVar }}
-            {{ else }}
+            {{ else -}}
                 {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", ""))
                 return {{ $assertVar }}
-            {{ end }}
+            {{ end -}}
         }
     {{ end }}
 {{ end -}}

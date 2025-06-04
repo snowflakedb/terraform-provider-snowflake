@@ -36,52 +36,42 @@ func (s *StreamlitResourceAssert) HasDatabaseString(expected string) *StreamlitR
 	s.AddAssertion(assert.ValueSet("database", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasSchemaString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("schema", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNameString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("name", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasCommentString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("comment", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasDirectoryLocationString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("directory_location", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasExternalAccessIntegrationsString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("external_access_integrations", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasFullyQualifiedNameString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasMainFileString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("main_file", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasQueryWarehouseString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("query_warehouse", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasStageString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("stage", expected))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasTitleString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("title", expected))
 	return s
@@ -95,52 +85,38 @@ func (s *StreamlitResourceAssert) HasNoDatabase() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("database"))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNoSchema() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("schema"))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNoName() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNoComment() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("comment"))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNoDirectoryLocation() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("directory_location"))
 	return s
 }
-
-func (s *StreamlitResourceAssert) HasNoExternalAccessIntegrations() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
-	return s
-}
-
 func (s *StreamlitResourceAssert) HasNoFullyQualifiedName() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNoMainFile() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("main_file"))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNoQueryWarehouse() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("query_warehouse"))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNoStage() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("stage"))
 	return s
 }
-
 func (s *StreamlitResourceAssert) HasNoTitle() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("title"))
 	return s
@@ -157,6 +133,11 @@ func (s *StreamlitResourceAssert) HasCommentEmpty() *StreamlitResourceAssert {
 
 func (s *StreamlitResourceAssert) HasDirectoryLocationEmpty() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("directory_location", ""))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasExternalAccessIntegrationsEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
 	return s
 }
 
@@ -201,11 +182,6 @@ func (s *StreamlitResourceAssert) HasCommentNotEmpty() *StreamlitResourceAssert 
 
 func (s *StreamlitResourceAssert) HasDirectoryLocationNotEmpty() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValuePresent("directory_location"))
-	return s
-}
-
-func (s *StreamlitResourceAssert) HasExternalAccessIntegrationsNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("external_access_integrations"))
 	return s
 }
 

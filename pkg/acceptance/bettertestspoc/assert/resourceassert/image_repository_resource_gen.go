@@ -36,22 +36,18 @@ func (i *ImageRepositoryResourceAssert) HasDatabaseString(expected string) *Imag
 	i.AddAssertion(assert.ValueSet("database", expected))
 	return i
 }
-
 func (i *ImageRepositoryResourceAssert) HasSchemaString(expected string) *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueSet("schema", expected))
 	return i
 }
-
 func (i *ImageRepositoryResourceAssert) HasNameString(expected string) *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueSet("name", expected))
 	return i
 }
-
 func (i *ImageRepositoryResourceAssert) HasCommentString(expected string) *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueSet("comment", expected))
 	return i
 }
-
 func (i *ImageRepositoryResourceAssert) HasFullyQualifiedNameString(expected string) *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return i
@@ -65,22 +61,18 @@ func (i *ImageRepositoryResourceAssert) HasNoDatabase() *ImageRepositoryResource
 	i.AddAssertion(assert.ValueNotSet("database"))
 	return i
 }
-
 func (i *ImageRepositoryResourceAssert) HasNoSchema() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueNotSet("schema"))
 	return i
 }
-
 func (i *ImageRepositoryResourceAssert) HasNoName() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueNotSet("name"))
 	return i
 }
-
 func (i *ImageRepositoryResourceAssert) HasNoComment() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueNotSet("comment"))
 	return i
 }
-
 func (i *ImageRepositoryResourceAssert) HasNoFullyQualifiedName() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return i

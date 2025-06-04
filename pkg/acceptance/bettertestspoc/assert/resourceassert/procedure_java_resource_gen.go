@@ -36,117 +36,94 @@ func (p *ProcedureJavaResourceAssert) HasDatabaseString(expected string) *Proced
 	p.AddAssertion(assert.ValueSet("database", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasSchemaString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("schema", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNameString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("name", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasArgumentsString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasCommentString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasEnableConsoleOutputString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("enable_console_output", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasExecuteAsString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("execute_as", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasExternalAccessIntegrationsString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("external_access_integrations", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasFullyQualifiedNameString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasHandlerString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("handler", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasImportsString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("imports", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasIsSecureString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("is_secure", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasLogLevelString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("log_level", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasMetricLevelString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("metric_level", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNullInputBehaviorString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasPackagesString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("packages", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasProcedureDefinitionString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("procedure_definition", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasProcedureLanguageString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("procedure_language", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasReturnTypeString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("return_type", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasRuntimeVersionString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("runtime_version", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasSecretsString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("secrets", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasSnowparkPackageString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("snowpark_package", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasTargetPathString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("target_path", expected))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasTraceLevelString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("trace_level", expected))
 	return p
@@ -160,117 +137,70 @@ func (p *ProcedureJavaResourceAssert) HasNoDatabase() *ProcedureJavaResourceAsse
 	p.AddAssertion(assert.ValueNotSet("database"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoSchema() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("schema"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoName() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("name"))
 	return p
 }
-
-func (p *ProcedureJavaResourceAssert) HasNoArguments() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments.#", "0"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoComment() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoEnableConsoleOutput() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("enable_console_output"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoExecuteAs() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("execute_as"))
 	return p
 }
-
-func (p *ProcedureJavaResourceAssert) HasNoExternalAccessIntegrations() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoFullyQualifiedName() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoHandler() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("handler"))
 	return p
 }
-
-func (p *ProcedureJavaResourceAssert) HasNoImports() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("imports.#", "0"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoIsSecure() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("is_secure"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoLogLevel() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("log_level"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoMetricLevel() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("metric_level"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoNullInputBehavior() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
 	return p
 }
-
-func (p *ProcedureJavaResourceAssert) HasNoPackages() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("packages.#", "0"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoProcedureDefinition() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("procedure_definition"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoProcedureLanguage() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("procedure_language"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoReturnType() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("return_type"))
 	return p
 }
-
 func (p *ProcedureJavaResourceAssert) HasNoRuntimeVersion() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("runtime_version"))
 	return p
 }
-
-func (p *ProcedureJavaResourceAssert) HasNoSecrets() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("secrets.#", "0"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoSnowparkPackage() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("snowpark_package"))
 	return p
 }
-
-func (p *ProcedureJavaResourceAssert) HasNoTargetPath() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("target_path.#", "0"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasNoTraceLevel() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("trace_level"))
 	return p
@@ -280,8 +210,18 @@ func (p *ProcedureJavaResourceAssert) HasNoTraceLevel() *ProcedureJavaResourceAs
 // Attribute empty checks //
 ////////////////////////////
 
+func (p *ProcedureJavaResourceAssert) HasArgumentsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	return p
+}
+
 func (p *ProcedureJavaResourceAssert) HasCommentEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasEnableConsoleOutputEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("enable_console_output", ""))
 	return p
 }
 
@@ -290,8 +230,18 @@ func (p *ProcedureJavaResourceAssert) HasExecuteAsEmpty() *ProcedureJavaResource
 	return p
 }
 
+func (p *ProcedureJavaResourceAssert) HasExternalAccessIntegrationsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	return p
+}
+
 func (p *ProcedureJavaResourceAssert) HasFullyQualifiedNameEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasImportsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("imports.#", "0"))
 	return p
 }
 
@@ -315,6 +265,11 @@ func (p *ProcedureJavaResourceAssert) HasNullInputBehaviorEmpty() *ProcedureJava
 	return p
 }
 
+func (p *ProcedureJavaResourceAssert) HasPackagesEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("packages.#", "0"))
+	return p
+}
+
 func (p *ProcedureJavaResourceAssert) HasProcedureDefinitionEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("procedure_definition", ""))
 	return p
@@ -322,6 +277,16 @@ func (p *ProcedureJavaResourceAssert) HasProcedureDefinitionEmpty() *ProcedureJa
 
 func (p *ProcedureJavaResourceAssert) HasProcedureLanguageEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("procedure_language", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasSecretsEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("secrets.#", "0"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasTargetPathEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("target_path.#", "0"))
 	return p
 }
 
@@ -349,11 +314,6 @@ func (p *ProcedureJavaResourceAssert) HasNameNotEmpty() *ProcedureJavaResourceAs
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasArgumentsNotEmpty() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValuePresent("arguments"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasCommentNotEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValuePresent("comment"))
 	return p
@@ -369,11 +329,6 @@ func (p *ProcedureJavaResourceAssert) HasExecuteAsNotEmpty() *ProcedureJavaResou
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasExternalAccessIntegrationsNotEmpty() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValuePresent("external_access_integrations"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasFullyQualifiedNameNotEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
 	return p
@@ -381,11 +336,6 @@ func (p *ProcedureJavaResourceAssert) HasFullyQualifiedNameNotEmpty() *Procedure
 
 func (p *ProcedureJavaResourceAssert) HasHandlerNotEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValuePresent("handler"))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasImportsNotEmpty() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValuePresent("imports"))
 	return p
 }
 
@@ -409,11 +359,6 @@ func (p *ProcedureJavaResourceAssert) HasNullInputBehaviorNotEmpty() *ProcedureJ
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasPackagesNotEmpty() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValuePresent("packages"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasProcedureDefinitionNotEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValuePresent("procedure_definition"))
 	return p
@@ -434,18 +379,8 @@ func (p *ProcedureJavaResourceAssert) HasRuntimeVersionNotEmpty() *ProcedureJava
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasSecretsNotEmpty() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValuePresent("secrets"))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasSnowparkPackageNotEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValuePresent("snowpark_package"))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasTargetPathNotEmpty() *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValuePresent("target_path"))
 	return p
 }
 
