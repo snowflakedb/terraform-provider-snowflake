@@ -388,9 +388,11 @@ var AllLogLevels = []LogLevel{
 type TraceLevel string
 
 const (
-	TraceLevelAlways  TraceLevel = "ALWAYS"
-	TraceLevelOnEvent TraceLevel = "ON_EVENT"
-	TraceLevelOff     TraceLevel = "OFF"
+	TraceLevelAlways TraceLevel = "ALWAYS"
+	// TODO: Wrong value?
+	TraceLevelOnEvent   TraceLevel = "ON_EVENT"
+	TraceLevelPropagate TraceLevel = "PROPAGATE"
+	TraceLevelOff       TraceLevel = "OFF"
 )
 
 func ToTraceLevel(value string) (TraceLevel, error) {

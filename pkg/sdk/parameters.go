@@ -1207,6 +1207,7 @@ var AllProcedureParameters = []ProcedureParameter{
 }
 
 // AccountParameters is based on https://docs.snowflake.com/en/sql-reference/parameters.
+// TODO: Revert
 type AccountParameters struct {
 	AbortDetachedQuery                               *bool   `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
 	ActivePythonProfiler                             *string `ddl:"parameter,double_quotes" sql:"ACTIVE_PYTHON_PROFILER"`
@@ -1265,7 +1266,7 @@ type AccountParameters struct {
 	HybridTableLockTimeout                           *int    `ddl:"parameter" sql:"HYBRID_TABLE_LOCK_TIMEOUT"`
 	// InitialReplicationSizeLimitInTB is a string because values like 3.0 get rounded to 3, resulting in an error in Snowflake.
 	// This is still validated below.
-	InitialReplicationSizeLimitInTB                  *string      `ddl:"parameter,double_quotes" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
+	InitialReplicationSizeLimitInTB                  *string      `ddl:"parameter,no_quotes" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
 	JdbcEnablePutGet                                 *bool        `ddl:"parameter" sql:"JDBC_ENABLE_PUT_GET"`
 	JdbcTreatDecimalAsInt                            *bool        `ddl:"parameter" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
 	JdbcTreatTimestampNtzAsUtc                       *bool        `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
@@ -1276,7 +1277,7 @@ type AccountParameters struct {
 	LockTimeout                                      *int         `ddl:"parameter" sql:"LOCK_TIMEOUT"`
 	LogLevel                                         *string      `ddl:"parameter,double_quotes" sql:"LOG_LEVEL"`
 	MaxConcurrencyLevel                              *int         `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
-	MaxDataExtensionTimeInDays                       *string      `ddl:"parameter,double_quotes" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays                       *int         `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	MetricLevel                                      *MetricLevel `ddl:"parameter,double_quotes" sql:"METRIC_LEVEL"`
 	MinDataRetentionTimeInDays                       *int         `ddl:"parameter" sql:"MIN_DATA_RETENTION_TIME_IN_DAYS"`
 	MultiStatementCount                              *int         `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
@@ -1286,7 +1287,7 @@ type AccountParameters struct {
 	OdbcTreatDecimalAsInt                            *bool        `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
 	PeriodicDataRekeying                             *bool        `ddl:"parameter" sql:"PERIODIC_DATA_REKEYING"`
 	PipeExecutionPaused                              *bool        `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
-	PreventLoadFromInlineURL                         *bool        `ddl:"parameter" sql:"PREVENT_LOAD_FROM_INLINE_URL"`
+	PreventLoadFromInlineURL                         *bool        `ddl:"parameter" sql:"PREVENT_LOAD_FROM_INLINE_URL"` // TODO: Not in the documentation
 	PreventUnloadToInlineURL                         *bool        `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INLINE_URL"`
 	PreventUnloadToInternalStages                    *bool        `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
 	PythonProfilerModules                            *string      `ddl:"parameter,double_quotes" sql:"PYTHON_PROFILER_MODULES"`
@@ -1334,6 +1335,130 @@ type AccountParameters struct {
 	WeekStart                                        *int         `ddl:"parameter" sql:"WEEK_START"`
 }
 
+// TODO: Rename
+type AccountParameters2 struct {
+	AbortDetachedQuery                               *bool                       `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
+	ActivePythonProfiler                             *ActivePythonProfiler       `ddl:"parameter,double_quotes" sql:"ACTIVE_PYTHON_PROFILER"`
+	AllowClientMFACaching                            *bool                       `ddl:"parameter" sql:"ALLOW_CLIENT_MFA_CACHING"`
+	AllowIDToken                                     *bool                       `ddl:"parameter" sql:"ALLOW_ID_TOKEN"` // #nosec G101
+	Autocommit                                       *bool                       `ddl:"parameter" sql:"AUTOCOMMIT"`
+	BaseLocationPrefix                               *string                     `ddl:"parameter,double_quotes" sql:"BASE_LOCATION_PREFIX"`
+	BinaryInputFormat                                *BinaryInputFormat          `ddl:"parameter,double_quotes" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                               *BinaryOutputFormat         `ddl:"parameter,double_quotes" sql:"BINARY_OUTPUT_FORMAT"`
+	Catalog                                          *string                     `ddl:"parameter,double_quotes" sql:"CATALOG"`
+	CatalogSync                                      *string                     `ddl:"parameter,double_quotes" sql:"CATALOG_SYNC"`
+	ClientEnableLogInfoStatementParameters           *bool                       `ddl:"parameter" sql:"CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS"`
+	ClientEncryptionKeySize                          *int                        `ddl:"parameter" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
+	ClientMemoryLimit                                *int                        `ddl:"parameter" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx            *bool                       `ddl:"parameter" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientMetadataUseSessionDatabase                 *bool                       `ddl:"parameter" sql:"CLIENT_METADATA_USE_SESSION_DATABASE"`
+	ClientPrefetchThreads                            *int                        `ddl:"parameter" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                            *int                        `ddl:"parameter" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive                *bool                       `ddl:"parameter" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                           *bool                       `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency         *int                        `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping                       *ClientTimestampTypeMapping `ddl:"parameter,double_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	CortexEnabledCrossRegion                         *string                     `ddl:"parameter,double_quotes" sql:"CORTEX_ENABLED_CROSS_REGION"`
+	CortexModelsAllowlist                            *string                     `ddl:"parameter,double_quotes" sql:"CORTEX_MODELS_ALLOWLIST"`
+	CsvTimestampFormat                               *string                     `ddl:"parameter,double_quotes" sql:"CSV_TIMESTAMP_FORMAT"`
+	DataRetentionTimeInDays                          *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	DateInputFormat                                  *string                     `ddl:"parameter,double_quotes" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                                 *string                     `ddl:"parameter,double_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	DefaultDDLCollation                              *string                     `ddl:"parameter,double_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu                    *string                     `ddl:"parameter,double_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu                    *string                     `ddl:"parameter,double_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
+	DefaultNullOrdering                              *DefaultNullOrdering        `ddl:"parameter,double_quotes" sql:"DEFAULT_NULL_ORDERING"`
+	DefaultStreamlitNotebookWarehouse                *AccountObjectIdentifier    `ddl:"parameter,double_quotes" sql:"DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE"`
+	DisableUiDownloadButton                          *bool                       `ddl:"parameter" sql:"DISABLE_UI_DOWNLOAD_BUTTON"`
+	DisableUserPrivilegeGrants                       *bool                       `ddl:"parameter" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
+	EnableAutomaticSensitiveDataClassificationLog    *bool                       `ddl:"parameter" sql:"ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG"`
+	EnableEgressCostOptimizer                        *bool                       `ddl:"parameter" sql:"ENABLE_EGRESS_COST_OPTIMIZER"`
+	EnableIdentifierFirstLogin                       *bool                       `ddl:"parameter" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
+	EnableInternalStagesPrivatelink                  *bool                       `ddl:"parameter" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
+	EnableTriSecretAndRekeyOptOutForImageRepository  *bool                       `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`   // #nosec G101
+	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage *bool                       `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE"` // #nosec G101
+	EnableUnhandledExceptionsReporting               *bool                       `ddl:"parameter" sql:"ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"`
+	EnableUnloadPhysicalTypeOptimization             *bool                       `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	EnableUnredactedQuerySyntaxError                 *bool                       `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	EnableUnredactedSecureObjectError                *bool                       `ddl:"parameter" sql:"ENABLE_UNREDACTED_SECURE_OBJECT_ERROR"`
+	EnforceNetworkRulesForInternalStages             *bool                       `ddl:"parameter" sql:"ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES"`
+	ErrorOnNondeterministicMerge                     *bool                       `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate                    *bool                       `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	EventTable                                       *SchemaObjectIdentifier     `ddl:"parameter,double_quotes" sql:"EVENT_TABLE"`
+	ExternalOAuthAddPrivilegedRolesToBlockedList     *bool                       `ddl:"parameter" sql:"EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
+	ExternalVolume                                   *AccountObjectIdentifier    `ddl:"parameter,double_quotes" sql:"EXTERNAL_VOLUME"`
+	GeographyOutputFormat                            *GeographyOutputFormat      `ddl:"parameter,double_quotes" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                             *GeometryOutputFormat       `ddl:"parameter,double_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	HybridTableLockTimeout                           *int                        `ddl:"parameter" sql:"HYBRID_TABLE_LOCK_TIMEOUT"`
+	// InitialReplicationSizeLimitInTB is a string because values like 3.0 get rounded to 3, resulting in an error in Snowflake.
+	// This is still validated below.
+	InitialReplicationSizeLimitInTB                  *string                  `ddl:"parameter,no_quotes" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
+	JdbcTreatDecimalAsInt                            *bool                    `ddl:"parameter" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
+	JdbcTreatTimestampNtzAsUtc                       *bool                    `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                           *bool                    `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                                       *int                     `ddl:"parameter" sql:"JSON_INDENT"`
+	JsTreatIntegerAsBigInt                           *bool                    `ddl:"parameter" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
+	ListingAutoFulfillmentReplicationRefreshSchedule *string                  `ddl:"parameter,double_quotes" sql:"LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE"`
+	LockTimeout                                      *int                     `ddl:"parameter" sql:"LOCK_TIMEOUT"`
+	LogLevel                                         *LogLevel                `ddl:"parameter,double_quotes" sql:"LOG_LEVEL"`
+	MaxConcurrencyLevel                              *int                     `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
+	MaxDataExtensionTimeInDays                       *int                     `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	MetricLevel                                      *MetricLevel             `ddl:"parameter,double_quotes" sql:"METRIC_LEVEL"`
+	MinDataRetentionTimeInDays                       *int                     `ddl:"parameter" sql:"MIN_DATA_RETENTION_TIME_IN_DAYS"`
+	MultiStatementCount                              *int                     `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
+	NetworkPolicy                                    *AccountObjectIdentifier `ddl:"parameter,double_quotes" sql:"NETWORK_POLICY"`
+	NoorderSequenceAsDefault                         *bool                    `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OAuthAddPrivilegedRolesToBlockedList             *bool                    `ddl:"parameter" sql:"OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
+	OdbcTreatDecimalAsInt                            *bool                    `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	PeriodicDataRekeying                             *bool                    `ddl:"parameter" sql:"PERIODIC_DATA_REKEYING"`
+	PipeExecutionPaused                              *bool                    `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
+	PreventUnloadToInlineURL                         *bool                    `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INLINE_URL"`
+	PreventUnloadToInternalStages                    *bool                    `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	// TOOD: A list
+	PythonProfilerModules                      *string                           `ddl:"parameter,double_quotes" sql:"PYTHON_PROFILER_MODULES"`
+	PythonProfilerTargetStage                  *SchemaObjectIdentifier           `ddl:"parameter,double_quotes" sql:"PYTHON_PROFILER_TARGET_STAGE"`
+	QueryTag                                   *string                           `ddl:"parameter,double_quotes" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase                *bool                             `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	ReplaceInvalidCharacters                   *bool                             `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	RequireStorageIntegrationForStageCreation  *bool                             `ddl:"parameter" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION"`
+	RequireStorageIntegrationForStageOperation *bool                             `ddl:"parameter" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION"`
+	RowsPerResultset                           *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                         *string                           `ddl:"parameter,double_quotes" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	SamlIdentityProvider                       *string                           `ddl:"parameter,double_quotes" sql:"SAML_IDENTITY_PROVIDER"`
+	SearchPath                                 *string                           `ddl:"parameter,double_quotes" sql:"SEARCH_PATH"`
+	ServerlessTaskMaxStatementSize             *WarehouseSize                    `ddl:"parameter,double_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
+	ServerlessTaskMinStatementSize             *WarehouseSize                    `ddl:"parameter,double_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	SimulatedDataSharingConsumer               *string                           `ddl:"parameter,double_quotes" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
+	SsoLoginPage                               *bool                             `ddl:"parameter" sql:"SSO_LOGIN_PAGE"`
+	StatementQueuedTimeoutInSeconds            *int                              `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                  *int                              `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StorageSerializationPolicy                 *StorageSerializationPolicy       `ddl:"parameter,double_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
+	StrictJsonOutput                           *bool                             `ddl:"parameter" sql:"STRICT_JSON_OUTPUT"`
+	SuspendTaskAfterNumFailures                *int                              `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
+	TaskAutoRetryAttempts                      *int                              `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
+	TimestampDayIsAlways24h                    *bool                             `ddl:"parameter" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                       *string                           `ddl:"parameter,double_quotes" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                   *string                           `ddl:"parameter,double_quotes" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                   *string                           `ddl:"parameter,double_quotes" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                      *string                           `ddl:"parameter,double_quotes" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                       *TimestampTypeMapping             `ddl:"parameter,double_quotes" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                    *string                           `ddl:"parameter,double_quotes" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                   *string                           `ddl:"parameter,double_quotes" sql:"TIMEZONE"`
+	TimeInputFormat                            *string                           `ddl:"parameter,double_quotes" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                           *string                           `ddl:"parameter,double_quotes" sql:"TIME_OUTPUT_FORMAT"`
+	TraceLevel                                 *TraceLevel                       `ddl:"parameter,double_quotes" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                    *bool                             `ddl:"parameter" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel           *TransactionDefaultIsolationLevel `ddl:"parameter,double_quotes" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                       *int                              `ddl:"parameter" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                       *UnsupportedDDLAction             `ddl:"parameter,double_quotes" sql:"UNSUPPORTED_DDL_ACTION"`
+	UserTaskManagedInitialWarehouseSize        *WarehouseSize                    `ddl:"parameter,double_quotes" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
+	UserTaskMinimumTriggerIntervalInSeconds    *int                              `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	UserTaskTimeoutMs                          *int                              `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
+	UseCachedResult                            *bool                             `ddl:"parameter" sql:"USE_CACHED_RESULT"`
+	WeekOfYearPolicy                           *int                              `ddl:"parameter" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                  *int                              `ddl:"parameter" sql:"WEEK_START"`
+}
+
 func (v *AccountParameters) validate() error {
 	var errs []error
 	if valueSet(v.ClientEncryptionKeySize) {
@@ -1355,6 +1480,7 @@ func (v *AccountParameters) validate() error {
 	return errors.Join(errs...)
 }
 
+// TODO: Revert
 type AccountParametersUnset struct {
 	AbortDetachedQuery                               *bool `ddl:"keyword" sql:"ABORT_DETACHED_QUERY"`
 	ActivePythonProfiler                             *bool `ddl:"keyword" sql:"ACTIVE_PYTHON_PROFILER"`
@@ -1448,36 +1574,158 @@ type AccountParametersUnset struct {
 	SearchPath                                       *bool `ddl:"keyword" sql:"SEARCH_PATH"`
 	ServerlessTaskMaxStatementSize                   *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 	ServerlessTaskMinStatementSize                   *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
-	//ShareRestrictions                                *bool `ddl:"keyword" sql:"SHARE_RESTRICTIONS"`
-	SimulatedDataSharingConsumer            *bool `ddl:"keyword" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
-	SsoLoginPage                            *bool `ddl:"keyword" sql:"SSO_LOGIN_PAGE"`
-	StatementQueuedTimeoutInSeconds         *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
-	StatementTimeoutInSeconds               *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-	StorageSerializationPolicy              *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
-	StrictJsonOutput                        *bool `ddl:"keyword" sql:"STRICT_JSON_OUTPUT"`
-	SuspendTaskAfterNumFailures             *bool `ddl:"keyword" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
-	TaskAutoRetryAttempts                   *bool `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
-	TimestampDayIsAlways24h                 *bool `ddl:"keyword" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
-	TimestampInputFormat                    *bool `ddl:"keyword" sql:"TIMESTAMP_INPUT_FORMAT"`
-	TimestampLtzOutputFormat                *bool `ddl:"keyword" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
-	TimestampNtzOutputFormat                *bool `ddl:"keyword" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
-	TimestampOutputFormat                   *bool `ddl:"keyword" sql:"TIMESTAMP_OUTPUT_FORMAT"`
-	TimestampTypeMapping                    *bool `ddl:"keyword" sql:"TIMESTAMP_TYPE_MAPPING"`
-	TimestampTzOutputFormat                 *bool `ddl:"keyword" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
-	Timezone                                *bool `ddl:"keyword" sql:"TIMEZONE"`
-	TimeInputFormat                         *bool `ddl:"keyword" sql:"TIME_INPUT_FORMAT"`
-	TimeOutputFormat                        *bool `ddl:"keyword" sql:"TIME_OUTPUT_FORMAT"`
-	TraceLevel                              *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
-	TransactionAbortOnError                 *bool `ddl:"keyword" sql:"TRANSACTION_ABORT_ON_ERROR"`
-	TransactionDefaultIsolationLevel        *bool `ddl:"keyword" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
-	TwoDigitCenturyStart                    *bool `ddl:"keyword" sql:"TWO_DIGIT_CENTURY_START"`
-	UnsupportedDdlAction                    *bool `ddl:"keyword" sql:"UNSUPPORTED_DDL_ACTION"`
-	UserTaskManagedInitialWarehouseSize     *bool `ddl:"keyword" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
-	UserTaskMinimumTriggerIntervalInSeconds *bool `ddl:"keyword" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
-	UserTaskTimeoutMs                       *bool `ddl:"keyword" sql:"USER_TASK_TIMEOUT_MS"`
-	UseCachedResult                         *bool `ddl:"keyword" sql:"USE_CACHED_RESULT"`
-	WeekOfYearPolicy                        *bool `ddl:"keyword" sql:"WEEK_OF_YEAR_POLICY"`
-	WeekStart                               *bool `ddl:"keyword" sql:"WEEK_START"`
+	ShareRestrictions                                *bool `ddl:"keyword" sql:"SHARE_RESTRICTIONS"`
+	SimulatedDataSharingConsumer                     *bool `ddl:"keyword" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
+	SsoLoginPage                                     *bool `ddl:"keyword" sql:"SSO_LOGIN_PAGE"`
+	StatementQueuedTimeoutInSeconds                  *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                        *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StorageSerializationPolicy                       *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
+	StrictJsonOutput                                 *bool `ddl:"keyword" sql:"STRICT_JSON_OUTPUT"`
+	SuspendTaskAfterNumFailures                      *bool `ddl:"keyword" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
+	TaskAutoRetryAttempts                            *bool `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
+	TimestampDayIsAlways24h                          *bool `ddl:"keyword" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                             *bool `ddl:"keyword" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                         *bool `ddl:"keyword" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                         *bool `ddl:"keyword" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                            *bool `ddl:"keyword" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                             *bool `ddl:"keyword" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                          *bool `ddl:"keyword" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                         *bool `ddl:"keyword" sql:"TIMEZONE"`
+	TimeInputFormat                                  *bool `ddl:"keyword" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                                 *bool `ddl:"keyword" sql:"TIME_OUTPUT_FORMAT"`
+	TraceLevel                                       *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                          *bool `ddl:"keyword" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel                 *bool `ddl:"keyword" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                             *bool `ddl:"keyword" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                             *bool `ddl:"keyword" sql:"UNSUPPORTED_DDL_ACTION"`
+	UserTaskManagedInitialWarehouseSize              *bool `ddl:"keyword" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
+	UserTaskMinimumTriggerIntervalInSeconds          *bool `ddl:"keyword" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	UserTaskTimeoutMs                                *bool `ddl:"keyword" sql:"USER_TASK_TIMEOUT_MS"`
+	UseCachedResult                                  *bool `ddl:"keyword" sql:"USE_CACHED_RESULT"`
+	WeekOfYearPolicy                                 *bool `ddl:"keyword" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                        *bool `ddl:"keyword" sql:"WEEK_START"`
+}
+
+// TODO: Rename
+type AccountParametersUnset2 struct {
+	AbortDetachedQuery                               *bool `ddl:"keyword" sql:"ABORT_DETACHED_QUERY"`
+	ActivePythonProfiler                             *bool `ddl:"keyword" sql:"ACTIVE_PYTHON_PROFILER"`
+	AllowClientMFACaching                            *bool `ddl:"keyword" sql:"ALLOW_CLIENT_MFA_CACHING"`
+	AllowIDToken                                     *bool `ddl:"keyword" sql:"ALLOW_ID_TOKEN"` // #nosec G101
+	Autocommit                                       *bool `ddl:"keyword" sql:"AUTOCOMMIT"`
+	BaseLocationPrefix                               *bool `ddl:"keyword" sql:"BASE_LOCATION_PREFIX"`
+	BinaryInputFormat                                *bool `ddl:"keyword" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                               *bool `ddl:"keyword" sql:"BINARY_OUTPUT_FORMAT"`
+	Catalog                                          *bool `ddl:"keyword" sql:"CATALOG"`
+	CatalogSync                                      *bool `ddl:"keyword" sql:"CATALOG_SYNC"`
+	ClientEnableLogInfoStatementParameters           *bool `ddl:"keyword" sql:"CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS"`
+	ClientEncryptionKeySize                          *bool `ddl:"keyword" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
+	ClientMemoryLimit                                *bool `ddl:"keyword" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx            *bool `ddl:"keyword" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientMetadataUseSessionDatabase                 *bool `ddl:"keyword" sql:"CLIENT_METADATA_USE_SESSION_DATABASE"`
+	ClientPrefetchThreads                            *bool `ddl:"keyword" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                            *bool `ddl:"keyword" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive                *bool `ddl:"keyword" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                           *bool `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency         *bool `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping                       *bool `ddl:"keyword" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	CortexEnabledCrossRegion                         *bool `ddl:"keyword" sql:"CORTEX_ENABLED_CROSS_REGION"`
+	CortexModelsAllowlist                            *bool `ddl:"keyword" sql:"CORTEX_MODELS_ALLOWLIST"`
+	CsvTimestampFormat                               *bool `ddl:"keyword" sql:"CSV_TIMESTAMP_FORMAT"`
+	DataRetentionTimeInDays                          *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	DateInputFormat                                  *bool `ddl:"keyword" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                                 *bool `ddl:"keyword" sql:"DATE_OUTPUT_FORMAT"`
+	DefaultDDLCollation                              *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu                    *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu                    *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
+	DefaultNullOrdering                              *bool `ddl:"keyword" sql:"DEFAULT_NULL_ORDERING"`
+	DefaultStreamlitNotebookWarehouse                *bool `ddl:"keyword" sql:"DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE"`
+	DisableUiDownloadButton                          *bool `ddl:"keyword" sql:"DISABLE_UI_DOWNLOAD_BUTTON"`
+	DisableUserPrivilegeGrants                       *bool `ddl:"keyword" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
+	EnableAutomaticSensitiveDataClassificationLog    *bool `ddl:"keyword" sql:"ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG"`
+	EnableEgressCostOptimizer                        *bool `ddl:"keyword" sql:"ENABLE_EGRESS_COST_OPTIMIZER"`
+	EnableIdentifierFirstLogin                       *bool `ddl:"keyword" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
+	EnableInternalStagesPrivatelink                  *bool `ddl:"keyword" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
+	EnableTriSecretAndRekeyOptOutForImageRepository  *bool `ddl:"keyword" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`   // #nosec G101
+	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage *bool `ddl:"keyword" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE"` // #nosec G101
+	EnableUnhandledExceptionsReporting               *bool `ddl:"keyword" sql:"ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"`
+	EnableUnloadPhysicalTypeOptimization             *bool `ddl:"keyword" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	EnableUnredactedQuerySyntaxError                 *bool `ddl:"keyword" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	EnableUnredactedSecureObjectError                *bool `ddl:"keyword" sql:"ENABLE_UNREDACTED_SECURE_OBJECT_ERROR"`
+	EnforceNetworkRulesForInternalStages             *bool `ddl:"keyword" sql:"ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES"`
+	ErrorOnNondeterministicMerge                     *bool `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate                    *bool `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	EventTable                                       *bool `ddl:"keyword" sql:"EVENT_TABLE"`
+	ExternalOAuthAddPrivilegedRolesToBlockedList     *bool `ddl:"keyword" sql:"EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
+	ExternalVolume                                   *bool `ddl:"keyword" sql:"EXTERNAL_VOLUME"`
+	GeographyOutputFormat                            *bool `ddl:"keyword" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                             *bool `ddl:"keyword" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	HybridTableLockTimeout                           *bool `ddl:"keyword" sql:"HYBRID_TABLE_LOCK_TIMEOUT"`
+	InitialReplicationSizeLimitInTB                  *bool `ddl:"keyword" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
+	JdbcTreatDecimalAsInt                            *bool `ddl:"keyword" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
+	JdbcTreatTimestampNtzAsUtc                       *bool `ddl:"keyword" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                           *bool `ddl:"keyword" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                                       *bool `ddl:"keyword" sql:"JSON_INDENT"`
+	JsTreatIntegerAsBigInt                           *bool `ddl:"keyword" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
+	ListingAutoFulfillmentReplicationRefreshSchedule *bool `ddl:"keyword" sql:"LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE"`
+	LockTimeout                                      *bool `ddl:"keyword" sql:"LOCK_TIMEOUT"`
+	LogLevel                                         *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	MaxConcurrencyLevel                              *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
+	MaxDataExtensionTimeInDays                       *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	MetricLevel                                      *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
+	MinDataRetentionTimeInDays                       *bool `ddl:"keyword" sql:"MIN_DATA_RETENTION_TIME_IN_DAYS"`
+	MultiStatementCount                              *bool `ddl:"keyword" sql:"MULTI_STATEMENT_COUNT"`
+	NetworkPolicy                                    *bool `ddl:"keyword" sql:"NETWORK_POLICY"`
+	NoorderSequenceAsDefault                         *bool `ddl:"keyword" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OAuthAddPrivilegedRolesToBlockedList             *bool `ddl:"keyword" sql:"OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
+	OdbcTreatDecimalAsInt                            *bool `ddl:"keyword" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	PeriodicDataRekeying                             *bool `ddl:"keyword" sql:"PERIODIC_DATA_REKEYING"`
+	PipeExecutionPaused                              *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`
+	PreventLoadFromInlineURL                         *bool `ddl:"keyword" sql:"PREVENT_LOAD_FROM_INLINE_URL"`
+	PreventUnloadToInlineURL                         *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INLINE_URL"`
+	PreventUnloadToInternalStages                    *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	PythonProfilerModules                            *bool `ddl:"keyword" sql:"PYTHON_PROFILER_MODULES"`
+	PythonProfilerTargetStage                        *bool `ddl:"keyword" sql:"PYTHON_PROFILER_TARGET_STAGE"`
+	QueryTag                                         *bool `ddl:"keyword" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase                      *bool `ddl:"keyword" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	ReplaceInvalidCharacters                         *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
+	RequireStorageIntegrationForStageCreation        *bool `ddl:"keyword" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION"`
+	RequireStorageIntegrationForStageOperation       *bool `ddl:"keyword" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION"`
+	RowsPerResultset                                 *bool `ddl:"keyword" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                               *bool `ddl:"keyword" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	SamlIdentityProvider                             *bool `ddl:"keyword" sql:"SAML_IDENTITY_PROVIDER"`
+	SearchPath                                       *bool `ddl:"keyword" sql:"SEARCH_PATH"`
+	ServerlessTaskMaxStatementSize                   *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
+	ServerlessTaskMinStatementSize                   *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	SimulatedDataSharingConsumer                     *bool `ddl:"keyword" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
+	SsoLoginPage                                     *bool `ddl:"keyword" sql:"SSO_LOGIN_PAGE"`
+	StatementQueuedTimeoutInSeconds                  *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                        *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StorageSerializationPolicy                       *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
+	StrictJsonOutput                                 *bool `ddl:"keyword" sql:"STRICT_JSON_OUTPUT"`
+	SuspendTaskAfterNumFailures                      *bool `ddl:"keyword" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
+	TaskAutoRetryAttempts                            *bool `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
+	TimestampDayIsAlways24h                          *bool `ddl:"keyword" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                             *bool `ddl:"keyword" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                         *bool `ddl:"keyword" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                         *bool `ddl:"keyword" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                            *bool `ddl:"keyword" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                             *bool `ddl:"keyword" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                          *bool `ddl:"keyword" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                         *bool `ddl:"keyword" sql:"TIMEZONE"`
+	TimeInputFormat                                  *bool `ddl:"keyword" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                                 *bool `ddl:"keyword" sql:"TIME_OUTPUT_FORMAT"`
+	TraceLevel                                       *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                          *bool `ddl:"keyword" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel                 *bool `ddl:"keyword" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                             *bool `ddl:"keyword" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                             *bool `ddl:"keyword" sql:"UNSUPPORTED_DDL_ACTION"`
+	UserTaskManagedInitialWarehouseSize              *bool `ddl:"keyword" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
+	UserTaskMinimumTriggerIntervalInSeconds          *bool `ddl:"keyword" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	UserTaskTimeoutMs                                *bool `ddl:"keyword" sql:"USER_TASK_TIMEOUT_MS"`
+	UseCachedResult                                  *bool `ddl:"keyword" sql:"USE_CACHED_RESULT"`
+	WeekOfYearPolicy                                 *bool `ddl:"keyword" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                        *bool `ddl:"keyword" sql:"WEEK_START"`
 }
 
 type ActivePythonProfiler string
@@ -1495,6 +1743,24 @@ func ToActivePythonProfiler(s string) (ActivePythonProfiler, error) {
 		return ActivePythonProfilerMemory, nil
 	default:
 		return "", fmt.Errorf("invalid active python profiler: %s", s)
+	}
+}
+
+type DefaultNullOrdering string
+
+const (
+	DefaultNullOrderingFirst DefaultNullOrdering = "FIRST"
+	DefaultNullOrderingLast  DefaultNullOrdering = "LAST"
+)
+
+func ToDefaultNullOrdering(s string) (DefaultNullOrdering, error) {
+	switch strings.ToUpper(s) {
+	case string(DefaultNullOrderingFirst):
+		return DefaultNullOrderingFirst, nil
+	case string(DefaultNullOrderingLast):
+		return DefaultNullOrderingLast, nil
+	default:
+		return "", fmt.Errorf("invalid default null ordering: %s", s)
 	}
 }
 
