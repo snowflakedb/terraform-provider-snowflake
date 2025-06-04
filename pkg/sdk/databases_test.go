@@ -79,7 +79,7 @@ func TestDatabasesCreate(t *testing.T) {
 		opts.DefaultDDLCollation = String("en_US")
 		opts.StorageSerializationPolicy = Pointer(StorageSerializationPolicyCompatible)
 		opts.LogLevel = Pointer(LogLevelInfo)
-		opts.TraceLevel = Pointer(TraceLevelOnEvent)
+		opts.TraceLevel = Pointer(TraceLevelPropagate)
 		opts.SuspendTaskAfterNumFailures = Int(10)
 		opts.TaskAutoRetryAttempts = Int(10)
 		opts.UserTaskManagedInitialWarehouseSize = Pointer(WarehouseSizeMedium)
@@ -158,7 +158,7 @@ func TestDatabasesCreateShared(t *testing.T) {
 		opts.DefaultDDLCollation = String("en_US")
 		opts.StorageSerializationPolicy = Pointer(StorageSerializationPolicyCompatible)
 		opts.LogLevel = Pointer(LogLevelInfo)
-		opts.TraceLevel = Pointer(TraceLevelOnEvent)
+		opts.TraceLevel = Pointer(TraceLevelPropagate)
 		opts.SuspendTaskAfterNumFailures = Int(10)
 		opts.TaskAutoRetryAttempts = Int(10)
 		opts.UserTaskManagedInitialWarehouseSize = Pointer(WarehouseSizeMedium)
@@ -239,7 +239,7 @@ func TestDatabasesCreateSecondary(t *testing.T) {
 		opts.DefaultDDLCollation = String("en_US")
 		opts.StorageSerializationPolicy = Pointer(StorageSerializationPolicyCompatible)
 		opts.LogLevel = Pointer(LogLevelInfo)
-		opts.TraceLevel = Pointer(TraceLevelOnEvent)
+		opts.TraceLevel = Pointer(TraceLevelPropagate)
 		opts.SuspendTaskAfterNumFailures = Int(10)
 		opts.TaskAutoRetryAttempts = Int(10)
 		opts.UserTaskManagedInitialWarehouseSize = Pointer(WarehouseSizeMedium)
@@ -391,7 +391,7 @@ func TestDatabasesAlter(t *testing.T) {
 			DefaultDDLCollation:        String("en_US"),
 			StorageSerializationPolicy: Pointer(StorageSerializationPolicyCompatible),
 			LogLevel:                   Pointer(LogLevelError),
-			TraceLevel:                 Pointer(TraceLevelOnEvent),
+			TraceLevel:                 Pointer(TraceLevelPropagate),
 			Comment:                    String("comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s SET DATA_RETENTION_TIME_IN_DAYS = 1, MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, EXTERNAL_VOLUME = %s, CATALOG = %s, REPLACE_INVALID_CHARACTERS = true, DEFAULT_DDL_COLLATION = 'en_US', STORAGE_SERIALIZATION_POLICY = COMPATIBLE, LOG_LEVEL = 'ERROR', TRACE_LEVEL = 'ON_EVENT', COMMENT = 'comment'`, opts.name.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName())

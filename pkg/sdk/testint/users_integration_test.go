@@ -99,7 +99,7 @@ func TestInt_Users(t *testing.T) {
 			HasTimezone("Europe/Warsaw").
 			HasTimeInputFormat("HH24:MI").
 			HasTimeOutputFormat("HH24:MI").
-			HasTraceLevel(sdk.TraceLevelOnEvent).
+			HasTraceLevel(sdk.TraceLevelPropagate).
 			HasTransactionAbortOnError(true).
 			HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
 			HasTwoDigitCenturyStart(1980).
@@ -799,7 +799,7 @@ func TestInt_Users(t *testing.T) {
 					Timezone:                                 sdk.String("Europe/Warsaw"),
 					TimeInputFormat:                          sdk.String("HH24:MI"),
 					TimeOutputFormat:                         sdk.String("HH24:MI"),
-					TraceLevel:                               sdk.Pointer(sdk.TraceLevelOnEvent),
+					TraceLevel:                               sdk.Pointer(sdk.TraceLevelPropagate),
 					TransactionAbortOnError:                  sdk.Bool(true),
 					TransactionDefaultIsolationLevel:         sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
 					TwoDigitCenturyStart:                     sdk.Int(1980),
@@ -1431,7 +1431,7 @@ func TestInt_Users(t *testing.T) {
 						Timezone:                                 sdk.String("Europe/Warsaw"),
 						TimeInputFormat:                          sdk.String("HH24:MI"),
 						TimeOutputFormat:                         sdk.String("HH24:MI"),
-						TraceLevel:                               sdk.Pointer(sdk.TraceLevelOnEvent),
+						TraceLevel:                               sdk.Pointer(sdk.TraceLevelPropagate),
 						TransactionAbortOnError:                  sdk.Bool(true),
 						TransactionDefaultIsolationLevel:         sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
 						TwoDigitCenturyStart:                     sdk.Int(1980),
@@ -1757,7 +1757,7 @@ func TestInt_Users(t *testing.T) {
 				Timezone:                                 sdk.String("Europe/Warsaw"),
 				TimeInputFormat:                          sdk.String("HH24:MI"),
 				TimeOutputFormat:                         sdk.String("HH24:MI"),
-				TraceLevel:                               sdk.Pointer(sdk.TraceLevelOnEvent),
+				TraceLevel:                               sdk.Pointer(sdk.TraceLevelPropagate),
 				TransactionAbortOnError:                  sdk.Bool(true),
 				TransactionDefaultIsolationLevel:         sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
 				TwoDigitCenturyStart:                     sdk.Int(1980),
