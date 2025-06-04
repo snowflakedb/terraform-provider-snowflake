@@ -36,70 +36,87 @@ func (s *Saml2SecurityIntegrationResourceAssert) HasNameString(expected string) 
 	s.AddAssertion(assert.ValueSet("name", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasAllowedEmailPatternsString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("allowed_email_patterns", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasAllowedUserDomainsString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("allowed_user_domains", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasCommentString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("comment", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasEnabledString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("enabled", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasFullyQualifiedNameString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2EnableSpInitiatedString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_enable_sp_initiated", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2ForceAuthnString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_force_authn", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2IssuerString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_issuer", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2PostLogoutRedirectUrlString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_post_logout_redirect_url", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2ProviderString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_provider", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2RequestedNameidFormatString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_requested_nameid_format", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SignRequestString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_sign_request", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SnowflakeAcsUrlString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_snowflake_acs_url", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SnowflakeIssuerUrlString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_snowflake_issuer_url", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SpInitiatedLoginPageLabelString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_sp_initiated_login_page_label", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SsoUrlString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_sso_url", expected))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2X509CertString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("saml2_x509_cert", expected))
 	return s
@@ -113,62 +130,77 @@ func (s *Saml2SecurityIntegrationResourceAssert) HasNoName() *Saml2SecurityInteg
 	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoComment() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("comment"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoEnabled() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("enabled"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoFullyQualifiedName() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2EnableSpInitiated() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_enable_sp_initiated"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2ForceAuthn() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_force_authn"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2Issuer() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_issuer"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2PostLogoutRedirectUrl() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_post_logout_redirect_url"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2Provider() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_provider"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2RequestedNameidFormat() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_requested_nameid_format"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2SignRequest() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_sign_request"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2SnowflakeAcsUrl() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_snowflake_acs_url"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2SnowflakeIssuerUrl() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_snowflake_issuer_url"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2SpInitiatedLoginPageLabel() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_sp_initiated_login_page_label"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2SsoUrl() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_sso_url"))
 	return s
 }
+
 func (s *Saml2SecurityIntegrationResourceAssert) HasNoSaml2X509Cert() *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("saml2_x509_cert"))
 	return s

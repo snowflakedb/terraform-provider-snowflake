@@ -36,38 +36,47 @@ func (r *ResourceMonitorResourceAssert) HasNameString(expected string) *Resource
 	r.AddAssertion(assert.ValueSet("name", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasCreditQuotaString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("credit_quota", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasEndTimestampString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("end_timestamp", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasFrequencyString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("frequency", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasFullyQualifiedNameString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNotifyTriggersString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("notify_triggers", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNotifyUsersString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("notify_users", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasStartTimestampString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("start_timestamp", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasSuspendImmediateTriggerString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("suspend_immediate_trigger", expected))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasSuspendTriggerString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("suspend_trigger", expected))
 	return r
@@ -81,30 +90,37 @@ func (r *ResourceMonitorResourceAssert) HasNoName() *ResourceMonitorResourceAsse
 	r.AddAssertion(assert.ValueNotSet("name"))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNoCreditQuota() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("credit_quota"))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNoEndTimestamp() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("end_timestamp"))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNoFrequency() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("frequency"))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNoFullyQualifiedName() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNoStartTimestamp() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("start_timestamp"))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNoSuspendImmediateTrigger() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("suspend_immediate_trigger"))
 	return r
 }
+
 func (r *ResourceMonitorResourceAssert) HasNoSuspendTrigger() *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("suspend_trigger"))
 	return r

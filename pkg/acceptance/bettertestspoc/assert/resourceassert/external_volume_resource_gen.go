@@ -36,18 +36,22 @@ func (e *ExternalVolumeResourceAssert) HasNameString(expected string) *ExternalV
 	e.AddAssertion(assert.ValueSet("name", expected))
 	return e
 }
+
 func (e *ExternalVolumeResourceAssert) HasAllowWritesString(expected string) *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueSet("allow_writes", expected))
 	return e
 }
+
 func (e *ExternalVolumeResourceAssert) HasCommentString(expected string) *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", expected))
 	return e
 }
+
 func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return e
 }
+
 func (e *ExternalVolumeResourceAssert) HasStorageLocationString(expected string) *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueSet("storage_location", expected))
 	return e
@@ -61,14 +65,17 @@ func (e *ExternalVolumeResourceAssert) HasNoName() *ExternalVolumeResourceAssert
 	e.AddAssertion(assert.ValueNotSet("name"))
 	return e
 }
+
 func (e *ExternalVolumeResourceAssert) HasNoAllowWrites() *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("allow_writes"))
 	return e
 }
+
 func (e *ExternalVolumeResourceAssert) HasNoComment() *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("comment"))
 	return e
 }
+
 func (e *ExternalVolumeResourceAssert) HasNoFullyQualifiedName() *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return e

@@ -7,31 +7,33 @@
 // Attribute value string checks //
 ///////////////////////////////////
 
-{{ range .Attributes -}}
+{{ range .Attributes }}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}String(expected string) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", expected))
         return {{ $assertVar }}
     }
-{{ end -}}
+
+{{ end }}
 
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
 
-{{ range .Attributes -}}
+{{ range .Attributes }}
     {{ if not .IsCollection -}}
     func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ SnakeCaseToCamel .Name }}() *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(assert.ValueNotSet("{{ .Name }}"))
         return {{ $assertVar }}
     }
-    {{ end -}}
-{{ end -}}
+
+    {{ end }}
+{{ end }}
 
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
 
-{{ range .Attributes -}}
+{{ range .Attributes }}
     {{ if not .IsRequired }}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}Empty() *{{ $assertName }} {
             {{ if .IsCollection -}}
@@ -42,8 +44,9 @@
                 return {{ $assertVar }}
             {{ end -}}
         }
+
     {{ end }}
-{{ end -}}
+{{ end }}
 
 ///////////////////////////////
 // Attribute presence checks //

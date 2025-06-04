@@ -36,18 +36,22 @@ func (s *SecondaryConnectionResourceAssert) HasNameString(expected string) *Seco
 	s.AddAssertion(assert.ValueSet("name", expected))
 	return s
 }
+
 func (s *SecondaryConnectionResourceAssert) HasAsReplicaOfString(expected string) *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueSet("as_replica_of", expected))
 	return s
 }
+
 func (s *SecondaryConnectionResourceAssert) HasCommentString(expected string) *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueSet("comment", expected))
 	return s
 }
+
 func (s *SecondaryConnectionResourceAssert) HasFullyQualifiedNameString(expected string) *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
 }
+
 func (s *SecondaryConnectionResourceAssert) HasIsPrimaryString(expected string) *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueSet("is_primary", expected))
 	return s
@@ -61,18 +65,22 @@ func (s *SecondaryConnectionResourceAssert) HasNoName() *SecondaryConnectionReso
 	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
+
 func (s *SecondaryConnectionResourceAssert) HasNoAsReplicaOf() *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("as_replica_of"))
 	return s
 }
+
 func (s *SecondaryConnectionResourceAssert) HasNoComment() *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("comment"))
 	return s
 }
+
 func (s *SecondaryConnectionResourceAssert) HasNoFullyQualifiedName() *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
 }
+
 func (s *SecondaryConnectionResourceAssert) HasNoIsPrimary() *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("is_primary"))
 	return s

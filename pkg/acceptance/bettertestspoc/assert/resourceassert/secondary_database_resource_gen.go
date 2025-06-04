@@ -36,82 +36,102 @@ func (s *SecondaryDatabaseResourceAssert) HasNameString(expected string) *Second
 	s.AddAssertion(assert.ValueSet("name", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasAsReplicaOfString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("as_replica_of", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasCatalogString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("catalog", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasCommentString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("comment", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasDataRetentionTimeInDaysString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("data_retention_time_in_days", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasDefaultDdlCollationString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("default_ddl_collation", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasEnableConsoleOutputString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("enable_console_output", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasExternalVolumeString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("external_volume", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasFullyQualifiedNameString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasIsTransientString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("is_transient", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasLogLevelString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("log_level", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasMaxDataExtensionTimeInDaysString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasReplaceInvalidCharactersString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("replace_invalid_characters", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasStorageSerializationPolicyString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_serialization_policy", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasSuspendTaskAfterNumFailuresString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasTaskAutoRetryAttemptsString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("task_auto_retry_attempts", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasTraceLevelString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("trace_level", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSizeString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", expected))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasUserTaskTimeoutMsString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("user_task_timeout_ms", expected))
 	return s
@@ -125,82 +145,102 @@ func (s *SecondaryDatabaseResourceAssert) HasNoName() *SecondaryDatabaseResource
 	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoAsReplicaOf() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("as_replica_of"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoCatalog() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("catalog"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoComment() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("comment"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoDataRetentionTimeInDays() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("data_retention_time_in_days"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoDefaultDdlCollation() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("default_ddl_collation"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoEnableConsoleOutput() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("enable_console_output"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoExternalVolume() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("external_volume"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoFullyQualifiedName() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoIsTransient() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("is_transient"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoLogLevel() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("log_level"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoMaxDataExtensionTimeInDays() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("max_data_extension_time_in_days"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("quoted_identifiers_ignore_case"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoReplaceInvalidCharacters() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("replace_invalid_characters"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoStorageSerializationPolicy() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("storage_serialization_policy"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoSuspendTaskAfterNumFailures() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("suspend_task_after_num_failures"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoTaskAutoRetryAttempts() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("task_auto_retry_attempts"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoTraceLevel() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("trace_level"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoUserTaskManagedInitialWarehouseSize() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("user_task_managed_initial_warehouse_size"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoUserTaskMinimumTriggerIntervalInSeconds() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("user_task_minimum_trigger_interval_in_seconds"))
 	return s
 }
+
 func (s *SecondaryDatabaseResourceAssert) HasNoUserTaskTimeoutMs() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("user_task_timeout_ms"))
 	return s

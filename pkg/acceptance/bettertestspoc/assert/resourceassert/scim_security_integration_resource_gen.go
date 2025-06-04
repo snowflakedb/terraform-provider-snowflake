@@ -36,30 +36,37 @@ func (s *ScimSecurityIntegrationResourceAssert) HasNameString(expected string) *
 	s.AddAssertion(assert.ValueSet("name", expected))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasCommentString(expected string) *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("comment", expected))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasEnabledString(expected string) *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("enabled", expected))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasFullyQualifiedNameString(expected string) *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasNetworkPolicyString(expected string) *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("network_policy", expected))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasRunAsRoleString(expected string) *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("run_as_role", expected))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasScimClientString(expected string) *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("scim_client", expected))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasSyncPasswordString(expected string) *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("sync_password", expected))
 	return s
@@ -73,30 +80,37 @@ func (s *ScimSecurityIntegrationResourceAssert) HasNoName() *ScimSecurityIntegra
 	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasNoComment() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("comment"))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasNoEnabled() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("enabled"))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasNoFullyQualifiedName() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasNoNetworkPolicy() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("network_policy"))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasNoRunAsRole() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("run_as_role"))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasNoScimClient() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("scim_client"))
 	return s
 }
+
 func (s *ScimSecurityIntegrationResourceAssert) HasNoSyncPassword() *ScimSecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("sync_password"))
 	return s

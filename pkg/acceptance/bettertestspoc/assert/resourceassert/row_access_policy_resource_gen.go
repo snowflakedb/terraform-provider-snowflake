@@ -36,26 +36,32 @@ func (r *RowAccessPolicyResourceAssert) HasDatabaseString(expected string) *RowA
 	r.AddAssertion(assert.ValueSet("database", expected))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasSchemaString(expected string) *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueSet("schema", expected))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasNameString(expected string) *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueSet("name", expected))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasArgumentString(expected string) *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueSet("argument", expected))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasBodyString(expected string) *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueSet("body", expected))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasCommentString(expected string) *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueSet("comment", expected))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasFullyQualifiedNameString(expected string) *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return r
@@ -69,22 +75,27 @@ func (r *RowAccessPolicyResourceAssert) HasNoDatabase() *RowAccessPolicyResource
 	r.AddAssertion(assert.ValueNotSet("database"))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasNoSchema() *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("schema"))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasNoName() *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("name"))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasNoBody() *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("body"))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasNoComment() *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("comment"))
 	return r
 }
+
 func (r *RowAccessPolicyResourceAssert) HasNoFullyQualifiedName() *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return r

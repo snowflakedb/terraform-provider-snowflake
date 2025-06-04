@@ -36,62 +36,77 @@ func (v *ViewResourceAssert) HasDatabaseString(expected string) *ViewResourceAss
 	v.AddAssertion(assert.ValueSet("database", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasSchemaString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("schema", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNameString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("name", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasAggregationPolicyString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("aggregation_policy", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasChangeTrackingString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("change_tracking", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasColumnString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("column", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasCommentString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("comment", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasCopyGrantsString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("copy_grants", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasDataMetricFunctionString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("data_metric_function", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasDataMetricScheduleString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("data_metric_schedule", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasFullyQualifiedNameString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasIsRecursiveString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("is_recursive", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasIsSecureString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("is_secure", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasIsTemporaryString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("is_temporary", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasRowAccessPolicyString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("row_access_policy", expected))
 	return v
 }
+
 func (v *ViewResourceAssert) HasStatementString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("statement", expected))
 	return v
@@ -105,42 +120,52 @@ func (v *ViewResourceAssert) HasNoDatabase() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("database"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoSchema() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("schema"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoName() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("name"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoChangeTracking() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("change_tracking"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoComment() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("comment"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoCopyGrants() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("copy_grants"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoFullyQualifiedName() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoIsRecursive() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("is_recursive"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoIsSecure() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("is_secure"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoIsTemporary() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("is_temporary"))
 	return v
 }
+
 func (v *ViewResourceAssert) HasNoStatement() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("statement"))
 	return v

@@ -36,302 +36,377 @@ func (l *LegacyServiceUserResourceAssert) HasNameString(expected string) *Legacy
 	l.AddAssertion(assert.ValueSet("name", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasAbortDetachedQueryString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("abort_detached_query", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasAutocommitString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("autocommit", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasBinaryInputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("binary_input_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasBinaryOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("binary_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimitString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("client_memory_limit", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtxString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("client_metadata_request_use_connection_ctx", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasClientPrefetchThreadsString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("client_prefetch_threads", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasClientResultChunkSizeString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("client_result_chunk_size", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasClientResultColumnCaseInsensitiveString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("client_result_column_case_insensitive", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasClientSessionKeepAliveString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("client_session_keep_alive", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasClientSessionKeepAliveHeartbeatFrequencyString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("client_session_keep_alive_heartbeat_frequency", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasClientTimestampTypeMappingString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("client_timestamp_type_mapping", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasCommentString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("comment", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDateInputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("date_input_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDateOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("date_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDaysToExpiryString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("days_to_expiry", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDefaultNamespaceString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("default_namespace", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDefaultRoleString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("default_role", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDefaultSecondaryRolesOptionString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("default_secondary_roles_option", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDefaultWarehouseString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("default_warehouse", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDisabledString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("disabled", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasDisplayNameString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("display_name", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasEmailString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("email", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("enable_unload_physical_type_optimization", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasEnableUnredactedQuerySyntaxErrorString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("enable_unredacted_query_syntax_error", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasErrorOnNondeterministicMergeString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("error_on_nondeterministic_merge", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasErrorOnNondeterministicUpdateString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("error_on_nondeterministic_update", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasFullyQualifiedNameString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasGeographyOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("geography_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasGeometryOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("geometry_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasJdbcTreatDecimalAsIntString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("jdbc_treat_decimal_as_int", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtcString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("jdbc_treat_timestamp_ntz_as_utc", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasJdbcUseSessionTimezoneString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("jdbc_use_session_timezone", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasJsonIndentString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("json_indent", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasLockTimeoutString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("lock_timeout", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasLogLevelString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("log_level", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasLoginNameString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("login_name", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasMinsToUnlockString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("mins_to_unlock", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasMultiStatementCountString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("multi_statement_count", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasMustChangePasswordString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("must_change_password", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNetworkPolicyString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("network_policy", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoorderSequenceAsDefaultString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("noorder_sequence_as_default", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasOdbcTreatDecimalAsIntString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("odbc_treat_decimal_as_int", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasPasswordString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("password", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasPreventUnloadToInternalStagesString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("prevent_unload_to_internal_stages", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasQueryTagString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("query_tag", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasRowsPerResultsetString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("rows_per_resultset", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("rsa_public_key", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2String(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("rsa_public_key_2", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasS3StageVpceDnsNameString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("s3_stage_vpce_dns_name", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasSearchPathString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("search_path", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasSimulatedDataSharingConsumerString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("simulated_data_sharing_consumer", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasStatementQueuedTimeoutInSecondsString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasStatementTimeoutInSecondsString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasStrictJsonOutputString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("strict_json_output", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimeInputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("time_input_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimeOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("time_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimestampDayIsAlways24hString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("timestamp_day_is_always_24h", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimestampInputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("timestamp_input_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimestampLtzOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("timestamp_ltz_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimestampNtzOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("timestamp_ntz_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimestampOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("timestamp_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimestampTypeMappingString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("timestamp_type_mapping", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimestampTzOutputFormatString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("timestamp_tz_output_format", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTimezoneString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("timezone", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTraceLevelString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("trace_level", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTransactionAbortOnErrorString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("transaction_abort_on_error", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTransactionDefaultIsolationLevelString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("transaction_default_isolation_level", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasTwoDigitCenturyStartString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("two_digit_century_start", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasUnsupportedDdlActionString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("unsupported_ddl_action", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasUseCachedResultString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("use_cached_result", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasUserTypeString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("user_type", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasWeekOfYearPolicyString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("week_of_year_policy", expected))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasWeekStartString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("week_start", expected))
 	return l
@@ -345,302 +420,377 @@ func (l *LegacyServiceUserResourceAssert) HasNoName() *LegacyServiceUserResource
 	l.AddAssertion(assert.ValueNotSet("name"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoAbortDetachedQuery() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("abort_detached_query"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoAutocommit() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("autocommit"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoBinaryInputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("binary_input_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoBinaryOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("binary_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientMemoryLimit() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("client_memory_limit"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientMetadataRequestUseConnectionCtx() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("client_metadata_request_use_connection_ctx"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientPrefetchThreads() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("client_prefetch_threads"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientResultChunkSize() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("client_result_chunk_size"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientResultColumnCaseInsensitive() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("client_result_column_case_insensitive"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientSessionKeepAlive() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("client_session_keep_alive"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientSessionKeepAliveHeartbeatFrequency() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("client_session_keep_alive_heartbeat_frequency"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientTimestampTypeMapping() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("client_timestamp_type_mapping"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoComment() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("comment"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDateInputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("date_input_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDateOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("date_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDaysToExpiry() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("days_to_expiry"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDefaultNamespace() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("default_namespace"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDefaultRole() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("default_role"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDefaultSecondaryRolesOption() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("default_secondary_roles_option"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDefaultWarehouse() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("default_warehouse"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDisabled() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("disabled"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoDisplayName() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("display_name"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoEmail() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("email"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoEnableUnloadPhysicalTypeOptimization() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("enable_unload_physical_type_optimization"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoEnableUnredactedQuerySyntaxError() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("enable_unredacted_query_syntax_error"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoErrorOnNondeterministicMerge() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("error_on_nondeterministic_merge"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoErrorOnNondeterministicUpdate() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("error_on_nondeterministic_update"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoFullyQualifiedName() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoGeographyOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("geography_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoGeometryOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("geometry_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoJdbcTreatDecimalAsInt() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("jdbc_treat_decimal_as_int"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoJdbcTreatTimestampNtzAsUtc() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("jdbc_treat_timestamp_ntz_as_utc"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoJdbcUseSessionTimezone() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("jdbc_use_session_timezone"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoJsonIndent() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("json_indent"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoLockTimeout() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("lock_timeout"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoLogLevel() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("log_level"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoLoginName() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("login_name"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoMinsToUnlock() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("mins_to_unlock"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoMultiStatementCount() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("multi_statement_count"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoMustChangePassword() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("must_change_password"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoNetworkPolicy() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("network_policy"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoNoorderSequenceAsDefault() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("noorder_sequence_as_default"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoOdbcTreatDecimalAsInt() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("odbc_treat_decimal_as_int"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoPassword() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("password"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoPreventUnloadToInternalStages() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("prevent_unload_to_internal_stages"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoQueryTag() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("query_tag"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("quoted_identifiers_ignore_case"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoRowsPerResultset() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("rows_per_resultset"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKey() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("rsa_public_key"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKey2() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("rsa_public_key_2"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoS3StageVpceDnsName() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("s3_stage_vpce_dns_name"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoSearchPath() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("search_path"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoSimulatedDataSharingConsumer() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("simulated_data_sharing_consumer"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoStatementQueuedTimeoutInSeconds() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("statement_queued_timeout_in_seconds"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoStatementTimeoutInSeconds() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("statement_timeout_in_seconds"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoStrictJsonOutput() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("strict_json_output"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimeInputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("time_input_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimeOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("time_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimestampDayIsAlways24h() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("timestamp_day_is_always_24h"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimestampInputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("timestamp_input_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimestampLtzOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("timestamp_ltz_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimestampNtzOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("timestamp_ntz_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimestampOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("timestamp_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimestampTypeMapping() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("timestamp_type_mapping"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimestampTzOutputFormat() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("timestamp_tz_output_format"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTimezone() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("timezone"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTraceLevel() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("trace_level"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTransactionAbortOnError() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("transaction_abort_on_error"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTransactionDefaultIsolationLevel() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("transaction_default_isolation_level"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoTwoDigitCenturyStart() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("two_digit_century_start"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoUnsupportedDdlAction() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("unsupported_ddl_action"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoUseCachedResult() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("use_cached_result"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoUserType() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("user_type"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoWeekOfYearPolicy() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("week_of_year_policy"))
 	return l
 }
+
 func (l *LegacyServiceUserResourceAssert) HasNoWeekStart() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("week_start"))
 	return l

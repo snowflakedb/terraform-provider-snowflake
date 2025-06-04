@@ -36,90 +36,112 @@ func (f *FunctionScalaResourceAssert) HasDatabaseString(expected string) *Functi
 	f.AddAssertion(assert.ValueSet("database", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasSchemaString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("schema", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNameString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("name", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasArgumentsString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("arguments", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasCommentString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("comment", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasEnableConsoleOutputString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("enable_console_output", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasExternalAccessIntegrationsString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("external_access_integrations", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasFullyQualifiedNameString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasFunctionDefinitionString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("function_definition", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasFunctionLanguageString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("function_language", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasHandlerString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("handler", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasImportsString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("imports", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasIsSecureString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("is_secure", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasLogLevelString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("log_level", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasMetricLevelString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("metric_level", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNullInputBehaviorString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasPackagesString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("packages", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasReturnResultsBehaviorString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("return_results_behavior", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasReturnTypeString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("return_type", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasRuntimeVersionString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("runtime_version", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasSecretsString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("secrets", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasTargetPathString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("target_path", expected))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasTraceLevelString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("trace_level", expected))
 	return f
@@ -133,66 +155,82 @@ func (f *FunctionScalaResourceAssert) HasNoDatabase() *FunctionScalaResourceAsse
 	f.AddAssertion(assert.ValueNotSet("database"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoSchema() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("schema"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoName() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("name"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoComment() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("comment"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoEnableConsoleOutput() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("enable_console_output"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoFullyQualifiedName() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoFunctionDefinition() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("function_definition"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoFunctionLanguage() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("function_language"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoHandler() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("handler"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoIsSecure() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("is_secure"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoLogLevel() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("log_level"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoMetricLevel() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("metric_level"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoNullInputBehavior() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("null_input_behavior"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoReturnResultsBehavior() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("return_results_behavior"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoReturnType() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("return_type"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoRuntimeVersion() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("runtime_version"))
 	return f
 }
+
 func (f *FunctionScalaResourceAssert) HasNoTraceLevel() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("trace_level"))
 	return f

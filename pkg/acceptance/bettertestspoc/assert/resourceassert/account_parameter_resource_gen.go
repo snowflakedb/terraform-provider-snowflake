@@ -36,6 +36,7 @@ func (a *AccountParameterResourceAssert) HasKeyString(expected string) *AccountP
 	a.AddAssertion(assert.ValueSet("key", expected))
 	return a
 }
+
 func (a *AccountParameterResourceAssert) HasValueString(expected string) *AccountParameterResourceAssert {
 	a.AddAssertion(assert.ValueSet("value", expected))
 	return a
@@ -49,6 +50,7 @@ func (a *AccountParameterResourceAssert) HasNoKey() *AccountParameterResourceAss
 	a.AddAssertion(assert.ValueNotSet("key"))
 	return a
 }
+
 func (a *AccountParameterResourceAssert) HasNoValue() *AccountParameterResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("value"))
 	return a
