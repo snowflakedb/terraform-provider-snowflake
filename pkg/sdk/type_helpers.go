@@ -43,12 +43,8 @@ func Float64(f float64) *float64 {
 }
 
 // ToFloat64 converts a string to a float64.
-func ToFloat64(s string) float64 {
-	f, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		panic(err)
-	}
-	return f
+func ToFloat64(s string) (float64, error) {
+	return strconv.ParseFloat(s, 64)
 }
 
 // Pointer is a generic function that returns a pointer to a given value.

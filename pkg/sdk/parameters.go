@@ -1531,6 +1531,11 @@ const (
 	ActivePythonProfilerMemory ActivePythonProfiler = "MEMORY"
 )
 
+var AllActivePythonProfilers = []ActivePythonProfiler{
+	ActivePythonProfilerLine,
+	ActivePythonProfilerMemory,
+}
+
 func ToActivePythonProfiler(s string) (ActivePythonProfiler, error) {
 	switch strings.ToUpper(s) {
 	case string(ActivePythonProfilerLine):
@@ -1548,6 +1553,11 @@ const (
 	DefaultNullOrderingFirst DefaultNullOrdering = "FIRST"
 	DefaultNullOrderingLast  DefaultNullOrdering = "LAST"
 )
+
+var AllDefaultNullOrderings = []DefaultNullOrdering{
+	DefaultNullOrderingFirst,
+	DefaultNullOrderingLast,
+}
 
 func ToDefaultNullOrdering(s string) (DefaultNullOrdering, error) {
 	switch strings.ToUpper(s) {
@@ -1569,6 +1579,14 @@ const (
 	GeographyOutputFormatEWKT    GeographyOutputFormat = "EWKT"
 	GeographyOutputFormatEWKB    GeographyOutputFormat = "EWKB"
 )
+
+var AllGeographyOutputFormats = []GeographyOutputFormat{
+	GeographyOutputFormatGeoJSON,
+	GeographyOutputFormatWKT,
+	GeographyOutputFormatWKB,
+	GeographyOutputFormatEWKT,
+	GeographyOutputFormatEWKB,
+}
 
 func ToGeographyOutputFormat(s string) (GeographyOutputFormat, error) {
 	switch strings.ToUpper(s) {
@@ -1597,6 +1615,14 @@ const (
 	GeometryOutputFormatEWKB    GeometryOutputFormat = "EWKB"
 )
 
+var AllGeometryOutputFormats = []GeometryOutputFormat{
+	GeometryOutputFormatGeoJSON,
+	GeometryOutputFormatWKT,
+	GeometryOutputFormatWKB,
+	GeometryOutputFormatEWKT,
+	GeometryOutputFormatEWKB,
+}
+
 func ToGeometryOutputFormat(s string) (GeometryOutputFormat, error) {
 	switch strings.ToUpper(s) {
 	case strings.ToUpper(string(GeometryOutputFormatGeoJSON)):
@@ -1622,6 +1648,12 @@ const (
 	BinaryInputFormatUTF8   BinaryInputFormat = "UTF8"
 )
 
+var AllBinaryInputFormats = []BinaryInputFormat{
+	BinaryInputFormatHex,
+	BinaryInputFormatBase64,
+	BinaryInputFormatUTF8,
+}
+
 func ToBinaryInputFormat(s string) (BinaryInputFormat, error) {
 	switch strings.ToUpper(s) {
 	case string(BinaryInputFormatHex):
@@ -1642,6 +1674,11 @@ const (
 	BinaryOutputFormatBase64 BinaryOutputFormat = "BASE64"
 )
 
+var AllBinaryOutputFormats = []BinaryOutputFormat{
+	BinaryOutputFormatHex,
+	BinaryOutputFormatBase64,
+}
+
 func ToBinaryOutputFormat(s string) (BinaryOutputFormat, error) {
 	switch strings.ToUpper(s) {
 	case string(BinaryOutputFormatHex):
@@ -1659,6 +1696,11 @@ const (
 	ClientTimestampTypeMappingLtz ClientTimestampTypeMapping = "TIMESTAMP_LTZ"
 	ClientTimestampTypeMappingNtz ClientTimestampTypeMapping = "TIMESTAMP_NTZ"
 )
+
+var AllClientTimestampTypeMappings = []ClientTimestampTypeMapping{
+	ClientTimestampTypeMappingLtz,
+	ClientTimestampTypeMappingNtz,
+}
 
 func ToClientTimestampTypeMapping(s string) (ClientTimestampTypeMapping, error) {
 	switch strings.ToUpper(s) {
@@ -1679,6 +1721,12 @@ const (
 	TimestampTypeMappingTz  TimestampTypeMapping = "TIMESTAMP_TZ"
 )
 
+var AllTimestampTypeMappings = []TimestampTypeMapping{
+	TimestampTypeMappingLtz,
+	TimestampTypeMappingNtz,
+	TimestampTypeMappingTz,
+}
+
 func ToTimestampTypeMapping(s string) (TimestampTypeMapping, error) {
 	switch strings.ToUpper(s) {
 	case string(TimestampTypeMappingLtz):
@@ -1697,6 +1745,10 @@ type TransactionDefaultIsolationLevel string
 const (
 	TransactionDefaultIsolationLevelReadCommitted TransactionDefaultIsolationLevel = "READ COMMITTED"
 )
+
+var AllTransactionDefaultIsolationLevels = []TransactionDefaultIsolationLevel{
+	TransactionDefaultIsolationLevelReadCommitted,
+}
 
 func ToTransactionDefaultIsolationLevel(s string) (TransactionDefaultIsolationLevel, error) {
 	switch strings.ToUpper(s) {
