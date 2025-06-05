@@ -74,7 +74,7 @@ func TestAcc_Task_Basic(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -282,7 +282,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -381,7 +381,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -722,7 +722,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -784,7 +784,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -898,7 +898,7 @@ func TestAcc_Task_CronAndMinutes(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 			// Create with cron
@@ -974,7 +974,7 @@ func TestAcc_Task_CronAndMinutes(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 		},
@@ -1012,7 +1012,7 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 			// External change - set minutes
@@ -1032,7 +1032,7 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 			// External change - set cron
@@ -1052,7 +1052,7 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 			// Set minutes schedule
