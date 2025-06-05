@@ -86,7 +86,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 			DefaultDDLCollation:                     sdk.String("en_US"),
 			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
 			LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-			TraceLevel:                              sdk.Pointer(sdk.TraceLevelOnEvent),
+			TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
 			SuspendTaskAfterNumFailures:             sdk.Int(10),
 			TaskAutoRetryAttempts:                   sdk.Int(10),
 			UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
@@ -127,7 +127,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
-		assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelOnEvent))
+		assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelPropagate))
 		assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
 		assertParameterEquals(t, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 		assertParameterEquals(t, sdk.AccountParameterSuspendTaskAfterNumFailures, "10")
@@ -419,7 +419,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					DefaultDDLCollation:                     sdk.String("en_US"),
 					StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
 					LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-					TraceLevel:                              sdk.Pointer(sdk.TraceLevelOnEvent),
+					TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
 					SuspendTaskAfterNumFailures:             sdk.Int(10),
 					TaskAutoRetryAttempts:                   sdk.Int(10),
 					UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
@@ -441,7 +441,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDefaultDDLCollation, "en_US")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
-			assertDatabaseParameterEquals(t, params, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelOnEvent))
+			assertDatabaseParameterEquals(t, params, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelPropagate))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterSuspendTaskAfterNumFailures, "10")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterTaskAutoRetryAttempts, "10")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterUserTaskManagedInitialWarehouseSize, string(sdk.WarehouseSizeMedium))

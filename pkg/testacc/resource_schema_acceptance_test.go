@@ -53,7 +53,7 @@ func TestAcc_Schema_basic(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
-		WithTraceLevel(string(sdk.TraceLevelOnEvent)).
+		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
 		WithUserTaskManagedInitialWarehouseSize(string(sdk.WarehouseSizeXLarge)).
@@ -186,7 +186,7 @@ func TestAcc_Schema_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "default_ddl_collation", "en_US"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "log_level", string(sdk.LogLevelInfo)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "trace_level", string(sdk.TraceLevelOnEvent)),
+					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "trace_level", string(sdk.TraceLevelPropagate)),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "suspend_task_after_num_failures", "20"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "task_auto_retry_attempts", "20"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "user_task_managed_initial_warehouse_size", string(sdk.WarehouseSizeXLarge)),
@@ -213,7 +213,7 @@ func TestAcc_Schema_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.default_ddl_collation.0.value", "en_US"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.storage_serialization_policy.0.value", string(sdk.StorageSerializationPolicyCompatible)),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.log_level.0.value", string(sdk.LogLevelInfo)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.trace_level.0.value", string(sdk.TraceLevelOnEvent)),
+					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.trace_level.0.value", string(sdk.TraceLevelPropagate)),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.suspend_task_after_num_failures.0.value", "20"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.task_auto_retry_attempts.0.value", "20"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.user_task_managed_initial_warehouse_size.0.value", string(sdk.WarehouseSizeXLarge)),
@@ -323,7 +323,7 @@ func TestAcc_Schema_complete(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
-		WithTraceLevel(string(sdk.TraceLevelOnEvent)).
+		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
 		WithUserTaskManagedInitialWarehouseSize(string(sdk.WarehouseSizeXLarge)).
@@ -357,7 +357,7 @@ func TestAcc_Schema_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "default_ddl_collation", "en_US"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "log_level", string(sdk.LogLevelInfo)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "trace_level", string(sdk.TraceLevelOnEvent)),
+					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "trace_level", string(sdk.TraceLevelPropagate)),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "suspend_task_after_num_failures", "20"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "task_auto_retry_attempts", "20"),
 					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "user_task_managed_initial_warehouse_size", string(sdk.WarehouseSizeXLarge)),
