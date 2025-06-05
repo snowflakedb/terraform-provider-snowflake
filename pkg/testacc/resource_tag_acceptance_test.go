@@ -68,8 +68,8 @@ func TestAcc_Tag_basic(t *testing.T) {
 					HasSchemaString(id.SchemaName()).
 					HasFullyQualifiedNameString(id.FullyQualifiedName()).
 					HasCommentString("").
-					HasNoMaskingPolicies().
-					HasNoAllowedValues(),
+					HasMaskingPoliciesEmpty().
+					HasAllowedValuesEmpty(),
 					resourceshowoutputassert.TagShowOutput(t, baseModel.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
