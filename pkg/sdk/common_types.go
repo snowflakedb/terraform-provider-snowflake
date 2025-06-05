@@ -389,6 +389,7 @@ type TraceLevel string
 
 const (
 	TraceLevelAlways    TraceLevel = "ALWAYS"
+	TraceLevelOnEvent   TraceLevel = "ON_EVENT"
 	TraceLevelPropagate TraceLevel = "PROPAGATE"
 	TraceLevelOff       TraceLevel = "OFF"
 )
@@ -397,6 +398,8 @@ func ToTraceLevel(value string) (TraceLevel, error) {
 	switch strings.ToUpper(value) {
 	case string(TraceLevelAlways):
 		return TraceLevelAlways, nil
+	case string(TraceLevelOnEvent):
+		return TraceLevelOnEvent, nil
 	case string(TraceLevelPropagate):
 		return TraceLevelPropagate, nil
 	case string(TraceLevelOff):
@@ -408,6 +411,7 @@ func ToTraceLevel(value string) (TraceLevel, error) {
 
 var AllTraceLevels = []TraceLevel{
 	TraceLevelAlways,
+	TraceLevelOnEvent,
 	TraceLevelPropagate,
 	TraceLevelOff,
 }
