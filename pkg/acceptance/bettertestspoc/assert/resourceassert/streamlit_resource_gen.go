@@ -87,9 +87,9 @@ func (s *StreamlitResourceAssert) HasTitleString(expected string) *StreamlitReso
 	return s
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (s *StreamlitResourceAssert) HasNoDatabase() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("database"))
@@ -116,11 +116,6 @@ func (s *StreamlitResourceAssert) HasNoDirectoryLocation() *StreamlitResourceAss
 	return s
 }
 
-func (s *StreamlitResourceAssert) HasNoExternalAccessIntegrations() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("external_access_integrations"))
-	return s
-}
-
 func (s *StreamlitResourceAssert) HasNoFullyQualifiedName() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
@@ -143,5 +138,93 @@ func (s *StreamlitResourceAssert) HasNoStage() *StreamlitResourceAssert {
 
 func (s *StreamlitResourceAssert) HasNoTitle() *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("title"))
+	return s
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *StreamlitResourceAssert) HasCommentEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasDirectoryLocationEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValueSet("directory_location", ""))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasExternalAccessIntegrationsEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasFullyQualifiedNameEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasQueryWarehouseEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValueSet("query_warehouse", ""))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasTitleEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValueSet("title", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *StreamlitResourceAssert) HasDatabaseNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("database"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasSchemaNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("schema"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasNameNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasCommentNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasDirectoryLocationNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("directory_location"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasFullyQualifiedNameNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasMainFileNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("main_file"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasQueryWarehouseNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("query_warehouse"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasStageNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("stage"))
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasTitleNotEmpty() *StreamlitResourceAssert {
+	s.AddAssertion(assert.ValuePresent("title"))
 	return s
 }

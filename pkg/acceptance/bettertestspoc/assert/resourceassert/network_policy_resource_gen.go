@@ -67,32 +67,12 @@ func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameString(expected strin
 	return n
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (n *NetworkPolicyResourceAssert) HasNoName() *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueNotSet("name"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasNoAllowedIpList() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("allowed_ip_list"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasNoAllowedNetworkRuleList() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("allowed_network_rule_list"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasNoBlockedIpList() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("blocked_ip_list"))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasNoBlockedNetworkRuleList() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("blocked_network_rule_list"))
 	return n
 }
 
@@ -103,5 +83,58 @@ func (n *NetworkPolicyResourceAssert) HasNoComment() *NetworkPolicyResourceAsser
 
 func (n *NetworkPolicyResourceAssert) HasNoFullyQualifiedName() *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	return n
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (n *NetworkPolicyResourceAssert) HasAllowedIpListEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("allowed_ip_list.#", "0"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasAllowedNetworkRuleListEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("allowed_network_rule_list.#", "0"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasBlockedIpListEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("blocked_ip_list.#", "0"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasBlockedNetworkRuleListEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("blocked_network_rule_list.#", "0"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasCommentEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("comment", ""))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return n
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (n *NetworkPolicyResourceAssert) HasNameNotEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValuePresent("name"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasCommentNotEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValuePresent("comment"))
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *NetworkPolicyResourceAssert {
+	n.AddAssertion(assert.ValuePresent("fully_qualified_name"))
 	return n
 }
