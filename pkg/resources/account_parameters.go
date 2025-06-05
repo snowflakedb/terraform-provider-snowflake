@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -217,13 +219,13 @@ func init() {
 		{Name: sdk.AccountParameterWeekStart, Type: schema.TypeInt, Description: "Specifies the first day of the week (used by week-related date functions). `0`: Legacy Snowflake behavior is used (i.e. ISO-like semantics). `1` (Monday) to `7` (Sunday): All the week-related functions use weeks that start on the specified day of the week."},
 
 		// String parameters
-		{Name: sdk.AccountParameterActivePythonProfiler, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToActivePythonProfiler), DiffSuppress: NormalizeAndCompare(sdk.ToActivePythonProfiler), Description: fmt.Sprintf("Sets the profiler to use for the session when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllActivePythonProfilers))},
+		{Name: sdk.AccountParameterActivePythonProfiler, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToActivePythonProfiler), DiffSuppress: NormalizeAndCompare(sdk.ToActivePythonProfiler), Description: fmt.Sprintf("Sets the profiler to use for the session when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler). Valid values are (case-insensitive): %s.", docs.PossibleValuesListed(sdk.AllActivePythonProfilers))},
 		{Name: sdk.AccountParameterBaseLocationPrefix, Type: schema.TypeString, Description: "Specifies a prefix for Snowflake to use in the write path for Snowflake-managed Apache Iceberg™ tables. For more information, see [data and metadata directories for Iceberg tables](https://docs.snowflake.com/en/user-guide/tables-iceberg-storage.html#label-tables-iceberg-configure-external-volume-base-location)."},
-		{Name: sdk.AccountParameterBinaryInputFormat, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToBinaryInputFormat), DiffSuppress: NormalizeAndCompare(sdk.ToBinaryInputFormat), Description: fmt.Sprintf("The format of VARCHAR values passed as input to VARCHAR-to-BINARY conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllBinaryInputFormats))},
-		{Name: sdk.AccountParameterBinaryOutputFormat, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToBinaryOutputFormat), DiffSuppress: NormalizeAndCompare(sdk.ToBinaryOutputFormat), Description: fmt.Sprintf("The format for VARCHAR values returned as output by BINARY-to-VARCHAR conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllBinaryOutputFormats))},
-		{Name: sdk.AccountParameterCatalog, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: suppressIdentifierQuoting, Description: blocklistedCharactersFieldDescription("Specifies the catalog for Apache Iceberg™ tables. For more information, see the [Iceberg table documentation](https://docs.snowflake.com/en/user-guide/tables-iceberg.html#label-tables-iceberg-catalog-def).")},
-		{Name: sdk.AccountParameterCatalogSync, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: suppressIdentifierQuoting, Description: blocklistedCharactersFieldDescription("Specifies the name of your catalog integration for [Snowflake Open Catalog](https://other-docs.snowflake.com/en/opencatalog/overview). Snowflake syncs tables that use the specified catalog integration with your Snowflake Open Catalog account. For more information, see [Sync a Snowflake-managed table with Snowflake Open Catalog](https://docs.snowflake.com/en/user-guide/tables-iceberg-open-catalog-sync).")},
-		{Name: sdk.AccountParameterClientTimestampTypeMapping, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToClientTimestampTypeMapping), DiffSuppress: NormalizeAndCompare(sdk.ToClientTimestampTypeMapping), Description: fmt.Sprintf("Specifies the [TIMESTAMP_* variation](https://docs.snowflake.com/en/sql-reference/data-types-datetime.html#label-datatypes-timestamp-variations) to use when binding timestamp variables for JDBC or ODBC applications that use the bind API to load data. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllClientTimestampTypeMappings))},
+		{Name: sdk.AccountParameterBinaryInputFormat, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToBinaryInputFormat), DiffSuppress: NormalizeAndCompare(sdk.ToBinaryInputFormat), Description: fmt.Sprintf("The format of VARCHAR values passed as input to VARCHAR-to-BINARY conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output). Valid values are (case-insensitive): %s.", sdk.AllBinaryInputFormats)},
+		{Name: sdk.AccountParameterBinaryOutputFormat, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToBinaryOutputFormat), DiffSuppress: NormalizeAndCompare(sdk.ToBinaryOutputFormat), Description: fmt.Sprintf("The format for VARCHAR values returned as output by BINARY-to-VARCHAR conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output). Valid values are (case-insensitive): %s.", sdk.AllBinaryOutputFormats)},
+		{Name: sdk.AccountParameterCatalog, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: NormalizeAndCompare(sdk.ParseAccountObjectIdentifier), Description: blocklistedCharactersFieldDescription("Specifies the catalog for Apache Iceberg™ tables. For more information, see the [Iceberg table documentation](https://docs.snowflake.com/en/user-guide/tables-iceberg.html#label-tables-iceberg-catalog-def).")},
+		{Name: sdk.AccountParameterCatalogSync, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: NormalizeAndCompare(sdk.ParseAccountObjectIdentifier), Description: blocklistedCharactersFieldDescription("Specifies the name of your catalog integration for [Snowflake Open Catalog](https://other-docs.snowflake.com/en/opencatalog/overview). Snowflake syncs tables that use the specified catalog integration with your Snowflake Open Catalog account. For more information, see [Sync a Snowflake-managed table with Snowflake Open Catalog](https://docs.snowflake.com/en/user-guide/tables-iceberg-open-catalog-sync).")},
+		{Name: sdk.AccountParameterClientTimestampTypeMapping, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToClientTimestampTypeMapping), DiffSuppress: NormalizeAndCompare(sdk.ToClientTimestampTypeMapping), Description: fmt.Sprintf("Specifies the [TIMESTAMP_* variation](https://docs.snowflake.com/en/sql-reference/data-types-datetime.html#label-datatypes-timestamp-variations) to use when binding timestamp variables for JDBC or ODBC applications that use the bind API to load data. Valid values are (case-insensitive): %s.", sdk.AllClientTimestampTypeMappings)},
 		{Name: sdk.AccountParameterCortexEnabledCrossRegion, Type: schema.TypeString, Description: "Specifies the regions where an inference request may be processed in case the request cannot be processed in the region where request is originally placed. Specifying DISABLED disables cross-region inferencing. For examples and details, see [Cross-region inference](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cross-region-inference)."},
 		{Name: sdk.AccountParameterCortexModelsAllowlist, Type: schema.TypeString, Description: "Specifies the models that users in the account can access. Use this parameter to allowlist models for all users in the account. If you need to provide specific users with access beyond what you’ve specified in the allowlist, use role-based access control instead. For more information, see [Model allowlist](https://docs.snowflake.com/en/user-guide/snowflake-cortex/aisql.html#label-cortex-llm-allowlist)."},
 		{Name: sdk.AccountParameterCsvTimestampFormat, Type: schema.TypeString, Description: "Specifies the format for TIMESTAMP values in CSV files downloaded from Snowsight. If this parameter is not set, [TIMESTAMP_LTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ltz-output-format) will be used for TIMESTAMP_LTZ values, [TIMESTAMP_TZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-tz-output-format) will be used for TIMESTAMP_TZ and [TIMESTAMP_NTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ntz-output-format) for TIMESTAMP_NTZ values. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output) or [Download your query results](https://docs.snowflake.com/en/user-guide/ui-snowsight-query.html#label-snowsight-download-query-results)."},
@@ -232,17 +234,17 @@ func init() {
 		{Name: sdk.AccountParameterDefaultDDLCollation, Type: schema.TypeString, Description: "Sets the default collation used for the following DDL operations: [CREATE TABLE](https://docs.snowflake.com/en/sql-reference/sql/create-table), [ALTER TABLE](https://docs.snowflake.com/en/sql-reference/sql/alter-table) … ADD COLUMN. Setting this parameter forces all subsequently-created columns in the affected objects (table, schema, database, or account) to have the specified collation as the default, unless the collation for the column is explicitly defined in the DDL."},
 		{Name: sdk.AccountParameterDefaultNotebookComputePoolCpu, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: suppressIdentifierQuoting, Description: blocklistedCharactersFieldDescription("Sets the preferred CPU compute pool used for [Notebooks on CPU Container Runtime](https://docs.snowflake.com/en/developer-guide/snowflake-ml/notebooks-on-spcs).")},
 		{Name: sdk.AccountParameterDefaultNotebookComputePoolGpu, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: suppressIdentifierQuoting, Description: blocklistedCharactersFieldDescription("Sets the preferred GPU compute pool used for [Notebooks on GPU Container Runtime](https://docs.snowflake.com/en/developer-guide/snowflake-ml/notebooks-on-spcs).")},
-		{Name: sdk.AccountParameterDefaultNullOrdering, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToDefaultNullOrdering), DiffSuppress: NormalizeAndCompare(sdk.ToDefaultNullOrdering), Description: fmt.Sprintf("Specifies the default ordering of NULL values in a result set ([more details](https://docs.snowflake.com/en/sql-reference/parameters#default-null-ordering)). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllDefaultNullOrderings))},
-		{Name: sdk.AccountParameterDefaultStreamlitNotebookWarehouse, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: suppressIdentifierQuoting, Description: blocklistedCharactersFieldDescription("Specifies the name of the default warehouse to use when creating a notebook.")},
-		{Name: sdk.AccountParameterEventTable, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.SchemaObjectIdentifier](), DiffSuppress: suppressIdentifierQuoting, Description: blocklistedCharactersFieldDescription("Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions).")},
-		{Name: sdk.AccountParameterExternalVolume, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: suppressIdentifierQuoting, Description: blocklistedCharactersFieldDescription("Specifies the external volume for Apache Iceberg™ tables. For more information, see the [Iceberg table documentation](https://docs.snowflake.com/en/user-guide/tables-iceberg.html#label-tables-iceberg-external-volume-def).")},
-		{Name: sdk.AccountParameterGeographyOutputFormat, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToGeographyOutputFormat), DiffSuppress: NormalizeAndCompare(sdk.ToGeographyOutputFormat), Description: fmt.Sprintf("Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllGeographyOutputFormats))},
-		{Name: sdk.AccountParameterGeometryOutputFormat, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToGeometryOutputFormat), DiffSuppress: NormalizeAndCompare(sdk.ToGeometryOutputFormat), Description: fmt.Sprintf("Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllGeometryOutputFormats))},
+		{Name: sdk.AccountParameterDefaultNullOrdering, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToDefaultNullOrdering), DiffSuppress: NormalizeAndCompare(sdk.ToDefaultNullOrdering), Description: fmt.Sprintf("Specifies the default ordering of NULL values in a result set ([more details](https://docs.snowflake.com/en/sql-reference/parameters#default-null-ordering)). Valid values are (case-insensitive): %s.", sdk.AllDefaultNullOrderings)},
+		{Name: sdk.AccountParameterDefaultStreamlitNotebookWarehouse, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: NormalizeAndCompare(sdk.ParseAccountObjectIdentifier), Description: blocklistedCharactersFieldDescription("Specifies the name of the default warehouse to use when creating a notebook.")},
+		{Name: sdk.AccountParameterEventTable, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.SchemaObjectIdentifier](), Description: blocklistedCharactersFieldDescription("Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions).")},
+		{Name: sdk.AccountParameterExternalVolume, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: NormalizeAndCompare(sdk.ParseAccountObjectIdentifier), Description: blocklistedCharactersFieldDescription("Specifies the external volume for Apache Iceberg™ tables. For more information, see the [Iceberg table documentation](https://docs.snowflake.com/en/user-guide/tables-iceberg.html#label-tables-iceberg-external-volume-def).")},
+		{Name: sdk.AccountParameterGeographyOutputFormat, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToGeographyOutputFormat), DiffSuppress: NormalizeAndCompare(sdk.ToGeographyOutputFormat), Description: fmt.Sprintf("Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography). Valid values are (case-insensitive): %s.", sdk.AllGeographyOutputFormats)},
+		{Name: sdk.AccountParameterGeometryOutputFormat, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToGeometryOutputFormat), DiffSuppress: NormalizeAndCompare(sdk.ToGeometryOutputFormat), Description: fmt.Sprintf("Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry). Valid values are (case-insensitive): %s.", sdk.AllGeometryOutputFormats)},
 		{Name: sdk.AccountParameterInitialReplicationSizeLimitInTB, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToFloat64), DiffSuppress: NormalizeAndCompare(sdk.ToFloat64), Description: "Sets the maximum estimated size limit for the initial replication of a primary database to a secondary database (in TB). Set this parameter on any account that stores a secondary database. This size limit helps prevent accounts from accidentally incurring large database replication charges. To remove the size limit, set the value to 0.0. It is required to pass numbers with scale of at least 1 (e.g. 20.5, 32.25, 33.333, etc.)."},
 		{Name: sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, Type: schema.TypeString, Description: "Sets the time interval used to refresh the application package based data products to other regions."},
-		{Name: sdk.AccountParameterLogLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToLogLevel), DiffSuppress: NormalizeAndCompare(sdk.ToLogLevel), Description: fmt.Sprintf("Specifies the severity level of messages that should be ingested and made available in the active event table. Messages at the specified level (and at more severe levels) are ingested. For more information about log levels, see [Setting levels for logging, metrics, and tracing](https://docs.snowflake.com/en/developer-guide/logging-tracing/telemetry-levels). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllLogLevels))},
-		{Name: sdk.AccountParameterMetricLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToMetricLevel), DiffSuppress: NormalizeAndCompare(sdk.ToMetricLevel), Description: fmt.Sprintf("Controls how metrics data is ingested into the event table. For more information about metric levels, see [Setting levels for logging, metrics, and tracing](https://docs.snowflake.com/en/developer-guide/logging-tracing/telemetry-levels). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllMetricLevels))},
-		{Name: sdk.AccountParameterNetworkPolicy, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: suppressIdentifierQuoting, Description: blocklistedCharactersFieldDescription("Specifies the network policy to enforce for your account. Network policies enable restricting access to your account based on users’ IP address. For more details, see [Controlling network traffic with network policies](https://docs.snowflake.com/en/user-guide/network-policies).")},
+		{Name: sdk.AccountParameterLogLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToLogLevel), DiffSuppress: NormalizeAndCompare(sdk.ToLogLevel), Description: fmt.Sprintf("Specifies the severity level of messages that should be ingested and made available in the active event table. Messages at the specified level (and at more severe levels) are ingested. For more information about log levels, see [Setting levels for logging, metrics, and tracing](https://docs.snowflake.com/en/developer-guide/logging-tracing/telemetry-levels). Valid values are (case-insensitive): %s.", sdk.AllLogLevels)},
+		{Name: sdk.AccountParameterMetricLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToMetricLevel), DiffSuppress: NormalizeAndCompare(sdk.ToMetricLevel), Description: fmt.Sprintf("Controls how metrics data is ingested into the event table. For more information about metric levels, see [Setting levels for logging, metrics, and tracing](https://docs.snowflake.com/en/developer-guide/logging-tracing/telemetry-levels). Valid values are (case-insensitive): %s.", sdk.AllMetricLevels)},
+		{Name: sdk.AccountParameterNetworkPolicy, Type: schema.TypeString, ValidateDiag: IsValidIdentifier[sdk.AccountObjectIdentifier](), DiffSuppress: NormalizeAndCompare(sdk.ParseAccountObjectIdentifier), Description: blocklistedCharactersFieldDescription("Specifies the network policy to enforce for your account. Network policies enable restricting access to your account based on users’ IP address. For more details, see [Controlling network traffic with network policies](https://docs.snowflake.com/en/user-guide/network-policies).")},
 		{Name: sdk.AccountParameterPythonProfilerModules, Type: schema.TypeString, Description: "Specifies the list of Python modules to include in a report when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler)."},
 		{Name: sdk.AccountParameterPythonProfilerTargetStage, Type: schema.TypeString, Description: "Specifies the fully-qualified name of the stage in which to save a report when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler)."},
 		{Name: sdk.AccountParameterQueryTag, Type: schema.TypeString, Description: "Optional string that can be used to tag queries and other SQL statements executed within a session. The tags are displayed in the output of the [QUERY_HISTORY, QUERY_HISTORY_BY_*](https://docs.snowflake.com/en/sql-reference/functions/query_history) functions."},
@@ -252,7 +254,7 @@ func init() {
 		{Name: sdk.AccountParameterServerlessTaskMaxStatementSize, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToWarehouseSize), DiffSuppress: NormalizeAndCompare(sdk.ToWarehouseSize), Description: fmt.Sprintf("Specifies the maximum allowed warehouse size for [Serverless tasks](https://docs.snowflake.com/en/user-guide/tasks-intro.html#label-tasks-compute-resources-serverless). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.ValidWarehouseSizesString))},
 		{Name: sdk.AccountParameterServerlessTaskMinStatementSize, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToWarehouseSize), DiffSuppress: NormalizeAndCompare(sdk.ToWarehouseSize), Description: fmt.Sprintf("Specifies the minimum allowed warehouse size for [Serverless tasks](https://docs.snowflake.com/en/user-guide/tasks-intro.html#label-tasks-compute-resources-serverless). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.ValidWarehouseSizesString))},
 		{Name: sdk.AccountParameterSimulatedDataSharingConsumer, Type: schema.TypeString, Description: "Specifies the name of a consumer account to simulate for testing/validating shared data, particularly shared secure views. When this parameter is set in a session, shared views return rows as if executed in the specified consumer account rather than the provider account."},
-		{Name: sdk.AccountParameterStorageSerializationPolicy, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToStorageSerializationPolicy), DiffSuppress: NormalizeAndCompare(sdk.ToStorageSerializationPolicy), Description: fmt.Sprintf("Specifies the storage serialization policy for Snowflake-managed [Apache Iceberg™ tables](https://docs.snowflake.com/en/user-guide/tables-iceberg). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllStorageSerializationPolicies))},
+		{Name: sdk.AccountParameterStorageSerializationPolicy, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToStorageSerializationPolicy), DiffSuppress: NormalizeAndCompare(sdk.ToStorageSerializationPolicy), Description: fmt.Sprintf("Specifies the storage serialization policy for Snowflake-managed [AApache Iceberg™ tables](https://docs.snowflake.com/en/user-guide/tables-iceberg). Valid values are (case-insensitive): %s.", sdk.AllStorageSerializationPolicies)},
 		{Name: sdk.AccountParameterTimestampInputFormat, Type: schema.TypeString, Description: "Specifies the input format for the TIMESTAMP data type alias. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). Any valid, supported timestamp format or AUTO (AUTO specifies that Snowflake attempts to automatically detect the format of timestamps stored in the system during the session)."},
 		{Name: sdk.AccountParameterTimestampLtzOutputFormat, Type: schema.TypeString, Description: "Specifies the display format for the TIMESTAMP_LTZ data type. If no format is specified, defaults to [TIMESTAMP_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-output-format). For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output)."},
 		{Name: sdk.AccountParameterTimestampNtzOutputFormat, Type: schema.TypeString, Description: "Specifies the display format for the TIMESTAMP_NTZ data type."},
@@ -262,10 +264,10 @@ func init() {
 		{Name: sdk.AccountParameterTimezone, Type: schema.TypeString, Description: "Specifies the time zone for the session. You can specify a [time zone name](https://data.iana.org/time-zones/tzdb-2021a/zone1970.tab) or a [link name](https://data.iana.org/time-zones/tzdb-2021a/backward) from release 2021a of the [IANA Time Zone Database](https://www.iana.org/time-zones) (e.g. America/Los_Angeles, Europe/London, UTC, Etc/GMT, etc.)."},
 		{Name: sdk.AccountParameterTimeInputFormat, Type: schema.TypeString, Description: "Specifies the input format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). Any valid, supported time format or AUTO (AUTO specifies that Snowflake attempts to automatically detect the format of times stored in the system during the session)."},
 		{Name: sdk.AccountParameterTimeOutputFormat, Type: schema.TypeString, Description: "Specifies the display format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output)."},
-		{Name: sdk.AccountParameterTraceLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToTraceLevel), DiffSuppress: NormalizeAndCompare(sdk.ToTraceLevel), Description: fmt.Sprintf("Controls how trace events are ingested into the event table. For more information about trace levels, see [Setting trace level](https://docs.snowflake.com/en/developer-guide/logging-tracing/tracing-trace-level). Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllTraceLevels))},
-		{Name: sdk.AccountParameterTransactionDefaultIsolationLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToTransactionDefaultIsolationLevel), DiffSuppress: NormalizeAndCompare(sdk.ToTransactionDefaultIsolationLevel), Description: fmt.Sprintf("Specifies the isolation level for transactions in the user session. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllTransactionDefaultIsolationLevels))},
+		{Name: sdk.AccountParameterTraceLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToTraceLevel), DiffSuppress: NormalizeAndCompare(sdk.ToTraceLevel), Description: fmt.Sprintf("Controls how trace events are ingested into the event table. For more information about trace levels, see [Setting trace level](https://docs.snowflake.com/en/developer-guide/logging-tracing/tracing-trace-level). Valid values are (case-insensitive): %s.", sdk.AllTraceLevels)},
+		{Name: sdk.AccountParameterTransactionDefaultIsolationLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToTransactionDefaultIsolationLevel), DiffSuppress: NormalizeAndCompare(sdk.ToTransactionDefaultIsolationLevel), Description: fmt.Sprintf("Specifies the isolation level for transactions in the user session. Valid values are (case-insensitive): %s.", sdk.AllTransactionDefaultIsolationLevels)},
 		{Name: sdk.AccountParameterUnsupportedDdlAction, Type: schema.TypeString, Description: "Determines if an unsupported (i.e. non-default) value specified for a constraint property returns an error."},
-		{Name: sdk.AccountParameterUserTaskManagedInitialWarehouseSize, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToWarehouseSize), DiffSuppress: NormalizeAndCompare(sdk.ToWarehouseSize), Description: fmt.Sprintf("Specifies the size of the compute resources to provision for the first run of the task, before a task history is available for Snowflake to determine an ideal size. Once a task has successfully completed a few runs, Snowflake ignores this parameter setting. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.ValidWarehouseSizesString))},
+		{Name: sdk.AccountParameterUserTaskManagedInitialWarehouseSize, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToWarehouseSize), DiffSuppress: NormalizeAndCompare(sdk.ToWarehouseSize), Description: fmt.Sprintf("Specifies the size of the compute resources to provision for the first run of the task, before a task history is available for Snowflake to determine an ideal size. Once a task has successfully completed a few runs, Snowflake ignores this parameter setting. Valid values are (case-insensitive): %s.", sdk.AllWarehouseSizes)},
 	}
 
 	// TODO [SNOW-1645342]: extract this method after moving to SDK
@@ -292,4 +294,294 @@ func accountParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.Account
 	return func(ctx context.Context, id sdk.AccountObjectIdentifier) ([]*sdk.Parameter, error) {
 		return c.Accounts.ShowParameters(ctx)
 	}
+}
+
+// TODO [SNOW-1645342]: make generic based on type definition
+func handleAccountParameterRead(d *schema.ResourceData, AccountParameters []*sdk.Parameter) error {
+	for _, p := range AccountParameters {
+		switch p.Key {
+		// Bool parameters
+		case string(sdk.AccountParameterAbortDetachedQuery),
+			string(sdk.AccountParameterAllowClientMFACaching),
+			string(sdk.AccountParameterAllowIDToken),
+			string(sdk.AccountParameterAutocommit),
+			string(sdk.AccountParameterClientEnableLogInfoStatementParameters),
+			string(sdk.AccountParameterClientMetadataRequestUseConnectionCtx),
+			string(sdk.AccountParameterClientMetadataUseSessionDatabase),
+			string(sdk.AccountParameterClientResultColumnCaseInsensitive),
+			string(sdk.AccountParameterClientSessionKeepAlive),
+			string(sdk.AccountParameterDisableUiDownloadButton),
+			string(sdk.AccountParameterDisableUserPrivilegeGrants),
+			string(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog),
+			string(sdk.AccountParameterEnableEgressCostOptimizer),
+			string(sdk.AccountParameterEnableIdentifierFirstLogin),
+			string(sdk.AccountParameterEnableInternalStagesPrivatelink),
+			string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository),
+			string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage),
+			string(sdk.AccountParameterEnableUnhandledExceptionsReporting),
+			string(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization),
+			string(sdk.AccountParameterEnableUnredactedQuerySyntaxError),
+			string(sdk.AccountParameterEnableUnredactedSecureObjectError),
+			string(sdk.AccountParameterEnforceNetworkRulesForInternalStages),
+			string(sdk.AccountParameterErrorOnNondeterministicMerge),
+			string(sdk.AccountParameterErrorOnNondeterministicUpdate),
+			string(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList),
+			string(sdk.AccountParameterJdbcTreatDecimalAsInt),
+			string(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc),
+			string(sdk.AccountParameterJdbcUseSessionTimezone),
+			string(sdk.AccountParameterJsTreatIntegerAsBigInt),
+			string(sdk.AccountParameterNoorderSequenceAsDefault),
+			string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList),
+			string(sdk.AccountParameterOdbcTreatDecimalAsInt),
+			string(sdk.AccountParameterPeriodicDataRekeying),
+			string(sdk.AccountParameterPipeExecutionPaused),
+			string(sdk.AccountParameterPreventUnloadToInlineURL),
+			string(sdk.AccountParameterPreventUnloadToInternalStages),
+			string(sdk.AccountParameterQuotedIdentifiersIgnoreCase),
+			string(sdk.AccountParameterReplaceInvalidCharacters),
+			string(sdk.AccountParameterRequireStorageIntegrationForStageCreation),
+			string(sdk.AccountParameterRequireStorageIntegrationForStageOperation),
+			string(sdk.AccountParameterSsoLoginPage),
+			string(sdk.AccountParameterStrictJsonOutput),
+			string(sdk.AccountParameterTimestampDayIsAlways24h),
+			string(sdk.AccountParameterTransactionAbortOnError),
+			string(sdk.AccountParameterUseCachedResult):
+			value, err := strconv.ParseBool(p.Value)
+			if err != nil {
+				return err
+			}
+			if err := d.Set(strings.ToLower(p.Key), value); err != nil {
+				return err
+			}
+			// Int parameters
+		case string(sdk.AccountParameterClientEncryptionKeySize),
+			string(sdk.AccountParameterClientMemoryLimit),
+			string(sdk.AccountParameterClientPrefetchThreads),
+			string(sdk.AccountParameterClientResultChunkSize),
+			string(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency),
+			string(sdk.AccountParameterDataRetentionTimeInDays),
+			string(sdk.AccountParameterHybridTableLockTimeout),
+			string(sdk.AccountParameterJsonIndent),
+			string(sdk.AccountParameterLockTimeout),
+			string(sdk.AccountParameterMaxConcurrencyLevel),
+			string(sdk.AccountParameterMaxDataExtensionTimeInDays),
+			string(sdk.AccountParameterMinDataRetentionTimeInDays),
+			string(sdk.AccountParameterMultiStatementCount),
+			string(sdk.AccountParameterRowsPerResultset),
+			string(sdk.AccountParameterStatementTimeoutInSeconds),
+			string(sdk.AccountParameterStatementQueuedTimeoutInSeconds),
+			string(sdk.AccountParameterSuspendTaskAfterNumFailures),
+			string(sdk.AccountParameterTaskAutoRetryAttempts),
+			string(sdk.AccountParameterTwoDigitCenturyStart),
+			string(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds),
+			string(sdk.AccountParameterUserTaskTimeoutMs),
+			string(sdk.AccountParameterWeekOfYearPolicy),
+			string(sdk.AccountParameterWeekStart):
+			value, err := strconv.Atoi(p.Value)
+			if err != nil {
+				return err
+			}
+			if err := d.Set(strings.ToLower(p.Key), value); err != nil {
+				return err
+			}
+		// String parameters
+		case string(sdk.AccountParameterActivePythonProfiler),
+			string(sdk.AccountParameterBaseLocationPrefix),
+			string(sdk.AccountParameterBinaryInputFormat),
+			string(sdk.AccountParameterBinaryOutputFormat),
+			string(sdk.AccountParameterCatalog),
+			string(sdk.AccountParameterCatalogSync),
+			string(sdk.AccountParameterClientTimestampTypeMapping),
+			string(sdk.AccountParameterCortexEnabledCrossRegion),
+			string(sdk.AccountParameterCortexModelsAllowlist),
+			string(sdk.AccountParameterCsvTimestampFormat),
+			string(sdk.AccountParameterDateInputFormat),
+			string(sdk.AccountParameterDateOutputFormat),
+			string(sdk.AccountParameterDefaultDDLCollation),
+			string(sdk.AccountParameterDefaultNotebookComputePoolCpu),
+			string(sdk.AccountParameterDefaultNotebookComputePoolGpu),
+			string(sdk.AccountParameterDefaultNullOrdering),
+			string(sdk.AccountParameterDefaultStreamlitNotebookWarehouse),
+			string(sdk.AccountParameterEventTable),
+			string(sdk.AccountParameterExternalVolume),
+			string(sdk.AccountParameterGeographyOutputFormat),
+			string(sdk.AccountParameterGeometryOutputFormat),
+			string(sdk.AccountParameterInitialReplicationSizeLimitInTB),
+			string(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule),
+			string(sdk.AccountParameterLogLevel),
+			string(sdk.AccountParameterMetricLevel),
+			string(sdk.AccountParameterNetworkPolicy),
+			string(sdk.AccountParameterPythonProfilerModules),
+			string(sdk.AccountParameterPythonProfilerTargetStage),
+			string(sdk.AccountParameterQueryTag),
+			string(sdk.AccountParameterS3StageVpceDnsName),
+			string(sdk.AccountParameterSamlIdentityProvider),
+			string(sdk.AccountParameterSearchPath),
+			string(sdk.AccountParameterServerlessTaskMaxStatementSize),
+			string(sdk.AccountParameterServerlessTaskMinStatementSize),
+			string(sdk.AccountParameterSimulatedDataSharingConsumer),
+			string(sdk.AccountParameterStorageSerializationPolicy),
+			string(sdk.AccountParameterTimestampInputFormat),
+			string(sdk.AccountParameterTimestampLtzOutputFormat),
+			string(sdk.AccountParameterTimestampNtzOutputFormat),
+			string(sdk.AccountParameterTimestampOutputFormat),
+			string(sdk.AccountParameterTimestampTypeMapping),
+			string(sdk.AccountParameterTimestampTzOutputFormat),
+			string(sdk.AccountParameterTimezone),
+			string(sdk.AccountParameterTimeInputFormat),
+			string(sdk.AccountParameterTimeOutputFormat),
+			string(sdk.AccountParameterTraceLevel),
+			string(sdk.AccountParameterTransactionDefaultIsolationLevel),
+			string(sdk.AccountParameterUnsupportedDdlAction),
+			string(sdk.AccountParameterUserTaskManagedInitialWarehouseSize):
+			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func handleAccountParametersCreate(d *schema.ResourceData) diag.Diagnostics {
+	set := new(sdk.AccountSet)
+	unset := new(sdk.AccountUnset)
+	return handleAccountParametersUpdate(d, set, unset)
+}
+
+func handleAccountParametersUpdate(d *schema.ResourceData, set *sdk.AccountSet, unset *sdk.AccountUnset) diag.Diagnostics {
+	set.Parameters = new(sdk.AccountParameters)
+	unset.Parameters = new(sdk.AccountParametersUnset)
+
+	diags := JoinDiags(
+		// Bool parameters
+		handleParameterUpdate(d, sdk.AccountParameterAbortDetachedQuery, &set.Parameters.AbortDetachedQuery, &unset.Parameters.AbortDetachedQuery),
+		handleParameterUpdate(d, sdk.AccountParameterAllowClientMFACaching, &set.Parameters.AllowClientMFACaching, &unset.Parameters.AllowClientMFACaching),
+		handleParameterUpdate(d, sdk.AccountParameterAllowIDToken, &set.Parameters.AllowIDToken, &unset.Parameters.AllowIDToken),
+		handleParameterUpdate(d, sdk.AccountParameterAutocommit, &set.Parameters.Autocommit, &unset.Parameters.Autocommit),
+		handleParameterUpdate(d, sdk.AccountParameterClientEnableLogInfoStatementParameters, &set.Parameters.ClientEnableLogInfoStatementParameters, &unset.Parameters.ClientEnableLogInfoStatementParameters),
+		handleParameterUpdate(d, sdk.AccountParameterClientMetadataRequestUseConnectionCtx, &set.Parameters.ClientMetadataRequestUseConnectionCtx, &unset.Parameters.ClientMetadataRequestUseConnectionCtx),
+		handleParameterUpdate(d, sdk.AccountParameterClientMetadataUseSessionDatabase, &set.Parameters.ClientMetadataUseSessionDatabase, &unset.Parameters.ClientMetadataUseSessionDatabase),
+		handleParameterUpdate(d, sdk.AccountParameterClientResultColumnCaseInsensitive, &set.Parameters.ClientResultColumnCaseInsensitive, &unset.Parameters.ClientResultColumnCaseInsensitive),
+		handleParameterUpdate(d, sdk.AccountParameterClientSessionKeepAlive, &set.Parameters.ClientSessionKeepAlive, &unset.Parameters.ClientSessionKeepAlive),
+		handleParameterUpdate(d, sdk.AccountParameterDisableUiDownloadButton, &set.Parameters.DisableUiDownloadButton, &unset.Parameters.DisableUiDownloadButton),
+		handleParameterUpdate(d, sdk.AccountParameterDisableUserPrivilegeGrants, &set.Parameters.DisableUserPrivilegeGrants, &unset.Parameters.DisableUserPrivilegeGrants),
+		handleParameterUpdate(d, sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog, &set.Parameters.EnableAutomaticSensitiveDataClassificationLog, &unset.Parameters.EnableAutomaticSensitiveDataClassificationLog),
+		handleParameterUpdate(d, sdk.AccountParameterEnableEgressCostOptimizer, &set.Parameters.EnableEgressCostOptimizer, &unset.Parameters.EnableEgressCostOptimizer),
+		handleParameterUpdate(d, sdk.AccountParameterEnableIdentifierFirstLogin, &set.Parameters.EnableIdentifierFirstLogin, &unset.Parameters.EnableIdentifierFirstLogin),
+		handleParameterUpdate(d, sdk.AccountParameterEnableInternalStagesPrivatelink, &set.Parameters.EnableInternalStagesPrivatelink, &unset.Parameters.EnableInternalStagesPrivatelink),
+		handleParameterUpdate(d, sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository, &set.Parameters.EnableTriSecretAndRekeyOptOutForImageRepository, &unset.Parameters.EnableTriSecretAndRekeyOptOutForImageRepository),
+		handleParameterUpdate(d, sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage, &set.Parameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage, &unset.Parameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage),
+		handleParameterUpdate(d, sdk.AccountParameterEnableUnhandledExceptionsReporting, &set.Parameters.EnableUnhandledExceptionsReporting, &unset.Parameters.EnableUnhandledExceptionsReporting),
+		handleParameterUpdate(d, sdk.AccountParameterEnableUnloadPhysicalTypeOptimization, &set.Parameters.EnableUnloadPhysicalTypeOptimization, &unset.Parameters.EnableUnloadPhysicalTypeOptimization),
+		handleParameterUpdate(d, sdk.AccountParameterEnableUnredactedQuerySyntaxError, &set.Parameters.EnableUnredactedQuerySyntaxError, &unset.Parameters.EnableUnredactedQuerySyntaxError),
+		handleParameterUpdate(d, sdk.AccountParameterEnableUnredactedSecureObjectError, &set.Parameters.EnableUnredactedSecureObjectError, &unset.Parameters.EnableUnredactedSecureObjectError),
+		handleParameterUpdate(d, sdk.AccountParameterEnforceNetworkRulesForInternalStages, &set.Parameters.EnforceNetworkRulesForInternalStages, &unset.Parameters.EnforceNetworkRulesForInternalStages),
+		handleParameterUpdate(d, sdk.AccountParameterErrorOnNondeterministicMerge, &set.Parameters.ErrorOnNondeterministicMerge, &unset.Parameters.ErrorOnNondeterministicMerge),
+		handleParameterUpdate(d, sdk.AccountParameterErrorOnNondeterministicUpdate, &set.Parameters.ErrorOnNondeterministicUpdate, &unset.Parameters.ErrorOnNondeterministicUpdate),
+		handleParameterUpdate(d, sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, &set.Parameters.ExternalOAuthAddPrivilegedRolesToBlockedList, &unset.Parameters.ExternalOAuthAddPrivilegedRolesToBlockedList),
+		handleParameterUpdate(d, sdk.AccountParameterJdbcTreatDecimalAsInt, &set.Parameters.JdbcTreatDecimalAsInt, &unset.Parameters.JdbcTreatDecimalAsInt),
+		handleParameterUpdate(d, sdk.AccountParameterJdbcTreatTimestampNtzAsUtc, &set.Parameters.JdbcTreatTimestampNtzAsUtc, &unset.Parameters.JdbcTreatTimestampNtzAsUtc),
+		handleParameterUpdate(d, sdk.AccountParameterJdbcUseSessionTimezone, &set.Parameters.JdbcUseSessionTimezone, &unset.Parameters.JdbcUseSessionTimezone),
+		handleParameterUpdate(d, sdk.AccountParameterJsTreatIntegerAsBigInt, &set.Parameters.JsTreatIntegerAsBigInt, &unset.Parameters.JsTreatIntegerAsBigInt),
+		handleParameterUpdate(d, sdk.AccountParameterNoorderSequenceAsDefault, &set.Parameters.NoorderSequenceAsDefault, &unset.Parameters.NoorderSequenceAsDefault),
+		handleParameterUpdate(d, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, &set.Parameters.OAuthAddPrivilegedRolesToBlockedList, &unset.Parameters.OAuthAddPrivilegedRolesToBlockedList),
+		handleParameterUpdate(d, sdk.AccountParameterOdbcTreatDecimalAsInt, &set.Parameters.OdbcTreatDecimalAsInt, &unset.Parameters.OdbcTreatDecimalAsInt),
+		handleParameterUpdate(d, sdk.AccountParameterPeriodicDataRekeying, &set.Parameters.PeriodicDataRekeying, &unset.Parameters.PeriodicDataRekeying),
+		handleParameterUpdate(d, sdk.AccountParameterPipeExecutionPaused, &set.Parameters.PipeExecutionPaused, &unset.Parameters.PipeExecutionPaused),
+		handleParameterUpdate(d, sdk.AccountParameterPreventUnloadToInlineURL, &set.Parameters.PreventUnloadToInlineURL, &unset.Parameters.PreventUnloadToInlineURL),
+		handleParameterUpdate(d, sdk.AccountParameterPreventUnloadToInternalStages, &set.Parameters.PreventUnloadToInternalStages, &unset.Parameters.PreventUnloadToInternalStages),
+		handleParameterUpdate(d, sdk.AccountParameterQuotedIdentifiersIgnoreCase, &set.Parameters.QuotedIdentifiersIgnoreCase, &unset.Parameters.QuotedIdentifiersIgnoreCase),
+		handleParameterUpdate(d, sdk.AccountParameterReplaceInvalidCharacters, &set.Parameters.ReplaceInvalidCharacters, &unset.Parameters.ReplaceInvalidCharacters),
+		handleParameterUpdate(d, sdk.AccountParameterRequireStorageIntegrationForStageCreation, &set.Parameters.RequireStorageIntegrationForStageCreation, &unset.Parameters.RequireStorageIntegrationForStageCreation),
+		handleParameterUpdate(d, sdk.AccountParameterRequireStorageIntegrationForStageOperation, &set.Parameters.RequireStorageIntegrationForStageOperation, &unset.Parameters.RequireStorageIntegrationForStageOperation),
+		handleParameterUpdate(d, sdk.AccountParameterSsoLoginPage, &set.Parameters.SsoLoginPage, &unset.Parameters.SsoLoginPage),
+		handleParameterUpdate(d, sdk.AccountParameterStrictJsonOutput, &set.Parameters.StrictJsonOutput, &unset.Parameters.StrictJsonOutput),
+		handleParameterUpdate(d, sdk.AccountParameterTimestampDayIsAlways24h, &set.Parameters.TimestampDayIsAlways24h, &unset.Parameters.TimestampDayIsAlways24h),
+		handleParameterUpdate(d, sdk.AccountParameterTransactionAbortOnError, &set.Parameters.TransactionAbortOnError, &unset.Parameters.TransactionAbortOnError),
+		handleParameterUpdate(d, sdk.AccountParameterUseCachedResult, &set.Parameters.UseCachedResult, &unset.Parameters.UseCachedResult),
+
+		// Int parameters
+		handleParameterUpdate(d, sdk.AccountParameterClientEncryptionKeySize, &set.Parameters.ClientEncryptionKeySize, &unset.Parameters.ClientEncryptionKeySize),
+		handleParameterUpdate(d, sdk.AccountParameterClientMemoryLimit, &set.Parameters.ClientMemoryLimit, &unset.Parameters.ClientMemoryLimit),
+		handleParameterUpdate(d, sdk.AccountParameterClientPrefetchThreads, &set.Parameters.ClientPrefetchThreads, &unset.Parameters.ClientPrefetchThreads),
+		handleParameterUpdate(d, sdk.AccountParameterClientResultChunkSize, &set.Parameters.ClientResultChunkSize, &unset.Parameters.ClientResultChunkSize),
+		handleParameterUpdate(d, sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency, &set.Parameters.ClientSessionKeepAliveHeartbeatFrequency, &unset.Parameters.ClientSessionKeepAliveHeartbeatFrequency),
+		handleParameterUpdate(d, sdk.AccountParameterDataRetentionTimeInDays, &set.Parameters.DataRetentionTimeInDays, &unset.Parameters.DataRetentionTimeInDays),
+		handleParameterUpdate(d, sdk.AccountParameterHybridTableLockTimeout, &set.Parameters.HybridTableLockTimeout, &unset.Parameters.HybridTableLockTimeout),
+		handleParameterUpdate(d, sdk.AccountParameterJsonIndent, &set.Parameters.JsonIndent, &unset.Parameters.JsonIndent),
+		handleParameterUpdate(d, sdk.AccountParameterLockTimeout, &set.Parameters.LockTimeout, &unset.Parameters.LockTimeout),
+		handleParameterUpdate(d, sdk.AccountParameterMaxConcurrencyLevel, &set.Parameters.MaxConcurrencyLevel, &unset.Parameters.MaxConcurrencyLevel),
+		handleParameterUpdate(d, sdk.AccountParameterMaxDataExtensionTimeInDays, &set.Parameters.MaxDataExtensionTimeInDays, &unset.Parameters.MaxDataExtensionTimeInDays),
+		handleParameterUpdate(d, sdk.AccountParameterMinDataRetentionTimeInDays, &set.Parameters.MinDataRetentionTimeInDays, &unset.Parameters.MinDataRetentionTimeInDays),
+		handleParameterUpdate(d, sdk.AccountParameterMultiStatementCount, &set.Parameters.MultiStatementCount, &unset.Parameters.MultiStatementCount),
+		handleParameterUpdate(d, sdk.AccountParameterRowsPerResultset, &set.Parameters.RowsPerResultset, &unset.Parameters.RowsPerResultset),
+		handleParameterUpdate(d, sdk.AccountParameterStatementTimeoutInSeconds, &set.Parameters.StatementTimeoutInSeconds, &unset.Parameters.StatementTimeoutInSeconds),
+		handleParameterUpdate(d, sdk.AccountParameterStatementQueuedTimeoutInSeconds, &set.Parameters.StatementQueuedTimeoutInSeconds, &unset.Parameters.StatementQueuedTimeoutInSeconds),
+		handleParameterUpdate(d, sdk.AccountParameterSuspendTaskAfterNumFailures, &set.Parameters.SuspendTaskAfterNumFailures, &unset.Parameters.SuspendTaskAfterNumFailures),
+		handleParameterUpdate(d, sdk.AccountParameterTaskAutoRetryAttempts, &set.Parameters.TaskAutoRetryAttempts, &unset.Parameters.TaskAutoRetryAttempts),
+		handleParameterUpdate(d, sdk.AccountParameterTwoDigitCenturyStart, &set.Parameters.TwoDigitCenturyStart, &unset.Parameters.TwoDigitCenturyStart),
+		handleParameterUpdate(d, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, &set.Parameters.UserTaskMinimumTriggerIntervalInSeconds, &unset.Parameters.UserTaskMinimumTriggerIntervalInSeconds),
+		handleParameterUpdate(d, sdk.AccountParameterUserTaskTimeoutMs, &set.Parameters.UserTaskTimeoutMs, &unset.Parameters.UserTaskTimeoutMs),
+		handleParameterUpdate(d, sdk.AccountParameterWeekOfYearPolicy, &set.Parameters.WeekOfYearPolicy, &unset.Parameters.WeekOfYearPolicy),
+		handleParameterUpdate(d, sdk.AccountParameterWeekStart, &set.Parameters.WeekStart, &unset.Parameters.WeekStart),
+
+		// String parameters
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterActivePythonProfiler, &set.Parameters.ActivePythonProfiler, &unset.Parameters.ActivePythonProfiler, sdk.ToActivePythonProfiler),
+		handleParameterUpdate(d, sdk.AccountParameterBaseLocationPrefix, &set.Parameters.BaseLocationPrefix, &unset.Parameters.BaseLocationPrefix),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterBinaryInputFormat, &set.Parameters.BinaryInputFormat, &unset.Parameters.BinaryInputFormat, sdk.ToBinaryInputFormat),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterBinaryOutputFormat, &set.Parameters.BinaryOutputFormat, &unset.Parameters.BinaryOutputFormat, sdk.ToBinaryOutputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterCatalog, &set.Parameters.Catalog, &unset.Parameters.Catalog),
+		handleParameterUpdate(d, sdk.AccountParameterCatalogSync, &set.Parameters.CatalogSync, &unset.Parameters.CatalogSync),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterClientTimestampTypeMapping, &set.Parameters.ClientTimestampTypeMapping, &unset.Parameters.ClientTimestampTypeMapping, sdk.ToClientTimestampTypeMapping),
+		handleParameterUpdate(d, sdk.AccountParameterCortexEnabledCrossRegion, &set.Parameters.CortexEnabledCrossRegion, &unset.Parameters.CortexEnabledCrossRegion),
+		handleParameterUpdate(d, sdk.AccountParameterCortexModelsAllowlist, &set.Parameters.CortexModelsAllowlist, &unset.Parameters.CortexModelsAllowlist),
+		handleParameterUpdate(d, sdk.AccountParameterCsvTimestampFormat, &set.Parameters.CsvTimestampFormat, &unset.Parameters.CsvTimestampFormat),
+		handleParameterUpdate(d, sdk.AccountParameterDateInputFormat, &set.Parameters.DateInputFormat, &unset.Parameters.DateInputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterDateOutputFormat, &set.Parameters.DateOutputFormat, &unset.Parameters.DateOutputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterDefaultDDLCollation, &set.Parameters.DefaultDDLCollation, &unset.Parameters.DefaultDDLCollation),
+		handleParameterUpdate(d, sdk.AccountParameterDefaultNotebookComputePoolCpu, &set.Parameters.DefaultNotebookComputePoolCpu, &unset.Parameters.DefaultNotebookComputePoolCpu),
+		handleParameterUpdate(d, sdk.AccountParameterDefaultNotebookComputePoolGpu, &set.Parameters.DefaultNotebookComputePoolGpu, &unset.Parameters.DefaultNotebookComputePoolGpu),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterDefaultNullOrdering, &set.Parameters.DefaultNullOrdering, &unset.Parameters.DefaultNullOrdering, sdk.ToDefaultNullOrdering),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterDefaultStreamlitNotebookWarehouse, &set.Parameters.DefaultStreamlitNotebookWarehouse, &unset.Parameters.DefaultStreamlitNotebookWarehouse, sdk.ParseAccountObjectIdentifier),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterEventTable, &set.Parameters.EventTable, &unset.Parameters.EventTable, sdk.ParseSchemaObjectIdentifier),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterExternalVolume, &set.Parameters.ExternalVolume, &unset.Parameters.ExternalVolume, sdk.ParseAccountObjectIdentifier),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterGeographyOutputFormat, &set.Parameters.GeographyOutputFormat, &unset.Parameters.GeographyOutputFormat, sdk.ToGeographyOutputFormat),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterGeometryOutputFormat, &set.Parameters.GeometryOutputFormat, &unset.Parameters.GeometryOutputFormat, sdk.ToGeometryOutputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterInitialReplicationSizeLimitInTB, &set.Parameters.InitialReplicationSizeLimitInTB, &unset.Parameters.InitialReplicationSizeLimitInTB),
+		handleParameterUpdate(d, sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, &set.Parameters.ListingAutoFulfillmentReplicationRefreshSchedule, &unset.Parameters.ListingAutoFulfillmentReplicationRefreshSchedule),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterLogLevel, &set.Parameters.LogLevel, &unset.Parameters.LogLevel, sdk.ToLogLevel),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterMetricLevel, &set.Parameters.MetricLevel, &unset.Parameters.MetricLevel, sdk.ToMetricLevel),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterNetworkPolicy, &set.Parameters.NetworkPolicy, &unset.Parameters.NetworkPolicy, sdk.ParseAccountObjectIdentifier),
+		handleParameterUpdate(d, sdk.AccountParameterPythonProfilerModules, &set.Parameters.PythonProfilerModules, &unset.Parameters.PythonProfilerModules),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterPythonProfilerTargetStage, &set.Parameters.PythonProfilerTargetStage, &unset.Parameters.PythonProfilerTargetStage, sdk.ParseSchemaObjectIdentifier),
+		handleParameterUpdate(d, sdk.AccountParameterQueryTag, &set.Parameters.QueryTag, &unset.Parameters.QueryTag),
+		handleParameterUpdate(d, sdk.AccountParameterS3StageVpceDnsName, &set.Parameters.S3StageVpceDnsName, &unset.Parameters.S3StageVpceDnsName),
+		handleParameterUpdate(d, sdk.AccountParameterSamlIdentityProvider, &set.Parameters.SamlIdentityProvider, &unset.Parameters.SamlIdentityProvider),
+		handleParameterUpdate(d, sdk.AccountParameterSearchPath, &set.Parameters.SearchPath, &unset.Parameters.SearchPath),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterServerlessTaskMaxStatementSize, &set.Parameters.ServerlessTaskMaxStatementSize, &unset.Parameters.ServerlessTaskMaxStatementSize, sdk.ToWarehouseSize),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterServerlessTaskMinStatementSize, &set.Parameters.ServerlessTaskMinStatementSize, &unset.Parameters.ServerlessTaskMinStatementSize, sdk.ToWarehouseSize),
+		handleParameterUpdate(d, sdk.AccountParameterSimulatedDataSharingConsumer, &set.Parameters.SimulatedDataSharingConsumer, &unset.Parameters.SimulatedDataSharingConsumer),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterStorageSerializationPolicy, &set.Parameters.StorageSerializationPolicy, &unset.Parameters.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
+		handleParameterUpdate(d, sdk.AccountParameterTimestampInputFormat, &set.Parameters.TimestampInputFormat, &unset.Parameters.TimestampInputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterTimestampLtzOutputFormat, &set.Parameters.TimestampLtzOutputFormat, &unset.Parameters.TimestampLtzOutputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterTimestampNtzOutputFormat, &set.Parameters.TimestampNtzOutputFormat, &unset.Parameters.TimestampNtzOutputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterTimestampOutputFormat, &set.Parameters.TimestampOutputFormat, &unset.Parameters.TimestampOutputFormat),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterTimestampTypeMapping, &set.Parameters.TimestampTypeMapping, &unset.Parameters.TimestampTypeMapping, sdk.ToTimestampTypeMapping),
+		handleParameterUpdate(d, sdk.AccountParameterTimestampTzOutputFormat, &set.Parameters.TimestampTzOutputFormat, &unset.Parameters.TimestampTzOutputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterTimezone, &set.Parameters.Timezone, &unset.Parameters.Timezone),
+		handleParameterUpdate(d, sdk.AccountParameterTimeInputFormat, &set.Parameters.TimeInputFormat, &unset.Parameters.TimeInputFormat),
+		handleParameterUpdate(d, sdk.AccountParameterTimeOutputFormat, &set.Parameters.TimeOutputFormat, &unset.Parameters.TimeOutputFormat),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterTraceLevel, &set.Parameters.TraceLevel, &unset.Parameters.TraceLevel, sdk.ToTraceLevel),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterTransactionDefaultIsolationLevel, &set.Parameters.TransactionDefaultIsolationLevel, &unset.Parameters.TransactionDefaultIsolationLevel, sdk.ToTransactionDefaultIsolationLevel),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterUnsupportedDdlAction, &set.Parameters.UnsupportedDdlAction, &unset.Parameters.UnsupportedDdlAction, sdk.ToUnsupportedDDLAction),
+		handleParameterUpdateWithMapping(d, sdk.AccountParameterUserTaskManagedInitialWarehouseSize, &set.Parameters.UserTaskManagedInitialWarehouseSize, &unset.Parameters.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
+	)
+	if *set.Parameters == (sdk.AccountParameters{}) {
+		set.Parameters = nil
+	}
+	if *unset.Parameters == (sdk.AccountParametersUnset{}) {
+		unset.Parameters = nil
+	}
+	return diags
 }
