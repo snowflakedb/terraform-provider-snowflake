@@ -43,8 +43,7 @@ func JobService() *schema.Resource {
 	)
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.JobServiceResource), TrackingCreateWrapper(resources.JobService, CreateJobService)),
-		// ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.JobServiceResource), TrackingReadWrapper(resources.JobService, ReadJobServiceFunc(true))),
-		ReadContext: PreviewFeatureReadContextWrapper(string(previewfeatures.JobServiceResource), TrackingReadWrapper(resources.JobService, ReadServiceGenericFunc(true, jobServiceOutputMappingsFunc, []string{"async"}))),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.JobServiceResource), TrackingReadWrapper(resources.JobService, ReadServiceGenericFunc(true, jobServiceOutputMappingsFunc, []string{"async"}))),
 		// No UpdateContext because altering job service is not supported in Snowflake.
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.JobServiceResource), TrackingDeleteWrapper(resources.JobService, deleteFunc)),
 		Description:   "Resource used to manage job services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service).",
