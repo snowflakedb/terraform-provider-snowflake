@@ -47,6 +47,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Databases().Schema,
 	},
 	{
+		name:   "GitRepositories",
+		schema: datasources.GitRepositories().Schema,
+	},
+	{
 		name:   "Grants",
 		schema: datasources.Grants().Schema,
 	},

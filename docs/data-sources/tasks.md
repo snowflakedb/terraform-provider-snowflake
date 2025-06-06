@@ -145,7 +145,7 @@ check "task_check" {
 
 - `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
-- `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit wll start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
+- `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
 - `root_only` (Boolean) Filters the command output to return only root tasks (tasks with no predecessors).
 - `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
 - `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR TASK for each task returned by SHOW TASK and saves the output to the parameters field as a map. By default this value is set to true.
