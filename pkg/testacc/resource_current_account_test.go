@@ -30,7 +30,7 @@ resource "snowflake_current_account" "current" {
 }
 `, resourceMonitor.ID().Name()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("current_account.current", "resource_monitor", resourceMonitor.ID().Name()),
+					resource.TestCheckResourceAttr("snowflake_current_account.current", "resource_monitor", resourceMonitor.ID().Name()),
 				),
 			},
 		},
