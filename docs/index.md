@@ -164,6 +164,7 @@ Required:
 The Snowflake provider support multiple ways to authenticate:
 
 * Password
+* PAT (Personal Access Token)
 * OAuth Access Token
 * OAuth Refresh Token
 * Browser Auth
