@@ -107,63 +107,67 @@ func ReadCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any) d
 func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	if d.HasChange("resource_monitor") {
-		opts := new(sdk.AlterAccountOptions)
-		if err := accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &opts.Set.ResourceMonitor, &opts.Unset.ResourceMonitor); err != nil {
-			return diag.FromErr(err)
-		}
-		if opts.Set.ResourceMonitor != nil || opts.Unset.ResourceMonitor != nil {
-			if err := client.Accounts.Alter(ctx, opts); err != nil {
+	alterIfIdentifierAttributeChanged := func(set *sdk.AccountSet, unset *sdk.AccountUnset, setId sdk.ObjectIdentifier, unsetBool *bool) diag.Diagnostics {
+		if setId != nil {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: set}); err != nil {
 				return diag.FromErr(err)
 			}
+		}
+		if unsetBool != nil && *unsetBool {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: unset}); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+		return nil
+	}
+
+	if d.HasChange("resource_monitor") {
+		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
+		if err := accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor); err != nil {
+			return diag.FromErr(err)
+		}
+		if diags := alterIfIdentifierAttributeChanged(set, unset, set.ResourceMonitor, unset.ResourceMonitor); diags != nil {
+			return diags
 		}
 	}
 
 	if d.HasChange("authentication_policy") {
-		opts := new(sdk.AlterAccountOptions)
-		if err := schemaObjectIdentifierAttributeUpdate(d, "authentication_policy", &opts.Set.AuthenticationPolicy, &opts.Unset.AuthenticationPolicy); err != nil {
+		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
+		if err := schemaObjectIdentifierAttributeUpdate(d, "authentication_policy", &set.AuthenticationPolicy, &unset.AuthenticationPolicy); err != nil {
 			return diag.FromErr(err)
 		}
-		if opts.Set.AuthenticationPolicy != nil || opts.Unset.AuthenticationPolicy != nil {
-			if err := client.Accounts.Alter(ctx, opts); err != nil {
-				return diag.FromErr(err)
-			}
+		if diags := alterIfIdentifierAttributeChanged(set, unset, set.AuthenticationPolicy, unset.AuthenticationPolicy); diags != nil {
+			return diags
 		}
 	}
 
 	if d.HasChange("password_policy") {
-		opts := new(sdk.AlterAccountOptions)
-		if err := schemaObjectIdentifierAttributeUpdate(d, "password_policy", &opts.Set.PasswordPolicy, &opts.Unset.PasswordPolicy); err != nil {
+		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
+		if err := schemaObjectIdentifierAttributeUpdate(d, "password_policy", &set.PasswordPolicy, &unset.PasswordPolicy); err != nil {
 			return diag.FromErr(err)
 		}
-		if opts.Set.PasswordPolicy != nil || opts.Unset.PasswordPolicy != nil {
-			if err := client.Accounts.Alter(ctx, opts); err != nil {
-				return diag.FromErr(err)
-			}
+		if diags := alterIfIdentifierAttributeChanged(set, unset, set.PasswordPolicy, unset.PasswordPolicy); diags != nil {
+			return diags
 		}
 	}
 
 	if d.HasChange("session_policy") {
-		opts := new(sdk.AlterAccountOptions)
-		if err := schemaObjectIdentifierAttributeUpdate(d, "session_policy", &opts.Set.SessionPolicy, &opts.Unset.SessionPolicy); err != nil {
+		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
+		if err := schemaObjectIdentifierAttributeUpdate(d, "session_policy", &set.SessionPolicy, &unset.SessionPolicy); err != nil {
 			return diag.FromErr(err)
 		}
-		if opts.Set.SessionPolicy != nil || opts.Unset.SessionPolicy != nil {
-			if err := client.Accounts.Alter(ctx, opts); err != nil {
-				return diag.FromErr(err)
-			}
+		if diags := alterIfIdentifierAttributeChanged(set, unset, set.SessionPolicy, unset.SessionPolicy); diags != nil {
+			return diags
 		}
 	}
 
 	if d.HasChange("packages_policy") {
-		opts := new(sdk.AlterAccountOptions)
-		if err := schemaObjectIdentifierAttributeUpdate(d, "packages_policy", &opts.Set.PackagesPolicy, &opts.Unset.PackagesPolicy); err != nil {
+		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
+		if err := schemaObjectIdentifierAttributeUpdate(d, "packages_policy", &set.PackagesPolicy, &unset.PackagesPolicy); err != nil {
 			return diag.FromErr(err)
 		}
-		if opts.Set.PackagesPolicy != nil || opts.Unset.PackagesPolicy != nil {
-			if err := client.Accounts.Alter(ctx, opts); err != nil {
-				return diag.FromErr(err)
-			}
+		if diags := alterIfIdentifierAttributeChanged(set, unset, set.PackagesPolicy, unset.PackagesPolicy); diags != nil {
+			return diags
 		}
 	}
 
