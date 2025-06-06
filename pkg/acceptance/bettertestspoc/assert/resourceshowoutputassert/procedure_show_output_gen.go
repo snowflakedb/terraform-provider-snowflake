@@ -2,7 +2,6 @@
 
 package resourceshowoutputassert
 
-// imports edited manually
 import (
 	"testing"
 
@@ -20,21 +19,21 @@ type ProcedureShowOutputAssert struct {
 func ProcedureShowOutput(t *testing.T, name string) *ProcedureShowOutputAssert {
 	t.Helper()
 
-	p := ProcedureShowOutputAssert{
+	procedureAssert := ProcedureShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	p.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &p
+	procedureAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &procedureAssert
 }
 
 func ImportedProcedureShowOutput(t *testing.T, id string) *ProcedureShowOutputAssert {
 	t.Helper()
 
-	p := ProcedureShowOutputAssert{
+	procedureAssert := ProcedureShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	p.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &p
+	procedureAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &procedureAssert
 }
 
 ////////////////////////////
@@ -81,8 +80,6 @@ func (p *ProcedureShowOutputAssert) HasMaxNumArguments(expected int) *ProcedureS
 	return p
 }
 
-// HasArgumentsOld removed manually
-
 func (p *ProcedureShowOutputAssert) HasArgumentsRaw(expected string) *ProcedureShowOutputAssert {
 	p.AddAssertion(assert.ResourceShowOutputValueSet("arguments_raw", expected))
 	return p
@@ -120,5 +117,94 @@ func (p *ProcedureShowOutputAssert) HasSecrets(expected string) *ProcedureShowOu
 
 func (p *ProcedureShowOutputAssert) HasExternalAccessIntegrations(expected string) *ProcedureShowOutputAssert {
 	p.AddAssertion(assert.ResourceShowOutputValueSet("external_access_integrations", expected))
+	return p
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (p *ProcedureShowOutputAssert) HasNoCreatedOn() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoName() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoSchemaName() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoIsBuiltin() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_builtin"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoIsAggregate() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_aggregate"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoIsAnsi() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_ansi"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoMinNumArguments() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_num_arguments"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoMaxNumArguments() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_num_arguments"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoArgumentsOld() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueSet("arguments_old.#", "0"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoArgumentsRaw() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueNotSet("arguments_raw"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoDescription() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueNotSet("description"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoCatalogName() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueNotSet("catalog_name"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoIsTableFunction() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_table_function"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoValidForClustering() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("valid_for_clustering"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoIsSecure() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_secure"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoSecrets() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueNotSet("secrets"))
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoExternalAccessIntegrations() *ProcedureShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputValueNotSet("external_access_integrations"))
 	return p
 }

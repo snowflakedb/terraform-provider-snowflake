@@ -2,6 +2,7 @@ package gen
 
 import (
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -37,12 +38,13 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) ResourceSh
 
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
+	unwantedPackageNames := []string{"slices"}
 	return ResourceShowOutputAssertionsModel{
 		Name:       name,
 		Attributes: attributes,
 		PreambleModel: PreambleModel{
 			PackageName:               packageWithGenerateDirective,
-			AdditionalStandardImports: genhelpers.AdditionalStandardImports(sdkObject.Fields),
+			AdditionalStandardImports: slices.DeleteFunc(genhelpers.AdditionalStandardImports(sdkObject.Fields), func(s string) bool { return slices.Contains(unwantedPackageNames, s) }),
 		},
 	}
 }
