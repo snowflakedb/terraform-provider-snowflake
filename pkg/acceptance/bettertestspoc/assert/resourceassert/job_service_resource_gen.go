@@ -82,6 +82,11 @@ func (j *JobServiceResourceAssert) HasQueryWarehouseString(expected string) *Job
 	return j
 }
 
+func (j *JobServiceResourceAssert) HasServiceTypeString(expected string) *JobServiceResourceAssert {
+	j.AddAssertion(assert.ValueSet("service_type", expected))
+	return j
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -126,6 +131,11 @@ func (j *JobServiceResourceAssert) HasNoQueryWarehouse() *JobServiceResourceAsse
 	return j
 }
 
+func (j *JobServiceResourceAssert) HasNoServiceType() *JobServiceResourceAssert {
+	j.AddAssertion(assert.ValueNotSet("service_type"))
+	return j
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -157,6 +167,11 @@ func (j *JobServiceResourceAssert) HasFullyQualifiedNameEmpty() *JobServiceResou
 
 func (j *JobServiceResourceAssert) HasQueryWarehouseEmpty() *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValueSet("query_warehouse", ""))
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasServiceTypeEmpty() *JobServiceResourceAssert {
+	j.AddAssertion(assert.ValueSet("service_type", ""))
 	return j
 }
 
@@ -201,5 +216,10 @@ func (j *JobServiceResourceAssert) HasFullyQualifiedNameNotEmpty() *JobServiceRe
 
 func (j *JobServiceResourceAssert) HasQueryWarehouseNotEmpty() *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValuePresent("query_warehouse"))
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasServiceTypeNotEmpty() *JobServiceResourceAssert {
+	j.AddAssertion(assert.ValuePresent("service_type"))
 	return j
 }

@@ -22,6 +22,7 @@ type JobServiceModel struct {
 	FromSpecification          tfconfig.Variable `json:"from_specification,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	QueryWarehouse             tfconfig.Variable `json:"query_warehouse,omitempty"`
+	ServiceType                tfconfig.Variable `json:"service_type,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -134,6 +135,11 @@ func (j *JobServiceModel) WithQueryWarehouse(queryWarehouse string) *JobServiceM
 	return j
 }
 
+func (j *JobServiceModel) WithServiceType(serviceType string) *JobServiceModel {
+	j.ServiceType = tfconfig.StringVariable(serviceType)
+	return j
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -185,5 +191,10 @@ func (j *JobServiceModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *
 
 func (j *JobServiceModel) WithQueryWarehouseValue(value tfconfig.Variable) *JobServiceModel {
 	j.QueryWarehouse = value
+	return j
+}
+
+func (j *JobServiceModel) WithServiceTypeValue(value tfconfig.Variable) *JobServiceModel {
+	j.ServiceType = value
 	return j
 }
