@@ -237,7 +237,7 @@ func (opts *AccountLevelParameters) validate() error {
 }
 
 type AccountSet struct {
-	Parameters           *AccountLevelParameters `ddl:"list,no_parentheses"`
+	LegacyParameters     *AccountLevelParameters `ddl:"list,no_parentheses"`
 	ResourceMonitor      AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	PackagesPolicy       SchemaObjectIdentifier  `ddl:"identifier" sql:"PACKAGES POLICY"`
 	PasswordPolicy       SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
@@ -248,14 +248,14 @@ type AccountSet struct {
 
 func (opts *AccountSet) validate() error {
 	var errs []error
-	if !exactlyOneValueSet(opts.Parameters, opts.ResourceMonitor, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) {
-		errs = append(errs, errExactlyOneOf("AccountSet", "Parameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+	if !exactlyOneValueSet(opts.LegacyParameters, opts.ResourceMonitor, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) {
+		errs = append(errs, errExactlyOneOf("AccountSet", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
 	}
 	if valueSet(opts.Force) && !valueSet(opts.PackagesPolicy) {
 		errs = append(errs, NewError("force can only be set with PackagesPolicy field"))
 	}
-	if valueSet(opts.Parameters) {
-		if err := opts.Parameters.validate(); err != nil {
+	if valueSet(opts.LegacyParameters) {
+		if err := opts.LegacyParameters.validate(); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -277,7 +277,7 @@ func (opts *AccountLevelParametersUnset) validate() error {
 }
 
 type AccountUnset struct {
-	Parameters           *AccountLevelParametersUnset `ddl:"list,no_parentheses"`
+	LegacyParameters     *AccountLevelParametersUnset `ddl:"list,no_parentheses"`
 	PackagesPolicy       *bool                        `ddl:"keyword" sql:"PACKAGES POLICY"`
 	PasswordPolicy       *bool                        `ddl:"keyword" sql:"PASSWORD POLICY"`
 	SessionPolicy        *bool                        `ddl:"keyword" sql:"SESSION POLICY"`
@@ -287,11 +287,11 @@ type AccountUnset struct {
 
 func (opts *AccountUnset) validate() error {
 	var errs []error
-	if !exactlyOneValueSet(opts.Parameters, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy, opts.ResourceMonitor) {
-		errs = append(errs, errExactlyOneOf("AccountUnset", "Parameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+	if !exactlyOneValueSet(opts.LegacyParameters, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy, opts.ResourceMonitor) {
+		errs = append(errs, errExactlyOneOf("AccountUnset", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
 	}
-	if valueSet(opts.Parameters) {
-		if err := opts.Parameters.validate(); err != nil {
+	if valueSet(opts.LegacyParameters) {
+		if err := opts.LegacyParameters.validate(); err != nil {
 			errs = append(errs, err)
 		}
 	}

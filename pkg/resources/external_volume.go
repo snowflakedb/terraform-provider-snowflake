@@ -219,9 +219,9 @@ func CreateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 		req.WithAllowWrites(parsed)
 	}
 
-	createErr := client.ExternalVolumes.Create(ctx, req)
+	err = client.ExternalVolumes.Create(ctx, req)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error creating external volume %v err = %w", id.Name(), createErr))
+		return diag.FromErr(fmt.Errorf("error creating external volume %v err = %w", id.Name(), err))
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))

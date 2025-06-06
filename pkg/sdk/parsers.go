@@ -3,6 +3,8 @@ package sdk
 import (
 	"strings"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 // fix timestamp merge
@@ -41,29 +43,17 @@ func ParseCommaSeparatedStringArray(value string, trimQuotes bool) []string {
 // ParseCommaSeparatedSchemaObjectIdentifierArray can be used to parse Snowflake output containing a list of schema-level object identifiers
 // in the format of ["db".SCHEMA."name", "db"."schema2"."name2", ...],
 func ParseCommaSeparatedSchemaObjectIdentifierArray(value string) ([]SchemaObjectIdentifier, error) {
-	idsRaw := ParseCommaSeparatedStringArray(value, false)
-	ids := make([]SchemaObjectIdentifier, len(idsRaw))
-	for i := range idsRaw {
-		id, err := ParseSchemaObjectIdentifier(idsRaw[i])
-		if err != nil {
-			return nil, err
-		}
-		ids[i] = id
-	}
-	return ids, nil
+	return collections.MapErr(ParseCommaSeparatedStringArray(value, false), ParseSchemaObjectIdentifier)
 }
 
 // ParseCommaSeparatedAccountIdentifierArray can be used to parse Snowflake output containing a list of account identifiers
 // in the format of ["organization1.account1", "organization2.account2", ...],
 func ParseCommaSeparatedAccountIdentifierArray(value string) ([]AccountIdentifier, error) {
-	idsRaw := ParseCommaSeparatedStringArray(value, false)
-	ids := make([]AccountIdentifier, len(idsRaw))
-	for i := range idsRaw {
-		id, err := ParseAccountIdentifier(idsRaw[i])
-		if err != nil {
-			return nil, err
-		}
-		ids[i] = id
-	}
-	return ids, nil
+	return collections.MapErr(ParseCommaSeparatedStringArray(value, false), ParseAccountIdentifier)
+}
+
+// ParseCommaSeparatedAccountObjectIdentifierArray can be used to parse Snowflake output containing a list of account object identifiers
+// in the format of ["object1", "object2", ...],
+func ParseCommaSeparatedAccountObjectIdentifierArray(value string) ([]AccountObjectIdentifier, error) {
+	return collections.MapErr(ParseCommaSeparatedStringArray(value, false), ParseAccountObjectIdentifier)
 }

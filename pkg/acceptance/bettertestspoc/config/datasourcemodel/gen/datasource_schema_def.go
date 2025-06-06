@@ -27,6 +27,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Accounts().Schema,
 	},
 	{
+		name:   "ComputePools",
+		schema: datasources.ComputePools().Schema,
+	},
+	{
 		name:   "Database",
 		schema: datasources.Database().Schema,
 	},
@@ -45,6 +49,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Grants",
 		schema: datasources.Grants().Schema,
+	},
+	{
+		name:   "ImageRepositories",
+		schema: datasources.ImageRepositories().Schema,
 	},
 	{
 		name:   "MaskingPolicies",

@@ -80,7 +80,7 @@ data "snowflake_tags" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of tags is equal to at exactly one element (with the use of check block)
+# Ensure the number of tags is equal to exactly one element (with the use of check block)
 check "tag_check" {
   data "snowflake_tags" "assert_with_check_block" {
     like = "tag-name"

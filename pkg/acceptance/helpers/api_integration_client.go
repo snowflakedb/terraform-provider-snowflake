@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -40,6 +41,22 @@ func (c *ApiIntegrationClient) CreateApiIntegration(t *testing.T) (*sdk.ApiInteg
 	require.NoError(t, err)
 
 	return apiIntegration, c.DropApiIntegrationFunc(t, id)
+}
+
+// TODO(SNOW-1348334): change raw sqls to proper client
+func (c *ApiIntegrationClient) CreateApiIntegrationForGitRepository(t *testing.T, origin string) (sdk.AccountObjectIdentifier, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomAccountObjectIdentifier()
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`CREATE OR REPLACE API INTEGRATION %s
+	  API_PROVIDER = GIT_HTTPS_API
+	  API_ALLOWED_PREFIXES = ('%s')
+	  ALLOWED_AUTHENTICATION_SECRETS = ALL
+	  ENABLED = TRUE;`, id.FullyQualifiedName(), origin))
+	require.NoError(t, err)
+
+	return id, c.DropApiIntegrationFunc(t, id)
 }
 
 func (c *ApiIntegrationClient) DropApiIntegrationFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {

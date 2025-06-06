@@ -463,7 +463,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
-				Parameters: &sdk.AccountLevelParameters{
+				LegacyParameters: &sdk.AccountLevelParameters{
 					AccountParameters: &sdk.AccountParameters{
 						MinDataRetentionTimeInDays: sdk.Int(15), // default is 0
 					},
@@ -492,7 +492,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{
-				Parameters: &sdk.AccountLevelParametersUnset{
+				LegacyParameters: &sdk.AccountLevelParametersUnset{
 					AccountParameters: &sdk.AccountParametersUnset{
 						MinDataRetentionTimeInDays: sdk.Bool(true),
 					},

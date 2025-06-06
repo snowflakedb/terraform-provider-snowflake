@@ -76,7 +76,7 @@ data "snowflake_views" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of views is equal to at exactly one element (with the use of check block)
+# Ensure the number of views is equal to exactly one element (with the use of check block)
 check "view_check" {
   data "snowflake_views" "assert_with_check_block" {
     like = "view-name"

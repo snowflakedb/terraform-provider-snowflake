@@ -53,6 +53,8 @@ but if we add one case, or modify more cases this becomes more challenging)
 - add support for Enums
 - handle arrays
 - handle more validation types
+  - validating numbers in a given range constrained by another variable (e.g. `x <= y`, `x > y`, etc.)
+  - validating number relations in a sequence (e.g. `x <= y <= z`, `x < y < z`)
 - write new `valueSet` function (see validations.go) that will have better defaults or more parameters that will determine
 checking behaviour which should get rid of edge cases that may cause bugs in the future
    - right now, we have `valueSet` function that doesn't take into consideration edge cases, e.g. with slice where sometimes
@@ -108,7 +110,6 @@ find a better solution to solve the issue (add more logic to the templates ?)
   - more clear definition of lists that can be empty vs cannot be empty
 - add empty ids in generated tests (TODO in random_test.go)
 - add optional imports (currently they have to be added manually, e.g. `datatypes.DataType`)
-- add fourth type of quotes - double dollars ($$..$$) -> used for functions, procedures, and tasks
 
 ##### Known issues
 - generating two converts when Show and Desc use the same data structure

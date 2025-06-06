@@ -2,9 +2,10 @@
 
 {{- $assertName := .Name | printf "%sShowOutputAssert" -}}
 {{- $nameLowerCase := FirstLetterLowercase .Name -}}
-{{- $assertVar := FirstLetter $nameLowerCase }}
+{{- $assertVar := FirstLetterLowercase .Name | printf "%sAssert" }}
+
 type {{ $assertName }} struct {
-*assert.ResourceAssert
+    *assert.ResourceAssert
 }
 
 func {{ .Name }}ShowOutput(t *testing.T, name string) *{{ $assertName }} {

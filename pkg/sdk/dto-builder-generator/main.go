@@ -112,25 +112,39 @@ func (gen *Generator) generateImports(imports ...string) {
 
 func (gen *Generator) addConstructorsAndBuilderMethods() {
 	for _, node := range gen.astFile.Decls {
-		if _, ok := node.(*ast.GenDecl); ok {
-			for _, spec := range node.(*ast.GenDecl).Specs {
-				if _, ok := spec.(*ast.TypeSpec); ok {
-					if _, ok := spec.(*ast.TypeSpec).Type.(*ast.StructType); ok {
-						var fields []*fieldDef
-						for _, field := range spec.(*ast.TypeSpec).Type.(*ast.StructType).Fields.List {
-							for _, name := range field.Names {
-								fs := newFieldDef(name, field)
-								fields = append(fields, fs)
-							}
-						}
-						def := newStructDef(spec.(*ast.TypeSpec), fields)
-						gen.generateConstructor(def)
-						gen.generateBuilderMethods(def)
-					}
-				}
+		genDecl, ok := node.(*ast.GenDecl)
+		if !ok {
+			continue
+		}
+
+		for _, spec := range genDecl.Specs {
+			typeSpec, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
 			}
+
+			structType, ok := typeSpec.Type.(*ast.StructType)
+			if !ok {
+				continue
+			}
+
+			fields := extractFieldDefs(structType.Fields.List)
+			def := newStructDef(typeSpec, fields)
+			gen.generateConstructor(def)
+			gen.generateBuilderMethods(def)
 		}
 	}
+}
+
+func extractFieldDefs(fieldList []*ast.Field) []*fieldDef {
+	var fields []*fieldDef
+	for _, field := range fieldList {
+		for _, name := range field.Names {
+			fs := newFieldDef(name, field)
+			fields = append(fields, fs)
+		}
+	}
+	return fields
 }
 
 type structDef struct {

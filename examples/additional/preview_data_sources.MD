@@ -2,6 +2,7 @@
 ## Currently preview data sources 
 
 - [snowflake_alerts](./docs/data-sources/alerts)
+- [snowflake_compute_pools](./docs/data-sources/compute_pools)
 - [snowflake_cortex_search_services](./docs/data-sources/cortex_search_services)
 - [snowflake_current_account](./docs/data-sources/current_account)
 - [snowflake_current_role](./docs/data-sources/current_role)
@@ -13,6 +14,7 @@
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)
+- [snowflake_image_repositories](./docs/data-sources/image_repositories)
 - [snowflake_materialized_views](./docs/data-sources/materialized_views)
 - [snowflake_parameters](./docs/data-sources/parameters)
 - [snowflake_pipes](./docs/data-sources/pipes)

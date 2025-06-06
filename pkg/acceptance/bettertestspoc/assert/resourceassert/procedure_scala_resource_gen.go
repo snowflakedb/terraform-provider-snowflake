@@ -32,6 +32,21 @@ func ImportedProcedureScalaResource(t *testing.T, id string) *ProcedureScalaReso
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (p *ProcedureScalaResourceAssert) HasDatabaseString(expected string) *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("database", expected))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasSchemaString(expected string) *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("schema", expected))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNameString(expected string) *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("name", expected))
+	return p
+}
+
 func (p *ProcedureScalaResourceAssert) HasArgumentsString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
@@ -39,11 +54,6 @@ func (p *ProcedureScalaResourceAssert) HasArgumentsString(expected string) *Proc
 
 func (p *ProcedureScalaResourceAssert) HasCommentString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasDatabaseString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
 	return p
 }
 
@@ -92,11 +102,6 @@ func (p *ProcedureScalaResourceAssert) HasMetricLevelString(expected string) *Pr
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasNameString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasNullInputBehaviorString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
 	return p
@@ -127,11 +132,6 @@ func (p *ProcedureScalaResourceAssert) HasRuntimeVersionString(expected string) 
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasSchemaString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasSecretsString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("secrets", expected))
 	return p
@@ -152,22 +152,27 @@ func (p *ProcedureScalaResourceAssert) HasTraceLevelString(expected string) *Pro
 	return p
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
-func (p *ProcedureScalaResourceAssert) HasNoArguments() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("arguments"))
+func (p *ProcedureScalaResourceAssert) HasNoDatabase() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("database"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNoSchema() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("schema"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNoName() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("name"))
 	return p
 }
 
 func (p *ProcedureScalaResourceAssert) HasNoComment() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasNoDatabase() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
 	return p
 }
 
@@ -181,11 +186,6 @@ func (p *ProcedureScalaResourceAssert) HasNoExecuteAs() *ProcedureScalaResourceA
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasNoExternalAccessIntegrations() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("external_access_integrations"))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasNoFullyQualifiedName() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return p
@@ -193,11 +193,6 @@ func (p *ProcedureScalaResourceAssert) HasNoFullyQualifiedName() *ProcedureScala
 
 func (p *ProcedureScalaResourceAssert) HasNoHandler() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("handler"))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasNoImports() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("imports"))
 	return p
 }
 
@@ -216,18 +211,8 @@ func (p *ProcedureScalaResourceAssert) HasNoMetricLevel() *ProcedureScalaResourc
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasNoName() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasNoNullInputBehavior() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasNoPackages() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("packages"))
 	return p
 }
 
@@ -251,27 +236,195 @@ func (p *ProcedureScalaResourceAssert) HasNoRuntimeVersion() *ProcedureScalaReso
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasNoSchema() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasNoSecrets() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("secrets"))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasNoSnowparkPackage() *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("snowpark_package"))
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasNoTargetPath() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("target_path"))
+func (p *ProcedureScalaResourceAssert) HasNoTraceLevel() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("trace_level"))
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasNoTraceLevel() *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("trace_level"))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (p *ProcedureScalaResourceAssert) HasArgumentsEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasCommentEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("comment", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasEnableConsoleOutputEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasExecuteAsEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("execute_as", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasExternalAccessIntegrationsEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasFullyQualifiedNameEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasImportsEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("imports.#", "0"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasIsSecureEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("is_secure", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasLogLevelEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_level", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasMetricLevelEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("metric_level", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNullInputBehaviorEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("null_input_behavior", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasPackagesEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("packages.#", "0"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasProcedureDefinitionEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("procedure_definition", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasProcedureLanguageEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("procedure_language", ""))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasSecretsEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("secrets.#", "0"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasTargetPathEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("target_path.#", "0"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasTraceLevelEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValueSet("trace_level", ""))
+	return p
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (p *ProcedureScalaResourceAssert) HasDatabaseNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("database"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasSchemaNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("schema"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNameNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("name"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasCommentNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("comment"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasEnableConsoleOutputNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("enable_console_output"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasExecuteAsNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("execute_as"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasFullyQualifiedNameNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasHandlerNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("handler"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasIsSecureNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("is_secure"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasLogLevelNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("log_level"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasMetricLevelNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("metric_level"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNullInputBehaviorNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("null_input_behavior"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasProcedureDefinitionNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("procedure_definition"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasProcedureLanguageNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("procedure_language"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasReturnTypeNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("return_type"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasRuntimeVersionNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("runtime_version"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasSnowparkPackageNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("snowpark_package"))
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasTraceLevelNotEmpty() *ProcedureScalaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("trace_level"))
 	return p
 }

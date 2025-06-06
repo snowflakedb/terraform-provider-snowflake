@@ -29,6 +29,15 @@ func TypeWithoutPointer(t string) string {
 	return without
 }
 
+func TypeWithoutPointerAndBrackets(t string) string {
+	without := strings.TrimLeft(t, "*[]")
+	return without
+}
+
+func IsTypeSlice(t string) bool {
+	return strings.HasPrefix(t, "[]")
+}
+
 func SnakeCase(name string) string {
 	return ToSnakeCase(name)
 }

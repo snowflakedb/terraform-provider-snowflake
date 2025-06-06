@@ -2,66 +2,32 @@ package acceptance
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"os"
-	"path/filepath"
-	"strconv"
-	"sync"
-	"testing"
 
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/acceptancetests"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-testing/config"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/snowflakedb/gosnowflake"
-	"github.com/stretchr/testify/require"
-)
-
-const AcceptanceTestPrefix = "acc_test_"
-
-var (
-	TestDatabaseName  = fmt.Sprintf("%sdb_%s", AcceptanceTestPrefix, acceptancetests.ObjectsSuffix)
-	TestSchemaName    = fmt.Sprintf("%ssc_%s", AcceptanceTestPrefix, acceptancetests.ObjectsSuffix)
-	TestWarehouseName = fmt.Sprintf("%swh_%s", AcceptanceTestPrefix, acceptancetests.ObjectsSuffix)
-
-	NonExistingAccountObjectIdentifier  = sdk.NewAccountObjectIdentifier("does_not_exist")
-	NonExistingDatabaseObjectIdentifier = sdk.NewDatabaseObjectIdentifier(TestDatabaseName, "does_not_exist")
-	NonExistingSchemaObjectIdentifier   = sdk.NewSchemaObjectIdentifier(TestDatabaseName, TestSchemaName, "does_not_exist")
 )
 
 var (
 	TestAccProvider *schema.Provider
 	v5Server        tfprotov5.ProviderServer
 	v6Server        tfprotov6.ProviderServer
-	atc             acceptanceTestContext
 
 	configureClientErrorDiag diag.Diagnostics
 	configureProviderCtx     *internalprovider.Context
 )
 
 func init() {
-	testObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.TestObjectsSuffix))
-	requireTestObjectSuffix := os.Getenv(fmt.Sprintf("%v", testenvs.RequireTestObjectsSuffix))
-	if requireTestObjectSuffix != "" && testObjectSuffix == "" {
-		log.Printf("Test object suffix is required for this test run. Set %s env.", testenvs.TestObjectsSuffix)
-		os.Exit(1)
-	}
+	log.Println("[DEBUG] Running init from old acceptance tests setup")
 
 	TestAccProvider = provider.Provider()
 	// TODO [SNOW-2054208]: improve during the package extraction
@@ -82,42 +48,6 @@ func init() {
 		log.Panicf("Cannot upgrade server from proto v5 to proto v6, failing, err: %v", err)
 	}
 	_ = testAccProtoV6ProviderFactoriesNew
-
-	defaultConfig, err := sdk.ProfileConfig(testprofiles.Default)
-	if err != nil {
-		log.Panicf("Could not read configuration from profile: %v", err)
-	}
-	if defaultConfig == nil {
-		log.Panic("Config is required to run acceptance tests")
-	}
-	atc.config = defaultConfig
-
-	client, err := sdk.NewClient(defaultConfig)
-	if err != nil {
-		log.Panicf("Cannot instantiate new client, err: %v", err)
-	}
-	atc.client = client
-
-	cfg, err := sdk.ProfileConfig(testprofiles.Secondary)
-	if err != nil {
-		log.Panicf("Config for the secondary client is needed to run acceptance tests, err: %v", err)
-	}
-	secondaryClient, err := sdk.NewClient(cfg)
-	if err != nil {
-		log.Panicf("Cannot instantiate new secondary client, err: %v", err)
-	}
-	atc.secondaryClient = secondaryClient
-
-	atc.testClient = helpers.NewTestClient(client, TestDatabaseName, TestSchemaName, TestWarehouseName, acceptancetests.ObjectsSuffix)
-	atc.secondaryTestClient = helpers.NewTestClient(secondaryClient, TestDatabaseName, TestSchemaName, TestWarehouseName, acceptancetests.ObjectsSuffix)
-}
-
-type acceptanceTestContext struct {
-	config              *gosnowflake.Config
-	client              *sdk.Client
-	secondaryClient     *sdk.Client
-	testClient          *helpers.TestClient
-	secondaryTestClient *helpers.TestClient
 }
 
 var TestAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
@@ -182,101 +112,4 @@ func ConfigureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 	}
 
 	return providerCtx, nil
-}
-
-var once sync.Once
-
-func TestAccPreCheck(t *testing.T) {
-	// use singleton design pattern to ensure we only create these resources once
-	// there is no cleanup currently, sweepers take care of it
-	once.Do(func() {
-		ctx := context.Background()
-
-		_, _ = TestClient().Database.CreateTestDatabaseIfNotExists(t)
-		_, _ = TestClient().Schema.CreateTestSchemaIfNotExists(t)
-		_, _ = TestClient().Warehouse.CreateTestWarehouseIfNotExists(t)
-
-		_, _ = SecondaryTestClient().Database.CreateTestDatabaseIfNotExists(t)
-		_, _ = SecondaryTestClient().Schema.CreateTestSchemaIfNotExists(t)
-		_, _ = SecondaryTestClient().Warehouse.CreateTestWarehouseIfNotExists(t)
-
-		if err := helpers.EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(atc.client, ctx); err != nil {
-			t.Fatal(err)
-		}
-
-		if err := helpers.EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(atc.secondaryClient, ctx); err != nil {
-			t.Fatal(err)
-		}
-
-		if err := helpers.EnsureScimProvisionerRolesExist(atc.client, ctx); err != nil {
-			t.Fatal(err)
-		}
-
-		if err := helpers.EnsureScimProvisionerRolesExist(atc.secondaryClient, ctx); err != nil {
-			t.Fatal(err)
-		}
-	})
-}
-
-// ConfigurationSameAsStepN should be used to obtain configuration for one of the previous steps to avoid duplication of configuration and var files.
-// Based on config.TestStepDirectory.
-func ConfigurationSameAsStepN(step int) func(config.TestStepConfigRequest) string {
-	return func(req config.TestStepConfigRequest) string {
-		return filepath.Join("testdata", req.TestName, strconv.Itoa(step))
-	}
-}
-
-// ConfigurationDirectory should be used to obtain configuration if the same can be shared between multiple tests to avoid duplication of configuration and var files.
-// Based on config.TestNameDirectory. Similar to config.StaticDirectory but prefixed provided directory with `testdata`.
-func ConfigurationDirectory(directory string) func(config.TestStepConfigRequest) string {
-	return func(req config.TestStepConfigRequest) string {
-		return filepath.Join("testdata", directory)
-	}
-}
-
-func DefaultConfig(t *testing.T) *gosnowflake.Config {
-	t.Helper()
-	return atc.config
-}
-
-func TestClient() *helpers.TestClient {
-	return atc.testClient
-}
-
-func SecondaryTestClient() *helpers.TestClient {
-	return atc.secondaryTestClient
-}
-
-// ExternalProviderWithExactVersion returns a map of external providers with an exact version constraint
-func ExternalProviderWithExactVersion(version string) map[string]resource.ExternalProvider {
-	return map[string]resource.ExternalProvider{
-		"snowflake": {
-			VersionConstraint: fmt.Sprintf("=%s", version),
-			Source:            "snowflakedb/snowflake",
-		},
-	}
-}
-
-// SetV097CompatibleConfigPathEnv sets a new config path in a relevant env variable for a file that is compatible with v0.97.
-func SetV097CompatibleConfigPathEnv(t *testing.T) {
-	t.Helper()
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
-	configPath := filepath.Join(home, ".snowflake", "config_v097_compatible")
-	t.Setenv(snowflakeenvs.ConfigPath, configPath)
-}
-
-// SetLegacyConfigPathEnv sets a new config path in a relevant env variable for a file that uses the legacy format.
-func SetLegacyConfigPathEnv(t *testing.T) {
-	t.Helper()
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
-	configPath := filepath.Join(home, ".snowflake", "config_legacy")
-	t.Setenv(snowflakeenvs.ConfigPath, configPath)
-}
-
-// UnsetConfigPathEnv unsets a config path env
-func UnsetConfigPathEnv(t *testing.T) {
-	t.Helper()
-	t.Setenv(snowflakeenvs.ConfigPath, "")
 }

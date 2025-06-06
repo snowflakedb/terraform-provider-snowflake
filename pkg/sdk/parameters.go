@@ -42,7 +42,7 @@ type parameters struct {
 func (parameters *parameters) SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error {
 	opts := AlterAccountOptions{
 		Set: &AccountSet{
-			Parameters: &AccountLevelParameters{
+			LegacyParameters: &AccountLevelParameters{
 				AccountParameters: &AccountParameters{},
 			},
 		},
@@ -53,143 +53,143 @@ func (parameters *parameters) SetAccountParameter(ctx context.Context, parameter
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.AllowClientMFACaching = b
+		opts.Set.LegacyParameters.AccountParameters.AllowClientMFACaching = b
 	case AccountParameterAllowIDToken:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.AllowIDToken = b
+		opts.Set.LegacyParameters.AccountParameters.AllowIDToken = b
 	case AccountParameterClientEncryptionKeySize:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("CLIENT_ENCRYPTION_KEY_SIZE session parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.AccountParameters.ClientEncryptionKeySize = Pointer(v)
+		opts.Set.LegacyParameters.AccountParameters.ClientEncryptionKeySize = Pointer(v)
 	case AccountParameterCortexEnabledCrossRegion:
-		opts.Set.Parameters.AccountParameters.CortexEnabledCrossRegion = &value
+		opts.Set.LegacyParameters.AccountParameters.CortexEnabledCrossRegion = &value
 	case AccountParameterDisableUserPrivilegeGrants:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.DisableUserPrivilegeGrants = b
+		opts.Set.LegacyParameters.AccountParameters.DisableUserPrivilegeGrants = b
 	case AccountParameterEnableIdentifierFirstLogin:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.EnableIdentifierFirstLogin = b
+		opts.Set.LegacyParameters.AccountParameters.EnableIdentifierFirstLogin = b
 	case AccountParameterEnableInternalStagesPrivatelink:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.AllowIDToken = b
+		opts.Set.LegacyParameters.AccountParameters.AllowIDToken = b
 	case AccountParameterEnablePersonalDatabase:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.EnablePersonalDatabase = b
+		opts.Set.LegacyParameters.AccountParameters.EnablePersonalDatabase = b
 	case AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = b
+		opts.Set.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = b
 	case AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = b
+		opts.Set.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = b
 	case AccountParameterEnableUnhandledExceptionsReporting:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.EnableUnhandledExceptionsReporting = b
+		opts.Set.LegacyParameters.AccountParameters.EnableUnhandledExceptionsReporting = b
 	case AccountParameterEnforceNetworkRulesForInternalStages:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.EnforceNetworkRulesForInternalStages = b
+		opts.Set.LegacyParameters.AccountParameters.EnforceNetworkRulesForInternalStages = b
 	case AccountParameterEventTable:
-		opts.Set.Parameters.AccountParameters.EventTable = &value
+		opts.Set.LegacyParameters.AccountParameters.EventTable = &value
 	case AccountParameterEnableUnredactedQuerySyntaxError:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.EnableUnredactedQuerySyntaxError = b
+		opts.Set.LegacyParameters.AccountParameters.EnableUnredactedQuerySyntaxError = b
 	case AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = b
+		opts.Set.LegacyParameters.AccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = b
 	case AccountParameterInitialReplicationSizeLimitInTB:
-		opts.Set.Parameters.AccountParameters.InitialReplicationSizeLimitInTB = &value
+		opts.Set.LegacyParameters.AccountParameters.InitialReplicationSizeLimitInTB = &value
 	case AccountParameterMinDataRetentionTimeInDays:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("MIN_DATA_RETENTION_TIME_IN_DAYS session parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.AccountParameters.MinDataRetentionTimeInDays = Pointer(v)
+		opts.Set.LegacyParameters.AccountParameters.MinDataRetentionTimeInDays = Pointer(v)
 	case AccountParameterMetricLevel:
-		opts.Set.Parameters.AccountParameters.MetricLevel = Pointer(MetricLevel(value))
+		opts.Set.LegacyParameters.AccountParameters.MetricLevel = Pointer(MetricLevel(value))
 	case AccountParameterNetworkPolicy:
-		opts.Set.Parameters.AccountParameters.NetworkPolicy = &value
+		opts.Set.LegacyParameters.AccountParameters.NetworkPolicy = &value
 	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.OAuthAddPrivilegedRolesToBlockedList = b
+		opts.Set.LegacyParameters.AccountParameters.OAuthAddPrivilegedRolesToBlockedList = b
 	case AccountParameterPeriodicDataRekeying:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.PeriodicDataRekeying = b
+		opts.Set.LegacyParameters.AccountParameters.PeriodicDataRekeying = b
 	case AccountParameterPreventLoadFromInlineURL:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.PreventLoadFromInlineURL = b
+		opts.Set.LegacyParameters.AccountParameters.PreventLoadFromInlineURL = b
 	case AccountParameterPreventUnloadToInlineURL:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.PreventUnloadToInlineURL = b
+		opts.Set.LegacyParameters.AccountParameters.PreventUnloadToInlineURL = b
 	case AccountParameterPreventUnloadToInternalStages:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.PreventUnloadToInternalStages = b
+		opts.Set.LegacyParameters.AccountParameters.PreventUnloadToInternalStages = b
 	case AccountParameterRequireStorageIntegrationForStageCreation:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.RequireStorageIntegrationForStageCreation = b
+		opts.Set.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageCreation = b
 	case AccountParameterRequireStorageIntegrationForStageOperation:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.RequireStorageIntegrationForStageOperation = b
+		opts.Set.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageOperation = b
 	case AccountParameterSSOLoginPage:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.AccountParameters.SSOLoginPage = b
+		opts.Set.LegacyParameters.AccountParameters.SSOLoginPage = b
 	default:
 		return parameters.SetSessionParameterOnAccount(ctx, SessionParameter(parameter), value)
 	}
@@ -203,66 +203,66 @@ func (parameters *parameters) SetAccountParameter(ctx context.Context, parameter
 func (parameters *parameters) UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error {
 	opts := AlterAccountOptions{
 		Unset: &AccountUnset{
-			Parameters: &AccountLevelParametersUnset{
+			LegacyParameters: &AccountLevelParametersUnset{
 				AccountParameters: &AccountParametersUnset{},
 			},
 		},
 	}
 	switch parameter {
 	case AccountParameterAllowClientMFACaching:
-		opts.Unset.Parameters.AccountParameters.AllowClientMFACaching = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.AllowClientMFACaching = Pointer(true)
 	case AccountParameterAllowIDToken:
-		opts.Unset.Parameters.AccountParameters.AllowIDToken = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.AllowIDToken = Pointer(true)
 	case AccountParameterClientEncryptionKeySize:
-		opts.Unset.Parameters.AccountParameters.ClientEncryptionKeySize = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.ClientEncryptionKeySize = Pointer(true)
 	case AccountParameterCortexEnabledCrossRegion:
-		opts.Unset.Parameters.AccountParameters.CortexEnabledCrossRegion = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.CortexEnabledCrossRegion = Pointer(true)
 	case AccountParameterDisableUserPrivilegeGrants:
-		opts.Unset.Parameters.AccountParameters.DisableUserPrivilegeGrants = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.DisableUserPrivilegeGrants = Pointer(true)
 	case AccountParameterEnableIdentifierFirstLogin:
-		opts.Unset.Parameters.AccountParameters.EnableIdentifierFirstLogin = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableIdentifierFirstLogin = Pointer(true)
 	case AccountParameterEnableInternalStagesPrivatelink:
-		opts.Unset.Parameters.AccountParameters.EnableInternalStagesPrivatelink = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableInternalStagesPrivatelink = Pointer(true)
 	case AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository:
-		opts.Unset.Parameters.AccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = Pointer(true)
 	case AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage:
-		opts.Unset.Parameters.AccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = Pointer(true)
 	case AccountParameterEnablePersonalDatabase:
-		opts.Unset.Parameters.AccountParameters.EnablePersonalDatabase = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnablePersonalDatabase = Pointer(true)
 	case AccountParameterEnableUnhandledExceptionsReporting:
-		opts.Unset.Parameters.AccountParameters.EnableUnhandledExceptionsReporting = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableUnhandledExceptionsReporting = Pointer(true)
 	case AccountParameterEnableUnredactedQuerySyntaxError:
-		opts.Unset.Parameters.AccountParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
 	case AccountParameterEnforceNetworkRulesForInternalStages:
-		opts.Unset.Parameters.AccountParameters.EnforceNetworkRulesForInternalStages = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EnforceNetworkRulesForInternalStages = Pointer(true)
 	case AccountParameterEventTable:
-		opts.Unset.Parameters.AccountParameters.EventTable = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.EventTable = Pointer(true)
 	case AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList:
-		opts.Unset.Parameters.AccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = Pointer(true)
 	case AccountParameterInitialReplicationSizeLimitInTB:
-		opts.Unset.Parameters.AccountParameters.InitialReplicationSizeLimitInTB = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.InitialReplicationSizeLimitInTB = Pointer(true)
 	case AccountParameterMinDataRetentionTimeInDays:
-		opts.Unset.Parameters.AccountParameters.MinDataRetentionTimeInDays = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.MinDataRetentionTimeInDays = Pointer(true)
 	case AccountParameterMetricLevel:
-		opts.Unset.Parameters.AccountParameters.MetricLevel = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.MetricLevel = Pointer(true)
 	case AccountParameterNetworkPolicy:
-		opts.Unset.Parameters.AccountParameters.NetworkPolicy = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.NetworkPolicy = Pointer(true)
 	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:
-		opts.Unset.Parameters.AccountParameters.OAuthAddPrivilegedRolesToBlockedList = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.OAuthAddPrivilegedRolesToBlockedList = Pointer(true)
 	case AccountParameterPeriodicDataRekeying:
-		opts.Unset.Parameters.AccountParameters.PeriodicDataRekeying = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.PeriodicDataRekeying = Pointer(true)
 	case AccountParameterPreventLoadFromInlineURL:
-		opts.Unset.Parameters.AccountParameters.PreventLoadFromInlineURL = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.PreventLoadFromInlineURL = Pointer(true)
 	case AccountParameterPreventUnloadToInlineURL:
-		opts.Unset.Parameters.AccountParameters.PreventUnloadToInlineURL = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.PreventUnloadToInlineURL = Pointer(true)
 	case AccountParameterPreventUnloadToInternalStages:
-		opts.Unset.Parameters.AccountParameters.PreventUnloadToInternalStages = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.PreventUnloadToInternalStages = Pointer(true)
 	case AccountParameterRequireStorageIntegrationForStageCreation:
-		opts.Unset.Parameters.AccountParameters.RequireStorageIntegrationForStageCreation = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageCreation = Pointer(true)
 	case AccountParameterRequireStorageIntegrationForStageOperation:
-		opts.Unset.Parameters.AccountParameters.RequireStorageIntegrationForStageOperation = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageOperation = Pointer(true)
 	case AccountParameterSSOLoginPage:
-		opts.Unset.Parameters.AccountParameters.SSOLoginPage = Pointer(true)
+		opts.Unset.LegacyParameters.AccountParameters.SSOLoginPage = Pointer(true)
 	default:
 		return parameters.UnsetSessionParameterOnAccount(ctx, SessionParameter(parameter))
 	}
@@ -273,7 +273,7 @@ func (parameters *parameters) SetSessionParameterOnAccount(ctx context.Context, 
 	sp := &SessionParameters{}
 	err := sp.setParam(parameter, value)
 	if err == nil {
-		opts := AlterAccountOptions{Set: &AccountSet{Parameters: &AccountLevelParameters{SessionParameters: sp}}}
+		opts := AlterAccountOptions{Set: &AccountSet{LegacyParameters: &AccountLevelParameters{SessionParameters: sp}}}
 		err = parameters.client.Accounts.Alter(ctx, &opts)
 		if err != nil {
 			return err
@@ -291,7 +291,7 @@ func (parameters *parameters) UnsetSessionParameterOnAccount(ctx context.Context
 	sp := &SessionParametersUnset{}
 	err := sp.setParam(parameter)
 	if err == nil {
-		opts := AlterAccountOptions{Unset: &AccountUnset{Parameters: &AccountLevelParametersUnset{SessionParameters: sp}}}
+		opts := AlterAccountOptions{Unset: &AccountUnset{LegacyParameters: &AccountLevelParametersUnset{SessionParameters: sp}}}
 		err = parameters.client.Accounts.Alter(ctx, &opts)
 		if err != nil {
 			return err
@@ -320,94 +320,94 @@ func (parameters *parameters) SetSessionParameterOnUser(ctx context.Context, use
 }
 
 func (parameters *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error {
-	opts := AlterAccountOptions{Set: &AccountSet{Parameters: &AccountLevelParameters{ObjectParameters: &ObjectParameters{}}}}
+	opts := AlterAccountOptions{Set: &AccountSet{LegacyParameters: &AccountLevelParameters{ObjectParameters: &ObjectParameters{}}}}
 	switch parameter {
 	case ObjectParameterDataRetentionTimeInDays:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("DATA_RETENTION_TIME_IN_DAYS object parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.ObjectParameters.DataRetentionTimeInDays = Pointer(v)
+		opts.Set.LegacyParameters.ObjectParameters.DataRetentionTimeInDays = Pointer(v)
 	case ObjectParameterDefaultDDLCollation:
-		opts.Set.Parameters.ObjectParameters.DefaultDDLCollation = &value
+		opts.Set.LegacyParameters.ObjectParameters.DefaultDDLCollation = &value
 	case ObjectParameterLogLevel:
-		opts.Set.Parameters.ObjectParameters.LogLevel = Pointer(LogLevel(value))
+		opts.Set.LegacyParameters.ObjectParameters.LogLevel = Pointer(LogLevel(value))
 	case ObjectParameterMaxConcurrencyLevel:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("MAX_CONCURRENCY_LEVEL object parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.ObjectParameters.MaxConcurrencyLevel = Pointer(v)
+		opts.Set.LegacyParameters.ObjectParameters.MaxConcurrencyLevel = Pointer(v)
 	case ObjectParameterMaxDataExtensionTimeInDays:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("MAX_DATA_EXTENSION_TIME_IN_DAYS object parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.ObjectParameters.MaxDataExtensionTimeInDays = Pointer(v)
+		opts.Set.LegacyParameters.ObjectParameters.MaxDataExtensionTimeInDays = Pointer(v)
 	case ObjectParameterPipeExecutionPaused:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.ObjectParameters.PipeExecutionPaused = b
+		opts.Set.LegacyParameters.ObjectParameters.PipeExecutionPaused = b
 	case ObjectParameterPreventUnloadToInternalStages:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.ObjectParameters.PreventUnloadToInternalStages = b
+		opts.Set.LegacyParameters.ObjectParameters.PreventUnloadToInternalStages = b
 	case ObjectParameterStatementQueuedTimeoutInSeconds:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS object parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.ObjectParameters.StatementQueuedTimeoutInSeconds = Pointer(v)
+		opts.Set.LegacyParameters.ObjectParameters.StatementQueuedTimeoutInSeconds = Pointer(v)
 	case ObjectParameterStatementTimeoutInSeconds:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("STATEMENT_TIMEOUT_IN_SECONDS object parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.ObjectParameters.StatementTimeoutInSeconds = Pointer(v)
+		opts.Set.LegacyParameters.ObjectParameters.StatementTimeoutInSeconds = Pointer(v)
 	case ObjectParameterNetworkPolicy:
-		opts.Set.Parameters.ObjectParameters.NetworkPolicy = &value
+		opts.Set.LegacyParameters.ObjectParameters.NetworkPolicy = &value
 	case ObjectParameterShareRestrictions:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.ObjectParameters.ShareRestrictions = b
+		opts.Set.LegacyParameters.ObjectParameters.ShareRestrictions = b
 	case ObjectParameterStorageSerializationPolicy:
-		opts.Set.Parameters.ObjectParameters.StorageSerializationPolicy = &value
+		opts.Set.LegacyParameters.ObjectParameters.StorageSerializationPolicy = &value
 	case ObjectParameterSuspendTaskAfterNumFailures:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("SUSPEND_TASK_AFTER_NUM_FAILURES object parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.ObjectParameters.SuspendTaskAfterNumFailures = Pointer(v)
+		opts.Set.LegacyParameters.ObjectParameters.SuspendTaskAfterNumFailures = Pointer(v)
 	case ObjectParameterTaskAutoRetryAttempts:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("TASK_AUTO_RETRY_ATTEMPTS object parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.ObjectParameters.TaskAutoRetryAttempts = Pointer(v)
+		opts.Set.LegacyParameters.ObjectParameters.TaskAutoRetryAttempts = Pointer(v)
 	case ObjectParameterTraceLevel:
-		opts.Set.Parameters.ObjectParameters.TraceLevel = Pointer(TraceLevel(value))
+		opts.Set.LegacyParameters.ObjectParameters.TraceLevel = Pointer(TraceLevel(value))
 	case ObjectParameterUserTaskManagedInitialWarehouseSize:
-		opts.Set.Parameters.ObjectParameters.UserTaskManagedInitialWarehouseSize = Pointer(WarehouseSize(value))
+		opts.Set.LegacyParameters.ObjectParameters.UserTaskManagedInitialWarehouseSize = Pointer(WarehouseSize(value))
 	case ObjectParameterUserTaskTimeoutMs:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("USER_TASK_TIMEOUT_MS object parameter is an integer, got %v", value)
 		}
-		opts.Set.Parameters.ObjectParameters.UserTaskTimeoutMs = Pointer(v)
+		opts.Set.LegacyParameters.ObjectParameters.UserTaskTimeoutMs = Pointer(v)
 	case ObjectParameterEnableUnredactedQuerySyntaxError:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return err
 		}
-		opts.Set.Parameters.ObjectParameters.EnableUnredactedQuerySyntaxError = b
+		opts.Set.LegacyParameters.ObjectParameters.EnableUnredactedQuerySyntaxError = b
 	case ObjectParameterCatalog:
-		opts.Set.Parameters.ObjectParameters.Catalog = &value
+		opts.Set.LegacyParameters.ObjectParameters.Catalog = &value
 	default:
 		return fmt.Errorf("Invalid object parameter: %v", string(parameter))
 	}
@@ -419,46 +419,46 @@ func (parameters *parameters) SetObjectParameterOnAccount(ctx context.Context, p
 }
 
 func (parameters *parameters) UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error {
-	opts := AlterAccountOptions{Unset: &AccountUnset{Parameters: &AccountLevelParametersUnset{ObjectParameters: &ObjectParametersUnset{}}}}
+	opts := AlterAccountOptions{Unset: &AccountUnset{LegacyParameters: &AccountLevelParametersUnset{ObjectParameters: &ObjectParametersUnset{}}}}
 	switch parameter {
 	case ObjectParameterCatalog:
-		opts.Unset.Parameters.ObjectParameters.Catalog = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.Catalog = Pointer(true)
 	case ObjectParameterDataRetentionTimeInDays:
-		opts.Unset.Parameters.ObjectParameters.DataRetentionTimeInDays = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.DataRetentionTimeInDays = Pointer(true)
 	case ObjectParameterDefaultDDLCollation:
-		opts.Unset.Parameters.ObjectParameters.DefaultDDLCollation = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.DefaultDDLCollation = Pointer(true)
 	case ObjectParameterLogLevel:
-		opts.Unset.Parameters.ObjectParameters.LogLevel = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.LogLevel = Pointer(true)
 	case ObjectParameterMaxConcurrencyLevel:
-		opts.Unset.Parameters.ObjectParameters.MaxConcurrencyLevel = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.MaxConcurrencyLevel = Pointer(true)
 	case ObjectParameterMaxDataExtensionTimeInDays:
-		opts.Unset.Parameters.ObjectParameters.MaxDataExtensionTimeInDays = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.MaxDataExtensionTimeInDays = Pointer(true)
 	case ObjectParameterPipeExecutionPaused:
-		opts.Unset.Parameters.ObjectParameters.PipeExecutionPaused = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.PipeExecutionPaused = Pointer(true)
 	case ObjectParameterPreventUnloadToInternalStages:
-		opts.Unset.Parameters.ObjectParameters.PreventUnloadToInternalStages = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.PreventUnloadToInternalStages = Pointer(true)
 	case ObjectParameterStatementQueuedTimeoutInSeconds:
-		opts.Unset.Parameters.ObjectParameters.StatementQueuedTimeoutInSeconds = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.StatementQueuedTimeoutInSeconds = Pointer(true)
 	case ObjectParameterStatementTimeoutInSeconds:
-		opts.Unset.Parameters.ObjectParameters.StatementTimeoutInSeconds = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.StatementTimeoutInSeconds = Pointer(true)
 	case ObjectParameterNetworkPolicy:
-		opts.Unset.Parameters.ObjectParameters.NetworkPolicy = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.NetworkPolicy = Pointer(true)
 	case ObjectParameterShareRestrictions:
-		opts.Unset.Parameters.ObjectParameters.ShareRestrictions = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.ShareRestrictions = Pointer(true)
 	case ObjectParameterStorageSerializationPolicy:
-		opts.Unset.Parameters.ObjectParameters.StorageSerializationPolicy = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.StorageSerializationPolicy = Pointer(true)
 	case ObjectParameterSuspendTaskAfterNumFailures:
-		opts.Unset.Parameters.ObjectParameters.SuspendTaskAfterNumFailures = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.SuspendTaskAfterNumFailures = Pointer(true)
 	case ObjectParameterTaskAutoRetryAttempts:
-		opts.Unset.Parameters.ObjectParameters.TaskAutoRetryAttempts = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.TaskAutoRetryAttempts = Pointer(true)
 	case ObjectParameterTraceLevel:
-		opts.Unset.Parameters.ObjectParameters.TraceLevel = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.TraceLevel = Pointer(true)
 	case ObjectParameterUserTaskManagedInitialWarehouseSize:
-		opts.Unset.Parameters.ObjectParameters.UserTaskManagedInitialWarehouseSize = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.UserTaskManagedInitialWarehouseSize = Pointer(true)
 	case ObjectParameterUserTaskTimeoutMs:
-		opts.Unset.Parameters.ObjectParameters.UserTaskTimeoutMs = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.UserTaskTimeoutMs = Pointer(true)
 	case ObjectParameterEnableUnredactedQuerySyntaxError:
-		opts.Unset.Parameters.ObjectParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
+		opts.Unset.LegacyParameters.ObjectParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
 	default:
 		return fmt.Errorf("invalid object parameter: %v", string(parameter))
 	}

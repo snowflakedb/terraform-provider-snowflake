@@ -78,7 +78,7 @@ data "snowflake_users" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of users is equal to at exactly one element (with the use of check block)
+# Ensure the number of users is equal to exactly one element (with the use of check block)
 check "user_check" {
   data "snowflake_users" "assert_with_check_block" {
     like = "user-name"

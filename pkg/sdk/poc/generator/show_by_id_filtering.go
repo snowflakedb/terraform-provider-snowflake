@@ -12,6 +12,7 @@ const (
 	ShowByIDInFiltering
 	ShowByIDExtendedInFiltering
 	ShowByIDApplicationNameFiltering
+	ShowByIDServiceInFiltering
 )
 
 type idPrefix string
@@ -69,6 +70,10 @@ func newShowByIDExtendedInFiltering(identifierKind idPrefix) ShowByIDFiltering {
 	return newShowByIDFiltering("In", "ExtendedIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
 }
 
+func newShowByIDServiceInFiltering(identifierKind idPrefix) ShowByIDFiltering {
+	return newShowByIDFiltering("In", "ServiceIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
+}
+
 type showByIDApplicationFilter struct {
 	showByIDFilter
 }
@@ -94,6 +99,8 @@ func (s *Operation) withFiltering(filtering ...ShowByIDFilteringKind) *Operation
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDExtendedInFiltering:
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDExtendedInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
+		case ShowByIDServiceInFiltering:
+			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDServiceInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDLikeFiltering:
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDLikeFiltering())
 		case ShowByIDApplicationNameFiltering:

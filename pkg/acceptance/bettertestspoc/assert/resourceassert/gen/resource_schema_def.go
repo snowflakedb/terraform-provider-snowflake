@@ -22,24 +22,28 @@ func GetResourceSchemaDetails() []genhelpers.ResourceSchemaDetails {
 
 var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
-		name:   "Warehouse",
-		schema: resources.Warehouse().Schema,
+		name:   "Account",
+		schema: resources.Account().Schema,
 	},
 	{
-		name:   "User",
-		schema: resources.User().Schema,
+		name:   "AccountParameter",
+		schema: resources.AccountParameter().Schema,
 	},
 	{
-		name:   "ServiceUser",
-		schema: resources.ServiceUser().Schema,
+		name:   "AccountRole",
+		schema: resources.AccountRole().Schema,
 	},
 	{
-		name:   "LegacyServiceUser",
-		schema: resources.LegacyServiceUser().Schema,
+		name:   "ApiAuthenticationIntegrationWithAuthorizationCodeGrant",
+		schema: resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant().Schema,
 	},
 	{
-		name:   "View",
-		schema: resources.View().Schema,
+		name:   "ApiAuthenticationIntegrationWithClientCredentials",
+		schema: resources.ApiAuthenticationIntegrationWithClientCredentials().Schema,
+	},
+	{
+		name:   "ComputePool",
+		schema: resources.ComputePool().Schema,
 	},
 	{
 		name:   "Database",
@@ -50,88 +54,16 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.DatabaseRole().Schema,
 	},
 	{
-		name:   "ResourceMonitor",
-		schema: resources.ResourceMonitor().Schema,
+		name:   "ExternalVolume",
+		schema: resources.ExternalVolume().Schema,
 	},
 	{
-		name:   "RowAccessPolicy",
-		schema: resources.RowAccessPolicy().Schema,
+		name:   "ImageRepository",
+		schema: resources.ImageRepository().Schema,
 	},
 	{
-		name:   "Schema",
-		schema: resources.Schema().Schema,
-	},
-	{
-		name:   "MaskingPolicy",
-		schema: resources.MaskingPolicy().Schema,
-	},
-	{
-		name:   "StreamOnTable",
-		schema: resources.StreamOnTable().Schema,
-	},
-	{
-		name:   "StreamOnExternalTable",
-		schema: resources.StreamOnExternalTable().Schema,
-	},
-	{
-		name:   "SecretWithAuthorizationCodeGrant",
-		schema: resources.SecretWithAuthorizationCodeGrant().Schema,
-	},
-	{
-		name:   "SecretWithBasicAuthentication",
-		schema: resources.SecretWithBasicAuthentication().Schema,
-	},
-	{
-		name:   "SecretWithClientCredentials",
-		schema: resources.SecretWithClientCredentials().Schema,
-	},
-	{
-		name:   "SecretWithGenericString",
-		schema: resources.SecretWithGenericString().Schema,
-	},
-	{
-		name:   "StreamOnDirectoryTable",
-		schema: resources.StreamOnDirectoryTable().Schema,
-	},
-	{
-		name:   "StreamOnView",
-		schema: resources.StreamOnView().Schema,
-	},
-	{
-		name:   "PrimaryConnection",
-		schema: resources.PrimaryConnection().Schema,
-	},
-	{
-		name:   "SecondaryConnection",
-		schema: resources.SecondaryConnection().Schema,
-	},
-	{
-		name:   "Tag",
-		schema: resources.Tag().Schema,
-	},
-	{
-		name:   "TagAssociation",
-		schema: resources.TagAssociation().Schema,
-	},
-	{
-		name:   "Task",
-		schema: resources.Task().Schema,
-	},
-	{
-		name:   "Account",
-		schema: resources.Account().Schema,
-	},
-	{
-		name:   "AccountParameter",
-		schema: resources.AccountParameter().Schema,
-	},
-	{
-		name:   "OauthIntegrationForCustomClients",
-		schema: resources.OauthIntegrationForCustomClients().Schema,
-	},
-	{
-		name:   "OauthIntegrationForPartnerApplications",
-		schema: resources.OauthIntegrationForPartnerApplications().Schema,
+		name:   "ExternalOauthSecurityIntegration",
+		schema: resources.ExternalOauthIntegration().Schema,
 	},
 	{
 		name:   "FunctionJava",
@@ -154,6 +86,34 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.FunctionSql().Schema,
 	},
 	{
+		name:   "LegacyServiceUser",
+		schema: resources.LegacyServiceUser().Schema,
+	},
+	{
+		name:   "ManagedAccount",
+		schema: resources.ManagedAccount().Schema,
+	},
+	{
+		name:   "MaskingPolicy",
+		schema: resources.MaskingPolicy().Schema,
+	},
+	{
+		name:   "NetworkPolicy",
+		schema: resources.NetworkPolicy().Schema,
+	},
+	{
+		name:   "OauthIntegrationForCustomClients",
+		schema: resources.OauthIntegrationForCustomClients().Schema,
+	},
+	{
+		name:   "OauthIntegrationForPartnerApplications",
+		schema: resources.OauthIntegrationForPartnerApplications().Schema,
+	},
+	{
+		name:   "PrimaryConnection",
+		schema: resources.PrimaryConnection().Schema,
+	},
+	{
 		name:   "ProcedureJava",
 		schema: resources.ProcedureJava().Schema,
 	},
@@ -174,51 +134,103 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ProcedureSql().Schema,
 	},
 	{
-		name:   "ManagedAccount",
-		schema: resources.ManagedAccount().Schema,
+		name:   "ResourceMonitor",
+		schema: resources.ResourceMonitor().Schema,
 	},
 	{
-		name:   "NetworkPolicy",
-		schema: resources.NetworkPolicy().Schema,
-	},
-	{
-		name:   "ScimSecurityIntegration",
-		schema: resources.SCIMIntegration().Schema,
+		name:   "RowAccessPolicy",
+		schema: resources.RowAccessPolicy().Schema,
 	},
 	{
 		name:   "Saml2SecurityIntegration",
 		schema: resources.SAML2Integration().Schema,
 	},
 	{
-		name:   "ApiAuthenticationIntegrationWithAuthorizationCodeGrant",
-		schema: resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant().Schema,
+		name:   "Schema",
+		schema: resources.Schema().Schema,
 	},
 	{
-		name:   "ApiAuthenticationIntegrationWithClientCredentials",
-		schema: resources.ApiAuthenticationIntegrationWithClientCredentials().Schema,
+		name:   "ScimSecurityIntegration",
+		schema: resources.SCIMIntegration().Schema,
 	},
 	{
-		name:   "ExternalOauthSecurityIntegration",
-		schema: resources.ExternalOauthIntegration().Schema,
-	},
-	{
-		name:   "Streamlit",
-		schema: resources.Streamlit().Schema,
-	},
-	{
-		name:   "AccountRole",
-		schema: resources.AccountRole().Schema,
+		name:   "SecondaryConnection",
+		schema: resources.SecondaryConnection().Schema,
 	},
 	{
 		name:   "SecondaryDatabase",
 		schema: resources.SecondaryDatabase().Schema,
 	},
 	{
+		name:   "SecretWithAuthorizationCodeGrant",
+		schema: resources.SecretWithAuthorizationCodeGrant().Schema,
+	},
+	{
+		name:   "SecretWithBasicAuthentication",
+		schema: resources.SecretWithBasicAuthentication().Schema,
+	},
+	{
+		name:   "SecretWithClientCredentials",
+		schema: resources.SecretWithClientCredentials().Schema,
+	},
+	{
+		name:   "SecretWithGenericString",
+		schema: resources.SecretWithGenericString().Schema,
+	},
+	{
+		name:   "ServiceUser",
+		schema: resources.ServiceUser().Schema,
+	},
+	{
 		name:   "SharedDatabase",
 		schema: resources.SharedDatabase().Schema,
 	},
 	{
+		name:   "Streamlit",
+		schema: resources.Streamlit().Schema,
+	},
+	{
+		name:   "StreamOnDirectoryTable",
+		schema: resources.StreamOnDirectoryTable().Schema,
+	},
+	{
+		name:   "StreamOnExternalTable",
+		schema: resources.StreamOnExternalTable().Schema,
+	},
+	{
+		name:   "StreamOnTable",
+		schema: resources.StreamOnTable().Schema,
+	},
+	{
+		name:   "StreamOnView",
+		schema: resources.StreamOnView().Schema,
+	},
+	{
 		name:   "Table",
 		schema: resources.Table().Schema,
+	},
+	{
+		name:   "Tag",
+		schema: resources.Tag().Schema,
+	},
+	{
+		name:   "TagAssociation",
+		schema: resources.TagAssociation().Schema,
+	},
+	{
+		name:   "Task",
+		schema: resources.Task().Schema,
+	},
+	{
+		name:   "User",
+		schema: resources.User().Schema,
+	},
+	{
+		name:   "View",
+		schema: resources.View().Schema,
+	},
+	{
+		name:   "Warehouse",
+		schema: resources.Warehouse().Schema,
 	},
 }

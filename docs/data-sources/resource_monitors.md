@@ -40,7 +40,7 @@ data "snowflake_resource_monitors" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of resource monitors is equal to at exactly one element (with the use of check block)
+# Ensure the number of resource monitors is equal to exactly one element (with the use of check block)
 check "resource_monitor_check" {
   data "snowflake_resource_monitors" "assert_with_check_block" {
     like = "resource-monitor-name"

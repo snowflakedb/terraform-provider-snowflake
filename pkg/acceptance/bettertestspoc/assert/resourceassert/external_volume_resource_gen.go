@@ -32,6 +32,11 @@ func ImportedExternalVolumeResource(t *testing.T, id string) *ExternalVolumeReso
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (e *ExternalVolumeResourceAssert) HasNameString(expected string) *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValueSet("name", expected))
+	return e
+}
+
 func (e *ExternalVolumeResourceAssert) HasAllowWritesString(expected string) *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueSet("allow_writes", expected))
 	return e
@@ -47,19 +52,19 @@ func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameString(expected stri
 	return e
 }
 
-func (e *ExternalVolumeResourceAssert) HasNameString(expected string) *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("name", expected))
-	return e
-}
-
 func (e *ExternalVolumeResourceAssert) HasStorageLocationString(expected string) *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueSet("storage_location", expected))
 	return e
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (e *ExternalVolumeResourceAssert) HasNoName() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValueNotSet("name"))
+	return e
+}
 
 func (e *ExternalVolumeResourceAssert) HasNoAllowWrites() *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("allow_writes"))
@@ -76,12 +81,45 @@ func (e *ExternalVolumeResourceAssert) HasNoFullyQualifiedName() *ExternalVolume
 	return e
 }
 
-func (e *ExternalVolumeResourceAssert) HasNoName() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("name"))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (e *ExternalVolumeResourceAssert) HasAllowWritesEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValueSet("allow_writes", ""))
 	return e
 }
 
-func (e *ExternalVolumeResourceAssert) HasNoStorageLocation() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("storage_location"))
+func (e *ExternalVolumeResourceAssert) HasCommentEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValueSet("comment", ""))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return e
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (e *ExternalVolumeResourceAssert) HasNameNotEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValuePresent("name"))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasAllowWritesNotEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValuePresent("allow_writes"))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasCommentNotEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValuePresent("comment"))
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameNotEmpty() *ExternalVolumeResourceAssert {
+	e.AddAssertion(assert.ValuePresent("fully_qualified_name"))
 	return e
 }

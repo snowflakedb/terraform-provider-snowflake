@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -86,7 +87,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, procedure.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -178,7 +179,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
@@ -259,7 +260,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -345,7 +346,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
@@ -493,7 +494,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -566,7 +567,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
@@ -619,7 +620,7 @@ func TestInt_Procedures(t *testing.T) {
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
 		}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, funcName).
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, funcName).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithProcedureDefinitionWrapped(definition)
 
@@ -639,7 +640,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -665,7 +666,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasImports(`[]`).
 			HasExactlyImportsNormalizedInAnyOrder().
 			HasHandler(funcName).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion(testvars.PythonRuntime).
 			HasPackages(`['snowflake-snowpark-python==1.14.0']`).
 			HasExactlyPackagesInAnyOrder().
 			HasSnowparkVersion("1.14.0").
@@ -694,10 +695,10 @@ func TestInt_Procedures(t *testing.T) {
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
-			*sdk.NewProcedurePackageRequest("absl-py==0.10.0"),
+			*sdk.NewProcedurePackageRequest("absl-py==0.12.0"),
 		}
 
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, funcName).
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, funcName).
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -726,7 +727,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
@@ -755,9 +756,9 @@ func TestInt_Procedures(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(funcName).
-			HasRuntimeVersion("3.8").
-			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.10.0']`).
-			HasExactlyPackagesInAnyOrder("absl-py==0.10.0").
+			HasRuntimeVersion(testvars.PythonRuntime).
+			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.12.0']`).
+			HasExactlyPackagesInAnyOrder("absl-py==0.12.0").
 			HasSnowparkVersion("1.14.0").
 			HasTargetPathNil().
 			HasNormalizedTargetPathNil().
@@ -782,7 +783,7 @@ func TestInt_Procedures(t *testing.T) {
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
 		}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, tmpPythonFunction.PythonHandler()).
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, tmpPythonFunction.PythonHandler()).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithImports([]sdk.ProcedureImportRequest{*sdk.NewProcedureImportRequest(tmpPythonFunction.PythonModuleLocation())})
 
@@ -802,7 +803,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -830,7 +831,7 @@ func TestInt_Procedures(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion("3.8").
+			HasRuntimeVersion(testvars.PythonRuntime).
 			HasPackages(`['snowflake-snowpark-python==1.14.0']`).
 			HasExactlyPackagesInAnyOrder().
 			HasSnowparkVersion("1.14.0").
@@ -857,10 +858,10 @@ func TestInt_Procedures(t *testing.T) {
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
-			*sdk.NewProcedurePackageRequest("absl-py==0.10.0"),
+			*sdk.NewProcedurePackageRequest("absl-py==0.12.0"),
 		}
 
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, tmpPythonFunction.PythonHandler()).
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, tmpPythonFunction.PythonHandler()).
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -888,7 +889,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
@@ -917,9 +918,9 @@ func TestInt_Procedures(t *testing.T) {
 				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
 			}).
 			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion("3.8").
-			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.10.0']`).
-			HasExactlyPackagesInAnyOrder("absl-py==0.10.0").
+			HasRuntimeVersion(testvars.PythonRuntime).
+			HasPackages(`['snowflake-snowpark-python==1.14.0','absl-py==0.12.0']`).
+			HasExactlyPackagesInAnyOrder("absl-py==0.12.0").
 			HasSnowparkVersion("1.14.0").
 			HasTargetPathNil().
 			HasNormalizedTargetPathNil().
@@ -968,7 +969,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -1062,7 +1063,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
@@ -1139,7 +1140,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -1227,7 +1228,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
@@ -1300,7 +1301,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -1404,7 +1405,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld([]sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
@@ -1471,7 +1472,7 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(0).
 			HasMaxNumArguments(0).
-			HasArgumentsOld([]sdk.DataType{}).
+			HasArgumentsOld().
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s() RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
@@ -1699,7 +1700,7 @@ def joblib_multiprocessing(session, i):
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python"),
 			*sdk.NewProcedurePackageRequest("joblib"),
 		}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, "joblib_multiprocessing").
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, "joblib_multiprocessing").
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithProcedureDefinitionWrapped(definition)
@@ -1733,7 +1734,7 @@ def filter_by_role(session, table_name, role):
 		arg1 := sdk.NewProcedureArgumentRequest("table_name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, "filter_by_role").
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, "filter_by_role").
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg1, *arg2}).
 			WithProcedureDefinitionWrapped(definition)
@@ -2280,7 +2281,7 @@ def filter_by_role(session, table_name, role):
 			err = client.Procedures.CreateForPython(ctx, sdk.NewCreateForPythonProcedureRequest(
 				idWithArguments.SchemaObjectId(),
 				*sdk.NewProcedureReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(dataType)),
-				"3.8",
+				testvars.PythonRuntime,
 				packages,
 				procName,
 			).
@@ -2505,7 +2506,7 @@ def filter_by_role(session, name, role):
 		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
-		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, "3.8", packages, "filter_by_role").
+		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, "filter_by_role").
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg1, *arg2}).
 			WithProcedureDefinitionWrapped(definition)
@@ -2674,7 +2675,7 @@ def filter_by_role(session, name, role):
 		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
 		ca := []string{fmt.Sprintf(`'%s'`, tid.FullyQualifiedName()), "'dev'"}
-		request := sdk.NewCreateAndCallForPythonProcedureRequest(name, *returns, "3.8", packages, "filter_by_role", name).
+		request := sdk.NewCreateAndCallForPythonProcedureRequest(name, *returns, testvars.PythonRuntime, packages, "filter_by_role", name).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg1, *arg2}).
 			WithProcedureDefinition(definition).
 			WithCallArguments(ca)

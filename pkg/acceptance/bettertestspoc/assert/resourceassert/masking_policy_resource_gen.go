@@ -32,6 +32,21 @@ func ImportedMaskingPolicyResource(t *testing.T, id string) *MaskingPolicyResour
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (m *MaskingPolicyResourceAssert) HasDatabaseString(expected string) *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueSet("database", expected))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasSchemaString(expected string) *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueSet("schema", expected))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasNameString(expected string) *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueSet("name", expected))
+	return m
+}
+
 func (m *MaskingPolicyResourceAssert) HasArgumentString(expected string) *MaskingPolicyResourceAssert {
 	m.AddAssertion(assert.ValueSet("argument", expected))
 	return m
@@ -47,11 +62,6 @@ func (m *MaskingPolicyResourceAssert) HasCommentString(expected string) *Masking
 	return m
 }
 
-func (m *MaskingPolicyResourceAssert) HasDatabaseString(expected string) *MaskingPolicyResourceAssert {
-	m.AddAssertion(assert.ValueSet("database", expected))
-	return m
-}
-
 func (m *MaskingPolicyResourceAssert) HasExemptOtherPoliciesString(expected string) *MaskingPolicyResourceAssert {
 	m.AddAssertion(assert.ValueSet("exempt_other_policies", expected))
 	return m
@@ -62,27 +72,27 @@ func (m *MaskingPolicyResourceAssert) HasFullyQualifiedNameString(expected strin
 	return m
 }
 
-func (m *MaskingPolicyResourceAssert) HasNameString(expected string) *MaskingPolicyResourceAssert {
-	m.AddAssertion(assert.ValueSet("name", expected))
-	return m
-}
-
 func (m *MaskingPolicyResourceAssert) HasReturnDataTypeString(expected string) *MaskingPolicyResourceAssert {
 	m.AddAssertion(assert.ValueSet("return_data_type", expected))
 	return m
 }
 
-func (m *MaskingPolicyResourceAssert) HasSchemaString(expected string) *MaskingPolicyResourceAssert {
-	m.AddAssertion(assert.ValueSet("schema", expected))
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (m *MaskingPolicyResourceAssert) HasNoDatabase() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueNotSet("database"))
 	return m
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+func (m *MaskingPolicyResourceAssert) HasNoSchema() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueNotSet("schema"))
+	return m
+}
 
-func (m *MaskingPolicyResourceAssert) HasNoArgument() *MaskingPolicyResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("argument"))
+func (m *MaskingPolicyResourceAssert) HasNoName() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueNotSet("name"))
 	return m
 }
 
@@ -96,11 +106,6 @@ func (m *MaskingPolicyResourceAssert) HasNoComment() *MaskingPolicyResourceAsser
 	return m
 }
 
-func (m *MaskingPolicyResourceAssert) HasNoDatabase() *MaskingPolicyResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("database"))
-	return m
-}
-
 func (m *MaskingPolicyResourceAssert) HasNoExemptOtherPolicies() *MaskingPolicyResourceAssert {
 	m.AddAssertion(assert.ValueNotSet("exempt_other_policies"))
 	return m
@@ -111,17 +116,70 @@ func (m *MaskingPolicyResourceAssert) HasNoFullyQualifiedName() *MaskingPolicyRe
 	return m
 }
 
-func (m *MaskingPolicyResourceAssert) HasNoName() *MaskingPolicyResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("name"))
-	return m
-}
-
 func (m *MaskingPolicyResourceAssert) HasNoReturnDataType() *MaskingPolicyResourceAssert {
 	m.AddAssertion(assert.ValueNotSet("return_data_type"))
 	return m
 }
 
-func (m *MaskingPolicyResourceAssert) HasNoSchema() *MaskingPolicyResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("schema"))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (m *MaskingPolicyResourceAssert) HasCommentEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueSet("comment", ""))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasExemptOtherPoliciesEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueSet("exempt_other_policies", ""))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasFullyQualifiedNameEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return m
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (m *MaskingPolicyResourceAssert) HasDatabaseNotEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValuePresent("database"))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasSchemaNotEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValuePresent("schema"))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasNameNotEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValuePresent("name"))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasBodyNotEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValuePresent("body"))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasCommentNotEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValuePresent("comment"))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasExemptOtherPoliciesNotEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValuePresent("exempt_other_policies"))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasReturnDataTypeNotEmpty() *MaskingPolicyResourceAssert {
+	m.AddAssertion(assert.ValuePresent("return_data_type"))
 	return m
 }

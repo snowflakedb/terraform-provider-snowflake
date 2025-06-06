@@ -4,11 +4,13 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -92,6 +94,19 @@ func (t *TagAssert) HasComment(expected string) *TagAssert {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagAssert) HasAllowedValues(expected ...string) *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		mapped := collections.Map(o.AllowedValues, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
+			return fmt.Errorf("expected allowed values: %v; got: %v", expected, o.AllowedValues)
 		}
 		return nil
 	})
