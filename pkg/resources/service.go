@@ -3,21 +3,17 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 var serviceSchema = map[string]*schema.Schema{
@@ -180,45 +176,11 @@ func Service() *schema.Resource {
 
 		Schema: serviceSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.Service, ImportService),
+			StateContext: TrackingImportWrapper(resources.Service, ImportServiceFunc(serviceCustomFieldsHandler)),
 		},
 
 		Timeouts: defaultTimeouts,
 	}
-}
-
-func ImportService(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	service, err := client.Services.ShowByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	if service.QueryWarehouse != nil {
-		if err := d.Set("query_warehouse", service.QueryWarehouse.FullyQualifiedName()); err != nil {
-			return nil, err
-		}
-	}
-
-	errs := errors.Join(
-		d.Set("name", service.Name),
-		d.Set("schema", service.SchemaName),
-		d.Set("database", service.DatabaseName),
-		d.Set("max_instances", service.MaxInstances),
-		d.Set("min_instances", service.MinInstances),
-		d.Set("min_ready_instances", service.MinReadyInstances),
-		d.Set("auto_resume", booleanStringFromBool(service.AutoResume)),
-		d.Set("auto_suspend_secs", service.AutoSuspendSecs),
-	)
-	if errs != nil {
-		return nil, errs
-	}
-	return []*schema.ResourceData{d}, nil
 }
 
 func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -253,74 +215,6 @@ func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	}
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 	return ReadServiceFunc(false)(ctx, d, meta)
-}
-
-func ReadServiceFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
-		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		service, err := client.Services.ShowByIDSafely(ctx, id)
-		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query service. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Service id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
-		}
-		serviceDetails, err := client.Services.Describe(ctx, id)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if withExternalChangesMarking {
-			var warehouseFullyQualifiedName string
-			if service.QueryWarehouse != nil {
-				warehouseFullyQualifiedName = service.QueryWarehouse.FullyQualifiedName()
-			}
-			if err = handleExternalChangesToObjectInShow(d,
-				outputMapping{"auto_resume", "auto_resume", service.AutoResume, booleanStringFromBool(service.AutoResume), nil},
-				outputMapping{"auto_suspend_secs", "auto_suspend_secs", service.AutoSuspendSecs, service.AutoSuspendSecs, nil},
-				outputMapping{"min_instances", "min_instances", service.MinInstances, service.MinInstances, nil},
-				outputMapping{"max_instances", "max_instances", service.MaxInstances, service.MaxInstances, nil},
-				outputMapping{"min_ready_instances", "min_ready_instances", service.MinReadyInstances, service.MinReadyInstances, nil},
-				outputMapping{"query_warehouse", "query_warehouse", warehouseFullyQualifiedName, warehouseFullyQualifiedName, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		if err = setStateToValuesFromConfig(d, serviceSchema, []string{
-			"auto_resume",
-			"auto_suspend_secs",
-			"min_instances",
-			"max_instances",
-			"min_ready_instances",
-			"query_warehouse",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ServiceToSchema(service)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ServiceDetailsToSchema(serviceDetails)}),
-			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			d.Set("compute_pool", service.ComputePool.FullyQualifiedName()),
-			d.Set("external_access_integrations", collections.Map(service.ExternalAccessIntegrations, func(id sdk.AccountObjectIdentifier) string { return id.FullyQualifiedName() })),
-			d.Set("comment", service.Comment),
-		)
-		if errs != nil {
-			return diag.FromErr(errs)
-		}
-		return nil
-	}
 }
 
 func UpdateService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -368,38 +262,24 @@ func UpdateService(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	return ReadServiceFunc(false)(ctx, d, meta)
 }
 
-func ToServiceExternalAccessIntegrationsRequest(value any) (sdk.ServiceExternalAccessIntegrationsRequest, error) {
-	raw := expandStringList(value.(*schema.Set).List())
-	integrations := make([]sdk.AccountObjectIdentifier, len(raw))
-	for i, v := range raw {
-		integrations[i] = sdk.NewAccountObjectIdentifier(v)
-	}
-	return sdk.ServiceExternalAccessIntegrationsRequest{
-		ExternalAccessIntegrations: integrations,
-	}, nil
+func serviceCustomFieldsHandler(d *schema.ResourceData, service *sdk.Service) error {
+	return errors.Join(
+		d.Set("max_instances", service.MaxInstances),
+		d.Set("min_instances", service.MinInstances),
+		d.Set("min_ready_instances", service.MinReadyInstances),
+		d.Set("auto_resume", booleanStringFromBool(service.AutoResume)),
+		d.Set("auto_suspend_secs", service.AutoSuspendSecs),
+	)
 }
 
-func ToServiceFromSpecificationRequest(value any) (sdk.ServiceFromSpecificationRequest, error) {
-	serviceFromSpecification := sdk.ServiceFromSpecificationRequest{}
-	for _, v := range value.([]any) {
-		fromSpecificationConfig := v.(map[string]any)
-		if text := fromSpecificationConfig["text"].(string); text != "" {
-			serviceFromSpecification.Specification = &text
-		}
-		if stageRaw := fromSpecificationConfig["stage"].(string); stageRaw != "" {
-			stage, err := sdk.ParseSchemaObjectIdentifier(stageRaw)
-			if err != nil {
-				return sdk.ServiceFromSpecificationRequest{}, err
-			}
-			var path string
-			if value := fromSpecificationConfig["path"].(string); value != "" {
-				path = value
-			}
-			serviceFromSpecification.Location = sdk.NewStageLocation(stage, path)
-		}
-		if file := fromSpecificationConfig["file"].(string); file != "" {
-			serviceFromSpecification.SpecificationFile = &file
+func serviceOutputMappingsFunc(service *sdk.Service) func() []outputMapping {
+	return func() []outputMapping {
+		return []outputMapping{
+			{"auto_resume", "auto_resume", service.AutoResume, booleanStringFromBool(service.AutoResume), nil},
+			{"auto_suspend_secs", "auto_suspend_secs", service.AutoSuspendSecs, service.AutoSuspendSecs, nil},
+			{"min_instances", "min_instances", service.MinInstances, service.MinInstances, nil},
+			{"max_instances", "max_instances", service.MaxInstances, service.MaxInstances, nil},
+			{"min_ready_instances", "min_ready_instances", service.MinReadyInstances, service.MinReadyInstances, nil},
 		}
 	}
-	return serviceFromSpecification, nil
 }

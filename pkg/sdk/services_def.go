@@ -170,6 +170,7 @@ var ServicesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"),
 ).CustomOperation(
+	// TODO: update name
 	"ExecuteJobService",
 	"https://docs.snowflake.com/en/sql-reference/sql/execute-job-service",
 	g.NewQueryStruct("ExecuteJobService").

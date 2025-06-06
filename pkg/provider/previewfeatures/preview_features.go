@@ -43,6 +43,7 @@ const (
 	FunctionsDatasource                           feature = "snowflake_functions_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
+	JobServiceResource                            feature = "snowflake_job_service_resource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
@@ -117,6 +118,7 @@ var allPreviewFeatures = []feature{
 	FunctionsDatasource,
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
+	JobServiceResource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,

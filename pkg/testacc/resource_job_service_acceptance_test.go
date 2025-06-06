@@ -9,7 +9,6 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -25,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Service_basic_fromSpecification(t *testing.T) {
+func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
 
@@ -35,28 +34,29 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 	externalAccessIntegration1Id, externalAccessIntegration1Cleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
 	t.Cleanup(externalAccessIntegration1Cleanup)
 
+	externalAccessIntegration2Id, externalAccessIntegration2Cleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
+	t.Cleanup(externalAccessIntegration2Cleanup)
+
+	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(warehouseCleanup)
+
 	comment, changedComment := random.Comment(), random.Comment()
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasic := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName())
+	modelBasic := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+		WithAsync("true")
 
-	modelComplete := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
-		WithAutoSuspendSecs(6767).
+	// TODO: add a ticket for testing without async option. This probably requires a custom no-op image in the image registry.
+	modelComplete := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegration1Id).
-		WithAutoResume("true").
-		WithMinInstances(2).
-		WithMinReadyInstances(2).
-		WithMaxInstances(2).
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
 		WithComment(comment)
 
-	modelCompleteWithDifferentValues := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
-		WithAutoSuspendSecs(2222).
-		WithAutoResume("false").
-		WithMinInstances(1).
-		WithMinReadyInstances(1).
-		WithMaxInstances(1).
-		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
+	modelCompleteWithDifferentValues := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+		WithAsync("true").
+		WithExternalAccessIntegrations(externalAccessIntegration2Id).
+		WithQueryWarehouse(warehouse.ID().FullyQualifiedName()).
 		WithComment(changedComment)
 
 	resource.Test(t, resource.TestCase{
@@ -71,19 +71,15 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, modelBasic),
 				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
+					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasAutoSuspendSecsString(r.IntDefaultString).
 						HasExternalAccessIntegrationsEmpty().
-						HasAutoResumeString(r.BooleanDefault).
-						HasNoMinInstances().
-						HasNoMinReadyInstances().
-						HasNoMaxInstances().
 						HasNoQueryWarehouse().
+						HasAsyncString("true").
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -93,7 +89,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
+						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -102,18 +98,18 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(0).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasNoQueryWarehouse().
-						HasIsJob(false).
-						HasIsAsyncJob(false).
+						HasQueryWarehouseEmpty().
+						HasIsJob(true).
+						HasIsAsyncJob(true).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -122,7 +118,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "0")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
@@ -137,8 +133,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.query_warehouse", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "true")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec_digest")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_upgrading", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.managing_object_domain", "")),
@@ -151,19 +147,15 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 				ResourceName: modelBasic.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedServiceResource(t, helpers.EncodeResourceIdentifier(id)).
+					resourceassert.ImportedJobServiceResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTemplateEmpty().
 						HasFromSpecificationEmpty().
-						HasAutoSuspendSecsString("0").
 						HasExternalAccessIntegrationsEmpty().
-						HasAutoResumeString("true").
-						HasMinInstancesString("1").
-						HasMinReadyInstancesString("1").
-						HasMaxInstancesString("1").
+						HasAsyncString("true").
 						HasNoQueryWarehouse().
 						HasCommentString(""),
 					resourceshowoutputassert.ImportedServiceShowOutput(t, helpers.EncodeResourceIdentifier(id)).
@@ -174,7 +166,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
+						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -183,18 +175,18 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(0).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasNoQueryWarehouse().
-						HasIsJob(false).
-						HasIsAsyncJob(false).
+						HasQueryWarehouseEmpty().
+						HasIsJob(true).
+						HasIsAsyncJob(true).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.database_name", id.DatabaseName())),
@@ -203,7 +195,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.spec")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.dns_name")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", "1")),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", "0")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", "1")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_ready_instances", "1")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_instances", "1")),
@@ -218,8 +210,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.comment", "")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.owner_role_type", "ROLE")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.query_warehouse", "")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_job", "false")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_async_job", "false")),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_job", "true")),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_async_job", "true")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.spec_digest")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_upgrading", "false")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.managing_object_domain", "")),
@@ -230,23 +222,19 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 				Config: accconfig.FromModels(t, modelComplete),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelComplete.ResourceReference()).
+					resourceassert.JobServiceResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasAutoSuspendSecsString("6767").
 						HasExternalAccessIntegrations(externalAccessIntegration1Id).
-						HasAutoResumeString(r.BooleanTrue).
-						HasMinInstancesString("2").
-						HasMinReadyInstancesString("2").
-						HasMaxInstancesString("2").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasAsyncString("true").
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -256,27 +244,27 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(2).
-						HasMinReadyInstances(2).
-						HasMinInstances(2).
-						HasMaxInstances(2).
+						HasCurrentInstances(0).
+						HasTargetInstances(1).
+						HasMinReadyInstances(1).
+						HasMinInstances(1).
+						HasMaxInstances(1).
 						HasAutoResume(true).
 						HasExternalAccessIntegrations(externalAccessIntegration1Id).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
-						HasAutoSuspendSecs(6767).
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
+						HasAutoSuspendSecs(0).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
 						HasQueryWarehouse(testClient().Ids.WarehouseId()).
-						HasIsJob(false).
-						HasIsAsyncJob(false).
+						HasIsJob(true).
+						HasIsAsyncJob(true).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -285,11 +273,11 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "2")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "2")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "2")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "2")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_resume", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegration1Id.Name())),
@@ -297,12 +285,12 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.updated_on")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.resumed_on", "")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.suspended_on", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "6767")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "0")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.comment", comment)),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.query_warehouse", testClient().Ids.WarehouseId().Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_job", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_async_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_async_job", "true")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec_digest")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_upgrading", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_domain", "")),
@@ -311,106 +299,29 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 			},
 			// import complete object
 			{
-				Config:       accconfig.FromModels(t, modelComplete),
-				ResourceName: modelComplete.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedServiceResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasComputePoolString(computePool.ID().FullyQualifiedName()).
-						HasFromSpecificationEmpty().
-						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegration1Id).
-						HasAutoResumeString("true").
-						HasMinInstancesString("2").
-						HasMinReadyInstancesString("2").
-						HasMaxInstancesString("2").
-						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
-						HasCommentString(comment),
-					resourceshowoutputassert.ImportedServiceShowOutput(t, helpers.EncodeResourceIdentifier(id)).
-						HasName(id.Name()).
-						HasStatus(sdk.ServiceStatusPending).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasComputePool(computePool.ID()).
-						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(2).
-						HasMinReadyInstances(2).
-						HasMinInstances(2).
-						HasMaxInstances(2).
-						HasAutoResume(true).
-						HasExternalAccessIntegrations(externalAccessIntegration1Id).
-						HasCreatedOnNotEmpty().
-						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
-						HasAutoSuspendSecs(6767).
-						HasComment(comment).
-						HasOwnerRoleType("ROLE").
-						HasQueryWarehouse(testClient().Ids.WarehouseId()).
-						HasIsJob(false).
-						HasIsAsyncJob(false).
-						HasSpecDigestNotEmpty().
-						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.status", string(sdk.ServiceStatusPending))),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.database_name", id.DatabaseName())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.schema_name", id.SchemaName())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.compute_pool", computePool.ID().Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.spec")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.dns_name")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", "1")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", "2")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_ready_instances", "2")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_instances", "2")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.max_instances", "2")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.auto_resume", "true")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.external_access_integrations.#", "1")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.external_access_integrations.0", externalAccessIntegration1Id.Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.created_on")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.updated_on")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.resumed_on", "")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.suspended_on", "")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.auto_suspend_secs", "6767")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.comment", comment)),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.owner_role_type", "ROLE")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.query_warehouse", testClient().Ids.WarehouseId().Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_job", "false")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_async_job", "false")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.spec_digest")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_upgrading", "false")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.managing_object_domain", "")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.managing_object_name", ""))),
+				Config:                  accconfig.FromModels(t, modelComplete),
+				ResourceName:            modelComplete.ResourceReference(),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"from_specification"},
 			},
 			// alter
 			{
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelCompleteWithDifferentValues.ResourceReference()).
+					resourceassert.JobServiceResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasAutoSuspendSecsString("2222").
-						HasExternalAccessIntegrationsEmpty().
-						HasAutoResumeString(r.BooleanFalse).
-						HasMinInstancesString("1").
-						HasMinReadyInstancesString("1").
-						HasMaxInstancesString("1").
-						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasExternalAccessIntegrations(externalAccessIntegration2Id).
+						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
+						HasAsyncString("true").
 						HasCommentString(changedComment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
@@ -420,93 +331,82 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
+						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
-						HasAutoResume(false).
-						HasNoExternalAccessIntegrations().
+						HasAutoResume(true).
+						HasExternalAccessIntegrations(externalAccessIntegration2Id).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
-						HasAutoSuspendSecs(2222).
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
+						HasAutoSuspendSecs(0).
 						HasComment(changedComment).
 						HasOwnerRoleType("ROLE").
-						HasQueryWarehouse(testClient().Ids.WarehouseId()).
-						HasIsJob(false).
-						HasIsAsyncJob(false).
+						HasQueryWarehouse(warehouse.ID()).
+						HasIsJob(true).
+						HasIsAsyncJob(true).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.spec")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.target_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.max_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.auto_resume", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.external_access_integrations.#", "0")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.updated_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.resumed_on", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.suspended_on", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.auto_suspend_secs", "2222")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.comment", changedComment)),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.query_warehouse", testClient().Ids.WarehouseId().Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.is_job", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.is_async_job", "false")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.spec_digest")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.is_upgrading", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.managing_object_domain", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.managing_object_name", "")),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_resume", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegration2Id.Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.updated_on")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.resumed_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.suspended_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.comment", changedComment)),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.query_warehouse", warehouse.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_async_job", "true")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec_digest")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_upgrading", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_domain", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_name", "")),
 				),
 			},
 			// change externally
 			{
 				PreConfig: func() {
-					testClient().Service.Alter(t, sdk.NewAlterServiceRequest(id).WithSet(
-						*sdk.NewServiceSetRequest().
-							WithMinReadyInstances(1).
-							WithMinInstances(2).
-							WithMaxInstances(3).
-							WithAutoSuspendSecs(4242).
-							WithAutoResume(true).
-							WithQueryWarehouse(sdk.NewAccountObjectIdentifier("SNOWFLAKE")).
-							WithExternalAccessIntegrations(*sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegration1Id})).
-							WithComment(random.Comment()),
-					))
+					testClient().Service.DropFunc(t, id)()
+					_, serviceCleanup := testClient().Service.ExecuteJobService(t, computePool.ID(), id)
+					t.Cleanup(serviceCleanup)
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelCompleteWithDifferentValues.ResourceReference()).
+					resourceassert.JobServiceResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasAutoSuspendSecsString("2222").
-						HasExternalAccessIntegrationsEmpty().
-						HasAutoResumeString(r.BooleanFalse).
-						HasMinInstancesString("1").
-						HasMinReadyInstancesString("1").
-						HasMaxInstancesString("1").
-						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasExternalAccessIntegrations(externalAccessIntegration2Id).
+						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
+						HasAsyncString("true").
 						HasCommentString(changedComment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
@@ -516,56 +416,57 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
+						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
-						HasAutoResume(false).
-						HasNoExternalAccessIntegrations().
+						HasAutoResume(true).
+						HasExternalAccessIntegrations(externalAccessIntegration2Id).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
-						HasAutoSuspendSecs(2222).
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
+						HasAutoSuspendSecs(0).
 						HasComment(changedComment).
 						HasOwnerRoleType("ROLE").
-						HasQueryWarehouse(testClient().Ids.WarehouseId()).
-						HasIsJob(false).
-						HasIsAsyncJob(false).
+						HasQueryWarehouse(warehouse.ID()).
+						HasIsJob(true).
+						HasIsAsyncJob(true).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.spec")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.target_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.max_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.auto_resume", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.external_access_integrations.#", "0")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.updated_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.resumed_on", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.suspended_on", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.auto_suspend_secs", "2222")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.comment", changedComment)),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.query_warehouse", testClient().Ids.WarehouseId().Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.is_job", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.is_async_job", "false")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.spec_digest")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.is_upgrading", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.managing_object_domain", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.managing_object_name", "")),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_resume", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegration2Id.Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.updated_on")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.resumed_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.suspended_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.comment", changedComment)),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.query_warehouse", warehouse.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_async_job", "true")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec_digest")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_upgrading", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_domain", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_name", "")),
 				),
 			},
 			// unset
@@ -573,23 +474,19 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 				Config: accconfig.FromModels(t, modelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
+					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasAutoSuspendSecsString(r.IntDefaultString).
 						HasExternalAccessIntegrationsEmpty().
-						HasAutoResumeString(r.BooleanDefault).
-						HasMinInstancesString("0").
-						HasMinReadyInstancesString("0").
-						HasMaxInstancesString("0").
-						HasQueryWarehouseString("").
+						HasNoQueryWarehouse().
+						HasAsyncString("true").
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -599,7 +496,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
+						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -608,18 +505,18 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(0).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasNoQueryWarehouse().
-						HasIsJob(false).
-						HasIsAsyncJob(false).
+						HasQueryWarehouseEmpty().
+						HasIsJob(true).
+						HasIsAsyncJob(true).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -628,7 +525,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "0")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
@@ -643,8 +540,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.query_warehouse", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "true")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec_digest")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_upgrading", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.managing_object_domain", "")),
@@ -655,7 +552,9 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 	})
 }
 
-func TestAcc_Service_changingSpec(t *testing.T) {
+// TODO (next PR): add tests for detecting is_job
+
+func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
 
@@ -673,74 +572,8 @@ spec:
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasicOnStage := model.ServiceWithDefaultSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
-	modelBasic := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Service),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasComputePoolString(computePool.ID().FullyQualifiedName()).
-						HasFromSpecificationTextNotEmpty(),
-					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
-						HasName(id.Name()),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
-				),
-			},
-			// update
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelBasicOnStage.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: accconfig.FromModels(t, modelBasicOnStage),
-				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelBasicOnStage.ResourceReference()).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasComputePoolString(computePool.ID().FullyQualifiedName()).
-						HasFromSpecificationOnStageNotEmpty(),
-					resourceshowoutputassert.ServiceShowOutput(t, modelBasicOnStage.ResourceReference()).
-						HasName(id.Name()),
-					assert.Check(resource.TestCheckResourceAttr(modelBasicOnStage.ResourceReference(), "describe_output.0.name", id.Name())),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
-	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
-	t.Cleanup(computePoolCleanup)
-
-	stage, stageCleanup := testClient().Stage.CreateStage(t)
-	t.Cleanup(stageCleanup)
-
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
-	specFileName := "spec.yaml"
-	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, spec)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	modelBasic := model.ServiceWithDefaultSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
+	modelBasic := model.JobServiceWithDefaultSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName).
+		WithAsync("true")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -754,19 +587,15 @@ spec:
 			{
 				Config: accconfig.FromModels(t, modelBasic),
 				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
+					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationOnStageNotEmpty().
-						HasAutoSuspendSecsString(r.IntDefaultString).
 						HasExternalAccessIntegrationsEmpty().
-						HasAutoResumeString(r.BooleanDefault).
-						HasNoMinInstances().
-						HasNoMinReadyInstances().
-						HasNoMaxInstances().
 						HasNoQueryWarehouse().
+						HasAsyncString("true").
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -776,7 +605,7 @@ spec:
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
+						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -785,18 +614,18 @@ spec:
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(0).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasNoQueryWarehouse().
-						HasIsJob(false).
-						HasIsAsyncJob(false).
+						HasQueryWarehouseEmpty().
+						HasIsJob(true).
+						HasIsAsyncJob(true).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -805,7 +634,7 @@ spec:
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "0")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
@@ -820,8 +649,8 @@ spec:
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.query_warehouse", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "true")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec_digest")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_upgrading", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.managing_object_domain", "")),
@@ -840,7 +669,7 @@ spec:
 // func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 // }
 
-func TestAcc_Service_complete(t *testing.T) {
+func TestAcc_JobService_complete(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
 
@@ -853,13 +682,9 @@ func TestAcc_Service_complete(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	modelComplete := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
-		WithAutoSuspendSecs(6767).
+	modelComplete := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegrationId).
-		WithAutoResume("true").
-		WithMinInstances(1).
-		WithMinReadyInstances(1).
-		WithMaxInstances(2).
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
 		WithComment(comment)
 
@@ -874,19 +699,15 @@ func TestAcc_Service_complete(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, modelComplete),
 				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelComplete.ResourceReference()).
+					resourceassert.JobServiceResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasAutoSuspendSecsString("6767").
 						HasExternalAccessIntegrations(externalAccessIntegrationId).
-						HasAutoResumeString(r.BooleanTrue).
-						HasMinInstancesString("1").
-						HasMinReadyInstancesString("1").
-						HasMaxInstancesString("2").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasAsyncString("true").
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -896,27 +717,27 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
+						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
-						HasMaxInstances(2).
+						HasMaxInstances(1).
 						HasAutoResume(true).
 						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
-						HasAutoSuspendSecs(6767).
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
+						HasAutoSuspendSecs(0).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
 						HasQueryWarehouse(testClient().Ids.WarehouseId()).
-						HasIsJob(false).
-						HasIsAsyncJob(false).
+						HasIsJob(true).
+						HasIsAsyncJob(true).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -925,11 +746,11 @@ func TestAcc_Service_complete(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "0")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "2")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_resume", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegrationId.Name())),
@@ -937,12 +758,12 @@ func TestAcc_Service_complete(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.updated_on")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.resumed_on", "")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.suspended_on", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "6767")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "0")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.comment", comment)),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.query_warehouse", testClient().Ids.WarehouseId().Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_job", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_async_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_async_job", "true")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec_digest")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_upgrading", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_domain", "")),
@@ -961,12 +782,12 @@ func TestAcc_Service_complete(t *testing.T) {
 }
 
 // TODO (next PR): Implement validations and add tests for them.
-func TestAcc_Service_Validations(t *testing.T) {
+func TestAcc_JobService_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	computePoolId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	modelCompleteWithInvalidAutoSuspendSecs := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
-		WithAutoSuspendSecs(-1)
+	modelCompleteWithInvalidAsync := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithAsync("invalid")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -977,9 +798,9 @@ func TestAcc_Service_Validations(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Service),
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, modelCompleteWithInvalidAutoSuspendSecs),
+				Config:      config.FromModels(t, modelCompleteWithInvalidAsync),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected auto_suspend_secs to be at least \(0\), got -1`),
+				ExpectError: regexp.MustCompile(`expected \[\{\{} async}] to be one of \["true" "false"], got invalid`),
 			},
 		},
 	})

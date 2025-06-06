@@ -86,6 +86,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.FunctionSql().Schema,
 	},
 	{
+		name:   "JobService",
+		schema: resources.JobService().Schema,
+	},
+	{
 		name:   "LegacyServiceUser",
 		schema: resources.LegacyServiceUser().Schema,
 	},

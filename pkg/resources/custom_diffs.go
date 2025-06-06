@@ -227,6 +227,24 @@ func RecreateWhenSecretTypeChangedExternally(secretType sdk.SecretType) schema.C
 	}
 }
 
+type serviceType string
+
+const (
+	serviceTypeService    serviceType = "SERVICE"
+	serviceTypeJobService serviceType = "JOB_SERVICE"
+)
+
+// TODO: unit tests
+func toServiceType(s string) (serviceType, error) {
+	switch serviceType := serviceType(strings.ToUpper(s)); serviceType {
+	case serviceTypeService,
+		serviceTypeJobService:
+		return serviceType, nil
+	default:
+		return "", fmt.Errorf("invalid service type: %s", s)
+	}
+}
+
 // RecreateWhenStreamTypeChangedExternally recreates a stream when argument streamType is different than in the state.
 func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) schema.CustomizeDiffFunc {
 	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)
