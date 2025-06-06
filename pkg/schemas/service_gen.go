@@ -143,6 +143,7 @@ func ServiceToSchema(service *sdk.Service) map[string]any {
 	serviceSchema["min_instances"] = service.MinInstances
 	serviceSchema["max_instances"] = service.MaxInstances
 	serviceSchema["auto_resume"] = service.AutoResume
+	// Adjusted manually.
 	serviceSchema["external_access_integrations"] = collections.Map(service.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)
 	serviceSchema["created_on"] = service.CreatedOn.String()
 	serviceSchema["updated_on"] = service.UpdatedOn.String()

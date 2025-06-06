@@ -77,11 +77,6 @@ func (s *ServiceResourceAssert) HasFromSpecificationString(expected string) *Ser
 	return s
 }
 
-func (s *ServiceResourceAssert) HasFromSpecificationTemplateString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("from_specification_template", expected))
-	return s
-}
-
 func (s *ServiceResourceAssert) HasFullyQualifiedNameString(expected string) *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
@@ -107,9 +102,9 @@ func (s *ServiceResourceAssert) HasQueryWarehouseString(expected string) *Servic
 	return s
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (s *ServiceResourceAssert) HasNoDatabase() *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("database"))
@@ -146,24 +141,6 @@ func (s *ServiceResourceAssert) HasNoComputePool() *ServiceResourceAssert {
 	return s
 }
 
-func (s *ServiceResourceAssert) HasNoExternalAccessIntegrations() *ServiceResourceAssert {
-	// Adjusted manually.
-	s.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
-	return s
-}
-
-func (s *ServiceResourceAssert) HasNoFromSpecification() *ServiceResourceAssert {
-	// Adjusted manually.
-	s.AddAssertion(assert.ValueSet("from_specification.#", "0"))
-	return s
-}
-
-func (s *ServiceResourceAssert) HasNoFromSpecificationTemplate() *ServiceResourceAssert {
-	// Adjusted manually.
-	s.AddAssertion(assert.ValueSet("from_specification_template.#", "0"))
-	return s
-}
-
 func (s *ServiceResourceAssert) HasNoFullyQualifiedName() *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return s
@@ -186,5 +163,123 @@ func (s *ServiceResourceAssert) HasNoMinReadyInstances() *ServiceResourceAssert 
 
 func (s *ServiceResourceAssert) HasNoQueryWarehouse() *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("query_warehouse"))
+	return s
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *ServiceResourceAssert) HasAutoResumeEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("auto_resume", ""))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasAutoSuspendSecsEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("auto_suspend_secs", ""))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasCommentEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasExternalAccessIntegrationsEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasFromSpecificationEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("from_specification.#", "0"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasFullyQualifiedNameEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMaxInstancesEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("max_instances", ""))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMinInstancesEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("min_instances", ""))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMinReadyInstancesEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("min_ready_instances", ""))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasQueryWarehouseEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("query_warehouse", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *ServiceResourceAssert) HasDatabaseNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("database"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasSchemaNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("schema"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasNameNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasAutoResumeNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("auto_resume"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasAutoSuspendSecsNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("auto_suspend_secs"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasCommentNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasComputePoolNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("compute_pool"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasFullyQualifiedNameNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMaxInstancesNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("max_instances"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMinInstancesNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("min_instances"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMinReadyInstancesNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("min_ready_instances"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasQueryWarehouseNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("query_warehouse"))
 	return s
 }
