@@ -102,18 +102,18 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(0).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasNoQueryWarehouse().
+						HasQueryWarehouseEmpty().
 						HasIsJob(false).
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -183,18 +183,18 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(0).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasNoQueryWarehouse().
+						HasQueryWarehouseEmpty().
 						HasIsJob(false).
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.database_name", id.DatabaseName())),
@@ -265,8 +265,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasExternalAccessIntegrations(externalAccessIntegration1Id).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(6767).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
@@ -275,8 +275,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -346,8 +346,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasExternalAccessIntegrations(externalAccessIntegration1Id).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(6767).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
@@ -356,8 +356,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.database_name", id.DatabaseName())),
@@ -429,8 +429,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(2222).
 						HasComment(changedComment).
 						HasOwnerRoleType("ROLE").
@@ -439,8 +439,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -516,8 +516,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
+						// Current and target instances are skipped because the value is not consistent and depends on provisioning the compute pool instances.
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -525,8 +524,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(2222).
 						HasComment(changedComment).
 						HasOwnerRoleType("ROLE").
@@ -535,8 +534,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -545,8 +544,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.target_instances", "1")),
+					// Current and target instances are skipped because the value is not consistent and depends on provisioning the compute pool instances.
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -599,8 +597,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
+						// Current and target instances are skipped because the value is not consistent and depends on provisioning the compute pool instances.
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -608,18 +605,18 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(0).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasNoQueryWarehouse().
+						HasQueryWarehouseEmpty().
 						HasIsJob(false).
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -628,8 +625,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
+					// Current and target instances are skipped because the value is not consistent and depends on provisioning the compute pool instances.
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -785,18 +781,18 @@ spec:
 						HasNoExternalAccessIntegrations().
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(0).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasNoQueryWarehouse().
+						HasQueryWarehouseEmpty().
 						HasIsJob(false).
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -905,8 +901,8 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
-						HasNoResumedOn().
-						HasNoSuspendedOn().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
 						HasAutoSuspendSecs(6767).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
@@ -915,8 +911,8 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasIsAsyncJob(false).
 						HasSpecDigestNotEmpty().
 						HasIsUpgrading(false).
-						HasNoManagingObjectDomain().
-						HasNoManagingObjectName(),
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),

@@ -73,6 +73,11 @@ func (t *TaskShowOutputAssert) HasTaskRelations(expected sdk.TaskRelations) *Tas
 	return t
 }
 
+func (t *TaskShowOutputAssert) HasScheduleEmpty() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", ""))
+	return t
+}
+
 func (t *TaskShowOutputAssert) HasScheduleMinutes(minutes int) *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("%d MINUTE", minutes)))
 	return t

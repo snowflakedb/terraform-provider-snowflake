@@ -96,7 +96,7 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasIsExclusive(false).
-						HasNoApplication(),
+						HasApplicationEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.state", string(sdk.ComputePoolStateStarting))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_nodes", "1")),
@@ -156,7 +156,7 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasIsExclusive(false).
-						HasNoApplication(),
+						HasApplicationEmpty(),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.state", string(sdk.ComputePoolStateStarting))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_nodes", "1")),

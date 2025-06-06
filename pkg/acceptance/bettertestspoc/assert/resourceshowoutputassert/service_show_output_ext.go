@@ -30,11 +30,6 @@ func (s *ServiceShowOutputAssert) HasUpdatedOnNotEmpty() *ServiceShowOutputAsser
 	return s
 }
 
-func (s *ServiceShowOutputAssert) HasSpecDigestNotEmpty() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValuePresent("spec_digest"))
-	return s
-}
-
 func (s *ServiceShowOutputAssert) HasResumedOnEmpty() *ServiceShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("resumed_on", ""))
 	return s
@@ -42,6 +37,11 @@ func (s *ServiceShowOutputAssert) HasResumedOnEmpty() *ServiceShowOutputAssert {
 
 func (s *ServiceShowOutputAssert) HasSuspendedOnEmpty() *ServiceShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("suspended_on", ""))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasSpecDigestNotEmpty() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValuePresent("spec_digest"))
 	return s
 }
 
@@ -57,5 +57,10 @@ func (s *ServiceShowOutputAssert) HasManagingObjectNameEmpty() *ServiceShowOutpu
 
 func (s *ServiceShowOutputAssert) HasQueryWarehouseEmpty() *ServiceShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("query_warehouse", ""))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasCommentEmpty() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", ""))
 	return s
 }
