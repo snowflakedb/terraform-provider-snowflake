@@ -46,6 +46,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ComputePool().Schema,
 	},
 	{
+		name:   "CurrentAccount",
+		schema: resources.CurrentAccount().Schema,
+	},
+	{
 		name:   "Database",
 		schema: resources.Database().Schema,
 	},
