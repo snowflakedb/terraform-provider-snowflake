@@ -82,6 +82,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasExternalAccessIntegrationsEmpty().
 						HasNoQueryWarehouse().
 						HasAsyncString("true").
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -159,6 +160,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasExternalAccessIntegrationsEmpty().
 						HasAsyncString("true").
 						HasNoQueryWarehouse().
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(""),
 					resourceshowoutputassert.ImportedServiceShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasName(id.Name()).
@@ -237,6 +239,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasExternalAccessIntegrations(externalAccessIntegration1Id).
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasAsyncString("true").
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -324,6 +327,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasExternalAccessIntegrations(externalAccessIntegration2Id).
 						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
 						HasAsyncString("true").
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(changedComment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
@@ -409,6 +413,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasExternalAccessIntegrations(externalAccessIntegration2Id).
 						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
 						HasAsyncString("true").
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(changedComment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
@@ -489,6 +494,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasExternalAccessIntegrationsEmpty().
 						HasNoQueryWarehouse().
 						HasAsyncString("true").
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -554,7 +560,66 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 	})
 }
 
-// TODO (next PR): add tests for detecting is_job
+func TestAcc_JobService_changeServiceTypeExternally(t *testing.T) {
+	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
+	t.Cleanup(computePoolCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	modelBasic := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+		WithAsync("true")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Service),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				Check: assertThat(t,
+					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)),
+					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
+						HasName(id.Name()).
+						HasIsJob(true).
+						HasIsAsyncJob(true),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "true")),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Service.DropFunc(t, id)()
+					_, serviceCleanup := testClient().Service.CreateWithId(t, computePool.ID(), id)
+					t.Cleanup(serviceCleanup)
+				},
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)),
+					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
+						HasName(id.Name()).
+						HasIsJob(true).
+						HasIsAsyncJob(true),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "true")),
+				),
+			},
+		},
+	})
+}
 
 func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
@@ -598,6 +663,7 @@ spec:
 						HasExternalAccessIntegrationsEmpty().
 						HasNoQueryWarehouse().
 						HasAsyncString("true").
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -800,6 +866,7 @@ func TestAcc_JobService_complete(t *testing.T) {
 						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasAsyncString("true").
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).

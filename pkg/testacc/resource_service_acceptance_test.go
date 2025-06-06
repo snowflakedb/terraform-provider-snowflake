@@ -85,6 +85,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasNoMinReadyInstances().
 						HasNoMaxInstances().
 						HasNoQueryWarehouse().
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -166,6 +167,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasMinReadyInstancesString("1").
 						HasMaxInstancesString("1").
 						HasNoQueryWarehouse().
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(""),
 					resourceshowoutputassert.ImportedServiceShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasName(id.Name()).
@@ -248,6 +250,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasMinReadyInstancesString("2").
 						HasMaxInstancesString("2").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -329,6 +332,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasMinReadyInstancesString("2").
 						HasMaxInstancesString("2").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(comment),
 					resourceshowoutputassert.ImportedServiceShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasName(id.Name()).
@@ -412,6 +416,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasMinReadyInstancesString("1").
 						HasMaxInstancesString("1").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(changedComment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
@@ -508,6 +513,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasMinReadyInstancesString("1").
 						HasMaxInstancesString("1").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(changedComment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
@@ -589,6 +595,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasMinReadyInstancesString("0").
 						HasMaxInstancesString("0").
 						HasQueryWarehouseString("").
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -737,6 +744,66 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 	})
 }
 
+func TestAcc_Service_changeServiceTypeExternally(t *testing.T) {
+	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
+	t.Cleanup(computePoolCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	modelBasic := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Service),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				Check: assertThat(t,
+					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasServiceTypeString(string(sdk.ServiceTypeService)),
+					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
+						HasName(id.Name()).
+						HasIsJob(false).
+						HasIsAsyncJob(false),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "false")),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Service.DropFunc(t, id)()
+					_, serviceCleanup := testClient().Service.ExecuteJobService(t, computePool.ID(), id)
+					t.Cleanup(serviceCleanup)
+				},
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasServiceTypeString(string(sdk.ServiceTypeService)),
+					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
+						HasName(id.Name()).
+						HasIsJob(false).
+						HasIsAsyncJob(false),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_async_job", "false")),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
@@ -777,6 +844,7 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 						HasNoMinReadyInstances().
 						HasNoMaxInstances().
 						HasNoQueryWarehouse().
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -898,6 +966,7 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasMinReadyInstancesString("1").
 						HasMaxInstancesString("2").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
+						HasServiceTypeString(string(sdk.ServiceTypeService)).
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).

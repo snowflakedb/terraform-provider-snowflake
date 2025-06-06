@@ -101,6 +101,11 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Specifies a comment for the service.",
 		},
+		"service_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Specifies a type for the service. This field is used for checking external changes and recreating the resources if needed.",
+		},
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 		ShowOutputAttributeName: {
 			Type:        schema.TypeList,
@@ -118,7 +123,6 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 				Schema: schemas.DescribeServiceSchema,
 			},
 		},
-		// TODO(next PR): add service_type and acc tests for handling ext changes.
 	}
 	if allFieldsForceNew {
 		markSettableFieldsInSchemaAsForceNew(schema)
@@ -220,6 +224,7 @@ func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsF
 			d.Set("compute_pool", service.ComputePool.FullyQualifiedName()),
 			d.Set("external_access_integrations", collections.Map(service.ExternalAccessIntegrations, func(id sdk.AccountObjectIdentifier) string { return id.FullyQualifiedName() })),
 			d.Set("comment", service.Comment),
+			d.Set("service_type", service.Type()),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
