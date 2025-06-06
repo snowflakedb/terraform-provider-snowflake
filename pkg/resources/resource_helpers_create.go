@@ -64,7 +64,11 @@ func booleanStringAttributeCreateBuilder[T any](d *schema.ResourceData, key stri
 
 func schemaObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, createField **sdk.SchemaObjectIdentifier) error {
 	if v, ok := d.GetOk(key); ok {
-		*createField = sdk.Pointer(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(v.(string)))
+		objectIdentifier, err := sdk.ParseSchemaObjectIdentifier(v.(string))
+		if err != nil {
+			return err
+		}
+		*createField = sdk.Pointer(objectIdentifier)
 	}
 	return nil
 }

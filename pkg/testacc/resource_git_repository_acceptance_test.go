@@ -22,33 +22,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func createApiIntegration(t *testing.T, origin string) sdk.AccountObjectIdentifier {
-	t.Helper()
-
-	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
-	t.Cleanup(apiIntegrationCleanup)
-
-	return apiIntegrationId
-}
-
-func createGitSecret(t *testing.T) sdk.SchemaObjectIdentifier {
-	t.Helper()
-
-	secretId := testClient().Ids.RandomSchemaObjectIdentifier()
-	_, secretCleanup := testClient().Secret.
-		CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
-	t.Cleanup(secretCleanup)
-
-	return secretId
-}
-
 func TestAcc_GitRepository_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
 	origin := "https://github.com/octocat/hello-world"
 
-	apiIntegrationId, changeApiIntegrationId := createApiIntegration(t, origin), createApiIntegration(t, origin)
-	secretId, changedSecretId := createGitSecret(t), createGitSecret(t)
+	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	t.Cleanup(apiIntegrationCleanup)
+	changeApiIntegrationId, changeApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	t.Cleanup(changeApiIntegrationCleanup)
+
+	secretId := testClient().Ids.RandomSchemaObjectIdentifier()
+	_, secretCleanup := testClient().Secret.CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
+	t.Cleanup(secretCleanup)
+
+	changedSecretId := testClient().Ids.RandomSchemaObjectIdentifier()
+	_, changedSecretCleanup := testClient().Secret.CreateWithBasicAuthenticationFlow(t, changedSecretId, "username", "password")
+	t.Cleanup(changedSecretCleanup)
+
 	modelBasic := model.GitRepository(
 		"test",
 		id.DatabaseName(),
@@ -111,16 +102,16 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(""),
-					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.origin", origin)),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.api_integration", apiIntegrationId.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.git_credentials", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.comment", "")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.origin", origin)),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.api_integration", apiIntegrationId.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.git_credentials", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
 				),
 			},
 			// import minimal state
@@ -298,8 +289,12 @@ func TestAcc_GitRepository_complete(t *testing.T) {
 	comment := random.Comment()
 	origin := "https://github.com/octocat/hello-world"
 
-	apiIntegrationId := createApiIntegration(t, origin)
-	secretId := createGitSecret(t)
+	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	t.Cleanup(apiIntegrationCleanup)
+
+	secretId := testClient().Ids.RandomSchemaObjectIdentifier()
+	_, secretCleanup := testClient().Secret.CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
+	t.Cleanup(secretCleanup)
 
 	modelComplete := model.
 		GitRepository("test", id.DatabaseName(), id.SchemaName(), id.Name(), apiIntegrationId.FullyQualifiedName(), origin).
@@ -328,6 +323,7 @@ func TestAcc_GitRepository_complete(t *testing.T) {
 						HasCommentString(comment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.GitRepositoryShowOutput(t, modelComplete.ResourceReference()).
+						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).

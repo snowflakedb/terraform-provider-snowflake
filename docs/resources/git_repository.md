@@ -7,7 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
--> **Note** The limitation of this resource is that currently we do not support creating `snowflake_api_integration_resource` with `git_https_api` type so it is not possible to create this object using only Terraform. (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository)).
+<!-- TODO(SNOW-1348334): support git_https_api type in snowflake_api_integration_resource -->
+-> **Note** Note that `snowflake_api_integration_resource` currently does not support `git_https_api` type. It will be added during the resource rework. Instead, you can use [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
 
 # snowflake_git_repository (Resource)
 
@@ -24,7 +25,7 @@ resource "snowflake_git_repository" "basic" {
   database        = "DATABASE"
   schema          = "SCHEMA"
   name            = "GIT_REPOSITORY"
-  origin          = "https://github/com/user/repo"
+  origin          = "https://github.com/user/repo"
   api_integration = "API_INTEGRATION"
 }
 
@@ -33,9 +34,9 @@ resource "snowflake_git_repository" "complete" {
   name            = "GIT_REPOSITORY"
   database        = "DATABASE"
   schema          = "SCHEMA"
-  origin          = "https://github/com/user/repo"
+  origin          = "https://github.com/user/repo"
   api_integration = "API_INTEGRATION"
-  git_credentials = "GIT_CREDENTIALS"
+  git_credentials = "\"<db_name>\".\"<schema_name>\".\"<secret_name>\""
   comment         = "comment"
 }
 ```
@@ -55,7 +56,7 @@ resource "snowflake_git_repository" "complete" {
 
 ### Optional
 
-- `comment` (String) Specifies a comment for the external access integration.
+- `comment` (String) Specifies a comment for the git repository.
 - `git_credentials` (String) Specifies the Snowflake secret containing the credentials to use for authenticating with the remote Git repository. Omit this parameter to use the default secret specified by the API integration or if this integration does not require authentication.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -117,5 +118,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_git_repository.example '"<git_repository_name>"'
+terraform import snowflake_git_repository.example '"<db_name>"."<schema_name>"."<git_repository_name>"'
 ```

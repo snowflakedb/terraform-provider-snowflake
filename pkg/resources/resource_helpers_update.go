@@ -87,7 +87,11 @@ func booleanStringAttributeUnsetFallbackUpdate(d *schema.ResourceData, key strin
 func schemaObjectIdentifierAttributeUpdate(d *schema.ResourceData, key string, setField **sdk.SchemaObjectIdentifier, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
-			*setField = sdk.Pointer(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(v.(string)))
+			objectIdentifier, err := sdk.ParseSchemaObjectIdentifier(v.(string))
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(objectIdentifier)
 		} else {
 			*unsetField = sdk.Bool(true)
 		}

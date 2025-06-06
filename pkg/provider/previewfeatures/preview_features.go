@@ -42,7 +42,6 @@ const (
 	FunctionSqlResource                           feature = "snowflake_function_sql_resource"
 	FunctionsDatasource                           feature = "snowflake_functions_datasource"
 	GitRepositoryResource                         feature = "snowflake_git_repository_resource"
-	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
@@ -117,7 +116,6 @@ var allPreviewFeatures = []feature{
 	FunctionSqlResource,
 	FunctionsDatasource,
 	GitRepositoryResource,
-	GitRepositoriesDatasource,
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
 	ManagedAccountResource,
