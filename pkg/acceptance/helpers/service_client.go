@@ -76,8 +76,8 @@ spec:
   - name: example-container
     image: /snowflake/images/snowflake_images/exampleimage:latest
 `
-	req := sdk.NewExecuteJobServiceServiceRequest(computePoolId, id).WithJobServiceFromSpecification(*sdk.NewJobServiceFromSpecificationRequest().WithSpecification(spec)).WithAsync(true)
-	err := c.client().ExecuteJobService(ctx, req)
+	req := sdk.NewExecuteJobServiceRequest(computePoolId, id).WithJobServiceFromSpecification(*sdk.NewJobServiceFromSpecificationRequest().WithSpecification(spec)).WithAsync(true)
+	err := c.client().ExecuteJob(ctx, req)
 	require.NoError(t, err)
 	service, err := c.client().ShowByID(ctx, req.GetName())
 	require.NoError(t, err)

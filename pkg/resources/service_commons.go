@@ -48,7 +48,6 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			MaxItems:    1,
 			Optional:    true,
-			ForceNew:    true,
 			Description: "Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -80,7 +79,6 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			MinItems:    1,
-			ForceNew:    true,
 			Description: "Specifies the names of the external access integrations that allow your service to access external sites.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
@@ -90,7 +88,6 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 		"query_warehouse": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			ForceNew:         true,
 			Description:      blocklistedCharactersFieldDescription("Warehouse to use if a service container connects to Snowflake to execute a query but does not explicitly specify a warehouse to use."),
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 			DiffSuppressFunc: suppressIdentifierQuoting,
@@ -98,7 +95,6 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 		"comment": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			ForceNew:    true,
 			Description: "Specifies a comment for the service.",
 		},
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -162,75 +158,7 @@ func ImportServiceFunc(customFieldsHandler func(d *schema.ResourceData, service 
 	}
 }
 
-func ReadServiceFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
-		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		service, err := client.Services.ShowByIDSafely(ctx, id)
-		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query service. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Service id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
-		}
-		serviceDetails, err := client.Services.Describe(ctx, id)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if withExternalChangesMarking {
-			var warehouseFullyQualifiedName string
-			if service.QueryWarehouse != nil {
-				warehouseFullyQualifiedName = service.QueryWarehouse.FullyQualifiedName()
-			}
-			if err = handleExternalChangesToObjectInShow(d,
-				outputMapping{"auto_resume", "auto_resume", service.AutoResume, booleanStringFromBool(service.AutoResume), nil},
-				outputMapping{"auto_suspend_secs", "auto_suspend_secs", service.AutoSuspendSecs, service.AutoSuspendSecs, nil},
-				outputMapping{"min_instances", "min_instances", service.MinInstances, service.MinInstances, nil},
-				outputMapping{"max_instances", "max_instances", service.MaxInstances, service.MaxInstances, nil},
-				outputMapping{"min_ready_instances", "min_ready_instances", service.MinReadyInstances, service.MinReadyInstances, nil},
-				outputMapping{"query_warehouse", "query_warehouse", warehouseFullyQualifiedName, warehouseFullyQualifiedName, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		if err = setStateToValuesFromConfig(d, serviceSchema, []string{
-			"auto_resume",
-			"auto_suspend_secs",
-			"min_instances",
-			"max_instances",
-			"min_ready_instances",
-			"query_warehouse",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ServiceToSchema(service)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ServiceDetailsToSchema(serviceDetails)}),
-			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			d.Set("compute_pool", service.ComputePool.FullyQualifiedName()),
-			d.Set("external_access_integrations", collections.Map(service.ExternalAccessIntegrations, func(id sdk.AccountObjectIdentifier) string { return id.FullyQualifiedName() })),
-			d.Set("comment", service.Comment),
-		)
-		if errs != nil {
-			return diag.FromErr(errs)
-		}
-		return nil
-	}
-}
-
-func ReadServiceGenericFunc(withExternalChangesMarking bool, extraOutputMappingsFunc func(service *sdk.Service) []outputMapping, extraSetStateToValuesFromConfigFields []string) schema.ReadContextFunc {
+func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsFunc func(service *sdk.Service) []outputMapping, extraSetStateToValuesFromConfigFields []string) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
@@ -323,28 +251,10 @@ func ToServiceFromSpecificationRequest(value any) (sdk.ServiceFromSpecificationR
 	return serviceFromSpecification, nil
 }
 
-// TODO: merge and remove
 func ToJobServiceFromSpecificationRequest(value any) (sdk.JobServiceFromSpecificationRequest, error) {
-	serviceFromSpecification := sdk.JobServiceFromSpecificationRequest{}
-	for _, v := range value.([]any) {
-		fromSpecificationConfig := v.(map[string]any)
-		if text := fromSpecificationConfig["text"].(string); text != "" {
-			serviceFromSpecification.Specification = &text
-		}
-		if stageRaw := fromSpecificationConfig["stage"].(string); stageRaw != "" {
-			stage, err := sdk.ParseSchemaObjectIdentifier(stageRaw)
-			if err != nil {
-				return sdk.JobServiceFromSpecificationRequest{}, err
-			}
-			var path string
-			if value := fromSpecificationConfig["path"].(string); value != "" {
-				path = value
-			}
-			serviceFromSpecification.Location = sdk.NewStageLocation(stage, path)
-		}
-		if file := fromSpecificationConfig["file"].(string); file != "" {
-			serviceFromSpecification.SpecificationFile = &file
-		}
+	spec, err := ToServiceFromSpecificationRequest(value)
+	if err != nil {
+		return sdk.JobServiceFromSpecificationRequest{}, err
 	}
-	return serviceFromSpecification, nil
+	return sdk.JobServiceFromSpecificationRequest(spec), nil
 }

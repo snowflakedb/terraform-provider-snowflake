@@ -5,10 +5,10 @@ import (
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -16,144 +16,48 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var serviceSchema = map[string]*schema.Schema{
-	"database": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("The database in which to create the service."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"schema": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("The schema in which to create the service."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the service; must be unique for the schema in which the service is created."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"compute_pool": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("Specifies the name of the compute pool in your account on which to run the service."),
-		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"from_specification": {
-		Type:        schema.TypeList,
-		MaxItems:    1,
-		Optional:    true,
-		Description: "Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"stage": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "The stage containing the service specification file. At symbol (`@`) is added automatically.",
-				},
-				"path": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "The path to the service specification file on the given stage.",
-				},
-				"file": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "The file name of the service specification.",
-				},
-				"text": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "The embedded text of the service specification.",
-				},
-			},
+var serviceSchema = func() map[string]*schema.Schema {
+	serviceSchema := map[string]*schema.Schema{
+		"auto_suspend_secs": {
+			Type:             schema.TypeInt,
+			Optional:         true,
+			ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("auto_suspend_secs"),
+			Description:      "Specifies the number of seconds of inactivity (service is idle) after which Snowflake automatically suspends the service.",
+			Default:          IntDefault,
 		},
-	},
-	// TODO (next PR): add from_specification_template
-	"auto_suspend_secs": {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("auto_suspend_secs"),
-		Description:      "Specifies the number of seconds of inactivity (service is idle) after which Snowflake automatically suspends the service.",
-		Default:          IntDefault,
-	},
-	"external_access_integrations": {
-		Type:        schema.TypeSet,
-		Optional:    true,
-		MinItems:    1,
-		Description: "Specifies the names of the external access integrations that allow your service to access external sites.",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
+		"auto_resume": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: validateBooleanString,
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("auto_resume"),
+			Description:      booleanStringFieldDescription("Specifies whether to automatically resume a service."),
+			Default:          BooleanDefault,
 		},
-		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("external_access_integrations"),
-	},
-	"auto_resume": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ValidateDiagFunc: validateBooleanString,
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("auto_resume"),
-		Description:      booleanStringFieldDescription("Specifies whether to automatically resume a service."),
-		Default:          BooleanDefault,
-	},
-	"min_instances": {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("min_instances"),
-		Description:      "Specifies the minimum number of service instances to run.",
-	},
-	"min_ready_instances": {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("min_ready_instances"),
-		Description:      "Indicates the minimum service instances that must be ready for Snowflake to consider the service is ready to process requests.",
-	},
-	"max_instances": {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("max_instances"),
-		Description:      "Specifies the maximum number of service instances to run.",
-	},
-	"query_warehouse": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      blocklistedCharactersFieldDescription("Warehouse to use if a service container connects to Snowflake to execute a query but does not explicitly specify a warehouse to use."),
-		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the service.",
-	},
-	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	ShowOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW SERVICES` for the given service.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowServiceSchema,
+		"min_instances": {
+			Type:             schema.TypeInt,
+			Optional:         true,
+			ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("min_instances"),
+			Description:      "Specifies the minimum number of service instances to run.",
 		},
-	},
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE SERVICE` for the given service.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeServiceSchema,
+		"min_ready_instances": {
+			Type:             schema.TypeInt,
+			Optional:         true,
+			ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("min_ready_instances"),
+			Description:      "Indicates the minimum service instances that must be ready for Snowflake to consider the service is ready to process requests.",
 		},
-	},
-}
+		"max_instances": {
+			Type:             schema.TypeInt,
+			Optional:         true,
+			ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("max_instances"),
+			Description:      "Specifies the maximum number of service instances to run.",
+		},
+	}
+	return collections.MergeMaps(serviceBaseSchema(false), serviceSchema)
+}()
 
 func Service() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
@@ -181,6 +85,10 @@ func Service() *schema.Resource {
 
 		Timeouts: defaultTimeouts,
 	}
+}
+
+func ReadServiceFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return ReadServiceCommonFunc(withExternalChangesMarking, serviceOutputMappingsFunc, []string{"max_instances", "min_instances", "min_ready_instances", "auto_resume", "auto_suspend_secs"})
 }
 
 func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -272,14 +180,12 @@ func serviceCustomFieldsHandler(d *schema.ResourceData, service *sdk.Service) er
 	)
 }
 
-func serviceOutputMappingsFunc(service *sdk.Service) func() []outputMapping {
-	return func() []outputMapping {
-		return []outputMapping{
-			{"auto_resume", "auto_resume", service.AutoResume, booleanStringFromBool(service.AutoResume), nil},
-			{"auto_suspend_secs", "auto_suspend_secs", service.AutoSuspendSecs, service.AutoSuspendSecs, nil},
-			{"min_instances", "min_instances", service.MinInstances, service.MinInstances, nil},
-			{"max_instances", "max_instances", service.MaxInstances, service.MaxInstances, nil},
-			{"min_ready_instances", "min_ready_instances", service.MinReadyInstances, service.MinReadyInstances, nil},
-		}
+func serviceOutputMappingsFunc(service *sdk.Service) []outputMapping {
+	return []outputMapping{
+		{"auto_resume", "auto_resume", service.AutoResume, booleanStringFromBool(service.AutoResume), nil},
+		{"auto_suspend_secs", "auto_suspend_secs", service.AutoSuspendSecs, service.AutoSuspendSecs, nil},
+		{"min_instances", "min_instances", service.MinInstances, service.MinInstances, nil},
+		{"max_instances", "max_instances", service.MaxInstances, service.MaxInstances, nil},
+		{"min_ready_instances", "min_ready_instances", service.MinReadyInstances, service.MinReadyInstances, nil},
 	}
 }

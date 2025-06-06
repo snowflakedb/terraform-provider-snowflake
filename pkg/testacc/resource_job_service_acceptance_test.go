@@ -46,7 +46,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 	modelBasic := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
 		WithAsync("true")
 
-	// TODO: add a ticket for testing without async option. This probably requires a custom no-op image in the image registry.
+	// TODO(SNOW-2138932): Test without async option. This probably requires a custom no-op image in the image registry.
 	modelComplete := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
 		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegration1Id).

@@ -472,13 +472,14 @@ spec:
 		)
 	})
 
+	// TODO(SNOW-2138932): Test without async option. This probably requires a custom no-op image in the image registry.
 	t.Run("execute job service - from specification template on stage", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-		request := sdk.NewExecuteJobServiceServiceRequest(computePool.ID(), id).
+		request := sdk.NewExecuteJobServiceRequest(computePool.ID(), id).
 			WithJobServiceFromSpecificationTemplate(*sdk.NewJobServiceFromSpecificationTemplateRequest(specTemplateUsing).WithLocation(location).WithSpecificationTemplateFile(specTemplateFileName)).
 			WithAsync(true)
 
-		err := client.Services.ExecuteJobService(ctx, request)
+		err := client.Services.ExecuteJob(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Service.DropFunc(t, id))
 
@@ -519,11 +520,11 @@ spec:
 
 	t.Run("execute job service - basic, from stage", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-		request := sdk.NewExecuteJobServiceServiceRequest(computePool.ID(), id).
+		request := sdk.NewExecuteJobServiceRequest(computePool.ID(), id).
 			WithJobServiceFromSpecification(*sdk.NewJobServiceFromSpecificationRequest().WithLocation(location).WithSpecificationFile(specFileName)).
 			WithAsync(true)
 
-		err := client.Services.ExecuteJobService(ctx, request)
+		err := client.Services.ExecuteJob(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Service.DropFunc(t, id))
 
@@ -565,14 +566,14 @@ spec:
 	t.Run("execute job service - complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 		comment := random.Comment()
-		request := sdk.NewExecuteJobServiceServiceRequest(computePool.ID(), id).
+		request := sdk.NewExecuteJobServiceRequest(computePool.ID(), id).
 			WithJobServiceFromSpecification(*sdk.NewJobServiceFromSpecificationRequest().WithSpecification(spec)).
 			WithAsync(true).
 			WithExternalAccessIntegrations(*sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId})).
 			WithQueryWarehouse(testClientHelper().Ids.WarehouseId()).
 			WithComment(comment)
 
-		err := client.Services.ExecuteJobService(ctx, request)
+		err := client.Services.ExecuteJob(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Service.DropFunc(t, id))
 

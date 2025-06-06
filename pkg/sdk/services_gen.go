@@ -9,7 +9,7 @@ import (
 type Services interface {
 	Create(ctx context.Context, request *CreateServiceRequest) error
 	Alter(ctx context.Context, request *AlterServiceRequest) error
-	ExecuteJobService(ctx context.Context, request *ExecuteJobServiceServiceRequest) error
+	ExecuteJob(ctx context.Context, request *ExecuteJobServiceRequest) error
 	Drop(ctx context.Context, request *DropServiceRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 	Show(ctx context.Context, request *ShowServiceRequest) ([]Service, error)
@@ -108,8 +108,8 @@ type ServiceUnset struct {
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
-// ExecuteJobServiceServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/execute-job-service.
-type ExecuteJobServiceServiceOptions struct {
+// ExecuteJobServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/execute-job-service.
+type ExecuteJobServiceOptions struct {
 	executeJobService                   bool                                 `ddl:"static" sql:"EXECUTE JOB SERVICE"`
 	InComputePool                       AccountObjectIdentifier              `ddl:"identifier" sql:"IN COMPUTE POOL"`
 	Name                                SchemaObjectIdentifier               `ddl:"identifier,equals" sql:"NAME"`

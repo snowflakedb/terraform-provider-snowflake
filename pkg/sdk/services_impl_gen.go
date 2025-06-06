@@ -23,7 +23,7 @@ func (v *services) Alter(ctx context.Context, request *AlterServiceRequest) erro
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *services) ExecuteJobService(ctx context.Context, request *ExecuteJobServiceServiceRequest) error {
+func (v *services) ExecuteJob(ctx context.Context, request *ExecuteJobServiceRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -176,8 +176,8 @@ func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 	return opts
 }
 
-func (r *ExecuteJobServiceServiceRequest) toOpts() *ExecuteJobServiceServiceOptions {
-	opts := &ExecuteJobServiceServiceOptions{
+func (r *ExecuteJobServiceRequest) toOpts() *ExecuteJobServiceOptions {
+	opts := &ExecuteJobServiceOptions{
 		InComputePool:  r.InComputePool,
 		Name:           r.Name,
 		Async:          r.Async,

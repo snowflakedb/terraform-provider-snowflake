@@ -4,6 +4,6 @@ func (s *CreateServiceRequest) GetName() SchemaObjectIdentifier {
 	return s.name
 }
 
-func (s *ExecuteJobServiceServiceRequest) GetName() SchemaObjectIdentifier {
+func (s *ExecuteJobServiceRequest) GetName() SchemaObjectIdentifier {
 	return s.Name
 }
