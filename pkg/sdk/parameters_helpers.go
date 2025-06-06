@@ -13,7 +13,11 @@ func parseBooleanParameter(parameter, value string) (_ *bool, err error) {
 	return &b, nil
 }
 
-func setBooleanValue[P AccountParameter | SessionParameter | UserParameter | TaskParameter | ObjectParameter](parameter P, value string, setField **bool) error {
+type ParameterConstraint interface {
+	AccountParameter | SessionParameter | UserParameter | TaskParameter | ObjectParameter
+}
+
+func setBooleanValue[P ParameterConstraint](parameter P, value string, setField **bool) error {
 	b, err := parseBooleanParameter(string(parameter), value)
 	if err != nil {
 		return err
@@ -22,7 +26,7 @@ func setBooleanValue[P AccountParameter | SessionParameter | UserParameter | Tas
 	return nil
 }
 
-func setIntegerValue[P AccountParameter | SessionParameter | UserParameter | TaskParameter | ObjectParameter](parameter P, value string, setField **int) error {
+func setIntegerValue[P ParameterConstraint](parameter P, value string, setField **int) error {
 	v, err := strconv.Atoi(value)
 	if err != nil {
 		return fmt.Errorf("failed to parse parameter %s, expected an integer, but got %v", parameter, value)

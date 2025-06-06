@@ -39,7 +39,7 @@ type parameters struct {
 	client *Client
 }
 
-func (parameters *parameters) SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error {
+func (v *parameters) SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error {
 	opts := AlterAccountOptions{
 		Set: &AccountSet{
 			LegacyParameters: &AccountLevelParameters{
@@ -191,9 +191,9 @@ func (parameters *parameters) SetAccountParameter(ctx context.Context, parameter
 		}
 		opts.Set.LegacyParameters.AccountParameters.SSOLoginPage = b
 	default:
-		return parameters.SetSessionParameterOnAccount(ctx, SessionParameter(parameter), value)
+		return v.SetSessionParameterOnAccount(ctx, SessionParameter(parameter), value)
 	}
-	if err := parameters.client.Accounts.Alter(ctx, &opts); err != nil {
+	if err := v.client.Accounts.Alter(ctx, &opts); err != nil {
 		return err
 	}
 	return nil
@@ -1477,7 +1477,6 @@ type AccountParametersUnset struct {
 	OdbcTreatDecimalAsInt                            *bool `ddl:"keyword" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
 	PeriodicDataRekeying                             *bool `ddl:"keyword" sql:"PERIODIC_DATA_REKEYING"`
 	PipeExecutionPaused                              *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`
-	PreventLoadFromInlineURL                         *bool `ddl:"keyword" sql:"PREVENT_LOAD_FROM_INLINE_URL"`
 	PreventUnloadToInlineURL                         *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INLINE_URL"`
 	PreventUnloadToInternalStages                    *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
 	PythonProfilerModules                            *bool `ddl:"keyword" sql:"PYTHON_PROFILER_MODULES"`

@@ -20,6 +20,10 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(new feature)* New tracking level
+
+Every resource that is capable of setting tracing level (`database`, `shared_database`, `secondary_database`, `schema`) now supports the new `PROPAGATE` value.
+
 ### *(bugfix)* Fix how snowflake_user_authentication_policy_attachment resource handles missing objects it depends on
 
 Previously, the `snowflake_user_authentication_policy_attachment` resource was not able to handle missing objects it depends on.

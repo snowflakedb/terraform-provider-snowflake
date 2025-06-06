@@ -536,6 +536,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
+		// TODO(SNOW2138715): Test all parameters
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
 				Parameters: &sdk.AccountParameters{
@@ -844,7 +845,6 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					OdbcTreatDecimalAsInt:                            sdk.Bool(true),
 					PeriodicDataRekeying:                             sdk.Bool(true),
 					PipeExecutionPaused:                              sdk.Bool(true),
-					PreventLoadFromInlineURL:                         sdk.Bool(true),
 					PreventUnloadToInlineURL:                         sdk.Bool(true),
 					PreventUnloadToInternalStages:                    sdk.Bool(true),
 					PythonProfilerModules:                            sdk.Bool(true),
