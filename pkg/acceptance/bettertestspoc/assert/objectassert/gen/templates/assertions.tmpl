@@ -5,17 +5,26 @@
 {{ $nameLowerCase := FirstLetterLowercase .Name }}
 {{ $assertVar := FirstLetter $nameLowerCase }}
 {{- range .Fields }}
-    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ TypeWithoutPointer .ConcreteType }}) *{{ $assertName }} {
+    {{ $itemType := TypeWithoutPointerAndBrackets .ConcreteType }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ if .IsOriginalTypeSlice }}...{{ end }}{{ $itemType }}) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
             t.Helper()
+            {{ if .IsOriginalTypeSlice -}}
+            mapped := collections.Map(o.{{ .Name }}, func(item {{ $itemType }}) any { return {{ RunMapper .Mapper "item" }} })
+            mappedExpected := collections.Map(expected, func(item {{ $itemType }}) any { return {{ RunMapper .ExpectedValueMapper "item" }} })
+            if !slices.Equal(mapped, mappedExpected) {
+                return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", expected, o.{{ .Name }})
+            }
+            {{ else -}}
             {{ if .IsOriginalTypePointer -}}
             if o.{{ .Name }} == nil {
                 return fmt.Errorf("expected {{ CamelToWords .Name }} to have value; got: nil")
             }
             {{ end -}}
-            if {{ if .IsOriginalTypePointer }}*{{ end }}{{ RunMapper .Mapper "o." .Name }} != {{ RunMapper .Mapper "expected" }} {
-                return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", {{ RunMapper .Mapper "expected" }}, {{ if .IsOriginalTypePointer }}*{{ end }}{{ RunMapper .Mapper "o." .Name }})
+            if {{ RunMapper .Mapper "o." .Name }} != {{ RunMapper .ExpectedValueMapper "expected" }} {
+                return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", {{ RunMapper .ExpectedValueMapper "expected" }}, {{ RunMapper .Mapper "o." .Name }})
             }
+            {{ end -}}
             return nil
         })
         return {{ $assertVar }}

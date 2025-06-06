@@ -108,7 +108,7 @@ func TestAcc_Task_Basic(t *testing.T) {
 						HasErrorIntegrationString("").
 						HasCommentString("").
 						HasFinalizeString("").
-						HasNoAfter().
+						HasAfterEmpty().
 						HasWhenString("").
 						HasSqlStatementString(statement),
 				),
@@ -162,7 +162,7 @@ func TestAcc_Task_Complete(t *testing.T) {
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
 						HasCommentString(comment).
 						HasFinalizeString("").
-						HasNoAfter().
+						HasAfterEmpty().
 						HasWhenString(condition).
 						HasSqlStatementString(statement),
 					resourceshowoutputassert.TaskShowOutput(t, configModel.ResourceReference()).
@@ -210,7 +210,7 @@ func TestAcc_Task_Complete(t *testing.T) {
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
 						HasCommentString(comment).
 						HasFinalizeString("").
-						HasNoAfter().
+						HasAfterEmpty().
 						HasWhenString(condition).
 						HasSqlStatementString(statement),
 				),

@@ -61,6 +61,11 @@ func (v *KeywordTransformer) DoubleQuotes() *KeywordTransformer {
 	return v
 }
 
+func (v *KeywordTransformer) DoubleDollarQuotes() *KeywordTransformer {
+	v.quotes = "double_dollar_quotes"
+	return v
+}
+
 func (v *KeywordTransformer) Parentheses() *KeywordTransformer {
 	v.parentheses = "parentheses"
 	return v
@@ -131,6 +136,11 @@ func (v *ParameterTransformer) SingleQuotes() *ParameterTransformer {
 
 func (v *ParameterTransformer) DoubleQuotes() *ParameterTransformer {
 	v.quotes = "double_quotes"
+	return v
+}
+
+func (v *ParameterTransformer) DoubleDollarQuotes() *ParameterTransformer {
+	v.quotes = "double_dollar_quotes"
 	return v
 }
 
@@ -238,6 +248,11 @@ func (v *IdentifierTransformer) SingleQuotes() *IdentifierTransformer {
 
 func (v *IdentifierTransformer) DoubleQuotes() *IdentifierTransformer {
 	v.quotes = "double_quotes"
+	return v
+}
+
+func (v *IdentifierTransformer) DoubleDollarQuotes() *IdentifierTransformer {
+	v.quotes = "double_dollar_quotes"
 	return v
 }
 

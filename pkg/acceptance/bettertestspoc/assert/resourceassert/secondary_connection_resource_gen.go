@@ -32,6 +32,11 @@ func ImportedSecondaryConnectionResource(t *testing.T, id string) *SecondaryConn
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (s *SecondaryConnectionResourceAssert) HasNameString(expected string) *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValueSet("name", expected))
+	return s
+}
+
 func (s *SecondaryConnectionResourceAssert) HasAsReplicaOfString(expected string) *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueSet("as_replica_of", expected))
 	return s
@@ -52,14 +57,14 @@ func (s *SecondaryConnectionResourceAssert) HasIsPrimaryString(expected string) 
 	return s
 }
 
-func (s *SecondaryConnectionResourceAssert) HasNameString(expected string) *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (s *SecondaryConnectionResourceAssert) HasNoName() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("name"))
 	return s
 }
-
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
 
 func (s *SecondaryConnectionResourceAssert) HasNoAsReplicaOf() *SecondaryConnectionResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("as_replica_of"))
@@ -81,7 +86,50 @@ func (s *SecondaryConnectionResourceAssert) HasNoIsPrimary() *SecondaryConnectio
 	return s
 }
 
-func (s *SecondaryConnectionResourceAssert) HasNoName() *SecondaryConnectionResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *SecondaryConnectionResourceAssert) HasCommentEmpty() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasFullyQualifiedNameEmpty() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasIsPrimaryEmpty() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValueSet("is_primary", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *SecondaryConnectionResourceAssert) HasNameNotEmpty() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasAsReplicaOfNotEmpty() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValuePresent("as_replica_of"))
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasCommentNotEmpty() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasFullyQualifiedNameNotEmpty() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasIsPrimaryNotEmpty() *SecondaryConnectionResourceAssert {
+	s.AddAssertion(assert.ValuePresent("is_primary"))
 	return s
 }

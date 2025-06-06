@@ -30,7 +30,7 @@ func TestInt_Tags(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(expectedComment).
-			HasAllowedValues(expectedAllowedValues...).
+			HasAllowedValuesUnordered(expectedAllowedValues...).
 			HasOwnerRoleType("ROLE"),
 		)
 	}
@@ -784,6 +784,31 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 		},
 		{
+			name:       "GitRepository",
+			objectType: sdk.ObjectTypeGitRepository,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				origin := "https://github.com/octocat/hello-world"
+
+				gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+				apiIntegrationId, apiIntegrationCleanup := testClientHelper().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+
+				repo, repoCleanup := testClientHelper().GitRepository.Create(t, gitRepositoryId, origin, apiIntegrationId)
+
+				cleanup := func() {
+					repoCleanup()
+					apiIntegrationCleanup()
+				}
+				return repo, cleanup
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.GitRepositories.Alter(ctx, sdk.NewAlterGitRepositoryRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.GitRepositories.Alter(ctx, sdk.NewAlterGitRepositoryRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
 			name:       "MaterializedView",
 			objectType: sdk.ObjectTypeMaterializedView,
 			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
@@ -938,6 +963,29 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
 				return client.ImageRepositories.Alter(ctx, sdk.NewAlterImageRepositoryRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
+			name:       "Service",
+			objectType: sdk.ObjectTypeService,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
+				t.Cleanup(computePoolCleanup)
+
+				db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
+				t.Cleanup(dbCleanup)
+
+				schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
+				t.Cleanup(schemaCleanup)
+
+				id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+				return testClientHelper().Service.CreateWithId(t, computePool.ID(), id)
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithUnsetTags(tags))
 			},
 		},
 	}

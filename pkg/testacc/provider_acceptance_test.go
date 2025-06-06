@@ -1,6 +1,6 @@
 //go:build !account_level_tests
 
-package provider_test
+package testacc
 
 import (
 	"fmt"
@@ -11,8 +11,6 @@ import (
 	"testing"
 	"time"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
@@ -24,6 +22,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -37,18 +36,16 @@ import (
 )
 
 func TestAcc_Provider_configHierarchy(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
-	incorrectConfig := acc.TestClient().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	incorrectConfig := testClient().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -72,12 +69,12 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", acc.TestDatabaseName),
+					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
 				),
 			},
 			// incorrect user in provider config should not be rewritten by profile and cause error
 			{
-				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithAuthenticatorType(sdk.AuthenticationTypeJwt).WithProfile(tmpServiceUserConfig.Profile).WithUserId(acc.NonExistingAccountObjectIdentifier), datasourceModel()),
+				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithAuthenticatorType(sdk.AuthenticationTypeJwt).WithProfile(tmpServiceUserConfig.Profile).WithUserId(NonExistingAccountObjectIdentifier), datasourceModel()),
 				ExpectError: regexp.MustCompile("JWT token is invalid"),
 			},
 			// correct user and key in provider's config should not be rewritten by a faulty config
@@ -92,13 +89,13 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 					WithRoleId(tmpServiceUser.RoleId).
 					WithPrivateKeyMultiline(tmpServiceUser.PrivateKey), datasourceModel()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", acc.TestDatabaseName),
+					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
 				),
 			},
 			// incorrect user in env variable should not be rewritten by profile and cause error (profile authenticator is set to JWT and that's why the error is about incorrect token)
 			{
 				PreConfig: func() {
-					t.Setenv(snowflakeenvs.User, acc.NonExistingAccountObjectIdentifier.Name())
+					t.Setenv(snowflakeenvs.User, NonExistingAccountObjectIdentifier.Name())
 					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 				},
 				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
@@ -114,7 +111,7 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(incorrectConfig.Profile).WithAuthenticatorType(sdk.AuthenticationTypeJwt), datasourceModel()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", acc.TestDatabaseName),
+					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
 				),
 			},
 			// user on provider level wins (it's incorrect - env and profile ones are)
@@ -126,7 +123,7 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().
 					WithAuthenticatorType(sdk.AuthenticationTypeJwt).
 					WithProfile(tmpServiceUserConfig.Profile).
-					WithUserId(acc.NonExistingAccountObjectIdentifier).
+					WithUserId(NonExistingAccountObjectIdentifier).
 					WithRoleId(tmpServiceUser.RoleId).
 					WithPrivateKeyMultiline(tmpServiceUser.PrivateKey), datasourceModel()),
 				ExpectError: regexp.MustCompile("JWT token is invalid"),
@@ -156,7 +153,7 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 					t.Setenv(snowflakeenvs.OrganizationName, tmpServiceUser.AccountId.OrganizationName())
 					t.Setenv(snowflakeenvs.Role, tmpServiceUser.RoleId.Name())
 				},
-				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithAuthenticatorType(sdk.AuthenticationTypeJwt).WithProfile(testprofiles.Default).WithUserId(acc.NonExistingAccountObjectIdentifier), datasourceModel()),
+				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithAuthenticatorType(sdk.AuthenticationTypeJwt).WithProfile(testprofiles.Default).WithUserId(NonExistingAccountObjectIdentifier), datasourceModel()),
 				ExpectError: regexp.MustCompile("JWT token is invalid"),
 			},
 			// make sure the teardown is fine by using a correct env config at the end
@@ -171,7 +168,7 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithAuthenticatorType(sdk.AuthenticationTypeJwt), datasourceModel()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", acc.TestDatabaseName),
+					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
 				),
 			},
 		},
@@ -179,18 +176,16 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 }
 
 func TestAcc_Provider_configureClientOnceSwitching(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
-	incorrectConfig := acc.TestClient().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	incorrectConfig := testClient().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -214,7 +209,7 @@ func TestAcc_Provider_configureClientOnceSwitching(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", acc.TestDatabaseName),
+					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
 				),
 			},
 		},
@@ -222,19 +217,17 @@ func TestAcc_Provider_configureClientOnceSwitching(t *testing.T) {
 }
 
 func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
 		return helpers.FullLegacyTomlConfigForServiceUser(t, profile, tmpServiceUser.UserId, tmpServiceUser.RoleId, tmpServiceUser.WarehouseId, tmpServiceUser.AccountId, tmpServiceUser.PrivateKey)
 	})
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -248,7 +241,7 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 			{
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithUseLegacyTomlFile(true), datasourceModel()),
 				Check: func(s *terraform.State) error {
-					config := acc.TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
+					config := TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
 					assert.Equal(t, tmpServiceUser.OrgAndAccount(), config.Account)
 					assert.Equal(t, tmpServiceUser.UserId.Name(), config.User)
 					assert.Equal(t, tmpServiceUser.WarehouseId.Name(), config.Warehouse)
@@ -294,19 +287,17 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 }
 
 func TestAcc_Provider_TomlConfig(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
 		return helpers.FullTomlConfigForServiceUser(t, profile, tmpServiceUser.UserId, tmpServiceUser.RoleId, tmpServiceUser.WarehouseId, tmpServiceUser.AccountId, tmpServiceUser.PrivateKey)
 	})
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -320,7 +311,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 			{
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
-					config := acc.TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
+					config := TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
 					assert.Equal(t, tmpServiceUser.OrgAndAccount(), config.Account)
 					assert.Equal(t, tmpServiceUser.UserId.Name(), config.User)
 					assert.Equal(t, tmpServiceUser.WarehouseId.Name(), config.Warehouse)
@@ -366,23 +357,21 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 }
 
 func TestAcc_Provider_TomlConfigFailsIfFormatsMismatch(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
 		return helpers.FullTomlConfigForServiceUser(t, profile, tmpServiceUser.UserId, tmpServiceUser.RoleId, tmpServiceUser.WarehouseId, tmpServiceUser.AccountId, tmpServiceUser.PrivateKey)
 	})
 
-	legacyTomlTmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
+	legacyTomlTmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
 		return helpers.FullLegacyTomlConfigForServiceUser(t, profile, tmpServiceUser.UserId, tmpServiceUser.RoleId, tmpServiceUser.WarehouseId, tmpServiceUser.AccountId, tmpServiceUser.PrivateKey)
 	})
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -413,18 +402,16 @@ func TestAcc_Provider_TomlConfigFailsIfFormatsMismatch(t *testing.T) {
 }
 
 func TestAcc_Provider_tomlConfigIsTooBig(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	c := make([]byte, 11*1024*1024)
-	tomlConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
+	tomlConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
 		return string(c)
 	})
 	providerModel := providermodel.SnowflakeProvider().WithProfile(tomlConfig.Profile)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -441,11 +428,9 @@ func TestAcc_Provider_tomlConfigIsTooBig(t *testing.T) {
 }
 
 func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	if oswrapper.IsRunningOnWindows() {
 		t.Skip("checking file permissions on Windows is currently done in manual tests package")
 	}
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	permissions := fs.FileMode(0o755)
@@ -454,7 +439,7 @@ func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
 	providerModel := providermodel.SnowflakeProvider().WithProfile(configPath)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -471,20 +456,18 @@ func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
 }
 
 func TestAcc_Provider_tomlConfigFilePermissionsCanBeSkipped(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	if oswrapper.IsRunningOnWindows() {
 		t.Skip("checking file permissions on Windows is currently done in manual tests package")
 	}
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigWithCustomPermissionsForServiceUser(t, tmpServiceUser, fs.FileMode(0o755))
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigWithCustomPermissionsForServiceUser(t, tmpServiceUser, fs.FileMode(0o755))
 
 	providerModelWithSkippedPermissionVerification := providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithSkipTomlFilePermissionVerification(true)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -495,7 +478,7 @@ func TestAcc_Provider_tomlConfigFilePermissionsCanBeSkipped(t *testing.T) {
 				},
 				Config: config.FromModels(t, providerModelWithSkippedPermissionVerification, datasourceModel()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", acc.TestDatabaseName),
+					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
 				),
 			},
 		},
@@ -503,17 +486,15 @@ func TestAcc_Provider_tomlConfigFilePermissionsCanBeSkipped(t *testing.T) {
 }
 
 func TestAcc_Provider_envConfig(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
 		return helpers.FullInvalidTomlConfigForServiceUser(t, profile)
 	})
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
@@ -564,7 +545,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
-					config := acc.TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
+					config := TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
 
 					assert.Equal(t, tmpServiceUser.OrgAndAccount(), config.Account)
 					assert.Equal(t, tmpServiceUser.UserId.Name(), config.User)
@@ -611,19 +592,17 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 }
 
 func TestAcc_Provider_tfConfig(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().StoreTempTomlConfig(t, func(profile string) string {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
 		return helpers.FullInvalidTomlConfigForServiceUser(t, profile)
 	})
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -673,7 +652,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
 				Check: func(s *terraform.State) error {
-					config := acc.TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
+					config := TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
 
 					assert.Equal(t, tmpServiceUser.OrgAndAccount(), config.Account)
 					assert.Equal(t, tmpServiceUser.UserId.Name(), config.User)
@@ -720,19 +699,17 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 }
 
 func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
 
 	nonExisting := "NON-EXISTENT"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -761,16 +738,14 @@ func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 
 // prove we can use tri-value booleans, similarly to the ones in resources
 func TestAcc_Provider_triValueBoolean(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -779,19 +754,19 @@ func TestAcc_Provider_triValueBoolean(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { acc.SetV097CompatibleConfigPathEnv(t) },
-				ExternalProviders: acc.ExternalProviderWithExactVersion("0.97.0"),
+				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
 				Config:            config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(testprofiles.Default).WithClientStoreTemporaryCredentialBool(true), datasourceModel()),
 			},
 			{
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 				},
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithClientStoreTemporaryCredentialBool(true), datasourceModel()),
 			},
 			{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithClientStoreTemporaryCredential("true"), datasourceModel()),
 			},
 		},
@@ -799,17 +774,15 @@ func TestAcc_Provider_triValueBoolean(t *testing.T) {
 }
 
 func TestAcc_Provider_sessionParameters(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -839,20 +812,18 @@ func TestAcc_Provider_sessionParameters(t *testing.T) {
 }
 
 func TestAcc_Provider_JwtAuth(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
-	tmpIncorrectServiceUserConfig := acc.TestClient().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
-	tmpServiceUserWithEncryptedKeyConfig := acc.TestClient().TempTomlConfigForServiceUserWithEncryptedKey(t, tmpServiceUser)
-	tmpIncorrectServiceUserWithEncryptedKeyConfig := acc.TestClient().TempIncorrectTomlConfigForServiceUserWithEncryptedKey(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpIncorrectServiceUserConfig := testClient().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUserWithEncryptedKeyConfig := testClient().TempTomlConfigForServiceUserWithEncryptedKey(t, tmpServiceUser)
+	tmpIncorrectServiceUserWithEncryptedKeyConfig := testClient().TempIncorrectTomlConfigForServiceUserWithEncryptedKey(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			acc.TestAccPreCheck(t)
+			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -895,16 +866,14 @@ func TestAcc_Provider_JwtAuth(t *testing.T) {
 }
 
 func TestAcc_Provider_SnowflakeAuth(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpLegacyServiceUser := acc.TestClient().SetUpTemporaryLegacyServiceUser(t)
-	tmpLegacyServiceUserConfig := acc.TestClient().TempTomlConfigForLegacyServiceUser(t, tmpLegacyServiceUser)
-	incorrectLegacyServiceUserConfig := acc.TestClient().TempIncorrectTomlConfigForLegacyServiceUser(t, tmpLegacyServiceUser)
+	tmpLegacyServiceUser := testClient().SetUpTemporaryLegacyServiceUser(t)
+	tmpLegacyServiceUserConfig := testClient().TempTomlConfigForLegacyServiceUser(t, tmpLegacyServiceUser)
+	incorrectLegacyServiceUserConfig := testClient().TempIncorrectTomlConfigForLegacyServiceUser(t, tmpLegacyServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -927,15 +896,13 @@ func TestAcc_Provider_SnowflakeAuth(t *testing.T) {
 }
 
 func TestAcc_Provider_invalidConfigurations(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1006,13 +973,12 @@ func TestAcc_Provider_invalidConfigurations(t *testing.T) {
 func TestAcc_Provider_PreviewFeaturesEnabled(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	t.Setenv(string(testenvs.EnableAllPreviewFeatures), "")
-	acc.TestAccPreCheck(t)
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1033,14 +999,13 @@ func TestAcc_Provider_PreviewFeaturesEnabled(t *testing.T) {
 func TestAcc_Provider_PreviewFeaturesDisabled(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	t.Setenv(string(testenvs.EnableAllPreviewFeatures), "")
-	acc.TestAccPreCheck(t)
 
-	tmpServiceUser := acc.TestClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := acc.TestClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1067,7 +1032,7 @@ data %[2]s t {}
 }
 
 func datasourceModel() config.DatasourceModel {
-	return datasourcemodel.Database("t", acc.TestDatabaseName)
+	return datasourcemodel.Database("t", TestDatabaseName)
 }
 
 func executeShowSessionParameter() string {

@@ -47,7 +47,7 @@ func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 						HasNoFrequency().
 						HasNoStartTimestamp().
 						HasNoEndTimestamp().
-						HasNoNotifyTriggers().
+						HasNotifyTriggersEmpty().
 						HasNoSuspendTrigger().
 						HasNoSuspendImmediateTrigger(),
 					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
@@ -78,7 +78,7 @@ func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 						HasFrequencyString(string(sdk.FrequencyMonthly)).
 						HasStartTimestampNotEmpty().
 						HasEndTimestampString("").
-						HasNoNotifyTriggers().
+						HasNotifyTriggersEmpty().
 						HasSuspendTriggerString("0").
 						HasSuspendImmediateTriggerString("0"),
 				),
