@@ -2,7 +2,6 @@
 
 package resourceshowoutputassert
 
-// imports edited manually
 import (
 	"testing"
 
