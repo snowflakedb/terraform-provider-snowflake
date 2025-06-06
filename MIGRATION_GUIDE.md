@@ -44,7 +44,7 @@ No configuration changes are needed.
 References: [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
 
 ### *(new feature)* snowflake_service resource
-Added a new preview resource for managing services. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-service). You can read about this resource's limitations in the documentation in the registry.
+Added a new preview resource for managing services. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-service). You can read about this resource's limitations in the documentation in the registry. This resource is not suitable for managing job services created with `EXECUTE JOB SERVICE`. There will be a separate `snowflake_job_service` resource for this use case.
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_service_resource` to `preview_features_enabled` field in the provider configuration.
 

@@ -16,7 +16,7 @@ func (s *ServiceResourceAssert) HasExternalAccessIntegrations(expected ...sdk.Ac
 }
 
 func (s *ServiceResourceAssert) HasFromSpecificationTextNotEmpty() *ServiceResourceAssert {
-	s.HasNoFromSpecificationTemplate()
+	s.HasFromSpecificationTemplateEmpty()
 	s.AddAssertion(assert.ValueSet("from_specification.#", "1"))
 	s.AddAssertion(assert.ValueSet("from_specification.0.stage", ""))
 	s.AddAssertion(assert.ValueSet("from_specification.0.path", ""))
@@ -26,7 +26,7 @@ func (s *ServiceResourceAssert) HasFromSpecificationTextNotEmpty() *ServiceResou
 }
 
 func (s *ServiceResourceAssert) HasFromSpecificationOnStageNotEmpty() *ServiceResourceAssert {
-	s.HasNoFromSpecificationTemplate()
+	s.HasFromSpecificationTemplateEmpty()
 	s.AddAssertion(assert.ValueSet("from_specification.#", "1"))
 	s.AddAssertion(assert.ValuePresent("from_specification.0.stage"))
 	s.AddAssertion(assert.ValueSet("from_specification.0.path", ""))
@@ -36,7 +36,7 @@ func (s *ServiceResourceAssert) HasFromSpecificationOnStageNotEmpty() *ServiceRe
 }
 
 func (s *ServiceResourceAssert) HasFromSpecificationTemplateTextNotEmpty() *ServiceResourceAssert {
-	s.HasNoFromSpecification()
+	s.HasFromSpecificationEmpty()
 	s.AddAssertion(assert.ValueSet("from_specification_template.#", "1"))
 	s.AddAssertion(assert.ValueSet("from_specification_template.0.stage", ""))
 	s.AddAssertion(assert.ValueSet("from_specification_template.0.path", ""))
@@ -47,7 +47,7 @@ func (s *ServiceResourceAssert) HasFromSpecificationTemplateTextNotEmpty() *Serv
 }
 
 func (s *ServiceResourceAssert) HasFromSpecificationTemplateText(text string) *ServiceResourceAssert {
-	s.HasNoFromSpecification()
+	s.HasFromSpecificationEmpty()
 	s.AddAssertion(assert.ValueSet("from_specification_template.#", "1"))
 	s.AddAssertion(assert.ValueSet("from_specification_template.0.stage", ""))
 	s.AddAssertion(assert.ValueSet("from_specification_template.0.path", ""))
@@ -62,11 +62,6 @@ func (s *ServiceResourceAssert) HasFromSpecificationTemplateUsing(using map[stri
 	for k, v := range using {
 		s.AddAssertion(assert.ValueSet(fmt.Sprintf("from_specification_template.0.using.%s", k), v))
 	}
-	return s
-}
-
-func (s *ServiceResourceAssert) HasFromSpecificationEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("from_specification.#"))
 	return s
 }
 

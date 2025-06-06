@@ -20,21 +20,21 @@ type ServiceShowOutputAssert struct {
 func ServiceShowOutput(t *testing.T, name string) *ServiceShowOutputAssert {
 	t.Helper()
 
-	s := ServiceShowOutputAssert{
+	serviceAssert := ServiceShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &s
+	serviceAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &serviceAssert
 }
 
 func ImportedServiceShowOutput(t *testing.T, id string) *ServiceShowOutputAssert {
 	t.Helper()
 
-	s := ServiceShowOutputAssert{
+	serviceAssert := ServiceShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &s
+	serviceAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &serviceAssert
 }
 
 ////////////////////////////
@@ -106,12 +106,6 @@ func (s *ServiceShowOutputAssert) HasAutoResume(expected bool) *ServiceShowOutpu
 	return s
 }
 
-// Adjusted manually.
-// func (s *ServiceShowOutputAssert) HasExternalAccessIntegrations(expected []sdk.AccountObjectIdentifier) *ServiceShowOutputAssert {
-// 	s.AddAssertion(assert.ResourceShowOutputValueSet("external_access_integrations", expected))
-// 	return s
-// }
-
 func (s *ServiceShowOutputAssert) HasCreatedOn(expected time.Time) *ServiceShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
 	return s
@@ -179,5 +173,149 @@ func (s *ServiceShowOutputAssert) HasManagingObjectDomain(expected string) *Serv
 
 func (s *ServiceShowOutputAssert) HasManagingObjectName(expected string) *ServiceShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("managing_object_name", expected))
+	return s
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (s *ServiceShowOutputAssert) HasNoName() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoStatus() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("status"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoDatabaseName() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoSchemaName() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoOwner() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoComputePool() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("compute_pool"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoDnsName() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("dns_name"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoCurrentInstances() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("current_instances"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoTargetInstances() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("target_instances"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoMinReadyInstances() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_ready_instances"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoMinInstances() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_instances"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoMaxInstances() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_instances"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoAutoResume() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("auto_resume"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoExternalAccessIntegrations() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueSet("external_access_integrations.#", "0"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoCreatedOn() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoUpdatedOn() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoResumedOn() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("resumed_on"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoSuspendedOn() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("suspended_on"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoAutoSuspendSecs() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("auto_suspend_secs"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoComment() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoOwnerRoleType() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoQueryWarehouse() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("query_warehouse"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoIsJob() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_job"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoIsAsyncJob() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_async_job"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoSpecDigest() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("spec_digest"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoIsUpgrading() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_upgrading"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoManagingObjectDomain() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("managing_object_domain"))
+	return s
+}
+
+func (s *ServiceShowOutputAssert) HasNoManagingObjectName() *ServiceShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueNotSet("managing_object_name"))
 	return s
 }
