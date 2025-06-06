@@ -49,6 +49,7 @@ func JobService() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.JobService, customdiff.All(
 			ComputedIfAnyAttributeChanged(jobServiceSchema, ShowOutputAttributeName, "query_warehouse", "comment", "async"),
 			ComputedIfAnyAttributeChanged(jobServiceSchema, DescribeOutputAttributeName, "query_warehouse", "comment", "async"),
+			RecreateWhenServiceTypeChangedExternally(sdk.ServiceTypeJobService),
 		)),
 
 		Schema: jobServiceSchema,

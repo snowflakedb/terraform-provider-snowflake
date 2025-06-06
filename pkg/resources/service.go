@@ -76,6 +76,7 @@ func Service() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Service, customdiff.All(
 			ComputedIfAnyAttributeChanged(serviceSchema, ShowOutputAttributeName, "auto_suspend_secs", "auto_resume", "min_instances", "max_instances", "min_ready_instances", "query_warehouse", "comment"),
 			ComputedIfAnyAttributeChanged(serviceSchema, DescribeOutputAttributeName, "auto_suspend_secs", "auto_resume", "min_instances", "max_instances", "min_ready_instances", "query_warehouse", "comment"),
+			RecreateWhenServiceTypeChangedExternally(sdk.ServiceTypeService),
 		)),
 
 		Schema: serviceSchema,

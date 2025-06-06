@@ -1,9 +1,11 @@
 package sdk
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/stretchr/testify/require"
 )
 
 func TestServices_Create(t *testing.T) {
@@ -965,4 +967,67 @@ func TestServices_Describe(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SERVICE %s", id.FullyQualifiedName())
 	})
+}
+
+func Test_Service_ToServiceType(t *testing.T) {
+	type test struct {
+		input Service
+		want  ServiceType
+	}
+
+	valid := []test{
+		{input: Service{IsJob: false}, want: ServiceTypeService},
+		{input: Service{IsJob: true}, want: ServiceTypeJobService},
+	}
+
+	for _, tc := range valid {
+		t.Run(fmt.Sprintf("input: %v", tc.input.IsJob), func(t *testing.T) {
+			require.Equal(t, tc.want, tc.input.Type())
+		})
+	}
+}
+
+func Test_Service_ToServiceStatus(t *testing.T) {
+	type test struct {
+		input string
+		want  ServiceStatus
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "pending", want: ServiceStatusPending},
+		{input: "running", want: ServiceStatusRunning},
+
+		// Supported Values
+		{input: "PENDING", want: ServiceStatusPending},
+		{input: "RUNNING", want: ServiceStatusRunning},
+		{input: "FAILED", want: ServiceStatusFailed},
+		{input: "DONE", want: ServiceStatusDone},
+		{input: "SUSPENDING", want: ServiceStatusSuspending},
+		{input: "SUSPENDED", want: ServiceStatusSuspended},
+		{input: "DELETING", want: ServiceStatusDeleting},
+		{input: "DELETED", want: ServiceStatusDeleted},
+		{input: "INTERNAL_ERROR", want: ServiceStatusInternalError},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToServiceStatus(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToServiceStatus(tc.input)
+			require.Error(t, err)
+		})
+	}
 }

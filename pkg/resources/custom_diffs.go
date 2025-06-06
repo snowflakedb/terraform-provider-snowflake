@@ -227,6 +227,11 @@ func RecreateWhenSecretTypeChangedExternally(secretType sdk.SecretType) schema.C
 	}
 }
 
+// RecreateWhenServiceTypeChangedExternally recreates a service when argument serviceType is different than in the state.
+func RecreateWhenServiceTypeChangedExternally(serviceType sdk.ServiceType) schema.CustomizeDiffFunc {
+	return RecreateWhenResourceTypeChangedExternally("service_type", serviceType, sdk.ToServiceType)
+}
+
 // RecreateWhenStreamTypeChangedExternally recreates a stream when argument streamType is different than in the state.
 func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) schema.CustomizeDiffFunc {
 	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)

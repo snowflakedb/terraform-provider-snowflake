@@ -102,6 +102,11 @@ func (s *ServiceResourceAssert) HasQueryWarehouseString(expected string) *Servic
 	return s
 }
 
+func (s *ServiceResourceAssert) HasServiceTypeString(expected string) *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("service_type", expected))
+	return s
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -166,6 +171,11 @@ func (s *ServiceResourceAssert) HasNoQueryWarehouse() *ServiceResourceAssert {
 	return s
 }
 
+func (s *ServiceResourceAssert) HasNoServiceType() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("service_type"))
+	return s
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -217,6 +227,11 @@ func (s *ServiceResourceAssert) HasMinReadyInstancesEmpty() *ServiceResourceAsse
 
 func (s *ServiceResourceAssert) HasQueryWarehouseEmpty() *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueSet("query_warehouse", ""))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasServiceTypeEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("service_type", ""))
 	return s
 }
 
@@ -281,5 +296,10 @@ func (s *ServiceResourceAssert) HasMinReadyInstancesNotEmpty() *ServiceResourceA
 
 func (s *ServiceResourceAssert) HasQueryWarehouseNotEmpty() *ServiceResourceAssert {
 	s.AddAssertion(assert.ValuePresent("query_warehouse"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasServiceTypeNotEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValuePresent("service_type"))
 	return s
 }
