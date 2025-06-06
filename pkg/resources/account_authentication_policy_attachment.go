@@ -52,7 +52,7 @@ func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 		Set: &sdk.AccountSet{
-			AuthenticationPolicy: authenticationPolicy,
+			AuthenticationPolicy: &authenticationPolicy,
 		},
 	})
 	if err != nil {

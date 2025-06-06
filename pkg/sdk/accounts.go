@@ -237,14 +237,14 @@ func (opts *AccountLevelParameters) validate() error {
 }
 
 type AccountSet struct {
-	Parameters           *AccountParameters      `ddl:"list,no_parentheses"`
-	LegacyParameters     *AccountLevelParameters `ddl:"list,no_parentheses"`
-	ResourceMonitor      AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
-	PackagesPolicy       SchemaObjectIdentifier  `ddl:"identifier" sql:"PACKAGES POLICY"`
-	PasswordPolicy       SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
-	SessionPolicy        SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
-	AuthenticationPolicy SchemaObjectIdentifier  `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
-	Force                *bool                   `ddl:"keyword" sql:"FORCE"`
+	Parameters           *AccountParameters       `ddl:"list,no_parentheses"`
+	LegacyParameters     *AccountLevelParameters  `ddl:"list,no_parentheses"`
+	ResourceMonitor      *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
+	PackagesPolicy       *SchemaObjectIdentifier  `ddl:"identifier" sql:"PACKAGES POLICY"`
+	PasswordPolicy       *SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
+	SessionPolicy        *SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
+	AuthenticationPolicy *SchemaObjectIdentifier  `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
+	Force                *bool                    `ddl:"keyword" sql:"FORCE"`
 }
 
 func (opts *AccountSet) validate() error {
