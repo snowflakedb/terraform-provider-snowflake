@@ -23,6 +23,11 @@ func (v *services) Alter(ctx context.Context, request *AlterServiceRequest) erro
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *services) ExecuteJob(ctx context.Context, request *ExecuteJobServiceRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *services) Drop(ctx context.Context, request *DropServiceRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -166,6 +171,39 @@ func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 			AutoResume:                 r.Unset.AutoResume,
 			ExternalAccessIntegrations: r.Unset.ExternalAccessIntegrations,
 			Comment:                    r.Unset.Comment,
+		}
+	}
+	return opts
+}
+
+func (r *ExecuteJobServiceRequest) toOpts() *ExecuteJobServiceOptions {
+	opts := &ExecuteJobServiceOptions{
+		InComputePool:  r.InComputePool,
+		Name:           r.Name,
+		Async:          r.Async,
+		QueryWarehouse: r.QueryWarehouse,
+		Comment:        r.Comment,
+
+		Tag: r.Tag,
+	}
+	if r.ExternalAccessIntegrations != nil {
+		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
+			ExternalAccessIntegrations: r.ExternalAccessIntegrations.ExternalAccessIntegrations,
+		}
+	}
+	if r.JobServiceFromSpecification != nil {
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Location:          r.JobServiceFromSpecification.Location,
+			SpecificationFile: r.JobServiceFromSpecification.SpecificationFile,
+			Specification:     r.JobServiceFromSpecification.Specification,
+		}
+	}
+	if r.JobServiceFromSpecificationTemplate != nil {
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
+			Location:                  r.JobServiceFromSpecificationTemplate.Location,
+			SpecificationTemplateFile: r.JobServiceFromSpecificationTemplate.SpecificationTemplateFile,
+			SpecificationTemplate:     r.JobServiceFromSpecificationTemplate.SpecificationTemplate,
+			Using:                     r.JobServiceFromSpecificationTemplate.Using,
 		}
 	}
 	return opts
