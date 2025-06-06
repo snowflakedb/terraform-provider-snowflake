@@ -646,19 +646,19 @@ func TestServices_Alter(t *testing.T) {
 	})
 }
 
-func TestServices_ExecuteJobService(t *testing.T) {
+func TestServices_ExecuteJob(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	computePoolId := randomAccountObjectIdentifier()
 	// Minimal valid CreateServiceOptions
-	defaultOpts := func() *ExecuteJobServiceServiceOptions {
-		return &ExecuteJobServiceServiceOptions{
+	defaultOpts := func() *ExecuteJobServiceOptions {
+		return &ExecuteJobServiceOptions{
 			Name:          id,
 			InComputePool: computePoolId,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *ExecuteJobServiceServiceOptions = nil
+		var opts *ExecuteJobServiceOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 	t.Run("validation: valid identifier for [opts.Name]", func(t *testing.T) {
@@ -675,13 +675,13 @@ func TestServices_ExecuteJobService(t *testing.T) {
 		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
 			SpecificationTemplate: String("{}"),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"))
 	})
 
 	t.Run("validation: empty opts.FromSpecification", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
 	})
 
 	t.Run("validation: conflicting fields for [opts.FromSpecification.Stage opts.FromSpecification.Specification]", func(t *testing.T) {
@@ -690,7 +690,7 @@ func TestServices_ExecuteJobService(t *testing.T) {
 			Specification:     String("{}"),
 			SpecificationFile: String("spec.yaml"),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
 	})
 
 	t.Run("validation: stage present without specification", func(t *testing.T) {
@@ -700,7 +700,7 @@ func TestServices_ExecuteJobService(t *testing.T) {
 		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
 			Location: &location,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
 	})
 
 	t.Run("validation: all specification fields present", func(t *testing.T) {
@@ -712,13 +712,13 @@ func TestServices_ExecuteJobService(t *testing.T) {
 			Specification:     String("{}"),
 			SpecificationFile: String("spec.yaml"),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
 	})
 
 	t.Run("validation: empty opts.FromSpecificationTemplate", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 	})
 
 	t.Run("validation: conflicting fields for [opts.FromSpecificationTemplate.Stage opts.FromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
@@ -727,7 +727,7 @@ func TestServices_ExecuteJobService(t *testing.T) {
 			SpecificationTemplate:     String("{}"),
 			SpecificationTemplateFile: String("spec.yaml"),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 	})
 
 	t.Run("validation: stage present without specification template", func(t *testing.T) {
@@ -737,7 +737,7 @@ func TestServices_ExecuteJobService(t *testing.T) {
 		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
 			Location: &location,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 	})
 
 	t.Run("validation: all specification template fields present", func(t *testing.T) {
@@ -749,7 +749,7 @@ func TestServices_ExecuteJobService(t *testing.T) {
 			SpecificationTemplate:     String("{}"),
 			SpecificationTemplateFile: String("spec.yaml"),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
 	})
 
 	t.Run("with specification file on stage", func(t *testing.T) {

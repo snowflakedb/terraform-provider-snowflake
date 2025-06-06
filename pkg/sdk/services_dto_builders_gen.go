@@ -282,47 +282,47 @@ func (s *ServiceUnsetRequest) WithComment(Comment bool) *ServiceUnsetRequest {
 	return s
 }
 
-func NewExecuteJobServiceServiceRequest(
+func NewExecuteJobServiceRequest(
 	InComputePool AccountObjectIdentifier,
 	Name SchemaObjectIdentifier,
-) *ExecuteJobServiceServiceRequest {
-	s := ExecuteJobServiceServiceRequest{}
+) *ExecuteJobServiceRequest {
+	s := ExecuteJobServiceRequest{}
 	s.InComputePool = InComputePool
 	s.Name = Name
 	return &s
 }
 
-func (s *ExecuteJobServiceServiceRequest) WithAsync(Async bool) *ExecuteJobServiceServiceRequest {
+func (s *ExecuteJobServiceRequest) WithAsync(Async bool) *ExecuteJobServiceRequest {
 	s.Async = &Async
 	return s
 }
 
-func (s *ExecuteJobServiceServiceRequest) WithQueryWarehouse(QueryWarehouse AccountObjectIdentifier) *ExecuteJobServiceServiceRequest {
+func (s *ExecuteJobServiceRequest) WithQueryWarehouse(QueryWarehouse AccountObjectIdentifier) *ExecuteJobServiceRequest {
 	s.QueryWarehouse = &QueryWarehouse
 	return s
 }
 
-func (s *ExecuteJobServiceServiceRequest) WithComment(Comment string) *ExecuteJobServiceServiceRequest {
+func (s *ExecuteJobServiceRequest) WithComment(Comment string) *ExecuteJobServiceRequest {
 	s.Comment = &Comment
 	return s
 }
 
-func (s *ExecuteJobServiceServiceRequest) WithExternalAccessIntegrations(ExternalAccessIntegrations ServiceExternalAccessIntegrationsRequest) *ExecuteJobServiceServiceRequest {
+func (s *ExecuteJobServiceRequest) WithExternalAccessIntegrations(ExternalAccessIntegrations ServiceExternalAccessIntegrationsRequest) *ExecuteJobServiceRequest {
 	s.ExternalAccessIntegrations = &ExternalAccessIntegrations
 	return s
 }
 
-func (s *ExecuteJobServiceServiceRequest) WithJobServiceFromSpecification(JobServiceFromSpecification JobServiceFromSpecificationRequest) *ExecuteJobServiceServiceRequest {
+func (s *ExecuteJobServiceRequest) WithJobServiceFromSpecification(JobServiceFromSpecification JobServiceFromSpecificationRequest) *ExecuteJobServiceRequest {
 	s.JobServiceFromSpecification = &JobServiceFromSpecification
 	return s
 }
 
-func (s *ExecuteJobServiceServiceRequest) WithJobServiceFromSpecificationTemplate(JobServiceFromSpecificationTemplate JobServiceFromSpecificationTemplateRequest) *ExecuteJobServiceServiceRequest {
+func (s *ExecuteJobServiceRequest) WithJobServiceFromSpecificationTemplate(JobServiceFromSpecificationTemplate JobServiceFromSpecificationTemplateRequest) *ExecuteJobServiceRequest {
 	s.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate
 	return s
 }
 
-func (s *ExecuteJobServiceServiceRequest) WithTag(Tag []TagAssociation) *ExecuteJobServiceServiceRequest {
+func (s *ExecuteJobServiceRequest) WithTag(Tag []TagAssociation) *ExecuteJobServiceRequest {
 	s.Tag = Tag
 	return s
 }

@@ -3,12 +3,12 @@ package sdk
 //go:generate go run ./dto-builder-generator/main.go
 
 var (
-	_ optionsProvider[CreateServiceOptions]            = new(CreateServiceRequest)
-	_ optionsProvider[AlterServiceOptions]             = new(AlterServiceRequest)
-	_ optionsProvider[ExecuteJobServiceServiceOptions] = new(ExecuteJobServiceServiceRequest)
-	_ optionsProvider[DropServiceOptions]              = new(DropServiceRequest)
-	_ optionsProvider[ShowServiceOptions]              = new(ShowServiceRequest)
-	_ optionsProvider[DescribeServiceOptions]          = new(DescribeServiceRequest)
+	_ optionsProvider[CreateServiceOptions]     = new(CreateServiceRequest)
+	_ optionsProvider[AlterServiceOptions]      = new(AlterServiceRequest)
+	_ optionsProvider[ExecuteJobServiceOptions] = new(ExecuteJobServiceRequest)
+	_ optionsProvider[DropServiceOptions]       = new(DropServiceRequest)
+	_ optionsProvider[ShowServiceOptions]       = new(ShowServiceRequest)
+	_ optionsProvider[DescribeServiceOptions]   = new(DescribeServiceRequest)
 )
 
 type CreateServiceRequest struct {
@@ -87,7 +87,7 @@ type ServiceUnsetRequest struct {
 	Comment                    *bool
 }
 
-type ExecuteJobServiceServiceRequest struct {
+type ExecuteJobServiceRequest struct {
 	InComputePool                       AccountObjectIdentifier // required
 	Name                                SchemaObjectIdentifier  // required
 	Async                               *bool
