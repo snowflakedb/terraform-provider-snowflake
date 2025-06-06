@@ -119,6 +119,21 @@ func accountObjectIdentifierAttributeUpdate(d *schema.ResourceData, key string, 
 	return nil
 }
 
+func schemaObjectIdentifierAttributeUpdate(d *schema.ResourceData, key string, setField **sdk.SchemaObjectIdentifier, unsetField **bool) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			id, err := sdk.ParseSchemaObjectIdentifier(v.(string))
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(id)
+		} else {
+			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
 func objectIdentifierAttributeUpdate(d *schema.ResourceData, key string, setField **sdk.ObjectIdentifier, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
