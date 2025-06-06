@@ -54,7 +54,6 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 		// If the configuration is not set, perform SetNewComputed for cases like:
 		// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
 		// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
-		log.Printf("Parameter name: %s", parameterName)
 		if parameter.Value != valueToString(d.Get(key)) || parameter.Level == objectParameterLevel {
 			return d.SetNewComputed(key)
 		}

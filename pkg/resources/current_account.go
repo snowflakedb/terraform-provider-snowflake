@@ -39,13 +39,14 @@ var currentAccountSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
-	"feature_policy": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      "",
-		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
+	// TODO(next prs)
+	// "feature_policy": {
+	//	Type:             schema.TypeString,
+	//	Optional:         true,
+	//	Description:      "",
+	//	ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+	//	DiffSuppressFunc: suppressIdentifierQuoting,
+	// },
 	"packages_policy": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -53,15 +54,16 @@ var currentAccountSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
-	"organization_user_group": {
-		Type: schema.TypeSet,
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		},
-		Optional:    true,
-		Description: "The list of organization user groups imported into the account.",
-	},
+	// TODO(next prs?)
+	// "organization_user_group": {
+	//	Type: schema.TypeSet,
+	//	Elem: &schema.Schema{
+	//		Type:             schema.TypeString,
+	//		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+	//	},
+	//	Optional:    true,
+	//	Description: "The list of organization user groups imported into the account.",
+	// },
 	// TODO: Tags are done by tags_association resource
 }
 
@@ -184,6 +186,16 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 	unsetParameters := new(sdk.AccountUnset)
 	if diags := handleAccountParametersUpdate(d, setParameters, unsetParameters); diags != nil {
 		return diags
+	}
+	if *setParameters != (sdk.AccountSet{}) {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: setParameters}); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if *unsetParameters != (sdk.AccountUnset{}) {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: unsetParameters}); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ReadCurrentAccount(ctx, d, meta)
