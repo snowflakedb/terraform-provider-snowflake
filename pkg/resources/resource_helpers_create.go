@@ -26,6 +26,13 @@ func intAttributeCreate(d *schema.ResourceData, key string, createField **int) e
 	return nil
 }
 
+func intAttributeCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(int) T) error {
+	if v, ok := d.GetOk(key); ok {
+		setValue(v.(int))
+	}
+	return nil
+}
+
 func intAttributeWithSpecialDefaultCreate(d *schema.ResourceData, key string, createField **int) error {
 	if v := d.Get(key).(int); v != IntDefault {
 		*createField = sdk.Int(v)

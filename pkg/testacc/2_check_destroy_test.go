@@ -254,6 +254,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.SecretWithGenericString: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Secrets.ShowByID)
 	},
+	resources.Service: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Services.ShowByID)
+	},
 	resources.Sequence: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Sequences.ShowByID)
 	},

@@ -87,3 +87,11 @@ func (c *ServiceClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*
 	ctx := context.Background()
 	return c.client().Describe(ctx, id)
 }
+
+func (c *ServiceClient) Alter(t *testing.T, req *sdk.AlterServiceRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}

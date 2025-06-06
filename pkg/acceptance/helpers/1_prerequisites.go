@@ -50,7 +50,7 @@ func (c *TestClient) EnsureScimProvisionerRolesExist(ctx context.Context) error 
 
 func (c *TestClient) EnsureImageRepositoryExist(ctx context.Context) error {
 	id := sdk.NewSchemaObjectIdentifier("SNOWFLAKE", "IMAGES", "SNOWFLAKE_IMAGES")
-	log.Printf("[DEBUG] Making sure %s image repository exist", id.FullyQualifiedName())
+	log.Printf("[DEBUG] Making sure %s image repository exists", id.FullyQualifiedName())
 	_, err := c.context.client.ImageRepositories.ShowByID(ctx, id)
 	if err != nil {
 		return err

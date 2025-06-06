@@ -48,7 +48,9 @@ func (c *ComputePoolClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifie
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropComputePoolRequest(id).WithIfExists(true))
+		err := c.client().Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithIfExists(true).WithStopAll(true))
+		require.NoError(t, err)
+		err = c.client().Drop(ctx, sdk.NewDropComputePoolRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

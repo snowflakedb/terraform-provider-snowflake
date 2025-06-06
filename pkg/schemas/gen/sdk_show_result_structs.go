@@ -43,6 +43,7 @@ var SdkShowResultStructs = []any{
 	sdk.Schema{},
 	sdk.Secret{},
 	sdk.SecurityIntegration{},
+	sdk.Service{},
 	sdk.Sequence{},
 	sdk.SessionPolicy{},
 	sdk.Share{},
