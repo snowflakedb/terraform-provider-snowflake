@@ -749,8 +749,9 @@ func TestAcc_Service_changeServiceTypeExternally(t *testing.T) {
 	t.Cleanup(computePoolCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelBasic := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName())
+	modelBasic := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

@@ -565,8 +565,9 @@ func TestAcc_JobService_changeServiceTypeExternally(t *testing.T) {
 	t.Cleanup(computePoolCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelBasic := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAsync("true")
 
 	resource.Test(t, resource.TestCase{
