@@ -71,14 +71,14 @@ func ReadGitRepositories(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 	handleLimitFrom(d, &req.Limit)
 
-	GitRepositories, err := client.GitRepositories.Show(ctx, &req)
+	gitRepositories, err := client.GitRepositories.Show(ctx, &req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId("git_repositories_read")
 
-	flattenedGitRepositories := make([]map[string]any, len(GitRepositories))
-	for i, gitRepository := range GitRepositories {
+	flattenedGitRepositories := make([]map[string]any, len(gitRepositories))
+	for i, gitRepository := range gitRepositories {
 		gitRepository := gitRepository
 		var gitRepositoryDetails []map[string]any
 		if d.Get("with_describe").(bool) {
