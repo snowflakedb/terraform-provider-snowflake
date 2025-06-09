@@ -1,4 +1,4 @@
-//go:build account_level_tests
+//go:build !account_level_tests
 
 package testacc
 
@@ -43,17 +43,19 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 	comment, changedComment := random.Comment(), random.Comment()
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasic := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	spec := testClient().Service.SampleSpec(t)
+
+	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAsync("true")
 
 	// TODO(SNOW-2138932): Test without async option. This probably requires a custom no-op image in the image registry.
-	modelComplete := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelComplete := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegration1Id).
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
 		WithComment(comment)
 
-	modelCompleteWithDifferentValues := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelCompleteWithDifferentValues := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegration2Id).
 		WithQueryWarehouse(warehouse.ID().FullyQualifiedName()).
@@ -65,7 +67,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.Service),
+		CheckDestroy: CheckDestroy(t, resources.JobService),
 		Steps: []resource.TestStep{
 			// create without optionals
 			{
@@ -637,7 +639,7 @@ spec:
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasic := model.JobServiceWithDefaultSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName).
+	modelBasic := model.JobServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName).
 		WithAsync("true")
 
 	resource.Test(t, resource.TestCase{
@@ -646,7 +648,7 @@ spec:
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.Service),
+		CheckDestroy: CheckDestroy(t, resources.JobService),
 		Steps: []resource.TestStep{
 			// create without optionals
 			{
@@ -735,6 +737,95 @@ spec:
 // func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 // }
 
+func TestAcc_JobService_changingSpec(t *testing.T) {
+	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
+	t.Cleanup(computePoolCleanup)
+
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	spec := testClient().Service.SampleSpec(t)
+	specFileName := "spec.yaml"
+	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, spec)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	modelBasicOnStage := model.JobServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName).
+		WithAsync("true")
+	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
+		WithAsync("true")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.JobService),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				Check: assertThat(t,
+					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasComputePoolString(computePool.ID().FullyQualifiedName()).
+						HasFromSpecificationTextNotEmpty(),
+					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
+						HasName(id.Name()),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
+				),
+			},
+			// update
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasicOnStage.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, modelBasicOnStage),
+				Check: assertThat(t,
+					resourceassert.JobServiceResource(t, modelBasicOnStage.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasComputePoolString(computePool.ID().FullyQualifiedName()).
+						HasFromSpecificationOnStageNotEmpty(),
+					resourceshowoutputassert.ServiceShowOutput(t, modelBasicOnStage.ResourceReference()).
+						HasName(id.Name()),
+					assert.Check(resource.TestCheckResourceAttr(modelBasicOnStage.ResourceReference(), "describe_output.0.name", id.Name())),
+				),
+			},
+			// external changed are not detected
+			{
+				PreConfig: func() {
+					testClient().Service.DropFunc(t, id)()
+					_, serviceCleanup := testClient().Service.ExecuteJobService(t, computePool.ID(), id)
+					t.Cleanup(serviceCleanup)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasicOnStage.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, modelBasicOnStage),
+				Check: assertThat(t,
+					resourceassert.JobServiceResource(t, modelBasicOnStage.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasComputePoolString(computePool.ID().FullyQualifiedName()).
+						HasFromSpecificationOnStageNotEmpty(),
+					resourceshowoutputassert.ServiceShowOutput(t, modelBasicOnStage.ResourceReference()).
+						HasName(id.Name()),
+					assert.Check(resource.TestCheckResourceAttr(modelBasicOnStage.ResourceReference(), "describe_output.0.name", id.Name())),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_JobService_complete(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
@@ -747,8 +838,9 @@ func TestAcc_JobService_complete(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelComplete := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelComplete := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegrationId).
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
@@ -760,7 +852,7 @@ func TestAcc_JobService_complete(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.Service),
+		CheckDestroy: CheckDestroy(t, resources.JobService),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
@@ -852,8 +944,9 @@ func TestAcc_JobService_complete(t *testing.T) {
 func TestAcc_JobService_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	computePoolId := testClient().Ids.RandomAccountObjectIdentifier()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelCompleteWithInvalidAsync := model.JobServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+	modelCompleteWithInvalidAsync := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
 		WithAsync("invalid")
 
 	resource.Test(t, resource.TestCase{
@@ -862,7 +955,7 @@ func TestAcc_JobService_Validations(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.Service),
+		CheckDestroy: CheckDestroy(t, resources.JobService),
 		Steps: []resource.TestStep{
 			{
 				Config:      config.FromModels(t, modelCompleteWithInvalidAsync),

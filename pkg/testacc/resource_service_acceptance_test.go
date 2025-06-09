@@ -1,4 +1,4 @@
-//go:build account_level_tests
+//go:build !account_level_tests
 
 package testacc
 
@@ -32,17 +32,18 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 	networkRule, networkRuleCleanup := testClient().NetworkRule.Create(t)
 	t.Cleanup(networkRuleCleanup)
 
-	externalAccessIntegration1Id, externalAccessIntegration1Cleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
+	externalAccessIntegrationId, externalAccessIntegration1Cleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
 	t.Cleanup(externalAccessIntegration1Cleanup)
 
 	comment, changedComment := random.Comment(), random.Comment()
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelBasic := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName())
+	modelBasic := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
-	modelComplete := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelComplete := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(6767).
-		WithExternalAccessIntegrations(externalAccessIntegration1Id).
+		WithExternalAccessIntegrations(externalAccessIntegrationId).
 		WithAutoResume("true").
 		WithMinInstances(2).
 		WithMinReadyInstances(2).
@@ -50,7 +51,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
 		WithComment(comment)
 
-	modelCompleteWithDifferentValues := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelCompleteWithDifferentValues := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(2222).
 		WithAutoResume("false").
 		WithMinInstances(1).
@@ -243,7 +244,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegration1Id).
+						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasAutoResumeString(r.BooleanTrue).
 						HasMinInstancesString("2").
 						HasMinReadyInstancesString("2").
@@ -265,7 +266,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasMinInstances(2).
 						HasMaxInstances(2).
 						HasAutoResume(true).
-						HasExternalAccessIntegrations(externalAccessIntegration1Id).
+						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
 						HasResumedOnEmpty().
@@ -295,7 +296,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "2")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_resume", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegration1Id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegrationId.Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.created_on")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.updated_on")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.resumed_on", "")),
@@ -325,7 +326,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegration1Id).
+						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasAutoResumeString("true").
 						HasMinInstancesString("2").
 						HasMinReadyInstancesString("2").
@@ -347,7 +348,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasMinInstances(2).
 						HasMaxInstances(2).
 						HasAutoResume(true).
-						HasExternalAccessIntegrations(externalAccessIntegration1Id).
+						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasCreatedOnNotEmpty().
 						HasUpdatedOnNotEmpty().
 						HasResumedOnEmpty().
@@ -377,7 +378,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.max_instances", "2")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.auto_resume", "true")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.external_access_integrations.#", "1")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.external_access_integrations.0", externalAccessIntegration1Id.Name())),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.external_access_integrations.0", externalAccessIntegrationId.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.created_on")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.updated_on")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.resumed_on", "")),
@@ -487,8 +488,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 							WithMaxInstances(3).
 							WithAutoSuspendSecs(4242).
 							WithAutoResume(true).
-							WithQueryWarehouse(sdk.NewAccountObjectIdentifier("SNOWFLAKE")).
-							WithExternalAccessIntegrations(*sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegration1Id})).
+							WithQueryWarehouse(testClient().Ids.SnowflakeWarehouseId()).
+							WithExternalAccessIntegrations(*sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId})).
 							WithComment(random.Comment()),
 					))
 				},
@@ -665,19 +666,14 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
+	spec := testClient().Service.SampleSpec(t)
 	specFileName := "spec.yaml"
 	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, spec)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasicOnStage := model.ServiceWithDefaultSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
-	modelBasic := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName())
+	modelBasicOnStage := model.ServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
+	modelBasic := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -706,6 +702,29 @@ spec:
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelBasicOnStage.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, modelBasicOnStage),
+				Check: assertThat(t,
+					resourceassert.ServiceResource(t, modelBasicOnStage.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasComputePoolString(computePool.ID().FullyQualifiedName()).
+						HasFromSpecificationOnStageNotEmpty(),
+					resourceshowoutputassert.ServiceShowOutput(t, modelBasicOnStage.ResourceReference()).
+						HasName(id.Name()),
+					assert.Check(resource.TestCheckResourceAttr(modelBasicOnStage.ResourceReference(), "describe_output.0.name", id.Name())),
+				),
+			},
+			// external changed are not detected
+			{
+				PreConfig: func() {
+					testClient().Service.Alter(t, sdk.NewAlterServiceRequest(id).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(testClient().Service.SampleSpecWithContainerName(t, "external-changed"))))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasicOnStage.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				Config: accconfig.FromModels(t, modelBasicOnStage),
@@ -792,18 +811,13 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
+	spec := testClient().Service.SampleSpec(t)
 	specFileName := "spec.yaml"
 	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, spec)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasic := model.ServiceWithDefaultSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
+	modelBasic := model.ServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -916,8 +930,9 @@ func TestAcc_Service_complete(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelComplete := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelComplete := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(6767).
 		WithExternalAccessIntegrations(externalAccessIntegrationId).
 		WithAutoResume("true").
@@ -1029,8 +1044,9 @@ func TestAcc_Service_complete(t *testing.T) {
 func TestAcc_Service_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	computePoolId := testClient().Ids.RandomAccountObjectIdentifier()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelCompleteWithInvalidAutoSuspendSecs := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+	modelCompleteWithInvalidAutoSuspendSecs := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(-1)
 
 	resource.Test(t, resource.TestCase{

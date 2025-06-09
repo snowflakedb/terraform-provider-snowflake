@@ -89,7 +89,7 @@ var GitRepositoriesDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).DescribeOperation(
-	g.DescriptionMappingKindSlice,
+	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-git-repository",
 	gitRepositoryDbRow,
 	gitRepository,

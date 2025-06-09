@@ -169,24 +169,6 @@ var ServicesDef = g.NewInterface(
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"),
-).CustomOperation(
-	"ExecuteJob",
-	"https://docs.snowflake.com/en/sql-reference/sql/execute-job-service",
-	g.NewQueryStruct("ExecuteJobService").
-		SQL("EXECUTE JOB SERVICE").
-		Identifier("InComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
-		Identifier("Name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("NAME").Equals().Required()).
-		OptionalBooleanAssignment("ASYNC", g.ParameterOptions()).
-		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
-		OptionalComment().
-		OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
-		OptionalQueryStructField("JobServiceFromSpecification", jobServiceFromSpecificationDef, g.KeywordOptions()).
-		OptionalQueryStructField("JobServiceFromSpecificationTemplate", jobServiceFromSpecificationTemplateDef, g.KeywordOptions()).
-		OptionalTags().
-		WithValidation(g.ValidIdentifier, "Name").
-		WithValidation(g.ExactlyOneValueSet, "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate").
-		WithValidation(g.ValidIdentifier, "InComputePool").
-		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-service",
 	g.NewQueryStruct("DropService").
@@ -337,4 +319,22 @@ var ServicesDef = g.NewInterface(
 		SQL("SERVICE").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+).CustomOperation(
+	"ExecuteJob",
+	"https://docs.snowflake.com/en/sql-reference/sql/execute-job-service",
+	g.NewQueryStruct("ExecuteJobService").
+		SQL("EXECUTE JOB SERVICE").
+		Identifier("InComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
+		Identifier("Name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("NAME").Equals().Required()).
+		OptionalBooleanAssignment("ASYNC", g.ParameterOptions()).
+		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
+		OptionalComment().
+		OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
+		OptionalQueryStructField("JobServiceFromSpecification", jobServiceFromSpecificationDef, g.KeywordOptions()).
+		OptionalQueryStructField("JobServiceFromSpecificationTemplate", jobServiceFromSpecificationTemplateDef, g.KeywordOptions()).
+		OptionalTags().
+		WithValidation(g.ValidIdentifier, "Name").
+		WithValidation(g.ExactlyOneValueSet, "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate").
+		WithValidation(g.ValidIdentifier, "InComputePool").
+		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
 )

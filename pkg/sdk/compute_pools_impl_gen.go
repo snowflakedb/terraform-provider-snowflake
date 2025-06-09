@@ -29,7 +29,14 @@ func (v *computePools) Drop(ctx context.Context, request *DropComputePoolRequest
 }
 
 func (v *computePools) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropComputePoolRequest(id).WithIfExists(true)) }, ctx, id)
+	return SafeDrop(v.client, func() error {
+		// Adjusted manually.
+		err := v.client.ComputePools.Alter(ctx, NewAlterComputePoolRequest(id).WithIfExists(true).WithStopAll(true))
+		if err != nil {
+			return err
+		}
+		return v.Drop(ctx, NewDropComputePoolRequest(id).WithIfExists(true))
+	}, ctx, id)
 }
 
 func (v *computePools) Show(ctx context.Context, request *ShowComputePoolRequest) ([]ComputePool, error) {

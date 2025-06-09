@@ -7,7 +7,7 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
--> **Note** Managing services via specification templates is not yet supported. This will be addressed in the next version.
+-> **Note** Managing services via specification templates is not yet supported. This will be addressed in the next versions.
 
 # snowflake_service (Resource)
 
@@ -21,22 +21,22 @@ Resource used to manage services. For more information, check [services document
 ```terraform
 # basic resource - from specification file on stage
 resource "snowflake_service" "basic" {
-  database        = "DATABASE"
-  schema          = "SCHEMA"
+  database        = snowflake_database.test.name
+  schema          = snowflake_schema.test.name
   name            = "SERVICE"
-  in_compute_pool = "COMPUTE_POOL"
+  in_compute_pool = snowflake_compute_pool.test.name
   from_specification {
-    stage = "\"DATABASE\".\"SCHEMA\".\"STAGE\""
+    stage = snowflake_stage.basic.fully_qualified_name
     file  = "spec.yaml"
   }
 }
 
 # basic resource - from specification content
 resource "snowflake_service" "basic" {
-  database        = "DATABASE"
-  schema          = "SCHEMA"
+  database        = snowflake_database.test.name
+  schema          = snowflake_schema.test.name
   name            = "SERVICE"
-  in_compute_pool = "COMPUTE_POOL"
+  in_compute_pool = snowflake_compute_pool.test.name
   from_specification {
     text = <<-EOT
 spec:
@@ -49,13 +49,16 @@ spec:
 
 # complete resource
 resource "snowflake_compute_pool" "complete" {
-  database        = "DATABASE"
-  schema          = "SCHEMA"
+  database        = snowflake_database.test.name
+  schema          = snowflake_schema.test.name
   name            = "SERVICE"
-  in_compute_pool = "COMPUTE_POOL"
+  in_compute_pool = snowflake_compute_pool.test.name
   from_specification {
-    stage = "\"DATABASE\".\"SCHEMA\".\"STAGE\""
-    file  = "spec.yaml"
+    stage = snowflake_stage.complete.fully_qualified_name
+    # or, with explicit stage value
+    # stage = "\"DATABASE\".\"SCHEMA\".\"STAGE\""
+    path = "path/to/spec"
+    file = "spec.yaml"
   }
   auto_suspend_secs = 1200
   external_access_integrations = [
@@ -65,7 +68,7 @@ resource "snowflake_compute_pool" "complete" {
   min_instances       = 1
   min_ready_instances = 1
   max_instances       = 2
-  query_warehouse     = "WAREHOUSE"
+  query_warehouse     = snowflake_warehouse.test.name
   comment             = "A service."
 }
 ```
@@ -77,7 +80,7 @@ resource "snowflake_compute_pool" "complete" {
 
 ### Required
 
-- `compute_pool` (String) Specifies the name of the compute pool in your account on which to run the service. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `compute_pool` (String) Specifies the name of the compute pool in your account on which to run the service. Identifiers with special or lower-case characters are not supported. This limitation in the provider follows the limitation in Snowflake (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool)). Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `database` (String) The database in which to create the service. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the service; must be unique for the schema in which the service is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the service. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
@@ -108,8 +111,8 @@ resource "snowflake_compute_pool" "complete" {
 Optional:
 
 - `file` (String) The file name of the service specification.
-- `path` (String) The path to the service specification file on the given stage.
-- `stage` (String) The stage containing the service specification file. At symbol (`@`) is added automatically.
+- `path` (String) The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.
+- `stage` (String) The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically.
 - `text` (String) The embedded text of the service specification.
 
 

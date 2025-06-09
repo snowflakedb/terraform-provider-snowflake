@@ -219,12 +219,10 @@ func TestInt_GitRepositories(t *testing.T) {
 			GitRepository.CreateWithRequest(t, createRequest)
 		t.Cleanup(gitRepositoryCleanup)
 
-		gitRepositories, err := client.GitRepositories.Describe(ctx, gitRepositoryId)
+		gitRepository, err := client.GitRepositories.Describe(ctx, gitRepositoryId)
 		require.NoError(t, err)
-		require.Len(t, gitRepositories, 1)
-		gitRepository := gitRepositories[0]
 
-		assertThatObject(t, objectassert.GitRepositoryFromObject(t, &gitRepository).
+		assertThatObject(t, objectassert.GitRepositoryFromObject(t, gitRepository).
 			HasName(gitRepositoryId.Name()).
 			HasDatabaseName(gitRepositoryId.DatabaseName()).
 			HasSchemaName(gitRepositoryId.SchemaName()).

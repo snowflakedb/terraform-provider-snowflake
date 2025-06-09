@@ -40,7 +40,7 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
-			Description:      blocklistedCharactersFieldDescription("Specifies the name of the compute pool in your account on which to run the service."),
+			Description:      blocklistedCharactersFieldDescription("Specifies the name of the compute pool in your account on which to run the service. Identifiers with special or lower-case characters are not supported. This limitation in the provider follows the limitation in Snowflake (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool))."),
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
@@ -52,14 +52,16 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"stage": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "The stage containing the service specification file. At symbol (`@`) is added automatically.",
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+						DiffSuppressFunc: suppressIdentifierQuoting,
+						Description:      "The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically.",
 					},
 					"path": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "The path to the service specification file on the given stage.",
+						Description: "The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.",
 					},
 					"file": {
 						Type:        schema.TypeString,
@@ -81,7 +83,9 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			MinItems:    1,
 			Description: "Specifies the names of the external access integrations that allow your service to access external sites.",
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:             schema.TypeString,
+				ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+				DiffSuppressFunc: suppressIdentifierQuoting,
 			},
 			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("external_access_integrations"),
 		},
@@ -121,13 +125,22 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 		},
 	}
 	if allFieldsForceNew {
-		for _, v := range schema {
-			if v.Optional || v.Required {
-				v.ForceNew = true
+		markSettableFieldsInSchemaAsForceNew(schema)
+	}
+	return schema
+}
+
+// markSettableFieldsInSchemaAsForceNew marks all settable fields in the resource schema as force new.
+// It maybe useful for resources that have no update functionality on settable fields.
+func markSettableFieldsInSchemaAsForceNew(resourceSchema map[string]*schema.Schema) {
+	for _, v := range resourceSchema {
+		if v.Optional || v.Required {
+			v.ForceNew = true
+			if v.Type == schema.TypeList {
+				markSettableFieldsInSchemaAsForceNew(v.Elem.(*schema.Resource).Schema)
 			}
 		}
 	}
-	return schema
 }
 
 func ImportServiceFunc(customFieldsHandler func(d *schema.ResourceData, service *sdk.Service) error) schema.StateContextFunc {

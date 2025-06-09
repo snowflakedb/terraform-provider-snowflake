@@ -282,6 +282,66 @@ func (s *ServiceUnsetRequest) WithComment(Comment bool) *ServiceUnsetRequest {
 	return s
 }
 
+func NewDropServiceRequest(
+	name SchemaObjectIdentifier,
+) *DropServiceRequest {
+	s := DropServiceRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *DropServiceRequest) WithIfExists(IfExists bool) *DropServiceRequest {
+	s.IfExists = &IfExists
+	return s
+}
+
+func (s *DropServiceRequest) WithForce(Force bool) *DropServiceRequest {
+	s.Force = &Force
+	return s
+}
+
+func NewShowServiceRequest() *ShowServiceRequest {
+	return &ShowServiceRequest{}
+}
+
+func (s *ShowServiceRequest) WithJob(Job bool) *ShowServiceRequest {
+	s.Job = &Job
+	return s
+}
+
+func (s *ShowServiceRequest) WithExcludeJobs(ExcludeJobs bool) *ShowServiceRequest {
+	s.ExcludeJobs = &ExcludeJobs
+	return s
+}
+
+func (s *ShowServiceRequest) WithLike(Like Like) *ShowServiceRequest {
+	s.Like = &Like
+	return s
+}
+
+func (s *ShowServiceRequest) WithIn(In ServiceIn) *ShowServiceRequest {
+	s.In = &In
+	return s
+}
+
+func (s *ShowServiceRequest) WithStartsWith(StartsWith string) *ShowServiceRequest {
+	s.StartsWith = &StartsWith
+	return s
+}
+
+func (s *ShowServiceRequest) WithLimit(Limit LimitFrom) *ShowServiceRequest {
+	s.Limit = &Limit
+	return s
+}
+
+func NewDescribeServiceRequest(
+	name SchemaObjectIdentifier,
+) *DescribeServiceRequest {
+	s := DescribeServiceRequest{}
+	s.name = name
+	return &s
+}
+
 func NewExecuteJobServiceRequest(
 	InComputePool AccountObjectIdentifier,
 	Name SchemaObjectIdentifier,
@@ -367,64 +427,4 @@ func (s *JobServiceFromSpecificationTemplateRequest) WithSpecificationTemplateFi
 func (s *JobServiceFromSpecificationTemplateRequest) WithSpecificationTemplate(SpecificationTemplate string) *JobServiceFromSpecificationTemplateRequest {
 	s.SpecificationTemplate = &SpecificationTemplate
 	return s
-}
-
-func NewDropServiceRequest(
-	name SchemaObjectIdentifier,
-) *DropServiceRequest {
-	s := DropServiceRequest{}
-	s.name = name
-	return &s
-}
-
-func (s *DropServiceRequest) WithIfExists(IfExists bool) *DropServiceRequest {
-	s.IfExists = &IfExists
-	return s
-}
-
-func (s *DropServiceRequest) WithForce(Force bool) *DropServiceRequest {
-	s.Force = &Force
-	return s
-}
-
-func NewShowServiceRequest() *ShowServiceRequest {
-	return &ShowServiceRequest{}
-}
-
-func (s *ShowServiceRequest) WithJob(Job bool) *ShowServiceRequest {
-	s.Job = &Job
-	return s
-}
-
-func (s *ShowServiceRequest) WithExcludeJobs(ExcludeJobs bool) *ShowServiceRequest {
-	s.ExcludeJobs = &ExcludeJobs
-	return s
-}
-
-func (s *ShowServiceRequest) WithLike(Like Like) *ShowServiceRequest {
-	s.Like = &Like
-	return s
-}
-
-func (s *ShowServiceRequest) WithIn(In ServiceIn) *ShowServiceRequest {
-	s.In = &In
-	return s
-}
-
-func (s *ShowServiceRequest) WithStartsWith(StartsWith string) *ShowServiceRequest {
-	s.StartsWith = &StartsWith
-	return s
-}
-
-func (s *ShowServiceRequest) WithLimit(Limit LimitFrom) *ShowServiceRequest {
-	s.Limit = &Limit
-	return s
-}
-
-func NewDescribeServiceRequest(
-	name SchemaObjectIdentifier,
-) *DescribeServiceRequest {
-	s := DescribeServiceRequest{}
-	s.name = name
-	return &s
 }
