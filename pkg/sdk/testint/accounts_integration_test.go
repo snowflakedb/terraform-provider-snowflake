@@ -216,10 +216,8 @@ func TestInt_Account(t *testing.T) {
 		require.Equal(t, false, *account.IsOrgAdmin)
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-				Name:     account.ID(),
-				OrgAdmin: true,
-			},
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{OrgAdmin: sdk.Bool(true)},
 		})
 		require.NoError(t, err)
 
@@ -228,10 +226,8 @@ func TestInt_Account(t *testing.T) {
 		require.Equal(t, true, *acc.IsOrgAdmin)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-				Name:     account.ID(),
-				OrgAdmin: false,
-			},
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{OrgAdmin: sdk.Bool(false)},
 		})
 		require.NoError(t, err)
 
@@ -248,8 +244,8 @@ func TestInt_Account(t *testing.T) {
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(oldAccount.ID()),
 			Rename: &sdk.AccountRename{
-				Name:    oldAccount.ID(),
 				NewName: newName,
 			},
 		})
@@ -273,8 +269,8 @@ func TestInt_Account(t *testing.T) {
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Rename: &sdk.AccountRename{
-				Name:       account.ID(),
 				NewName:    newName,
 				SaveOldURL: sdk.Bool(false),
 			},
@@ -295,8 +291,8 @@ func TestInt_Account(t *testing.T) {
 		t.Cleanup(accountCleanup)
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Drop: &sdk.AccountDrop{
-				Name:   account.ID(),
 				OldUrl: sdk.Bool(true),
 			},
 		})
@@ -311,8 +307,8 @@ func TestInt_Account(t *testing.T) {
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Rename: &sdk.AccountRename{
-				Name:    account.ID(),
 				NewName: newName,
 			},
 		})
@@ -323,8 +319,8 @@ func TestInt_Account(t *testing.T) {
 		require.NotEmpty(t, acc.OldAccountURL)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: &newName,
 			Drop: &sdk.AccountDrop{
-				Name:   newName,
 				OldUrl: sdk.Bool(true),
 			},
 		})

@@ -12,22 +12,23 @@ import (
 )
 
 type AccountModel struct {
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	AdminName          tfconfig.Variable `json:"admin_name,omitempty"`
-	AdminPassword      tfconfig.Variable `json:"admin_password,omitempty"`
-	AdminRsaPublicKey  tfconfig.Variable `json:"admin_rsa_public_key,omitempty"`
-	AdminUserType      tfconfig.Variable `json:"admin_user_type,omitempty"`
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	Edition            tfconfig.Variable `json:"edition,omitempty"`
-	Email              tfconfig.Variable `json:"email,omitempty"`
-	FirstName          tfconfig.Variable `json:"first_name,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	GracePeriodInDays  tfconfig.Variable `json:"grace_period_in_days,omitempty"`
-	IsOrgAdmin         tfconfig.Variable `json:"is_org_admin,omitempty"`
-	LastName           tfconfig.Variable `json:"last_name,omitempty"`
-	MustChangePassword tfconfig.Variable `json:"must_change_password,omitempty"`
-	Region             tfconfig.Variable `json:"region,omitempty"`
-	RegionGroup        tfconfig.Variable `json:"region_group,omitempty"`
+	Name                     tfconfig.Variable `json:"name,omitempty"`
+	AdminName                tfconfig.Variable `json:"admin_name,omitempty"`
+	AdminPassword            tfconfig.Variable `json:"admin_password,omitempty"`
+	AdminRsaPublicKey        tfconfig.Variable `json:"admin_rsa_public_key,omitempty"`
+	AdminUserType            tfconfig.Variable `json:"admin_user_type,omitempty"`
+	Comment                  tfconfig.Variable `json:"comment,omitempty"`
+	ConsumptionBillingEntity tfconfig.Variable `json:"consumption_billing_entity,omitempty"`
+	Edition                  tfconfig.Variable `json:"edition,omitempty"`
+	Email                    tfconfig.Variable `json:"email,omitempty"`
+	FirstName                tfconfig.Variable `json:"first_name,omitempty"`
+	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	GracePeriodInDays        tfconfig.Variable `json:"grace_period_in_days,omitempty"`
+	IsOrgAdmin               tfconfig.Variable `json:"is_org_admin,omitempty"`
+	LastName                 tfconfig.Variable `json:"last_name,omitempty"`
+	MustChangePassword       tfconfig.Variable `json:"must_change_password,omitempty"`
+	Region                   tfconfig.Variable `json:"region,omitempty"`
+	RegionGroup              tfconfig.Variable `json:"region_group,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -130,6 +131,11 @@ func (a *AccountModel) WithComment(comment string) *AccountModel {
 	return a
 }
 
+func (a *AccountModel) WithConsumptionBillingEntity(consumptionBillingEntity string) *AccountModel {
+	a.ConsumptionBillingEntity = tfconfig.StringVariable(consumptionBillingEntity)
+	return a
+}
+
 func (a *AccountModel) WithEdition(edition string) *AccountModel {
 	a.Edition = tfconfig.StringVariable(edition)
 	return a
@@ -211,6 +217,11 @@ func (a *AccountModel) WithAdminUserTypeValue(value tfconfig.Variable) *AccountM
 
 func (a *AccountModel) WithCommentValue(value tfconfig.Variable) *AccountModel {
 	a.Comment = value
+	return a
+}
+
+func (a *AccountModel) WithConsumptionBillingEntityValue(value tfconfig.Variable) *AccountModel {
+	a.ConsumptionBillingEntity = value
 	return a
 }
 

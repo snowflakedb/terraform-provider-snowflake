@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: Add tests for moved fields and newly added validations
+
 func TestAccountCreate(t *testing.T) {
 	t.Run("simplest case", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
@@ -70,7 +72,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "OrgAdmin", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountSet - multiple set", func(t *testing.T) {
@@ -81,14 +83,14 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: randomSchemaObjectIdentifier(),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "OrgAdmin", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - multiple set", func(t *testing.T) {
@@ -99,7 +101,7 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("with legacy set params", func(t *testing.T) {
@@ -556,10 +558,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("set is_org_admin", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			SetIsOrgAdmin: &AccountSetIsOrgAdmin{
-				Name:     id,
-				OrgAdmin: true,
-			},
+			Name: &id,
+			Set:  &AccountSet{OrgAdmin: Bool(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s SET IS_ORG_ADMIN = true`, id.FullyQualifiedName())
 	})
@@ -568,8 +568,8 @@ func TestAccountAlter(t *testing.T) {
 		oldName := randomAccountObjectIdentifier()
 		newName := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &oldName,
 			Rename: &AccountRename{
-				Name:       oldName,
 				NewName:    newName,
 				SaveOldURL: Bool(false),
 			},
@@ -580,9 +580,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: drop no url set", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			Drop: &AccountDrop{
-				Name: id,
-			},
+			Name: &id,
+			Drop: &AccountDrop{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountDrop", "OldUrl", "OldOrganizationUrl"))
 	})
@@ -590,8 +589,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: drop all url options set", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:               id,
 				OldUrl:             Bool(true),
 				OldOrganizationUrl: Bool(true),
 			},
@@ -602,8 +601,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("drop old url", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:   id,
 				OldUrl: Bool(true),
 			},
 		}
@@ -613,8 +612,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("drop organization old url", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:               id,
 				OldOrganizationUrl: Bool(true),
 			},
 		}
