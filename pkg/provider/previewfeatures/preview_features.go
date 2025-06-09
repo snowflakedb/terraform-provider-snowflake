@@ -65,6 +65,7 @@ const (
 	ProceduresDatasource                          feature = "snowflake_procedures_datasource"
 	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
 	ServiceResource                               feature = "snowflake_service_resource"
+	ServicesDatasource                            feature = "snowflake_services_datasource"
 	SequenceResource                              feature = "snowflake_sequence_resource"
 	SequencesDatasource                           feature = "snowflake_sequences_datasource"
 	ShareResource                                 feature = "snowflake_share_resource"
@@ -136,6 +137,7 @@ var allPreviewFeatures = []feature{
 	PipesDatasource,
 	CurrentRoleDatasource,
 	ServiceResource,
+	ServicesDatasource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,

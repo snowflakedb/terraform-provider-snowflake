@@ -21,6 +21,7 @@
 - [snowflake_pipes](./docs/data-sources/pipes)
 - [snowflake_procedures](./docs/data-sources/procedures)
 - [snowflake_sequences](./docs/data-sources/sequences)
+- [snowflake_services](./docs/data-sources/services)
 - [snowflake_shares](./docs/data-sources/shares)
 - [snowflake_stages](./docs/data-sources/stages)
 - [snowflake_storage_integrations](./docs/data-sources/storage_integrations)
