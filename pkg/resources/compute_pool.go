@@ -107,10 +107,6 @@ func ComputePool() *schema.Resource {
 		sdk.ParseAccountObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
-				err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithIfExists(true).WithStopAll(true))
-				if err != nil {
-					return err
-				}
 				return client.ComputePools.DropSafely(ctx, id)
 			}
 		},

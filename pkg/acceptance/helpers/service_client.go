@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -31,27 +32,13 @@ func (c *ServiceClient) Create(t *testing.T, computePoolId sdk.AccountObjectIden
 
 func (c *ServiceClient) CreateWithId(t *testing.T, computePoolId sdk.AccountObjectIdentifier, id sdk.SchemaObjectIdentifier) (*sdk.Service, func()) {
 	t.Helper()
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
+	spec := c.SampleSpec(t)
 	return c.CreateWithRequest(t, sdk.NewCreateServiceRequest(id, computePoolId).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)))
 }
 
 func (c *ServiceClient) CreateWithIdWithBlockVolume(t *testing.T, computePoolId sdk.AccountObjectIdentifier, id sdk.SchemaObjectIdentifier) (*sdk.Service, func()) {
 	t.Helper()
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-  volumes:
-  - name: block-volume
-    source: block
-    size: 1Gi
-`
+	spec := c.SampleSpecWithBlockVolume(t)
 	return c.CreateWithRequest(t, sdk.NewCreateServiceRequest(id, computePoolId).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)))
 }
 
@@ -94,4 +81,35 @@ func (c *ServiceClient) Alter(t *testing.T, req *sdk.AlterServiceRequest) {
 
 	err := c.client().Alter(ctx, req)
 	require.NoError(t, err)
+}
+
+func (c *ServiceClient) SampleSpec(t *testing.T) string {
+	t.Helper()
+
+	return c.SampleSpecWithContainerName(t, "example-container")
+}
+
+func (c *ServiceClient) SampleSpecWithContainerName(t *testing.T, containerName string) string {
+	t.Helper()
+
+	return fmt.Sprintf(`
+spec:
+  containers:
+  - name: %s
+    image: /snowflake/images/snowflake_images/exampleimage:latest
+`, containerName)
+}
+
+func (c *ServiceClient) SampleSpecWithBlockVolume(t *testing.T) string {
+	t.Helper()
+	return `
+spec:
+  containers:
+  - name: example-container
+    image: /snowflake/images/snowflake_images/exampleimage:latest
+  volumes:
+  - name: block-volume
+    source: block
+    size: 1Gi
+`
 }

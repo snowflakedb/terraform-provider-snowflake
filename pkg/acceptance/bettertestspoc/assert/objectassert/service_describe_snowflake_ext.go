@@ -3,6 +3,7 @@ package objectassert
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -434,6 +435,17 @@ func (s *ServiceDetailsAssert) HasSpecNotEmpty() *ServiceDetailsAssert {
 		t.Helper()
 		if o.Spec == "" {
 			return fmt.Errorf("expected spec to be not empty")
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceDetailsAssert) HasSpecThatContains(content string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if !strings.Contains(o.Spec, content) {
+			return fmt.Errorf("expected spec to contain: %v; got: %v", content, o.Spec)
 		}
 		return nil
 	})
