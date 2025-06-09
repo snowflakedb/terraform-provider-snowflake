@@ -121,13 +121,22 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 		// TODO(next PR): add service_type and acc tests for handling ext changes.
 	}
 	if allFieldsForceNew {
-		for _, v := range schema {
-			if v.Optional || v.Required {
-				v.ForceNew = true
+		markSettableFieldsInSchemaAsForceNew(schema)
+	}
+	return schema
+}
+
+// markSettableFieldsInSchemaAsForceNew marks all settable fields in the resource schema as force new.
+// It maybe useful for resources that have no update functionality on settable fields.
+func markSettableFieldsInSchemaAsForceNew(resourceSchema map[string]*schema.Schema) {
+	for _, v := range resourceSchema {
+		if v.Optional || v.Required {
+			v.ForceNew = true
+			if v.Type == schema.TypeList {
+				markSettableFieldsInSchemaAsForceNew(v.Elem.(*schema.Resource).Schema)
 			}
 		}
 	}
-	return schema
 }
 
 func ImportServiceFunc(customFieldsHandler func(d *schema.ResourceData, service *sdk.Service) error) schema.StateContextFunc {

@@ -8,19 +8,14 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-func ServiceWithDefaultSpec(
+func ServiceWithSpec(
 	resourceName string,
 	database string,
 	schema string,
 	name string,
 	computePool string,
+	spec string,
 ) *ServiceModel {
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
 	s := &ServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.Service)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
@@ -30,7 +25,7 @@ spec:
 	return s
 }
 
-func ServiceWithDefaultSpecOnStage(
+func ServiceWithSpecOnStage(
 	resourceName string,
 	database string,
 	schema string,

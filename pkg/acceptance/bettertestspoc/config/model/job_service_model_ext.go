@@ -8,19 +8,14 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-func JobServiceWithDefaultSpec(
+func JobServiceWithSpec(
 	resourceName string,
 	database string,
 	schema string,
 	name string,
 	computePool string,
+	spec string,
 ) *JobServiceModel {
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
 	s := &JobServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.JobService)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
@@ -30,7 +25,7 @@ spec:
 	return s
 }
 
-func JobServiceWithDefaultSpecOnStage(
+func JobServiceWithSpecOnStage(
 	resourceName string,
 	database string,
 	schema string,

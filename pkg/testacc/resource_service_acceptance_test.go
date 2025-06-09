@@ -37,10 +37,11 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 
 	comment, changedComment := random.Comment(), random.Comment()
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelBasic := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName())
+	modelBasic := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
-	modelComplete := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelComplete := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(6767).
 		WithExternalAccessIntegrations(externalAccessIntegrationId).
 		WithAutoResume("true").
@@ -50,7 +51,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
 		WithComment(comment)
 
-	modelCompleteWithDifferentValues := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelCompleteWithDifferentValues := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(2222).
 		WithAutoResume("false").
 		WithMinInstances(1).
@@ -664,8 +665,8 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasicOnStage := model.ServiceWithDefaultSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
-	modelBasic := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName())
+	modelBasicOnStage := model.ServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
+	modelBasic := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -749,7 +750,7 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasic := model.ServiceWithDefaultSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
+	modelBasic := model.ServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -861,8 +862,9 @@ func TestAcc_Service_complete(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelComplete := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName()).
+	modelComplete := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(6767).
 		WithExternalAccessIntegrations(externalAccessIntegrationId).
 		WithAutoResume("true").
@@ -973,8 +975,9 @@ func TestAcc_Service_complete(t *testing.T) {
 func TestAcc_Service_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	computePoolId := testClient().Ids.RandomAccountObjectIdentifier()
+	spec := testClient().Service.SampleSpec(t)
 
-	modelCompleteWithInvalidAutoSuspendSecs := model.ServiceWithDefaultSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+	modelCompleteWithInvalidAutoSuspendSecs := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(-1)
 
 	resource.Test(t, resource.TestCase{
