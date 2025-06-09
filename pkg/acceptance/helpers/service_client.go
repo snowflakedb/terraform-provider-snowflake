@@ -57,12 +57,7 @@ func (c *ServiceClient) ExecuteJobService(t *testing.T, computePoolId sdk.Accoun
 	t.Helper()
 	ctx := context.Background()
 
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
+	spec := c.SampleSpec(t)
 	req := sdk.NewExecuteJobServiceRequest(computePoolId, id).WithJobServiceFromSpecification(*sdk.NewJobServiceFromSpecificationRequest().WithSpecification(spec)).WithAsync(true)
 	err := c.client().ExecuteJob(ctx, req)
 	require.NoError(t, err)

@@ -5,10 +5,10 @@ package sdk
 var (
 	_ optionsProvider[CreateServiceOptions]     = new(CreateServiceRequest)
 	_ optionsProvider[AlterServiceOptions]      = new(AlterServiceRequest)
-	_ optionsProvider[ExecuteJobServiceOptions] = new(ExecuteJobServiceRequest)
 	_ optionsProvider[DropServiceOptions]       = new(DropServiceRequest)
 	_ optionsProvider[ShowServiceOptions]       = new(ShowServiceRequest)
 	_ optionsProvider[DescribeServiceOptions]   = new(DescribeServiceRequest)
+	_ optionsProvider[ExecuteJobServiceOptions] = new(ExecuteJobServiceRequest)
 )
 
 type CreateServiceRequest struct {
@@ -87,6 +87,25 @@ type ServiceUnsetRequest struct {
 	Comment                    *bool
 }
 
+type DropServiceRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	Force    *bool
+}
+
+type ShowServiceRequest struct {
+	Job         *bool
+	ExcludeJobs *bool
+	Like        *Like
+	In          *ServiceIn
+	StartsWith  *string
+	Limit       *LimitFrom
+}
+
+type DescribeServiceRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
 type ExecuteJobServiceRequest struct {
 	InComputePool                       AccountObjectIdentifier // required
 	Name                                SchemaObjectIdentifier  // required
@@ -110,23 +129,4 @@ type JobServiceFromSpecificationTemplateRequest struct {
 	SpecificationTemplateFile *string
 	SpecificationTemplate     *string
 	Using                     []ListItem // required
-}
-
-type DropServiceRequest struct {
-	IfExists *bool
-	name     SchemaObjectIdentifier // required
-	Force    *bool
-}
-
-type ShowServiceRequest struct {
-	Job         *bool
-	ExcludeJobs *bool
-	Like        *Like
-	In          *ServiceIn
-	StartsWith  *string
-	Limit       *LimitFrom
-}
-
-type DescribeServiceRequest struct {
-	name SchemaObjectIdentifier // required
 }
