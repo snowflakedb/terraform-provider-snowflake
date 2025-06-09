@@ -92,7 +92,9 @@ You must fulfill the following prerequisites to generate and use programmatic ac
 - [Authentication policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-authentication)
 
 To generate PAT, you use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
-It will generate a new token and return it in the output console. To use it in the provider, follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow, but use the token instead of password.
+It will generate a new token and return it in the output console. To use it in the provider,
+follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
+but instead of password, use the generated token.
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more information on PAT authentication.
 
