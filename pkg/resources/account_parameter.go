@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -127,6 +129,14 @@ var accountParameterSupportedParameters = []sdk.AccountParameter{
 	sdk.AccountParameterEnablePersonalDatabase,
 }
 
+func ToAccountParameter(s string) (sdk.AccountParameter, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(accountParameterSupportedParameters, sdk.AccountParameter(s)) {
+		return "", fmt.Errorf("invalid account parameter: %s", s)
+	}
+	return sdk.AccountParameter(s), nil
+}
+
 var accountParameterSchema = map[string]*schema.Schema{
 	"key": {
 		Type:             schema.TypeString,
@@ -165,7 +175,7 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	client := meta.(*provider.Context).Client
 	key := d.Get("key").(string)
 	value := d.Get("value").(string)
-	parameter, err := sdk.ToAccountParameter(key)
+	parameter, err := ToAccountParameter(key)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,7 +191,7 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 func ReadAccountParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	parameterNameRaw := d.Id()
-	parameterName, err := sdk.ToAccountParameter(parameterNameRaw)
+	parameterName, err := ToAccountParameter(parameterNameRaw)
 	if err != nil {
 		return diag.FromErr(err)
 	}
