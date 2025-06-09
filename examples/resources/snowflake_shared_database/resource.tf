@@ -28,12 +28,11 @@ resource "snowflake_shared_database" "test" {
 
 ## 2.2. Complete version (with every optional set)
 resource "snowflake_shared_database" "test" {
-  provider     = secondary_account
-  depends_on   = [snowflake_grant_privileges_to_share.test]
-  name         = snowflake_database.test.name # shared database should have the same as the "imported" one
-  is_transient = false
-  from_share   = "<primary_account_organization_name>.<primary_account_name>.${snowflake_share.test.name}"
-  comment      = "A shared database"
+  provider   = secondary_account
+  depends_on = [snowflake_grant_privileges_to_share.test]
+  name       = snowflake_database.test.name # shared database should have the same as the "imported" one
+  from_share = "<primary_account_organization_name>.<primary_account_name>.${snowflake_share.test.name}"
+  comment    = "A shared database"
 
   external_volume                               = "<external_volume_name>"
   catalog                                       = "<catalog_name>"

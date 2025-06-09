@@ -11,7 +11,7 @@ type GitRepositories interface {
 	Alter(ctx context.Context, request *AlterGitRepositoryRequest) error
 	Drop(ctx context.Context, request *DropGitRepositoryRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
-	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]GitRepository, error)
+	Describe(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error)
 	Show(ctx context.Context, request *ShowGitRepositoryRequest) ([]GitRepository, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error)

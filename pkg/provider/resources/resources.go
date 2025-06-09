@@ -27,6 +27,7 @@ const (
 	ExternalVolume                                         resource = "snowflake_external_volume"
 	FailoverGroup                                          resource = "snowflake_failover_group"
 	FileFormat                                             resource = "snowflake_file_format"
+	GitRepository                                          resource = "snowflake_git_repository"
 	GrantAccountRole                                       resource = "snowflake_grant_account_role"
 	GrantApplicationRole                                   resource = "snowflake_grant_application_role"
 	GrantDatabaseRole                                      resource = "snowflake_grant_database_role"

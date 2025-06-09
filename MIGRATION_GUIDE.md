@@ -48,6 +48,11 @@ Added a new preview resource for managing services. See reference [docs](https:/
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_service_resource` to `preview_features_enabled` field in the provider configuration.
 
+### *(new feature)* snowflake_git_repository resource
+Added a new preview resource for managing git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository). Note that `snowflake_api_integration_resource` currently does not support `git_https_api` type. It will be added during the resource rework. Instead, you can use [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_git_repository_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* snowflake_compute_pool resource
 Added a new preview resource for managing compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool). The limitation of this resource is that identifiers with special or lower-case characters are not supported. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
@@ -93,6 +98,11 @@ Reference: [#3690](https://github.com/snowflakedb/terraform-provider-snowflake/i
 Added a new preview resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier). The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repository_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_git_repositories data source
+Added a new preview data source for git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-git-repositories).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_git_repositories_datasource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* snowflake_compute_pools data source
 Added a new preview data source for compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools).

@@ -14,6 +14,7 @@
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)
+- [snowflake_git_repositories](./docs/data-sources/git_repositories)
 - [snowflake_image_repositories](./docs/data-sources/image_repositories)
 - [snowflake_materialized_views](./docs/data-sources/materialized_views)
 - [snowflake_parameters](./docs/data-sources/parameters)
