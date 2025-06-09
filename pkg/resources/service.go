@@ -67,7 +67,7 @@ var serviceSchema = map[string]*schema.Schema{
 				"path": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`",
+					Description: "The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.",
 				},
 				"file": {
 					Type:        schema.TypeString,

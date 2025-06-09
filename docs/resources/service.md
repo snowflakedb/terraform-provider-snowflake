@@ -111,7 +111,7 @@ resource "snowflake_compute_pool" "complete" {
 Optional:
 
 - `file` (String) The file name of the service specification.
-- `path` (String) The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`
+- `path` (String) The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.
 - `stage` (String) The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically.
 - `text` (String) The embedded text of the service specification.
 
