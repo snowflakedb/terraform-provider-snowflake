@@ -21,6 +21,7 @@ const (
 	FailoverGroups                 datasource = "snowflake_failover_groups"
 	FileFormats                    datasource = "snowflake_file_formats"
 	Functions                      datasource = "snowflake_functions"
+	GitRepositories                datasource = "snowflake_git_repositories"
 	Grants                         datasource = "snowflake_grants"
 	ImageRepositories              datasource = "snowflake_image_repositories"
 	MaskingPolicies                datasource = "snowflake_masking_policies"

@@ -20,6 +20,7 @@
 - [snowflake_function_python](./docs/resources/function_python)
 - [snowflake_function_scala](./docs/resources/function_scala)
 - [snowflake_function_sql](./docs/resources/function_sql)
+- [snowflake_git_repository](./docs/resources/git_repository)
 - [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
