@@ -142,8 +142,8 @@ var accountParameterSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: sdkValidation(sdk.ToAccountParameter),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToAccountParameter),
+		ValidateDiagFunc: sdkValidation(ToAccountParameter),
+		DiffSuppressFunc: NormalizeAndCompare(ToAccountParameter),
 		Description:      fmt.Sprintf("Name of account parameter. Valid values are (case-insensitive): %s. Deprecated parameters are not supported in the provider.", possibleValuesListed(sdk.AsStringList(accountParameterSupportedParameters))),
 	},
 	"value": {
