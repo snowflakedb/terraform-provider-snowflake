@@ -57,3 +57,11 @@ func (c *GitRepositoryClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) 
 
 	return c.client().ShowByID(ctx, id)
 }
+
+func (c *GitRepositoryClient) Alter(t *testing.T, req *sdk.AlterGitRepositoryRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}

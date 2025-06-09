@@ -3,10 +3,10 @@ package sdk
 var (
 	_ validatable = new(CreateServiceOptions)
 	_ validatable = new(AlterServiceOptions)
-	_ validatable = new(ExecuteJobServiceOptions)
 	_ validatable = new(DropServiceOptions)
 	_ validatable = new(ShowServiceOptions)
 	_ validatable = new(DescribeServiceOptions)
+	_ validatable = new(ExecuteJobServiceOptions)
 )
 
 func (opts *CreateServiceOptions) validate() error {
@@ -153,6 +153,39 @@ func (opts *AlterServiceOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
+func (opts *DropServiceOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowServiceOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if everyValueSet(opts.Job, opts.ExcludeJobs) {
+		errs = append(errs, errOneOf("ShowServiceOptions", "Job", "ExcludeJobs"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *DescribeServiceOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
 func (opts *ExecuteJobServiceOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -185,39 +218,6 @@ func (opts *ExecuteJobServiceOptions) validate() error {
 		if !exactlyOneValueSet(opts.JobServiceFromSpecificationTemplate.Location, opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
 			errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "Location", "SpecificationTemplate"))
 		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *DropServiceOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *ShowServiceOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if everyValueSet(opts.Job, opts.ExcludeJobs) {
-		errs = append(errs, errOneOf("ShowServiceOptions", "Job", "ExcludeJobs"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *DescribeServiceOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	return JoinErrors(errs...)
 }

@@ -86,6 +86,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.FunctionSql().Schema,
 	},
 	{
+		name:   "GitRepository",
+		schema: resources.GitRepository().Schema,
+	},
+	{
 		name:   "JobService",
 		schema: resources.JobService().Schema,
 	},

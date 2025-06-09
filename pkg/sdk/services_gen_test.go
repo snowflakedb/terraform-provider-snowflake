@@ -646,6 +646,139 @@ func TestServices_Alter(t *testing.T) {
 	})
 }
 
+func TestServices_Drop(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid DropServiceOptions
+	defaultOpts := func() *DropServiceOptions {
+		return &DropServiceOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *DropServiceOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "DROP SERVICE %s", id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.Force = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "DROP SERVICE IF EXISTS %s FORCE", id.FullyQualifiedName())
+	})
+}
+
+func TestServices_Show(t *testing.T) {
+	// Minimal valid ShowServiceOptions
+	defaultOpts := func() *ShowServiceOptions {
+		return &ShowServiceOptions{}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *ShowServiceOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES")
+	})
+
+	t.Run("validation: conflicting fields for [opts.Job opts.ExcludeJobs]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Job = Bool(true)
+		opts.ExcludeJobs = Bool(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("ShowServiceOptions", "Job", "ExcludeJobs"))
+	})
+
+	t.Run("with jobs option", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Job = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "SHOW JOB SERVICES")
+	})
+
+	t.Run("with exclude jobs", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExcludeJobs = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES EXCLUDE JOBS")
+	})
+
+	t.Run("with like", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Like = &Like{Pattern: String("service_*")}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIKE 'service_*'")
+	})
+
+	t.Run("in schema", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.In = &ServiceIn{
+			In: In{
+				Database: NewAccountObjectIdentifier("database"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW SERVICES IN DATABASE "database"`)
+	})
+
+	t.Run("in compute pool", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.In = &ServiceIn{ComputePool: NewAccountObjectIdentifier("compute_pool")}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW SERVICES IN COMPUTE POOL "compute_pool"`)
+	})
+
+	t.Run("with starts with", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.StartsWith = String("my_prefix")
+		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES STARTS WITH 'my_prefix'")
+	})
+
+	t.Run("with limit", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Limit = &LimitFrom{Rows: Pointer(10)}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIMIT 10")
+	})
+
+	t.Run("with limit and from", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Limit = &LimitFrom{Rows: Pointer(10), From: String("service1")}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIMIT 10 FROM 'service1'")
+	})
+}
+
+func TestServices_Describe(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid DescribeServiceOptions
+	defaultOpts := func() *DescribeServiceOptions {
+		return &DescribeServiceOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *DescribeServiceOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SERVICE %s", id.FullyQualifiedName())
+	})
+}
+
 func TestServices_ExecuteJob(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	computePoolId := randomAccountObjectIdentifier()
@@ -831,138 +964,5 @@ func TestServices_ExecuteJob(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s ASYNC = true QUERY_WAREHOUSE = %s COMMENT = '%s' "+
 			"EXTERNAL_ACCESS_INTEGRATIONS = (%s) FROM SPECIFICATION $$SPEC$$ TAG (\"tag1\" = 'value1')",
 			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), comment, integration1Id.FullyQualifiedName())
-	})
-}
-
-func TestServices_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropServiceOptions
-	defaultOpts := func() *DropServiceOptions {
-		return &DropServiceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *DropServiceOptions = nil
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP SERVICE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Force = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP SERVICE IF EXISTS %s FORCE", id.FullyQualifiedName())
-	})
-}
-
-func TestServices_Show(t *testing.T) {
-	// Minimal valid ShowServiceOptions
-	defaultOpts := func() *ShowServiceOptions {
-		return &ShowServiceOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *ShowServiceOptions = nil
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES")
-	})
-
-	t.Run("validation: conflicting fields for [opts.Job opts.ExcludeJobs]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Job = Bool(true)
-		opts.ExcludeJobs = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("ShowServiceOptions", "Job", "ExcludeJobs"))
-	})
-
-	t.Run("with jobs option", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Job = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "SHOW JOB SERVICES")
-	})
-
-	t.Run("with exclude jobs", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExcludeJobs = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES EXCLUDE JOBS")
-	})
-
-	t.Run("with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("service_*")}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIKE 'service_*'")
-	})
-
-	t.Run("in schema", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &ServiceIn{
-			In: In{
-				Database: NewAccountObjectIdentifier("database"),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SERVICES IN DATABASE "database"`)
-	})
-
-	t.Run("in compute pool", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &ServiceIn{ComputePool: NewAccountObjectIdentifier("compute_pool")}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SERVICES IN COMPUTE POOL "compute_pool"`)
-	})
-
-	t.Run("with starts with", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.StartsWith = String("my_prefix")
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES STARTS WITH 'my_prefix'")
-	})
-
-	t.Run("with limit", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{Rows: Pointer(10)}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIMIT 10")
-	})
-
-	t.Run("with limit and from", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{Rows: Pointer(10), From: String("service1")}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIMIT 10 FROM 'service1'")
-	})
-}
-
-func TestServices_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeServiceOptions
-	defaultOpts := func() *DescribeServiceOptions {
-		return &DescribeServiceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *DescribeServiceOptions = nil
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SERVICE %s", id.FullyQualifiedName())
 	})
 }

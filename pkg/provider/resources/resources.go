@@ -32,6 +32,7 @@ const (
 	FunctionPython                                         resource = "snowflake_function_python"
 	FunctionScala                                          resource = "snowflake_function_scala"
 	FunctionSql                                            resource = "snowflake_function_sql"
+	GitRepository                                          resource = "snowflake_git_repository"
 	GrantAccountRole                                       resource = "snowflake_grant_account_role"
 	GrantApplicationRole                                   resource = "snowflake_grant_application_role"
 	GrantDatabaseRole                                      resource = "snowflake_grant_database_role"
