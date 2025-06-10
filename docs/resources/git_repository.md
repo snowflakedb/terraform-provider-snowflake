@@ -57,7 +57,7 @@ resource "snowflake_git_repository" "complete" {
 ### Optional
 
 - `comment` (String) Specifies a comment for the git repository.
-- `git_credentials` (String) "Specifies the Snowflake secret fully qualified name (e.g "<db_name>"."<schema_name>"."<secret_name>") containing the credentials to use for authenticating with the remote Git repository. Omit this parameter to use the default secret specified by the API integration or if this integration does not require authentication."
+- `git_credentials` (String) Specifies the Snowflake secret fully qualified name (e.g "\"<db_name>\".\"<schema_name>\".\"<secret_name>\"") containing the credentials to use for authenticating with the remote Git repository. Omit this parameter to use the default secret specified by the API integration or if this integration does not require authentication.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
