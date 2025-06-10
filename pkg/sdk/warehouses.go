@@ -74,19 +74,6 @@ const (
 	WarehouseSizeX6Large  WarehouseSize = "X6LARGE"
 )
 
-var AllWarehouseSizes = []WarehouseSize{
-	WarehouseSizeXSmall,
-	WarehouseSizeSmall,
-	WarehouseSizeMedium,
-	WarehouseSizeLarge,
-	WarehouseSizeXLarge,
-	WarehouseSizeXXLarge,
-	WarehouseSizeXXXLarge,
-	WarehouseSizeX4Large,
-	WarehouseSizeX5Large,
-	WarehouseSizeX6Large,
-}
-
 func ToWarehouseSize(s string) (WarehouseSize, error) {
 	switch strings.ToUpper(s) {
 	case string(WarehouseSizeXSmall), "X-SMALL":
