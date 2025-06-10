@@ -606,7 +606,7 @@ func TestAcc_JobService_changeServiceTypeExternally(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
+					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
