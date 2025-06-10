@@ -5,6 +5,8 @@ package testacc
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -25,19 +27,17 @@ import (
 func TestAcc_GitRepository_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
-	origin := "https://github.com/octocat/hello-world"
+	origin := testvars.ExampleGitRepositoryOrigin
 
 	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
 	t.Cleanup(apiIntegrationCleanup)
 	changeApiIntegrationId, changeApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
 	t.Cleanup(changeApiIntegrationCleanup)
 
-	secretId := testClient().Ids.RandomSchemaObjectIdentifier()
-	_, secretCleanup := testClient().Secret.CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
+	secretId, secretCleanup := testClient().Secret.CreateRandomPasswordSecret(t)
 	t.Cleanup(secretCleanup)
 
-	changedSecretId := testClient().Ids.RandomSchemaObjectIdentifier()
-	_, changedSecretCleanup := testClient().Secret.CreateWithBasicAuthenticationFlow(t, changedSecretId, "username", "password")
+	changedSecretId, changedSecretCleanup := testClient().Secret.CreateRandomPasswordSecret(t)
 	t.Cleanup(changedSecretCleanup)
 
 	modelBasic := model.GitRepository(
@@ -219,11 +219,11 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 			// change externally
 			{
 				PreConfig: func() {
-					testClient().GitRepository.Alter(t, sdk.NewAlterGitRepositoryRequest(id).WithSet(
-						*sdk.NewGitRepositorySetRequest().
-							WithApiIntegration(apiIntegrationId).
-							WithGitCredentials(secretId).
-							WithComment(comment)))
+					newOrigin := "https://github.com/octocat/Hello-World"
+					newApiIntegrationId, newApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, newOrigin)
+					t.Cleanup(newApiIntegrationCleanup)
+					testClient().GitRepository.CreateWithRequest(t, sdk.NewCreateGitRepositoryRequest(id, newOrigin, newApiIntegrationId).
+						WithGitCredentials(secretId).WithComment(comment).WithOrReplace(true))
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				Check: assertThat(t,
@@ -287,7 +287,7 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 func TestAcc_GitRepository_complete(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
-	origin := "https://github.com/octocat/hello-world"
+	origin := testvars.ExampleGitRepositoryOrigin
 
 	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
 	t.Cleanup(apiIntegrationCleanup)

@@ -14,6 +14,6 @@ resource "snowflake_git_repository" "complete" {
   schema          = "SCHEMA"
   origin          = "https://github.com/user/repo"
   api_integration = "API_INTEGRATION"
-  git_credentials = "\"<db_name>\".\"<schema_name>\".\"<secret_name>\""
+  git_credentials = "snowflake_secret_with_basic_authentication.secret_name.fully_qualified_name"
   comment         = "comment"
 }

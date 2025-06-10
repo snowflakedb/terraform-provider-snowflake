@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
+
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -21,14 +23,13 @@ import (
 
 func TestAcc_GitRepositories(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	origin := "https://github.com/octocat/hello-world"
+	origin := testvars.ExampleGitRepositoryOrigin
 	comment := random.Comment()
 
 	apiIntegrationId, apiCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
 	t.Cleanup(apiCleanup)
 
-	secretId := testClient().Ids.RandomSchemaObjectIdentifier()
-	_, secretCleanup := testClient().Secret.CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
+	secretId, secretCleanup := testClient().Secret.CreateRandomPasswordSecret(t)
 	t.Cleanup(secretCleanup)
 
 	gitRepositoryModel := model.
@@ -106,7 +107,7 @@ func TestAcc_GitRepositories_Filtering(t *testing.T) {
 	id2 := testClient().Ids.RandomSchemaObjectIdentifier()
 	id3 := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	origin := "https://github.com/octocat/hello-world"
+	origin := testvars.ExampleGitRepositoryOrigin
 	apiIntegrationId, apiCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
 	t.Cleanup(apiCleanup)
 

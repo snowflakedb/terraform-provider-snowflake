@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -16,15 +18,13 @@ func TestInt_GitRepositories(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	gitRepositoryOrigin := "https://github.com/octocat/hello-world"
+	gitRepositoryOrigin := testvars.ExampleGitRepositoryOrigin
 
 	apiIntegrationId, apiIntegrationCleanup := testClientHelper().ApiIntegration.
 		CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
 	t.Cleanup(apiIntegrationCleanup)
 
-	secretId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	_, secretCleanup := testClientHelper().Secret.
-		CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
+	secretId, secretCleanup := testClientHelper().Secret.CreateRandomPasswordSecret(t)
 	t.Cleanup(secretCleanup)
 
 	t.Run("create - basic", func(t *testing.T) {
