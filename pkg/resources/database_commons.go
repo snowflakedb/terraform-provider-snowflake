@@ -97,7 +97,7 @@ func init() {
 		{
 			Name:         sdk.ObjectParameterTraceLevel,
 			Type:         schema.TypeString,
-			Description:  fmt.Sprintf("Controls how trace events are ingested into the event table. Valid options are: %v. For information about levels, see [TRACE_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters.html#label-trace-level).", docs.PossibleValuesListed(sdk.AsStringList(sdk.AllTraceLevels))),
+			Description:  fmt.Sprintf("Controls how trace events are ingested into the event table. Valid options are: %v. For information about levels, see [TRACE_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters.html#label-trace-level).", possibleValuesListed(sdk.AsStringList(sdk.AllTraceLevels))),
 			ValidateDiag: sdkValidation(sdk.ToTraceLevel),
 			DiffSuppress: NormalizeAndCompare(sdk.ToTraceLevel),
 		},

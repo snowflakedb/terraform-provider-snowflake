@@ -32,15 +32,15 @@ func (v *gitRepositories) DropSafely(ctx context.Context, id SchemaObjectIdentif
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropGitRepositoryRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
-func (v *gitRepositories) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]GitRepository, error) {
+func (v *gitRepositories) Describe(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error) {
 	opts := &DescribeGitRepositoryOptions{
 		name: id,
 	}
-	rows, err := validateAndQuery[gitRepositoriesRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[gitRepositoriesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[gitRepositoriesRow, GitRepository](rows), nil
+	return result.convert(), nil
 }
 
 func (v *gitRepositories) Show(ctx context.Context, request *ShowGitRepositoryRequest) ([]GitRepository, error) {

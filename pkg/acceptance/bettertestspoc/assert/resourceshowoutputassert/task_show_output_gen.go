@@ -19,21 +19,21 @@ type TaskShowOutputAssert struct {
 func TaskShowOutput(t *testing.T, name string) *TaskShowOutputAssert {
 	t.Helper()
 
-	task := TaskShowOutputAssert{
+	taskAssert := TaskShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	task.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &task
+	taskAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &taskAssert
 }
 
 func ImportedTaskShowOutput(t *testing.T, id string) *TaskShowOutputAssert {
 	t.Helper()
 
-	task := TaskShowOutputAssert{
+	taskAssert := TaskShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	task.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &task
+	taskAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &taskAssert
 }
 
 ////////////////////////////
@@ -135,7 +135,127 @@ func (t *TaskShowOutputAssert) HasBudget(expected string) *TaskShowOutputAssert 
 	return t
 }
 
+// Manually adjusted
+// func (t *TaskShowOutputAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskShowOutputAssert {
+//	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("task_relations", expected))
+//	return t
+// }
+
 func (t *TaskShowOutputAssert) HasLastSuspendedReason(expected string) *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("last_suspended_reason", expected))
+	return t
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (t *TaskShowOutputAssert) HasNoCreatedOn() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoName() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoId() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("id"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoDatabaseName() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoSchemaName() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoOwner() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoComment() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoWarehouse() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("warehouse"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoSchedule() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("schedule"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoPredecessors() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("predecessors.#", "0"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoState() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoDefinition() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("definition"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoCondition() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("condition"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoAllowOverlappingExecution() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("allow_overlapping_execution"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoErrorIntegration() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("error_integration"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoLastCommittedOn() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("last_committed_on"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoLastSuspendedOn() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("last_suspended_on"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoOwnerRoleType() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoConfig() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("config"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoBudget() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("budget"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoTaskRelations() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("task_relations"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoLastSuspendedReason() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("last_suspended_reason"))
 	return t
 }

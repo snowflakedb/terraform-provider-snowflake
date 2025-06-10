@@ -82,7 +82,7 @@ func TestAcc_StreamOnTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeDefault).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -140,7 +140,7 @@ func TestAcc_StreamOnTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeAppendOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -192,7 +192,7 @@ func TestAcc_StreamOnTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeAppendOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -241,7 +241,7 @@ func TestAcc_StreamOnTable_Basic(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeDefault).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -608,7 +608,7 @@ func TestAcc_StreamOnTable_At(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeAppendOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").
@@ -722,7 +722,7 @@ func TestAcc_StreamOnTable_Before(t *testing.T) {
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
-						HasStale("false").
+						HasStale(false).
 						HasMode(sdk.StreamModeAppendOnly).
 						HasStaleAfterNotEmpty().
 						HasInvalidReason("N/A").

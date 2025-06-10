@@ -147,9 +147,9 @@ func (f *FunctionPythonResourceAssert) HasTraceLevelString(expected string) *Fun
 	return f
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (f *FunctionPythonResourceAssert) HasNoDatabase() *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("database"))
@@ -166,11 +166,6 @@ func (f *FunctionPythonResourceAssert) HasNoName() *FunctionPythonResourceAssert
 	return f
 }
 
-func (f *FunctionPythonResourceAssert) HasNoArguments() *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("arguments"))
-	return f
-}
-
 func (f *FunctionPythonResourceAssert) HasNoComment() *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("comment"))
 	return f
@@ -178,11 +173,6 @@ func (f *FunctionPythonResourceAssert) HasNoComment() *FunctionPythonResourceAss
 
 func (f *FunctionPythonResourceAssert) HasNoEnableConsoleOutput() *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("enable_console_output"))
-	return f
-}
-
-func (f *FunctionPythonResourceAssert) HasNoExternalAccessIntegrations() *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("external_access_integrations"))
 	return f
 }
 
@@ -203,11 +193,6 @@ func (f *FunctionPythonResourceAssert) HasNoFunctionLanguage() *FunctionPythonRe
 
 func (f *FunctionPythonResourceAssert) HasNoHandler() *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("handler"))
-	return f
-}
-
-func (f *FunctionPythonResourceAssert) HasNoImports() *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("imports"))
 	return f
 }
 
@@ -236,11 +221,6 @@ func (f *FunctionPythonResourceAssert) HasNoNullInputBehavior() *FunctionPythonR
 	return f
 }
 
-func (f *FunctionPythonResourceAssert) HasNoPackages() *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("packages"))
-	return f
-}
-
 func (f *FunctionPythonResourceAssert) HasNoReturnResultsBehavior() *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("return_results_behavior"))
 	return f
@@ -256,12 +236,190 @@ func (f *FunctionPythonResourceAssert) HasNoRuntimeVersion() *FunctionPythonReso
 	return f
 }
 
-func (f *FunctionPythonResourceAssert) HasNoSecrets() *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("secrets"))
+func (f *FunctionPythonResourceAssert) HasNoTraceLevel() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("trace_level"))
 	return f
 }
 
-func (f *FunctionPythonResourceAssert) HasNoTraceLevel() *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("trace_level"))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (f *FunctionPythonResourceAssert) HasArgumentsEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasCommentEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("comment", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasEnableConsoleOutputEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasExternalAccessIntegrationsEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFullyQualifiedNameEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFunctionDefinitionEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("function_definition", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFunctionLanguageEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("function_language", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasImportsEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("imports.#", "0"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasIsAggregateEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("is_aggregate", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasIsSecureEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("is_secure", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasLogLevelEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_level", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasMetricLevelEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("metric_level", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasNullInputBehaviorEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("null_input_behavior", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasPackagesEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("packages.#", "0"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasReturnResultsBehaviorEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("return_results_behavior", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasSecretsEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("secrets.#", "0"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasTraceLevelEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("trace_level", ""))
+	return f
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (f *FunctionPythonResourceAssert) HasDatabaseNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("database"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasSchemaNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("schema"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasNameNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("name"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasCommentNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("comment"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasEnableConsoleOutputNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("enable_console_output"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFullyQualifiedNameNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFunctionDefinitionNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("function_definition"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFunctionLanguageNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("function_language"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasHandlerNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("handler"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasIsAggregateNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("is_aggregate"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasIsSecureNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("is_secure"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasLogLevelNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("log_level"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasMetricLevelNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("metric_level"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasNullInputBehaviorNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("null_input_behavior"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasReturnResultsBehaviorNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("return_results_behavior"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasReturnTypeNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("return_type"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasRuntimeVersionNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("runtime_version"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasTraceLevelNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("trace_level"))
 	return f
 }

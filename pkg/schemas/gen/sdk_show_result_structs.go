@@ -22,6 +22,7 @@ var SdkShowResultStructs = []any{
 	sdk.FailoverGroup{},
 	sdk.FileFormat{},
 	sdk.Function{},
+	sdk.GitRepository{},
 	sdk.Grant{},
 	sdk.ManagedAccount{},
 	sdk.MaskingPolicy{},

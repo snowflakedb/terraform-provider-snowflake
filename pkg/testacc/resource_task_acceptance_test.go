@@ -74,7 +74,7 @@ func TestAcc_Task_Basic(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -108,7 +108,7 @@ func TestAcc_Task_Basic(t *testing.T) {
 						HasErrorIntegrationString("").
 						HasCommentString("").
 						HasFinalizeString("").
-						HasNoAfter().
+						HasAfterEmpty().
 						HasWhenString("").
 						HasSqlStatementString(statement),
 				),
@@ -162,7 +162,7 @@ func TestAcc_Task_Complete(t *testing.T) {
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
 						HasCommentString(comment).
 						HasFinalizeString("").
-						HasNoAfter().
+						HasAfterEmpty().
 						HasWhenString(condition).
 						HasSqlStatementString(statement),
 					resourceshowoutputassert.TaskShowOutput(t, configModel.ResourceReference()).
@@ -210,7 +210,7 @@ func TestAcc_Task_Complete(t *testing.T) {
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
 						HasCommentString(comment).
 						HasFinalizeString("").
-						HasNoAfter().
+						HasAfterEmpty().
 						HasWhenString(condition).
 						HasSqlStatementString(statement),
 				),
@@ -282,7 +282,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -381,7 +381,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -722,7 +722,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -784,7 +784,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment("").
 						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasNoSchedule().
+						HasScheduleEmpty().
 						HasPredecessors().
 						HasState(sdk.TaskStateSuspended).
 						HasDefinition(statement).
@@ -898,7 +898,7 @@ func TestAcc_Task_CronAndMinutes(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 			// Create with cron
@@ -974,7 +974,7 @@ func TestAcc_Task_CronAndMinutes(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 		},
@@ -1012,7 +1012,7 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 			// External change - set minutes
@@ -1032,7 +1032,7 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 			// External change - set cron
@@ -1052,7 +1052,7 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
-						HasNoSchedule(),
+						HasScheduleEmpty(),
 				),
 			},
 			// Set minutes schedule
@@ -1233,7 +1233,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 		WithTimezone("Europe/Warsaw").
 		WithTimeInputFormat("HH24:MI").
 		WithTimeOutputFormat("HH24:MI").
-		WithTraceLevelEnum(sdk.TraceLevelOnEvent).
+		WithTraceLevelEnum(sdk.TraceLevelPropagate).
 		WithTransactionAbortOnError(true).
 		WithTransactionDefaultIsolationLevelEnum(sdk.TransactionDefaultIsolationLevelReadCommitted).
 		WithTwoDigitCenturyStart(1980).
@@ -1328,7 +1328,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").
 						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelOnEvent).
+						HasTraceLevel(sdk.TraceLevelPropagate).
 						HasTransactionAbortOnError(true).
 						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
 						HasTwoDigitCenturyStart(1980).
@@ -1386,7 +1386,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").
 						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelOnEvent).
+						HasTraceLevel(sdk.TraceLevelPropagate).
 						HasTransactionAbortOnError(true).
 						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
 						HasTwoDigitCenturyStart(1980).
@@ -1453,7 +1453,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").
 						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelOnEvent).
+						HasTraceLevel(sdk.TraceLevelPropagate).
 						HasTransactionAbortOnError(true).
 						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
 						HasTwoDigitCenturyStart(1980).
