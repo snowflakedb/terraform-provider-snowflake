@@ -51,14 +51,14 @@ var gitRepositorySchema = map[string]*schema.Schema{
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		Required:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
-		Description:      "Specifies the API INTEGRATION identifier that contains information about the remote Git repository such as allowed credentials and prefixes for target URLs.",
+		Description:      "Identifier of API INTEGRATION containing information about the remote Git repository such as allowed credentials and prefixes for target URLs.",
 	},
 	"git_credentials": {
 		Type:             schema.TypeString,
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		Optional:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
-		Description:      "Specifies the Snowflake secret fully qualified name (e.g <db_name>.<schema_name>.<secret_name>) containing the credentials to use for authenticating with the remote Git repository. Omit this parameter to use the default secret specified by the API integration or if this integration does not require authentication.",
+		Description:      `Specifies the Snowflake secret fully qualified name (e.g ""<db_name>"."<schema_name>"."<secret_name>"") containing the credentials to use for authenticating with the remote Git repository. Omit this parameter to use the default secret specified by the API integration or if this integration does not require authentication.`,
 	},
 	"comment": {
 		Type:        schema.TypeString,

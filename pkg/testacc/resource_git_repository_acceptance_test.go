@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
@@ -19,7 +20,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -31,8 +31,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 
 	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
 	t.Cleanup(apiIntegrationCleanup)
-	changeApiIntegrationId, changeApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
-	t.Cleanup(changeApiIntegrationCleanup)
+	changedApiIntegrationId, changedApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	t.Cleanup(changedApiIntegrationCleanup)
 
 	secretId, secretCleanup := testClient().Secret.CreateRandomPasswordSecret(t)
 	t.Cleanup(secretCleanup)
@@ -64,7 +64,7 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
-		changeApiIntegrationId.FullyQualifiedName(),
+		changedApiIntegrationId.FullyQualifiedName(),
 		origin,
 	).WithGitCredentials(changedSecretId.FullyQualifiedName()).
 		WithComment(changedComment)
@@ -199,7 +199,7 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasOriginString(origin).
-						HasApiIntegrationString(changeApiIntegrationId.FullyQualifiedName()).
+						HasApiIntegrationString(changedApiIntegrationId.FullyQualifiedName()).
 						HasGitCredentialsString(changedSecretId.FullyQualifiedName()).
 						HasCommentString(changedComment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -209,30 +209,35 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOrigin(origin).
-						HasApiIntegration(changeApiIntegrationId).
+						HasApiIntegration(changedApiIntegrationId).
 						HasGitCredentials(changedSecretId).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(changedComment),
 				),
 			},
-			// change externally
+			// change externally alter
 			{
 				PreConfig: func() {
-					newOrigin := "https://github.com/octocat/Hello-World"
-					newApiIntegrationId, newApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, newOrigin)
-					t.Cleanup(newApiIntegrationCleanup)
-					testClient().GitRepository.CreateWithRequest(t, sdk.NewCreateGitRepositoryRequest(id, newOrigin, newApiIntegrationId).
-						WithGitCredentials(secretId).WithComment(comment).WithOrReplace(true))
+					testClient().GitRepository.Alter(t, sdk.NewAlterGitRepositoryRequest(id).WithSet(
+						*sdk.NewGitRepositorySetRequest().
+							WithApiIntegration(apiIntegrationId).
+							WithGitCredentials(secretId).
+							WithComment(comment)))
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: assertThat(t,
 					resourceassert.GitRepositoryResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasOriginString(origin).
-						HasApiIntegrationString(changeApiIntegrationId.FullyQualifiedName()).
+						HasApiIntegrationString(changedApiIntegrationId.FullyQualifiedName()).
 						HasGitCredentialsString(changedSecretId.FullyQualifiedName()).
 						HasCommentString(changedComment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -242,7 +247,45 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOrigin(origin).
-						HasApiIntegration(changeApiIntegrationId).
+						HasApiIntegration(changedApiIntegrationId).
+						HasGitCredentials(changedSecretId).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
+						HasComment(changedComment),
+				),
+			},
+			// change externally create
+			{
+				PreConfig: func() {
+					newOrigin := "https://github.com/octocat/git-consortium"
+					newApiIntegrationId, newApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, newOrigin)
+					t.Cleanup(newApiIntegrationCleanup)
+					testClient().GitRepository.CreateWithRequest(t, sdk.NewCreateGitRepositoryRequest(id, newOrigin, newApiIntegrationId).
+						WithGitCredentials(secretId).WithComment(comment).WithOrReplace(true))
+				},
+				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.GitRepositoryResource(t, modelCompleteWithDifferentValues.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasOriginString(origin).
+						HasApiIntegrationString(changedApiIntegrationId.FullyQualifiedName()).
+						HasGitCredentialsString(changedSecretId.FullyQualifiedName()).
+						HasCommentString(changedComment).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.GitRepositoryShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasOrigin(origin).
+						HasApiIntegration(changedApiIntegrationId).
 						HasGitCredentials(changedSecretId).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
@@ -292,8 +335,7 @@ func TestAcc_GitRepository_complete(t *testing.T) {
 	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
 	t.Cleanup(apiIntegrationCleanup)
 
-	secretId := testClient().Ids.RandomSchemaObjectIdentifier()
-	_, secretCleanup := testClient().Secret.CreateWithBasicAuthenticationFlow(t, secretId, "username", "password")
+	secretId, secretCleanup := testClient().Secret.CreateRandomPasswordSecret(t)
 	t.Cleanup(secretCleanup)
 
 	modelComplete := model.
