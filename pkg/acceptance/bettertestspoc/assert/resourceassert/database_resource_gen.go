@@ -142,9 +142,9 @@ func (d *DatabaseResourceAssert) HasUserTaskTimeoutMsString(expected string) *Da
 	return d
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
 
 func (d *DatabaseResourceAssert) HasNoName() *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueNotSet("name"))
@@ -216,11 +216,6 @@ func (d *DatabaseResourceAssert) HasNoReplaceInvalidCharacters() *DatabaseResour
 	return d
 }
 
-func (d *DatabaseResourceAssert) HasNoReplication() *DatabaseResourceAssert {
-	d.AddAssertion(assert.ValueNotSet("replication"))
-	return d
-}
-
 func (d *DatabaseResourceAssert) HasNoStorageSerializationPolicy() *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueNotSet("storage_serialization_policy"))
 	return d
@@ -253,5 +248,223 @@ func (d *DatabaseResourceAssert) HasNoUserTaskMinimumTriggerIntervalInSeconds() 
 
 func (d *DatabaseResourceAssert) HasNoUserTaskTimeoutMs() *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueNotSet("user_task_timeout_ms"))
+	return d
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (d *DatabaseResourceAssert) HasCatalogEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("catalog", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasCommentEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("comment", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDataRetentionTimeInDaysEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("data_retention_time_in_days", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultDdlCollationEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("default_ddl_collation", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDropPublicSchemaOnCreationEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("drop_public_schema_on_creation", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasEnableConsoleOutputEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasExternalVolumeEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("external_volume", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasFullyQualifiedNameEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasIsTransientEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("is_transient", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasLogLevelEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("log_level", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasReplaceInvalidCharactersEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("replace_invalid_characters", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasReplicationEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("replication.#", "0"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasStorageSerializationPolicyEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("storage_serialization_policy", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasSuspendTaskAfterNumFailuresEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasTaskAutoRetryAttemptsEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("task_auto_retry_attempts", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasTraceLevelEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("trace_level", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSizeEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskTimeoutMsEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("user_task_timeout_ms", ""))
+	return d
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (d *DatabaseResourceAssert) HasNameNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("name"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasCatalogNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("catalog"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasCommentNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("comment"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("data_retention_time_in_days"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultDdlCollationNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("default_ddl_collation"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDropPublicSchemaOnCreationNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("drop_public_schema_on_creation"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasEnableConsoleOutputNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("enable_console_output"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasExternalVolumeNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("external_volume"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasFullyQualifiedNameNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasIsTransientNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("is_transient"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasLogLevelNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("log_level"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasMaxDataExtensionTimeInDaysNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("max_data_extension_time_in_days"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("quoted_identifiers_ignore_case"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasReplaceInvalidCharactersNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("replace_invalid_characters"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasStorageSerializationPolicyNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("storage_serialization_policy"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasSuspendTaskAfterNumFailuresNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("suspend_task_after_num_failures"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasTaskAutoRetryAttemptsNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("task_auto_retry_attempts"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasTraceLevelNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("trace_level"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSizeNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("user_task_managed_initial_warehouse_size"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("user_task_minimum_trigger_interval_in_seconds"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskTimeoutMsNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("user_task_timeout_ms"))
 	return d
 }

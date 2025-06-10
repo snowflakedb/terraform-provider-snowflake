@@ -15,6 +15,7 @@ type Services interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Service, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Service, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*ServiceDetails, error)
+	ExecuteJob(ctx context.Context, request *ExecuteJobServiceRequest) error
 }
 
 // CreateServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-service.
@@ -267,4 +268,33 @@ type ServiceDetails struct {
 	IsUpgrading                bool
 	ManagingObjectDomain       *string
 	ManagingObjectName         *string
+}
+
+// ExecuteJobServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/execute-job-service.
+type ExecuteJobServiceOptions struct {
+	executeJobService                   bool                                 `ddl:"static" sql:"EXECUTE JOB SERVICE"`
+	InComputePool                       AccountObjectIdentifier              `ddl:"identifier" sql:"IN COMPUTE POOL"`
+	Name                                SchemaObjectIdentifier               `ddl:"identifier,equals" sql:"NAME"`
+	Async                               *bool                                `ddl:"parameter" sql:"ASYNC"`
+	QueryWarehouse                      *AccountObjectIdentifier             `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
+	Comment                             *string                              `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	ExternalAccessIntegrations          *ServiceExternalAccessIntegrations   `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	JobServiceFromSpecification         *JobServiceFromSpecification         `ddl:"keyword"`
+	JobServiceFromSpecificationTemplate *JobServiceFromSpecificationTemplate `ddl:"keyword"`
+	Tag                                 []TagAssociation                     `ddl:"keyword,parentheses" sql:"TAG"`
+}
+
+type JobServiceFromSpecification struct {
+	from              bool     `ddl:"static" sql:"FROM"`
+	Location          Location `ddl:"parameter,no_quotes,no_equals"`
+	SpecificationFile *string  `ddl:"parameter,single_quotes" sql:"SPECIFICATION_FILE"`
+	Specification     *string  `ddl:"parameter,double_dollar_quotes,no_equals" sql:"SPECIFICATION"`
+}
+
+type JobServiceFromSpecificationTemplate struct {
+	from                      bool       `ddl:"static" sql:"FROM"`
+	Location                  Location   `ddl:"parameter,no_quotes,no_equals"`
+	SpecificationTemplateFile *string    `ddl:"parameter,single_quotes" sql:"SPECIFICATION_TEMPLATE_FILE"`
+	SpecificationTemplate     *string    `ddl:"parameter,double_dollar_quotes,no_equals" sql:"SPECIFICATION_TEMPLATE"`
+	Using                     []ListItem `ddl:"parameter,parentheses,no_equals" sql:"USING"`
 }

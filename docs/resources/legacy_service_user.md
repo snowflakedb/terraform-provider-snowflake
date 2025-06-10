@@ -107,7 +107,7 @@ resource "snowflake_legacy_service_user" "u" {
   timestamp_type_mapping                        = "TIMESTAMP_LTZ"
   timestamp_tz_output_format                    = "YYYY-MM-DD HH24:MI:SS"
   timezone                                      = "Europe/Warsaw"
-  trace_level                                   = "ON_EVENT"
+  trace_level                                   = "PROPAGATE"
   transaction_abort_on_error                    = true
   transaction_default_isolation_level           = "READ COMMITTED"
   two_digit_century_start                       = 1980

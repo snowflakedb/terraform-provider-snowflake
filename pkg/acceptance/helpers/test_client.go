@@ -62,6 +62,7 @@ type TestClient struct {
 	Sequence                     *SequenceClient
 	SessionPolicy                *SessionPolicyClient
 	Share                        *ShareClient
+	Snapshot                     *SnapshotClient
 	Stage                        *StageClient
 	StorageIntegration           *StorageIntegrationClient
 	Stream                       *StreamClient
@@ -137,6 +138,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		Schema:                       NewSchemaClient(context, idsGenerator),
 		Secret:                       NewSecretClient(context, idsGenerator),
 		SecurityIntegration:          NewSecurityIntegrationClient(context, idsGenerator),
+		Snapshot:                     NewSnapshotClient(context, idsGenerator),
 		Service:                      NewServiceClient(context, idsGenerator),
 		Sequence:                     NewSequenceClient(context, idsGenerator),
 		SessionPolicy:                NewSessionPolicyClient(context, idsGenerator),

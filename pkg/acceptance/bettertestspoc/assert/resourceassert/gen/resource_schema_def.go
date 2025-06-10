@@ -86,6 +86,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.FunctionSql().Schema,
 	},
 	{
+		name:   "GitRepository",
+		schema: resources.GitRepository().Schema,
+	},
+	{
 		name:   "LegacyServiceUser",
 		schema: resources.LegacyServiceUser().Schema,
 	},
@@ -176,6 +180,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "SecretWithGenericString",
 		schema: resources.SecretWithGenericString().Schema,
+	},
+	{
+		name:   "Service",
+		schema: resources.Service().Schema,
 	},
 	{
 		name:   "ServiceUser",

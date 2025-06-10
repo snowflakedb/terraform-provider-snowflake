@@ -22,7 +22,9 @@ import (
 /*
 The following tests are showing the behavior of the provider in cases where objects higher in the hierarchy
 like database or schema are renamed when the objects lower in the hierarchy are in the Terraform configuration.
-For more information check TODO(SNOW-1672319): link public document.
+For more information check:
+- https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_research_summary
+- https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide
 
 Shallow hierarchy (database + schema)
 - is in config - renamed internally - with implicit dependency (works)

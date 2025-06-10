@@ -3,11 +3,12 @@ package sdk
 //go:generate go run ./dto-builder-generator/main.go
 
 var (
-	_ optionsProvider[CreateServiceOptions]   = new(CreateServiceRequest)
-	_ optionsProvider[AlterServiceOptions]    = new(AlterServiceRequest)
-	_ optionsProvider[DropServiceOptions]     = new(DropServiceRequest)
-	_ optionsProvider[ShowServiceOptions]     = new(ShowServiceRequest)
-	_ optionsProvider[DescribeServiceOptions] = new(DescribeServiceRequest)
+	_ optionsProvider[CreateServiceOptions]     = new(CreateServiceRequest)
+	_ optionsProvider[AlterServiceOptions]      = new(AlterServiceRequest)
+	_ optionsProvider[DropServiceOptions]       = new(DropServiceRequest)
+	_ optionsProvider[ShowServiceOptions]       = new(ShowServiceRequest)
+	_ optionsProvider[DescribeServiceOptions]   = new(DescribeServiceRequest)
+	_ optionsProvider[ExecuteJobServiceOptions] = new(ExecuteJobServiceRequest)
 )
 
 type CreateServiceRequest struct {
@@ -103,4 +104,29 @@ type ShowServiceRequest struct {
 
 type DescribeServiceRequest struct {
 	name SchemaObjectIdentifier // required
+}
+
+type ExecuteJobServiceRequest struct {
+	InComputePool                       AccountObjectIdentifier // required
+	Name                                SchemaObjectIdentifier  // required
+	Async                               *bool
+	QueryWarehouse                      *AccountObjectIdentifier
+	Comment                             *string
+	ExternalAccessIntegrations          *ServiceExternalAccessIntegrationsRequest
+	JobServiceFromSpecification         *JobServiceFromSpecificationRequest
+	JobServiceFromSpecificationTemplate *JobServiceFromSpecificationTemplateRequest
+	Tag                                 []TagAssociation
+}
+
+type JobServiceFromSpecificationRequest struct {
+	Location          Location
+	SpecificationFile *string
+	Specification     *string
+}
+
+type JobServiceFromSpecificationTemplateRequest struct {
+	Location                  Location
+	SpecificationTemplateFile *string
+	SpecificationTemplate     *string
+	Using                     []ListItem // required
 }

@@ -2,6 +2,7 @@ package gen
 
 import (
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -37,12 +38,13 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) ResourceSh
 
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
+	unwantedPackageNames := []string{"slices"}
 	return ResourceShowOutputAssertionsModel{
 		Name:       name,
 		Attributes: attributes,
 		PreambleModel: PreambleModel{
 			PackageName:               packageWithGenerateDirective,
-			AdditionalStandardImports: genhelpers.AdditionalStandardImports(sdkObject.Fields),
+			AdditionalStandardImports: slices.DeleteFunc(genhelpers.AdditionalStandardImports(sdkObject.Fields), func(s string) bool { return slices.Contains(unwantedPackageNames, s) }),
 		},
 	}
 }
@@ -53,18 +55,18 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 	var assertionCreator string
 	switch {
 	case concreteTypeWithoutPtr == "bool":
-		assertionCreator = "ResourceShowOutputBoolValueSet"
+		assertionCreator = "ResourceShowOutputBoolValue"
 	case concreteTypeWithoutPtr == "int":
-		assertionCreator = "ResourceShowOutputIntValueSet"
+		assertionCreator = "ResourceShowOutputIntValue"
 	case concreteTypeWithoutPtr == "float64":
-		assertionCreator = "ResourceShowOutputFloatValueSet"
+		assertionCreator = "ResourceShowOutputFloatValue"
 	case concreteTypeWithoutPtr == "string":
-		assertionCreator = "ResourceShowOutputValueSet"
+		assertionCreator = "ResourceShowOutputValue"
 	// TODO [SNOW-1501905]: distinguish between different enum types
 	case strings.HasPrefix(concreteTypeWithoutPtr, "sdk."):
-		assertionCreator = "ResourceShowOutputStringUnderlyingValueSet"
+		assertionCreator = "ResourceShowOutputStringUnderlyingValue"
 	default:
-		assertionCreator = "ResourceShowOutputValueSet"
+		assertionCreator = "ResourceShowOutputValue"
 	}
 
 	// TODO [SNOW-1501905]: handle other mappings if needed
@@ -72,6 +74,8 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 	switch concreteTypeWithoutPtr {
 	case "sdk.AccountObjectIdentifier":
 		mapper = genhelpers.Name
+	case "sdk.AccountIdentifier", "sdk.DatabaseObjectIdentifier", "sdk.SchemaObjectIdentifier", "sdk.SchemaObjectIdentifierWithArguments", "sdk.ExternalObjectIdentifier":
+		mapper = genhelpers.FullyQualifiedName
 	case "time.Time":
 		mapper = genhelpers.ToString
 	}

@@ -117,6 +117,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeGitRepository,
 		ObjectStruct: sdk.GitRepository{},
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeService,
+		ObjectStruct: sdk.Service{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

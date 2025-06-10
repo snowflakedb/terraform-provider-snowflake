@@ -6,6 +6,7 @@ var (
 	_ validatable = new(DropServiceOptions)
 	_ validatable = new(ShowServiceOptions)
 	_ validatable = new(DescribeServiceOptions)
+	_ validatable = new(ExecuteJobServiceOptions)
 )
 
 func (opts *CreateServiceOptions) validate() error {
@@ -181,6 +182,42 @@ func (opts *DescribeServiceOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ExecuteJobServiceOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.Name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.JobServiceFromSpecification, opts.JobServiceFromSpecificationTemplate) {
+		errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"))
+	}
+	if !ValidObjectIdentifier(opts.InComputePool) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.JobServiceFromSpecification) {
+		if !exactlyOneValueSet(opts.JobServiceFromSpecification.SpecificationFile, opts.JobServiceFromSpecification.Specification) {
+			errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
+		}
+		if !exactlyOneValueSet(opts.JobServiceFromSpecification.Location, opts.JobServiceFromSpecification.Specification) {
+			errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "Location", "Specification"))
+		}
+	}
+	if valueSet(opts.JobServiceFromSpecificationTemplate) {
+		if !exactlyOneValueSet(opts.JobServiceFromSpecificationTemplate.SpecificationTemplateFile, opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
+		}
+		if !exactlyOneValueSet(opts.JobServiceFromSpecificationTemplate.Location, opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "Location", "SpecificationTemplate"))
+		}
 	}
 	return JoinErrors(errs...)
 }

@@ -170,6 +170,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.FunctionSql: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Functions.ShowByID)
 	},
+	resources.GitRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.GitRepositories.ShowByID)
+	},
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ImageRepositories.ShowByID)
 	},
@@ -253,6 +256,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	},
 	resources.SecretWithGenericString: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Secrets.ShowByID)
+	},
+	resources.Service: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Services.ShowByID)
 	},
 	resources.Sequence: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Sequences.ShowByID)

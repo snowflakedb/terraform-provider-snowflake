@@ -237,9 +237,14 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, cleanup := testClientHelper().ComputePool.Create(t)
 		t.Cleanup(cleanup)
 
+		service, serviceCleanup := testClientHelper().Service.Create(t, computePool.ID())
+		t.Cleanup(serviceCleanup)
+
 		err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(computePool.ID()).WithStopAll(true))
 		require.NoError(t, err)
-		// TODO (SNOW-2081739): Add assertions to check that all services are stopped.
+
+		_, err = client.Services.ShowByID(ctx, service.ID())
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 	t.Run("describe", func(t *testing.T) {
 		computePool, funcCleanup := testClientHelper().ComputePool.Create(t)

@@ -41,6 +41,8 @@ const (
 	FunctionScalaResource                         feature = "snowflake_function_scala_resource"
 	FunctionSqlResource                           feature = "snowflake_function_sql_resource"
 	FunctionsDatasource                           feature = "snowflake_functions_datasource"
+	GitRepositoryResource                         feature = "snowflake_git_repository_resource"
+	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
@@ -61,6 +63,7 @@ const (
 	ProcedureSqlResource                          feature = "snowflake_procedure_sql_resource"
 	ProceduresDatasource                          feature = "snowflake_procedures_datasource"
 	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
+	ServiceResource                               feature = "snowflake_service_resource"
 	SequenceResource                              feature = "snowflake_sequence_resource"
 	SequencesDatasource                           feature = "snowflake_sequences_datasource"
 	ShareResource                                 feature = "snowflake_share_resource"
@@ -114,6 +117,8 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
+	GitRepositoryResource,
+	GitRepositoriesDatasource,
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
 	ManagedAccountResource,
@@ -128,6 +133,7 @@ var allPreviewFeatures = []feature{
 	PipeResource,
 	PipesDatasource,
 	CurrentRoleDatasource,
+	ServiceResource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,

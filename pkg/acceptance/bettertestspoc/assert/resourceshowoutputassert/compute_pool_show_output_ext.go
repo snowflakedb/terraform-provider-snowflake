@@ -32,7 +32,7 @@ func (c *ComputePoolShowOutputAssert) HasUpdatedOnNotEmpty() *ComputePoolShowOut
 	return c
 }
 
-func (c *ComputePoolShowOutputAssert) HasNoApplication() *ComputePoolShowOutputAssert {
+func (c *ComputePoolShowOutputAssert) HasApplicationEmpty() *ComputePoolShowOutputAssert {
 	c.AddAssertion(assert.ResourceShowOutputValueSet("application", ""))
 	return c
 }

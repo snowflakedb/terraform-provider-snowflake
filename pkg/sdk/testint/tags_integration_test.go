@@ -965,6 +965,29 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return client.ImageRepositories.Alter(ctx, sdk.NewAlterImageRepositoryRequest(id).WithUnsetTags(tags))
 			},
 		},
+		{
+			name:       "Service",
+			objectType: sdk.ObjectTypeService,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
+				t.Cleanup(computePoolCleanup)
+
+				db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
+				t.Cleanup(dbCleanup)
+
+				schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
+				t.Cleanup(schemaCleanup)
+
+				id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+				return testClientHelper().Service.CreateWithId(t, computePool.ID(), id)
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithUnsetTags(tags))
+			},
+		},
 	}
 
 	for _, tc := range schemaObjectTestCases {

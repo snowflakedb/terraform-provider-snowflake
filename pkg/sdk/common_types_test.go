@@ -368,6 +368,7 @@ func TestToTraceLevel(t *testing.T) {
 	}{
 		{Input: string(TraceLevelAlways), Expected: TraceLevelAlways},
 		{Input: string(TraceLevelOnEvent), Expected: TraceLevelOnEvent},
+		{Input: string(TraceLevelPropagate), Expected: TraceLevelPropagate},
 		{Input: string(TraceLevelOff), Expected: TraceLevelOff},
 		{Name: "validation: incorrect trace level", Input: "incorrect", Error: "unknown trace level: incorrect"},
 		{Name: "validation: empty input", Input: "", Error: "unknown trace level: "},

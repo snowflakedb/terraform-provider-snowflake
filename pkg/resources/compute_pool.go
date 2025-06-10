@@ -106,7 +106,9 @@ func ComputePool() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
 		sdk.ParseAccountObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-			return client.ComputePools.DropSafely
+			return func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
+				return client.ComputePools.DropSafely(ctx, id)
+			}
 		},
 	)
 	return &schema.Resource{

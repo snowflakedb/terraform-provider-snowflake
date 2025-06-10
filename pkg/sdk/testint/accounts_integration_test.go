@@ -436,6 +436,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	assertParameterIsDefault := func(t *testing.T, parameters []*sdk.Parameter, parameterKey string) {
 		t.Helper()
 		param, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == parameterKey })
+		// TODO(SNOW-1325308): Improve collections.FindFirst error message to include more detail about missing item
 		require.NoError(t, err, "parameter %v not found", parameterKey)
 		require.NotNil(t, param)
 		require.Equal(t, (*param).Default, (*param).Value)
@@ -536,7 +537,14 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
-		// TODO(SNOW2138715): Test all parameters
+		// TODO(SNOW-2138715): Test all parameters, the following parameters were not tested due to more complex setup:
+		// - ActivePythonProfiler
+		// - CatalogSync
+		// - EnableInternalStagesPrivatelink
+		// - PythonProfilerModules
+		// - S3StageVpceDnsName
+		// - SamlIdentityProvider
+		// - SimulatedDataSharingConsumer
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
 				Parameters: &sdk.AccountParameters{
