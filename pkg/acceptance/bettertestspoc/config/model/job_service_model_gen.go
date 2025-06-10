@@ -15,7 +15,6 @@ type JobServiceModel struct {
 	Database                   tfconfig.Variable `json:"database,omitempty"`
 	Schema                     tfconfig.Variable `json:"schema,omitempty"`
 	Name                       tfconfig.Variable `json:"name,omitempty"`
-	Async                      tfconfig.Variable `json:"async,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
 	ComputePool                tfconfig.Variable `json:"compute_pool,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
@@ -105,11 +104,6 @@ func (j *JobServiceModel) WithName(name string) *JobServiceModel {
 	return j
 }
 
-func (j *JobServiceModel) WithAsync(async string) *JobServiceModel {
-	j.Async = tfconfig.StringVariable(async)
-	return j
-}
-
 func (j *JobServiceModel) WithComment(comment string) *JobServiceModel {
 	j.Comment = tfconfig.StringVariable(comment)
 	return j
@@ -150,11 +144,6 @@ func (j *JobServiceModel) WithSchemaValue(value tfconfig.Variable) *JobServiceMo
 
 func (j *JobServiceModel) WithNameValue(value tfconfig.Variable) *JobServiceModel {
 	j.Name = value
-	return j
-}
-
-func (j *JobServiceModel) WithAsyncValue(value tfconfig.Variable) *JobServiceModel {
-	j.Async = value
 	return j
 }
 

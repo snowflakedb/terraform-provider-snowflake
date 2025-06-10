@@ -3,7 +3,6 @@
 package testacc
 
 import (
-	"regexp"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -13,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -45,18 +43,15 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 
 	spec := testClient().Service.SampleSpec(t)
 
-	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
-		WithAsync("true")
+	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	// TODO(SNOW-2138932): Test without async option. This probably requires a custom no-op image in the image registry.
 	modelComplete := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
-		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegration1Id).
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
 		WithComment(comment)
 
 	modelCompleteWithDifferentValues := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
-		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegration2Id).
 		WithQueryWarehouse(warehouse.ID().FullyQualifiedName()).
 		WithComment(changedComment)
@@ -81,7 +76,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasFromSpecificationTextNotEmpty().
 						HasExternalAccessIntegrationsEmpty().
 						HasNoQueryWarehouse().
-						HasAsyncString("true").
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -157,7 +151,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasFromSpecificationTemplateEmpty().
 						HasFromSpecificationEmpty().
 						HasExternalAccessIntegrationsEmpty().
-						HasAsyncString("true").
 						HasNoQueryWarehouse().
 						HasCommentString(""),
 					resourceshowoutputassert.ImportedServiceShowOutput(t, helpers.EncodeResourceIdentifier(id)).
@@ -236,7 +229,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasFromSpecificationTextNotEmpty().
 						HasExternalAccessIntegrations(externalAccessIntegration1Id).
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
-						HasAsyncString("true").
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -323,7 +315,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasFromSpecificationTextNotEmpty().
 						HasExternalAccessIntegrations(externalAccessIntegration2Id).
 						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
-						HasAsyncString("true").
 						HasCommentString(changedComment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
@@ -408,7 +399,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasFromSpecificationTextNotEmpty().
 						HasExternalAccessIntegrations(externalAccessIntegration2Id).
 						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
-						HasAsyncString("true").
 						HasCommentString(changedComment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
@@ -488,7 +478,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasFromSpecificationTextNotEmpty().
 						HasExternalAccessIntegrationsEmpty().
 						HasNoQueryWarehouse().
-						HasAsyncString("true").
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -574,8 +563,7 @@ spec:
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasic := model.JobServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName).
-		WithAsync("true")
+	modelBasic := model.JobServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -597,7 +585,6 @@ spec:
 						HasFromSpecificationOnStageNotEmpty().
 						HasExternalAccessIntegrationsEmpty().
 						HasNoQueryWarehouse().
-						HasAsyncString("true").
 						HasCommentString(""),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -684,10 +671,8 @@ func TestAcc_JobService_changingSpec(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	modelBasicOnStage := model.JobServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName).
-		WithAsync("true")
-	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
-		WithAsync("true")
+	modelBasicOnStage := model.JobServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
+	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -775,7 +760,6 @@ func TestAcc_JobService_complete(t *testing.T) {
 	spec := testClient().Service.SampleSpec(t)
 
 	modelComplete := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
-		WithAsync("true").
 		WithExternalAccessIntegrations(externalAccessIntegrationId).
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
 		WithComment(comment)
@@ -799,7 +783,6 @@ func TestAcc_JobService_complete(t *testing.T) {
 						HasFromSpecificationTextNotEmpty().
 						HasExternalAccessIntegrations(externalAccessIntegrationId).
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
-						HasAsyncString("true").
 						HasCommentString(comment),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -874,27 +857,5 @@ func TestAcc_JobService_complete(t *testing.T) {
 }
 
 // TODO (next PR): Implement validations and add tests for them.
-func TestAcc_JobService_Validations(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	computePoolId := testClient().Ids.RandomAccountObjectIdentifier()
-	spec := testClient().Service.SampleSpec(t)
-
-	modelCompleteWithInvalidAsync := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
-		WithAsync("invalid")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.JobService),
-		Steps: []resource.TestStep{
-			{
-				Config:      config.FromModels(t, modelCompleteWithInvalidAsync),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected \[\{\{} async}] to be one of \["true" "false"], got invalid`),
-			},
-		},
-	})
-}
+// func TestAcc_JobService_Validations(t *testing.T) {
+// }

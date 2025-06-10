@@ -56,3 +56,7 @@ func copyGrantsDescription(description string) string {
 func relatedResourceDescription(description string, resource providerresources.Resource) string {
 	return fmt.Sprintf(`%s For more information about this resource, see [docs](./%s).`, description, strings.TrimPrefix(resource.String(), "snowflake_"))
 }
+
+func longDescription(parts ...string) string {
+	return strings.Join(parts, " ")
+}
