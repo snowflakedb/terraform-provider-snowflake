@@ -23,23 +23,6 @@ var ValidWarehouseSizesString = []string{
 	"6X-LARGE",
 }
 
-// ValidTaskWarehouseSizesString is based on:
-// - https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-min-statement-size
-// - https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-max-statement-size
-// - https://docs.snowflake.com/en/sql-reference/parameters#user-task-managed-initial-warehouse-size
-var ValidTaskWarehouseSizesString = []string{
-	string(WarehouseSizeXSmall),
-	"X-SMALL",
-	string(WarehouseSizeSmall),
-	string(WarehouseSizeMedium),
-	string(WarehouseSizeLarge),
-	string(WarehouseSizeXLarge),
-	"X-LARGE",
-	string(WarehouseSizeXXLarge),
-	"X2LARGE",
-	"2X-LARGE",
-}
-
 // ValidWarehouseScalingPoliciesString is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties
 var ValidWarehouseScalingPoliciesString = []string{
 	string(ScalingPolicyStandard),

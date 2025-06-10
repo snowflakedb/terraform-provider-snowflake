@@ -628,7 +628,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					RequireStorageIntegrationForStageOperation:       sdk.Bool(true),
 					RowsPerResultset:                                 sdk.Int(1000),
 					SearchPath:                                       sdk.String("$current, $public"),
-					ServerlessTaskMaxStatementSize:                   sdk.Pointer(sdk.WarehouseSizeXLarge),
+					ServerlessTaskMaxStatementSize:                   sdk.Pointer(sdk.WarehouseSize("6X-LARGE")),
 					ServerlessTaskMinStatementSize:                   sdk.Pointer(sdk.WarehouseSizeSmall),
 					SsoLoginPage:                                     sdk.Bool(true),
 					StatementQueuedTimeoutInSeconds:                  sdk.Int(1),
@@ -652,7 +652,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					TransactionDefaultIsolationLevel:                 sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
 					TwoDigitCenturyStart:                             sdk.Int(1971),
 					UnsupportedDdlAction:                             sdk.Pointer(sdk.UnsupportedDDLActionFail),
-					UserTaskManagedInitialWarehouseSize:              sdk.Pointer(sdk.WarehouseSizeSmall),
+					UserTaskManagedInitialWarehouseSize:              sdk.Pointer(sdk.WarehouseSizeX6Large),
 					UserTaskMinimumTriggerIntervalInSeconds:          sdk.Int(10),
 					UserTaskTimeoutMs:                                sdk.Int(10),
 					UseCachedResult:                                  sdk.Bool(false),
@@ -746,7 +746,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRequireStorageIntegrationForStageOperation), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRowsPerResultset), "1000")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSearchPath), "$current, $public")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMaxStatementSize), string(sdk.WarehouseSizeXLarge))
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMaxStatementSize), "6X-LARGE")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMinStatementSize), string(sdk.WarehouseSizeSmall))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSsoLoginPage), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStatementQueuedTimeoutInSeconds), "1")
@@ -770,7 +770,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTransactionDefaultIsolationLevel), string(sdk.TransactionDefaultIsolationLevelReadCommitted))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTwoDigitCenturyStart), "1971")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUnsupportedDdlAction), string(sdk.UnsupportedDDLActionFail))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskManagedInitialWarehouseSize), string(sdk.WarehouseSizeSmall))
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskManagedInitialWarehouseSize), string(sdk.WarehouseSizeX6Large))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds), "10")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs), "10")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUseCachedResult), "false")
