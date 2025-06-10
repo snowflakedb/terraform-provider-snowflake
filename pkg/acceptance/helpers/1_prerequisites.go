@@ -3,7 +3,9 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"log"
+	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -65,4 +67,12 @@ func hasGranteeName(grants []sdk.Grant, role sdk.AccountObjectIdentifier) bool {
 		}
 	}
 	return false
+}
+
+func (c *TestClient) EnsureValidAccountIsUsed(t *testing.T) {
+	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	nonProdModifiableAccountLocator := testenvs.GetOrSkipTest(t, testenvs.TestNonProdModifiableAccountLocator)
+	if c.context.client.GetAccountLocator() != nonProdModifiableAccountLocator {
+		t.Skipf("Current client account locator does not match the required non-prod modifiable account's locator set in %s env variable. Skipping test.", testenvs.TestNonProdModifiableAccountLocator)
+	}
 }
