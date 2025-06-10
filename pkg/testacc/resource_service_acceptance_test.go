@@ -710,7 +710,7 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasicOnStage.ResourceReference(), "describe_output.0.name", id.Name())),
 				),
 			},
-			// external changed are not detected
+			// external changes are not detected
 			{
 				PreConfig: func() {
 					testClient().Service.Alter(t, sdk.NewAlterServiceRequest(id).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(testClient().Service.SampleSpecWithContainerName(t, "external-changed"))))
