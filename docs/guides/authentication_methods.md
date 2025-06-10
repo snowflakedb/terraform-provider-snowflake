@@ -98,6 +98,8 @@ but instead of password, use the generated token.
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more information on PAT authentication.
 
+> Note: Currently, PAT authentication is not natively supported by the provider (only through default Snowflake authenticator), but it's planned to be fully supported in the future (see [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#pat-support)).
+
 ### JWT authenticator flow
 
 To use JWT authentication, you have to firstly generate key-pairs used by Snowflake.
