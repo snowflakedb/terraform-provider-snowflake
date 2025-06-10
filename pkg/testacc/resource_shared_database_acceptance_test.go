@@ -159,7 +159,7 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
-		WithTraceLevel(string(sdk.TraceLevelOnEvent)).
+		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
 		WithUserTaskManagedInitialWarehouseSize(string(sdk.WarehouseSizeXLarge)).
@@ -190,7 +190,7 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "default_ddl_collation", "en_US"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "storage_serialization_policy", string(sdk.StorageSerializationPolicyOptimized)),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "log_level", string(sdk.LogLevelInfo)),
-					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "trace_level", string(sdk.TraceLevelOnEvent)),
+					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "trace_level", string(sdk.TraceLevelPropagate)),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "suspend_task_after_num_failures", "20"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "task_auto_retry_attempts", "20"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "user_task_managed_initial_warehouse_size", string(sdk.WarehouseSizeXLarge)),

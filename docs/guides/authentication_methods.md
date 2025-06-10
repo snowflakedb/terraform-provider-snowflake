@@ -28,6 +28,7 @@ Read more on Snowflake's password protection: https://docs.snowflake.com/en/user
 
 * [Protecting secret values](#protecting-secret-values)
 * [Snowflake authenticator flow (login + password)](#snowflake-authenticator-flow-login--password)
+* [PAT (Personal Access Token)](#pat-personal-access-token)
 * [JWT authenticator flow](#jwt-authenticator-flow)
   * [JWT authenticator flow using passphrase](#jwt-authenticator-flow-using-passphrase)
 * [MFA authenticator flow](#mfa-authenticator-flow)
@@ -83,6 +84,21 @@ variable "password" {
   sensitive = true
 }
 ```
+
+### PAT (Personal Access Token)
+
+You must fulfill the following prerequisites to generate and use programmatic access tokens:
+- [Network policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-network)
+- [Authentication policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-authentication)
+
+To generate PAT, you use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
+It will generate a new token and return it in the output console. To use it in the provider,
+follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
+but instead of password, use the generated token.
+
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more information on PAT authentication.
+
+> Note: Currently, PAT authentication is not natively supported by the provider (only through default Snowflake authenticator), but it's planned to be fully supported in the future (see [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#pat-support)).
 
 ### JWT authenticator flow
 

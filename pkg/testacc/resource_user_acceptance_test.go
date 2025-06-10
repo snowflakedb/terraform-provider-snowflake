@@ -413,7 +413,7 @@ func TestAcc_User_AllParameters(t *testing.T) {
 		WithTimezone("Europe/Warsaw").
 		WithTimeInputFormat("HH24:MI").
 		WithTimeOutputFormat("HH24:MI").
-		WithTraceLevelEnum(sdk.TraceLevelOnEvent).
+		WithTraceLevelEnum(sdk.TraceLevelPropagate).
 		WithTransactionAbortOnError(true).
 		WithTransactionDefaultIsolationLevelEnum(sdk.TransactionDefaultIsolationLevelReadCommitted).
 		WithTwoDigitCenturyStart(1980).
@@ -505,7 +505,7 @@ func TestAcc_User_AllParameters(t *testing.T) {
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").
 						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelOnEvent).
+						HasTraceLevel(sdk.TraceLevelPropagate).
 						HasTransactionAbortOnError(true).
 						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
 						HasTwoDigitCenturyStart(1980).
@@ -564,7 +564,7 @@ func TestAcc_User_AllParameters(t *testing.T) {
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").
 						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelOnEvent).
+						HasTraceLevel(sdk.TraceLevelPropagate).
 						HasTransactionAbortOnError(true).
 						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
 						HasTwoDigitCenturyStart(1980).
@@ -630,7 +630,7 @@ func TestAcc_User_AllParameters(t *testing.T) {
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").
 						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelOnEvent).
+						HasTraceLevel(sdk.TraceLevelPropagate).
 						HasTransactionAbortOnError(true).
 						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
 						HasTwoDigitCenturyStart(1980).
