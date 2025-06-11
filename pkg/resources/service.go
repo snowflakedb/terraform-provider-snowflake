@@ -71,7 +71,7 @@ func Service() *schema.Resource {
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ServiceResource), TrackingReadWrapper(resources.Service, ReadServiceFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ServiceResource), TrackingUpdateWrapper(resources.Service, UpdateService)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ServiceResource), TrackingDeleteWrapper(resources.Service, deleteFunc)),
-		Description: longDescription(
+		Description: joinWithSpace(
 			"Resource used to manage services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/create-service).",
 			"A long-running service is like a web service that does not end automatically. After you create a service, Snowflake manages the running service.",
 			"For example, if a service container stops, for whatever reason, Snowflake restarts that container so the service runs uninterrupted.",

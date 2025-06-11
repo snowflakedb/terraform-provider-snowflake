@@ -57,6 +57,6 @@ func relatedResourceDescription(description string, resource providerresources.R
 	return fmt.Sprintf(`%s For more information about this resource, see [docs](./%s).`, description, strings.TrimPrefix(resource.String(), "snowflake_"))
 }
 
-func longDescription(parts ...string) string {
+func joinWithSpace(parts ...string) string {
 	return strings.Join(parts, " ")
 }

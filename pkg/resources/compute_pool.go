@@ -116,7 +116,7 @@ func ComputePool() *schema.Resource {
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ComputePoolResource), TrackingReadWrapper(resources.ComputePool, ReadComputePoolFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ComputePoolResource), TrackingUpdateWrapper(resources.ComputePool, UpdateComputePool)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ComputePoolResource), TrackingDeleteWrapper(resources.ComputePool, deleteFunc)),
-		Description: longDescription(
+		Description: joinWithSpace(
 			"Resource used to manage compute pools. For more information, check [compute pools documentation](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool).",
 			"A compute pool is a collection of one or more virtual machine (VM) nodes on which Snowflake runs your Snowpark Container Services services (including job services).",
 			"See [Working with compute pools](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool) developer guide for more details.",
