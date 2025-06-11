@@ -12,24 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 var jobServiceSchema = func() map[string]*schema.Schema {
-	jobServiceSchema := map[string]*schema.Schema{
-		"async": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: validateBooleanString,
-			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("is_async_job"),
-			Description:      booleanStringFieldDescription("Specifies whether to execute the job service asynchronously."),
-			Default:          BooleanDefault,
-		},
-	}
-	return collections.MergeMaps(serviceBaseSchema(true), jobServiceSchema)
+	// TODO(SNOW-2129584): add async field, or handle sync jobs in a separate resource/data source
+	return serviceBaseSchema(true)
 }()
 
 func JobService() *schema.Resource {
@@ -44,11 +33,16 @@ func JobService() *schema.Resource {
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.JobServiceResource), TrackingReadWrapper(resources.JobService, ReadJobServiceFunc(true))),
 		// No UpdateContext because altering job service is not supported in Snowflake.
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.JobServiceResource), TrackingDeleteWrapper(resources.JobService, deleteFunc)),
-		Description:   "Resource used to manage job services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service).",
+		Description: joinWithSpace(
+			"Resource used to manage job services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service).",
+			"Executes a Snowpark Container Services service as a job. A service, created using `CREATE SERVICE`, is long-running and you must explicitly stop it when it is no longer needed.",
+			"On the other hand, a job, created using EXECUTE JOB SERVICE (with `ASYNC=TRUE` in this resource), returns immediately while the job is running.",
+			"See [Working with services](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services) developer guide for more details.",
+		),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.JobService, customdiff.All(
-			ComputedIfAnyAttributeChanged(jobServiceSchema, ShowOutputAttributeName, "query_warehouse", "comment", "async"),
-			ComputedIfAnyAttributeChanged(jobServiceSchema, DescribeOutputAttributeName, "query_warehouse", "comment", "async"),
+			ComputedIfAnyAttributeChanged(jobServiceSchema, ShowOutputAttributeName, "query_warehouse", "comment"),
+			ComputedIfAnyAttributeChanged(jobServiceSchema, DescribeOutputAttributeName, "query_warehouse", "comment"),
 			RecreateWhenServiceTypeChangedExternally(sdk.ServiceTypeJobService),
 		)),
 
@@ -62,7 +56,7 @@ func JobService() *schema.Resource {
 }
 
 func ReadJobServiceFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return ReadServiceCommonFunc(withExternalChangesMarking, jobServiceOutputMappingsFunc, []string{"async"})
+	return ReadServiceCommonFunc(withExternalChangesMarking, jobServiceOutputMappingsFunc, nil)
 }
 
 func CreateJobService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -83,8 +77,9 @@ func CreateJobService(ctx context.Context, d *schema.ResourceData, meta any) dia
 		accountObjectIdentifierAttributeCreate(d, "query_warehouse", &request.QueryWarehouse),
 		attributeMappedValueCreateBuilder(d, "external_access_integrations", request.WithExternalAccessIntegrations, ToServiceExternalAccessIntegrationsRequest),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		booleanStringAttributeCreateBuilder(d, "async", request.WithAsync),
 	)
+	// TODO(SNOW-2129584): adjust default async option
+	request.WithAsync(true)
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
@@ -96,13 +91,11 @@ func CreateJobService(ctx context.Context, d *schema.ResourceData, meta any) dia
 }
 
 func jobServiceCustomFieldsHandler(d *schema.ResourceData, service *sdk.Service) error {
-	return errors.Join(
-		d.Set("async", booleanStringFromBool(service.IsAsyncJob)),
-	)
+	// noop, as job service has no custom fields
+	return nil
 }
 
 func jobServiceOutputMappingsFunc(service *sdk.Service) []outputMapping {
-	return []outputMapping{
-		{"async", "async", service.IsAsyncJob, booleanStringFromBool(service.IsAsyncJob), nil},
-	}
+	// noop, as job service has no custom fields
+	return nil
 }

@@ -8,6 +8,7 @@ import (
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -717,7 +719,7 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasicOnStage.ResourceReference(), "describe_output.0.name", id.Name())),
 				),
 			},
-			// external changed are not detected
+			// external changes are not detected
 			{
 				PreConfig: func() {
 					testClient().Service.Alter(t, sdk.NewAlterServiceRequest(id).WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(testClient().Service.SampleSpecWithContainerName(t, "external-changed"))))
@@ -786,6 +788,9 @@ func TestAcc_Service_changeServiceTypeExternally(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(modelBasic.ResourceReference(), "service_type", sdk.Pointer(string(sdk.ServiceTypeService)), sdk.Pointer(string(sdk.ServiceTypeJobService))),
+						planchecks.ExpectChange(modelBasic.ResourceReference(), "service_type", tfjson.ActionDelete, sdk.Pointer(string(sdk.ServiceTypeJobService)), nil),
+						planchecks.ExpectChange(modelBasic.ResourceReference(), "service_type", tfjson.ActionCreate, sdk.Pointer(string(sdk.ServiceTypeJobService)), nil),
 					},
 				},
 				Check: assertThat(t,

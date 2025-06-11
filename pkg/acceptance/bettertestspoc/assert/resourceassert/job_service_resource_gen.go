@@ -47,11 +47,6 @@ func (j *JobServiceResourceAssert) HasNameString(expected string) *JobServiceRes
 	return j
 }
 
-func (j *JobServiceResourceAssert) HasAsyncString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("async", expected))
-	return j
-}
-
 func (j *JobServiceResourceAssert) HasCommentString(expected string) *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValueSet("comment", expected))
 	return j
@@ -106,11 +101,6 @@ func (j *JobServiceResourceAssert) HasNoName() *JobServiceResourceAssert {
 	return j
 }
 
-func (j *JobServiceResourceAssert) HasNoAsync() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("async"))
-	return j
-}
-
 func (j *JobServiceResourceAssert) HasNoComment() *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValueNotSet("comment"))
 	return j
@@ -139,11 +129,6 @@ func (j *JobServiceResourceAssert) HasNoServiceType() *JobServiceResourceAssert 
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
-
-func (j *JobServiceResourceAssert) HasAsyncEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("async", ""))
-	return j
-}
 
 func (j *JobServiceResourceAssert) HasCommentEmpty() *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValueSet("comment", ""))
@@ -191,11 +176,6 @@ func (j *JobServiceResourceAssert) HasSchemaNotEmpty() *JobServiceResourceAssert
 
 func (j *JobServiceResourceAssert) HasNameNotEmpty() *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValuePresent("name"))
-	return j
-}
-
-func (j *JobServiceResourceAssert) HasAsyncNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("async"))
 	return j
 }
 

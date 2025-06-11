@@ -2,7 +2,7 @@
 page_title: "snowflake_compute_pool Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage compute pools. For more information, check compute pools documentation https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool.
+  Resource used to manage compute pools. For more information, check compute pools documentation https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool. A compute pool is a collection of one or more virtual machine (VM) nodes on which Snowflake runs your Snowpark Container Services services (including job services). See Working with compute pools https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool developer guide for more details.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
@@ -13,7 +13,7 @@ description: |-
 
 # snowflake_compute_pool (Resource)
 
-Resource used to manage compute pools. For more information, check [compute pools documentation](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool).
+Resource used to manage compute pools. For more information, check [compute pools documentation](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool). A compute pool is a collection of one or more virtual machine (VM) nodes on which Snowflake runs your Snowpark Container Services services (including job services). See [Working with compute pools](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool) developer guide for more details.
 
 ## Example Usage
 

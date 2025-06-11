@@ -2,16 +2,21 @@
 page_title: "snowflake_job_service Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage job services. For more information, check services documentation https://docs.snowflake.com/en/sql-reference/sql/execute-job-service.
+  Resource used to manage job services. For more information, check services documentation https://docs.snowflake.com/en/sql-reference/sql/execute-job-service. Executes a Snowpark Container Services service as a job. A service, created using CREATE SERVICE, is long-running and you must explicitly stop it when it is no longer needed. On the other hand, a job, created using EXECUTE JOB SERVICE (with ASYNC=TRUE in this resource), returns immediately while the job is running. See Working with services https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services developer guide for more details.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+
+<!-- TODO(SNOW-2129584): address this limitation -->
+!> **Caution** Only asynchronous job services are supported. This resource uses `ASYNC=TRUE` during creation. In this case, the command returns immediately while the job is running. Creating a job service automatically executes the job (read more in [EXECUTE JOB SERVICE docs](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service)).
+
+-> **Note** For asynchronous jobs, Snowflake does not perform automatic cleanup after completion. You must either remove the resource or execute the `DROP SERVICE` command to remove the job. If you want to execute the job again, use the [replace flag](https://developer.hashicorp.com/terraform/cli/commands/apply#replace-resource).
 
 -> **Note** Managing services via specification templates is not yet supported. This will be addressed in the next versions.
 
 # snowflake_job_service (Resource)
 
-Resource used to manage job services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service).
+Resource used to manage job services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service). Executes a Snowpark Container Services service as a job. A service, created using `CREATE SERVICE`, is long-running and you must explicitly stop it when it is no longer needed. On the other hand, a job, created using EXECUTE JOB SERVICE (with `ASYNC=TRUE` in this resource), returns immediately while the job is running. See [Working with services](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services) developer guide for more details.
 
 ## Example Usage
 
@@ -83,7 +88,6 @@ resource "snowflake_job_service" "complete" {
 
 ### Optional
 
-- `async` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to execute the job service asynchronously. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `comment` (String) Specifies a comment for the service.
 - `external_access_integrations` (Set of String) Specifies the names of the external access integrations that allow your service to access external sites.
 - `from_specification` (Block List, Max: 1) Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected. (see [below for nested schema](#nestedblock--from_specification))
