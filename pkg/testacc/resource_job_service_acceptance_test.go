@@ -558,8 +558,7 @@ func TestAcc_JobService_changeServiceTypeExternally(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	spec := testClient().Service.SampleSpec(t)
 
-	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
-		WithAsync("true")
+	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
