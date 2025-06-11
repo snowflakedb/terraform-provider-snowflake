@@ -184,7 +184,7 @@ func (opts *AlterAccountOptions) validate() error {
 	}
 	if valueSet(opts.Set) {
 		if valueSet(opts.Set.ConsumptionBillingEntity) {
-			if !ValidObjectIdentifier(opts.Name) {
+			if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
 				errs = append(errs, ErrInvalidObjectIdentifier)
 			}
 		}
@@ -194,7 +194,7 @@ func (opts *AlterAccountOptions) validate() error {
 	}
 	if valueSet(opts.Unset) {
 		if valueSet(opts.Unset.ConsumptionBillingEntity) {
-			if !ValidObjectIdentifier(opts.Name) {
+			if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
 				errs = append(errs, ErrInvalidObjectIdentifier)
 			}
 		}
@@ -213,7 +213,7 @@ func (opts *AlterAccountOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Drop) || valueSet(opts.Rename) {
-		if !ValidObjectIdentifier(opts.Name) {
+		if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
 	}
@@ -253,7 +253,7 @@ func (opts *AccountLevelParameters) validate() error {
 }
 
 type AccountSet struct {
-	Parameters           *AccountParameters      `ddl:"list,no_parentheses"`
+	Parameters               *AccountParameters      `ddl:"list,no_parentheses"`
 	LegacyParameters         *AccountLevelParameters `ddl:"list,no_parentheses"`
 	ResourceMonitor          AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	PackagesPolicy           SchemaObjectIdentifier  `ddl:"identifier" sql:"PACKAGES POLICY"`
@@ -296,7 +296,7 @@ func (opts *AccountLevelParametersUnset) validate() error {
 }
 
 type AccountUnset struct {
-	Parameters           *AccountParametersUnset      `ddl:"list,no_parentheses"`
+	Parameters               *AccountParametersUnset      `ddl:"list,no_parentheses"`
 	LegacyParameters         *AccountLevelParametersUnset `ddl:"list,no_parentheses"`
 	PackagesPolicy           *bool                        `ddl:"keyword" sql:"PACKAGES POLICY"`
 	PasswordPolicy           *bool                        `ddl:"keyword" sql:"PASSWORD POLICY"`

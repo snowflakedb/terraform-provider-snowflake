@@ -161,7 +161,7 @@ func Account() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Account, customdiff.All(
 			ComputedIfAnyAttributeChanged(accountSchema, FullyQualifiedNameAttributeName, "name"),
-			ComputedIfAnyAttributeChanged(accountSchema, ShowOutputAttributeName, "name", "is_org_admin"),
+			ComputedIfAnyAttributeChanged(accountSchema, ShowOutputAttributeName, "name", "is_org_admin", "consumption_billing_entity"),
 		)),
 
 		Schema: accountSchema,
@@ -454,6 +454,29 @@ func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				}); err != nil {
 					return diag.FromErr(err)
 				}
+			}
+		}
+	}
+
+	if d.HasChange("consumption_billing_entity") {
+		newConsumptionBillingEntity := d.Get("consumption_billing_entity").(string)
+		if newConsumptionBillingEntity != "" {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+				Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
+				Set: &sdk.AccountSet{
+					ConsumptionBillingEntity: sdk.String(newConsumptionBillingEntity),
+				},
+			}); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+				Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
+				Unset: &sdk.AccountUnset{
+					ConsumptionBillingEntity: sdk.Bool(true),
+				},
+			}); err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}

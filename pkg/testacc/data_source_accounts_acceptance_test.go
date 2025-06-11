@@ -21,7 +21,8 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 	prefix := testClient().Ids.AlphaN(4)
 
 	publicKey, _ := random.GenerateRSAPublicKey(t)
-	account, accountCleanup := testClient().Account.CreateWithRequest(t, testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix), &sdk.CreateAccountOptions{
+	id1 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AdminName()))
+	account, accountCleanup := testClient().Account.CreateWithRequest(t, id1, &sdk.CreateAccountOptions{
 		AdminName:         testClient().Ids.Alpha(),
 		AdminRSAPublicKey: &publicKey,
 		AdminUserType:     sdk.Pointer(sdk.UserTypeService),
@@ -30,7 +31,8 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 	})
 	t.Cleanup(accountCleanup)
 
-	_, account2Cleanup := testClient().Account.CreateWithRequest(t, testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix), &sdk.CreateAccountOptions{
+	id2 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AdminName()))
+	_, account2Cleanup := testClient().Account.CreateWithRequest(t, id2, &sdk.CreateAccountOptions{
 		AdminName:         testClient().Ids.Alpha(),
 		AdminRSAPublicKey: &publicKey,
 		AdminUserType:     sdk.Pointer(sdk.UserTypeService),

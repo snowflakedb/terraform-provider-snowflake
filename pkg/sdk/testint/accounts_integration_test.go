@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -27,6 +28,8 @@ func TestInt_Account(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 	currentAccountName := testClientHelper().Context.CurrentAccountName(t)
+	// The default consumption billing entity consists of organization name followed by _DefaultBE
+	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", testClientHelper().Context.CurrentOrganizationName(t))
 
 	assertAccountQueriedByOrgAdmin := func(t *testing.T, account sdk.Account, accountName string) {
 		t.Helper()
@@ -174,7 +177,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("create: complete", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AdminName())
 		name := random.AdminName()
 		password := random.Password()
 		email := random.Email()
@@ -187,16 +190,17 @@ func TestInt_Account(t *testing.T) {
 		comment := random.Comment()
 
 		createResponse, err := client.Accounts.Create(ctx, id, &sdk.CreateAccountOptions{
-			AdminName:          name,
-			AdminPassword:      sdk.String(password),
-			FirstName:          sdk.String("firstName"),
-			LastName:           sdk.String("lastName"),
-			Email:              email,
-			MustChangePassword: sdk.Bool(true),
-			Edition:            sdk.EditionStandard,
-			RegionGroup:        sdk.String("PUBLIC"),
-			Region:             sdk.String(currentRegion.SnowflakeRegion),
-			Comment:            sdk.String(comment),
+			AdminName:                name,
+			AdminPassword:            sdk.String(password),
+			FirstName:                sdk.String("firstName"),
+			LastName:                 sdk.String("lastName"),
+			Email:                    email,
+			MustChangePassword:       sdk.Bool(true),
+			Edition:                  sdk.EditionStandard,
+			RegionGroup:              sdk.String("PUBLIC"),
+			Region:                   sdk.String(currentRegion.SnowflakeRegion),
+			Comment:                  sdk.String(comment),
+			ConsumptionBillingEntity: sdk.String(defaultConsumptionBillingEntity),
 			// TODO(SNOW-1895880): with polaris Snowflake returns an error saying: "invalid property polaris for account"
 			// Polaris: sdk.Bool(true),
 		})
@@ -286,6 +290,34 @@ func TestInt_Account(t *testing.T) {
 		require.Empty(t, acc.OldAccountURL)
 	})
 
+	t.Run("alter: set / unset consumption billing entity", func(t *testing.T) {
+		account, accountCleanup := testClientHelper().Account.Create(t)
+		t.Cleanup(accountCleanup)
+
+		require.Equal(t, defaultConsumptionBillingEntity, *account.ConsumptionBillingEntityName)
+
+		// We are not able to create consumption billing entities, because of that, we use the default one.
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{ConsumptionBillingEntity: sdk.String(defaultConsumptionBillingEntity)},
+		})
+		require.NoError(t, err)
+
+		acc, err := client.Accounts.ShowByID(ctx, account.ID())
+		require.NoError(t, err)
+		require.Equal(t, defaultConsumptionBillingEntity, *acc.ConsumptionBillingEntityName)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name:  sdk.Pointer(account.ID()),
+			Unset: &sdk.AccountUnset{ConsumptionBillingEntity: sdk.Bool(true)},
+		})
+		require.NoError(t, err)
+
+		acc, err = client.Accounts.ShowByID(ctx, account.ID())
+		require.NoError(t, err)
+		require.Equal(t, defaultConsumptionBillingEntity, *acc.ConsumptionBillingEntityName)
+	})
+
 	t.Run("alter: drop url when there's no old url", func(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
@@ -319,7 +351,7 @@ func TestInt_Account(t *testing.T) {
 		require.NotEmpty(t, acc.OldAccountURL)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Name: &newName,
+			Name: sdk.Pointer(newName),
 			Drop: &sdk.AccountDrop{
 				OldUrl: sdk.Bool(true),
 			},
@@ -624,7 +656,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					RequireStorageIntegrationForStageOperation:       sdk.Bool(true),
 					RowsPerResultset:                                 sdk.Int(1000),
 					SearchPath:                                       sdk.String("$current, $public"),
-					ServerlessTaskMaxStatementSize:                   sdk.Pointer(sdk.WarehouseSizeXLarge),
+					ServerlessTaskMaxStatementSize:                   sdk.Pointer(sdk.WarehouseSize("6X-LARGE")),
 					ServerlessTaskMinStatementSize:                   sdk.Pointer(sdk.WarehouseSizeSmall),
 					SsoLoginPage:                                     sdk.Bool(true),
 					StatementQueuedTimeoutInSeconds:                  sdk.Int(1),
@@ -648,7 +680,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					TransactionDefaultIsolationLevel:                 sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
 					TwoDigitCenturyStart:                             sdk.Int(1971),
 					UnsupportedDdlAction:                             sdk.Pointer(sdk.UnsupportedDDLActionFail),
-					UserTaskManagedInitialWarehouseSize:              sdk.Pointer(sdk.WarehouseSizeSmall),
+					UserTaskManagedInitialWarehouseSize:              sdk.Pointer(sdk.WarehouseSizeX6Large),
 					UserTaskMinimumTriggerIntervalInSeconds:          sdk.Int(10),
 					UserTaskTimeoutMs:                                sdk.Int(10),
 					UseCachedResult:                                  sdk.Bool(false),
@@ -742,7 +774,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRequireStorageIntegrationForStageOperation), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRowsPerResultset), "1000")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSearchPath), "$current, $public")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMaxStatementSize), string(sdk.WarehouseSizeXLarge))
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMaxStatementSize), "6X-LARGE")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMinStatementSize), string(sdk.WarehouseSizeSmall))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSsoLoginPage), "true")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStatementQueuedTimeoutInSeconds), "1")
@@ -766,7 +798,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTransactionDefaultIsolationLevel), string(sdk.TransactionDefaultIsolationLevelReadCommitted))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTwoDigitCenturyStart), "1971")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUnsupportedDdlAction), string(sdk.UnsupportedDDLActionFail))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskManagedInitialWarehouseSize), string(sdk.WarehouseSizeSmall))
+		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskManagedInitialWarehouseSize), string(sdk.WarehouseSizeX6Large))
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds), "10")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs), "10")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUseCachedResult), "false")

@@ -92,6 +92,16 @@ func (c *ContextClient) CurrentAccountIdentifier(t *testing.T) sdk.AccountIdenti
 	return sdk.NewAccountIdentifier(details.OrganizationName, details.AccountName)
 }
 
+func (c *ContextClient) CurrentOrganizationName(t *testing.T) string {
+	t.Helper()
+	ctx := context.Background()
+
+	organizationName, err := c.client().CurrentOrganizationName(ctx)
+	require.NoError(t, err)
+
+	return organizationName
+}
+
 func (c *ContextClient) IsRoleInSession(t *testing.T, id sdk.AccountObjectIdentifier) bool {
 	t.Helper()
 	ctx := context.Background()

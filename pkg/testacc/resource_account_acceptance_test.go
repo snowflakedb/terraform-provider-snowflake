@@ -26,11 +26,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TESTS
+// - Create with be
+// - Set/Unset be
+// - Upgrade to check if any changes are required
+
 func TestAcc_Account_Minimal(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
-	id := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
 	email := random.Email()
 	name := random.AdminName()
@@ -128,7 +133,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
-	id := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
 	firstName := random.AlphaN(30)
 	lastName := random.AlphaN(30)
@@ -137,6 +142,9 @@ func TestAcc_Account_Complete(t *testing.T) {
 	key, _ := random.GenerateRSAPublicKey(t)
 	region := testClient().Context.CurrentRegion(t)
 	comment := random.Comment()
+	// The default consumption billing entity consists of organization name followed by _DefaultBE
+	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", testClient().Context.CurrentOrganizationName(t))
+	_ = defaultConsumptionBillingEntity
 
 	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypePerson).
@@ -237,7 +245,7 @@ func TestAcc_Account_Rename(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
-	id := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
 
 	newId := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
@@ -298,7 +306,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
-	id := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
 
 	email := random.Email()
@@ -415,7 +423,7 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
-	id := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
 
 	firstName := random.AlphaN(30)
@@ -492,7 +500,7 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
-	id := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	email := random.Email()
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
@@ -522,7 +530,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 func TestAcc_Account_InvalidValues(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
-	id := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	email := random.Email()
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
@@ -565,7 +573,7 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
-	id := testClient().Ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	email := random.Email()
 	adminName := random.AdminName()
 	adminPassword := random.Password()

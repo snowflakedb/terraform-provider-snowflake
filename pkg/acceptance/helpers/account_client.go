@@ -53,7 +53,7 @@ func (c *AccountClient) GetAccountIdentifier(t *testing.T) sdk.AccountIdentifier
 
 func (c *AccountClient) Create(t *testing.T) (*sdk.Account, func()) {
 	t.Helper()
-	id := c.ids.RandomSensitiveAccountObjectIdentifier()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
 	name := random.AdminName()
 	email := random.Email()
 	publicKey, _ := random.GenerateRSAPublicKey(t)

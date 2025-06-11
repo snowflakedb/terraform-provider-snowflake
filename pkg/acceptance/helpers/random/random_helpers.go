@@ -3,6 +3,7 @@ package random
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 
@@ -33,10 +34,10 @@ func Comment() string {
 }
 
 // AdminName returns admin name acceptable by Snowflake:
-// 090088 (22000): ADMIN_NAME can only contain letters, numbers and underscores.
+// 090088 (22000): ADMIN_NAME can only contain capital letters, numbers and underscores.
 // 090089 (22000): ADMIN_NAME must start with a letter.
 func AdminName() string {
-	return SensitiveAlpha()
+	return strings.ToUpper(SensitiveAlpha())
 }
 
 func Email() string {

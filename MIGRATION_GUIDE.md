@@ -20,6 +20,13 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(new feature)* New consumption_billing_entity field in snowflake_account resource
+
+The `snowflake_account` resource now has a new `consumption_billing_entity` field, which allows you to set the consumption billing entity for the account.
+
+[//]: # (TODO: Check)
+No configuration changes are needed.
+
 ### *(new feature)* New tracking level
 
 Every resource that is capable of setting tracing level (`database`, `shared_database`, `secondary_database`, `schema`) now supports the new `PROPAGATE` value.
