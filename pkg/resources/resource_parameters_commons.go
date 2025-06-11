@@ -70,6 +70,7 @@ func stringToStringEnumProvider[T ~string](mapper func(string) (T, error)) func(
 	}
 }
 
+// TODO(SNOW-2147123): Move to docs package
 // enrichWithReferenceToParameterDocs adds the reference to the Snowflake Parameter docs at the end of the provided description.
 func enrichWithReferenceToParameterDocs[T ~string](parameter T, description string) string {
 	link := fmt.Sprintf("https://docs.snowflake.com/en/sql-reference/parameters#%s", strings.ReplaceAll(strings.ToLower(string(parameter)), "_", "-"))
