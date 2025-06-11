@@ -10,7 +10,7 @@ description: |-
 <!-- TODO(SNOW-2129584): address this limitation -->
 !> **Caution** Only asynchronous job services are supported. This resource uses `ASYNC=TRUE` during creation. In this case, the command returns immediately while the job is running. Creating a job service automatically executes the job (read more in [EXECUTE JOB SERVICE docs](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service)).
 
--> **Note** For asynchronous jobs, Snowflake does not perform automatic cleanup after completion. You must explicitly execute the `DROP SERVICE` command to remove the job. If you want to execute the job again, use the [replace flag](https://developer.hashicorp.com/terraform/cli/commands/apply#replace-resource).
+-> **Note** For asynchronous jobs, Snowflake does not perform automatic cleanup after completion. You must either remove the resource or execute the `DROP SERVICE` command to remove the job. If you want to execute the job again, use the [replace flag](https://developer.hashicorp.com/terraform/cli/commands/apply#replace-resource).
 
 -> **Note** Managing services via specification templates is not yet supported. This will be addressed in the next versions.
 
