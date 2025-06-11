@@ -215,6 +215,7 @@ func ImportAccount(ctx context.Context, d *schema.ResourceData, meta any) ([]*sc
 		d.Set("region", account.SnowflakeRegion),
 		d.Set("comment", comment),
 		d.Set("is_org_admin", booleanStringFromBool(*account.IsOrgAdmin)),
+		d.Set("consumption_billing_entity", *account.ConsumptionBillingEntityName),
 	); err != nil {
 		return nil, err
 	}
@@ -303,6 +304,18 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		}
 	}
 
+	if v, ok := d.GetOk("consumption_billing_entity"); ok {
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: &id,
+			Set: &sdk.AccountSet{
+				ConsumptionBillingEntity: sdk.String(v.(string)),
+			},
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return ReadAccount(false)(ctx, d, meta)
 }
 
@@ -357,7 +370,7 @@ func ReadAccount(withExternalChangesMarking bool) schema.ReadContextFunc {
 				outputMapping{"region_group", "region_group", regionGroup, regionGroup, nil},
 				outputMapping{"snowflake_region", "region", account.SnowflakeRegion, account.SnowflakeRegion, nil},
 				outputMapping{"comment", "comment", comment, comment, nil},
-				outputMapping{"consumption_billing_entity", "consumption_billing_entity", consumptionBillingEntityName, consumptionBillingEntityName, nil},
+				outputMapping{"consumption_billing_entity_name", "consumption_billing_entity", consumptionBillingEntityName, consumptionBillingEntityName, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}

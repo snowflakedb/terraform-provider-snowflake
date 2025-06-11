@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"log"
 	"os"
 	"testing"
@@ -104,6 +105,15 @@ func (atc *acceptanceTestContext) initialize() error {
 	atc.config = defaultConfig
 	atc.client = client
 	atc.testClient = helpers.NewTestClient(client, TestDatabaseName, TestSchemaName, TestWarehouseName, acceptancetests.ObjectsSuffix)
+
+	// TODO(SNOW-1842271): Adjust test setup to work properly with Accountadmin role for object tests and Orgadmin for account tests
+	if os.Getenv(string(testenvs.TestAccountCreate)) != "" {
+		err := client.Sessions.UseRole(context.Background(), snowflakeroles.Accountadmin)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = client.Sessions.UseRole(context.Background(), snowflakeroles.Orgadmin) }()
+	}
 
 	ctx := context.Background()
 	db, dbCleanup, err := testClient().CreateTestDatabase(ctx, false)

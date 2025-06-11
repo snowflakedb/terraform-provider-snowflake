@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"regexp"
 	"testing"
 
@@ -42,6 +43,8 @@ func TestAcc_Account_Minimal(t *testing.T) {
 	key, _ := random.GenerateRSAPublicKey(t)
 	region := testClient().Context.CurrentRegion(t)
 
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+
 	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminRsaPublicKey(key)
 
@@ -53,7 +56,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Account),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, configModel),
+				Config: config.FromModels(t, providerModel, configModel),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -104,7 +107,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 			},
 			{
 				ResourceName: configModel.ResourceReference(),
-				Config:       config.FromModels(t, configModel),
+				Config:       config.FromModels(t, providerModel, configModel),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedAccountResource(t, helpers.EncodeResourceIdentifier(accountId)).
@@ -142,9 +145,10 @@ func TestAcc_Account_Complete(t *testing.T) {
 	key, _ := random.GenerateRSAPublicKey(t)
 	region := testClient().Context.CurrentRegion(t)
 	comment := random.Comment()
-	// The default consumption billing entity consists of organization name followed by _DefaultBE
-	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", testClient().Context.CurrentOrganizationName(t))
-	_ = defaultConsumptionBillingEntity
+	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
+	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", organizationName)
+
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
 	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypePerson).
@@ -155,6 +159,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 		WithRegionGroup("PUBLIC").
 		WithRegion(region).
 		WithComment(comment).
+		WithConsumptionBillingEntity(defaultConsumptionBillingEntity).
 		WithIsOrgAdmin(r.BooleanFalse)
 
 	resource.Test(t, resource.TestCase{
@@ -165,7 +170,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Account),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, configModel),
+				Config: config.FromModels(t, providerModel, configModel),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -180,6 +185,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasRegionGroupString("PUBLIC").
 						HasRegionString(region).
 						HasCommentString(comment).
+						HasConsumptionBillingEntityString(defaultConsumptionBillingEntity).
 						HasIsOrgAdminString(r.BooleanFalse).
 						HasGracePeriodInDaysString("3"),
 					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
@@ -194,7 +200,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasAccountLocatorNotEmpty().
 						HasAccountLocatorUrlNotEmpty().
 						HasManagedAccounts(0).
-						HasConsumptionBillingEntityNameNotEmpty().
+						HasConsumptionBillingEntityName(defaultConsumptionBillingEntity).
 						HasMarketplaceConsumerBillingEntityName("").
 						HasMarketplaceProviderBillingEntityNameNotEmpty().
 						HasOldAccountURL("").
@@ -216,7 +222,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 			},
 			{
 				ResourceName: configModel.ResourceReference(),
-				Config:       config.FromModels(t, configModel),
+				Config:       config.FromModels(t, providerModel, configModel),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedAccountResource(t, helpers.EncodeResourceIdentifier(accountId)).
@@ -233,6 +239,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasNoRegionGroup().
 						HasRegionString(region).
 						HasCommentString(comment).
+						HasConsumptionBillingEntityString(defaultConsumptionBillingEntity).
 						HasIsOrgAdminString(r.BooleanFalse).
 						HasNoGracePeriodInDays(),
 				),
@@ -255,9 +262,12 @@ func TestAcc_Account_Rename(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+
 	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
+
 	newConfigModel := model.Account("test", newId.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
@@ -270,7 +280,7 @@ func TestAcc_Account_Rename(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Account),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, configModel),
+				Config: config.FromModels(t, providerModel, configModel),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -287,7 +297,7 @@ func TestAcc_Account_Rename(t *testing.T) {
 						plancheck.ExpectResourceAction(newConfigModel.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, newConfigModel),
+				Config: config.FromModels(t, providerModel, newConfigModel),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, newConfigModel.ResourceReference()).
 						HasNameString(newId.Name()).
@@ -313,6 +323,8 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+
 	configModelWithOrgAdminTrue := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key).
@@ -336,7 +348,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with ORGADMIN enabled
 			{
-				Config: config.FromModels(t, configModelWithOrgAdminTrue),
+				Config: config.FromModels(t, providerModel, configModelWithOrgAdminTrue),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModelWithOrgAdminTrue.ResourceReference()).
 						HasNameString(id.Name()).
@@ -356,7 +368,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 						plancheck.ExpectResourceAction(configModelWithOrgAdminFalse.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, configModelWithOrgAdminFalse),
+				Config: config.FromModels(t, providerModel, configModelWithOrgAdminFalse),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModelWithOrgAdminFalse.ResourceReference()).
 						HasNameString(id.Name()).
@@ -376,7 +388,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 						plancheck.ExpectResourceAction(configModelWithoutOrgAdmin.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, configModelWithoutOrgAdmin),
+				Config: config.FromModels(t, providerModel, configModelWithoutOrgAdmin),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModelWithoutOrgAdmin.ResourceReference()).
 						HasNameString(id.Name()).
@@ -402,7 +414,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 						plancheck.ExpectResourceAction(configModelWithoutOrgAdmin.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, configModelWithoutOrgAdmin),
+				Config: config.FromModels(t, providerModel, configModelWithoutOrgAdmin),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModelWithoutOrgAdmin.ResourceReference()).
 						HasNameString(id.Name()).
@@ -416,6 +428,91 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAcc_Account_UpdatingConsumptionBillingEntity(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+
+	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
+	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
+	email := random.Email()
+	name := random.AdminName()
+	key, _ := random.GenerateRSAPublicKey(t)
+
+	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
+	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", organizationName)
+
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+
+	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
+		WithAdminRsaPublicKey(key)
+
+	configModelWithConsumptionBillingEntity := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
+		WithAdminRsaPublicKey(key).
+		WithConsumptionBillingEntity(defaultConsumptionBillingEntity)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Account),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModel, configModel),
+				Check: assertThat(t,
+					resourceassert.AccountResource(t, configModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
+						HasNoConsumptionBillingEntity(),
+					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
+						HasOrganizationName(organizationName).
+						HasAccountName(id.Name()).
+						HasConsumptionBillingEntityName(defaultConsumptionBillingEntity),
+				),
+			},
+			// Set consumption billing entity
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configModelWithConsumptionBillingEntity.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, providerModel, configModelWithConsumptionBillingEntity),
+				Check: assertThat(t,
+					resourceassert.AccountResource(t, configModelWithConsumptionBillingEntity.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
+						HasConsumptionBillingEntityString(defaultConsumptionBillingEntity),
+					resourceshowoutputassert.AccountShowOutput(t, configModelWithConsumptionBillingEntity.ResourceReference()).
+						HasOrganizationName(organizationName).
+						HasAccountName(id.Name()).
+						HasConsumptionBillingEntityName(defaultConsumptionBillingEntity),
+				),
+			},
+			// Unset consumption billing entity
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, providerModel, configModel),
+				Check: assertThat(t,
+					resourceassert.AccountResource(t, configModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
+						HasConsumptionBillingEntityEmpty(),
+					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
+						HasOrganizationName(organizationName).
+						HasAccountName(id.Name()).
+						HasConsumptionBillingEntityName(defaultConsumptionBillingEntity),
+				),
+			},
+		},
+		// TODO(SNOW-2131939): Test with external changes
 	})
 }
 
@@ -438,6 +535,8 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 	newName := random.AdminName()
 	newPass := random.Password()
 
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+
 	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypePerson).
 		WithFirstName(firstName).
@@ -459,7 +558,7 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Account),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, configModel),
+				Config: config.FromModels(t, providerModel, configModel),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -479,7 +578,7 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 						plancheck.ExpectResourceAction(newConfigModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Config: config.FromModels(t, newConfigModel),
+				Config: config.FromModels(t, providerModel, newConfigModel),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, newConfigModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -508,6 +607,8 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	t.Setenv(snowflakeenvs.Role, snowflakeroles.Accountadmin.Name())
 
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+
 	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
@@ -520,7 +621,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Account),
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, configModel),
+				Config:      config.FromModels(t, providerModel, configModel),
 				ExpectError: regexp.MustCompile("Error: current user doesn't have the orgadmin role in session"),
 			},
 		},
@@ -534,6 +635,8 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 	email := random.Email()
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
+
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
 	configModelInvalidUserType := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserType("invalid_user_type").
@@ -555,15 +658,15 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Account),
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, configModelInvalidUserType),
+				Config:      config.FromModels(t, providerModel, configModelInvalidUserType),
 				ExpectError: regexp.MustCompile("invalid user type: invalid_user_type"),
 			},
 			{
-				Config:      config.FromModels(t, configModelInvalidAccountEdition),
+				Config:      config.FromModels(t, providerModel, configModelInvalidAccountEdition),
 				ExpectError: regexp.MustCompile("unknown account edition: invalid_account_edition"),
 			},
 			{
-				Config:      config.FromModels(t, configModelInvalidGracePeriodInDays),
+				Config:      config.FromModels(t, providerModel, configModelInvalidGracePeriodInDays),
 				ExpectError: regexp.MustCompile(`Error: expected grace_period_in_days to be at least \(3\), got 2`),
 			},
 		},
@@ -581,6 +684,8 @@ func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
 	lastName := random.AlphaN(30)
 	region := testClient().Context.CurrentRegion(t)
 	comment := random.Comment()
+
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
 	configModel := model.Account("test", id.Name(), adminName, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
@@ -604,7 +709,7 @@ func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, configModel),
+				Config:                   config.FromModels(t, providerModel, configModel),
 				Check: assertThat(t,
 					resourceassert.AccountResource(t, configModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -639,6 +744,10 @@ func accountConfig_v0_99_0(
 	comment string,
 ) string {
 	return fmt.Sprintf(`
+provider "snowflake" {
+	role = "ORGADMIN"
+}
+
 resource "snowflake_account" "test" {
 	name = "%[1]s"
 	admin_name = "%[2]s"

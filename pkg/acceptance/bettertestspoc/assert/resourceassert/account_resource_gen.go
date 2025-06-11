@@ -62,6 +62,11 @@ func (a *AccountResourceAssert) HasCommentString(expected string) *AccountResour
 	return a
 }
 
+func (a *AccountResourceAssert) HasConsumptionBillingEntityString(expected string) *AccountResourceAssert {
+	a.AddAssertion(assert.ValueSet("consumption_billing_entity", expected))
+	return a
+}
+
 func (a *AccountResourceAssert) HasEditionString(expected string) *AccountResourceAssert {
 	a.AddAssertion(assert.ValueSet("edition", expected))
 	return a
@@ -146,6 +151,11 @@ func (a *AccountResourceAssert) HasNoComment() *AccountResourceAssert {
 	return a
 }
 
+func (a *AccountResourceAssert) HasNoConsumptionBillingEntity() *AccountResourceAssert {
+	a.AddAssertion(assert.ValueNotSet("consumption_billing_entity"))
+	return a
+}
+
 func (a *AccountResourceAssert) HasNoEdition() *AccountResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("edition"))
 	return a
@@ -220,6 +230,11 @@ func (a *AccountResourceAssert) HasCommentEmpty() *AccountResourceAssert {
 	return a
 }
 
+func (a *AccountResourceAssert) HasConsumptionBillingEntityEmpty() *AccountResourceAssert {
+	a.AddAssertion(assert.ValueSet("consumption_billing_entity", ""))
+	return a
+}
+
 func (a *AccountResourceAssert) HasFirstNameEmpty() *AccountResourceAssert {
 	a.AddAssertion(assert.ValueSet("first_name", ""))
 	return a
@@ -286,6 +301,11 @@ func (a *AccountResourceAssert) HasAdminUserTypeNotEmpty() *AccountResourceAsser
 
 func (a *AccountResourceAssert) HasCommentNotEmpty() *AccountResourceAssert {
 	a.AddAssertion(assert.ValuePresent("comment"))
+	return a
+}
+
+func (a *AccountResourceAssert) HasConsumptionBillingEntityNotEmpty() *AccountResourceAssert {
+	a.AddAssertion(assert.ValuePresent("consumption_billing_entity"))
 	return a
 }
 
