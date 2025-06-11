@@ -218,25 +218,22 @@ func handleIn(d *schema.ResourceData, setField **sdk.In) error {
 	return nil
 }
 
-func handleNestedIn(d *schema.ResourceData) (*sdk.In, error) {
-	if v, ok := d.GetOk("in"); ok {
-		in := v.([]any)[0].(map[string]any)
-		if v, ok := in["account"]; ok && v.(bool) {
-			return &sdk.In{Account: sdk.Bool(true)}, nil
+func mapToSdkIn(in map[string]any) (*sdk.In, error) {
+	if v, ok := in["account"]; ok && v.(bool) {
+		return &sdk.In{Account: sdk.Bool(true)}, nil
+	}
+	if v, ok := in["database"]; ok {
+		if database := v.(string); database != "" {
+			return &sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}, nil
 		}
-		if v, ok := in["database"]; ok {
-			if database := v.(string); database != "" {
-				return &sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}, nil
+	}
+	if v, ok := in["schema"]; ok {
+		if schema := v.(string); schema != "" {
+			schemaId, err := sdk.ParseDatabaseObjectIdentifier(schema)
+			if err != nil {
+				return nil, fmt.Errorf("invalid schema identifier: %w", err)
 			}
-		}
-		if v, ok := in["schema"]; ok {
-			if schema := v.(string); schema != "" {
-				schemaId, err := sdk.ParseDatabaseObjectIdentifier(schema)
-				if err != nil {
-					return nil, fmt.Errorf("invalid schema identifier: %w", err)
-				}
-				return &sdk.In{Schema: schemaId}, nil
-			}
+			return &sdk.In{Schema: schemaId}, nil
 		}
 	}
 	return nil, nil
@@ -244,14 +241,14 @@ func handleNestedIn(d *schema.ResourceData) (*sdk.In, error) {
 
 func handleExtendedIn(d *schema.ResourceData, setField **sdk.ExtendedIn) error {
 	if v, ok := d.GetOk("in"); ok {
-		sdkIn, err := handleNestedIn(d)
+		in := v.([]any)[0].(map[string]any)
+		sdkIn, err := mapToSdkIn(in)
 		if err != nil {
 			return err
 		}
 		if sdkIn != nil {
 			*setField = &sdk.ExtendedIn{In: *sdkIn}
 		}
-		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["application"]; ok {
 			if application := v.(string); application != "" {
 				*setField = &sdk.ExtendedIn{Application: sdk.NewAccountObjectIdentifier(application)}
@@ -268,14 +265,14 @@ func handleExtendedIn(d *schema.ResourceData, setField **sdk.ExtendedIn) error {
 
 func handleServiceIn(d *schema.ResourceData, setField **sdk.ServiceIn) error {
 	if v, ok := d.GetOk("in"); ok {
-		sdkIn, err := handleNestedIn(d)
+		in := v.([]any)[0].(map[string]any)
+		sdkIn, err := mapToSdkIn(in)
 		if err != nil {
 			return err
 		}
 		if sdkIn != nil {
 			*setField = &sdk.ServiceIn{In: *sdkIn}
 		}
-		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["compute_pool"]; ok {
 			if computePool := v.(string); computePool != "" {
 				*setField = &sdk.ServiceIn{ComputePool: sdk.NewAccountObjectIdentifier(computePool)}
