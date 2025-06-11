@@ -179,25 +179,37 @@ func TestAcc_Services_Filtering(t *testing.T) {
 	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id3 := testClient().Ids.RandomSchemaObjectIdentifier()
+	id4 := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	model1 := model.ServiceWithSpec("test1", id1.DatabaseName(), id1.SchemaName(), id1.Name(), computePool1.ID().FullyQualifiedName(), spec)
 	model2 := model.ServiceWithSpec("test2", id2.DatabaseName(), id2.SchemaName(), id2.Name(), computePool2.ID().FullyQualifiedName(), spec)
 	model3 := model.ServiceWithSpec("test3", id3.DatabaseName(), id3.SchemaName(), id3.Name(), computePool2.ID().FullyQualifiedName(), spec)
+	jobModel := model.JobServiceWithSpec("test", id4.DatabaseName(), id4.SchemaName(), id4.Name(), computePool2.ID().FullyQualifiedName(), spec)
 
 	dataSourceModelLikeFirstOne := datasourcemodel.Services("test").
 		WithLike(id1.Name()).
 		WithWithDescribe(false).
 		WithInDatabase(id1.DatabaseId()).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), jobModel.ResourceReference())
 	dataSourceModelLikePrefix := datasourcemodel.Services("test").
 		WithLike(prefix+"%").
 		WithWithDescribe(false).
 		WithInDatabase(id1.DatabaseId()).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), jobModel.ResourceReference())
 	dataSourceModelInComputePool := datasourcemodel.Services("test").
 		WithWithDescribe(false).
-		WithInComputePool(computePool1.ID()).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+		WithInComputePool(computePool2.ID()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), jobModel.ResourceReference())
+	dataSourceModelInComputePoolJobsOnly := datasourcemodel.Services("test").
+		WithWithDescribe(false).
+		WithJobsOnly(true).
+		WithInComputePool(computePool2.ID()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), jobModel.ResourceReference())
+	dataSourceModelInComputePoolExcludeJobs := datasourcemodel.Services("test").
+		WithWithDescribe(false).
+		WithExcludeJobs(true).
+		WithInComputePool(computePool2.ID()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), jobModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -207,21 +219,33 @@ func TestAcc_Services_Filtering(t *testing.T) {
 		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, dataSourceModelLikeFirstOne),
+				Config: accconfig.FromModels(t, model1, model2, model3, jobModel, dataSourceModelLikeFirstOne),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceModelLikeFirstOne.DatasourceReference(), "services.#", "1"),
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, dataSourceModelLikePrefix),
+				Config: accconfig.FromModels(t, model1, model2, model3, jobModel, dataSourceModelLikePrefix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceModelLikePrefix.DatasourceReference(), "services.#", "2"),
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, dataSourceModelInComputePool),
+				Config: accconfig.FromModels(t, model1, model2, model3, jobModel, dataSourceModelInComputePool),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(dataSourceModelInComputePool.DatasourceReference(), "services.#", "1"),
+					resource.TestCheckResourceAttr(dataSourceModelInComputePool.DatasourceReference(), "services.#", "3"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, jobModel, dataSourceModelInComputePoolJobsOnly),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(dataSourceModelInComputePoolJobsOnly.DatasourceReference(), "services.#", "1"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, jobModel, dataSourceModelInComputePoolExcludeJobs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(dataSourceModelInComputePoolExcludeJobs.DatasourceReference(), "services.#", "2"),
 				),
 			},
 		},
