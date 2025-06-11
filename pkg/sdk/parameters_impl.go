@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"fmt"
-	"strconv"
 )
 
 func GetSessionParametersFrom(params map[string]any) (*SessionParameters, error) {
@@ -155,24 +154,6 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 		err = fmt.Errorf("%s session parameter is not supported", string(parameter))
 	}
 	return err
-}
-
-func setBooleanValue(parameter SessionParameter, value string, setField **bool) error {
-	b, err := parseBooleanParameter(string(parameter), value)
-	if err != nil {
-		return err
-	}
-	*setField = b
-	return nil
-}
-
-func setIntegerValue(parameter SessionParameter, value string, setField **int) error {
-	v, err := strconv.Atoi(value)
-	if err != nil {
-		return fmt.Errorf("%s session parameter is an integer, got %v", parameter, value)
-	}
-	*setField = Pointer(v)
-	return nil
 }
 
 func GetSessionParametersUnsetFrom(params map[string]any) (*SessionParametersUnset, error) {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -66,6 +68,22 @@ func (c *SecretClient) CreateWithBasicAuthenticationFlow(t *testing.T, id sdk.Sc
 	require.NoError(t, err)
 
 	return secret, c.DropFunc(t, id)
+}
+
+func (c *SecretClient) CreateRandomPasswordSecret(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+	request := sdk.NewCreateWithBasicAuthenticationSecretRequest(id, random.AdminName(), random.Password())
+
+	err := c.client().CreateWithBasicAuthentication(ctx, request)
+	require.NoError(t, err)
+
+	_, err = c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return id, c.DropFunc(t, id)
 }
 
 func (c *SecretClient) CreateWithGenericString(t *testing.T, id sdk.SchemaObjectIdentifier, secretString string) (*sdk.Secret, func()) {

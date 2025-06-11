@@ -20,6 +20,10 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(new feature)* New tracking level
+
+Every resource that is capable of setting tracing level (`database`, `shared_database`, `secondary_database`, `schema`) now supports the new `PROPAGATE` value.
+
 ### *(bugfix)* Fix how snowflake_user_authentication_policy_attachment resource handles missing objects it depends on
 
 Previously, the `snowflake_user_authentication_policy_attachment` resource was not able to handle missing objects it depends on.
@@ -49,7 +53,7 @@ Added new preview resources for managing services and job services. See referenc
 These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use these features, add `snowflake_service_resource` or `snowflake_job_service_resource` to `preview_features_enabled` field in the provider configuration, respectively.
 
 ### *(new feature)* snowflake_git_repository resource
-Added a new preview resource for managing git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository). Note that `snowflake_api_integration_resource` currently does not support `git_https_api` type. It will be added during the resource rework. Instead, you can use [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+Added a new preview resource for managing git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository). Note that `snowflake_api_integration` currently does not support `git_https_api` type. It will be added during the resource rework. Instead, you can use [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_git_repository_resource` to `preview_features_enabled` field in the provider configuration.
 
