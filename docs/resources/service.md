@@ -2,16 +2,18 @@
 page_title: "snowflake_service Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage services. For more information, check services documentation https://docs.snowflake.com/en/sql-reference/sql/create-service.
+  Resource used to manage services. For more information, check services documentation https://docs.snowflake.com/en/sql-reference/sql/create-service. A long-running service is like a web service that does not end automatically. After you create a service, Snowflake manages the running service. For example, if a service container stops, for whatever reason, Snowflake restarts that container so the service runs uninterrupted. See Working with services https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services developer guide for more details.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Managing services via specification templates is not yet supported. This will be addressed in the next versions.
 
+-> **Note** Managing service state is limited. It is handled by `auto_suspend_secs`, and `auto_resume` fields. The provider does not support managing the state of services in Snowflake with `ALTER ... SUSPEND` and `ALTER ... RESUME`. See [Suspending a service documentation](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services#suspending-a-service) for more details.
+
 # snowflake_service (Resource)
 
-Resource used to manage services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/create-service).
+Resource used to manage services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/create-service). A long-running service is like a web service that does not end automatically. After you create a service, Snowflake manages the running service. For example, if a service container stops, for whatever reason, Snowflake restarts that container so the service runs uninterrupted. See [Working with services](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services) developer guide for more details.
 
 ## Example Usage
 

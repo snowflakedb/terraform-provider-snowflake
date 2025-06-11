@@ -48,6 +48,7 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			MaxItems:    1,
 			Optional:    true,
+			ForceNew:    allFieldsForceNew,
 			Description: "Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -56,21 +57,25 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 						Optional:         true,
 						ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 						DiffSuppressFunc: suppressIdentifierQuoting,
+						ForceNew:         allFieldsForceNew,
 						Description:      "The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically.",
 					},
 					"path": {
 						Type:        schema.TypeString,
 						Optional:    true,
+						ForceNew:    allFieldsForceNew,
 						Description: "The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.",
 					},
 					"file": {
 						Type:        schema.TypeString,
 						Optional:    true,
+						ForceNew:    allFieldsForceNew,
 						Description: "The file name of the service specification.",
 					},
 					"text": {
 						Type:        schema.TypeString,
 						Optional:    true,
+						ForceNew:    allFieldsForceNew,
 						Description: "The embedded text of the service specification.",
 					},
 				},
@@ -81,17 +86,20 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			MinItems:    1,
+			ForceNew:    allFieldsForceNew,
 			Description: "Specifies the names of the external access integrations that allow your service to access external sites.",
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,
 				ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 				DiffSuppressFunc: suppressIdentifierQuoting,
+				ForceNew:         allFieldsForceNew,
 			},
 			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("external_access_integrations"),
 		},
 		"query_warehouse": {
 			Type:             schema.TypeString,
 			Optional:         true,
+			ForceNew:         allFieldsForceNew,
 			Description:      blocklistedCharactersFieldDescription("Warehouse to use if a service container connects to Snowflake to execute a query but does not explicitly specify a warehouse to use."),
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 			DiffSuppressFunc: suppressIdentifierQuoting,
@@ -99,6 +107,7 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 		"comment": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			ForceNew:    allFieldsForceNew,
 			Description: "Specifies a comment for the service.",
 		},
 		"service_type": {
@@ -124,23 +133,7 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			},
 		},
 	}
-	if allFieldsForceNew {
-		markSettableFieldsInSchemaAsForceNew(schema)
-	}
 	return schema
-}
-
-// markSettableFieldsInSchemaAsForceNew marks all settable fields in the resource schema as force new.
-// It maybe useful for resources that have no update functionality on settable fields.
-func markSettableFieldsInSchemaAsForceNew(resourceSchema map[string]*schema.Schema) {
-	for _, v := range resourceSchema {
-		if v.Optional || v.Required {
-			v.ForceNew = true
-			if v.Type == schema.TypeList {
-				markSettableFieldsInSchemaAsForceNew(v.Elem.(*schema.Resource).Schema)
-			}
-		}
-	}
 }
 
 func ImportServiceFunc(customFieldsHandler func(d *schema.ResourceData, service *sdk.Service) error) schema.StateContextFunc {

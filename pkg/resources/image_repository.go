@@ -68,7 +68,11 @@ func ImageRepository() *schema.Resource {
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingReadWrapper(resources.ImageRepository, ReadImageRepository)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingUpdateWrapper(resources.ImageRepository, UpdateImageRepository)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingDeleteWrapper(resources.ImageRepository, deleteFunc)),
-		Description:   "Resource used to manage image repositories. For more information, check [image repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).",
+		Description: joinWithSpace(
+			"Resource used to manage image repositories. For more information, check [image repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).",
+			"Snowpark Container Services provides an OCIv2-compliant image registry service and a storage unit call repository to store images.",
+			"See [Working with an image registry and repository](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-registry-repository) developer guide for more details.",
+		),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ImageRepository, customdiff.All(
 			ComputedIfAnyAttributeChanged(imageRepositorySchema, ShowOutputAttributeName, "comment"),

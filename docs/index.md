@@ -513,7 +513,7 @@ Preview features are disabled by default and should be used with caution.
 To use them, add the relevant feature name to the `preview_features_enabled` field in the [provider configuration](#preview_features_enabled-1).
 
 <!-- Section of stable resources -->
-## Currently stable resources
+## Currently stable resources 
 
 - [snowflake_account](./docs/resources/account)
 - [snowflake_account_parameter](./docs/resources/account_parameter)
@@ -564,7 +564,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_warehouse](./docs/resources/warehouse)
 
 <!-- Section of stable data sources -->
-## Currently stable data sources
+## Currently stable data sources 
 
 - [snowflake_account_roles](./docs/data-sources/account_roles)
 - [snowflake_accounts](./docs/data-sources/accounts)
@@ -588,7 +588,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_warehouses](./docs/data-sources/warehouses)
 
 <!-- Section of preview resources -->
-## Currently preview resources
+## Currently preview resources 
 
 - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
@@ -638,7 +638,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
 
 <!-- Section of preview data sources -->
-## Currently preview data sources
+## Currently preview data sources 
 
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_compute_pools](./docs/data-sources/compute_pools)
