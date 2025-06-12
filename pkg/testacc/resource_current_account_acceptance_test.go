@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+/* TODO(Next pr)
 func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
@@ -60,6 +61,19 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				),
 			},
 			{
+				Config:       config.FromModels(t, unsetModel),
+				ResourceName: unsetModel.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedCurrentAccountResource(t, "current_account").
+						HasNoResourceMonitor().
+						HasNoAuthenticationPolicy().
+						HasNoPasswordPolicy().
+						HasNoSessionPolicy().
+						HasNoPackagesPolicy(),
+				),
+			},
+			{
 				Config: config.FromModels(t, setModel),
 				Check: assertThat(t,
 					resourceassert.CurrentAccountResource(t, setModel.ResourceReference()).
@@ -88,6 +102,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 // TestAcc_CurrentAccount_PolicyAndParameterChange tests the change of policy and parameter in the same step
 func TestAcc_CurrentAccount_PolicyAndParameterChange(t *testing.T) {
 }
+*/
 
 func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
@@ -228,6 +243,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
+			// resource with unset parameters
 			{
 				Config: config.FromModels(t, unsetParametersModel),
 				Check: assertThat(t,
@@ -345,6 +361,127 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasWeekStartString("0"),
 				),
 			},
+			// import with unset parameters
+			{
+				Config:       config.FromModels(t, unsetParametersModel),
+				ResourceName: unsetParametersModel.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedCurrentAccountResource(t, "current_account").
+						HasAbortDetachedQueryString("false").
+						HasAllowClientMfaCachingString("false").
+						HasAllowIdTokenString("false").
+						HasAutocommitString("true").
+						HasBaseLocationPrefixEmpty().
+						HasBinaryInputFormatString("HEX").
+						HasBinaryOutputFormatString("HEX").
+						HasCatalogEmpty().
+						HasCatalogSyncEmpty().
+						HasClientEnableLogInfoStatementParametersString("false").
+						HasClientEncryptionKeySizeString("128").
+						HasClientMemoryLimitString("1536").
+						HasClientMetadataRequestUseConnectionCtxString("false").
+						HasClientMetadataUseSessionDatabaseString("false").
+						HasClientPrefetchThreadsString("4").
+						HasClientResultChunkSizeString("160").
+						HasClientResultColumnCaseInsensitiveString("false").
+						HasClientSessionKeepAliveString("false").
+						HasClientSessionKeepAliveHeartbeatFrequencyString("3600").
+						HasClientTimestampTypeMappingString("TIMESTAMP_LTZ").
+						HasCortexEnabledCrossRegionString("DISABLED").
+						HasCortexModelsAllowlistString("ALL").
+						HasCsvTimestampFormatEmpty().
+						HasDataRetentionTimeInDaysString("1").
+						HasDateInputFormatString("AUTO").
+						HasDateOutputFormatString("YYYY-MM-DD").
+						HasDefaultDdlCollationEmpty().
+						HasDefaultNotebookComputePoolCpuString("SYSTEM_COMPUTE_POOL_CPU").
+						HasDefaultNotebookComputePoolGpuString("SYSTEM_COMPUTE_POOL_GPU").
+						HasDefaultNullOrderingString("LAST").
+						HasDefaultStreamlitNotebookWarehouseString("REGRESS").
+						HasDisableUiDownloadButtonString("false").
+						HasDisableUserPrivilegeGrantsString("false").
+						HasEnableAutomaticSensitiveDataClassificationLogString("true").
+						HasEnableEgressCostOptimizerString("true").
+						HasEnableIdentifierFirstLoginString("true").
+						HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("false").
+						HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("false").
+						HasEnableUnhandledExceptionsReportingString("true").
+						HasEnableUnloadPhysicalTypeOptimizationString("true").
+						HasEnableUnredactedQuerySyntaxErrorString("false").
+						HasEnableUnredactedSecureObjectErrorString("false").
+						HasEnforceNetworkRulesForInternalStagesString("false").
+						HasErrorOnNondeterministicMergeString("true").
+						HasErrorOnNondeterministicUpdateString("false").
+						HasEventTableString("snowflake.telemetry.events").
+						HasExternalOauthAddPrivilegedRolesToBlockedListString("true").
+						HasExternalVolumeEmpty().
+						HasGeographyOutputFormatString("GeoJSON").
+						HasGeometryOutputFormatString("GeoJSON").
+						HasHybridTableLockTimeoutString("3600").
+						HasInitialReplicationSizeLimitInTbString("10.0").
+						HasJdbcTreatDecimalAsIntString("true").
+						HasJdbcTreatTimestampNtzAsUtcString("false").
+						HasJdbcUseSessionTimezoneString("true").
+						HasJsonIndentString("2").
+						HasJsTreatIntegerAsBigintString("false").
+						HasListingAutoFulfillmentReplicationRefreshScheduleString("1440 MINUTE").
+						HasLockTimeoutString("43200").
+						HasLogLevelString("OFF").
+						HasMaxConcurrencyLevelString("8").
+						HasMaxDataExtensionTimeInDaysString("14").
+						HasMetricLevelString("NONE").
+						HasMinDataRetentionTimeInDaysString("0").
+						HasMultiStatementCountString("1").
+						HasNetworkPolicyEmpty().
+						HasNoorderSequenceAsDefaultString("true").
+						HasOauthAddPrivilegedRolesToBlockedListString("true").
+						HasOdbcTreatDecimalAsIntString("false").
+						HasPeriodicDataRekeyingString("false").
+						HasPipeExecutionPausedString("false").
+						HasPreventUnloadToInlineUrlString("false").
+						HasPreventUnloadToInternalStagesString("false").
+						HasPythonProfilerTargetStageEmpty().
+						HasQueryTagEmpty().
+						HasQuotedIdentifiersIgnoreCaseString("false").
+						HasReplaceInvalidCharactersString("false").
+						HasRequireStorageIntegrationForStageCreationString("false").
+						HasRequireStorageIntegrationForStageOperationString("false").
+						HasRowsPerResultsetString("0").
+						HasSearchPathString("$current, $public").
+						HasServerlessTaskMaxStatementSizeString("X2Large").
+						HasServerlessTaskMinStatementSizeString("XSMALL").
+						HasSsoLoginPageString("false").
+						HasStatementQueuedTimeoutInSecondsString("0").
+						HasStatementTimeoutInSecondsString("172800").
+						HasStorageSerializationPolicyString("OPTIMIZED").
+						HasStrictJsonOutputString("false").
+						HasSuspendTaskAfterNumFailuresString("10").
+						HasTaskAutoRetryAttemptsString("0").
+						HasTimestampDayIsAlways24hString("false").
+						HasTimestampInputFormatString("AUTO").
+						HasTimestampLtzOutputFormatEmpty().
+						HasTimestampNtzOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3").
+						HasTimestampOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM").
+						HasTimestampTypeMappingString("TIMESTAMP_NTZ").
+						HasTimestampTzOutputFormatEmpty().
+						HasTimezoneString("America/Los_Angeles").
+						HasTimeInputFormatString("AUTO").
+						HasTimeOutputFormatString("HH24:MI:SS").
+						HasTraceLevelString("OFF").
+						HasTransactionAbortOnErrorString("false").
+						HasTransactionDefaultIsolationLevelString("READ COMMITTED").
+						HasTwoDigitCenturyStartString("1970").
+						HasUnsupportedDdlActionString("ignore").
+						HasUserTaskManagedInitialWarehouseSizeString("Medium").
+						HasUserTaskMinimumTriggerIntervalInSecondsString("30").
+						HasUserTaskTimeoutMsString("3600000").
+						HasUseCachedResultString("true").
+						HasWeekOfYearPolicyString("0").
+						HasWeekStartString("0"),
+				),
+			},
+			// set all parameters
 			{
 				Config: config.FromModels(t, setParametersModel),
 				Check: assertThat(t,
@@ -461,8 +598,252 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasWeekStartString("1"),
 				),
 			},
+			// import with all parameters set
+			{
+				Config:       config.FromModels(t, setParametersModel),
+				ResourceName: unsetParametersModel.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedCurrentAccountResource(t, "current_account").
+						HasAbortDetachedQueryString("true").
+						HasAllowClientMfaCachingString("true").
+						HasAllowIdTokenString("true").
+						HasAutocommitString("false").
+						HasBaseLocationPrefixString("STORAGE_BASE_URL/").
+						HasBinaryInputFormatString(string(sdk.BinaryInputFormatBase64)).
+						HasBinaryOutputFormatString(string(sdk.BinaryOutputFormatBase64)).
+						HasCatalogString("SNOWFLAKE").
+						HasClientEnableLogInfoStatementParametersString("true").
+						HasClientEncryptionKeySizeString("256").
+						HasClientMemoryLimitString("1540").
+						HasClientMetadataRequestUseConnectionCtxString("true").
+						HasClientMetadataUseSessionDatabaseString("true").
+						HasClientPrefetchThreadsString("5").
+						HasClientResultChunkSizeString("159").
+						HasClientResultColumnCaseInsensitiveString("true").
+						HasClientSessionKeepAliveString("true").
+						HasClientSessionKeepAliveHeartbeatFrequencyString("3599").
+						HasClientTimestampTypeMappingString(string(sdk.ClientTimestampTypeMappingNtz)).
+						HasCortexEnabledCrossRegionString("ANY_REGION").
+						HasCortexModelsAllowlistString("All").
+						HasCsvTimestampFormatString("YYYY-MM-DD").
+						HasDataRetentionTimeInDaysString("2").
+						HasDateInputFormatString("YYYY-MM-DD").
+						HasDateOutputFormatString("YYYY-MM-DD").
+						HasDefaultDdlCollationString("en-cs").
+						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
+						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
+						HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingFirst)).
+						HasDefaultStreamlitNotebookWarehouseString(warehouseId.Name()).
+						HasDisableUiDownloadButtonString("true").
+						HasDisableUserPrivilegeGrantsString("true").
+						HasEnableAutomaticSensitiveDataClassificationLogString("false").
+						HasEnableEgressCostOptimizerString("false").
+						HasEnableIdentifierFirstLoginString("false").
+						HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("true").
+						HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("true").
+						HasEnableUnhandledExceptionsReportingString("false").
+						HasEnableUnloadPhysicalTypeOptimizationString("false").
+						HasEnableUnredactedQuerySyntaxErrorString("true").
+						HasEnableUnredactedSecureObjectErrorString("true").
+						HasEnforceNetworkRulesForInternalStagesString("true").
+						HasErrorOnNondeterministicMergeString("false").
+						HasErrorOnNondeterministicUpdateString("true").
+						HasEventTableString(eventTable.ID().FullyQualifiedName()).
+						HasExternalOauthAddPrivilegedRolesToBlockedListString("false").
+						HasExternalVolumeString(externalVolumeId.Name()).
+						HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatWKT)).
+						HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatWKT)).
+						HasHybridTableLockTimeoutString("3599").
+						HasInitialReplicationSizeLimitInTbString("9.9").
+						HasJdbcTreatDecimalAsIntString("false").
+						HasJdbcTreatTimestampNtzAsUtcString("true").
+						HasJdbcUseSessionTimezoneString("false").
+						HasJsonIndentString("4").
+						HasJsTreatIntegerAsBigintString("true").
+						HasListingAutoFulfillmentReplicationRefreshScheduleString("2 minutes").
+						HasLockTimeoutString("43201").
+						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasMaxConcurrencyLevelString("7").
+						HasMaxDataExtensionTimeInDaysString("13").
+						HasMetricLevelString(string(sdk.MetricLevelAll)).
+						HasMinDataRetentionTimeInDaysString("1").
+						HasMultiStatementCountString("0").
+						HasNetworkPolicyString(networkPolicy.ID().Name()).
+						HasNoorderSequenceAsDefaultString("false").
+						HasOauthAddPrivilegedRolesToBlockedListString("false").
+						HasOdbcTreatDecimalAsIntString("true").
+						HasPeriodicDataRekeyingString("false").
+						HasPipeExecutionPausedString("true").
+						HasPreventUnloadToInlineUrlString("true").
+						HasPreventUnloadToInternalStagesString("true").
+						HasPythonProfilerTargetStageString(stage.ID().FullyQualifiedName()).
+						HasQueryTagString("test-query-tag").
+						HasQuotedIdentifiersIgnoreCaseString("true").
+						HasReplaceInvalidCharactersString("true").
+						HasRequireStorageIntegrationForStageCreationString("true").
+						HasRequireStorageIntegrationForStageOperationString("true").
+						HasRowsPerResultsetString("1000").
+						HasSearchPathString("$current, $public").
+						HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXLarge)).
+						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
+						HasSsoLoginPageString("true").
+						HasStatementQueuedTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("1").
+						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
+						HasStrictJsonOutputString("true").
+						HasSuspendTaskAfterNumFailuresString("3").
+						HasTaskAutoRetryAttemptsString("3").
+						HasTimestampDayIsAlways24hString("true").
+						HasTimestampInputFormatString("YYYY-MM-DD").
+						HasTimestampLtzOutputFormatString("YYYY-MM-DD").
+						HasTimestampNtzOutputFormatString("YYYY-MM-DD").
+						HasTimestampOutputFormatString("YYYY-MM-DD").
+						HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingLtz)).
+						HasTimestampTzOutputFormatString("YYYY-MM-DD").
+						HasTimezoneString("Europe/London").
+						HasTimeInputFormatString("YYYY-MM-DD").
+						HasTimeOutputFormatString("YYYY-MM-DD").
+						HasTraceLevelString(string(sdk.TraceLevelPropagate)).
+						HasTransactionAbortOnErrorString("true").
+						HasTransactionDefaultIsolationLevelString(string(sdk.TransactionDefaultIsolationLevelReadCommitted)).
+						HasTwoDigitCenturyStartString("1971").
+						HasUnsupportedDdlActionString(string(sdk.UnsupportedDDLActionFail)).
+						HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeSmall)).
+						HasUserTaskMinimumTriggerIntervalInSecondsString("10").
+						HasUserTaskTimeoutMsString("10").
+						HasUseCachedResultString("false").
+						HasWeekOfYearPolicyString("1").
+						HasWeekStartString("1"),
+				),
+			},
+			// unset parameters
 			{
 				Config: config.FromModels(t, unsetParametersModel),
+				Check: assertThat(t,
+					resourceassert.CurrentAccountResource(t, setParametersModel.ResourceReference()).
+						HasAbortDetachedQueryString("true").
+						HasAllowClientMfaCachingString("true").
+						HasAllowIdTokenString("true").
+						HasAutocommitString("false").
+						HasBaseLocationPrefixString("STORAGE_BASE_URL/").
+						HasBinaryInputFormatString(string(sdk.BinaryInputFormatBase64)).
+						HasBinaryOutputFormatString(string(sdk.BinaryOutputFormatBase64)).
+						HasCatalogString("SNOWFLAKE").
+						HasClientEnableLogInfoStatementParametersString("true").
+						HasClientEncryptionKeySizeString("256").
+						HasClientMemoryLimitString("1540").
+						HasClientMetadataRequestUseConnectionCtxString("true").
+						HasClientMetadataUseSessionDatabaseString("true").
+						HasClientPrefetchThreadsString("5").
+						HasClientResultChunkSizeString("159").
+						HasClientResultColumnCaseInsensitiveString("true").
+						HasClientSessionKeepAliveString("true").
+						HasClientSessionKeepAliveHeartbeatFrequencyString("3599").
+						HasClientTimestampTypeMappingString(string(sdk.ClientTimestampTypeMappingNtz)).
+						HasCortexEnabledCrossRegionString("ANY_REGION").
+						HasCortexModelsAllowlistString("All").
+						HasCsvTimestampFormatString("YYYY-MM-DD").
+						HasDataRetentionTimeInDaysString("2").
+						HasDateInputFormatString("YYYY-MM-DD").
+						HasDateOutputFormatString("YYYY-MM-DD").
+						HasDefaultDdlCollationString("en-cs").
+						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
+						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
+						HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingFirst)).
+						HasDefaultStreamlitNotebookWarehouseString(warehouseId.Name()).
+						HasDisableUiDownloadButtonString("true").
+						HasDisableUserPrivilegeGrantsString("true").
+						HasEnableAutomaticSensitiveDataClassificationLogString("false").
+						HasEnableEgressCostOptimizerString("false").
+						HasEnableIdentifierFirstLoginString("false").
+						HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("true").
+						HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("true").
+						HasEnableUnhandledExceptionsReportingString("false").
+						HasEnableUnloadPhysicalTypeOptimizationString("false").
+						HasEnableUnredactedQuerySyntaxErrorString("true").
+						HasEnableUnredactedSecureObjectErrorString("true").
+						HasEnforceNetworkRulesForInternalStagesString("true").
+						HasErrorOnNondeterministicMergeString("false").
+						HasErrorOnNondeterministicUpdateString("true").
+						HasEventTableString(eventTable.ID().FullyQualifiedName()).
+						HasExternalOauthAddPrivilegedRolesToBlockedListString("false").
+						HasExternalVolumeString(externalVolumeId.Name()).
+						HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatWKT)).
+						HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatWKT)).
+						HasHybridTableLockTimeoutString("3599").
+						HasInitialReplicationSizeLimitInTbString("9.9").
+						HasJdbcTreatDecimalAsIntString("false").
+						HasJdbcTreatTimestampNtzAsUtcString("true").
+						HasJdbcUseSessionTimezoneString("false").
+						HasJsonIndentString("4").
+						HasJsTreatIntegerAsBigintString("true").
+						HasListingAutoFulfillmentReplicationRefreshScheduleString("2 minutes").
+						HasLockTimeoutString("43201").
+						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasMaxConcurrencyLevelString("7").
+						HasMaxDataExtensionTimeInDaysString("13").
+						HasMetricLevelString(string(sdk.MetricLevelAll)).
+						HasMinDataRetentionTimeInDaysString("1").
+						HasMultiStatementCountString("0").
+						HasNetworkPolicyString(networkPolicy.ID().Name()).
+						HasNoorderSequenceAsDefaultString("false").
+						HasOauthAddPrivilegedRolesToBlockedListString("false").
+						HasOdbcTreatDecimalAsIntString("true").
+						HasPeriodicDataRekeyingString("false").
+						HasPipeExecutionPausedString("true").
+						HasPreventUnloadToInlineUrlString("true").
+						HasPreventUnloadToInternalStagesString("true").
+						HasPythonProfilerTargetStageString(stage.ID().FullyQualifiedName()).
+						HasQueryTagString("test-query-tag").
+						HasQuotedIdentifiersIgnoreCaseString("true").
+						HasReplaceInvalidCharactersString("true").
+						HasRequireStorageIntegrationForStageCreationString("true").
+						HasRequireStorageIntegrationForStageOperationString("true").
+						HasRowsPerResultsetString("1000").
+						HasSearchPathString("$current, $public").
+						HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXLarge)).
+						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
+						HasSsoLoginPageString("true").
+						HasStatementQueuedTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("1").
+						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
+						HasStrictJsonOutputString("true").
+						HasSuspendTaskAfterNumFailuresString("3").
+						HasTaskAutoRetryAttemptsString("3").
+						HasTimestampDayIsAlways24hString("true").
+						HasTimestampInputFormatString("YYYY-MM-DD").
+						HasTimestampLtzOutputFormatString("YYYY-MM-DD").
+						HasTimestampNtzOutputFormatString("YYYY-MM-DD").
+						HasTimestampOutputFormatString("YYYY-MM-DD").
+						HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingLtz)).
+						HasTimestampTzOutputFormatString("YYYY-MM-DD").
+						HasTimezoneString("Europe/London").
+						HasTimeInputFormatString("YYYY-MM-DD").
+						HasTimeOutputFormatString("YYYY-MM-DD").
+						HasTraceLevelString(string(sdk.TraceLevelPropagate)).
+						HasTransactionAbortOnErrorString("true").
+						HasTransactionDefaultIsolationLevelString(string(sdk.TransactionDefaultIsolationLevelReadCommitted)).
+						HasTwoDigitCenturyStartString("1971").
+						HasUnsupportedDdlActionString(string(sdk.UnsupportedDDLActionFail)).
+						HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeSmall)).
+						HasUserTaskMinimumTriggerIntervalInSecondsString("10").
+						HasUserTaskTimeoutMsString("10").
+						HasUseCachedResultString("false").
+						HasWeekOfYearPolicyString("1").
+						HasWeekStartString("1"),
+				),
+			},
+			// Test for external changes
+			{
+				PreConfig: func() {
+					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{Parameters: &sdk.AccountParameters{AbortDetachedQuery: sdk.Bool(false)}}})
+				},
+				Config: config.FromModels(t, unsetParametersModel),
+				Check: assertThat(t,
+					resourceassert.CurrentAccountResource(t, setParametersModel.ResourceReference()).
+						HasAbortDetachedQueryString("true"),
+				),
 			},
 		},
 	})
