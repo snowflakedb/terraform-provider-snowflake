@@ -94,7 +94,12 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 }
 
 func accountsConfig(pattern string) string {
-	return fmt.Sprintf(`data "snowflake_accounts" "test" {
+	return fmt.Sprintf(`
+provider "snowflake" {
+	role = "ORGADMIN"
+}
+
+data "snowflake_accounts" "test" {
 	with_history = true
 	like = "%s"
 }`, pattern)

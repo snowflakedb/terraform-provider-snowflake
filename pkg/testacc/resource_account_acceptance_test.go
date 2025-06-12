@@ -4,9 +4,10 @@ package testacc
 
 import (
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"regexp"
 	"testing"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -27,11 +28,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TESTS
-// - Create with be
-// - Set/Unset be
-// - Upgrade to check if any changes are required
-
 func TestAcc_Account_Minimal(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
@@ -42,6 +38,9 @@ func TestAcc_Account_Minimal(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 	region := testClient().Context.CurrentRegion(t)
+
+	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
+	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", organizationName)
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
@@ -71,6 +70,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 						HasNoRegionGroup().
 						HasNoRegion().
 						HasNoComment().
+						HasNoConsumptionBillingEntity().
 						HasIsOrgAdminString(r.BooleanDefault).
 						HasGracePeriodInDaysString("3"),
 					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
@@ -125,6 +125,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 						HasRegionString(region).
 						HasCommentString("SNOWFLAKE").
 						HasIsOrgAdminString(r.BooleanFalse).
+						HasConsumptionBillingEntityString(defaultConsumptionBillingEntity).
 						HasNoGracePeriodInDays(),
 				),
 			},
@@ -774,6 +775,70 @@ resource "snowflake_account" "test" {
 		gracePeriodInDays,
 		comment,
 	)
+}
+
+func TestAcc_Account_UpgradeFrom_v210(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+
+	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
+	id := sdk.NewAccountObjectIdentifier(random.AdminName())
+	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
+	email := random.Email()
+	name := random.AdminName()
+	key, _ := random.GenerateRSAPublicKey(t)
+
+	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
+	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", organizationName)
+
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+
+	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
+		WithAdminRsaPublicKey(key)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Account),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
+				Config:            config.FromModels(t, providerModel, configModel),
+				Check: assertThat(t,
+					resourceassert.AccountResource(t, configModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
+						HasNoConsumptionBillingEntity(),
+					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
+						HasOrganizationName(organizationName).
+						HasAccountName(id.Name()).
+						HasConsumptionBillingEntityName(defaultConsumptionBillingEntity),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, providerModel, configModel),
+				Check: assertThat(t,
+					resourceassert.AccountResource(t, configModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
+						HasNoConsumptionBillingEntity(),
+					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
+						HasOrganizationName(organizationName).
+						HasAccountName(id.Name()).
+						HasConsumptionBillingEntityName(defaultConsumptionBillingEntity),
+				),
+			},
+		},
+	})
 }
 
 // TODO(SNOW-1875369): add a state upgrader test for an imported account with optional parameters
