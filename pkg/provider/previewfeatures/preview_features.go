@@ -11,7 +11,6 @@ import (
 type feature string
 
 const (
-	CurrentAccountDatasource                      feature = "snowflake_current_account_datasource"
 	AccountAuthenticationPolicyAttachmentResource feature = "snowflake_account_authentication_policy_attachment_resource"
 	AccountPasswordPolicyAttachmentResource       feature = "snowflake_account_password_policy_attachment_resource"
 	AlertResource                                 feature = "snowflake_alert_resource"
@@ -22,6 +21,8 @@ const (
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
 	CortexSearchServicesDatasource                feature = "snowflake_cortex_search_services_datasource"
+	CurrentAccountResource                        feature = "snowflake_current_account_resource"
+	CurrentAccountDatasource                      feature = "snowflake_current_account_datasource"
 	DatabaseDatasource                            feature = "snowflake_database_datasource"
 	DatabaseRoleDatasource                        feature = "snowflake_database_role_datasource"
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
@@ -88,7 +89,6 @@ const (
 )
 
 var allPreviewFeatures = []feature{
-	CurrentAccountDatasource,
 	AccountAuthenticationPolicyAttachmentResource,
 	AccountPasswordPolicyAttachmentResource,
 	AlertResource,
@@ -99,6 +99,8 @@ var allPreviewFeatures = []feature{
 	ComputePoolsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
+	CurrentAccountResource,
+	CurrentAccountDatasource,
 	DatabaseDatasource,
 	DatabaseRoleDatasource,
 	DynamicTableResource,
