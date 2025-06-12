@@ -36,486 +36,587 @@ func (c *CurrentAccountResourceAssert) HasAbortDetachedQueryString(expected stri
 	c.AddAssertion(assert.ValueSet("abort_detached_query", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasActivePythonProfilerString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("active_python_profiler", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("allow_client_mfa_caching", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasAllowIdTokenString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("allow_id_token", expected))
 	return c
 }
-func (c *CurrentAccountResourceAssert) HasAuthenticationPolicyString(expected string) *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("authentication_policy", expected))
-	return c
-}
+
 func (c *CurrentAccountResourceAssert) HasAutocommitString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("autocommit", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasBaseLocationPrefixString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("base_location_prefix", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasBinaryInputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("binary_input_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasBinaryOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("binary_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasCatalogString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("catalog", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasCatalogSyncString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("catalog_sync", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientEnableLogInfoStatementParametersString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_enable_log_info_statement_parameters", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientEncryptionKeySizeString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_encryption_key_size", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientMemoryLimitString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_memory_limit", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientMetadataRequestUseConnectionCtxString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_metadata_request_use_connection_ctx", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientMetadataUseSessionDatabaseString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_metadata_use_session_database", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientPrefetchThreadsString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_prefetch_threads", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientResultChunkSizeString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_result_chunk_size", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientResultColumnCaseInsensitiveString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_result_column_case_insensitive", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientSessionKeepAliveString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_session_keep_alive", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientSessionKeepAliveHeartbeatFrequencyString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_session_keep_alive_heartbeat_frequency", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasClientTimestampTypeMappingString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_timestamp_type_mapping", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasCortexEnabledCrossRegionString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("cortex_enabled_cross_region", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasCortexModelsAllowlistString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("cortex_models_allowlist", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasCsvTimestampFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("csv_timestamp_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDataRetentionTimeInDaysString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("data_retention_time_in_days", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDateInputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("date_input_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDateOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("date_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDefaultDdlCollationString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("default_ddl_collation", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDefaultNotebookComputePoolCpuString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("default_notebook_compute_pool_cpu", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDefaultNotebookComputePoolGpuString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("default_notebook_compute_pool_gpu", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDefaultNullOrderingString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("default_null_ordering", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDefaultStreamlitNotebookWarehouseString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("default_streamlit_notebook_warehouse", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDisableUiDownloadButtonString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("disable_ui_download_button", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasDisableUserPrivilegeGrantsString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("disable_user_privilege_grants", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableAutomaticSensitiveDataClassificationLogString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_automatic_sensitive_data_classification_log", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableEgressCostOptimizerString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_egress_cost_optimizer", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableIdentifierFirstLoginString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_identifier_first_login", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelinkString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_internal_stages_privatelink", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForImageRepositoryString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_tri_secret_and_rekey_opt_out_for_image_repository", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableUnhandledExceptionsReportingString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_unhandled_exceptions_reporting", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableUnloadPhysicalTypeOptimizationString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_unload_physical_type_optimization", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableUnredactedQuerySyntaxErrorString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_unredacted_query_syntax_error", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnableUnredactedSecureObjectErrorString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_unredacted_secure_object_error", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEnforceNetworkRulesForInternalStagesString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("enforce_network_rules_for_internal_stages", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasErrorOnNondeterministicMergeString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("error_on_nondeterministic_merge", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasErrorOnNondeterministicUpdateString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("error_on_nondeterministic_update", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasEventTableString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("event_table", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasExternalOauthAddPrivilegedRolesToBlockedListString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("external_oauth_add_privileged_roles_to_blocked_list", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasExternalVolumeString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("external_volume", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasGeographyOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("geography_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasGeometryOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("geometry_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasHybridTableLockTimeoutString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("hybrid_table_lock_timeout", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasInitialReplicationSizeLimitInTbString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("initial_replication_size_limit_in_tb", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasJdbcTreatDecimalAsIntString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("jdbc_treat_decimal_as_int", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasJdbcTreatTimestampNtzAsUtcString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("jdbc_treat_timestamp_ntz_as_utc", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasJdbcUseSessionTimezoneString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("jdbc_use_session_timezone", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasJsTreatIntegerAsBigintString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("js_treat_integer_as_bigint", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasJsonIndentString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("json_indent", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasListingAutoFulfillmentReplicationRefreshScheduleString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("listing_auto_fulfillment_replication_refresh_schedule", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasLockTimeoutString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("lock_timeout", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasLogLevelString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("log_level", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasMaxConcurrencyLevelString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("max_concurrency_level", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasMaxDataExtensionTimeInDaysString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasMetricLevelString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("metric_level", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasMinDataRetentionTimeInDaysString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("min_data_retention_time_in_days", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasMultiStatementCountString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("multi_statement_count", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNetworkPolicyString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("network_policy", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoorderSequenceAsDefaultString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("noorder_sequence_as_default", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasOauthAddPrivilegedRolesToBlockedListString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("oauth_add_privileged_roles_to_blocked_list", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasOdbcTreatDecimalAsIntString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("odbc_treat_decimal_as_int", expected))
 	return c
 }
-func (c *CurrentAccountResourceAssert) HasPackagesPolicyString(expected string) *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("packages_policy", expected))
-	return c
-}
-func (c *CurrentAccountResourceAssert) HasPasswordPolicyString(expected string) *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("password_policy", expected))
-	return c
-}
+
 func (c *CurrentAccountResourceAssert) HasPeriodicDataRekeyingString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("periodic_data_rekeying", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasPipeExecutionPausedString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("pipe_execution_paused", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasPreventUnloadToInlineUrlString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("prevent_unload_to_inline_url", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasPreventUnloadToInternalStagesString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("prevent_unload_to_internal_stages", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasPythonProfilerModulesString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("python_profiler_modules", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasPythonProfilerTargetStageString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("python_profiler_target_stage", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasQueryTagString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("query_tag", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasReplaceInvalidCharactersString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("replace_invalid_characters", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasRequireStorageIntegrationForStageCreationString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("require_storage_integration_for_stage_creation", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasRequireStorageIntegrationForStageOperationString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("require_storage_integration_for_stage_operation", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasResourceMonitorString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("resource_monitor", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasRowsPerResultsetString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("rows_per_resultset", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasS3StageVpceDnsNameString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("s3_stage_vpce_dns_name", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasSamlIdentityProviderString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("saml_identity_provider", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasSearchPathString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("search_path", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMaxStatementSizeString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("serverless_task_max_statement_size", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("serverless_task_min_statement_size", expected))
 	return c
 }
-func (c *CurrentAccountResourceAssert) HasSessionPolicyString(expected string) *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("session_policy", expected))
-	return c
-}
+
 func (c *CurrentAccountResourceAssert) HasSimulatedDataSharingConsumerString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("simulated_data_sharing_consumer", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasSsoLoginPageString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("sso_login_page", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasStatementQueuedTimeoutInSecondsString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasStatementTimeoutInSecondsString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasStorageSerializationPolicyString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("storage_serialization_policy", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasStrictJsonOutputString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("strict_json_output", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasSuspendTaskAfterNumFailuresString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTaskAutoRetryAttemptsString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("task_auto_retry_attempts", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimeInputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("time_input_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimeOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("time_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimestampDayIsAlways24hString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("timestamp_day_is_always_24h", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimestampInputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("timestamp_input_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimestampLtzOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("timestamp_ltz_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimestampNtzOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("timestamp_ntz_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimestampOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("timestamp_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimestampTypeMappingString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("timestamp_type_mapping", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimestampTzOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("timestamp_tz_output_format", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTimezoneString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("timezone", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTraceLevelString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("trace_level", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTransactionAbortOnErrorString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("transaction_abort_on_error", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTransactionDefaultIsolationLevelString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("transaction_default_isolation_level", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasTwoDigitCenturyStartString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("two_digit_century_start", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasUnsupportedDdlActionString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("unsupported_ddl_action", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasUseCachedResultString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("use_cached_result", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasUserTaskManagedInitialWarehouseSizeString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasUserTaskTimeoutMsString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("user_task_timeout_ms", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasWeekOfYearPolicyString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("week_of_year_policy", expected))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasWeekStartString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("week_start", expected))
 	return c
@@ -529,486 +630,587 @@ func (c *CurrentAccountResourceAssert) HasNoAbortDetachedQuery() *CurrentAccount
 	c.AddAssertion(assert.ValueNotSet("abort_detached_query"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoActivePythonProfiler() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("active_python_profiler"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoAllowClientMfaCaching() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("allow_client_mfa_caching"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoAllowIdToken() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("allow_id_token"))
 	return c
 }
-func (c *CurrentAccountResourceAssert) HasNoAuthenticationPolicy() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("authentication_policy"))
-	return c
-}
+
 func (c *CurrentAccountResourceAssert) HasNoAutocommit() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("autocommit"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoBaseLocationPrefix() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("base_location_prefix"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoBinaryInputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("binary_input_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoBinaryOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("binary_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoCatalog() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("catalog"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoCatalogSync() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("catalog_sync"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientEnableLogInfoStatementParameters() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_enable_log_info_statement_parameters"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientEncryptionKeySize() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_encryption_key_size"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientMemoryLimit() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_memory_limit"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientMetadataRequestUseConnectionCtx() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_metadata_request_use_connection_ctx"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientMetadataUseSessionDatabase() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_metadata_use_session_database"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientPrefetchThreads() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_prefetch_threads"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientResultChunkSize() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_result_chunk_size"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientResultColumnCaseInsensitive() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_result_column_case_insensitive"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientSessionKeepAlive() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_session_keep_alive"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientSessionKeepAliveHeartbeatFrequency() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_session_keep_alive_heartbeat_frequency"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoClientTimestampTypeMapping() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_timestamp_type_mapping"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoCortexEnabledCrossRegion() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("cortex_enabled_cross_region"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoCortexModelsAllowlist() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("cortex_models_allowlist"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoCsvTimestampFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("csv_timestamp_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDataRetentionTimeInDays() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("data_retention_time_in_days"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDateInputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("date_input_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDateOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("date_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDefaultDdlCollation() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("default_ddl_collation"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDefaultNotebookComputePoolCpu() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("default_notebook_compute_pool_cpu"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDefaultNotebookComputePoolGpu() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("default_notebook_compute_pool_gpu"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDefaultNullOrdering() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("default_null_ordering"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDefaultStreamlitNotebookWarehouse() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("default_streamlit_notebook_warehouse"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDisableUiDownloadButton() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("disable_ui_download_button"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoDisableUserPrivilegeGrants() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("disable_user_privilege_grants"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableAutomaticSensitiveDataClassificationLog() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_automatic_sensitive_data_classification_log"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableEgressCostOptimizer() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_egress_cost_optimizer"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableIdentifierFirstLogin() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_identifier_first_login"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableInternalStagesPrivatelink() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_internal_stages_privatelink"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableTriSecretAndRekeyOptOutForImageRepository() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_tri_secret_and_rekey_opt_out_for_image_repository"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableTriSecretAndRekeyOptOutForSpcsBlockStorage() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableUnhandledExceptionsReporting() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_unhandled_exceptions_reporting"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableUnloadPhysicalTypeOptimization() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_unload_physical_type_optimization"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableUnredactedQuerySyntaxError() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_unredacted_query_syntax_error"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnableUnredactedSecureObjectError() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enable_unredacted_secure_object_error"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEnforceNetworkRulesForInternalStages() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("enforce_network_rules_for_internal_stages"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoErrorOnNondeterministicMerge() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("error_on_nondeterministic_merge"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoErrorOnNondeterministicUpdate() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("error_on_nondeterministic_update"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoEventTable() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("event_table"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoExternalOauthAddPrivilegedRolesToBlockedList() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("external_oauth_add_privileged_roles_to_blocked_list"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoExternalVolume() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("external_volume"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoGeographyOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("geography_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoGeometryOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("geometry_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoHybridTableLockTimeout() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("hybrid_table_lock_timeout"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoInitialReplicationSizeLimitInTb() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("initial_replication_size_limit_in_tb"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoJdbcTreatDecimalAsInt() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("jdbc_treat_decimal_as_int"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoJdbcTreatTimestampNtzAsUtc() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("jdbc_treat_timestamp_ntz_as_utc"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoJdbcUseSessionTimezone() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("jdbc_use_session_timezone"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoJsTreatIntegerAsBigint() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("js_treat_integer_as_bigint"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoJsonIndent() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("json_indent"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoListingAutoFulfillmentReplicationRefreshSchedule() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("listing_auto_fulfillment_replication_refresh_schedule"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoLockTimeout() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("lock_timeout"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoLogLevel() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("log_level"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoMaxConcurrencyLevel() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("max_concurrency_level"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoMaxDataExtensionTimeInDays() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("max_data_extension_time_in_days"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoMetricLevel() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("metric_level"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoMinDataRetentionTimeInDays() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("min_data_retention_time_in_days"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoMultiStatementCount() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("multi_statement_count"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoNetworkPolicy() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("network_policy"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoNoorderSequenceAsDefault() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("noorder_sequence_as_default"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoOauthAddPrivilegedRolesToBlockedList() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("oauth_add_privileged_roles_to_blocked_list"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoOdbcTreatDecimalAsInt() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("odbc_treat_decimal_as_int"))
 	return c
 }
-func (c *CurrentAccountResourceAssert) HasNoPackagesPolicy() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("packages_policy"))
-	return c
-}
-func (c *CurrentAccountResourceAssert) HasNoPasswordPolicy() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("password_policy"))
-	return c
-}
+
 func (c *CurrentAccountResourceAssert) HasNoPeriodicDataRekeying() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("periodic_data_rekeying"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoPipeExecutionPaused() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("pipe_execution_paused"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoPreventUnloadToInlineUrl() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("prevent_unload_to_inline_url"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoPreventUnloadToInternalStages() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("prevent_unload_to_internal_stages"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoPythonProfilerModules() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("python_profiler_modules"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoPythonProfilerTargetStage() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("python_profiler_target_stage"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoQueryTag() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("query_tag"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("quoted_identifiers_ignore_case"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoReplaceInvalidCharacters() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("replace_invalid_characters"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoRequireStorageIntegrationForStageCreation() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("require_storage_integration_for_stage_creation"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoRequireStorageIntegrationForStageOperation() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("require_storage_integration_for_stage_operation"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoResourceMonitor() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("resource_monitor"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoRowsPerResultset() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("rows_per_resultset"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoS3StageVpceDnsName() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("s3_stage_vpce_dns_name"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoSamlIdentityProvider() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("saml_identity_provider"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoSearchPath() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("search_path"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoServerlessTaskMaxStatementSize() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("serverless_task_max_statement_size"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoServerlessTaskMinStatementSize() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("serverless_task_min_statement_size"))
 	return c
 }
-func (c *CurrentAccountResourceAssert) HasNoSessionPolicy() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("session_policy"))
-	return c
-}
+
 func (c *CurrentAccountResourceAssert) HasNoSimulatedDataSharingConsumer() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("simulated_data_sharing_consumer"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoSsoLoginPage() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("sso_login_page"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoStatementQueuedTimeoutInSeconds() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("statement_queued_timeout_in_seconds"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoStatementTimeoutInSeconds() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("statement_timeout_in_seconds"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoStorageSerializationPolicy() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("storage_serialization_policy"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoStrictJsonOutput() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("strict_json_output"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoSuspendTaskAfterNumFailures() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("suspend_task_after_num_failures"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTaskAutoRetryAttempts() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("task_auto_retry_attempts"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimeInputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("time_input_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimeOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("time_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimestampDayIsAlways24h() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("timestamp_day_is_always_24h"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimestampInputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("timestamp_input_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimestampLtzOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("timestamp_ltz_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimestampNtzOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("timestamp_ntz_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimestampOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("timestamp_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimestampTypeMapping() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("timestamp_type_mapping"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimestampTzOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("timestamp_tz_output_format"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTimezone() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("timezone"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTraceLevel() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("trace_level"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTransactionAbortOnError() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("transaction_abort_on_error"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTransactionDefaultIsolationLevel() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("transaction_default_isolation_level"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoTwoDigitCenturyStart() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("two_digit_century_start"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoUnsupportedDdlAction() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("unsupported_ddl_action"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoUseCachedResult() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("use_cached_result"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoUserTaskManagedInitialWarehouseSize() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("user_task_managed_initial_warehouse_size"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoUserTaskMinimumTriggerIntervalInSeconds() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("user_task_minimum_trigger_interval_in_seconds"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoUserTaskTimeoutMs() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("user_task_timeout_ms"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoWeekOfYearPolicy() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("week_of_year_policy"))
 	return c
 }
+
 func (c *CurrentAccountResourceAssert) HasNoWeekStart() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("week_start"))
 	return c
@@ -1019,857 +1221,593 @@ func (c *CurrentAccountResourceAssert) HasNoWeekStart() *CurrentAccountResourceA
 ////////////////////////////
 
 func (c *CurrentAccountResourceAssert) HasAbortDetachedQueryEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("abort_detached_query", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasActivePythonProfilerEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("active_python_profiler", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("allow_client_mfa_caching", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasAllowIdTokenEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("allow_id_token", ""))
 	return c
-
-}
-
-func (c *CurrentAccountResourceAssert) HasAuthenticationPolicyEmpty() *CurrentAccountResourceAssert {
-
-	c.AddAssertion(assert.ValueSet("authentication_policy", ""))
-	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasAutocommitEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("autocommit", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasBaseLocationPrefixEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("base_location_prefix", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasBinaryInputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("binary_input_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasBinaryOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("binary_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasCatalogEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("catalog", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasCatalogSyncEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("catalog_sync", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientEnableLogInfoStatementParametersEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_enable_log_info_statement_parameters", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientEncryptionKeySizeEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_encryption_key_size", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientMemoryLimitEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_memory_limit", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientMetadataRequestUseConnectionCtxEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_metadata_request_use_connection_ctx", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientMetadataUseSessionDatabaseEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_metadata_use_session_database", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientPrefetchThreadsEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_prefetch_threads", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientResultChunkSizeEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_result_chunk_size", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientResultColumnCaseInsensitiveEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_result_column_case_insensitive", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientSessionKeepAliveEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_session_keep_alive", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientSessionKeepAliveHeartbeatFrequencyEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_session_keep_alive_heartbeat_frequency", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasClientTimestampTypeMappingEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("client_timestamp_type_mapping", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasCortexEnabledCrossRegionEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("cortex_enabled_cross_region", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasCortexModelsAllowlistEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("cortex_models_allowlist", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasCsvTimestampFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("csv_timestamp_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDataRetentionTimeInDaysEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("data_retention_time_in_days", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDateInputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("date_input_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDateOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("date_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDefaultDdlCollationEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("default_ddl_collation", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDefaultNotebookComputePoolCpuEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("default_notebook_compute_pool_cpu", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDefaultNotebookComputePoolGpuEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("default_notebook_compute_pool_gpu", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDefaultNullOrderingEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("default_null_ordering", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDefaultStreamlitNotebookWarehouseEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("default_streamlit_notebook_warehouse", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDisableUiDownloadButtonEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("disable_ui_download_button", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasDisableUserPrivilegeGrantsEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("disable_user_privilege_grants", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableAutomaticSensitiveDataClassificationLogEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_automatic_sensitive_data_classification_log", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableEgressCostOptimizerEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_egress_cost_optimizer", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableIdentifierFirstLoginEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_identifier_first_login", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelinkEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_internal_stages_privatelink", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForImageRepositoryEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_tri_secret_and_rekey_opt_out_for_image_repository", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableUnhandledExceptionsReportingEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_unhandled_exceptions_reporting", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableUnloadPhysicalTypeOptimizationEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_unload_physical_type_optimization", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableUnredactedQuerySyntaxErrorEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_unredacted_query_syntax_error", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnableUnredactedSecureObjectErrorEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enable_unredacted_secure_object_error", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEnforceNetworkRulesForInternalStagesEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("enforce_network_rules_for_internal_stages", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasErrorOnNondeterministicMergeEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("error_on_nondeterministic_merge", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasErrorOnNondeterministicUpdateEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("error_on_nondeterministic_update", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasEventTableEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("event_table", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasExternalOauthAddPrivilegedRolesToBlockedListEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("external_oauth_add_privileged_roles_to_blocked_list", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasExternalVolumeEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("external_volume", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasGeographyOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("geography_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasGeometryOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("geometry_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasHybridTableLockTimeoutEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("hybrid_table_lock_timeout", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasInitialReplicationSizeLimitInTbEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("initial_replication_size_limit_in_tb", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasJdbcTreatDecimalAsIntEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("jdbc_treat_decimal_as_int", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasJdbcTreatTimestampNtzAsUtcEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("jdbc_treat_timestamp_ntz_as_utc", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasJdbcUseSessionTimezoneEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("jdbc_use_session_timezone", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasJsTreatIntegerAsBigintEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("js_treat_integer_as_bigint", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasJsonIndentEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("json_indent", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasListingAutoFulfillmentReplicationRefreshScheduleEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("listing_auto_fulfillment_replication_refresh_schedule", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasLockTimeoutEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("lock_timeout", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasLogLevelEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("log_level", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasMaxConcurrencyLevelEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("max_concurrency_level", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasMetricLevelEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("metric_level", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasMinDataRetentionTimeInDaysEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("min_data_retention_time_in_days", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasMultiStatementCountEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("multi_statement_count", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasNetworkPolicyEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("network_policy", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasNoorderSequenceAsDefaultEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("noorder_sequence_as_default", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasOauthAddPrivilegedRolesToBlockedListEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("oauth_add_privileged_roles_to_blocked_list", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasOdbcTreatDecimalAsIntEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("odbc_treat_decimal_as_int", ""))
 	return c
-
-}
-
-func (c *CurrentAccountResourceAssert) HasPackagesPolicyEmpty() *CurrentAccountResourceAssert {
-
-	c.AddAssertion(assert.ValueSet("packages_policy", ""))
-	return c
-
-}
-
-func (c *CurrentAccountResourceAssert) HasPasswordPolicyEmpty() *CurrentAccountResourceAssert {
-
-	c.AddAssertion(assert.ValueSet("password_policy", ""))
-	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasPeriodicDataRekeyingEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("periodic_data_rekeying", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasPipeExecutionPausedEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("pipe_execution_paused", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasPreventUnloadToInlineUrlEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("prevent_unload_to_inline_url", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasPreventUnloadToInternalStagesEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("prevent_unload_to_internal_stages", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasPythonProfilerModulesEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("python_profiler_modules", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasPythonProfilerTargetStageEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("python_profiler_target_stage", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasQueryTagEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("query_tag", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasReplaceInvalidCharactersEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("replace_invalid_characters", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasRequireStorageIntegrationForStageCreationEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("require_storage_integration_for_stage_creation", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasRequireStorageIntegrationForStageOperationEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("require_storage_integration_for_stage_operation", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasResourceMonitorEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("resource_monitor", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasRowsPerResultsetEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("rows_per_resultset", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasS3StageVpceDnsNameEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("s3_stage_vpce_dns_name", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasSamlIdentityProviderEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("saml_identity_provider", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasSearchPathEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("search_path", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMaxStatementSizeEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("serverless_task_max_statement_size", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("serverless_task_min_statement_size", ""))
 	return c
-
-}
-
-func (c *CurrentAccountResourceAssert) HasSessionPolicyEmpty() *CurrentAccountResourceAssert {
-
-	c.AddAssertion(assert.ValueSet("session_policy", ""))
-	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasSimulatedDataSharingConsumerEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("simulated_data_sharing_consumer", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasSsoLoginPageEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("sso_login_page", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasStatementQueuedTimeoutInSecondsEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasStatementTimeoutInSecondsEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasStorageSerializationPolicyEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("storage_serialization_policy", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasStrictJsonOutputEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("strict_json_output", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasSuspendTaskAfterNumFailuresEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTaskAutoRetryAttemptsEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("task_auto_retry_attempts", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimeInputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("time_input_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimeOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("time_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimestampDayIsAlways24hEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("timestamp_day_is_always_24h", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimestampInputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("timestamp_input_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimestampLtzOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("timestamp_ltz_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimestampNtzOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("timestamp_ntz_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimestampOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("timestamp_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimestampTypeMappingEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("timestamp_type_mapping", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimestampTzOutputFormatEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("timestamp_tz_output_format", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTimezoneEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("timezone", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTraceLevelEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("trace_level", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTransactionAbortOnErrorEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("transaction_abort_on_error", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTransactionDefaultIsolationLevelEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("transaction_default_isolation_level", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasTwoDigitCenturyStartEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("two_digit_century_start", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasUnsupportedDdlActionEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("unsupported_ddl_action", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasUseCachedResultEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("use_cached_result", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasUserTaskManagedInitialWarehouseSizeEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasUserTaskTimeoutMsEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("user_task_timeout_ms", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasWeekOfYearPolicyEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("week_of_year_policy", ""))
 	return c
-
 }
 
 func (c *CurrentAccountResourceAssert) HasWeekStartEmpty() *CurrentAccountResourceAssert {
-
 	c.AddAssertion(assert.ValueSet("week_start", ""))
 	return c
-
 }
 
 ///////////////////////////////
@@ -1893,11 +1831,6 @@ func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingNotEmpty() *Curre
 
 func (c *CurrentAccountResourceAssert) HasAllowIdTokenNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("allow_id_token"))
-	return c
-}
-
-func (c *CurrentAccountResourceAssert) HasAuthenticationPolicyNotEmpty() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValuePresent("authentication_policy"))
 	return c
 }
 
@@ -2236,16 +2169,6 @@ func (c *CurrentAccountResourceAssert) HasOdbcTreatDecimalAsIntNotEmpty() *Curre
 	return c
 }
 
-func (c *CurrentAccountResourceAssert) HasPackagesPolicyNotEmpty() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValuePresent("packages_policy"))
-	return c
-}
-
-func (c *CurrentAccountResourceAssert) HasPasswordPolicyNotEmpty() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValuePresent("password_policy"))
-	return c
-}
-
 func (c *CurrentAccountResourceAssert) HasPeriodicDataRekeyingNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("periodic_data_rekeying"))
 	return c
@@ -2333,11 +2256,6 @@ func (c *CurrentAccountResourceAssert) HasServerlessTaskMaxStatementSizeNotEmpty
 
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("serverless_task_min_statement_size"))
-	return c
-}
-
-func (c *CurrentAccountResourceAssert) HasSessionPolicyNotEmpty() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValuePresent("session_policy"))
 	return c
 }
 
