@@ -69,7 +69,8 @@ func hasGranteeName(grants []sdk.Grant, role sdk.AccountObjectIdentifier) bool {
 	return false
 }
 
-func (c *TestClient) EnsureValidAccountIsUsed(t *testing.T) {
+func (c *TestClient) EnsureValidNonProdAccountIsUsed(t *testing.T) {
+	t.Helper()
 	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 	nonProdModifiableAccountLocator := testenvs.GetOrSkipTest(t, testenvs.TestNonProdModifiableAccountLocator)
 	if c.context.client.GetAccountLocator() != nonProdModifiableAccountLocator {
