@@ -63,7 +63,6 @@ type CurrentAccountModel struct {
 	EventTable                                       tfconfig.Variable `json:"event_table,omitempty"`
 	ExternalOauthAddPrivilegedRolesToBlockedList     tfconfig.Variable `json:"external_oauth_add_privileged_roles_to_blocked_list,omitempty"`
 	ExternalVolume                                   tfconfig.Variable `json:"external_volume,omitempty"`
-	FeaturePolicy                                    tfconfig.Variable `json:"feature_policy,omitempty"`
 	GeographyOutputFormat                            tfconfig.Variable `json:"geography_output_format,omitempty"`
 	GeometryOutputFormat                             tfconfig.Variable `json:"geometry_output_format,omitempty"`
 	HybridTableLockTimeout                           tfconfig.Variable `json:"hybrid_table_lock_timeout,omitempty"`
@@ -85,7 +84,6 @@ type CurrentAccountModel struct {
 	NoorderSequenceAsDefault                         tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
 	OauthAddPrivilegedRolesToBlockedList             tfconfig.Variable `json:"oauth_add_privileged_roles_to_blocked_list,omitempty"`
 	OdbcTreatDecimalAsInt                            tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
-	OrganizationUserGroup                            tfconfig.Variable `json:"organization_user_group,omitempty"`
 	PackagesPolicy                                   tfconfig.Variable `json:"packages_policy,omitempty"`
 	PasswordPolicy                                   tfconfig.Variable `json:"password_policy,omitempty"`
 	PeriodicDataRekeying                             tfconfig.Variable `json:"periodic_data_rekeying,omitempty"`
@@ -442,11 +440,6 @@ func (c *CurrentAccountModel) WithExternalVolume(externalVolume string) *Current
 	return c
 }
 
-func (c *CurrentAccountModel) WithFeaturePolicy(featurePolicy string) *CurrentAccountModel {
-	c.FeaturePolicy = tfconfig.StringVariable(featurePolicy)
-	return c
-}
-
 func (c *CurrentAccountModel) WithGeographyOutputFormat(geographyOutputFormat string) *CurrentAccountModel {
 	c.GeographyOutputFormat = tfconfig.StringVariable(geographyOutputFormat)
 	return c
@@ -551,8 +544,6 @@ func (c *CurrentAccountModel) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bo
 	c.OdbcTreatDecimalAsInt = tfconfig.BoolVariable(odbcTreatDecimalAsInt)
 	return c
 }
-
-// organization_user_group attribute type is not yet supported, so WithOrganizationUserGroup can't be generated
 
 func (c *CurrentAccountModel) WithPackagesPolicy(packagesPolicy string) *CurrentAccountModel {
 	c.PackagesPolicy = tfconfig.StringVariable(packagesPolicy)
@@ -1063,11 +1054,6 @@ func (c *CurrentAccountModel) WithExternalVolumeValue(value tfconfig.Variable) *
 	return c
 }
 
-func (c *CurrentAccountModel) WithFeaturePolicyValue(value tfconfig.Variable) *CurrentAccountModel {
-	c.FeaturePolicy = value
-	return c
-}
-
 func (c *CurrentAccountModel) WithGeographyOutputFormatValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.GeographyOutputFormat = value
 	return c
@@ -1170,11 +1156,6 @@ func (c *CurrentAccountModel) WithOauthAddPrivilegedRolesToBlockedListValue(valu
 
 func (c *CurrentAccountModel) WithOdbcTreatDecimalAsIntValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.OdbcTreatDecimalAsInt = value
-	return c
-}
-
-func (c *CurrentAccountModel) WithOrganizationUserGroupValue(value tfconfig.Variable) *CurrentAccountModel {
-	c.OrganizationUserGroup = value
 	return c
 }
 
