@@ -48,7 +48,11 @@ No configuration changes are needed.
 References: [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
 
 ### *(new feature)* snowflake_current_account resource
-Added new preview resource for managing an account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account). You can read about the resources' limitations in the documentation in the registry.
+Added a new preview resource for managing an account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account). You can read about the resources' limitations in the documentation in the registry.
+This resource is intended to replace the `snowflake_account_parameter` resource, which will be deprecated in the future, but some of the supported parameters in `snowflake_account_parameter` won't be supported in `snowflake_current_account_resource`. Those parameters are:
+- ENABLE_CONSOLE_OUTPUT
+- ENABLE_PERSONAL_DATABASE
+- PREVENT_LOAD_FROM_INLINE_URL
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_account_resource` to `preview_features_enabled` field in the provider configuration.
 
