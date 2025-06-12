@@ -53,6 +53,7 @@ var definitionMapping = map[string]*generator.Interface{
 	"compute_pools_def.go":                   sdk.ComputePoolsDef,
 	"git_repository_def.go":                  sdk.GitRepositoriesDef,
 	"services_def.go":                        sdk.ServicesDef,
+	"listing_def.go":                         sdk.ListingsDef,
 }
 
 func main() {
