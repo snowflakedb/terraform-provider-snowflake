@@ -7,6 +7,7 @@
 - [snowflake_api_authentication_integration_with_authorization_code_grant](./docs/resources/api_authentication_integration_with_authorization_code_grant)
 - [snowflake_api_authentication_integration_with_client_credentials](./docs/resources/api_authentication_integration_with_client_credentials)
 - [snowflake_api_authentication_integration_with_jwt_bearer](./docs/resources/api_authentication_integration_with_jwt_bearer)
+- [snowflake_current_account](./docs/resources/current_account)
 - [snowflake_database](./docs/resources/database)
 - [snowflake_database_role](./docs/resources/database_role)
 - [snowflake_execute](./docs/resources/execute)

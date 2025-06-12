@@ -3,9 +3,10 @@ package resources
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
@@ -297,8 +298,8 @@ func accountParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.Account
 }
 
 // TODO [SNOW-1645342]: make generic based on type definition
-func handleAccountParameterRead(d *schema.ResourceData, AccountParameters []*sdk.Parameter) error {
-	for _, p := range AccountParameters {
+func handleAccountParameterRead(d *schema.ResourceData, accountParameters []*sdk.Parameter) error {
+	for _, p := range accountParameters {
 		switch p.Key {
 		// Bool parameters
 		case string(sdk.AccountParameterAbortDetachedQuery),

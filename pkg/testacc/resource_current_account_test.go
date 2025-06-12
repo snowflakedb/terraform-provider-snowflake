@@ -3,6 +3,8 @@
 package testacc
 
 import (
+	"testing"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -10,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"testing"
 )
 
 func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
@@ -86,7 +87,6 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 
 // TestAcc_CurrentAccount_PolicyAndParameterChange tests the change of policy and parameter in the same step
 func TestAcc_CurrentAccount_PolicyAndParameterChange(t *testing.T) {
-
 }
 
 func TestAcc_CurrentAccount_Parameters(t *testing.T) {

@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -172,15 +173,6 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 			return diags
 		}
 	}
-
-	//if errs := errors.Join(
-	//	alterAccountIfAttributeChanged(client, ctx, d, schemaObjectIdentifierAttributeUpdate, "feature_policy", func(opts *sdk.AlterAccountOptions) *sdk.SchemaObjectIdentifier { return opts.Set.FeaturePolicy }, func(opts *sdk.AlterAccountOptions) *bool { return opts.Unset.FeaturePolicy }),
-	//); errs != nil {
-	//	return diag.FromErr(errs)
-	//}
-
-	//before, after := d.GetChange("organization_user_group")
-	//// TODO: Update if not empty
 
 	setParameters := new(sdk.AccountSet)
 	unsetParameters := new(sdk.AccountUnset)
