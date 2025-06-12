@@ -126,6 +126,10 @@ The [snowflake_tag_association](https://registry.terraform.io/providers/snowflak
 In v2.1.0, we introduced a fix in handling users' grants ([migration guide](#bugfix-fixed-snowflake_grant_database_role-resource)), which addressed changes in the `2025_02` bundle. The username was parsed incorrectly if it had a prefix formed of `U`, `S`, `E`, and `R` characters. The username returned from `SHOW GRANTS` was incorrect in this case. Now, such names should be handled correctly.
 No configuration changes are necessary.
 
+### *(new feature)* Granting privileges on future cortex search services
+
+As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
+
 ## v2.0.0 ➞ v2.1.0
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
