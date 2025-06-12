@@ -52,36 +52,108 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Description: "Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					// Acceptec configurations:
+					// - stage, file, and optional path
+					// - text
 					"stage": {
 						Type:             schema.TypeString,
 						Optional:         true,
 						ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 						DiffSuppressFunc: suppressIdentifierQuoting,
 						ForceNew:         allFieldsForceNew,
+						RequiredWith:     []string{"from_specification.0.file"},
 						Description:      "The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically.",
+					},
+					"path": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ForceNew:     allFieldsForceNew,
+						RequiredWith: []string{"from_specification.0.stage", "from_specification.0.file"},
+						Description:  "The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.",
+					},
+					"file": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ForceNew:     allFieldsForceNew,
+						RequiredWith: []string{"from_specification.0.stage"},
+						ExactlyOneOf: []string{"from_specification.0.text", "from_specification.0.file"},
+						Description:  "The file name of the service specification.",
+					},
+					"text": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ForceNew:     allFieldsForceNew,
+						Description:  "The embedded text of the service specification.",
+						ExactlyOneOf: []string{"from_specification.0.text", "from_specification.0.file"},
+					},
+				},
+			},
+			ExactlyOneOf: []string{"from_specification", "from_specification_template"},
+		},
+		"from_specification_template": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "Specifies the service specification template to use for the service.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"stage": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+						DiffSuppressFunc: suppressIdentifierQuoting,
+						Description:      "The stage containing the service specification template file. At symbol (`@`) is added automatically.",
 					},
 					"path": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						ForceNew:    allFieldsForceNew,
 						Description: "The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.",
 					},
 					"file": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						ForceNew:    allFieldsForceNew,
-						Description: "The file name of the service specification.",
+						Description: "The file name of the service specification template.",
 					},
 					"text": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						ForceNew:    allFieldsForceNew,
-						Description: "The embedded text of the service specification.",
+						Description: "The embedded text of the service specification template.",
+					},
+					"using": {
+						Type:     schema.TypeList,
+						MinItems: 1,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"key": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "The key name. The provider wraps it in double quotes by default, so be aware of that while referencing the argument in the spec definition.",
+								},
+								"value": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "The raw value.",
+								},
+								"value_in_quotes": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "The value wrapped in single quotes (`'`).",
+								},
+								"value_in_double_dollars": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "The value wrapped in double dollars (`$$`).",
+								},
+							},
+						},
+						Required:    true,
+						Description: "List of the specified template variables and the values of those variables.",
 					},
 				},
 			},
+			ExactlyOneOf: []string{"from_specification", "from_specification_template"},
 		},
-		// TODO (next PR): add from_specification_template
 		"external_access_integrations": {
 			Type:        schema.TypeSet,
 			Optional:    true,
@@ -268,4 +340,57 @@ func ToJobServiceFromSpecificationRequest(value any) (sdk.JobServiceFromSpecific
 		return sdk.JobServiceFromSpecificationRequest{}, err
 	}
 	return sdk.JobServiceFromSpecificationRequest(spec), nil
+}
+
+// TODO: extract common logic for from_specification and from_specification_template
+func ToServiceFromSpecificationTemplateRequest(value any) (sdk.ServiceFromSpecificationTemplateRequest, error) {
+	serviceFromSpecificationTemplate := sdk.ServiceFromSpecificationTemplateRequest{}
+	for _, v := range value.([]any) {
+		fromSpecificationConfig := v.(map[string]any)
+		if text := fromSpecificationConfig["text"].(string); text != "" {
+			serviceFromSpecificationTemplate.SpecificationTemplate = &text
+		}
+		if stageRaw := fromSpecificationConfig["stage"].(string); stageRaw != "" {
+			stage, err := sdk.ParseSchemaObjectIdentifier(stageRaw)
+			if err != nil {
+				return sdk.ServiceFromSpecificationTemplateRequest{}, err
+			}
+			var path string
+			if value := fromSpecificationConfig["path"].(string); value != "" {
+				path = value
+			}
+			serviceFromSpecificationTemplate.Location = sdk.NewStageLocation(stage, path)
+		}
+		if file := fromSpecificationConfig["file"].(string); file != "" {
+			serviceFromSpecificationTemplate.SpecificationTemplateFile = &file
+		}
+		if using := fromSpecificationConfig["using"].([]any); using != nil {
+			serviceFromSpecificationTemplate.Using = collections.Map(using, func(v any) sdk.ListItem {
+				m := v.(map[string]any)
+				var item sdk.ListItem
+				if value := m["key"].(string); value != "" {
+					item.Key = value
+				}
+				if value := m["value"].(string); value != "" {
+					item.Value = value
+				}
+				if valueInQuotes := m["value_in_quotes"].(string); valueInQuotes != "" {
+					item.Value = fmt.Sprintf("'%s'", valueInQuotes)
+				}
+				if valueInDoubleDollars := m["value_in_double_dollars"].(string); valueInDoubleDollars != "" {
+					item.Value = fmt.Sprintf("$$%s$$", valueInDoubleDollars)
+				}
+				return item
+			})
+		}
+	}
+	return serviceFromSpecificationTemplate, nil
+}
+
+func ToJobServiceFromSpecificationTemplateRequest(value any) (sdk.JobServiceFromSpecificationTemplateRequest, error) {
+	spec, err := ToServiceFromSpecificationTemplateRequest(value)
+	if err != nil {
+		return sdk.JobServiceFromSpecificationTemplateRequest{}, err
+	}
+	return sdk.JobServiceFromSpecificationTemplateRequest(spec), nil
 }

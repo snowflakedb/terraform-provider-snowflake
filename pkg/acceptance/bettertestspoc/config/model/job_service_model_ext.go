@@ -58,6 +58,22 @@ func (s *JobServiceModel) WithFromSpecificationOnStage(stageId sdk.SchemaObjectI
 	return s
 }
 
+func (s *JobServiceModel) WithFromSpecificationTemplate(spec string, using ...sdk.ListItem) *JobServiceModel {
+	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"text": config.MultilineWrapperVariable(spec),
+		"using": tfconfig.SetVariable(
+			collections.Map(using, func(item sdk.ListItem) tfconfig.Variable {
+				v := item.Value.(string)
+				return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"key":   tfconfig.StringVariable(item.Key),
+					"value": tfconfig.StringVariable(v),
+				})
+			})...,
+		),
+	}))
+	return s
+}
+
 func (f *JobServiceModel) WithExternalAccessIntegrations(ids ...sdk.AccountObjectIdentifier) *JobServiceModel {
 	return f.WithExternalAccessIntegrationsValue(
 		tfconfig.SetVariable(

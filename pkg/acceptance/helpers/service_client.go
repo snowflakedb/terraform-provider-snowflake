@@ -126,3 +126,52 @@ spec:
     size: 1Gi
 `
 }
+
+func (c *ServiceClient) SampleSpecTemplate(t *testing.T) string {
+	t.Helper()
+
+	return `
+spec:
+  containers:
+  - name: example-container
+  # using: {{ key }}
+    image: /snowflake/images/snowflake_images/exampleimage:latest
+`
+}
+
+type ServiceSpecUsing struct {
+	Key                  string
+	Value                *string
+	ValueInQuotes        *string
+	ValueInDoubleDollars *string
+}
+
+func (c *ServiceClient) SampleSpecTemplateWithUsingValue(t *testing.T) (string, []ServiceSpecUsing) {
+	t.Helper()
+	return c.SampleSpecTemplate(t), []ServiceSpecUsing{
+		{
+			Key:   "key",
+			Value: sdk.Pointer("42"),
+		},
+	}
+}
+
+func (c *ServiceClient) SampleSpecTemplateWithUsingValueInQuotes(t *testing.T) (string, []ServiceSpecUsing) {
+	t.Helper()
+	return c.SampleSpecTemplate(t), []ServiceSpecUsing{
+		{
+			Key:           "key",
+			ValueInQuotes: sdk.Pointer("valueinquotes"),
+		},
+	}
+}
+
+func (c *ServiceClient) SampleSpecTemplateWithUsingValueInDoubleDollars(t *testing.T) (string, []ServiceSpecUsing) {
+	t.Helper()
+	return c.SampleSpecTemplate(t), []ServiceSpecUsing{
+		{
+			Key:                  "key",
+			ValueInDoubleDollars: sdk.Pointer("valueindoubledollars"),
+		},
+	}
+}

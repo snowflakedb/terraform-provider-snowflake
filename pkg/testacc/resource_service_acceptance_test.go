@@ -22,6 +22,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfjson "github.com/hashicorp/terraform-json"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -916,13 +917,217 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 	})
 }
 
-// TODO (next PR): fill
-// func TestAcc_Service_fromSpecificationTemplate(t *testing.T) {
-// }
+func TestAcc_Service_fromSpecificationTemplate(t *testing.T) {
+	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
+	t.Cleanup(computePoolCleanup)
 
-// TODO (next PR): fill
-// func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
-// }
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	specTemplate, using := testClient().Service.SampleSpecTemplateWithUsingValueInQuotes(t)
+
+	modelComplete := model.ServiceWithSpecTemplate("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), specTemplate, using)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Service),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelComplete),
+				Check: assertThat(t,
+					resourceassert.ServiceResource(t, modelComplete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasComputePoolString(computePool.ID().FullyQualifiedName()).
+						HasFromSpecificationTemplateText([]map[string]string{
+							{
+								"key":             "key",
+								"value_in_quotes": "valueinquotes",
+							},
+						}).
+						HasAutoSuspendSecsString(r.IntDefaultString).
+						HasExternalAccessIntegrationsEmpty().
+						HasAutoResumeString(r.BooleanDefault).
+						HasNoMinInstances().
+						HasNoMinReadyInstances().
+						HasNoMaxInstances().
+						HasNoQueryWarehouse().
+						HasCommentString(""),
+					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
+						HasName(id.Name()).
+						HasStatus(sdk.ServiceStatusPending).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComputePool(computePool.ID()).
+						HasDnsNameNotEmpty().
+						HasCurrentInstances(1).
+						HasTargetInstances(1).
+						HasMinReadyInstances(1).
+						HasMinInstances(1).
+						HasMaxInstances(1).
+						HasAutoResume(true).
+						HasNoExternalAccessIntegrations().
+						HasCreatedOnNotEmpty().
+						HasUpdatedOnNotEmpty().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
+						HasAutoSuspendSecs(0).
+						HasComment("").
+						HasOwnerRoleType("ROLE").
+						HasQueryWarehouseEmpty().
+						HasIsJob(false).
+						HasIsAsyncJob(false).
+						HasSpecDigestNotEmpty().
+						HasIsUpgrading(false).
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_resume", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "0")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.updated_on")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.resumed_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.suspended_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.comment", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.query_warehouse", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_async_job", "false")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec_digest")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_upgrading", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_domain", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_name", "")),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
+	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
+	t.Cleanup(computePoolCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	specTemplate := testClient().Service.SampleSpecTemplate(t)
+
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	specFileName := "spec.yaml"
+	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, specTemplate)
+
+	modelComplete := model.ServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Service),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelComplete),
+				Check: assertThat(t,
+					resourceassert.ServiceResource(t, modelComplete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasComputePoolString(computePool.ID().FullyQualifiedName()).
+						HasFromSpecificationTemplateOnStage(stage.ID(), "", specFileName, []map[string]string{
+							{
+								"key":             "key",
+								"value_in_quotes": "valueinquotes",
+							},
+						}).
+						HasAutoSuspendSecsString(r.IntDefaultString).
+						HasExternalAccessIntegrationsEmpty().
+						HasAutoResumeString(r.BooleanDefault).
+						HasNoMinInstances().
+						HasNoMinReadyInstances().
+						HasNoMaxInstances().
+						HasNoQueryWarehouse().
+						HasCommentString(""),
+					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
+						HasName(id.Name()).
+						HasStatus(sdk.ServiceStatusPending).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComputePool(computePool.ID()).
+						HasDnsNameNotEmpty().
+						HasCurrentInstances(1).
+						HasTargetInstances(1).
+						HasMinReadyInstances(1).
+						HasMinInstances(1).
+						HasMaxInstances(1).
+						HasAutoResume(true).
+						HasNoExternalAccessIntegrations().
+						HasCreatedOnNotEmpty().
+						HasUpdatedOnNotEmpty().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
+						HasAutoSuspendSecs(0).
+						HasComment("").
+						HasOwnerRoleType("ROLE").
+						HasQueryWarehouseEmpty().
+						HasIsJob(false).
+						HasIsAsyncJob(false).
+						HasSpecDigestNotEmpty().
+						HasIsUpgrading(false).
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_resume", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "0")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.updated_on")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.resumed_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.suspended_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.comment", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.query_warehouse", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_job", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_async_job", "false")),
+					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec_digest")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_upgrading", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_domain", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_name", "")),
+				),
+			},
+		},
+	})
+}
 
 func TestAcc_Service_complete(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
@@ -1046,14 +1251,47 @@ func TestAcc_Service_complete(t *testing.T) {
 	})
 }
 
-// TODO (next PR): Implement validations and add tests for them.
 func TestAcc_Service_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	computePoolId := testClient().Ids.RandomAccountObjectIdentifier()
 	spec := testClient().Service.SampleSpec(t)
+	specTemplate := testClient().Service.SampleSpecTemplate(t)
 
-	modelCompleteWithInvalidAutoSuspendSecs := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
+	modelWithInvalidAutoSuspendSecs := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
 		WithAutoSuspendSecs(-1)
+	modelWithInvalidAutoResume := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
+		WithAutoResume("invalid")
+	modelWithInvalidMinInstances := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
+		WithMinInstances(0)
+	modelWithInvalidMaxInstances := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
+		WithMaxInstances(0)
+	modelWithInvalidMinReadyInstances := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), spec).
+		WithMinReadyInstances(0)
+
+	modelWithSpecAndSpecTemplate := model.Service("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecification(spec).
+		WithFromSpecificationTemplate(specTemplate, sdk.ListItem{Key: "key", Value: "value"})
+	modelWithNoSpecAndNoSpecTemplate := model.Service("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName())
+	modelWithEmptyExtAccessIntegrations := model.Service("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithExternalAccessIntegrations()
+	modelWithInvalidStage := model.Service("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"stage": tfconfig.StringVariable("invalid"),
+			"file":  tfconfig.StringVariable("file"),
+		}))
+	modelWithTextAndFile := model.Service("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"file": tfconfig.StringVariable("file"),
+			"text": config.MultilineWrapperVariable(spec),
+		}))
+	modelWithFileAndNoStage := model.Service("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"file": tfconfig.StringVariable("file"),
+		}))
+	modelWithStageAndNoFile := model.Service("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"stage": tfconfig.StringVariable("stage"),
+		}))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1064,9 +1302,64 @@ func TestAcc_Service_Validations(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Service),
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, modelCompleteWithInvalidAutoSuspendSecs),
+				Config:      config.FromModels(t, modelWithInvalidAutoSuspendSecs),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected auto_suspend_secs to be at least \(0\), got -1`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithInvalidAutoResume),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected \[\{\{} auto_resume}] to be one of \["true" "false"], got invalid`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithInvalidMinInstances),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected min_instances to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithInvalidMaxInstances),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected max_instances to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithInvalidMinReadyInstances),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected min_ready_instances to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithSpecAndSpecTemplate),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification,from_specification_template` were specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithNoSpecAndNoSpecTemplate),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification,from_specification_template` must be specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithEmptyExtAccessIntegrations),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Attribute external_access_integrations requires 1 item minimum`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithInvalidStage),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Expected SchemaObjectIdentifier identifier type`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithTextAndFile),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification.0.file,from_specification.0.text` were specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithFileAndNoStage),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification.0.file,from_specification.0.stage` must be specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithStageAndNoFile),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification.0.file,from_specification.0.stage` must be specified"),
 			},
 		},
 	})

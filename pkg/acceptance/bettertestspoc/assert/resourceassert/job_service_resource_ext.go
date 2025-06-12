@@ -34,8 +34,3 @@ func (s *JobServiceResourceAssert) HasFromSpecificationOnStageNotEmpty() *JobSer
 	s.AddAssertion(assert.ValueSet("from_specification.0.text", ""))
 	return s
 }
-
-func (s *JobServiceResourceAssert) HasFromSpecificationTemplateEmpty() *JobServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("from_specification_template.#"))
-	return s
-}

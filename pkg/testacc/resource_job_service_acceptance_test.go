@@ -3,8 +3,10 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
@@ -19,6 +21,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfjson "github.com/hashicorp/terraform-json"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -622,12 +625,7 @@ func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	spec := `
-spec:
-  containers:
-  - name: example-container
-    image: /snowflake/images/snowflake_images/exampleimage:latest
-`
+	spec := testClient().Service.SampleSpec(t)
 	specFileName := "spec.yaml"
 	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, spec)
 
@@ -928,6 +926,80 @@ func TestAcc_JobService_complete(t *testing.T) {
 	})
 }
 
-// TODO (next PR): Implement validations and add tests for them.
-// func TestAcc_JobService_Validations(t *testing.T) {
-// }
+func TestAcc_JobService_Validations(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	computePoolId := testClient().Ids.RandomAccountObjectIdentifier()
+	spec := testClient().Service.SampleSpec(t)
+	specTemplate := testClient().Service.SampleSpecTemplate(t)
+
+	modelWithSpecAndSpecTemplate := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecification(spec).
+		WithFromSpecificationTemplate(specTemplate, sdk.ListItem{Key: "key", Value: "value"})
+	modelWithNoSpecAndNoSpecTemplate := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName())
+	modelWithEmptyExtAccessIntegrations := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithExternalAccessIntegrations()
+	modelWithInvalidStage := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"stage": tfconfig.StringVariable("invalid"),
+			"file":  tfconfig.StringVariable("file"),
+		}))
+	modelWithTextAndFile := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"file": tfconfig.StringVariable("file"),
+			"text": config.MultilineWrapperVariable(spec),
+		}))
+	modelWithFileAndNoStage := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"file": tfconfig.StringVariable("file"),
+		}))
+	modelWithStageAndNoFile := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"stage": tfconfig.StringVariable("stage"),
+		}))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.JobService),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, modelWithSpecAndSpecTemplate),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification,from_specification_template` were specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithNoSpecAndNoSpecTemplate),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification,from_specification_template` must be specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithEmptyExtAccessIntegrations),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Attribute external_access_integrations requires 1 item minimum`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithInvalidStage),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Expected SchemaObjectIdentifier identifier type`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithTextAndFile),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification.0.file,from_specification.0.text` were specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithFileAndNoStage),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification.0.file,from_specification.0.stage` must be specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithStageAndNoFile),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`from_specification.0.file,from_specification.0.stage` must be specified"),
+			},
+		},
+	})
+}

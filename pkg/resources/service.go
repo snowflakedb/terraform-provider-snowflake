@@ -112,6 +112,7 @@ func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	request := sdk.NewCreateServiceRequest(id, computePoolId)
 	errs := errors.Join(
 		attributeMappedValueCreateBuilder(d, "from_specification", request.WithFromSpecification, ToServiceFromSpecificationRequest),
+		attributeMappedValueCreateBuilder(d, "from_specification_template", request.WithFromSpecificationTemplate, ToServiceFromSpecificationTemplateRequest),
 		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
 		intAttributeCreateBuilder(d, "min_instances", request.WithMinInstances),
 		intAttributeCreateBuilder(d, "max_instances", request.WithMaxInstances),
@@ -144,6 +145,17 @@ func UpdateService(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				return diag.FromErr(err)
 			}
 			if err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithFromSpecification(spec)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+	if d.HasChange("from_specification_template") {
+		if v, ok := d.GetOk("from_specification_template"); ok {
+			spec, err := ToServiceFromSpecificationTemplateRequest(v)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			if err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithFromSpecificationTemplate(spec)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
