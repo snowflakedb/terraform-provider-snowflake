@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -43,6 +44,43 @@ func JobServiceWithSpecOnStage(
 	return s
 }
 
+func JobServiceWithSpecTemplate(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	computePool string,
+	specTemplate string,
+	using []helpers.ServiceSpecUsing,
+) *JobServiceModel {
+	s := &JobServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.JobService)}
+	s.WithDatabase(database)
+	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithComputePool(computePool)
+	s.WithFromSpecificationTemplate(specTemplate, using...)
+	return s
+}
+
+func JobServiceWithSpecTemplateOnStage(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	computePool string,
+	stageId sdk.SchemaObjectIdentifier,
+	fileName string,
+	using []helpers.ServiceSpecUsing,
+) *JobServiceModel {
+	s := &JobServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.JobService)}
+	s.WithDatabase(database)
+	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithComputePool(computePool)
+	s.WithFromSpecificationTemplateOnStage(stageId, fileName, using)
+	return s
+}
+
 func (s *JobServiceModel) WithFromSpecification(spec string) *JobServiceModel {
 	s.WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"text": config.MultilineWrapperVariable(spec),
@@ -58,16 +96,25 @@ func (s *JobServiceModel) WithFromSpecificationOnStage(stageId sdk.SchemaObjectI
 	return s
 }
 
-func (s *JobServiceModel) WithFromSpecificationTemplate(spec string, using ...sdk.ListItem) *JobServiceModel {
+func (s *JobServiceModel) WithFromSpecificationTemplate(spec string, using ...helpers.ServiceSpecUsing) *JobServiceModel {
 	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"text": config.MultilineWrapperVariable(spec),
 		"using": tfconfig.SetVariable(
-			collections.Map(using, func(item sdk.ListItem) tfconfig.Variable {
-				v := item.Value.(string)
-				return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"key":   tfconfig.StringVariable(item.Key),
-					"value": tfconfig.StringVariable(v),
-				})
+			collections.Map(using, func(item helpers.ServiceSpecUsing) tfconfig.Variable {
+				return item.ToTfVariable()
+			})...,
+		),
+	}))
+	return s
+}
+
+func (s *JobServiceModel) WithFromSpecificationTemplateOnStage(stageId sdk.SchemaObjectIdentifier, fileName string, using []helpers.ServiceSpecUsing) *JobServiceModel {
+	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
+		"file":  tfconfig.StringVariable(fileName),
+		"using": tfconfig.SetVariable(
+			collections.Map(using, func(item helpers.ServiceSpecUsing) tfconfig.Variable {
+				return item.ToTfVariable()
 			})...,
 		),
 	}))

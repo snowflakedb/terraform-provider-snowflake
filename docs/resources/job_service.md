@@ -12,8 +12,6 @@ description: |-
 
 -> **Note** For asynchronous jobs, Snowflake does not perform automatic cleanup after completion. You must either remove the resource or execute the `DROP SERVICE` command to remove the job. If you want to execute the job again, use the [replace flag](https://developer.hashicorp.com/terraform/cli/commands/apply#replace-resource).
 
--> **Note** Managing services via specification templates is not yet supported. This will be addressed in the next versions.
-
 # snowflake_job_service (Resource)
 
 Resource used to manage job services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service). Executes a Snowpark Container Services service as a job. A service, created using `CREATE SERVICE`, is long-running and you must explicitly stop it when it is no longer needed. On the other hand, a job, created using EXECUTE JOB SERVICE (with `ASYNC=TRUE` in this resource), returns immediately while the job is running. See [Working with services](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services) developer guide for more details.
@@ -52,6 +50,44 @@ spec:
   }
 }
 
+# basic resource - from specification template file on stage
+resource "snowflake_job_service" "basic" {
+  database        = snowflake_database.test.name
+  schema          = snowflake_schema.test.name
+  name            = "SERVICE"
+  in_compute_pool = snowflake_compute_pool.test.name
+  from_specification_template {
+    stage = snowflake_stage.test.fully_qualified_name
+    path  = "path/to/spec"
+    file  = "spec.yaml"
+    using {
+      key   = "tag"
+      value = "latest"
+    }
+  }
+}
+
+
+# basic resource - from specification template content
+resource "snowflake_job_service" "basic" {
+  database        = snowflake_database.test.name
+  schema          = snowflake_schema.test.name
+  name            = "SERVICE"
+  in_compute_pool = snowflake_compute_pool.test.name
+  from_specification {
+    text = <<-EOT
+spec:
+ containers:
+ - name: {{ tag }}
+   image: /database/schema/image_repository/exampleimage:latest
+   EOT
+    using {
+      key   = "tag"
+      value = "latest"
+    }
+  }
+}
+
 # complete resource
 resource "snowflake_job_service" "complete" {
   database        = snowflake_database.test.name
@@ -69,7 +105,7 @@ resource "snowflake_job_service" "complete" {
     "INTEGRATION"
   ]
   async           = true
-  query_warehouse = "WAREHOUSE"
+  query_warehouse = snowflake_warehouse.test.name
   comment         = "A service."
 }
 ```
@@ -90,7 +126,8 @@ resource "snowflake_job_service" "complete" {
 
 - `comment` (String) Specifies a comment for the service.
 - `external_access_integrations` (Set of String) Specifies the names of the external access integrations that allow your service to access external sites.
-- `from_specification` (Block List, Max: 1) Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected. (see [below for nested schema](#nestedblock--from_specification))
+- `from_specification` (Block List, Max: 1) Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected. Use correctly formatted YAML files. Watch out for the space/tabs indentation. See [service specification](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/specification-reference#general-guidelines) for more information. (see [below for nested schema](#nestedblock--from_specification))
+- `from_specification_template` (Block List, Max: 1) Specifies the service specification template to use for the service. Note that external changes on this field and nested fields are not detected. Use correctly formatted YAML files. Watch out for the space/tabs indentation. See [service specification](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/specification-reference#general-guidelines) for more information. (see [below for nested schema](#nestedblock--from_specification_template))
 - `query_warehouse` (String) Warehouse to use if a service container connects to Snowflake to execute a query but does not explicitly specify a warehouse to use. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -107,10 +144,34 @@ resource "snowflake_job_service" "complete" {
 
 Optional:
 
-- `file` (String) The file name of the service specification.
+- `file` (String) The file name of the service specification. Example: `spec.yaml`.
 - `path` (String) The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.
-- `stage` (String) The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically.
+- `stage` (String) The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically. Example: `"\"<db_name>\".\"<schema_name>\".\"<schema_name>\""`.
 - `text` (String) The embedded text of the service specification.
+
+
+<a id="nestedblock--from_specification_template"></a>
+### Nested Schema for `from_specification_template`
+
+Required:
+
+- `using` (Block List, Min: 1) List of the specified template variables and the values of those variables. (see [below for nested schema](#nestedblock--from_specification_template--using))
+
+Optional:
+
+- `file` (String) The file name of the service specification template. Example: `spec.yaml`.
+- `path` (String) The path to the service specification template file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.
+- `stage` (String) The fully qualified name of the stage containing the service specification template file. At symbol (`@`) is added automatically. Example: `"\"<db_name>\".\"<schema_name>\".\"<schema_name>\""`.
+- `text` (String) The embedded text of the service specification template.
+
+<a id="nestedblock--from_specification_template--using"></a>
+### Nested Schema for `from_specification_template.using`
+
+Required:
+
+- `key` (String) The name of the template variable. The provider wraps it in double quotes by default, so be aware of that while referencing the argument in the spec definition.
+- `value` (String) The value to assign to the variable in the template. The provider wraps it in `$$` by default, so be aware of that while referencing the argument in the spec definition. The value must either be alphanumeric or valid JSON.
+
 
 
 <a id="nestedblock--timeouts"></a>

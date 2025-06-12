@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	acchelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -650,7 +651,7 @@ func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
-						HasFromSpecificationOnStageNotEmpty().
+						HasFromSpecificationOnStage(stage.ID(), "", specFileName).
 						HasExternalAccessIntegrationsEmpty().
 						HasNoQueryWarehouse().
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
@@ -719,13 +720,199 @@ func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 	})
 }
 
-// TODO (next PR): fill
-// func TestAcc_Service_fromSpecificationTemplate(t *testing.T) {
-// }
+func TestAcc_JobService_fromSpecificationTemplate(t *testing.T) {
+	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
+	t.Cleanup(computePoolCleanup)
 
-// TODO (next PR): fill
-// func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
-// }
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	specTemplate, using := testClient().Service.SampleSpecTemplateWithUsingValue(t)
+
+	model := model.JobServiceWithSpecTemplate("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), specTemplate, using)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Service),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, model),
+				Check: assertThat(t,
+					resourceassert.JobServiceResource(t, model.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasComputePoolString(computePool.ID().FullyQualifiedName()).
+						HasFromSpecificationTemplateTextNotEmpty(using...).
+						HasExternalAccessIntegrationsEmpty().
+						HasNoQueryWarehouse().
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
+						HasCommentString(""),
+					resourceshowoutputassert.ServiceShowOutput(t, model.ResourceReference()).
+						HasName(id.Name()).
+						HasStatus(sdk.ServiceStatusPending).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComputePool(computePool.ID()).
+						HasDnsNameNotEmpty().
+						HasCurrentInstances(0).
+						HasTargetInstances(1).
+						HasMinReadyInstances(1).
+						HasMinInstances(1).
+						HasMaxInstances(1).
+						HasAutoResume(true).
+						HasNoExternalAccessIntegrations().
+						HasCreatedOnNotEmpty().
+						HasUpdatedOnNotEmpty().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
+						HasAutoSuspendSecs(0).
+						HasComment("").
+						HasOwnerRoleType("ROLE").
+						HasQueryWarehouseEmpty().
+						HasIsJob(true).
+						HasIsAsyncJob(true).
+						HasSpecDigestNotEmpty().
+						HasIsUpgrading(false).
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec")),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.current_instances", "0")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.max_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.auto_resume", "true")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.external_access_integrations.#", "0")),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.updated_on")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.resumed_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.suspended_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.auto_suspend_secs", "0")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.comment", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.query_warehouse", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.is_async_job", "true")),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec_digest")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.is_upgrading", "false")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.managing_object_domain", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.managing_object_name", "")),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_JobService_fromSpecificationTemplateOnStage(t *testing.T) {
+	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
+	t.Cleanup(computePoolCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	specTemplate, using := testClient().Service.SampleSpecTemplateWithUsingValue(t)
+
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	specFileName := "spec.yaml"
+	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, specTemplate)
+
+	model := model.JobServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName, using)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Service),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, model),
+				Check: assertThat(t,
+					resourceassert.JobServiceResource(t, model.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasComputePoolString(computePool.ID().FullyQualifiedName()).
+						HasFromSpecificationTemplateOnStage(stage.ID(), "", specFileName, using...).
+						HasExternalAccessIntegrationsEmpty().
+						HasNoQueryWarehouse().
+						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
+						HasCommentString(""),
+					resourceshowoutputassert.ServiceShowOutput(t, model.ResourceReference()).
+						HasName(id.Name()).
+						HasStatus(sdk.ServiceStatusPending).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComputePool(computePool.ID()).
+						HasDnsNameNotEmpty().
+						HasCurrentInstances(0).
+						HasTargetInstances(1).
+						HasMinReadyInstances(1).
+						HasMinInstances(1).
+						HasMaxInstances(1).
+						HasAutoResume(true).
+						HasNoExternalAccessIntegrations().
+						HasCreatedOnNotEmpty().
+						HasUpdatedOnNotEmpty().
+						HasResumedOnEmpty().
+						HasSuspendedOnEmpty().
+						HasAutoSuspendSecs(0).
+						HasComment("").
+						HasOwnerRoleType("ROLE").
+						HasQueryWarehouseEmpty().
+						HasIsJob(true).
+						HasIsAsyncJob(true).
+						HasSpecDigestNotEmpty().
+						HasIsUpgrading(false).
+						HasManagingObjectDomainEmpty().
+						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec")),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.current_instances", "0")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.max_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.auto_resume", "true")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.external_access_integrations.#", "0")),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.updated_on")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.resumed_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.suspended_on", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.auto_suspend_secs", "0")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.comment", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.query_warehouse", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.is_job", "true")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.is_async_job", "true")),
+					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec_digest")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.is_upgrading", "false")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.managing_object_domain", "")),
+					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.managing_object_name", "")),
+				),
+			},
+		},
+	})
+}
 
 func TestAcc_JobService_changingSpec(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
@@ -779,7 +966,7 @@ func TestAcc_JobService_changingSpec(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
-						HasFromSpecificationOnStageNotEmpty(),
+						HasFromSpecificationOnStage(stage.ID(), "", specFileName),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasicOnStage.ResourceReference()).
 						HasName(id.Name()),
 					assert.Check(resource.TestCheckResourceAttr(modelBasicOnStage.ResourceReference(), "describe_output.0.name", id.Name())),
@@ -804,7 +991,7 @@ func TestAcc_JobService_changingSpec(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
-						HasFromSpecificationOnStageNotEmpty(),
+						HasFromSpecificationOnStage(stage.ID(), "", specFileName),
 					resourceshowoutputassert.ServiceShowOutput(t, modelBasicOnStage.ResourceReference()).
 						HasName(id.Name()),
 					assert.Check(resource.TestCheckResourceAttr(modelBasicOnStage.ResourceReference(), "describe_output.0.name", id.Name())),
@@ -934,7 +1121,29 @@ func TestAcc_JobService_Validations(t *testing.T) {
 
 	modelWithSpecAndSpecTemplate := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
 		WithFromSpecification(spec).
-		WithFromSpecificationTemplate(specTemplate, sdk.ListItem{Key: "key", Value: "value"})
+		WithFromSpecificationTemplate(specTemplate, acchelpers.ServiceSpecUsing{Key: "key", Value: "value"})
+	modelWithUsingMissingKey := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"text": config.MultilineWrapperVariable(spec),
+			"using": tfconfig.SetVariable(
+				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"value": tfconfig.StringVariable("value"),
+				}),
+			),
+		}))
+	modelWithUsingMissingValue := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"text": config.MultilineWrapperVariable(spec),
+			"using": tfconfig.SetVariable(
+				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"key": tfconfig.StringVariable("key"),
+				}),
+			),
+		}))
+	modelWithEmptyUsing := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
+		WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"text": config.MultilineWrapperVariable(spec),
+		}))
 	modelWithNoSpecAndNoSpecTemplate := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName())
 	modelWithEmptyExtAccessIntegrations := model.JobService("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName()).
 		WithExternalAccessIntegrations()
@@ -969,6 +1178,21 @@ func TestAcc_JobService_Validations(t *testing.T) {
 				Config:      config.FromModels(t, modelWithSpecAndSpecTemplate),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("`from_specification,from_specification_template` were specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithUsingMissingKey),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`The argument "key" is required, but no definition was found`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithUsingMissingValue),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`The argument "value" is required, but no definition was found`),
+			},
+			{
+				Config:      config.FromModels(t, modelWithEmptyUsing),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`At least 1 "using" blocks are required.`),
 			},
 			{
 				Config:      config.FromModels(t, modelWithNoSpecAndNoSpecTemplate),

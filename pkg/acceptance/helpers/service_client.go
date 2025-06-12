@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -134,44 +135,41 @@ func (c *ServiceClient) SampleSpecTemplate(t *testing.T) string {
 spec:
   containers:
   - name: example-container
-  # using: {{ key }}
     image: /snowflake/images/snowflake_images/exampleimage:latest
+  endpoints:
+  - name: {{ endpoint_name }}
+    public: {{ endpoint_is_public }}
+    protocol: TCP
+    port: {{ endpoint_port }}
 `
 }
 
 type ServiceSpecUsing struct {
-	Key                  string
-	Value                *string
-	ValueInQuotes        *string
-	ValueInDoubleDollars *string
+	Key   string
+	Value string
+}
+
+func (s *ServiceSpecUsing) ToTfVariable() tfconfig.Variable {
+	return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"key":   tfconfig.StringVariable(s.Key),
+		"value": tfconfig.StringVariable(s.Value),
+	})
 }
 
 func (c *ServiceClient) SampleSpecTemplateWithUsingValue(t *testing.T) (string, []ServiceSpecUsing) {
 	t.Helper()
 	return c.SampleSpecTemplate(t), []ServiceSpecUsing{
 		{
-			Key:   "key",
-			Value: sdk.Pointer("42"),
+			Key:   "endpoint_is_public",
+			Value: "false",
 		},
-	}
-}
-
-func (c *ServiceClient) SampleSpecTemplateWithUsingValueInQuotes(t *testing.T) (string, []ServiceSpecUsing) {
-	t.Helper()
-	return c.SampleSpecTemplate(t), []ServiceSpecUsing{
 		{
-			Key:           "key",
-			ValueInQuotes: sdk.Pointer("valueinquotes"),
+			Key:   "endpoint_name",
+			Value: "endpoint",
 		},
-	}
-}
-
-func (c *ServiceClient) SampleSpecTemplateWithUsingValueInDoubleDollars(t *testing.T) (string, []ServiceSpecUsing) {
-	t.Helper()
-	return c.SampleSpecTemplate(t), []ServiceSpecUsing{
 		{
-			Key:                  "key",
-			ValueInDoubleDollars: sdk.Pointer("valueindoubledollars"),
+			Key:   "endpoint_port",
+			Value: "4242",
 		},
 	}
 }

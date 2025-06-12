@@ -7,8 +7,6 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
--> **Note** Managing services via specification templates is not yet supported. This will be addressed in the next versions.
-
 -> **Note** Managing service state is limited. It is handled by `auto_suspend_secs`, and `auto_resume` fields. The provider does not support managing the state of services in Snowflake with `ALTER ... SUSPEND` and `ALTER ... RESUME`. See [Suspending a service documentation](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services#suspending-a-service) for more details.
 
 # snowflake_service (Resource)
@@ -46,6 +44,44 @@ spec:
   - name: example-container
     image: /database/schema/image_repository/exampleimage:latest
     EOT
+  }
+}
+
+# basic resource - from specification template file on stage
+resource "snowflake_service" "basic" {
+  database        = snowflake_database.test.name
+  schema          = snowflake_schema.test.name
+  name            = "SERVICE"
+  in_compute_pool = snowflake_compute_pool.test.name
+  from_specification_template {
+    stage = snowflake_stage.test.fully_qualified_name
+    path  = "path/to/spec"
+    file  = "spec.yaml"
+    using {
+      key   = "tag"
+      value = "latest"
+    }
+  }
+}
+
+
+# basic resource - from specification template content
+resource "snowflake_service" "basic" {
+  database        = snowflake_database.test.name
+  schema          = snowflake_schema.test.name
+  name            = "SERVICE"
+  in_compute_pool = snowflake_compute_pool.test.name
+  from_specification {
+    text = <<-EOT
+spec:
+ containers:
+ - name: {{ tag }}
+   image: /database/schema/image_repository/exampleimage:latest
+   EOT
+    using {
+      key   = "tag"
+      value = "latest"
+    }
   }
 }
 
@@ -93,7 +129,8 @@ resource "snowflake_compute_pool" "complete" {
 - `auto_suspend_secs` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the number of seconds of inactivity (service is idle) after which Snowflake automatically suspends the service.
 - `comment` (String) Specifies a comment for the service.
 - `external_access_integrations` (Set of String) Specifies the names of the external access integrations that allow your service to access external sites.
-- `from_specification` (Block List, Max: 1) Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected. (see [below for nested schema](#nestedblock--from_specification))
+- `from_specification` (Block List, Max: 1) Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected. Use correctly formatted YAML files. Watch out for the space/tabs indentation. See [service specification](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/specification-reference#general-guidelines) for more information. (see [below for nested schema](#nestedblock--from_specification))
+- `from_specification_template` (Block List, Max: 1) Specifies the service specification template to use for the service. Note that external changes on this field and nested fields are not detected. Use correctly formatted YAML files. Watch out for the space/tabs indentation. See [service specification](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/specification-reference#general-guidelines) for more information. (see [below for nested schema](#nestedblock--from_specification_template))
 - `max_instances` (Number) Specifies the maximum number of service instances to run.
 - `min_instances` (Number) Specifies the minimum number of service instances to run.
 - `min_ready_instances` (Number) Indicates the minimum service instances that must be ready for Snowflake to consider the service is ready to process requests.
@@ -113,10 +150,34 @@ resource "snowflake_compute_pool" "complete" {
 
 Optional:
 
-- `file` (String) The file name of the service specification.
+- `file` (String) The file name of the service specification. Example: `spec.yaml`.
 - `path` (String) The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.
-- `stage` (String) The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically.
+- `stage` (String) The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically. Example: `"\"<db_name>\".\"<schema_name>\".\"<schema_name>\""`.
 - `text` (String) The embedded text of the service specification.
+
+
+<a id="nestedblock--from_specification_template"></a>
+### Nested Schema for `from_specification_template`
+
+Required:
+
+- `using` (Block List, Min: 1) List of the specified template variables and the values of those variables. (see [below for nested schema](#nestedblock--from_specification_template--using))
+
+Optional:
+
+- `file` (String) The file name of the service specification template. Example: `spec.yaml`.
+- `path` (String) The path to the service specification template file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.
+- `stage` (String) The fully qualified name of the stage containing the service specification template file. At symbol (`@`) is added automatically. Example: `"\"<db_name>\".\"<schema_name>\".\"<schema_name>\""`.
+- `text` (String) The embedded text of the service specification template.
+
+<a id="nestedblock--from_specification_template--using"></a>
+### Nested Schema for `from_specification_template.using`
+
+Required:
+
+- `key` (String) The name of the template variable. The provider wraps it in double quotes by default, so be aware of that while referencing the argument in the spec definition.
+- `value` (String) The value to assign to the variable in the template. The provider wraps it in `$$` by default, so be aware of that while referencing the argument in the spec definition. The value must either be alphanumeric or valid JSON.
+
 
 
 <a id="nestedblock--timeouts"></a>
