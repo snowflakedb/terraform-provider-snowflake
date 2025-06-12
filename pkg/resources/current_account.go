@@ -12,10 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO
-// deprecate account_parameter resource
-// in the next pr support policies and organization user group
-
 var currentAccountSchema = map[string]*schema.Schema{
 	"resource_monitor": {
 		Type:             schema.TypeString,
@@ -24,58 +20,11 @@ var currentAccountSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
-	/*
-		"authentication_policy": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "",
-			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
-		},
-		"password_policy": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "",
-			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
-		},
-		"session_policy": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "",
-			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
-		},
-		"feature_policy": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "",
-			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
-		},
-		"packages_policy": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "",
-			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
-		},
-		"organization_user_group": {
-			Type: schema.TypeSet,
-			Elem: &schema.Schema{
-				Type:             schema.TypeString,
-				ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-			},
-			Optional:    true,
-			Description: "The list of organization user groups imported into the account.",
-		},
-	*/
-	// TODO: Tags are done by tags_association resource
 }
 
 func CurrentAccount() *schema.Resource {
 	return &schema.Resource{
-		Description:   "TODO",
+		Description:   "Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See [ALTER ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account) documentation for more information on resource capabilities.",
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CurrentAccountResource), TrackingCreateWrapper(resources.CurrentAccount, CreateCurrentAccount)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CurrentAccountResource), TrackingReadWrapper(resources.CurrentAccount, ReadCurrentAccount)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CurrentAccountResource), TrackingUpdateWrapper(resources.CurrentAccount, UpdateCurrentAccount)),
@@ -138,48 +87,6 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 			return diags
 		}
 	}
-
-	/* TODO(next prs): implement policies
-	if d.HasChange("authentication_policy") {
-		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
-		if err := schemaObjectIdentifierAttributeUpdate(d, "authentication_policy", &set.AuthenticationPolicy, &unset.AuthenticationPolicy); err != nil {
-			return diag.FromErr(err)
-		}
-		if diags := alterIfIdentifierAttributeChanged(set, unset, set.AuthenticationPolicy, unset.AuthenticationPolicy); diags != nil {
-			return diags
-		}
-	}
-
-	if d.HasChange("password_policy") {
-		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
-		if err := schemaObjectIdentifierAttributeUpdate(d, "password_policy", &set.PasswordPolicy, &unset.PasswordPolicy); err != nil {
-			return diag.FromErr(err)
-		}
-		if diags := alterIfIdentifierAttributeChanged(set, unset, set.PasswordPolicy, unset.PasswordPolicy); diags != nil {
-			return diags
-		}
-	}
-
-	if d.HasChange("session_policy") {
-		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
-		if err := schemaObjectIdentifierAttributeUpdate(d, "session_policy", &set.SessionPolicy, &unset.SessionPolicy); err != nil {
-			return diag.FromErr(err)
-		}
-		if diags := alterIfIdentifierAttributeChanged(set, unset, set.SessionPolicy, unset.SessionPolicy); diags != nil {
-			return diags
-		}
-	}
-
-	if d.HasChange("packages_policy") {
-		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
-		if err := schemaObjectIdentifierAttributeUpdate(d, "packages_policy", &set.PackagesPolicy, &unset.PackagesPolicy); err != nil {
-			return diag.FromErr(err)
-		}
-		if diags := alterIfIdentifierAttributeChanged(set, unset, set.PackagesPolicy, unset.PackagesPolicy); diags != nil {
-			return diags
-		}
-	}
-	*/
 
 	setParameters := new(sdk.AccountSet)
 	unsetParameters := new(sdk.AccountUnset)
