@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
@@ -65,7 +66,7 @@ func TestAcc_Services(t *testing.T) {
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.#", "1")),
 
-					resourceshowoutputassert.ServiceShowOutput(t, serviceModel.ResourceReference()).
+					resourceshowoutputassert.ServicesDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasStatus(sdk.ServiceStatusPending).
 						HasDatabaseName(id.DatabaseName()).
@@ -131,7 +132,7 @@ func TestAcc_Services(t *testing.T) {
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModelWithoutOptionals.DatasourceReference(), "services.#", "1")),
 
-					resourceshowoutputassert.ServicesDatasourceShowOutput(t, "snowflake_services.test").
+					resourceshowoutputassert.ServicesDatasourceShowOutput(t, dataSourceModelWithoutOptionals.DatasourceReference()).
 						HasName(id.Name()).
 						HasStatus(sdk.ServiceStatusPending).
 						HasDatabaseName(id.DatabaseName()).
@@ -202,12 +203,12 @@ func TestAcc_Services_Filtering(t *testing.T) {
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), jobModel.ResourceReference())
 	dataSourceModelInComputePoolJobsOnly := datasourcemodel.Services("test").
 		WithWithDescribe(false).
-		WithJobsOnly(true).
+		WithServiceType(string(datasources.ShowServicesTypeJobsOnly)).
 		WithInComputePool(computePool2.ID()).
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), jobModel.ResourceReference())
 	dataSourceModelInComputePoolExcludeJobs := datasourcemodel.Services("test").
 		WithWithDescribe(false).
-		WithExcludeJobs(true).
+		WithServiceType(string(datasources.ShowServicesTypeServicesOnly)).
 		WithInComputePool(computePool2.ID()).
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), jobModel.ResourceReference())
 

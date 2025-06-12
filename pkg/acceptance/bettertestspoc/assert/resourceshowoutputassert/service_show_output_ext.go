@@ -13,7 +13,7 @@ func ServicesDatasourceShowOutput(t *testing.T, name string) *ServiceShowOutputA
 	t.Helper()
 
 	s := ServiceShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert("data."+name, "show_output", "services.0."),
+		ResourceAssert: assert.NewDatasourceAssert(name, "show_output", "services.0."),
 	}
 	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &s

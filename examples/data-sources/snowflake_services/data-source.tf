@@ -81,7 +81,7 @@ output "limit_output" {
 
 # Filtering (jobs only)
 data "snowflake_services" "jobs_only" {
-  jobs_only = true
+  service_type = "JOBS_ONLY"
 }
 
 output "jobs_only_output" {
@@ -90,7 +90,7 @@ output "jobs_only_output" {
 
 # Filtering (exclude jobs)
 data "snowflake_services" "exclude_jobs" {
-  exclude_jobs = true
+  service_type = "SERVICES_ONLY"
 }
 
 output "exclude_jobs_output" {

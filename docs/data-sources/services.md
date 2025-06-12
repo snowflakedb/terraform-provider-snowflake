@@ -2,14 +2,14 @@
 page_title: "snowflake_services Data Source - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Data source used to get details of filtered services. Filtering is aligned with the current possibilities for SHOW SERVICES https://docs.snowflake.com/en/sql-reference/sql/show-services query. The results of SHOW and DESCRIBE are encapsulated in one output collection services.
+  Data source used to get details of filtered services. Filtering is aligned with the current possibilities for SHOW SERVICES https://docs.snowflake.com/en/sql-reference/sql/show-services query. The results of SHOW and DESCRIBE are encapsulated in one output collection services. By default, the results includes both services and job services. If you want to filter only services or job service, set mode with a relevant option.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_services (Data Source)
 
-Data source used to get details of filtered services. Filtering is aligned with the current possibilities for [SHOW SERVICES](https://docs.snowflake.com/en/sql-reference/sql/show-services) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `services`.
+Data source used to get details of filtered services. Filtering is aligned with the current possibilities for [SHOW SERVICES](https://docs.snowflake.com/en/sql-reference/sql/show-services) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `services`. By default, the results includes both services and job services. If you want to filter only services or job service, set `mode` with a relevant option.
 
 ## Example Usage
 
@@ -97,7 +97,7 @@ output "limit_output" {
 
 # Filtering (jobs only)
 data "snowflake_services" "jobs_only" {
-  jobs_only = true
+  mode = "JOBS_ONLY"
 }
 
 output "jobs_only_output" {
@@ -106,7 +106,7 @@ output "jobs_only_output" {
 
 # Filtering (exclude jobs)
 data "snowflake_services" "exclude_jobs" {
-  exclude_jobs = true
+  mode = "SERVICES_ONLY"
 }
 
 output "exclude_jobs_output" {
@@ -154,11 +154,10 @@ check "service_check" {
 
 ### Optional
 
-- `exclude_jobs` (Boolean) (Default: `false`) If true, jobs will be excluded from the output. If false, jobs will be included in the output.
 - `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
-- `jobs_only` (Boolean) (Default: `false`) If true, only jobs will be returned. If false, normal services will be included in the output.
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
 - `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
+- `mode` (String) (Default: `ALL`) The type filtering of `SHOW SERVICES` results. `ALL` returns both services and job services. `JOBS_ONLY` returns only job services (`JOB` option in SQL). `SERVICES_ONLY` returns only services (`EXCLUDE_JOBS` option in SQL).
 - `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
 - `with_describe` (Boolean) (Default: `true`) Runs DESC SERVICE for each service returned by SHOW SERVICES. The output of describe is saved to the description field. By default this value is set to true.
 

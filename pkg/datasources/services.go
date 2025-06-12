@@ -2,11 +2,15 @@ package datasources
 
 import (
 	"context"
+	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 
@@ -15,6 +19,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type ShowServicesType string
+
+const (
+	ShowServicesTypeAll          ShowServicesType = "ALL"
+	ShowServicesTypeJobsOnly     ShowServicesType = "JOBS_ONLY"
+	ShowServicesTypeServicesOnly ShowServicesType = "SERVICES_ONLY"
+)
+
+var allShowServicesTypes = []ShowServicesType{
+	ShowServicesTypeAll,
+	ShowServicesTypeJobsOnly,
+	ShowServicesTypeServicesOnly,
+}
+
+func toShowServicesType(s string) (ShowServicesType, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(allShowServicesTypes, ShowServicesType(s)) {
+		return "", fmt.Errorf("invalid show services type: %s", s)
+	}
+	return ShowServicesType(s), nil
+}
+
 var servicesSchema = map[string]*schema.Schema{
 	"with_describe": {
 		Type:        schema.TypeBool,
@@ -22,17 +48,12 @@ var servicesSchema = map[string]*schema.Schema{
 		Default:     true,
 		Description: "Runs DESC SERVICE for each service returned by SHOW SERVICES. The output of describe is saved to the description field. By default this value is set to true.",
 	},
-	"jobs_only": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     false,
-		Description: "If true, only jobs will be returned. If false, normal services will be included in the output.",
-	},
-	"exclude_jobs": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     false,
-		Description: "If true, jobs will be excluded from the output. If false, jobs will be included in the output.",
+	"service_type": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          string(ShowServicesTypeAll),
+		Description:      fmt.Sprintf("The type filtering of `SHOW SERVICES` results. `ALL` returns both services and job services. `JOBS_ONLY` returns only job services (`JOB` option in SQL). `SERVICES_ONLY` returns only services (`EXCLUDE_JOBS` option in SQL)."),
+		ValidateDiagFunc: validators.NormalizeValidation(toShowServicesType),
 	},
 	"like":        likeSchema,
 	"starts_with": startsWithSchema,
@@ -69,7 +90,8 @@ func Services() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ServicesDatasource), TrackingReadWrapper(datasources.Services, ReadServices)),
 		Schema:      servicesSchema,
-		Description: "Data source used to get details of filtered services. Filtering is aligned with the current possibilities for [SHOW SERVICES](https://docs.snowflake.com/en/sql-reference/sql/show-services) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `services`.",
+		Description: "Data source used to get details of filtered services. Filtering is aligned with the current possibilities for [SHOW SERVICES](https://docs.snowflake.com/en/sql-reference/sql/show-services) query." +
+			" The results of SHOW and DESCRIBE are encapsulated in one output collection `services`. By default, the results includes both services and job services. If you want to filter only services or job service, set `service_type` with a relevant option.",
 	}
 }
 
@@ -83,11 +105,19 @@ func ReadServices(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	if err := handleServiceIn(d, &req.In); err != nil {
 		return diag.FromErr(err)
 	}
-	if d.Get("jobs_only").(bool) {
-		req.Job = sdk.Bool(true)
-	}
-	if d.Get("exclude_jobs").(bool) {
-		req.ExcludeJobs = sdk.Bool(true)
+	if v := d.Get("service_type").(string); v != "" {
+		mode, err := toShowServicesType(v)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		switch mode {
+		case ShowServicesTypeJobsOnly:
+			req.Job = sdk.Bool(true)
+		case ShowServicesTypeServicesOnly:
+			req.ExcludeJobs = sdk.Bool(true)
+		case ShowServicesTypeAll:
+			// no-op, filtering is not applied
+		}
 	}
 
 	services, err := client.Services.Show(ctx, &req)

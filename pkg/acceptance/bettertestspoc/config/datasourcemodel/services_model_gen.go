@@ -12,11 +12,10 @@ import (
 )
 
 type ServicesModel struct {
-	ExcludeJobs  tfconfig.Variable `json:"exclude_jobs,omitempty"`
 	In           tfconfig.Variable `json:"in,omitempty"`
-	JobsOnly     tfconfig.Variable `json:"jobs_only,omitempty"`
 	Like         tfconfig.Variable `json:"like,omitempty"`
 	Limit        tfconfig.Variable `json:"limit,omitempty"`
+	ServiceType  tfconfig.Variable `json:"service_type,omitempty"`
 	Services     tfconfig.Variable `json:"services,omitempty"`
 	StartsWith   tfconfig.Variable `json:"starts_with,omitempty"`
 	WithDescribe tfconfig.Variable `json:"with_describe,omitempty"`
@@ -66,17 +65,7 @@ func (s *ServicesModel) WithDependsOn(values ...string) *ServicesModel {
 // below all the proper values //
 /////////////////////////////////
 
-func (s *ServicesModel) WithExcludeJobs(excludeJobs bool) *ServicesModel {
-	s.ExcludeJobs = tfconfig.BoolVariable(excludeJobs)
-	return s
-}
-
 // in attribute type is not yet supported, so WithIn can't be generated
-
-func (s *ServicesModel) WithJobsOnly(jobsOnly bool) *ServicesModel {
-	s.JobsOnly = tfconfig.BoolVariable(jobsOnly)
-	return s
-}
 
 func (s *ServicesModel) WithLike(like string) *ServicesModel {
 	s.Like = tfconfig.StringVariable(like)
@@ -84,6 +73,11 @@ func (s *ServicesModel) WithLike(like string) *ServicesModel {
 }
 
 // limit attribute type is not yet supported, so WithLimit can't be generated
+
+func (s *ServicesModel) WithServiceType(serviceType string) *ServicesModel {
+	s.ServiceType = tfconfig.StringVariable(serviceType)
+	return s
+}
 
 // services attribute type is not yet supported, so WithServices can't be generated
 
@@ -101,18 +95,8 @@ func (s *ServicesModel) WithWithDescribe(withDescribe bool) *ServicesModel {
 // below it's possible to set any value //
 //////////////////////////////////////////
 
-func (s *ServicesModel) WithExcludeJobsValue(value tfconfig.Variable) *ServicesModel {
-	s.ExcludeJobs = value
-	return s
-}
-
 func (s *ServicesModel) WithInValue(value tfconfig.Variable) *ServicesModel {
 	s.In = value
-	return s
-}
-
-func (s *ServicesModel) WithJobsOnlyValue(value tfconfig.Variable) *ServicesModel {
-	s.JobsOnly = value
 	return s
 }
 
@@ -123,6 +107,11 @@ func (s *ServicesModel) WithLikeValue(value tfconfig.Variable) *ServicesModel {
 
 func (s *ServicesModel) WithLimitValue(value tfconfig.Variable) *ServicesModel {
 	s.Limit = value
+	return s
+}
+
+func (s *ServicesModel) WithServiceTypeValue(value tfconfig.Variable) *ServicesModel {
+	s.ServiceType = value
 	return s
 }
 
