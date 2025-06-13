@@ -28,6 +28,12 @@ You can find more details in [this](https://community.snowflake.com/s/article/ER
 
 No configuration changes are needed.
 
+### The ORGADMIN checks removed from snowflake_account resource
+
+Previously, the `snowflake_account` resource required the ORGADMIN role for operations to be executed.
+In recent Snowflake changes that introduced organization accounts, more roles can now manage the account.
+Because of that, to enable the resource to be used in more scenarios, we removed the ORGADMIN checks from the resource.
+
 ### *(new feature)* New tracking level
 
 Every resource that is capable of setting tracing level (`database`, `shared_database`, `secondary_database`, `schema`) now supports the new `PROPAGATE` value.
