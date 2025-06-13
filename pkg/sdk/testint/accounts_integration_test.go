@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -26,7 +27,10 @@ func TestInt_Account(t *testing.T) {
 
 	client := testClient(t)
 	ctx := testContext(t)
-	currentAccountName := testClientHelper().Context.CurrentAccountName(t)
+	currentAccountId := testClientHelper().Context.CurrentAccountId(t)
+	currentAccountName := currentAccountId.AccountName()
+	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
+	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", currentAccountId.OrganizationName())
 
 	assertAccountQueriedByOrgAdmin := func(t *testing.T, account sdk.Account, accountName string) {
 		t.Helper()
@@ -109,7 +113,7 @@ func TestInt_Account(t *testing.T) {
 	}
 
 	t.Run("create: minimal", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AccountName())
 		name := random.AdminName()
 		password := random.Password()
 		email := random.Email()
@@ -130,7 +134,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("create: user type service", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AccountName())
 		name := random.AdminName()
 		key, _ := random.GenerateRSAPublicKey(t)
 		email := random.Email()
@@ -152,7 +156,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("create: user type legacy service", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AccountName())
 		name := random.AdminName()
 		password := random.Password()
 		email := random.Email()
@@ -174,7 +178,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("create: complete", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AccountName())
 		name := random.AdminName()
 		password := random.Password()
 		email := random.Email()
@@ -187,16 +191,17 @@ func TestInt_Account(t *testing.T) {
 		comment := random.Comment()
 
 		createResponse, err := client.Accounts.Create(ctx, id, &sdk.CreateAccountOptions{
-			AdminName:          name,
-			AdminPassword:      sdk.String(password),
-			FirstName:          sdk.String("firstName"),
-			LastName:           sdk.String("lastName"),
-			Email:              email,
-			MustChangePassword: sdk.Bool(true),
-			Edition:            sdk.EditionStandard,
-			RegionGroup:        sdk.String("PUBLIC"),
-			Region:             sdk.String(currentRegion.SnowflakeRegion),
-			Comment:            sdk.String(comment),
+			AdminName:                name,
+			AdminPassword:            sdk.String(password),
+			FirstName:                sdk.String("firstName"),
+			LastName:                 sdk.String("lastName"),
+			Email:                    email,
+			MustChangePassword:       sdk.Bool(true),
+			Edition:                  sdk.EditionStandard,
+			RegionGroup:              sdk.String("PUBLIC"),
+			Region:                   sdk.String(currentRegion.SnowflakeRegion),
+			Comment:                  sdk.String(comment),
+			ConsumptionBillingEntity: sdk.String(defaultConsumptionBillingEntity),
 			// TODO(SNOW-1895880): with polaris Snowflake returns an error saying: "invalid property polaris for account"
 			// Polaris: sdk.Bool(true),
 		})
@@ -216,10 +221,8 @@ func TestInt_Account(t *testing.T) {
 		require.Equal(t, false, *account.IsOrgAdmin)
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-				Name:     account.ID(),
-				OrgAdmin: true,
-			},
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{OrgAdmin: sdk.Bool(true)},
 		})
 		require.NoError(t, err)
 
@@ -228,10 +231,8 @@ func TestInt_Account(t *testing.T) {
 		require.Equal(t, true, *acc.IsOrgAdmin)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-				Name:     account.ID(),
-				OrgAdmin: false,
-			},
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{OrgAdmin: sdk.Bool(false)},
 		})
 		require.NoError(t, err)
 
@@ -244,12 +245,12 @@ func TestInt_Account(t *testing.T) {
 		oldAccount, oldAccountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(oldAccountCleanup)
 
-		newName := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		newName := sdk.NewAccountObjectIdentifier(random.AccountName())
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(oldAccount.ID()),
 			Rename: &sdk.AccountRename{
-				Name:    oldAccount.ID(),
 				NewName: newName,
 			},
 		})
@@ -269,12 +270,12 @@ func TestInt_Account(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
 
-		newName := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		newName := sdk.NewAccountObjectIdentifier(random.AccountName())
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Rename: &sdk.AccountRename{
-				Name:       account.ID(),
 				NewName:    newName,
 				SaveOldURL: sdk.Bool(false),
 			},
@@ -290,13 +291,41 @@ func TestInt_Account(t *testing.T) {
 		require.Empty(t, acc.OldAccountURL)
 	})
 
+	t.Run("alter: set / unset consumption billing entity", func(t *testing.T) {
+		account, accountCleanup := testClientHelper().Account.Create(t)
+		t.Cleanup(accountCleanup)
+
+		require.Equal(t, defaultConsumptionBillingEntity, *account.ConsumptionBillingEntityName)
+
+		// We are not able to create consumption billing entities, because of that, we use the default one.
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{ConsumptionBillingEntity: sdk.String(defaultConsumptionBillingEntity)},
+		})
+		require.NoError(t, err)
+
+		acc, err := client.Accounts.ShowByID(ctx, account.ID())
+		require.NoError(t, err)
+		require.Equal(t, defaultConsumptionBillingEntity, *acc.ConsumptionBillingEntityName)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name:  sdk.Pointer(account.ID()),
+			Unset: &sdk.AccountUnset{ConsumptionBillingEntity: sdk.Bool(true)},
+		})
+		require.NoError(t, err)
+
+		acc, err = client.Accounts.ShowByID(ctx, account.ID())
+		require.NoError(t, err)
+		require.Equal(t, defaultConsumptionBillingEntity, *acc.ConsumptionBillingEntityName)
+	})
+
 	t.Run("alter: drop url when there's no old url", func(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Drop: &sdk.AccountDrop{
-				Name:   account.ID(),
 				OldUrl: sdk.Bool(true),
 			},
 		})
@@ -307,12 +336,12 @@ func TestInt_Account(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
 
-		newName := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		newName := sdk.NewAccountObjectIdentifier(random.AccountName())
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Rename: &sdk.AccountRename{
-				Name:    account.ID(),
 				NewName: newName,
 			},
 		})
@@ -323,8 +352,8 @@ func TestInt_Account(t *testing.T) {
 		require.NotEmpty(t, acc.OldAccountURL)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(newName),
 			Drop: &sdk.AccountDrop{
-				Name:   newName,
 				OldUrl: sdk.Bool(true),
 			},
 		})
