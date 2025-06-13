@@ -66,11 +66,16 @@ func TestAccountCreate(t *testing.T) {
 }
 
 func TestAccountAlter(t *testing.T) {
+	t.Run("validation: exactly one value - nothing set", func(t *testing.T) {
+		opts := &AlterAccountOptions{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename", "SetIsOrgAdmin"))
+	})
+
 	t.Run("validation: exactly one value set in AccountSet - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet"))
 	})
 
 	t.Run("validation: exactly one value set in AccountSet - multiple set", func(t *testing.T) {
@@ -81,14 +86,14 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - multiple set", func(t *testing.T) {
@@ -99,7 +104,7 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset"))
 	})
 
 	t.Run("with legacy set params", func(t *testing.T) {
@@ -418,6 +423,16 @@ func TestAccountAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET RESOURCE_MONITOR = "mymonitor"`)
 	})
 
+	t.Run("with set feature policy", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				FeaturePolicySet: &AccountFeaturePolicySet{FeaturePolicy: &id},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET FEATURE POLICY %s FOR ALL APPLICATIONS`, id.FullyQualifiedName())
+	})
+
 	t.Run("with set packages policy", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
@@ -447,7 +462,7 @@ func TestAccountAlter(t *testing.T) {
 				Force:          Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("force can only be set with PackagesPolicy field"))
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("force can only be set with PackagesPolicy and FeaturePolicy"))
 	})
 
 	t.Run("with set password policy", func(t *testing.T) {
@@ -487,6 +502,15 @@ func TestAccountAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET PACKAGES POLICY`)
+	})
+
+	t.Run("with unset feature policy", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				FeaturePolicyUnset: &AccountFeaturePolicyUnset{FeaturePolicy: Bool(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET FEATURE POLICY FOR ALL APPLICATIONS`)
 	})
 
 	t.Run("with unset password policy", func(t *testing.T) {

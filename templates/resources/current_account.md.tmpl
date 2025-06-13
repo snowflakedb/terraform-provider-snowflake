@@ -9,6 +9,8 @@ description: |-
 {{- end }}
 ---
 
+!> **Warning** This resource requires warehouse to be in the context. To use this resource, specify a default warehouse in the provider configuration.
+
 -> **Note** On removal, the resource will unset all account properties. To remove the resource without unsetting properties, use [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm) command.
 
 -> **Note** You can manage only one such resource **per account**. More instances on one account could cause unexpected behavior.

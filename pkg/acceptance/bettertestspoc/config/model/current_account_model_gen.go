@@ -16,6 +16,7 @@ type CurrentAccountModel struct {
 	ActivePythonProfiler                             tfconfig.Variable `json:"active_python_profiler,omitempty"`
 	AllowClientMfaCaching                            tfconfig.Variable `json:"allow_client_mfa_caching,omitempty"`
 	AllowIdToken                                     tfconfig.Variable `json:"allow_id_token,omitempty"`
+	AuthenticationPolicy                             tfconfig.Variable `json:"authentication_policy,omitempty"`
 	Autocommit                                       tfconfig.Variable `json:"autocommit,omitempty"`
 	BaseLocationPrefix                               tfconfig.Variable `json:"base_location_prefix,omitempty"`
 	BinaryInputFormat                                tfconfig.Variable `json:"binary_input_format,omitempty"`
@@ -62,6 +63,7 @@ type CurrentAccountModel struct {
 	EventTable                                       tfconfig.Variable `json:"event_table,omitempty"`
 	ExternalOauthAddPrivilegedRolesToBlockedList     tfconfig.Variable `json:"external_oauth_add_privileged_roles_to_blocked_list,omitempty"`
 	ExternalVolume                                   tfconfig.Variable `json:"external_volume,omitempty"`
+	FeaturePolicy                                    tfconfig.Variable `json:"feature_policy,omitempty"`
 	GeographyOutputFormat                            tfconfig.Variable `json:"geography_output_format,omitempty"`
 	GeometryOutputFormat                             tfconfig.Variable `json:"geometry_output_format,omitempty"`
 	HybridTableLockTimeout                           tfconfig.Variable `json:"hybrid_table_lock_timeout,omitempty"`
@@ -83,6 +85,8 @@ type CurrentAccountModel struct {
 	NoorderSequenceAsDefault                         tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
 	OauthAddPrivilegedRolesToBlockedList             tfconfig.Variable `json:"oauth_add_privileged_roles_to_blocked_list,omitempty"`
 	OdbcTreatDecimalAsInt                            tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
+	PackagesPolicy                                   tfconfig.Variable `json:"packages_policy,omitempty"`
+	PasswordPolicy                                   tfconfig.Variable `json:"password_policy,omitempty"`
 	PeriodicDataRekeying                             tfconfig.Variable `json:"periodic_data_rekeying,omitempty"`
 	PipeExecutionPaused                              tfconfig.Variable `json:"pipe_execution_paused,omitempty"`
 	PreventUnloadToInlineUrl                         tfconfig.Variable `json:"prevent_unload_to_inline_url,omitempty"`
@@ -101,6 +105,7 @@ type CurrentAccountModel struct {
 	SearchPath                                       tfconfig.Variable `json:"search_path,omitempty"`
 	ServerlessTaskMaxStatementSize                   tfconfig.Variable `json:"serverless_task_max_statement_size,omitempty"`
 	ServerlessTaskMinStatementSize                   tfconfig.Variable `json:"serverless_task_min_statement_size,omitempty"`
+	SessionPolicy                                    tfconfig.Variable `json:"session_policy,omitempty"`
 	SimulatedDataSharingConsumer                     tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
 	SsoLoginPage                                     tfconfig.Variable `json:"sso_login_page,omitempty"`
 	StatementQueuedTimeoutInSeconds                  tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
@@ -198,6 +203,11 @@ func (c *CurrentAccountModel) WithAllowClientMfaCaching(allowClientMfaCaching bo
 
 func (c *CurrentAccountModel) WithAllowIdToken(allowIdToken bool) *CurrentAccountModel {
 	c.AllowIdToken = tfconfig.BoolVariable(allowIdToken)
+	return c
+}
+
+func (c *CurrentAccountModel) WithAuthenticationPolicy(authenticationPolicy string) *CurrentAccountModel {
+	c.AuthenticationPolicy = tfconfig.StringVariable(authenticationPolicy)
 	return c
 }
 
@@ -431,6 +441,11 @@ func (c *CurrentAccountModel) WithExternalVolume(externalVolume string) *Current
 	return c
 }
 
+func (c *CurrentAccountModel) WithFeaturePolicy(featurePolicy string) *CurrentAccountModel {
+	c.FeaturePolicy = tfconfig.StringVariable(featurePolicy)
+	return c
+}
+
 func (c *CurrentAccountModel) WithGeographyOutputFormat(geographyOutputFormat string) *CurrentAccountModel {
 	c.GeographyOutputFormat = tfconfig.StringVariable(geographyOutputFormat)
 	return c
@@ -536,6 +551,16 @@ func (c *CurrentAccountModel) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bo
 	return c
 }
 
+func (c *CurrentAccountModel) WithPackagesPolicy(packagesPolicy string) *CurrentAccountModel {
+	c.PackagesPolicy = tfconfig.StringVariable(packagesPolicy)
+	return c
+}
+
+func (c *CurrentAccountModel) WithPasswordPolicy(passwordPolicy string) *CurrentAccountModel {
+	c.PasswordPolicy = tfconfig.StringVariable(passwordPolicy)
+	return c
+}
+
 func (c *CurrentAccountModel) WithPeriodicDataRekeying(periodicDataRekeying bool) *CurrentAccountModel {
 	c.PeriodicDataRekeying = tfconfig.BoolVariable(periodicDataRekeying)
 	return c
@@ -623,6 +648,11 @@ func (c *CurrentAccountModel) WithServerlessTaskMaxStatementSize(serverlessTaskM
 
 func (c *CurrentAccountModel) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize string) *CurrentAccountModel {
 	c.ServerlessTaskMinStatementSize = tfconfig.StringVariable(serverlessTaskMinStatementSize)
+	return c
+}
+
+func (c *CurrentAccountModel) WithSessionPolicy(sessionPolicy string) *CurrentAccountModel {
+	c.SessionPolicy = tfconfig.StringVariable(sessionPolicy)
 	return c
 }
 
@@ -792,6 +822,11 @@ func (c *CurrentAccountModel) WithAllowClientMfaCachingValue(value tfconfig.Vari
 
 func (c *CurrentAccountModel) WithAllowIdTokenValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.AllowIdToken = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithAuthenticationPolicyValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.AuthenticationPolicy = value
 	return c
 }
 
@@ -1025,6 +1060,11 @@ func (c *CurrentAccountModel) WithExternalVolumeValue(value tfconfig.Variable) *
 	return c
 }
 
+func (c *CurrentAccountModel) WithFeaturePolicyValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.FeaturePolicy = value
+	return c
+}
+
 func (c *CurrentAccountModel) WithGeographyOutputFormatValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.GeographyOutputFormat = value
 	return c
@@ -1130,6 +1170,16 @@ func (c *CurrentAccountModel) WithOdbcTreatDecimalAsIntValue(value tfconfig.Vari
 	return c
 }
 
+func (c *CurrentAccountModel) WithPackagesPolicyValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.PackagesPolicy = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithPasswordPolicyValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.PasswordPolicy = value
+	return c
+}
+
 func (c *CurrentAccountModel) WithPeriodicDataRekeyingValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.PeriodicDataRekeying = value
 	return c
@@ -1217,6 +1267,11 @@ func (c *CurrentAccountModel) WithServerlessTaskMaxStatementSizeValue(value tfco
 
 func (c *CurrentAccountModel) WithServerlessTaskMinStatementSizeValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.ServerlessTaskMinStatementSize = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithSessionPolicyValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.SessionPolicy = value
 	return c
 }
 

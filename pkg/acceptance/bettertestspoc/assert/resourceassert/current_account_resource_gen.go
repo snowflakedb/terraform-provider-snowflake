@@ -52,6 +52,11 @@ func (c *CurrentAccountResourceAssert) HasAllowIdTokenString(expected string) *C
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasAuthenticationPolicyString(expected string) *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("authentication_policy", expected))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasAutocommitString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("autocommit", expected))
 	return c
@@ -282,6 +287,11 @@ func (c *CurrentAccountResourceAssert) HasExternalVolumeString(expected string) 
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasFeaturePolicyString(expected string) *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("feature_policy", expected))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasGeographyOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("geography_output_format", expected))
 	return c
@@ -387,6 +397,21 @@ func (c *CurrentAccountResourceAssert) HasOdbcTreatDecimalAsIntString(expected s
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasOrganizationUserGroupString(expected string) *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("organization_user_group", expected))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasPackagesPolicyString(expected string) *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("packages_policy", expected))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasPasswordPolicyString(expected string) *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("password_policy", expected))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasPeriodicDataRekeyingString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("periodic_data_rekeying", expected))
 	return c
@@ -474,6 +499,11 @@ func (c *CurrentAccountResourceAssert) HasServerlessTaskMaxStatementSizeString(e
 
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("serverless_task_min_statement_size", expected))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasSessionPolicyString(expected string) *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("session_policy", expected))
 	return c
 }
 
@@ -643,6 +673,11 @@ func (c *CurrentAccountResourceAssert) HasNoAllowClientMfaCaching() *CurrentAcco
 
 func (c *CurrentAccountResourceAssert) HasNoAllowIdToken() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("allow_id_token"))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoAuthenticationPolicy() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("authentication_policy"))
 	return c
 }
 
@@ -876,6 +911,11 @@ func (c *CurrentAccountResourceAssert) HasNoExternalVolume() *CurrentAccountReso
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoFeaturePolicy() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("feature_policy"))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoGeographyOutputFormat() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("geography_output_format"))
 	return c
@@ -981,6 +1021,16 @@ func (c *CurrentAccountResourceAssert) HasNoOdbcTreatDecimalAsInt() *CurrentAcco
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoPackagesPolicy() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("packages_policy"))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoPasswordPolicy() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("password_policy"))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoPeriodicDataRekeying() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("periodic_data_rekeying"))
 	return c
@@ -1068,6 +1118,11 @@ func (c *CurrentAccountResourceAssert) HasNoServerlessTaskMaxStatementSize() *Cu
 
 func (c *CurrentAccountResourceAssert) HasNoServerlessTaskMinStatementSize() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("serverless_task_min_statement_size"))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoSessionPolicy() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("session_policy"))
 	return c
 }
 
@@ -1237,6 +1292,11 @@ func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingEmpty() *CurrentA
 
 func (c *CurrentAccountResourceAssert) HasAllowIdTokenEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("allow_id_token", ""))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasAuthenticationPolicyEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("authentication_policy", ""))
 	return c
 }
 
@@ -1470,6 +1530,11 @@ func (c *CurrentAccountResourceAssert) HasExternalVolumeEmpty() *CurrentAccountR
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasFeaturePolicyEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("feature_policy", ""))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasGeographyOutputFormatEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("geography_output_format", ""))
 	return c
@@ -1575,6 +1640,21 @@ func (c *CurrentAccountResourceAssert) HasOdbcTreatDecimalAsIntEmpty() *CurrentA
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasOrganizationUserGroupEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("organization_user_group.#", "0"))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasPackagesPolicyEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("packages_policy", ""))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasPasswordPolicyEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("password_policy", ""))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasPeriodicDataRekeyingEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("periodic_data_rekeying", ""))
 	return c
@@ -1662,6 +1742,11 @@ func (c *CurrentAccountResourceAssert) HasServerlessTaskMaxStatementSizeEmpty() 
 
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("serverless_task_min_statement_size", ""))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasSessionPolicyEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("session_policy", ""))
 	return c
 }
 
@@ -1831,6 +1916,11 @@ func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingNotEmpty() *Curre
 
 func (c *CurrentAccountResourceAssert) HasAllowIdTokenNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("allow_id_token"))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasAuthenticationPolicyNotEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("authentication_policy"))
 	return c
 }
 
@@ -2064,6 +2154,11 @@ func (c *CurrentAccountResourceAssert) HasExternalVolumeNotEmpty() *CurrentAccou
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasFeaturePolicyNotEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("feature_policy"))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasGeographyOutputFormatNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("geography_output_format"))
 	return c
@@ -2169,6 +2264,16 @@ func (c *CurrentAccountResourceAssert) HasOdbcTreatDecimalAsIntNotEmpty() *Curre
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasPackagesPolicyNotEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("packages_policy"))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasPasswordPolicyNotEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("password_policy"))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasPeriodicDataRekeyingNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("periodic_data_rekeying"))
 	return c
@@ -2256,6 +2361,11 @@ func (c *CurrentAccountResourceAssert) HasServerlessTaskMaxStatementSizeNotEmpty
 
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("serverless_task_min_statement_size"))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasSessionPolicyNotEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("session_policy"))
 	return c
 }
 

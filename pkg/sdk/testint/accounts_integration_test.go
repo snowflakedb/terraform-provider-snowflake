@@ -911,7 +911,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		}
 	})
 
-	assertPolicySet := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
+	assertThatPolicyIsSetOnAccount := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
 		t.Helper()
 
 		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount)
@@ -922,7 +922,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	assertPolicyNotSet := func(t *testing.T) {
+	assertThatNoPolicyIsSetOnAccount := func(t *testing.T) {
 		t.Helper()
 
 		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount)
@@ -963,6 +963,9 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(authPolicyCleanup)
 
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
 		passwordPolicy, passwordPolicyCleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
 		t.Cleanup(passwordPolicyCleanup)
 
@@ -972,96 +975,58 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
 		t.Cleanup(packagesPolicyCleanup)
 
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PackagesPolicy: &packagesPolicyId,
-			},
-		})
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					PackagesPolicy: sdk.Bool(true),
-				},
-			}))
+			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}}))
 		})
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PasswordPolicy: sdk.Pointer(passwordPolicy.ID()),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					PasswordPolicy: sdk.Bool(true),
-				},
-			}))
+			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}}))
 		})
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				SessionPolicy: sdk.Pointer(sessionPolicy.ID()),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					SessionPolicy: sdk.Bool(true),
-				},
-			}))
+			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}}))
 		})
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				AuthenticationPolicy: sdk.Pointer(authPolicy.ID()),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					AuthenticationPolicy: sdk.Bool(true),
-				},
-			}))
+			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PasswordPolicy: sdk.Bool(true)}}))
 		})
 
-		assertPolicySet(t, authPolicy.ID())
-		assertPolicySet(t, passwordPolicy.ID())
-		assertPolicySet(t, sessionPolicy.ID())
-		assertPolicySet(t, packagesPolicyId)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				PackagesPolicy: sdk.Bool(true),
-			},
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{SessionPolicy: sdk.Bool(true)}}))
 		})
+
+		assertThatPolicyIsSetOnAccount(t, featurePolicyId)
+		assertThatPolicyIsSetOnAccount(t, authPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, passwordPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sessionPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, packagesPolicyId)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}})
 		require.NoError(t, err)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				PasswordPolicy: sdk.Bool(true),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}})
 		require.NoError(t, err)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				SessionPolicy: sdk.Bool(true),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PasswordPolicy: sdk.Bool(true)}})
 		require.NoError(t, err)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				AuthenticationPolicy: sdk.Bool(true),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{SessionPolicy: sdk.Bool(true)}})
 		require.NoError(t, err)
 
-		assertPolicyNotSet(t)
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}})
+		require.NoError(t, err)
+
+		assertThatNoPolicyIsSetOnAccount(t)
 	})
 
 	t.Run("force new packages policy", func(t *testing.T) {
@@ -1071,37 +1036,44 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		newPackagesPolicyId, newPackagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
 		t.Cleanup(newPackagesPolicyCleanup)
 
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PackagesPolicy: &packagesPolicyId,
-			},
-		})
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
 		require.NoError(t, err)
-		assertPolicySet(t, packagesPolicyId)
+		assertThatPolicyIsSetOnAccount(t, packagesPolicyId)
 		t.Cleanup(func() {
-			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					PackagesPolicy: sdk.Bool(true),
-				},
-			})
+			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}})
 			require.NoError(t, err)
-			assertPolicyNotSet(t)
+			assertThatNoPolicyIsSetOnAccount(t)
 		})
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PackagesPolicy: &newPackagesPolicyId,
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &newPackagesPolicyId}})
 		require.Error(t, err)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PackagesPolicy: &newPackagesPolicyId,
-				Force:          sdk.Bool(true),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &newPackagesPolicyId, Force: sdk.Bool(true)}})
 		require.NoError(t, err)
-		assertPolicySet(t, newPackagesPolicyId)
+		assertThatPolicyIsSetOnAccount(t, newPackagesPolicyId)
+	})
+
+	t.Run("force new feature policy", func(t *testing.T) {
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
+		newFeaturePolicyId, newFeaturePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(newFeaturePolicyCleanup)
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, featurePolicyId)
+		t.Cleanup(func() {
+			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}})
+			require.NoError(t, err)
+			assertThatNoPolicyIsSetOnAccount(t)
+		})
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}}})
+		require.Error(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}, Force: sdk.Bool(true)}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, newFeaturePolicyId)
 	})
 }

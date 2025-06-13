@@ -33,6 +33,7 @@ type TestClient struct {
 	ExternalTable                *ExternalTableClient
 	ExternalVolume               *ExternalVolumeClient
 	FailoverGroup                *FailoverGroupClient
+	FeaturePolicy                *FeaturePolicyClient
 	FileFormat                   *FileFormatClient
 	Function                     *FunctionClient
 	GitRepository                *GitRepositoryClient
@@ -113,6 +114,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		ExternalTable:                NewExternalTableClient(context, idsGenerator),
 		ExternalVolume:               NewExternalVolumeClient(context, idsGenerator),
 		FailoverGroup:                NewFailoverGroupClient(context, idsGenerator),
+		FeaturePolicy:                NewFeaturePolicyClient(context, idsGenerator),
 		FileFormat:                   NewFileFormatClient(context, idsGenerator),
 		Function:                     NewFunctionClient(context, idsGenerator),
 		GitRepository:                NewGitRepositoryClient(context, idsGenerator),

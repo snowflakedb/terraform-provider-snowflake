@@ -5,6 +5,8 @@ description: |-
   Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See ALTER ACCOUNT https://docs.snowflake.com/en/sql-reference/sql/alter-account documentation for more information on resource capabilities.
 ---
 
+!> **Warning** This resource requires warehouse to be in the context. To use this resource, specify a default warehouse in the provider configuration.
+
 -> **Note** On removal, the resource will unset all account properties. To remove the resource without unsetting properties, use [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm) command.
 
 -> **Note** You can manage only one such resource **per account**. More instances on one account could cause unexpected behavior.
@@ -13,7 +15,136 @@ description: |-
 
 Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See [ALTER ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account) documentation for more information on resource capabilities.
 
+## Example Usage
 
+-> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
+<!-- TODO(SNOW-1634854): include an example showing both methods-->
+
+```terraform
+## Minimal
+resource "snowflake_current_account" "minimal" {
+}
+
+## Complete (with every optional set)
+resource "snowflake_current_account" "complete" {
+  abort_detached_query                                       = true
+  allow_client_mfa_caching                                   = true
+  allow_id_token                                             = true
+  authentication_policy                                      = snowflake_authentication_policy.example.fully_qualified_name
+  autocommit                                                 = false
+  base_location_prefix                                       = "STORAGE_BASE_URL/"
+  binary_input_format                                        = "BASE64"
+  binary_output_format                                       = "BASE64"
+  catalog                                                    = "SNOWFLAKE"
+  client_enable_log_info_statement_parameters                = true
+  client_encryption_key_size                                 = 256
+  client_memory_limit                                        = 1540
+  client_metadata_request_use_connection_ctx                 = true
+  client_metadata_use_session_database                       = true
+  client_prefetch_threads                                    = 5
+  client_result_chunk_size                                   = 159
+  client_result_column_case_insensitive                      = true
+  client_session_keep_alive                                  = true
+  client_session_keep_alive_heartbeat_frequency              = 3599
+  client_timestamp_type_mapping                              = "TIMESTAMP_NTZ"
+  cortex_enabled_cross_region                                = "ANY_REGION"
+  cortex_models_allowlist                                    = "All"
+  csv_timestamp_format                                       = "YYYY-MM-DD"
+  data_retention_time_in_days                                = 2
+  date_input_format                                          = "YYYY-MM-DD"
+  date_output_format                                         = "YYYY-MM-DD"
+  default_ddl_collation                                      = "en-cs"
+  default_notebook_compute_pool_cpu                          = "CPU_X64_S"
+  default_notebook_compute_pool_gpu                          = "GPU_NV_S"
+  default_null_ordering                                      = "FIRST"
+  default_streamlit_notebook_warehouse                       = snowflake_warehouse.example.fully_qualified_name
+  disable_ui_download_button                                 = true
+  disable_user_privilege_grants                              = true
+  enable_automatic_sensitive_data_classification_log         = false
+  enable_egress_cost_optimizer                               = false
+  enable_identifier_first_login                              = false
+  enable_tri_secret_and_rekey_opt_out_for_image_repository   = true
+  enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage = true
+  enable_unhandled_exceptions_reporting                      = false
+  enable_unload_physical_type_optimization                   = false
+  enable_unredacted_query_syntax_error                       = true
+  enable_unredacted_secure_object_error                      = true
+  enforce_network_rules_for_internal_stages                  = true
+  error_on_nondeterministic_merge                            = false
+  error_on_nondeterministic_update                           = true
+  event_table                                                = "\"<database_name>\".\"<schema_name>\".\"<event_table_name>\""
+  external_oauth_add_privileged_roles_to_blocked_list        = false
+  external_volume                                            = "XWDVEAAT_A6FEE9D6_5D41_AB3D_EB0C_51DA5E5F0BE2"
+  feature_policy                                             = "\"<database_name>\".\"<schema_name>\".\"<feature_policy_name>\""
+  geography_output_format                                    = "WKT"
+  geometry_output_format                                     = "WKT"
+  hybrid_table_lock_timeout                                  = 3599
+  initial_replication_size_limit_in_tb                       = "9.9"
+  jdbc_treat_decimal_as_int                                  = false
+  jdbc_treat_timestamp_ntz_as_utc                            = true
+  jdbc_use_session_timezone                                  = false
+  js_treat_integer_as_bigint                                 = true
+  json_indent                                                = 4
+  listing_auto_fulfillment_replication_refresh_schedule      = "2 minutes"
+  lock_timeout                                               = 43201
+  log_level                                                  = "INFO"
+  max_concurrency_level                                      = 7
+  max_data_extension_time_in_days                            = 13
+  metric_level                                               = "ALL"
+  min_data_retention_time_in_days                            = 1
+  multi_statement_count                                      = 0
+  network_policy                                             = snowflake_network_policy.example.fully_qualified_name
+  noorder_sequence_as_default                                = false
+  oauth_add_privileged_roles_to_blocked_list                 = false
+  odbc_treat_decimal_as_int                                  = true
+  packages_policy                                            = "\"<database_name>\".\"<schema_name>\".\"<packages_policy_name>\""
+  password_policy                                            = snowflake_password_policy.example.fully_qualified_name
+  periodic_data_rekeying                                     = false
+  pipe_execution_paused                                      = true
+  prevent_unload_to_inline_url                               = true
+  prevent_unload_to_internal_stages                          = true
+  python_profiler_target_stage                               = snowflake_stage.example.fully_qualified_name
+  query_tag                                                  = "test-query-tag"
+  quoted_identifiers_ignore_case                             = true
+  replace_invalid_characters                                 = true
+  require_storage_integration_for_stage_creation             = true
+  require_storage_integration_for_stage_operation            = true
+  resource_monitor                                           = snowflake_resource_monitor.example.fully_qualified_name
+  rows_per_resultset                                         = 1000
+  search_path                                                = "$current, $public"
+  serverless_task_max_statement_size                         = "XLARGE"
+  serverless_task_min_statement_size                         = "SMALL"
+  session_policy                                             = "\"<database_name>\".\"<schema_name>\".\"<session_policy_name>\""
+  sso_login_page                                             = true
+  statement_queued_timeout_in_seconds                        = 1
+  statement_timeout_in_seconds                               = 1
+  storage_serialization_policy                               = "OPTIMIZED"
+  strict_json_output                                         = true
+  suspend_task_after_num_failures                            = 3
+  task_auto_retry_attempts                                   = 3
+  time_input_format                                          = "YYYY-MM-DD"
+  time_output_format                                         = "YYYY-MM-DD"
+  timestamp_day_is_always_24h                                = true
+  timestamp_input_format                                     = "YYYY-MM-DD"
+  timestamp_ltz_output_format                                = "YYYY-MM-DD"
+  timestamp_ntz_output_format                                = "YYYY-MM-DD"
+  timestamp_output_format                                    = "YYYY-MM-DD"
+  timestamp_type_mapping                                     = "TIMESTAMP_LTZ"
+  timestamp_tz_output_format                                 = "YYYY-MM-DD"
+  timezone                                                   = "Europe/London"
+  trace_level                                                = "PROPAGATE"
+  transaction_abort_on_error                                 = true
+  transaction_default_isolation_level                        = "READ COMMITTED"
+  two_digit_century_start                                    = 1971
+  unsupported_ddl_action                                     = "FAIL"
+  use_cached_result                                          = false
+  user_task_managed_initial_warehouse_size                   = "SMALL"
+  user_task_minimum_trigger_interval_in_seconds              = 10
+  user_task_timeout_ms                                       = 10
+  week_of_year_policy                                        = 1
+  week_start                                                 = 1
+}
+```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
@@ -26,6 +157,7 @@ Resource used to manage the account you are currently connected to. This resourc
 - `active_python_profiler` (String) Sets the profiler to use for the session when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler). Valid values are (case-insensitive): `LINE` | `MEMORY`. For more information, check [ACTIVE_PYTHON_PROFILER docs](https://docs.snowflake.com/en/sql-reference/parameters#active-python-profiler).
 - `allow_client_mfa_caching` (Boolean) Specifies whether an MFA token can be saved in the client-side operating system keystore to promote continuous, secure connectivity without users needing to respond to an MFA prompt at the start of each connection attempt to Snowflake. For details and the list of supported Snowflake-provided clients, see [Using MFA token caching to minimize the number of prompts during authentication — optional.](https://docs.snowflake.com/en/user-guide/security-mfa.html#label-mfa-token-caching) For more information, check [ALLOW_CLIENT_MFA_CACHING docs](https://docs.snowflake.com/en/sql-reference/parameters#allow-client-mfa-caching).
 - `allow_id_token` (Boolean) Specifies whether a connection token can be saved in the client-side operating system keystore to promote continuous, secure connectivity without users needing to enter login credentials at the start of each connection attempt to Snowflake. For details and the list of supported Snowflake-provided clients, see [Using connection caching to minimize the number of prompts for authentication — optional.](https://docs.snowflake.com/en/user-guide/admin-security-fed-auth-use.html#label-browser-based-sso-connection-caching) For more information, check [ALLOW_ID_TOKEN docs](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token).
+- `authentication_policy` (String) Specifies [authentication policy](https://docs.snowflake.com/en/user-guide/authentication-policies) for the current account.
 - `autocommit` (Boolean) Specifies whether autocommit is enabled for the session. Autocommit determines whether a DML statement, when executed without an active transaction, is automatically committed after the statement successfully completes. For more information, see [Transactions](https://docs.snowflake.com/en/sql-reference/transactions). For more information, check [AUTOCOMMIT docs](https://docs.snowflake.com/en/sql-reference/parameters#autocommit).
 - `base_location_prefix` (String) Specifies a prefix for Snowflake to use in the write path for Snowflake-managed Apache Iceberg™ tables. For more information, see [data and metadata directories for Iceberg tables](https://docs.snowflake.com/en/user-guide/tables-iceberg-storage.html#label-tables-iceberg-configure-external-volume-base-location). For more information, check [BASE_LOCATION_PREFIX docs](https://docs.snowflake.com/en/sql-reference/parameters#base-location-prefix).
 - `binary_input_format` (String) The format of VARCHAR values passed as input to VARCHAR-to-BINARY conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output). Valid values are (case-insensitive): `HEX` | `BASE64` | `UTF8`. For more information, check [BINARY_INPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#binary-input-format).
@@ -72,6 +204,7 @@ Resource used to manage the account you are currently connected to. This resourc
 - `event_table` (String) Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions). Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`. For more information, check [EVENT_TABLE docs](https://docs.snowflake.com/en/sql-reference/parameters#event-table).
 - `external_oauth_add_privileged_roles_to_blocked_list` (Boolean) Determines whether the ACCOUNTADMIN, ORGADMIN, GLOBALORGADMIN, and SECURITYADMIN roles can be used as the primary role when creating a Snowflake session based on the access token from the External OAuth authorization server. For more information, check [EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST docs](https://docs.snowflake.com/en/sql-reference/parameters#external-oauth-add-privileged-roles-to-blocked-list).
 - `external_volume` (String) Specifies the external volume for Apache Iceberg™ tables. For more information, see the [Iceberg table documentation](https://docs.snowflake.com/en/user-guide/tables-iceberg.html#label-tables-iceberg-external-volume-def). Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`. For more information, check [EXTERNAL_VOLUME docs](https://docs.snowflake.com/en/sql-reference/parameters#external-volume).
+- `feature_policy` (String) Specifies [feature policy](https://docs.snowflake.com/en/developer-guide/native-apps/ui-consumer-feature-policies) for the current account.
 - `geography_output_format` (String) Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography). Valid values are (case-insensitive): `GeoJSON` | `WKT` | `WKB` | `EWKT` | `EWKB`. For more information, check [GEOGRAPHY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#geography-output-format).
 - `geometry_output_format` (String) Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry). Valid values are (case-insensitive): `GeoJSON` | `WKT` | `WKB` | `EWKT` | `EWKB`. For more information, check [GEOMETRY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#geometry-output-format).
 - `hybrid_table_lock_timeout` (Number) Number of seconds to wait while trying to acquire row-level locks on a hybrid table, before timing out and aborting the statement. For more information, check [HYBRID_TABLE_LOCK_TIMEOUT docs](https://docs.snowflake.com/en/sql-reference/parameters#hybrid-table-lock-timeout).
@@ -93,6 +226,8 @@ Resource used to manage the account you are currently connected to. This resourc
 - `noorder_sequence_as_default` (Boolean) Specifies whether the ORDER or NOORDER property is set by default when you create a new sequence or add a new table column. The ORDER and NOORDER properties determine whether or not the values are generated for the sequence or auto-incremented column in [increasing or decreasing order](https://docs.snowflake.com/en/user-guide/querying-sequences.html#label-querying-sequences-increasing-values). For more information, check [NOORDER_SEQUENCE_AS_DEFAULT docs](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default).
 - `oauth_add_privileged_roles_to_blocked_list` (Boolean) Determines whether the ACCOUNTADMIN, ORGADMIN, GLOBALORGADMIN, and SECURITYADMIN roles can be used as the primary role when creating a Snowflake session based on the access token from Snowflake’s authorization server. For more information, check [OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST docs](https://docs.snowflake.com/en/sql-reference/parameters#oauth-add-privileged-roles-to-blocked-list).
 - `odbc_treat_decimal_as_int` (Boolean) Specifies how ODBC processes columns that have a scale of zero (0). For more information, check [ODBC_TREAT_DECIMAL_AS_INT docs](https://docs.snowflake.com/en/sql-reference/parameters#odbc-treat-decimal-as-int).
+- `packages_policy` (String) Specifies [packages policy](https://docs.snowflake.com/en/developer-guide/udf/python/packages-policy) for the current account.
+- `password_policy` (String) Specifies [password policy](https://docs.snowflake.com/en/user-guide/password-authentication#label-using-password-policies) for the current account.
 - `periodic_data_rekeying` (Boolean) It enables/disables re-encryption of table data with new keys on a yearly basis to provide additional levels of data protection ([more details](https://docs.snowflake.com/en/sql-reference/parameters#periodic-data-rekeying)). For more information, check [PERIODIC_DATA_REKEYING docs](https://docs.snowflake.com/en/sql-reference/parameters#periodic-data-rekeying).
 - `pipe_execution_paused` (Boolean) Specifies whether to pause a running pipe, primarily in preparation for transferring ownership of the pipe to a different role ([more details](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused)). For more information, check [PIPE_EXECUTION_PAUSED docs](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused).
 - `prevent_unload_to_inline_url` (Boolean) Specifies whether to prevent ad hoc data unload operations to external cloud storage locations (that is, [COPY INTO location](https://docs.snowflake.com/en/sql-reference/sql/copy-into-location) statements that specify the cloud storage URL and access settings directly in the statement). For an example, see [Unloading data from a table directly to files in an external location](https://docs.snowflake.com/en/sql-reference/sql/copy-into-location.html#label-copy-into-location-ad-hoc). For more information, check [PREVENT_UNLOAD_TO_INLINE_URL docs](https://docs.snowflake.com/en/sql-reference/parameters#prevent-unload-to-inline-url).
@@ -111,6 +246,7 @@ Resource used to manage the account you are currently connected to. This resourc
 - `search_path` (String) Specifies the path to search to resolve unqualified object names in queries. For more information, see [Name resolution in queries](https://docs.snowflake.com/en/sql-reference/name-resolution.html#label-object-name-resolution-search-path). Comma-separated list of identifiers. An identifier can be a fully or partially qualified schema name. For more information, check [SEARCH_PATH docs](https://docs.snowflake.com/en/sql-reference/parameters#search-path).
 - `serverless_task_max_statement_size` (String) Specifies the maximum allowed warehouse size for [Serverless tasks](https://docs.snowflake.com/en/user-guide/tasks-intro.html#label-tasks-compute-resources-serverless). Valid values are (case-insensitive): `XSMALL` | `X-SMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `X-LARGE` | `XXLARGE` | `X2LARGE` | `2X-LARGE` | `XXXLARGE` | `X3LARGE` | `3X-LARGE` | `X4LARGE` | `4X-LARGE` | `X5LARGE` | `5X-LARGE` | `X6LARGE` | `6X-LARGE`. For more information, check [SERVERLESS_TASK_MAX_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-max-statement-size).
 - `serverless_task_min_statement_size` (String) Specifies the minimum allowed warehouse size for [Serverless tasks](https://docs.snowflake.com/en/user-guide/tasks-intro.html#label-tasks-compute-resources-serverless). Valid values are (case-insensitive): `XSMALL` | `X-SMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `X-LARGE` | `XXLARGE` | `X2LARGE` | `2X-LARGE` | `XXXLARGE` | `X3LARGE` | `3X-LARGE` | `X4LARGE` | `4X-LARGE` | `X5LARGE` | `5X-LARGE` | `X6LARGE` | `6X-LARGE`. For more information, check [SERVERLESS_TASK_MIN_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-min-statement-size).
+- `session_policy` (String) Specifies [session policy](https://docs.snowflake.com/en/user-guide/session-policies-using) for the current account.
 - `simulated_data_sharing_consumer` (String) Specifies the name of a consumer account to simulate for testing/validating shared data, particularly shared secure views. When this parameter is set in a session, shared views return rows as if executed in the specified consumer account rather than the provider account. For more information, check [SIMULATED_DATA_SHARING_CONSUMER docs](https://docs.snowflake.com/en/sql-reference/parameters#simulated-data-sharing-consumer).
 - `sso_login_page` (Boolean) This deprecated parameter disables preview mode for testing SSO (after enabling federated authentication) before rolling it out to users. For more information, check [SSO_LOGIN_PAGE docs](https://docs.snowflake.com/en/sql-reference/parameters#sso-login-page).
 - `statement_queued_timeout_in_seconds` (Number) Amount of time, in seconds, a SQL statement (query, DDL, DML, etc.) remains queued for a warehouse before it is canceled by the system. This parameter can be used in conjunction with the [MAX_CONCURRENCY_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#label-max-concurrency-level) parameter to ensure a warehouse is never backlogged. For more information, check [STATEMENT_QUEUED_TIMEOUT_IN_SECONDS docs](https://docs.snowflake.com/en/sql-reference/parameters#statement-queued-timeout-in-seconds).
@@ -155,3 +291,12 @@ Optional:
 - `delete` (String)
 - `read` (String)
 - `update` (String)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# This resource may contain a random identifier, but the following format is recommended.
+terraform import snowflake_current_account.example 'current_account'
+```

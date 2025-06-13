@@ -179,7 +179,7 @@ func (opts *AlterAccountOptions) validate() error {
 	}
 	var errs []error
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTag, opts.UnsetTag, opts.Drop, opts.Rename, opts.SetIsOrgAdmin) {
-		errs = append(errs, errExactlyOneOf("CreateAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename", "SetIsOrgAdmin"))
+		errs = append(errs, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename", "SetIsOrgAdmin"))
 	}
 	if valueSet(opts.Set) {
 		if err := opts.Set.validate(); err != nil {
@@ -244,16 +244,22 @@ type AccountSet struct {
 	PasswordPolicy       *SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
 	SessionPolicy        *SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
 	AuthenticationPolicy *SchemaObjectIdentifier  `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
+	FeaturePolicySet     *AccountFeaturePolicySet `ddl:"keyword"`
 	Force                *bool                    `ddl:"keyword" sql:"FORCE"`
+}
+
+type AccountFeaturePolicySet struct {
+	FeaturePolicy      *SchemaObjectIdentifier `ddl:"identifier" sql:"FEATURE POLICY"`
+	forAllApplications bool                    `ddl:"static" sql:"FOR ALL APPLICATIONS"`
 }
 
 func (opts *AccountSet) validate() error {
 	var errs []error
-	if !exactlyOneValueSet(opts.Parameters, opts.LegacyParameters, opts.ResourceMonitor, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) {
-		errs = append(errs, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+	if !exactlyOneValueSet(opts.Parameters, opts.LegacyParameters, opts.ResourceMonitor, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy, opts.FeaturePolicySet) {
+		errs = append(errs, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet"))
 	}
-	if valueSet(opts.Force) && !valueSet(opts.PackagesPolicy) {
-		errs = append(errs, NewError("force can only be set with PackagesPolicy field"))
+	if valueSet(opts.Force) && !valueSet(opts.PackagesPolicy) && !valueSet(opts.FeaturePolicySet) {
+		errs = append(errs, NewError("force can only be set with PackagesPolicy and FeaturePolicy"))
 	}
 	if valueSet(opts.LegacyParameters) {
 		if err := opts.LegacyParameters.validate(); err != nil {
@@ -280,17 +286,23 @@ func (opts *AccountLevelParametersUnset) validate() error {
 type AccountUnset struct {
 	Parameters           *AccountParametersUnset      `ddl:"list,no_parentheses"`
 	LegacyParameters     *AccountLevelParametersUnset `ddl:"list,no_parentheses"`
+	AuthenticationPolicy *bool                        `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
+	FeaturePolicyUnset   *AccountFeaturePolicyUnset   `ddl:"keyword"`
 	PackagesPolicy       *bool                        `ddl:"keyword" sql:"PACKAGES POLICY"`
 	PasswordPolicy       *bool                        `ddl:"keyword" sql:"PASSWORD POLICY"`
 	SessionPolicy        *bool                        `ddl:"keyword" sql:"SESSION POLICY"`
-	AuthenticationPolicy *bool                        `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
 	ResourceMonitor      *bool                        `ddl:"keyword" sql:"RESOURCE_MONITOR"`
+}
+
+type AccountFeaturePolicyUnset struct {
+	FeaturePolicy      *bool `ddl:"keyword" sql:"FEATURE POLICY"`
+	forAllApplications bool  `ddl:"static" sql:"FOR ALL APPLICATIONS"`
 }
 
 func (opts *AccountUnset) validate() error {
 	var errs []error
-	if !exactlyOneValueSet(opts.LegacyParameters, opts.Parameters, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy, opts.ResourceMonitor) {
-		errs = append(errs, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+	if !exactlyOneValueSet(opts.LegacyParameters, opts.Parameters, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy, opts.ResourceMonitor, opts.FeaturePolicyUnset) {
+		errs = append(errs, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset"))
 	}
 	if valueSet(opts.LegacyParameters) {
 		if err := opts.LegacyParameters.validate(); err != nil {
