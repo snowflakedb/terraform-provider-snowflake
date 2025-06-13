@@ -146,7 +146,7 @@ Optional:
 
 - `file` (String) The file name of the service specification. Example: `spec.yaml`.
 - `path` (String) The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.
-- `stage` (String) The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically. Example: `"\"<db_name>\".\"<schema_name>\".\"<schema_name>\""`.
+- `stage` (String) The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically. Example: `"\"<db_name>\".\"<schema_name>\".\"<schema_name>\""`. For more information about this resource, see [docs](./stage).
 - `text` (String) The embedded text of the service specification.
 
 
@@ -161,7 +161,7 @@ Optional:
 
 - `file` (String) The file name of the service specification template. Example: `spec.yaml`.
 - `path` (String) The path to the service specification template file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.
-- `stage` (String) The fully qualified name of the stage containing the service specification template file. At symbol (`@`) is added automatically. Example: `"\"<db_name>\".\"<schema_name>\".\"<schema_name>\""`.
+- `stage` (String) The fully qualified name of the stage containing the service specification template file. At symbol (`@`) is added automatically. Example: `"\"<db_name>\".\"<schema_name>\".\"<schema_name>\""`. For more information about this resource, see [docs](./stage).
 - `text` (String) The embedded text of the service specification template.
 
 <a id="nestedblock--from_specification_template--using"></a>

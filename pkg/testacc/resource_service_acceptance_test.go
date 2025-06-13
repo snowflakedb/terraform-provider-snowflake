@@ -681,7 +681,7 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 
 	modelBasicOnStage := model.ServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
 	modelBasic := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
-	modelBasicOnStageTemplate := model.ServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specTemplateFileName, using)
+	modelBasicOnStageTemplate := model.ServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specTemplateFileName, using...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1052,7 +1052,7 @@ func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 	specFileName := "spec.yaml"
 	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, specTemplate)
 
-	model := model.ServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName, using)
+	model := model.ServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName, using...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

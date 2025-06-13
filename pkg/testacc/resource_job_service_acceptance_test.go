@@ -727,7 +727,7 @@ func TestAcc_JobService_fromSpecificationTemplate(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	specTemplate, using := testClient().Service.SampleSpecTemplateWithUsingValue(t)
 
-	model := model.JobServiceWithSpecTemplate("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), specTemplate, using)
+	model := model.JobServiceWithSpecTemplate("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), specTemplate, using...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -827,7 +827,7 @@ func TestAcc_JobService_fromSpecificationTemplateOnStage(t *testing.T) {
 	specFileName := "spec.yaml"
 	testClient().Stage.PutInLocationWithContent(t, stage.Location(), specFileName, specTemplate)
 
-	model := model.JobServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName, using)
+	model := model.JobServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName, using...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

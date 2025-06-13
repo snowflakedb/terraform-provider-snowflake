@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -36,7 +37,7 @@ func serviceFromSpecificationTemplateSchema(allFieldsForceNew, isTemplate bool) 
 			DiffSuppressFunc: suppressIdentifierQuoting,
 			ForceNew:         allFieldsForceNew,
 			RequiredWith:     []string{fileFieldName},
-			Description:      fmt.Sprintf("The fully qualified name of the stage containing the service %s file. At symbol (`@`) is added automatically. Example: `\"\\\"<db_name>\\\".\\\"<schema_name>\\\".\\\"<schema_name>\\\"\"`.", objectNameInDescription),
+			Description:      relatedResourceDescription(fmt.Sprintf("The fully qualified name of the stage containing the service %s file. At symbol (`@`) is added automatically. Example: `\"\\\"<db_name>\\\".\\\"<schema_name>\\\".\\\"<schema_name>\\\"\"`.", objectNameInDescription), resources.Stage),
 		},
 		"path": {
 			Type:         schema.TypeString,

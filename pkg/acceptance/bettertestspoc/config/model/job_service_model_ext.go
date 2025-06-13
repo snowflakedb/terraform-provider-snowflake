@@ -51,7 +51,7 @@ func JobServiceWithSpecTemplate(
 	name string,
 	computePool string,
 	specTemplate string,
-	using []helpers.ServiceSpecUsing,
+	using ...helpers.ServiceSpecUsing,
 ) *JobServiceModel {
 	s := &JobServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.JobService)}
 	s.WithDatabase(database)
@@ -70,14 +70,14 @@ func JobServiceWithSpecTemplateOnStage(
 	computePool string,
 	stageId sdk.SchemaObjectIdentifier,
 	fileName string,
-	using []helpers.ServiceSpecUsing,
+	using ...helpers.ServiceSpecUsing,
 ) *JobServiceModel {
 	s := &JobServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.JobService)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
 	s.WithComputePool(computePool)
-	s.WithFromSpecificationTemplateOnStage(stageId, fileName, using)
+	s.WithFromSpecificationTemplateOnStage(stageId, fileName, using...)
 	return s
 }
 
@@ -100,22 +100,18 @@ func (s *JobServiceModel) WithFromSpecificationTemplate(spec string, using ...he
 	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"text": config.MultilineWrapperVariable(spec),
 		"using": tfconfig.SetVariable(
-			collections.Map(using, func(item helpers.ServiceSpecUsing) tfconfig.Variable {
-				return item.ToTfVariable()
-			})...,
+			collections.Map(using, helpers.ServiceSpecUsing.ToTfVariable)...,
 		),
 	}))
 	return s
 }
 
-func (s *JobServiceModel) WithFromSpecificationTemplateOnStage(stageId sdk.SchemaObjectIdentifier, fileName string, using []helpers.ServiceSpecUsing) *JobServiceModel {
+func (s *JobServiceModel) WithFromSpecificationTemplateOnStage(stageId sdk.SchemaObjectIdentifier, fileName string, using ...helpers.ServiceSpecUsing) *JobServiceModel {
 	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
 		"file":  tfconfig.StringVariable(fileName),
 		"using": tfconfig.SetVariable(
-			collections.Map(using, func(item helpers.ServiceSpecUsing) tfconfig.Variable {
-				return item.ToTfVariable()
-			})...,
+			collections.Map(using, helpers.ServiceSpecUsing.ToTfVariable)...,
 		),
 	}))
 	return s

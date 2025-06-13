@@ -70,14 +70,14 @@ func ServiceWithSpecTemplateOnStage(
 	computePool string,
 	stageId sdk.SchemaObjectIdentifier,
 	fileName string,
-	using []helpers.ServiceSpecUsing,
+	using ...helpers.ServiceSpecUsing,
 ) *ServiceModel {
 	s := &ServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.Service)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
 	s.WithComputePool(computePool)
-	s.WithFromSpecificationTemplateOnStage(stageId, fileName, using)
+	s.WithFromSpecificationTemplateOnStage(stageId, fileName, using...)
 	return s
 }
 
@@ -100,22 +100,18 @@ func (s *ServiceModel) WithFromSpecificationTemplate(spec string, using ...helpe
 	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"text": config.MultilineWrapperVariable(spec),
 		"using": tfconfig.SetVariable(
-			collections.Map(using, func(item helpers.ServiceSpecUsing) tfconfig.Variable {
-				return item.ToTfVariable()
-			})...,
+			collections.Map(using, helpers.ServiceSpecUsing.ToTfVariable)...,
 		),
 	}))
 	return s
 }
 
-func (s *ServiceModel) WithFromSpecificationTemplateOnStage(stageId sdk.SchemaObjectIdentifier, fileName string, using []helpers.ServiceSpecUsing) *ServiceModel {
+func (s *ServiceModel) WithFromSpecificationTemplateOnStage(stageId sdk.SchemaObjectIdentifier, fileName string, using ...helpers.ServiceSpecUsing) *ServiceModel {
 	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
 		"file":  tfconfig.StringVariable(fileName),
 		"using": tfconfig.SetVariable(
-			collections.Map(using, func(item helpers.ServiceSpecUsing) tfconfig.Variable {
-				return item.ToTfVariable()
-			})...,
+			collections.Map(using, helpers.ServiceSpecUsing.ToTfVariable)...,
 		),
 	}))
 	return s

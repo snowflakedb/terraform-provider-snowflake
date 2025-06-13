@@ -149,7 +149,7 @@ type ServiceSpecUsing struct {
 	Value string
 }
 
-func (s *ServiceSpecUsing) ToTfVariable() tfconfig.Variable {
+func (s ServiceSpecUsing) ToTfVariable() tfconfig.Variable {
 	return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"key":   tfconfig.StringVariable(s.Key),
 		"value": tfconfig.StringVariable(s.Value),
