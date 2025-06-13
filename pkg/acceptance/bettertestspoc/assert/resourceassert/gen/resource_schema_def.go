@@ -90,6 +90,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.GitRepository().Schema,
 	},
 	{
+		name:   "JobService",
+		schema: resources.JobService().Schema,
+	},
+	{
 		name:   "LegacyServiceUser",
 		schema: resources.LegacyServiceUser().Schema,
 	},

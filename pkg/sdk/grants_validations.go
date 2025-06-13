@@ -121,10 +121,6 @@ var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeTag,
 }
 
-var invalidGrantPluralObjectTypes = []ObjectType{
-	ObjectTypeCortexSearchService, // added because it is not working currently
-}
-
 var (
 	ValidGrantOwnershipObjectTypesString       = make([]string, len(validGrantOwnershipObjectTypes))
 	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipObjectTypes))
@@ -141,7 +137,7 @@ func init() {
 	for i, objectType := range validGrantToObjectTypes {
 		ValidGrantToObjectTypesString[i] = objectType.String()
 		ValidGrantToPluralObjectTypesString[i] = objectType.Plural().String()
-		if !slices.Contains(invalidGrantToFutureObjectTypes, objectType) && !slices.Contains(invalidGrantPluralObjectTypes, objectType) {
+		if !slices.Contains(invalidGrantToFutureObjectTypes, objectType) {
 			ValidGrantToFuturePluralObjectTypesString = append(ValidGrantToFuturePluralObjectTypesString, objectType.Plural().String())
 		}
 	}

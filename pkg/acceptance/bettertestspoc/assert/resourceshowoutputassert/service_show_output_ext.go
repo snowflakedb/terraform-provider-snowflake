@@ -2,10 +2,22 @@ package resourceshowoutputassert
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
+
+// ServicesDatasourceShowOutput is a temporary workaround to have better show output assertions in data source acceptance tests.
+func ServicesDatasourceShowOutput(t *testing.T, name string) *ServiceShowOutputAssert {
+	t.Helper()
+
+	s := ServiceShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceAssert(name, "show_output", "services.0."),
+	}
+	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &s
+}
 
 func (s *ServiceShowOutputAssert) HasDnsNameNotEmpty() *ServiceShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValuePresent("dns_name"))

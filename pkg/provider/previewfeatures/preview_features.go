@@ -45,6 +45,7 @@ const (
 	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
+	JobServiceResource                            feature = "snowflake_job_service_resource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
@@ -64,6 +65,7 @@ const (
 	ProceduresDatasource                          feature = "snowflake_procedures_datasource"
 	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
 	ServiceResource                               feature = "snowflake_service_resource"
+	ServicesDatasource                            feature = "snowflake_services_datasource"
 	SequenceResource                              feature = "snowflake_sequence_resource"
 	SequencesDatasource                           feature = "snowflake_sequences_datasource"
 	ShareResource                                 feature = "snowflake_share_resource"
@@ -121,6 +123,7 @@ var allPreviewFeatures = []feature{
 	GitRepositoriesDatasource,
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
+	JobServiceResource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
@@ -134,6 +137,7 @@ var allPreviewFeatures = []feature{
 	PipesDatasource,
 	CurrentRoleDatasource,
 	ServiceResource,
+	ServicesDatasource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,

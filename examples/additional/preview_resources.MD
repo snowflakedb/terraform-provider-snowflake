@@ -22,6 +22,7 @@
 - [snowflake_function_sql](./docs/resources/function_sql)
 - [snowflake_git_repository](./docs/resources/git_repository)
 - [snowflake_image_repository](./docs/resources/image_repository)
+- [snowflake_job_service](./docs/resources/job_service)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
 - [snowflake_network_policy_attachment](./docs/resources/network_policy_attachment)

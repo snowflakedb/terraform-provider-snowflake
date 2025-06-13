@@ -26,6 +26,7 @@ type ServiceModel struct {
 	MinInstances               tfconfig.Variable `json:"min_instances,omitempty"`
 	MinReadyInstances          tfconfig.Variable `json:"min_ready_instances,omitempty"`
 	QueryWarehouse             tfconfig.Variable `json:"query_warehouse,omitempty"`
+	ServiceType                tfconfig.Variable `json:"service_type,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -158,6 +159,11 @@ func (s *ServiceModel) WithQueryWarehouse(queryWarehouse string) *ServiceModel {
 	return s
 }
 
+func (s *ServiceModel) WithServiceType(serviceType string) *ServiceModel {
+	s.ServiceType = tfconfig.StringVariable(serviceType)
+	return s
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -229,5 +235,10 @@ func (s *ServiceModel) WithMinReadyInstancesValue(value tfconfig.Variable) *Serv
 
 func (s *ServiceModel) WithQueryWarehouseValue(value tfconfig.Variable) *ServiceModel {
 	s.QueryWarehouse = value
+	return s
+}
+
+func (s *ServiceModel) WithServiceTypeValue(value tfconfig.Variable) *ServiceModel {
+	s.ServiceType = value
 	return s
 }

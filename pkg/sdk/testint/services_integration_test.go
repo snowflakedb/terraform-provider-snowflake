@@ -467,6 +467,7 @@ func TestInt_Services(t *testing.T) {
 		)
 	})
 
+	// TODO(SNOW-2138932): Test without async option. This probably requires a custom no-op image in the image registry.
 	t.Run("execute job service - from specification template on stage", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 		request := sdk.NewExecuteJobServiceRequest(computePool.ID(), id).

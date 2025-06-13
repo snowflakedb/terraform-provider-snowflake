@@ -36,7 +36,7 @@ resource "snowflake_git_repository" "complete" {
   schema          = "SCHEMA"
   origin          = "https://github.com/user/repo"
   api_integration = "API_INTEGRATION"
-  git_credentials = "\"<db_name>\".\"<schema_name>\".\"<secret_name>\""
+  git_credentials = snowflake_secret_with_basic_authentication.secret_name.fully_qualified_name
   comment         = "comment"
 }
 ```
@@ -48,7 +48,7 @@ resource "snowflake_git_repository" "complete" {
 
 ### Required
 
-- `api_integration` (String) Specifies the API INTEGRATION that contains information about the remote Git repository such as allowed credentials and prefixes for target URLs.
+- `api_integration` (String) Identifier of API INTEGRATION containing information about the remote Git repository such as allowed credentials and prefixes for target URLs.
 - `database` (String) The database in which to create the git repository. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the git repository; must be unique for the schema in which the git repository is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `origin` (String) Specifies the origin URL of the remote Git repository that this Git repository clone represents. The URL must use HTTPS.
@@ -57,7 +57,7 @@ resource "snowflake_git_repository" "complete" {
 ### Optional
 
 - `comment` (String) Specifies a comment for the git repository.
-- `git_credentials` (String) Specifies the Snowflake secret containing the credentials to use for authenticating with the remote Git repository. Omit this parameter to use the default secret specified by the API integration or if this integration does not require authentication.
+- `git_credentials` (String) Specifies the Snowflake secret fully qualified name (e.g `"\"<db_name>\".\"<schema_name>\".\"<secret_name>\""`) containing the credentials to use for authenticating with the remote Git repository. Omit this parameter to use the default secret specified by the API integration or if this integration does not require authentication.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

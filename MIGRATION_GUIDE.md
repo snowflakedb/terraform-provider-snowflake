@@ -52,13 +52,13 @@ No configuration changes are needed.
 
 References: [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
 
-### *(new feature)* snowflake_service resource
-Added a new preview resource for managing services. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-service). You can read about this resource's limitations in the documentation in the registry. This resource is not suitable for managing job services created with `EXECUTE JOB SERVICE`. There will be a separate `snowflake_job_service` resource for this use case.
+### *(new feature)* snowflake_service and snowflake_job_service resources
+Added new preview resources for managing services and job services. See reference docs for [services](https://docs.snowflake.com/en/sql-reference/sql/create-service) and [job services](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service). You can read about the resources' limitations in the documentation in the registry.
 
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_service_resource` to `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use these features, add `snowflake_service_resource` or `snowflake_job_service_resource` to `preview_features_enabled` field in the provider configuration, respectively.
 
 ### *(new feature)* snowflake_git_repository resource
-Added a new preview resource for managing git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository). Note that `snowflake_api_integration_resource` currently does not support `git_https_api` type. It will be added during the resource rework. Instead, you can use [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+Added a new preview resource for managing git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository). Note that `snowflake_api_integration` currently does not support `git_https_api` type. It will be added during the resource rework. Instead, you can use [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_git_repository_resource` to `preview_features_enabled` field in the provider configuration.
 
@@ -123,6 +123,11 @@ Added a new preview data source for image repositories. See reference [docs](htt
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repositories_datasource` to `preview_features_enabled` field in the provider configuration.
 
+### *(new feature)* snowflake_services data source
+Added a new preview data source for services. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-services).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_services_datasource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* Managing tags for image repositories, compute pools, services, and git repositories
 The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository), [compute pools](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool), [services](https://docs.snowflake.com/en/sql-reference/sql/create-service) and [git repositories](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository).
 
@@ -130,6 +135,10 @@ The [snowflake_tag_association](https://registry.terraform.io/providers/snowflak
 
 In v2.1.0, we introduced a fix in handling users' grants ([migration guide](#bugfix-fixed-snowflake_grant_database_role-resource)), which addressed changes in the `2025_02` bundle. The username was parsed incorrectly if it had a prefix formed of `U`, `S`, `E`, and `R` characters. The username returned from `SHOW GRANTS` was incorrect in this case. Now, such names should be handled correctly.
 No configuration changes are necessary.
+
+### *(new feature)* Granting privileges on future cortex search services
+
+As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
 
 ## v2.0.0 ➞ v2.1.0
 

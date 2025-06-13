@@ -2,7 +2,7 @@
 page_title: "snowflake_image_repository Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage image repositories. For more information, check image repositories documentation https://docs.snowflake.com/en/sql-reference/sql/create-image-repository.
+  Resource used to manage image repositories. For more information, check image repositories documentation https://docs.snowflake.com/en/sql-reference/sql/create-image-repository. Snowpark Container Services provides an OCIv2-compliant image registry service and a storage unit call repository to store images. See Working with an image registry and repository https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-registry-repository developer guide for more details.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
@@ -11,7 +11,7 @@ description: |-
 
 # snowflake_image_repository (Resource)
 
-Resource used to manage image repositories. For more information, check [image repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).
+Resource used to manage image repositories. For more information, check [image repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). Snowpark Container Services provides an OCIv2-compliant image registry service and a storage unit call repository to store images. See [Working with an image registry and repository](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-registry-repository) developer guide for more details.
 
 ## Example Usage
 
