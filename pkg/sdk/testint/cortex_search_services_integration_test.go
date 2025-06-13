@@ -50,18 +50,26 @@ func TestInt_CortexSearchServices(t *testing.T) {
 		name := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
 		embeddingModel := "snowflake-arctic-embed-m-v1.5"
-		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(name, on, testClientHelper().Ids.WarehouseId(), targetLag, buildQuery(table.ID())).WithOrReplace(true).WithComment(comment).WithEmbeddingModel(embeddingModel))
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(name, on, testClientHelper().Ids.WarehouseId(), targetLag, buildQuery(table.ID())).
+			WithOrReplace(true).
+			WithComment(comment).
+			WithEmbeddingModel(embeddingModel))
 		require.NoError(t, err)
 		t.Cleanup(func() {
 			err = client.CortexSearchServices.Drop(ctx, sdk.NewDropCortexSearchServiceRequest(name))
 			require.NoError(t, err)
 		})
-		entities, err := client.CortexSearchServices.Show(ctx, sdk.NewShowCortexSearchServiceRequest().WithLike(sdk.Like{Pattern: sdk.String(name.Name())}))
+		showResults, err := client.CortexSearchServices.Show(ctx, sdk.NewShowCortexSearchServiceRequest().WithLike(sdk.Like{Pattern: sdk.String(name.Name())}))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(entities))
+		require.Equal(t, 1, len(showResults))
 
-		entity := entities[0]
-		require.Equal(t, name.Name(), entity.Name)
+		showResult := showResults[0]
+		require.NotNil(t, showResult)
+		require.Equal(t, name.Name(), showResult.Name)
+		require.NotEmpty(t, showResult.CreatedOn)
+		require.Equal(t, name.DatabaseName(), showResult.DatabaseName)
+		require.Equal(t, name.SchemaName(), showResult.SchemaName)
+		require.Equal(t, comment, showResult.Comment)
 
 		cortexSearchServiceDetails, err := client.CortexSearchServices.Describe(ctx, name)
 		require.NoError(t, err)
@@ -70,8 +78,10 @@ func TestInt_CortexSearchServices(t *testing.T) {
 		require.Equal(t, name.Name(), cortexSearchServiceDetails.Name)
 		require.Equal(t, name.DatabaseName(), cortexSearchServiceDetails.DatabaseName)
 		require.Equal(t, name.SchemaName(), cortexSearchServiceDetails.SchemaName)
-		require.Equal(t, comment, cortexSearchServiceDetails.Comment)
-		require.Equal(t, embeddingModel, cortexSearchServiceDetails.EmbeddingModel)
+		require.NotNil(t, cortexSearchServiceDetails.Comment)
+		require.Equal(t, comment, *cortexSearchServiceDetails.Comment)
+		require.NotNil(t, cortexSearchServiceDetails.EmbeddingModel)
+		require.Equal(t, embeddingModel, *cortexSearchServiceDetails.EmbeddingModel)
 	})
 
 	t.Run("describe: when cortex search service exists", func(t *testing.T) {
@@ -97,6 +107,8 @@ func TestInt_CortexSearchServices(t *testing.T) {
 		assert.GreaterOrEqual(t, cortexSearchServiceDetails.SourceDataNumRows, 0)
 		assert.NotEmpty(t, cortexSearchServiceDetails.IndexingState)
 		assert.Empty(t, cortexSearchServiceDetails.IndexingError)
+		require.NotNil(t, cortexSearchServiceDetails.EmbeddingModel)
+		require.Equal(t, "snowflake-arctic-embed-m-v1.5", *cortexSearchServiceDetails.EmbeddingModel)
 	})
 
 	t.Run("describe: when cortex search service does not exist", func(t *testing.T) {

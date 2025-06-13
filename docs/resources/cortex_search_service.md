@@ -45,14 +45,15 @@ resource "snowflake_table" "test" {
 resource "snowflake_cortex_search_service" "test" {
   depends_on = [snowflake_table.test]
 
-  database   = snowflake_database.test.name
-  schema     = snowflake_schema.test.name
-  name       = "some_name"
-  on         = "SOME_TEXT"
-  target_lag = "2 minutes"
-  warehouse  = "some_warehouse"
-  query      = "SELECT SOME_TEXT FROM \"some_database\".\"some_schema\".\"some_table\""
-  comment    = "some comment"
+  database        = snowflake_database.test.name
+  schema          = snowflake_schema.test.name
+  name            = "some_name"
+  on              = "SOME_TEXT"
+  target_lag      = "2 minutes"
+  warehouse       = "some_warehouse"
+  query           = "SELECT SOME_TEXT FROM \"some_database\".\"some_schema\".\"some_table\""
+  comment         = "some comment"
+  embedding_model = "snowflake-arctic-embed-m-v1.5"
 }
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
@@ -77,7 +78,7 @@ resource "snowflake_cortex_search_service" "test" {
 
 - `attributes` (Set of String) Specifies the list of columns in the base table to enable filtering on when issuing queries to the service.
 - `comment` (String) Specifies a comment for the Cortex search service.
-- `embedding_model` (String) (Default: `snowflake-arctic-embed-m-v1.5`) Specifies the embedding model to use for the Cortex search service.
+- `embedding_model` (String) Specifies the embedding model to use for the Cortex search service.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
