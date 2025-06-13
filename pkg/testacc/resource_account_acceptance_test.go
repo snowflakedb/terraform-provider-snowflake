@@ -505,7 +505,7 @@ func TestAcc_Account_UpdatingConsumptionBillingEntity(t *testing.T) {
 					resourceassert.AccountResource(t, configModel.ResourceReference()).
 						HasNameString(id).
 						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
-						HasConsumptionBillingEntityEmpty(),
+						HasNoConsumptionBillingEntity(),
 					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
 						HasOrganizationName(organizationName).
 						HasAccountName(id).
