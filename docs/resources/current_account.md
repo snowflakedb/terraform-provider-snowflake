@@ -9,6 +9,8 @@ description: |-
 
 -> **Note** You can manage only one such resource **per account**. More instances on one account could cause unexpected behavior.
 
+-> **Note** Currently, this resource does not support setting policies and organization user groups.
+
 # snowflake_current_account (Resource)
 
 Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See [ALTER ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account) documentation for more information on resource capabilities.
