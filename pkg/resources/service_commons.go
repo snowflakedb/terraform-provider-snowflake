@@ -37,7 +37,7 @@ func serviceFromSpecificationTemplateSchema(allFieldsForceNew, isTemplate bool) 
 			DiffSuppressFunc: suppressIdentifierQuoting,
 			ForceNew:         allFieldsForceNew,
 			RequiredWith:     []string{fileFieldName},
-			Description:      relatedResourceDescription(fmt.Sprintf("The fully qualified name of the stage containing the service %s file. At symbol (`@`) is added automatically. Example: `\"\\\"<db_name>\\\".\\\"<schema_name>\\\".\\\"<schema_name>\\\"\"`.", objectNameInDescription), resources.Stage),
+			Description:      relatedResourceDescription(fmt.Sprintf("The fully qualified name of the stage containing the service %s file. At symbol (`@`) is added automatically. %s", objectNameInDescription, exampleSchemaObjectIdentifier("stage")), resources.Stage),
 		},
 		"path": {
 			Type:         schema.TypeString,
