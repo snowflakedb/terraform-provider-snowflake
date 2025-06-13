@@ -34,9 +34,15 @@ func Comment() string {
 }
 
 // AdminName returns admin name acceptable by Snowflake:
-// 090088 (22000): ADMIN_NAME can only contain capital letters, numbers and underscores.
+// 090088 (22000): ADMIN_NAME can only contain letters, numbers and underscores.
 // 090089 (22000): ADMIN_NAME must start with a letter.
 func AdminName() string {
+	return SensitiveAlpha()
+}
+
+// AccountName returns account name acceptable by Snowflake:
+// It can only contain capital letters, numbers and underscores.
+func AccountName() string {
 	return strings.ToUpper(SensitiveAlpha())
 }
 

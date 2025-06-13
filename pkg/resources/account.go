@@ -136,9 +136,10 @@ var accountSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(3)),
 	},
 	"consumption_billing_entity": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Determines which billing entity is responsible for the account's consumption-based billing.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("consumption_billing_entity_name"),
+		Description:      "Determines which billing entity is responsible for the account's consumption-based billing.",
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {

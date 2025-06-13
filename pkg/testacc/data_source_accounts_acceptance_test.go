@@ -6,6 +6,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -21,7 +26,7 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 	prefix := testClient().Ids.AlphaN(4)
 
 	publicKey, _ := random.GenerateRSAPublicKey(t)
-	id1 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AdminName()))
+	id1 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AccountName()))
 	account, accountCleanup := testClient().Account.CreateWithRequest(t, id1, &sdk.CreateAccountOptions{
 		AdminName:         testClient().Ids.Alpha(),
 		AdminRSAPublicKey: &publicKey,
@@ -31,7 +36,7 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 	})
 	t.Cleanup(accountCleanup)
 
-	id2 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AdminName()))
+	id2 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AccountName()))
 	_, account2Cleanup := testClient().Account.CreateWithRequest(t, id2, &sdk.CreateAccountOptions{
 		AdminName:         testClient().Ids.Alpha(),
 		AdminRSAPublicKey: &publicKey,
@@ -41,6 +46,10 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 	})
 	t.Cleanup(account2Cleanup)
 
+	provider := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+	accountsWithPattern := datasourcemodel.Accounts("test").WithWithHistory(true).WithLike(prefix + "%")
+	accountsWithAccountName := datasourcemodel.Accounts("test").WithWithHistory(true).WithLike(account.ID().Name())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -48,13 +57,13 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accountsConfig(prefix + "%"),
+				Config: config.FromModels(t, provider, accountsWithPattern),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.snowflake_accounts.test", "accounts.#", "2"),
 				),
 			},
 			{
-				Config: accountsConfig(account.ID().Name()),
+				Config: config.FromModels(t, provider, accountsWithAccountName),
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr("data.snowflake_accounts.test", "accounts.#", "1")),
 					resourceshowoutputassert.AccountDatasourceShowOutput(t, "snowflake_accounts.test").
@@ -91,16 +100,4 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 			},
 		},
 	})
-}
-
-func accountsConfig(pattern string) string {
-	return fmt.Sprintf(`
-provider "snowflake" {
-	role = "ORGADMIN"
-}
-
-data "snowflake_accounts" "test" {
-	with_history = true
-	like = "%s"
-}`, pattern)
 }

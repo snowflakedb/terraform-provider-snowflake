@@ -23,6 +23,8 @@ across different versions.
 ### *(new feature)* New consumption_billing_entity field in snowflake_account resource
 
 The `snowflake_account` resource now has a new `consumption_billing_entity` field, which allows you to set the consumption billing entity for the account.
+It is useful in case you have multiple billing entities in your account and want to set a specific one for the account.
+You can find more details in [this](https://community.snowflake.com/s/article/ERROR-Multiple-suitable-billing-entities-exist-for-the-target-cloud) KB article.
 
 No configuration changes are needed.
 
