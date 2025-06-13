@@ -325,6 +325,48 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		assert.Equal(t, 0, len(grants))
 	})
 
+	t.Run("on future: cortex search service", func(t *testing.T) {
+		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		privileges := &sdk.AccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
+		}
+		on := &sdk.AccountRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				Future: &sdk.GrantOnSchemaObjectIn{
+					PluralObjectType: sdk.PluralObjectTypeCortexSearchServices,
+					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
+				},
+			},
+		}
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		require.NoError(t, err)
+
+		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Future: sdk.Bool(true),
+			To: &sdk.ShowGrantsTo{
+				Role: roleTest.ID(),
+			},
+		})
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(grants))
+		assert.Equal(t, sdk.SchemaObjectPrivilegeUsage.String(), grants[0].Privilege)
+		assert.Equal(t, sdk.ObjectTypeCortexSearchService, grants[0].GrantOn)
+
+		// now revoke and verify that the grant(s) are gone
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		require.NoError(t, err)
+		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Future: sdk.Bool(true),
+			To: &sdk.ShowGrantsTo{
+				Role: roleTest.ID(),
+			},
+		})
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(grants))
+	})
+
 	t.Run("grant and revoke on all pipes", func(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
@@ -476,8 +518,6 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
 
-		databaseRoleId := testClientHelper().Ids.NewDatabaseObjectIdentifier(databaseRole.Name)
-
 		privileges := &sdk.DatabaseRoleGrantPrivileges{
 			DatabasePrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateSchema},
 		}
@@ -485,12 +525,12 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			Database: sdk.Pointer(testClientHelper().Ids.DatabaseId()),
 		}
 
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 
 		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -507,12 +547,12 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, createSchemaPrivilege.GrantedTo)
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 
 		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -524,8 +564,6 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
 
-		databaseRoleId := testClientHelper().Ids.NewDatabaseObjectIdentifier(databaseRole.Name)
-
 		privileges := &sdk.DatabaseRoleGrantPrivileges{
 			SchemaPrivileges: []sdk.SchemaPrivilege{sdk.SchemaPrivilegeCreateAlert},
 		}
@@ -535,12 +573,12 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		}
 
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 
 		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -557,12 +595,12 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, createAlertPrivilege.GrantedTo)
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 
 		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -574,7 +612,6 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
 
-		databaseRoleId := testClientHelper().Ids.NewDatabaseObjectIdentifier(databaseRole.Name)
 		table, _ := testClientHelper().Table.Create(t)
 
 		privileges := &sdk.DatabaseRoleGrantPrivileges{
@@ -589,12 +626,12 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		}
 
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 
 		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -611,12 +648,12 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, table.ID().FullyQualifiedName(), selectPrivilege.Name.FullyQualifiedName())
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 
 		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -627,7 +664,6 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 	t.Run("on schema object: cortex search service", func(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
-		databaseRoleId := testClientHelper().Ids.NewDatabaseObjectIdentifier(databaseRole.Name)
 		table, tableTestCleanup := testClientHelper().Table.CreateWithPredefinedColumns(t)
 		t.Cleanup(tableTestCleanup)
 		cortex, cortexCleanup := testClientHelper().CortexSearchService.CreateCortexSearchService(t, table.ID())
@@ -644,11 +680,11 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 				},
 			},
 		}
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -665,11 +701,11 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, cortex.ID().FullyQualifiedName(), selectPrivilege.Name.FullyQualifiedName())
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -680,8 +716,6 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 	t.Run("on future schema object", func(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
-
-		databaseRoleId := testClientHelper().Ids.NewDatabaseObjectIdentifier(databaseRole.Name)
 
 		privileges := &sdk.DatabaseRoleGrantPrivileges{
 			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
@@ -694,13 +728,13 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 				},
 			},
 		}
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 
 		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			Future: sdk.Bool(true),
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
@@ -711,13 +745,54 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, returnedGrants[0].GrantTo)
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
 		require.NoError(t, err)
 
 		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			Future: sdk.Bool(true),
 			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
+				DatabaseRole: databaseRole.ID(),
+			},
+		})
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(returnedGrants))
+	})
+
+	t.Run("on schema object: cortex search service", func(t *testing.T) {
+		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+		t.Cleanup(databaseRoleCleanup)
+
+		privileges := &sdk.DatabaseRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
+		}
+		on := &sdk.DatabaseRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				Future: &sdk.GrantOnSchemaObjectIn{
+					PluralObjectType: sdk.PluralObjectTypeCortexSearchServices,
+					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
+				},
+			},
+		}
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		require.NoError(t, err)
+		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Future: sdk.Bool(true),
+			To: &sdk.ShowGrantsTo{
+				DatabaseRole: databaseRole.ID(),
+			},
+		})
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(returnedGrants))
+		assert.Equal(t, sdk.SchemaObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
+		assert.Equal(t, sdk.ObjectTypeCortexSearchService, returnedGrants[0].GrantOn)
+
+		// now revoke and verify that the new grant is gone
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		require.NoError(t, err)
+		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Future: sdk.Bool(true),
+			To: &sdk.ShowGrantsTo{
+				DatabaseRole: databaseRole.ID(),
 			},
 		})
 		require.NoError(t, err)
