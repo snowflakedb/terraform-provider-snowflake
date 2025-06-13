@@ -12,6 +12,8 @@ description: |-
 
 -> **Note** For asynchronous jobs, Snowflake does not perform automatic cleanup after completion. You must either remove the resource or execute the `DROP SERVICE` command to remove the job. If you want to execute the job again, use the [replace flag](https://developer.hashicorp.com/terraform/cli/commands/apply#replace-resource).
 
+-> **Note** During resource deletion and recreation, the provider uses `DROP SERVICE` with `FORCE` option to properly handle services with block storage volumes. Read more in [docs](https://docs.snowflake.com/en/sql-reference/sql/drop-service#force-option).
+
 # snowflake_job_service (Resource)
 
 Resource used to manage job services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service). Executes a Snowpark Container Services service as a job. A service, created using `CREATE SERVICE`, is long-running and you must explicitly stop it when it is no longer needed. On the other hand, a job, created using EXECUTE JOB SERVICE (with `ASYNC=TRUE` in this resource), returns immediately while the job is running. See [Working with services](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services) developer guide for more details.

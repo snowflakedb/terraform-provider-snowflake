@@ -9,6 +9,8 @@ description: |-
 
 -> **Note** Managing service state is limited. It is handled by `auto_suspend_secs`, and `auto_resume` fields. The provider does not support managing the state of services in Snowflake with `ALTER ... SUSPEND` and `ALTER ... RESUME`. See [Suspending a service documentation](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services#suspending-a-service) for more details.
 
+-> **Note** During resource deletion and recreation, the provider uses `DROP SERVICE` with `FORCE` option to properly handle services with block storage volumes. Read more in [docs](https://docs.snowflake.com/en/sql-reference/sql/drop-service#force-option).
+
 # snowflake_service (Resource)
 
 Resource used to manage services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/create-service). A long-running service is like a web service that does not end automatically. After you create a service, Snowflake manages the running service. For example, if a service container stops, for whatever reason, Snowflake restarts that container so the service runs uninterrupted. See [Working with services](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-services) developer guide for more details.

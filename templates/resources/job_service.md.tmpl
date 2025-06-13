@@ -16,6 +16,8 @@ description: |-
 
 -> **Note** For asynchronous jobs, Snowflake does not perform automatic cleanup after completion. You must either remove the resource or execute the `DROP SERVICE` command to remove the job. If you want to execute the job again, use the [replace flag](https://developer.hashicorp.com/terraform/cli/commands/apply#replace-resource).
 
+-> **Note** During resource deletion and recreation, the provider uses `DROP SERVICE` with `FORCE` option to properly handle services with block storage volumes. Read more in [docs](https://docs.snowflake.com/en/sql-reference/sql/drop-service#force-option).
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
