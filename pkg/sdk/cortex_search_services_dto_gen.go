@@ -18,6 +18,7 @@ type CreateCortexSearchServiceRequest struct {
 	Attributes      *AttributesRequest
 	Warehouse       AccountObjectIdentifier // required
 	TargetLag       string                  // required
+	EmbeddingModel  *string
 	Comment         *string
 	QueryDefinition string // required
 }

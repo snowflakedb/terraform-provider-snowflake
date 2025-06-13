@@ -28,6 +28,7 @@ type CreateCortexSearchServiceOptions struct {
 	Attributes          *Attributes             `ddl:"keyword"`
 	Warehouse           AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
 	TargetLag           string                  `ddl:"parameter,single_quotes" sql:"TARGET_LAG"`
+	EmbeddingModel      *string                 `ddl:"parameter,single_quotes" sql:"EMBEDDING_MODEL"`
 	Comment             *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	QueryDefinition     string                  `ddl:"parameter,no_quotes,no_equals" sql:"AS"`
 }
@@ -101,6 +102,7 @@ type cortexSearchServiceDetailsRow struct {
 	SourceDataNumRows int            `db:"source_data_num_rows"`
 	IndexingState     string         `db:"indexing_state"`
 	IndexingError     sql.NullString `db:"indexing_error"`
+	EmbeddingModel    sql.NullString `db:"embedding_model"`
 }
 type CortexSearchServiceDetails struct {
 	CreatedOn         string
@@ -119,6 +121,7 @@ type CortexSearchServiceDetails struct {
 	SourceDataNumRows int
 	IndexingState     string
 	IndexingError     *string
+	EmbeddingModel    *string
 }
 
 // DropCortexSearchServiceOptions is based on https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/drop-cortex-search.

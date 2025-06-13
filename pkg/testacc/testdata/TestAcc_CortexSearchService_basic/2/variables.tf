@@ -35,3 +35,7 @@ variable "comment" {
 variable "table_name" {
   type = string
 }
+
+variable "embedding_model" {
+  type = string
+}
