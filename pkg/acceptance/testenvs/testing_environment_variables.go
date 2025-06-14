@@ -13,8 +13,11 @@ type env string
 const (
 	BusinessCriticalAccount env = "SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT"
 
-	TestAccountCreate  env = "TEST_SF_TF_TEST_ACCOUNT_CREATE"
-	TestFailoverGroups env = "TEST_SF_TF_TEST_FAILOVER_GROUPS"
+	// TestNonProdModifiableAccountLocator represents an account locator that can be used for account modification tests.
+	// It's used in XXX to conditionally skip tests that require a modifiable account.
+	TestNonProdModifiableAccountLocator env = "TEST_SF_TF_NON_PROD_MODIFIABLE_ACCOUNT_LOCATOR"
+	TestAccountCreate                   env = "TEST_SF_TF_TEST_ACCOUNT_CREATE"
+	TestFailoverGroups                  env = "TEST_SF_TF_TEST_FAILOVER_GROUPS"
 
 	AwsExternalBucketUrl   env = "TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL"
 	AwsExternalKeyId       env = "TEST_SF_TF_AWS_EXTERNAL_KEY_ID"
