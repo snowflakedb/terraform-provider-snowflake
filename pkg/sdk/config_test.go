@@ -17,6 +17,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: add test checking for the "default" boolean value
+// TODO: add test for merging given boolean values: default to default, true to default, false to default, default to true, default to false, false to true, true to false
+
 // TODO [SNOW-1827309]: use toml config builder instead of hardcoding
 func TestLoadConfigFile(t *testing.T) {
 	c := `

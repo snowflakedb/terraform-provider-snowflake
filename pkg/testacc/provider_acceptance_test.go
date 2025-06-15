@@ -736,6 +736,7 @@ func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 	})
 }
 
+// TODO: add test for tri-value boolean merging (false to default, default to default, default to false)
 // prove we can use tri-value booleans, similarly to the ones in resources
 func TestAcc_Provider_triValueBoolean(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
