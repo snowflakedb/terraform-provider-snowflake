@@ -18,8 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: test DriverConfig() func
-// TODO: add test for merging given boolean values: default to default, true to default, false to default, default to true, default to false, false to true, true to false
+// TODO [SNOW-1827309]: test DriverConfig() func
 
 func TestLoadConfigFile(t *testing.T) {
 	cfg := NewConfigFile().WithProfiles(map[string]ConfigDTO{
@@ -512,6 +511,50 @@ func Test_MergeConfig(t *testing.T) {
 
 		require.Equal(t, config1, config)
 	})
+}
+
+func Test_MergeConfig_triValueBooleans(t *testing.T) {
+	// TODO: extract configBoolDefault
+	configBoolDefault := gosnowflake.ConfigBool(0)
+	printConfigBool := func(cb gosnowflake.ConfigBool) string {
+		var s string
+		switch cb {
+		case gosnowflake.ConfigBoolTrue:
+			s = "ConfigBoolTrue"
+		case gosnowflake.ConfigBoolFalse:
+			s = "ConfigBoolFalse"
+		default:
+			s = "ConfigBoolDefault"
+		}
+		return s
+	}
+
+	tests := []struct {
+		valueInFirstConfig  gosnowflake.ConfigBool
+		valueInSecondConfig gosnowflake.ConfigBool
+		expectedConfigBool  gosnowflake.ConfigBool
+	}{
+		{configBoolDefault, configBoolDefault, configBoolDefault},
+		{gosnowflake.ConfigBoolTrue, configBoolDefault, gosnowflake.ConfigBoolTrue},
+		{gosnowflake.ConfigBoolFalse, configBoolDefault, gosnowflake.ConfigBoolFalse},
+		{configBoolDefault, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolTrue},
+		{configBoolDefault, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolFalse},
+		{gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolTrue},
+		{gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolFalse},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("transition from %s to %s expecting %s", printConfigBool(tt.valueInFirstConfig), printConfigBool(tt.valueInSecondConfig), printConfigBool(tt.expectedConfigBool)), func(t *testing.T) {
+			config1 := &gosnowflake.Config{
+				ValidateDefaultParameters: tt.valueInFirstConfig,
+			}
+			config2 := &gosnowflake.Config{
+				ValidateDefaultParameters: tt.valueInSecondConfig,
+			}
+			mergedConfig := MergeConfig(config1, config2)
+
+			require.Equal(t, tt.expectedConfigBool, mergedConfig.ValidateDefaultParameters)
+		})
+	}
 }
 
 func Test_ToAuthenticationType(t *testing.T) {
