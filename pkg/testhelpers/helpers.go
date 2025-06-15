@@ -6,9 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"golang.org/x/sys/unix"
-
 	"github.com/stretchr/testify/require"
+	"golang.org/x/sys/unix"
 )
 
 // TODO [next PRs]: move this file
@@ -20,11 +19,11 @@ func TestFile(t *testing.T, filename string, data []byte) string {
 	dir, err := os.MkdirTemp(t.TempDir(), "")
 	require.NoError(t, err)
 
-	filepath := filepath.Join(dir, filename)
+	fp := filepath.Join(dir, filename)
 
-	err = os.WriteFile(filepath, data, 0o600)
+	err = os.WriteFile(fp, data, 0o600)
 	require.NoError(t, err)
-	return filepath
+	return fp
 }
 
 // TestFileWithCustomPermissions creates a temporary file with the given filename and permissions.
