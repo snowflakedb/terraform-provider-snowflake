@@ -86,9 +86,9 @@ func Test_LoadConfigFile_triValueBooleanDefault(t *testing.T) {
 
 	driverCfg, err := m["default"].DriverConfig()
 	require.NoError(t, err)
-	require.NotEqual(t, gosnowflake.ConfigBoolTrue, driverCfg.ValidateDefaultParameters)
-	require.NotEqual(t, gosnowflake.ConfigBoolFalse, driverCfg.ValidateDefaultParameters)
-	require.Equal(t, gosnowflake.ConfigBool(0), driverCfg.ValidateDefaultParameters)
+	assert.NotEqual(t, gosnowflake.ConfigBoolTrue, driverCfg.ValidateDefaultParameters)
+	assert.NotEqual(t, gosnowflake.ConfigBoolFalse, driverCfg.ValidateDefaultParameters)
+	require.Equal(t, gosnowflakeBoolConfigDefault, driverCfg.ValidateDefaultParameters)
 }
 
 func Test_LoadConfigFile_triValueBooleanSet(t *testing.T) {
@@ -514,8 +514,6 @@ func Test_MergeConfig(t *testing.T) {
 }
 
 func Test_MergeConfig_triValueBooleans(t *testing.T) {
-	// TODO: extract configBoolDefault
-	configBoolDefault := gosnowflake.ConfigBool(0)
 	printConfigBool := func(cb gosnowflake.ConfigBool) string {
 		var s string
 		switch cb {
@@ -534,11 +532,11 @@ func Test_MergeConfig_triValueBooleans(t *testing.T) {
 		valueInSecondConfig gosnowflake.ConfigBool
 		expectedConfigBool  gosnowflake.ConfigBool
 	}{
-		{configBoolDefault, configBoolDefault, configBoolDefault},
-		{gosnowflake.ConfigBoolTrue, configBoolDefault, gosnowflake.ConfigBoolTrue},
-		{gosnowflake.ConfigBoolFalse, configBoolDefault, gosnowflake.ConfigBoolFalse},
-		{configBoolDefault, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolTrue},
-		{configBoolDefault, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolFalse},
+		{gosnowflakeBoolConfigDefault, gosnowflakeBoolConfigDefault, gosnowflakeBoolConfigDefault},
+		{gosnowflake.ConfigBoolTrue, gosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolTrue},
+		{gosnowflake.ConfigBoolFalse, gosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolFalse},
+		{gosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolTrue},
+		{gosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolFalse},
 		{gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolTrue},
 		{gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolFalse},
 	}

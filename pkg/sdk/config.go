@@ -463,6 +463,8 @@ func ToExtendedAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 	}
 }
 
+const gosnowflakeBoolConfigDefault = gosnowflake.ConfigBool(0)
+
 type DriverLogLevel string
 
 const (
