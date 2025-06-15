@@ -5,6 +5,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"net"
+	"strconv"
 	"testing"
 	"time"
 
@@ -17,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: add test checking for the "default" boolean value
+// TODO: test DriverConfig() func
 // TODO: add test for merging given boolean values: default to default, true to default, false to default, default to true, default to false, false to true, true to false
 
 func TestLoadConfigFile(t *testing.T) {
@@ -68,6 +69,57 @@ func TestLoadConfigFileWithUnknownFields(t *testing.T) {
 			AccountName: Pointer("TEST_ACCOUNT"),
 		},
 	}, m)
+}
+
+func Test_LoadConfigFile_triValueBooleanDefault(t *testing.T) {
+	// omitting the tri value boolean on purpose
+	cfg := ConfigFileWithDefaultProfile(NewConfigDTO().
+		WithAccountName("TEST_ACCOUNT").
+		WithOrganizationName("TEST_ORG"),
+	)
+	bytes, err := cfg.MarshalToml()
+	require.NoError(t, err)
+	configPath := testhelpers.TestFile(t, "config", bytes)
+
+	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
+	require.NoError(t, err)
+	require.Nil(t, m["default"].ValidateDefaultParameters)
+
+	driverCfg, err := m["default"].DriverConfig()
+	require.NoError(t, err)
+	require.NotEqual(t, gosnowflake.ConfigBoolTrue, driverCfg.ValidateDefaultParameters)
+	require.NotEqual(t, gosnowflake.ConfigBoolFalse, driverCfg.ValidateDefaultParameters)
+	require.Equal(t, gosnowflake.ConfigBool(0), driverCfg.ValidateDefaultParameters)
+}
+
+func Test_LoadConfigFile_triValueBooleanSet(t *testing.T) {
+	tests := []struct {
+		value              bool
+		expectedConfigBool gosnowflake.ConfigBool
+	}{
+		{true, gosnowflake.ConfigBoolTrue},
+		{false, gosnowflake.ConfigBoolFalse},
+	}
+	for _, tt := range tests {
+		t.Run(strconv.FormatBool(tt.value), func(t *testing.T) {
+			cfg := ConfigFileWithDefaultProfile(NewConfigDTO().
+				WithAccountName("TEST_ACCOUNT").
+				WithOrganizationName("TEST_ORG").
+				WithValidateDefaultParameters(tt.value),
+			)
+			bytes, err := cfg.MarshalToml()
+			require.NoError(t, err)
+			configPath := testhelpers.TestFile(t, "config", bytes)
+
+			m, err := LoadConfigFile[*ConfigDTO](configPath, true)
+			require.NoError(t, err)
+			require.Equal(t, tt.value, *m["default"].ValidateDefaultParameters)
+
+			driverCfg, err := m["default"].DriverConfig()
+			require.NoError(t, err)
+			require.Equal(t, tt.expectedConfigBool, driverCfg.ValidateDefaultParameters)
+		})
+	}
 }
 
 func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
