@@ -83,6 +83,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.SecurityIntegrations().Schema,
 	},
 	{
+		name:   "Services",
+		schema: datasources.Services().Schema,
+	},
+	{
 		name:   "Streamlits",
 		schema: datasources.Streamlits().Schema,
 	},

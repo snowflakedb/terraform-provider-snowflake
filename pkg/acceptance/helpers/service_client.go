@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -125,4 +126,50 @@ spec:
     source: block
     size: 1Gi
 `
+}
+
+func (c *ServiceClient) SampleSpecTemplate(t *testing.T) string {
+	t.Helper()
+
+	return `
+spec:
+  containers:
+  - name: example-container
+    image: /snowflake/images/snowflake_images/exampleimage:latest
+  endpoints:
+  - name: {{ endpoint_name }}
+    public: {{ endpoint_is_public }}
+    protocol: TCP
+    port: {{ endpoint_port }}
+`
+}
+
+type ServiceSpecUsing struct {
+	Key   string
+	Value string
+}
+
+func (s ServiceSpecUsing) ToTfVariable() tfconfig.Variable {
+	return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"key":   tfconfig.StringVariable(s.Key),
+		"value": tfconfig.StringVariable(s.Value),
+	})
+}
+
+func (c *ServiceClient) SampleSpecTemplateWithUsingValue(t *testing.T) (string, []ServiceSpecUsing) {
+	t.Helper()
+	return c.SampleSpecTemplate(t), []ServiceSpecUsing{
+		{
+			Key:   "endpoint_is_public",
+			Value: "false",
+		},
+		{
+			Key:   "endpoint_name",
+			Value: "endpoint",
+		},
+		{
+			Key:   "endpoint_port",
+			Value: "4242",
+		},
+	}
 }

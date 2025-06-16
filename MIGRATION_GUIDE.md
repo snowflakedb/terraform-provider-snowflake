@@ -127,6 +127,11 @@ Added a new preview data source for image repositories. See reference [docs](htt
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repositories_datasource` to `preview_features_enabled` field in the provider configuration.
 
+### *(new feature)* snowflake_services data source
+Added a new preview data source for services. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-services).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_services_datasource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* Managing tags for image repositories, compute pools, services, and git repositories
 The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository), [compute pools](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool), [services](https://docs.snowflake.com/en/sql-reference/sql/create-service) and [git repositories](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository).
 
@@ -134,6 +139,10 @@ The [snowflake_tag_association](https://registry.terraform.io/providers/snowflak
 
 In v2.1.0, we introduced a fix in handling users' grants ([migration guide](#bugfix-fixed-snowflake_grant_database_role-resource)), which addressed changes in the `2025_02` bundle. The username was parsed incorrectly if it had a prefix formed of `U`, `S`, `E`, and `R` characters. The username returned from `SHOW GRANTS` was incorrect in this case. Now, such names should be handled correctly.
 No configuration changes are necessary.
+
+### *(new feature)* Granting privileges on future cortex search services
+
+As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
 
 ## v2.0.0 ➞ v2.1.0
 
