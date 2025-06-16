@@ -5,7 +5,7 @@ description: |-
   Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See ALTER ACCOUNT https://docs.snowflake.com/en/sql-reference/sql/alter-account documentation for more information on resource capabilities.
 ---
 
-!> **Warning** This resource shouldn't be used with `snowflake_account_parameter` resource in the same configuration, as it may lead to unexpected behavior.
+!> **Warning** This resource shouldn't be used with `snowflake_account_parameter` resource in the same configuration, as it may lead to unexpected behavior. Unless the `snowflake_account_parameter` is used to manage the follwing parameters that are not supported by `snowflake_current_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL.
 
 -> **Note** On removal, the resource will unset all account properties. To remove the resource without unsetting properties, use [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm) command.
 
