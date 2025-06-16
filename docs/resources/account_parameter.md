@@ -5,6 +5,8 @@ description: |-
   Resource used to manage current account parameters. For more information, check parameters documentation https://docs.snowflake.com/en/sql-reference/parameters.
 ---
 
+!> **Warning** This resource shouldn't be used with `snowflake_current_account` resource in the same configuration, as it may lead to unexpected behavior.
+
 -> **Note** This resource does not support all account parameters. The supported ones are listed below. This feature gap will be addressed in future releases.
 
 # snowflake_account_parameter (Resource)

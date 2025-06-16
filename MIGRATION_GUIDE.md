@@ -54,6 +54,8 @@ This resource is intended to replace the `snowflake_account_parameter` resource,
 - ENABLE_PERSONAL_DATABASE
 - PREVENT_LOAD_FROM_INLINE_URL
 
+The `snowflake_current_account_resource` resource shouldn't be used with `snowflake_account_parameter` resource in the same configuration, as it may lead to unexpected behavior.
+
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_account_resource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* snowflake_service and snowflake_job_service resources

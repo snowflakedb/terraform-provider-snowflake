@@ -5,6 +5,8 @@ description: |-
   Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See ALTER ACCOUNT https://docs.snowflake.com/en/sql-reference/sql/alter-account documentation for more information on resource capabilities.
 ---
 
+!> **Warning** This resource shouldn't be used with `snowflake_account_parameter` resource in the same configuration, as it may lead to unexpected behavior.
+
 -> **Note** On removal, the resource will unset all account properties. To remove the resource without unsetting properties, use [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm) command.
 
 -> **Note** You can manage only one such resource **per account**. More instances on one account could cause unexpected behavior.
