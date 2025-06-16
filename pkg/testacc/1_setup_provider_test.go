@@ -98,7 +98,9 @@ func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 		configureProviderCtx = nil
 		configureClientErrorDiag = make(diag.Diagnostics, 0)
 	}
-	lastConfiguredProviderContext = providerCtx.(*internalprovider.Context)
+	if v, ok := providerCtx.(*internalprovider.Context); ok {
+		lastConfiguredProviderContext = v
+	}
 
 	if clientErrorDiag.HasError() {
 		return nil, clientErrorDiag
