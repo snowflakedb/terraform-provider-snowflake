@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"net"
@@ -736,7 +737,6 @@ func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 	})
 }
 
-// TODO: add test for tri-value boolean merging (false to default, default to default, default to false)
 // prove we can use tri-value booleans, similarly to the ones in resources
 func TestAcc_Provider_triValueBoolean(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
@@ -769,6 +769,77 @@ func TestAcc_Provider_triValueBoolean(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithClientStoreTemporaryCredential("true"), datasourceModel()),
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_triValueBooleanTransitions(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
+		return helpers.TomlConfigForServiceUserWithModifiers(t, profile, tmpServiceUser, func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO {
+			return cfg.
+				WithClientRequestMfaToken(false).
+				// WithDisableConsoleLogin(). // omitted - default
+				// WithIncludeRetryReason(). // omitted - default
+				WithClientStoreTemporaryCredential(true)
+		})
+	})
+	providerConfigModel := providermodel.SnowflakeProvider().
+		WithProfile(tmpServiceUserConfig.Profile).
+		// WithClientRequestMfaTokenBool(). // omitted - default
+		// WithDisableConsoleLoginBool(). // omitted - default
+		WithIncludeRetryReasonBool(true).
+		WithClientStoreTemporaryCredentialBool(false)
+
+	printConfigBool := func(cb gosnowflake.ConfigBool) string {
+		var s string
+		switch cb {
+		case gosnowflake.ConfigBoolTrue:
+			s = "ConfigBoolTrue"
+		case gosnowflake.ConfigBoolFalse:
+			s = "ConfigBoolFalse"
+		default:
+			s = "ConfigBoolDefault"
+		}
+		return s
+	}
+	verifyDriverConfig := func(t *testing.T) func(*terraform.State) error {
+		t.Helper()
+
+		validateConfigBoolField := func(fieldName string, fieldValue gosnowflake.ConfigBool, expectedValue gosnowflake.ConfigBool) error {
+			if fieldValue != expectedValue {
+				return fmt.Errorf("expected %s: %s; got: %s", fieldName, printConfigBool(expectedValue), printConfigBool(fieldValue))
+			}
+			return nil
+		}
+
+		return func(state *terraform.State) error {
+			cfg := lastConfiguredProviderContext.Client.GetConfig()
+			return errors.Join(
+				validateConfigBoolField("ClientRequestMfaToken", cfg.ClientRequestMfaToken, gosnowflake.ConfigBoolFalse),
+				validateConfigBoolField("DisableConsoleLogin", cfg.DisableConsoleLogin, sdk.GosnowflakeBoolConfigDefault),
+				validateConfigBoolField("IncludeRetryReason", cfg.IncludeRetryReason, gosnowflake.ConfigBoolTrue),
+				validateConfigBoolField("ClientStoreTemporaryCredential", cfg.ClientStoreTemporaryCredential, gosnowflake.ConfigBoolFalse),
+			)
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, providerConfigModel, datasourceModel()),
+				Check:                    verifyDriverConfig(t),
 			},
 		},
 	})

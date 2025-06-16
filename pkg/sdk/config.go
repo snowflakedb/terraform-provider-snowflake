@@ -321,7 +321,6 @@ func pointerTimeInSecondsAttributeSet(src *int, dst *time.Duration) {
 	}
 }
 
-// TODO [SNOW-1827312]: fix this method
 func pointerConfigBoolAttributeSet(src *bool, dst *gosnowflake.ConfigBool) {
 	if src != nil {
 		*dst = boolToConfigBool(*src)
@@ -463,7 +462,7 @@ func ToExtendedAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 	}
 }
 
-const gosnowflakeBoolConfigDefault = gosnowflake.ConfigBool(0)
+const GosnowflakeBoolConfigDefault = gosnowflake.ConfigBool(0)
 
 type DriverLogLevel string
 

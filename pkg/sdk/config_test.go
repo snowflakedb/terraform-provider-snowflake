@@ -88,7 +88,7 @@ func Test_LoadConfigFile_triValueBooleanDefault(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEqual(t, gosnowflake.ConfigBoolTrue, driverCfg.ValidateDefaultParameters)
 	assert.NotEqual(t, gosnowflake.ConfigBoolFalse, driverCfg.ValidateDefaultParameters)
-	require.Equal(t, gosnowflakeBoolConfigDefault, driverCfg.ValidateDefaultParameters)
+	require.Equal(t, GosnowflakeBoolConfigDefault, driverCfg.ValidateDefaultParameters)
 }
 
 func Test_LoadConfigFile_triValueBooleanSet(t *testing.T) {
@@ -532,11 +532,11 @@ func Test_MergeConfig_triValueBooleans(t *testing.T) {
 		valueInSecondConfig gosnowflake.ConfigBool
 		expectedConfigBool  gosnowflake.ConfigBool
 	}{
-		{gosnowflakeBoolConfigDefault, gosnowflakeBoolConfigDefault, gosnowflakeBoolConfigDefault},
-		{gosnowflake.ConfigBoolTrue, gosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolTrue},
-		{gosnowflake.ConfigBoolFalse, gosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolFalse},
-		{gosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolTrue},
-		{gosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolFalse},
+		{GosnowflakeBoolConfigDefault, GosnowflakeBoolConfigDefault, GosnowflakeBoolConfigDefault},
+		{gosnowflake.ConfigBoolTrue, GosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolTrue},
+		{gosnowflake.ConfigBoolFalse, GosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolFalse},
+		{GosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolTrue},
+		{GosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolFalse},
 		{gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolTrue},
 		{gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolFalse},
 	}
