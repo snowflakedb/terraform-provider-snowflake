@@ -162,3 +162,22 @@ func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.Acc
 	require.NoError(t, err)
 	return string(bytes)
 }
+
+// TomlConfigForServiceUserWithModifiers is a temporary function used to test provider configuration allowing to modify the toml config
+func TomlConfigForServiceUserWithModifiers(t *testing.T, profile string, serviceUser *TmpServiceUser, configDtoModifier func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO) string {
+	t.Helper()
+
+	config := sdk.NewConfigDTO().
+		WithOrganizationName(serviceUser.AccountId.OrganizationName()).
+		WithAccountName(serviceUser.AccountId.AccountName()).
+		WithUser(serviceUser.UserId.Name()).
+		WithRole(serviceUser.RoleId.Name()).
+		WithWarehouse(serviceUser.WarehouseId.Name()).
+		WithPrivateKey(serviceUser.PrivateKey).
+		WithAuthenticator(string(sdk.AuthenticationTypeJwt))
+	config = configDtoModifier(config)
+	cfg := sdk.NewConfigFile().WithProfiles(map[string]sdk.ConfigDTO{profile: *config})
+	bytes, err := cfg.MarshalToml()
+	require.NoError(t, err)
+	return string(bytes)
+}

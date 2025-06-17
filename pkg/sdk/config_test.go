@@ -5,6 +5,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"net"
+	"strconv"
 	"testing"
 	"time"
 
@@ -17,24 +18,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [SNOW-1827309]: use toml config builder instead of hardcoding
-func TestLoadConfigFile(t *testing.T) {
-	c := `
-	[default]
-	account_name='TEST_ACCOUNT'
-	organization_name='TEST_ORG'
-	user='TEST_USER'
-	password='abcd1234'
-	role='ACCOUNTADMIN'
+// TODO [SNOW-1827309]: test DriverConfig() func
 
-	[securityadmin]
-	account_name='TEST_ACCOUNT'
-	organization_name='TEST_ORG'
-	user='TEST_USER'
-	password='abcd1234'
-	role='SECURITYADMIN'
-	`
-	configPath := testhelpers.TestFile(t, "config", []byte(c))
+func TestLoadConfigFile(t *testing.T) {
+	cfg := NewConfigFile().WithProfiles(map[string]ConfigDTO{
+		"default": *NewConfigDTO().
+			WithAccountName("TEST_ACCOUNT").
+			WithOrganizationName("TEST_ORG").
+			WithUser("TEST_USER").
+			WithPassword("abcd1234").
+			WithRole("ACCOUNTADMIN"),
+		"securityadmin": *NewConfigDTO().
+			WithAccountName("TEST_ACCOUNT_2").
+			WithOrganizationName("TEST_ORG_2").
+			WithUser("TEST_USER_2").
+			WithPassword("abcd1234_2").
+			WithRole("SECURITYADMIN"),
+	})
+	bytes, err := cfg.MarshalToml()
+	require.NoError(t, err)
+	configPath := testhelpers.TestFile(t, "config", bytes)
 
 	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -43,10 +46,10 @@ func TestLoadConfigFile(t *testing.T) {
 	assert.Equal(t, "TEST_USER", *m["default"].User)
 	assert.Equal(t, "abcd1234", *m["default"].Password)
 	assert.Equal(t, "ACCOUNTADMIN", *m["default"].Role)
-	assert.Equal(t, "TEST_ACCOUNT", *m["securityadmin"].AccountName)
-	assert.Equal(t, "TEST_ORG", *m["securityadmin"].OrganizationName)
-	assert.Equal(t, "TEST_USER", *m["securityadmin"].User)
-	assert.Equal(t, "abcd1234", *m["securityadmin"].Password)
+	assert.Equal(t, "TEST_ACCOUNT_2", *m["securityadmin"].AccountName)
+	assert.Equal(t, "TEST_ORG_2", *m["securityadmin"].OrganizationName)
+	assert.Equal(t, "TEST_USER_2", *m["securityadmin"].User)
+	assert.Equal(t, "abcd1234_2", *m["securityadmin"].Password)
 	assert.Equal(t, "SECURITYADMIN", *m["securityadmin"].Role)
 }
 
@@ -65,6 +68,57 @@ func TestLoadConfigFileWithUnknownFields(t *testing.T) {
 			AccountName: Pointer("TEST_ACCOUNT"),
 		},
 	}, m)
+}
+
+func Test_LoadConfigFile_triValueBooleanDefault(t *testing.T) {
+	// omitting the tri value boolean on purpose
+	cfg := ConfigFileWithDefaultProfile(NewConfigDTO().
+		WithAccountName("TEST_ACCOUNT").
+		WithOrganizationName("TEST_ORG"),
+	)
+	bytes, err := cfg.MarshalToml()
+	require.NoError(t, err)
+	configPath := testhelpers.TestFile(t, "config", bytes)
+
+	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
+	require.NoError(t, err)
+	require.Nil(t, m["default"].ValidateDefaultParameters)
+
+	driverCfg, err := m["default"].DriverConfig()
+	require.NoError(t, err)
+	assert.NotEqual(t, gosnowflake.ConfigBoolTrue, driverCfg.ValidateDefaultParameters)
+	assert.NotEqual(t, gosnowflake.ConfigBoolFalse, driverCfg.ValidateDefaultParameters)
+	require.Equal(t, GosnowflakeBoolConfigDefault, driverCfg.ValidateDefaultParameters)
+}
+
+func Test_LoadConfigFile_triValueBooleanSet(t *testing.T) {
+	tests := []struct {
+		value              bool
+		expectedConfigBool gosnowflake.ConfigBool
+	}{
+		{true, gosnowflake.ConfigBoolTrue},
+		{false, gosnowflake.ConfigBoolFalse},
+	}
+	for _, tt := range tests {
+		t.Run(strconv.FormatBool(tt.value), func(t *testing.T) {
+			cfg := ConfigFileWithDefaultProfile(NewConfigDTO().
+				WithAccountName("TEST_ACCOUNT").
+				WithOrganizationName("TEST_ORG").
+				WithValidateDefaultParameters(tt.value),
+			)
+			bytes, err := cfg.MarshalToml()
+			require.NoError(t, err)
+			configPath := testhelpers.TestFile(t, "config", bytes)
+
+			m, err := LoadConfigFile[*ConfigDTO](configPath, true)
+			require.NoError(t, err)
+			require.Equal(t, tt.value, *m["default"].ValidateDefaultParameters)
+
+			driverCfg, err := m["default"].DriverConfig()
+			require.NoError(t, err)
+			require.Equal(t, tt.expectedConfigBool, driverCfg.ValidateDefaultParameters)
+		})
+	}
 }
 
 func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
@@ -215,50 +269,52 @@ func TestLoadConfigFileWithInvalidTOMLFails(t *testing.T) {
 func TestProfileConfig(t *testing.T) {
 	unencryptedKey, encryptedKey := random.GenerateRSAPrivateKeyEncrypted(t, "password")
 
-	c := fmt.Sprintf(`
-	[securityadmin]
-	account='account'
-	account_name='accountname'
-	organization_name='organizationname'
-	user='user'
-	password='password'
-	host='host'
-	warehouse='warehouse'
-	role='role'
-	client_ip='1.1.1.1'
-	protocol='http'
-	passcode='passcode'
-	port=1
-	passcode_in_password=true
-	okta_url='%[3]s'
-	client_timeout=10
-	jwt_client_timeout=20
-	login_timeout=30
-	request_timeout=40
-	jwt_expire_timeout=50
-	external_browser_timeout=60
-	max_retry_count=1
-	authenticator='SNOWFLAKE_JWT'
-	insecure_mode=true
-	ocsp_fail_open=true
-	token='token'
-	keep_session_alive=true
-	private_key="""%[1]s"""
-	private_key_passphrase='%[2]s'
-	disable_telemetry=true
-	validate_default_parameters=true
-	client_request_mfa_token=true
-	client_store_temporary_credential=true
-	driver_tracing='tracing'
-	tmp_dir_path='.'
-	disable_query_context_cache=true
-	include_retry_reason=true
-	disable_console_login=true
+	cfg := ConfigFileWithProfile(NewConfigDTO().
+		WithAccountName("accountname").
+		WithOrganizationName("organizationname").
+		WithUser("user").
+		WithPassword("password").
+		WithHost("host").
+		WithWarehouse("warehouse").
+		WithRole("role").
+		WithClientIp("1.1.1.1").
+		WithProtocol("http").
+		WithPasscode("passcode").
+		WithPort(1).
+		WithPasscodeInPassword(true).
+		WithOktaUrl(testvars.ExampleOktaUrlString).
+		WithClientTimeout(10).
+		WithJwtClientTimeout(20).
+		WithLoginTimeout(30).
+		WithRequestTimeout(40).
+		WithJwtExpireTimeout(50).
+		WithExternalBrowserTimeout(60).
+		WithMaxRetryCount(1).
+		WithAuthenticator(string(AuthenticationTypeJwt)).
+		WithInsecureMode(true).
+		WithOcspFailOpen(true).
+		WithToken("token").
+		WithKeepSessionAlive(true).
+		WithPrivateKey(encryptedKey).
+		WithPrivateKeyPassphrase("password").
+		WithDisableTelemetry(true).
+		WithValidateDefaultParameters(true).
+		WithClientRequestMfaToken(true).
+		WithClientStoreTemporaryCredential(true).
+		WithDriverTracing(string(DriverLogLevelTrace)).
+		WithTmpDirPath(".").
+		WithDisableQueryContextCache(true).
+		WithIncludeRetryReason(true).
+		WithDisableConsoleLogin(true).
+		WithParams(map[string]*string{
+			"foo": Pointer("bar"),
+		}),
+		"securityadmin",
+	)
+	bytes, err := cfg.MarshalToml()
+	require.NoError(t, err)
 
-	[securityadmin.params]
-	foo = 'bar'
-	`, encryptedKey, "password", testvars.ExampleOktaUrlString)
-	configPath := testhelpers.TestFile(t, "config", []byte(c))
+	configPath := testhelpers.TestFile(t, "config", bytes)
 
 	t.Run("with found profile", func(t *testing.T) {
 		t.Setenv(snowflakeenvs.ConfigPath, configPath)
@@ -304,7 +360,7 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, true, config.KeepSessionAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
 		assert.Equal(t, true, config.DisableTelemetry)
-		assert.Equal(t, "tracing", config.Tracing)
+		assert.Equal(t, "trace", config.Tracing)
 		assert.Equal(t, ".", config.TmpDirPath)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
@@ -457,6 +513,48 @@ func Test_MergeConfig(t *testing.T) {
 	})
 }
 
+func Test_MergeConfig_triValueBooleans(t *testing.T) {
+	printConfigBool := func(cb gosnowflake.ConfigBool) string {
+		var s string
+		switch cb {
+		case gosnowflake.ConfigBoolTrue:
+			s = "ConfigBoolTrue"
+		case gosnowflake.ConfigBoolFalse:
+			s = "ConfigBoolFalse"
+		default:
+			s = "ConfigBoolDefault"
+		}
+		return s
+	}
+
+	tests := []struct {
+		valueInFirstConfig  gosnowflake.ConfigBool
+		valueInSecondConfig gosnowflake.ConfigBool
+		expectedConfigBool  gosnowflake.ConfigBool
+	}{
+		{GosnowflakeBoolConfigDefault, GosnowflakeBoolConfigDefault, GosnowflakeBoolConfigDefault},
+		{gosnowflake.ConfigBoolTrue, GosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolTrue},
+		{gosnowflake.ConfigBoolFalse, GosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolFalse},
+		{GosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolTrue},
+		{GosnowflakeBoolConfigDefault, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolFalse},
+		{gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolTrue},
+		{gosnowflake.ConfigBoolFalse, gosnowflake.ConfigBoolTrue, gosnowflake.ConfigBoolFalse},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("transition from %s to %s expecting %s", printConfigBool(tt.valueInFirstConfig), printConfigBool(tt.valueInSecondConfig), printConfigBool(tt.expectedConfigBool)), func(t *testing.T) {
+			config1 := &gosnowflake.Config{
+				ValidateDefaultParameters: tt.valueInFirstConfig,
+			}
+			config2 := &gosnowflake.Config{
+				ValidateDefaultParameters: tt.valueInSecondConfig,
+			}
+			mergedConfig := MergeConfig(config1, config2)
+
+			require.Equal(t, tt.expectedConfigBool, mergedConfig.ValidateDefaultParameters)
+		})
+	}
+}
+
 func Test_ToAuthenticationType(t *testing.T) {
 	type test struct {
 		input string
@@ -565,6 +663,7 @@ func Test_Provider_toDriverLogLevel(t *testing.T) {
 	invalid := []test{
 		{input: ""},
 		{input: "foo"},
+		{input: "tracing"},
 	}
 
 	for _, tc := range valid {

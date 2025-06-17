@@ -20,6 +20,25 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(new feature) New fields in snowflake_cortex_search_service resource
+We added a new `embedding_model` field to the `snowflake_cortex_search_service`. This field specifies the embedding model to use in the Cortex Search Service.
+We updated the examples of using the resource with this field.
+Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)).
+
+### *(new feature)* New consumption_billing_entity field in snowflake_account resource
+
+The `snowflake_account` resource now has a new `consumption_billing_entity` field, which allows you to set the consumption billing entity for the account.
+It is useful in case you have multiple billing entities in your account and want to set a specific one for the account.
+You can find more details in [this](https://community.snowflake.com/s/article/ERROR-Multiple-suitable-billing-entities-exist-for-the-target-cloud) KB article.
+
+No configuration changes are needed.
+
+### The ORGADMIN checks removed from snowflake_account resource
+
+Previously, the `snowflake_account` resource required the ORGADMIN role for operations to be executed.
+In recent Snowflake changes that introduced organization accounts, more roles can now manage the account.
+Because of that, to enable the resource to be used in more scenarios, we removed the ORGADMIN checks from the resource.
+
 ### *(new feature)* New tracking level
 
 Every resource that is capable of setting tracing level (`database`, `shared_database`, `secondary_database`, `schema`) now supports the new `PROPAGATE` value.

@@ -1423,3 +1423,106 @@ resource "snowflake_view" "test" {
 }
 `, id.DatabaseName(), id.SchemaName(), id.Name(), tagId.Name(), tagValue, statement)
 }
+
+func TestAcc_View_Issue3676_proof(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("foo", sdk.DataTypeNumber),
+	})
+	t.Cleanup(tableCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newId := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := fmt.Sprintf("SELECT id, foo FROM %s", table.ID().FullyQualifiedName())
+	otherStatement := fmt.Sprintf("SELECT foo, id FROM %s", table.ID().FullyQualifiedName())
+	columnNames := []string{"ID", "FOO"}
+
+	initialModel := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement).WithColumnNames(columnNames...)
+	renamedAndAlteredModel := model.View("test", newId.DatabaseName(), newId.SchemaName(), newId.Name(), otherStatement).WithColumnNames(columnNames...)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.View),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
+				Config:            accconfig.FromModels(t, initialModel),
+				Check: assertThat(t, resourceassert.ViewResource(t, initialModel.ResourceReference()).
+					HasDatabaseString(TestDatabaseName).
+					HasSchemaString(TestSchemaName).
+					HasNameString(id.Name()).
+					HasStatementString(statement),
+				),
+			},
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
+				Config:            accconfig.FromModels(t, renamedAndAlteredModel),
+				Check: assertThat(t, resourceassert.ViewResource(t, initialModel.ResourceReference()).
+					HasDatabaseString(TestDatabaseName).
+					HasSchemaString(TestSchemaName).
+					HasNameString(newId.Name()).
+					HasStatementString(otherStatement),
+					objectassert.View(t, newId).HasName(newId.Name()),
+					// existence of the old view confirms the issue https://github.com/snowflakedb/terraform-provider-snowflake/issues/3676
+					objectassert.View(t, id).HasName(id.Name()),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_View_Issue3676_fix(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("foo", sdk.DataTypeNumber),
+	})
+	t.Cleanup(tableCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newId := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := fmt.Sprintf("SELECT id, foo FROM %s", table.ID().FullyQualifiedName())
+	otherStatement := fmt.Sprintf("SELECT foo, id FROM %s", table.ID().FullyQualifiedName())
+	columnNames := []string{"ID", "FOO"}
+
+	initialModel := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement).WithColumnNames(columnNames...)
+	renamedAndAlteredModel := model.View("test", newId.DatabaseName(), newId.SchemaName(), newId.Name(), otherStatement).WithColumnNames(columnNames...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.View),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, initialModel),
+				Check: assertThat(t, resourceassert.ViewResource(t, initialModel.ResourceReference()).
+					HasDatabaseString(TestDatabaseName).
+					HasSchemaString(TestSchemaName).
+					HasNameString(id.Name()).
+					HasStatementString(statement),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, renamedAndAlteredModel),
+				Check: assertThat(t, resourceassert.ViewResource(t, initialModel.ResourceReference()).
+					HasDatabaseString(TestDatabaseName).
+					HasSchemaString(TestSchemaName).
+					HasNameString(newId.Name()).
+					HasStatementString(otherStatement),
+					objectassert.View(t, newId).HasName(newId.Name()),
+					// view with the old id does not exist
+					objectassert.ViewDoesNotExist(t, id),
+				),
+			},
+		},
+	})
+}

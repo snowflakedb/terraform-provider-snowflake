@@ -28,21 +28,22 @@ func TestAccountCreate(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		key := random.Password()
 		opts := &CreateAccountOptions{
-			name:               id,
-			AdminName:          "someadmin",
-			AdminRSAPublicKey:  String(key),
-			AdminUserType:      Pointer(UserTypeService),
-			FirstName:          String("Ad"),
-			LastName:           String("Min"),
-			Email:              "admin@example.com",
-			MustChangePassword: Bool(true),
-			Edition:            EditionBusinessCritical,
-			RegionGroup:        String("groupid"),
-			Region:             String("regionid"),
-			Comment:            String("Test account"),
-			Polaris:            Bool(true),
+			name:                     id,
+			AdminName:                "someadmin",
+			AdminRSAPublicKey:        String(key),
+			AdminUserType:            Pointer(UserTypeService),
+			FirstName:                String("Ad"),
+			LastName:                 String("Min"),
+			Email:                    "admin@example.com",
+			MustChangePassword:       Bool(true),
+			Edition:                  EditionBusinessCritical,
+			RegionGroup:              String("groupid"),
+			Region:                   String("regionid"),
+			Comment:                  String("Test account"),
+			ConsumptionBillingEntity: String("be-name"),
+			Polaris:                  Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE ACCOUNT %s ADMIN_NAME = 'someadmin' ADMIN_RSA_PUBLIC_KEY = '%s' ADMIN_USER_TYPE = SERVICE FIRST_NAME = 'Ad' LAST_NAME = 'Min' EMAIL = 'admin@example.com' MUST_CHANGE_PASSWORD = true EDITION = BUSINESS_CRITICAL REGION_GROUP = groupid REGION = regionid COMMENT = 'Test account' POLARIS = true`, id.FullyQualifiedName(), key)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ACCOUNT %s ADMIN_NAME = 'someadmin' ADMIN_RSA_PUBLIC_KEY = '%s' ADMIN_USER_TYPE = SERVICE FIRST_NAME = 'Ad' LAST_NAME = 'Min' EMAIL = 'admin@example.com' MUST_CHANGE_PASSWORD = true EDITION = BUSINESS_CRITICAL REGION_GROUP = groupid REGION = regionid COMMENT = 'Test account' CONSUMPTION_BILLING_ENTITY = "be-name" POLARIS = true`, id.FullyQualifiedName(), key)
 	})
 
 	t.Run("static password", func(t *testing.T) {
@@ -75,7 +76,41 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "OrgAdmin", "ConsumptionBillingEntity"))
+	})
+
+	t.Run("validation: no name passed when setting consumption billing entity", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				ConsumptionBillingEntity: String("be-name"),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: no name passed when unsetting consumption billing entity", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				ConsumptionBillingEntity: Bool(true),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: no name passed when dropping account", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Drop: &AccountDrop{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: no name passed when renaming account", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Rename: &AccountRename{
+				NewName: randomAccountObjectIdentifier(),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one value set in AccountSet - multiple set", func(t *testing.T) {
@@ -86,14 +121,14 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "OrgAdmin", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - multiple set", func(t *testing.T) {
@@ -104,7 +139,7 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("with legacy set params", func(t *testing.T) {
@@ -495,6 +530,28 @@ func TestAccountAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET AUTHENTICATION POLICY %s`, id.FullyQualifiedName())
 	})
 
+	t.Run("with set consumption billing entity", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Name: &id,
+			Set: &AccountSet{
+				ConsumptionBillingEntity: String("my_consumption_billing_entity"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s SET CONSUMPTION_BILLING_ENTITY = "my_consumption_billing_entity"`, id.FullyQualifiedName())
+	})
+
+	t.Run("with unset consumption billing entity", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Name: &id,
+			Unset: &AccountUnset{
+				ConsumptionBillingEntity: Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s UNSET CONSUMPTION_BILLING_ENTITY`, id.FullyQualifiedName())
+	})
+
 	t.Run("with unset packages policy", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
@@ -580,10 +637,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("set is_org_admin", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			SetIsOrgAdmin: &AccountSetIsOrgAdmin{
-				Name:     id,
-				OrgAdmin: true,
-			},
+			Name: &id,
+			Set:  &AccountSet{OrgAdmin: Bool(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s SET IS_ORG_ADMIN = true`, id.FullyQualifiedName())
 	})
@@ -592,8 +647,8 @@ func TestAccountAlter(t *testing.T) {
 		oldName := randomAccountObjectIdentifier()
 		newName := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &oldName,
 			Rename: &AccountRename{
-				Name:       oldName,
 				NewName:    newName,
 				SaveOldURL: Bool(false),
 			},
@@ -604,9 +659,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: drop no url set", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			Drop: &AccountDrop{
-				Name: id,
-			},
+			Name: &id,
+			Drop: &AccountDrop{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountDrop", "OldUrl", "OldOrganizationUrl"))
 	})
@@ -614,8 +668,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: drop all url options set", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:               id,
 				OldUrl:             Bool(true),
 				OldOrganizationUrl: Bool(true),
 			},
@@ -626,8 +680,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("drop old url", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:   id,
 				OldUrl: Bool(true),
 			},
 		}
@@ -637,8 +691,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("drop organization old url", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:               id,
 				OldOrganizationUrl: Bool(true),
 			},
 		}
