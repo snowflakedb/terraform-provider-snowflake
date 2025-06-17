@@ -45,7 +45,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 		WithBaseLocationPrefix("STORAGE_BASE_URL/").
 		WithBinaryInputFormat(string(sdk.BinaryInputFormatBase64)).
 		WithBinaryOutputFormat(string(sdk.BinaryOutputFormatBase64)).
-		WithCatalog("SNOWFLAKE").
+		WithCatalog(helpers.TestDatabaseCatalog.Name()).
 		WithClientEnableLogInfoStatementParameters(true).
 		WithClientEncryptionKeySize(256).
 		WithClientMemoryLimit(1540).
@@ -406,7 +406,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasBaseLocationPrefixString("STORAGE_BASE_URL/").
 						HasBinaryInputFormatString(string(sdk.BinaryInputFormatBase64)).
 						HasBinaryOutputFormatString(string(sdk.BinaryOutputFormatBase64)).
-						HasCatalogString("SNOWFLAKE").
+						HasCatalogString(helpers.TestDatabaseCatalog.Name()).
 						HasClientEnableLogInfoStatementParametersString("true").
 						HasClientEncryptionKeySizeString("256").
 						HasClientMemoryLimitString("1540").
@@ -525,7 +525,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasBaseLocationPrefixString("STORAGE_BASE_URL/").
 						HasBinaryInputFormatString(string(sdk.BinaryInputFormatBase64)).
 						HasBinaryOutputFormatString(string(sdk.BinaryOutputFormatBase64)).
-						HasCatalogString("SNOWFLAKE").
+						HasCatalogString(helpers.TestDatabaseCatalog.Name()).
 						HasClientEnableLogInfoStatementParametersString("true").
 						HasClientEncryptionKeySizeString("256").
 						HasClientMemoryLimitString("1540").

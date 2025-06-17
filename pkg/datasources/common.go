@@ -98,6 +98,44 @@ var extendedInSchema = &schema.Schema{
 	},
 }
 
+var serviceInSchema = &schema.Schema{
+	Type:        schema.TypeList,
+	Optional:    true,
+	Description: "IN clause to filter the list of objects",
+	MaxItems:    1,
+	Elem: &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"account": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				Description:  "Returns records for the entire account.",
+				ExactlyOneOf: []string{"in.0.account", "in.0.database", "in.0.schema", "in.0.compute_pool"},
+			},
+			"database": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Returns records for the current database in use or for a specified database.",
+				ExactlyOneOf:     []string{"in.0.account", "in.0.database", "in.0.schema", "in.0.compute_pool"},
+				ValidateDiagFunc: resources.IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			},
+			"schema": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Returns records for the current schema in use or a specified schema. Use fully qualified name.",
+				ExactlyOneOf:     []string{"in.0.account", "in.0.database", "in.0.schema", "in.0.compute_pool"},
+				ValidateDiagFunc: resources.IsValidIdentifier[sdk.DatabaseObjectIdentifier](),
+			},
+			"compute_pool": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Returns records for the specified compute pool.",
+				ExactlyOneOf:     []string{"in.0.account", "in.0.database", "in.0.schema", "in.0.compute_pool"},
+				ValidateDiagFunc: resources.IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			},
+		},
+	},
+}
+
 var startsWithSchema = &schema.Schema{
 	Type:        schema.TypeString,
 	Optional:    true,
@@ -180,25 +218,36 @@ func handleIn(d *schema.ResourceData, setField **sdk.In) error {
 	return nil
 }
 
+func mapToSdkIn(in map[string]any) (*sdk.In, error) {
+	if v, ok := in["account"]; ok && v.(bool) {
+		return &sdk.In{Account: sdk.Bool(true)}, nil
+	}
+	if v, ok := in["database"]; ok {
+		if database := v.(string); database != "" {
+			return &sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}, nil
+		}
+	}
+	if v, ok := in["schema"]; ok {
+		if schema := v.(string); schema != "" {
+			schemaId, err := sdk.ParseDatabaseObjectIdentifier(schema)
+			if err != nil {
+				return nil, fmt.Errorf("invalid schema identifier: %w", err)
+			}
+			return &sdk.In{Schema: schemaId}, nil
+		}
+	}
+	return nil, nil
+}
+
 func handleExtendedIn(d *schema.ResourceData, setField **sdk.ExtendedIn) error {
 	if v, ok := d.GetOk("in"); ok {
 		in := v.([]any)[0].(map[string]any)
-		if v, ok := in["account"]; ok && v.(bool) {
-			*setField = &sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}
+		sdkIn, err := mapToSdkIn(in)
+		if err != nil {
+			return err
 		}
-		if v, ok := in["database"]; ok {
-			if database := v.(string); database != "" {
-				*setField = &sdk.ExtendedIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}}
-			}
-		}
-		if v, ok := in["schema"]; ok {
-			if schema := v.(string); schema != "" {
-				schemaId, err := sdk.ParseDatabaseObjectIdentifier(schema)
-				if err != nil {
-					return err
-				}
-				*setField = &sdk.ExtendedIn{In: sdk.In{Schema: schemaId}}
-			}
+		if sdkIn != nil {
+			*setField = &sdk.ExtendedIn{In: *sdkIn}
 		}
 		if v, ok := in["application"]; ok {
 			if application := v.(string); application != "" {
@@ -208,6 +257,25 @@ func handleExtendedIn(d *schema.ResourceData, setField **sdk.ExtendedIn) error {
 		if v, ok := in["application_package"]; ok {
 			if applicationPackage := v.(string); applicationPackage != "" {
 				*setField = &sdk.ExtendedIn{ApplicationPackage: sdk.NewAccountObjectIdentifier(applicationPackage)}
+			}
+		}
+	}
+	return nil
+}
+
+func handleServiceIn(d *schema.ResourceData, setField **sdk.ServiceIn) error {
+	if v, ok := d.GetOk("in"); ok {
+		in := v.([]any)[0].(map[string]any)
+		sdkIn, err := mapToSdkIn(in)
+		if err != nil {
+			return err
+		}
+		if sdkIn != nil {
+			*setField = &sdk.ServiceIn{In: *sdkIn}
+		}
+		if v, ok := in["compute_pool"]; ok {
+			if computePool := v.(string); computePool != "" {
+				*setField = &sdk.ServiceIn{ComputePool: sdk.NewAccountObjectIdentifier(computePool)}
 			}
 		}
 	}

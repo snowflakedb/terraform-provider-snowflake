@@ -60,3 +60,7 @@ func relatedResourceDescription(description string, resource providerresources.R
 func joinWithSpace(parts ...string) string {
 	return strings.Join(parts, " ")
 }
+
+func exampleSchemaObjectIdentifier(schemaObjectName string) string {
+	return fmt.Sprintf("Example: `\"\\\"<db_name>\\\".\\\"<schema_name>\\\".\\\"<%s_name>\\\"\"`.", schemaObjectName)
+}
