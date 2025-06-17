@@ -409,6 +409,7 @@ func DeleteCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 
 func unsetAccountPolicySafely(client *sdk.Client, ctx context.Context, kind sdk.PolicyKind, unset *sdk.AccountUnset) error {
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: unset})
+	// If the policy is not attached to the account, Snowflake returns an error.
 	if err != nil && strings.Contains(err.Error(), fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", kind)) {
 		return nil
 	}

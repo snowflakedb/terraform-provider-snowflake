@@ -21,6 +21,7 @@ across different versions.
 ## v2.1.0 ➞ v2.2.0
 
 ### *(new feature) New fields in snowflake_cortex_search_service resource
+
 We added a new `embedding_model` field to the `snowflake_cortex_search_service`. This field specifies the embedding model to use in the Cortex Search Service.
 We updated the examples of using the resource with this field.
 Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)).
@@ -77,7 +78,8 @@ but some of the supported parameters in `snowflake_account_parameter` aren't sup
 They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters).
 Once they are publicly documented, they will be added to the `snowflake_current_account_resource` resource.
 
-The `snowflake_current_account_resource` resource shouldn't be used with `snowflake_account_parameter` resource in the same configuration, as it may lead to unexpected behavior.
+The `snowflake_current_account_resource` resource shouldn't be used with `snowflake_object_parameter` and `snowflake_account_parameter` resources in the same configuration, as it may lead to unexpected behavior. Unless they're used to manage the above parameters that are not supported. 
+The resource shouldn't be also used with `snowflake_account_password_policy_attachment`, `snowflake_network_policy_attachment`, `snowflake_account_authentication_policy_attachment` resources in the same configuration to manage policies on the current account, as it may lead to unexpected behavior.
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_account_resource` to `preview_features_enabled` field in the provider configuration.
 

@@ -1098,9 +1098,11 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 			assertThatNoPolicyIsSetOnAccount(t)
 		})
 
+		// Here we expect to get an error as there is another feature policy set on the account.
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}}})
 		require.Error(t, err)
 
+		// To set a new feature policy on the account without firstly unsetting it, we can use FORCE parameter.
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}, Force: sdk.Bool(true)}})
 		require.NoError(t, err)
 		assertThatPolicyIsSetOnAccount(t, newFeaturePolicyId)

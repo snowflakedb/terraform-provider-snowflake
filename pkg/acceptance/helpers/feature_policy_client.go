@@ -30,6 +30,7 @@ func (c *FeaturePolicyClient) Create(t *testing.T) (sdk.SchemaObjectIdentifier, 
 	ctx := context.Background()
 
 	id := c.ids.RandomSchemaObjectIdentifier()
+	// TODO(SNOW-2158888): Replace with client method when available
 	_, err := c.client().ExecForTests(ctx, fmt.Sprintf(`CREATE FEATURE POLICY %s BLOCKED_OBJECT_TYPES_FOR_CREATION = ("TASKS")`, id.FullyQualifiedName()))
 	require.NoError(t, err)
 	return id, c.DropFunc(t, id)
@@ -40,6 +41,7 @@ func (c *FeaturePolicyClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifi
 	ctx := context.Background()
 
 	return func() {
+		// TODO(SNOW-2158888): Replace with client method when available
 		_, err := c.client().ExecForTests(ctx, fmt.Sprintf(`DROP FEATURE POLICY IF EXISTS %s`, id.FullyQualifiedName()))
 		require.NoError(t, err)
 	}

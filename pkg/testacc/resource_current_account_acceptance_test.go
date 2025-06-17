@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -161,118 +162,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 			{
 				Config: config.FromModels(t, provider, unsetParametersModel),
 				Check: assertThat(t,
-					resourceassert.CurrentAccountResource(t, unsetParametersModel.ResourceReference()).
-						HasAbortDetachedQueryString("false").
-						HasAllowClientMfaCachingString("false").
-						HasAllowIdTokenString("false").
-						HasAutocommitString("true").
-						HasBaseLocationPrefixEmpty().
-						HasBinaryInputFormatString("HEX").
-						HasBinaryOutputFormatString("HEX").
-						HasCatalogEmpty().
-						HasCatalogSyncEmpty().
-						HasClientEnableLogInfoStatementParametersString("false").
-						HasClientEncryptionKeySizeString("128").
-						HasClientMemoryLimitString("1536").
-						HasClientMetadataRequestUseConnectionCtxString("false").
-						HasClientMetadataUseSessionDatabaseString("false").
-						HasClientPrefetchThreadsString("4").
-						HasClientResultChunkSizeString("160").
-						HasClientResultColumnCaseInsensitiveString("false").
-						HasClientSessionKeepAliveString("false").
-						HasClientSessionKeepAliveHeartbeatFrequencyString("3600").
-						HasClientTimestampTypeMappingString("TIMESTAMP_LTZ").
-						HasCortexEnabledCrossRegionString("DISABLED").
-						HasCortexModelsAllowlistString("ALL").
-						HasCsvTimestampFormatEmpty().
-						HasDataRetentionTimeInDaysString("1").
-						HasDateInputFormatString("AUTO").
-						HasDateOutputFormatString("YYYY-MM-DD").
-						HasDefaultDdlCollationEmpty().
-						HasDefaultNotebookComputePoolCpuString("SYSTEM_COMPUTE_POOL_CPU").
-						HasDefaultNotebookComputePoolGpuString("SYSTEM_COMPUTE_POOL_GPU").
-						HasDefaultNullOrderingString("LAST").
-						HasDefaultStreamlitNotebookWarehouseString("REGRESS").
-						HasDisableUiDownloadButtonString("false").
-						HasDisableUserPrivilegeGrantsString("false").
-						HasEnableAutomaticSensitiveDataClassificationLogString("true").
-						HasEnableEgressCostOptimizerString("true").
-						HasEnableIdentifierFirstLoginString("true").
-						HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("false").
-						HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("false").
-						HasEnableUnhandledExceptionsReportingString("true").
-						HasEnableUnloadPhysicalTypeOptimizationString("true").
-						HasEnableUnredactedQuerySyntaxErrorString("false").
-						HasEnableUnredactedSecureObjectErrorString("false").
-						HasEnforceNetworkRulesForInternalStagesString("false").
-						HasErrorOnNondeterministicMergeString("true").
-						HasErrorOnNondeterministicUpdateString("false").
-						HasEventTableString("snowflake.telemetry.events").
-						HasExternalOauthAddPrivilegedRolesToBlockedListString("true").
-						HasExternalVolumeEmpty().
-						HasGeographyOutputFormatString("GeoJSON").
-						HasGeometryOutputFormatString("GeoJSON").
-						HasHybridTableLockTimeoutString("3600").
-						HasInitialReplicationSizeLimitInTbString("10.0").
-						HasJdbcTreatDecimalAsIntString("true").
-						HasJdbcTreatTimestampNtzAsUtcString("false").
-						HasJdbcUseSessionTimezoneString("true").
-						HasJsonIndentString("2").
-						HasJsTreatIntegerAsBigintString("false").
-						HasListingAutoFulfillmentReplicationRefreshScheduleString("1440 MINUTE").
-						HasLockTimeoutString("43200").
-						HasLogLevelString("OFF").
-						HasMaxConcurrencyLevelString("8").
-						HasMaxDataExtensionTimeInDaysString("14").
-						HasMetricLevelString("NONE").
-						HasMinDataRetentionTimeInDaysString("0").
-						HasMultiStatementCountString("1").
-						HasNetworkPolicyEmpty().
-						HasNoorderSequenceAsDefaultString("true").
-						HasOauthAddPrivilegedRolesToBlockedListString("true").
-						HasOdbcTreatDecimalAsIntString("false").
-						HasPeriodicDataRekeyingString("false").
-						HasPipeExecutionPausedString("false").
-						HasPreventUnloadToInlineUrlString("false").
-						HasPreventUnloadToInternalStagesString("false").
-						HasPythonProfilerTargetStageEmpty().
-						HasQueryTagEmpty().
-						HasQuotedIdentifiersIgnoreCaseString("false").
-						HasReplaceInvalidCharactersString("false").
-						HasRequireStorageIntegrationForStageCreationString("false").
-						HasRequireStorageIntegrationForStageOperationString("false").
-						HasRowsPerResultsetString("0").
-						HasSearchPathString("$current, $public").
-						HasServerlessTaskMaxStatementSizeString("X2Large").
-						HasServerlessTaskMinStatementSizeString("XSMALL").
-						HasSsoLoginPageString("false").
-						HasStatementQueuedTimeoutInSecondsString("0").
-						HasStatementTimeoutInSecondsString("172800").
-						HasStorageSerializationPolicyString("OPTIMIZED").
-						HasStrictJsonOutputString("false").
-						HasSuspendTaskAfterNumFailuresString("10").
-						HasTaskAutoRetryAttemptsString("0").
-						HasTimestampDayIsAlways24hString("false").
-						HasTimestampInputFormatString("AUTO").
-						HasTimestampLtzOutputFormatEmpty().
-						HasTimestampNtzOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3").
-						HasTimestampOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM").
-						HasTimestampTypeMappingString("TIMESTAMP_NTZ").
-						HasTimestampTzOutputFormatEmpty().
-						HasTimezoneString("America/Los_Angeles").
-						HasTimeInputFormatString("AUTO").
-						HasTimeOutputFormatString("HH24:MI:SS").
-						HasTraceLevelString("OFF").
-						HasTransactionAbortOnErrorString("false").
-						HasTransactionDefaultIsolationLevelString("READ COMMITTED").
-						HasTwoDigitCenturyStartString("1970").
-						HasUnsupportedDdlActionString("ignore").
-						HasUserTaskManagedInitialWarehouseSizeString("Medium").
-						HasUserTaskMinimumTriggerIntervalInSecondsString("30").
-						HasUserTaskTimeoutMsString("3600000").
-						HasUseCachedResultString("true").
-						HasWeekOfYearPolicyString("0").
-						HasWeekStartString("0"),
+					resourceassert.CurrentAccountResource(t, unsetParametersModel.ResourceReference()).HasAllDefaultParameters(),
 				),
 			},
 			// import with unset parameters
@@ -281,118 +171,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 				ResourceName: unsetParametersModel.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedCurrentAccountResource(t, "current_account").
-						HasAbortDetachedQueryString("false").
-						HasAllowClientMfaCachingString("false").
-						HasAllowIdTokenString("false").
-						HasAutocommitString("true").
-						HasBaseLocationPrefixEmpty().
-						HasBinaryInputFormatString("HEX").
-						HasBinaryOutputFormatString("HEX").
-						HasCatalogEmpty().
-						HasCatalogSyncEmpty().
-						HasClientEnableLogInfoStatementParametersString("false").
-						HasClientEncryptionKeySizeString("128").
-						HasClientMemoryLimitString("1536").
-						HasClientMetadataRequestUseConnectionCtxString("false").
-						HasClientMetadataUseSessionDatabaseString("false").
-						HasClientPrefetchThreadsString("4").
-						HasClientResultChunkSizeString("160").
-						HasClientResultColumnCaseInsensitiveString("false").
-						HasClientSessionKeepAliveString("false").
-						HasClientSessionKeepAliveHeartbeatFrequencyString("3600").
-						HasClientTimestampTypeMappingString("TIMESTAMP_LTZ").
-						HasCortexEnabledCrossRegionString("DISABLED").
-						HasCortexModelsAllowlistString("ALL").
-						HasCsvTimestampFormatEmpty().
-						HasDataRetentionTimeInDaysString("1").
-						HasDateInputFormatString("AUTO").
-						HasDateOutputFormatString("YYYY-MM-DD").
-						HasDefaultDdlCollationEmpty().
-						HasDefaultNotebookComputePoolCpuString("SYSTEM_COMPUTE_POOL_CPU").
-						HasDefaultNotebookComputePoolGpuString("SYSTEM_COMPUTE_POOL_GPU").
-						HasDefaultNullOrderingString("LAST").
-						HasDefaultStreamlitNotebookWarehouseString("REGRESS").
-						HasDisableUiDownloadButtonString("false").
-						HasDisableUserPrivilegeGrantsString("false").
-						HasEnableAutomaticSensitiveDataClassificationLogString("true").
-						HasEnableEgressCostOptimizerString("true").
-						HasEnableIdentifierFirstLoginString("true").
-						HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("false").
-						HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("false").
-						HasEnableUnhandledExceptionsReportingString("true").
-						HasEnableUnloadPhysicalTypeOptimizationString("true").
-						HasEnableUnredactedQuerySyntaxErrorString("false").
-						HasEnableUnredactedSecureObjectErrorString("false").
-						HasEnforceNetworkRulesForInternalStagesString("false").
-						HasErrorOnNondeterministicMergeString("true").
-						HasErrorOnNondeterministicUpdateString("false").
-						HasEventTableString("snowflake.telemetry.events").
-						HasExternalOauthAddPrivilegedRolesToBlockedListString("true").
-						HasExternalVolumeEmpty().
-						HasGeographyOutputFormatString("GeoJSON").
-						HasGeometryOutputFormatString("GeoJSON").
-						HasHybridTableLockTimeoutString("3600").
-						HasInitialReplicationSizeLimitInTbString("10.0").
-						HasJdbcTreatDecimalAsIntString("true").
-						HasJdbcTreatTimestampNtzAsUtcString("false").
-						HasJdbcUseSessionTimezoneString("true").
-						HasJsonIndentString("2").
-						HasJsTreatIntegerAsBigintString("false").
-						HasListingAutoFulfillmentReplicationRefreshScheduleString("1440 MINUTE").
-						HasLockTimeoutString("43200").
-						HasLogLevelString("OFF").
-						HasMaxConcurrencyLevelString("8").
-						HasMaxDataExtensionTimeInDaysString("14").
-						HasMetricLevelString("NONE").
-						HasMinDataRetentionTimeInDaysString("0").
-						HasMultiStatementCountString("1").
-						HasNetworkPolicyEmpty().
-						HasNoorderSequenceAsDefaultString("true").
-						HasOauthAddPrivilegedRolesToBlockedListString("true").
-						HasOdbcTreatDecimalAsIntString("false").
-						HasPeriodicDataRekeyingString("false").
-						HasPipeExecutionPausedString("false").
-						HasPreventUnloadToInlineUrlString("false").
-						HasPreventUnloadToInternalStagesString("false").
-						HasPythonProfilerTargetStageEmpty().
-						HasQueryTagEmpty().
-						HasQuotedIdentifiersIgnoreCaseString("false").
-						HasReplaceInvalidCharactersString("false").
-						HasRequireStorageIntegrationForStageCreationString("false").
-						HasRequireStorageIntegrationForStageOperationString("false").
-						HasRowsPerResultsetString("0").
-						HasSearchPathString("$current, $public").
-						HasServerlessTaskMaxStatementSizeString("X2Large").
-						HasServerlessTaskMinStatementSizeString("XSMALL").
-						HasSsoLoginPageString("false").
-						HasStatementQueuedTimeoutInSecondsString("0").
-						HasStatementTimeoutInSecondsString("172800").
-						HasStorageSerializationPolicyString("OPTIMIZED").
-						HasStrictJsonOutputString("false").
-						HasSuspendTaskAfterNumFailuresString("10").
-						HasTaskAutoRetryAttemptsString("0").
-						HasTimestampDayIsAlways24hString("false").
-						HasTimestampInputFormatString("AUTO").
-						HasTimestampLtzOutputFormatEmpty().
-						HasTimestampNtzOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3").
-						HasTimestampOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM").
-						HasTimestampTypeMappingString("TIMESTAMP_NTZ").
-						HasTimestampTzOutputFormatEmpty().
-						HasTimezoneString("America/Los_Angeles").
-						HasTimeInputFormatString("AUTO").
-						HasTimeOutputFormatString("HH24:MI:SS").
-						HasTraceLevelString("OFF").
-						HasTransactionAbortOnErrorString("false").
-						HasTransactionDefaultIsolationLevelString("READ COMMITTED").
-						HasTwoDigitCenturyStartString("1970").
-						HasUnsupportedDdlActionString("ignore").
-						HasUserTaskManagedInitialWarehouseSizeString("Medium").
-						HasUserTaskMinimumTriggerIntervalInSecondsString("30").
-						HasUserTaskTimeoutMsString("3600000").
-						HasUseCachedResultString("true").
-						HasWeekOfYearPolicyString("0").
-						HasWeekStartString("0"),
+					resourceassert.ImportedCurrentAccountResource(t, "current_account").HasAllDefaultParameters(),
 				),
 			},
 			// set all parameters
@@ -635,118 +414,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 			{
 				Config: config.FromModels(t, provider, unsetParametersModel),
 				Check: assertThat(t,
-					resourceassert.CurrentAccountResource(t, unsetParametersModel.ResourceReference()).
-						HasAbortDetachedQueryString("false").
-						HasAllowClientMfaCachingString("false").
-						HasAllowIdTokenString("false").
-						HasAutocommitString("true").
-						HasBaseLocationPrefixEmpty().
-						HasBinaryInputFormatString("HEX").
-						HasBinaryOutputFormatString("HEX").
-						HasCatalogEmpty().
-						HasCatalogSyncEmpty().
-						HasClientEnableLogInfoStatementParametersString("false").
-						HasClientEncryptionKeySizeString("128").
-						HasClientMemoryLimitString("1536").
-						HasClientMetadataRequestUseConnectionCtxString("false").
-						HasClientMetadataUseSessionDatabaseString("false").
-						HasClientPrefetchThreadsString("4").
-						HasClientResultChunkSizeString("160").
-						HasClientResultColumnCaseInsensitiveString("false").
-						HasClientSessionKeepAliveString("false").
-						HasClientSessionKeepAliveHeartbeatFrequencyString("3600").
-						HasClientTimestampTypeMappingString("TIMESTAMP_LTZ").
-						HasCortexEnabledCrossRegionString("DISABLED").
-						HasCortexModelsAllowlistString("ALL").
-						HasCsvTimestampFormatEmpty().
-						HasDataRetentionTimeInDaysString("1").
-						HasDateInputFormatString("AUTO").
-						HasDateOutputFormatString("YYYY-MM-DD").
-						HasDefaultDdlCollationEmpty().
-						HasDefaultNotebookComputePoolCpuString("SYSTEM_COMPUTE_POOL_CPU").
-						HasDefaultNotebookComputePoolGpuString("SYSTEM_COMPUTE_POOL_GPU").
-						HasDefaultNullOrderingString("LAST").
-						HasDefaultStreamlitNotebookWarehouseString("REGRESS").
-						HasDisableUiDownloadButtonString("false").
-						HasDisableUserPrivilegeGrantsString("false").
-						HasEnableAutomaticSensitiveDataClassificationLogString("true").
-						HasEnableEgressCostOptimizerString("true").
-						HasEnableIdentifierFirstLoginString("true").
-						HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("false").
-						HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("false").
-						HasEnableUnhandledExceptionsReportingString("true").
-						HasEnableUnloadPhysicalTypeOptimizationString("true").
-						HasEnableUnredactedQuerySyntaxErrorString("false").
-						HasEnableUnredactedSecureObjectErrorString("false").
-						HasEnforceNetworkRulesForInternalStagesString("false").
-						HasErrorOnNondeterministicMergeString("true").
-						HasErrorOnNondeterministicUpdateString("false").
-						HasEventTableString("snowflake.telemetry.events").
-						HasExternalOauthAddPrivilegedRolesToBlockedListString("true").
-						HasExternalVolumeEmpty().
-						HasGeographyOutputFormatString("GeoJSON").
-						HasGeometryOutputFormatString("GeoJSON").
-						HasHybridTableLockTimeoutString("3600").
-						HasInitialReplicationSizeLimitInTbString("10.0").
-						HasJdbcTreatDecimalAsIntString("true").
-						HasJdbcTreatTimestampNtzAsUtcString("false").
-						HasJdbcUseSessionTimezoneString("true").
-						HasJsonIndentString("2").
-						HasJsTreatIntegerAsBigintString("false").
-						HasListingAutoFulfillmentReplicationRefreshScheduleString("1440 MINUTE").
-						HasLockTimeoutString("43200").
-						HasLogLevelString("OFF").
-						HasMaxConcurrencyLevelString("8").
-						HasMaxDataExtensionTimeInDaysString("14").
-						HasMetricLevelString("NONE").
-						HasMinDataRetentionTimeInDaysString("0").
-						HasMultiStatementCountString("1").
-						HasNetworkPolicyEmpty().
-						HasNoorderSequenceAsDefaultString("true").
-						HasOauthAddPrivilegedRolesToBlockedListString("true").
-						HasOdbcTreatDecimalAsIntString("false").
-						HasPeriodicDataRekeyingString("false").
-						HasPipeExecutionPausedString("false").
-						HasPreventUnloadToInlineUrlString("false").
-						HasPreventUnloadToInternalStagesString("false").
-						HasPythonProfilerTargetStageEmpty().
-						HasQueryTagEmpty().
-						HasQuotedIdentifiersIgnoreCaseString("false").
-						HasReplaceInvalidCharactersString("false").
-						HasRequireStorageIntegrationForStageCreationString("false").
-						HasRequireStorageIntegrationForStageOperationString("false").
-						HasRowsPerResultsetString("0").
-						HasSearchPathString("$current, $public").
-						HasServerlessTaskMaxStatementSizeString("X2Large").
-						HasServerlessTaskMinStatementSizeString("XSMALL").
-						HasSsoLoginPageString("false").
-						HasStatementQueuedTimeoutInSecondsString("0").
-						HasStatementTimeoutInSecondsString("172800").
-						HasStorageSerializationPolicyString("OPTIMIZED").
-						HasStrictJsonOutputString("false").
-						HasSuspendTaskAfterNumFailuresString("10").
-						HasTaskAutoRetryAttemptsString("0").
-						HasTimestampDayIsAlways24hString("false").
-						HasTimestampInputFormatString("AUTO").
-						HasTimestampLtzOutputFormatEmpty().
-						HasTimestampNtzOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3").
-						HasTimestampOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM").
-						HasTimestampTypeMappingString("TIMESTAMP_NTZ").
-						HasTimestampTzOutputFormatEmpty().
-						HasTimezoneString("America/Los_Angeles").
-						HasTimeInputFormatString("AUTO").
-						HasTimeOutputFormatString("HH24:MI:SS").
-						HasTraceLevelString("OFF").
-						HasTransactionAbortOnErrorString("false").
-						HasTransactionDefaultIsolationLevelString("READ COMMITTED").
-						HasTwoDigitCenturyStartString("1970").
-						HasUnsupportedDdlActionString("ignore").
-						HasUserTaskManagedInitialWarehouseSizeString("Medium").
-						HasUserTaskMinimumTriggerIntervalInSecondsString("30").
-						HasUserTaskTimeoutMsString("3600000").
-						HasUseCachedResultString("true").
-						HasWeekOfYearPolicyString("0").
-						HasWeekStartString("0"),
+					resourceassert.CurrentAccountResource(t, unsetParametersModel.ResourceReference()).HasAllDefaultParameters(),
 				),
 			},
 			// Test for external changes
@@ -754,10 +422,14 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 				PreConfig: func() {
 					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{Parameters: &sdk.AccountParameters{AbortDetachedQuery: sdk.Bool(true)}}})
 				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(setParametersModel.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Config: config.FromModels(t, provider, unsetParametersModel),
 				Check: assertThat(t,
-					resourceassert.CurrentAccountResource(t, setParametersModel.ResourceReference()).
-						HasAbortDetachedQueryString("false"),
+					resourceassert.CurrentAccountResource(t, setParametersModel.ResourceReference()).HasAllDefaultParameters(),
 				),
 			},
 		},

@@ -11,7 +11,9 @@ description: |-
 
 !> **Warning** This resource requires warehouse to be in the context. To use this resource, specify a default warehouse in the provider configuration.
 
-!> **Warning** This resource shouldn't be used with `snowflake_account_parameter` resource in the same configuration, as it may lead to unexpected behavior. Unless the `snowflake_account_parameter` is used to manage the following parameters that are not supported by `snowflake_current_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL. They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters). Once they are publicly documented, they will be added to the `snowflake_current_account` resource.
+!> **Warning** This resource shouldn't be used with `snowflake_object_parameter` and `snowflake_account_parameter` resources in the same configuration, as it may lead to unexpected behavior. Unless they're used to manage the following parameters that are not supported by `snowflake_current_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL. They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters). Once they are publicly documented, they will be added to the `snowflake_current_account` resource.
+
+!> **Warning** This resource shouldn't be also used with `snowflake_account_password_policy_attachment`, `snowflake_network_policy_attachment`, `snowflake_account_authentication_policy_attachment` resources in the same configuration to manage policies on the current account, as it may lead to unexpected behavior.
 
 -> **Note** On removal, the resource will unset all account properties. To remove the resource without unsetting properties, use [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm) command.
 

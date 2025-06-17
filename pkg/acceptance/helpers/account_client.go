@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/snowflakedb/gosnowflake"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,6 +29,16 @@ func NewAccountClient(context *TestClientContext, idsGenerator *IdsGenerator) *A
 
 func (c *AccountClient) client() sdk.Accounts {
 	return c.context.client.Accounts
+}
+
+func (c *AccountClient) UseOrgadmin(t *testing.T) func() {
+	t.Helper()
+	currentRole, err := c.context.client.ContextFunctions.CurrentRole(context.Background())
+	assert.NoError(t, err)
+	assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), snowflakeroles.Orgadmin))
+	return func() {
+		assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), currentRole))
+	}
 }
 
 // GetAccountIdentifier gets the account identifier from Snowflake API, by fetching the account locator
@@ -68,6 +79,9 @@ func (c *AccountClient) Create(t *testing.T) (*sdk.Account, func()) {
 
 func (c *AccountClient) CreateWithRequest(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.CreateAccountOptions) (*sdk.Account, func()) {
 	t.Helper()
+	revertRole := c.UseOrgadmin(t)
+	defer revertRole()
+
 	_, err := c.client().Create(context.Background(), id, opts)
 	require.NoError(t, err)
 
@@ -79,6 +93,8 @@ func (c *AccountClient) CreateWithRequest(t *testing.T, id sdk.AccountObjectIden
 
 func (c *AccountClient) Alter(t *testing.T, opts *sdk.AlterAccountOptions) {
 	t.Helper()
+	revertRole := c.UseOrgadmin(t)
+	defer revertRole()
 	err := c.client().Alter(context.Background(), opts)
 	require.NoError(t, err)
 }
@@ -93,7 +109,8 @@ func (c *AccountClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) f
 func (c *AccountClient) Drop(t *testing.T, id sdk.AccountObjectIdentifier) error {
 	t.Helper()
 	ctx := context.Background()
-
+	revertRole := c.UseOrgadmin(t)
+	defer revertRole()
 	return c.client().Drop(ctx, id, 3, &sdk.DropAccountOptions{IfExists: sdk.Bool(true)})
 }
 
