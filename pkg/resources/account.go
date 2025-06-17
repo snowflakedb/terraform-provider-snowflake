@@ -270,6 +270,9 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	if v, ok := d.GetOk("comment"); ok {
 		opts.Comment = sdk.String(v.(string))
 	}
+	if v, ok := d.GetOk("consumption_billing_entity"); ok {
+		opts.ConsumptionBillingEntity = sdk.String(v.(string))
+	}
 
 	createResponse, err := client.Accounts.Create(ctx, id, opts)
 	if err != nil {
@@ -298,18 +301,6 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 			Name: &id,
 			Set: &sdk.AccountSet{
 				OrgAdmin: sdk.Bool(true),
-			},
-		})
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if v, ok := d.GetOk("consumption_billing_entity"); ok {
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Name: &id,
-			Set: &sdk.AccountSet{
-				ConsumptionBillingEntity: sdk.String(v.(string)),
 			},
 		})
 		if err != nil {
