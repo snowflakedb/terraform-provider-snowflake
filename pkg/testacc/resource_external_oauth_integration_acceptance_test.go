@@ -428,7 +428,7 @@ func TestAcc_ExternalOauthIntegration_invalidAnyRoleMode(t *testing.T) {
 			"external_oauth_any_role_mode":                    config.StringVariable("invalid"),
 			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_issuer":                           config.StringVariable("foo"),
+			"external_oauth_issuer":                           config.StringVariable(random.String()),
 			"external_oauth_jws_keys_url":                     config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_rsa_public_key":                   config.StringVariable("foo"),
 			"external_oauth_rsa_public_key_2":                 config.StringVariable("foo"),
@@ -465,7 +465,7 @@ func TestAcc_ExternalOauthIntegration_invalidSnowflakeUserMappingAttribute(t *te
 			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
 			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_issuer":                           config.StringVariable("foo"),
+			"external_oauth_issuer":                           config.StringVariable(random.String()),
 			"external_oauth_jws_keys_url":                     config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_rsa_public_key":                   config.StringVariable("foo"),
 			"external_oauth_rsa_public_key_2":                 config.StringVariable("foo"),
@@ -502,7 +502,7 @@ func TestAcc_ExternalOauthIntegration_invalidOauthType(t *testing.T) {
 			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
 			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_issuer":                           config.StringVariable("foo"),
+			"external_oauth_issuer":                           config.StringVariable(random.String()),
 			"external_oauth_jws_keys_url":                     config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_rsa_public_key":                   config.StringVariable("foo"),
 			"external_oauth_rsa_public_key_2":                 config.StringVariable("foo"),
@@ -852,13 +852,13 @@ func TestAcc_ExternalOauthIntegration_WithQuotedName(t *testing.T) {
 func externalOauthIntegrationBasicConfig(name string) string {
 	return fmt.Sprintf(`
 resource "snowflake_external_oauth_integration" "test" {
-	name               = "%s"
+	name               = "%[1]s"
 	external_oauth_type                             = "CUSTOM"
 	enabled                                         = true
-	external_oauth_issuer                           = "issuer"
+	external_oauth_issuer                           = "%[2]s"
 	external_oauth_token_user_mapping_claim         = [ "foo" ]
 	external_oauth_snowflake_user_mapping_attribute = "EMAIL_ADDRESS"
 	external_oauth_jws_keys_url                     = [ "https://example.com" ]
 }
-`, name)
+`, name, random.String())
 }
