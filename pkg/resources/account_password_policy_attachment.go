@@ -52,7 +52,7 @@ func CreateAccountPasswordPolicyAttachment(ctx context.Context, d *schema.Resour
 
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 		Set: &sdk.AccountSet{
-			PasswordPolicy: passwordPolicy,
+			PasswordPolicy: &passwordPolicy,
 		},
 	})
 	if err != nil {
