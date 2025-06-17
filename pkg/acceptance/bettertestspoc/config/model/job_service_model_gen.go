@@ -19,6 +19,7 @@ type JobServiceModel struct {
 	ComputePool                tfconfig.Variable `json:"compute_pool,omitempty"`
 	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
 	FromSpecification          tfconfig.Variable `json:"from_specification,omitempty"`
+	FromSpecificationTemplate  tfconfig.Variable `json:"from_specification_template,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	QueryWarehouse             tfconfig.Variable `json:"query_warehouse,omitempty"`
 	ServiceType                tfconfig.Variable `json:"service_type,omitempty"`
@@ -119,6 +120,8 @@ func (j *JobServiceModel) WithComputePool(computePool string) *JobServiceModel {
 
 // from_specification attribute type is not yet supported, so WithFromSpecification can't be generated
 
+// from_specification_template attribute type is not yet supported, so WithFromSpecificationTemplate can't be generated
+
 func (j *JobServiceModel) WithFullyQualifiedName(fullyQualifiedName string) *JobServiceModel {
 	j.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return j
@@ -170,6 +173,11 @@ func (j *JobServiceModel) WithExternalAccessIntegrationsValue(value tfconfig.Var
 
 func (j *JobServiceModel) WithFromSpecificationValue(value tfconfig.Variable) *JobServiceModel {
 	j.FromSpecification = value
+	return j
+}
+
+func (j *JobServiceModel) WithFromSpecificationTemplateValue(value tfconfig.Variable) *JobServiceModel {
+	j.FromSpecificationTemplate = value
 	return j
 }
 

@@ -67,6 +67,11 @@ func (j *JobServiceResourceAssert) HasFromSpecificationString(expected string) *
 	return j
 }
 
+func (j *JobServiceResourceAssert) HasFromSpecificationTemplateString(expected string) *JobServiceResourceAssert {
+	j.AddAssertion(assert.ValueSet("from_specification_template", expected))
+	return j
+}
+
 func (j *JobServiceResourceAssert) HasFullyQualifiedNameString(expected string) *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return j
@@ -142,6 +147,11 @@ func (j *JobServiceResourceAssert) HasExternalAccessIntegrationsEmpty() *JobServ
 
 func (j *JobServiceResourceAssert) HasFromSpecificationEmpty() *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValueSet("from_specification.#", "0"))
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasFromSpecificationTemplateEmpty() *JobServiceResourceAssert {
+	j.AddAssertion(assert.ValueSet("from_specification_template.#", "0"))
 	return j
 }
 

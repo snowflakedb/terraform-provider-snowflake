@@ -20,6 +20,11 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(new feature) New fields in snowflake_cortex_search_service resource
+We added a new `embedding_model` field to the `snowflake_cortex_search_service`. This field specifies the embedding model to use in the Cortex Search Service.
+We updated the examples of using the resource with this field.
+Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)).
+
 ### *(new feature)* New consumption_billing_entity field in snowflake_account resource
 
 The `snowflake_account` resource now has a new `consumption_billing_entity` field, which allows you to set the consumption billing entity for the account.
@@ -60,6 +65,21 @@ either bump the provider version to at least `v2.2.0` or [remove the resource fr
 No configuration changes are needed.
 
 References: [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
+
+### *(new feature)* snowflake_current_account resource
+Added a new preview resource for managing an account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account). You can read about the resources' limitations in the documentation in the registry.
+This resource is intended to replace the `snowflake_account_parameter` resource, which will be deprecated in the future,
+but some of the supported parameters in `snowflake_account_parameter` aren't supported in `snowflake_current_account_resource`. Those parameters are:
+- ENABLE_CONSOLE_OUTPUT
+- ENABLE_PERSONAL_DATABASE
+- PREVENT_LOAD_FROM_INLINE_URL
+ 
+They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters).
+Once they are publicly documented, they will be added to the `snowflake_current_account_resource` resource.
+
+The `snowflake_current_account_resource` resource shouldn't be used with `snowflake_account_parameter` resource in the same configuration, as it may lead to unexpected behavior.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_account_resource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* snowflake_service and snowflake_job_service resources
 Added new preview resources for managing services and job services. See reference docs for [services](https://docs.snowflake.com/en/sql-reference/sql/create-service) and [job services](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service). You can read about the resources' limitations in the documentation in the registry.

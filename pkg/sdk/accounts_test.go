@@ -111,9 +111,9 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: exactly one value set in AccountSet - multiple set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PasswordPolicy:       randomSchemaObjectIdentifier(),
-				SessionPolicy:        randomSchemaObjectIdentifier(),
-				AuthenticationPolicy: randomSchemaObjectIdentifier(),
+				PasswordPolicy:       Pointer(randomSchemaObjectIdentifier()),
+				SessionPolicy:        Pointer(randomSchemaObjectIdentifier()),
+				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "OrgAdmin", "ConsumptionBillingEntity"))
@@ -447,7 +447,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with set resource monitor", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				ResourceMonitor: NewAccountObjectIdentifier("mymonitor"),
+				ResourceMonitor: Pointer(NewAccountObjectIdentifier("mymonitor")),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET RESOURCE_MONITOR = "mymonitor"`)
@@ -457,7 +457,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PackagesPolicy: id,
+				PackagesPolicy: &id,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET PACKAGES POLICY %s`, id.FullyQualifiedName())
@@ -467,7 +467,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PackagesPolicy: id,
+				PackagesPolicy: &id,
 				Force:          Bool(true),
 			},
 		}
@@ -478,7 +478,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PasswordPolicy: id,
+				PasswordPolicy: &id,
 				Force:          Bool(true),
 			},
 		}
@@ -489,7 +489,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PasswordPolicy: id,
+				PasswordPolicy: &id,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET PASSWORD POLICY %s`, id.FullyQualifiedName())
@@ -499,7 +499,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				SessionPolicy: id,
+				SessionPolicy: &id,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET SESSION POLICY %s`, id.FullyQualifiedName())
@@ -509,7 +509,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				AuthenticationPolicy: id,
+				AuthenticationPolicy: &id,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET AUTHENTICATION POLICY %s`, id.FullyQualifiedName())

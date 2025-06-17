@@ -25,6 +25,11 @@ var (
 
 	configureClientErrorDiag diag.Diagnostics
 	configureProviderCtx     *internalprovider.Context
+
+	// temporary unsafe way to get the last configuration for the provider (to verify in tests);
+	// should be used with caution as it is not prepared for the parallel tests
+	// should be replaced in the future (e.g. map with test name as key)
+	lastConfiguredProviderContext *internalprovider.Context
 )
 
 // TODO [next PRs]: rework this when working on terraform plugin framework PoC
@@ -92,6 +97,9 @@ func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 	} else {
 		configureProviderCtx = nil
 		configureClientErrorDiag = make(diag.Diagnostics, 0)
+	}
+	if v, ok := providerCtx.(*internalprovider.Context); ok {
+		lastConfiguredProviderContext = v
 	}
 
 	if clientErrorDiag.HasError() {

@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -43,6 +44,43 @@ func ServiceWithSpecOnStage(
 	return s
 }
 
+func ServiceWithSpecTemplate(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	computePool string,
+	specTemplate string,
+	using ...helpers.ServiceSpecUsing,
+) *ServiceModel {
+	s := &ServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.Service)}
+	s.WithDatabase(database)
+	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithComputePool(computePool)
+	s.WithFromSpecificationTemplate(specTemplate, using...)
+	return s
+}
+
+func ServiceWithSpecTemplateOnStage(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	computePool string,
+	stageId sdk.SchemaObjectIdentifier,
+	fileName string,
+	using ...helpers.ServiceSpecUsing,
+) *ServiceModel {
+	s := &ServiceModel{ResourceModelMeta: config.Meta(resourceName, resources.Service)}
+	s.WithDatabase(database)
+	s.WithSchema(schema)
+	s.WithName(name)
+	s.WithComputePool(computePool)
+	s.WithFromSpecificationTemplateOnStage(stageId, fileName, using...)
+	return s
+}
+
 func (s *ServiceModel) WithFromSpecification(spec string) *ServiceModel {
 	s.WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"text": config.MultilineWrapperVariable(spec),
@@ -54,6 +92,27 @@ func (s *ServiceModel) WithFromSpecificationOnStage(stageId sdk.SchemaObjectIden
 	s.WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
 		"file":  tfconfig.StringVariable(fileName),
+	}))
+	return s
+}
+
+func (s *ServiceModel) WithFromSpecificationTemplate(spec string, using ...helpers.ServiceSpecUsing) *ServiceModel {
+	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"text": config.MultilineWrapperVariable(spec),
+		"using": tfconfig.SetVariable(
+			collections.Map(using, helpers.ServiceSpecUsing.ToTfVariable)...,
+		),
+	}))
+	return s
+}
+
+func (s *ServiceModel) WithFromSpecificationTemplateOnStage(stageId sdk.SchemaObjectIdentifier, fileName string, using ...helpers.ServiceSpecUsing) *ServiceModel {
+	s.WithFromSpecificationTemplateValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
+		"file":  tfconfig.StringVariable(fileName),
+		"using": tfconfig.SetVariable(
+			collections.Map(using, helpers.ServiceSpecUsing.ToTfVariable)...,
+		),
 	}))
 	return s
 }
