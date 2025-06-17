@@ -21,8 +21,8 @@ const (
 	ServiceTypeJobService ServiceType = "JOB_SERVICE"
 )
 
-func (s Service) Type() ServiceType {
-	if s.IsJob {
+func (v *Service) Type() ServiceType {
+	if v.IsJob {
 		return ServiceTypeJobService
 	}
 	return ServiceTypeService
