@@ -779,6 +779,7 @@ resource "snowflake_external_oauth_integration" "test" {
 
 func TestAcc_ExternalOauthIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	issuer := random.String()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { TestAccPreCheck(t) },
@@ -790,7 +791,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromV0941_ensureSmoothUpgradeWithNe
 			{
 				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            externalOauthIntegrationBasicConfig(id.Name()),
+				Config:            externalOauthIntegrationBasicConfig(id.Name(), issuer),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "id", id.Name()),
 				),
@@ -798,7 +799,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromV0941_ensureSmoothUpgradeWithNe
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   externalOauthIntegrationBasicConfig(id.Name()),
+				Config:                   externalOauthIntegrationBasicConfig(id.Name(), issuer),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "id", id.Name()),
 				),
@@ -810,6 +811,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromV0941_ensureSmoothUpgradeWithNe
 func TestAcc_ExternalOauthIntegration_WithQuotedName(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`\"%s\"`, id.Name())
+	issuer := random.String()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { TestAccPreCheck(t) },
@@ -822,7 +824,7 @@ func TestAcc_ExternalOauthIntegration_WithQuotedName(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             externalOauthIntegrationBasicConfig(quotedId),
+				Config:             externalOauthIntegrationBasicConfig(quotedId, issuer),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "id", id.Name()),
@@ -831,7 +833,7 @@ func TestAcc_ExternalOauthIntegration_WithQuotedName(t *testing.T) {
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   externalOauthIntegrationBasicConfig(quotedId),
+				Config:                   externalOauthIntegrationBasicConfig(quotedId, issuer),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("snowflake_external_oauth_integration.test", plancheck.ResourceActionNoop),
@@ -849,7 +851,7 @@ func TestAcc_ExternalOauthIntegration_WithQuotedName(t *testing.T) {
 	})
 }
 
-func externalOauthIntegrationBasicConfig(name string) string {
+func externalOauthIntegrationBasicConfig(name string, issuer string) string {
 	return fmt.Sprintf(`
 resource "snowflake_external_oauth_integration" "test" {
 	name               = "%[1]s"
@@ -860,5 +862,5 @@ resource "snowflake_external_oauth_integration" "test" {
 	external_oauth_snowflake_user_mapping_attribute = "EMAIL_ADDRESS"
 	external_oauth_jws_keys_url                     = [ "https://example.com" ]
 }
-`, name, random.String())
+`, name, issuer)
 }
