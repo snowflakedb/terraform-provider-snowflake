@@ -1301,6 +1301,7 @@ func TestAcc_GrantOwnership_OnTask_Discussion2877(t *testing.T) {
 	})
 }
 
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3750 is fixed
 func TestAcc_GrantOwnership_OnAllTasks(t *testing.T) {
 	taskId := testClient().Ids.RandomSchemaObjectIdentifier()
 	secondTaskId := testClient().Ids.RandomSchemaObjectIdentifier()

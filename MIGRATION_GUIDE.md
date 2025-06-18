@@ -20,6 +20,15 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(bugfix) Fix grant_ownership resource for serverless tasks
+
+Previously, it wasn't possible to use the `snowflake_grant_ownership` resource to grant ownership of serverless tasks.
+In this version, we fixed the issue, and now you can use the resource to grant ownership of serverless tasks.
+
+No configuration changes are needed.
+
+References: [#3750](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3750)
+
 ### *(new feature) New fields in snowflake_cortex_search_service resource
 We added a new `embedding_model` field to the `snowflake_cortex_search_service`. This field specifies the embedding model to use in the Cortex Search Service.
 We updated the examples of using the resource with this field.
