@@ -16,4 +16,10 @@ variable "task" {
 
 variable "warehouse" {
   type = string
+  default = null
+}
+
+variable "warehouse_init_size" {
+  type = string
+  default = null
 }

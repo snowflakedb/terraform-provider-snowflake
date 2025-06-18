@@ -1346,11 +1346,11 @@ func TestAcc_GrantOwnership_OnServerlessTask(t *testing.T) {
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleId.Name()),
-		"database":          config.StringVariable(taskId.DatabaseName()),
-		"schema":            config.StringVariable(taskId.SchemaName()),
-		"task":              config.StringVariable(taskId.Name()),
-		"warehouse":         config.StringVariable(""),
+		"account_role_name":   config.StringVariable(accountRoleId.Name()),
+		"database":            config.StringVariable(taskId.DatabaseName()),
+		"schema":              config.StringVariable(taskId.SchemaName()),
+		"task":                config.StringVariable(taskId.Name()),
+		"warehouse_init_size": config.StringVariable("XSMALL"),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
