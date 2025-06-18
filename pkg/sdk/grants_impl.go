@@ -407,7 +407,7 @@ func (v *grants) grantOwnershipOnTask(ctx context.Context, taskId SchemaObjectId
 	var isGrantedWithWarehouseUsage bool
 
 	if currentTask.Warehouse == nil {
-		//return fmt.Errorf("no warehouse found to be attached to the task: %s", taskId.FullyQualifiedName())
+		// For serverless tasks (tasks that are not associated with any warehouse), we don't need to check for warehouse usage privileges.
 		isGrantedWithWarehouseUsage = true
 	} else {
 		currentGrantsOnTaskWarehouse, err := v.client.Grants.Show(ctx, &ShowGrantOptions{
