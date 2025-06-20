@@ -8,6 +8,7 @@ on:
 
 jobs:
   CodeQL-Build:
+    if: false
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
     strategy:

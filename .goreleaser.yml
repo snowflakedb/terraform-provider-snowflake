@@ -1,23 +1,23 @@
 builds:
-- env:
-  - >-
-    {{- if or (eq .Os "windows") (eq .Os "darwin") -}}
-      CGO_ENABLED=1
-    {{- else -}}
-      CGO_ENABLED=0
-    {{- end -}}
-  goos:
-    - windows
-    - linux
-    - darwin
-    - freebsd
-  goarch:
-    - amd64
-    - arm64
-    - '386'
-  flags:
-    - -trimpath
-  binary: '{{ .ProjectName }}_v{{ .Version }}'
+  - env:
+      - >-
+        {{- if or (eq .Os "windows") (eq .Os "darwin") -}}
+          CGO_ENABLED=1
+        {{- else -}}
+          CGO_ENABLED=0
+        {{- end -}}
+    goos:
+      - windows
+      - linux
+      - darwin
+      - freebsd
+    goarch:
+      - amd64
+      - arm64
+      - '386'
+    flags:
+      - -trimpath
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
 
 archives:
   - format: zip
