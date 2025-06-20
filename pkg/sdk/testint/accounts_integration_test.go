@@ -450,7 +450,7 @@ func TestInt_Account(t *testing.T) {
 }
 
 func TestInt_Account_SelfAlter(t *testing.T) {
-	// t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
+	t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
 	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
 	// This client should be operating on a different account than the "main" one (because it will be altered here).
