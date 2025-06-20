@@ -40,161 +40,25 @@ type parameters struct {
 }
 
 func (v *parameters) SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error {
-	opts := AlterAccountOptions{
-		Set: &AccountSet{
-			LegacyParameters: &AccountLevelParameters{
-				AccountParameters: &LegacyAccountParameters{},
-			},
-		},
-	}
-	switch parameter {
-	case AccountParameterAllowClientMFACaching:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.AllowClientMFACaching = b
-	case AccountParameterAllowIDToken:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.AllowIDToken = b
-	case AccountParameterClientEncryptionKeySize:
-		v, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("CLIENT_ENCRYPTION_KEY_SIZE session parameter is an integer, got %v", value)
-		}
-		opts.Set.LegacyParameters.AccountParameters.ClientEncryptionKeySize = Pointer(v)
-	case AccountParameterCortexEnabledCrossRegion:
-		opts.Set.LegacyParameters.AccountParameters.CortexEnabledCrossRegion = &value
-	case AccountParameterDisableUserPrivilegeGrants:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.DisableUserPrivilegeGrants = b
-	case AccountParameterEnableIdentifierFirstLogin:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.EnableIdentifierFirstLogin = b
-	case AccountParameterEnableInternalStagesPrivatelink:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.EnableInternalStagesPrivatelink = b
-	case AccountParameterEnablePersonalDatabase:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.EnablePersonalDatabase = b
-	case AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = b
-	case AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = b
-	case AccountParameterEnableUnhandledExceptionsReporting:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.EnableUnhandledExceptionsReporting = b
-	case AccountParameterEnforceNetworkRulesForInternalStages:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.EnforceNetworkRulesForInternalStages = b
-	case AccountParameterEventTable:
-		opts.Set.LegacyParameters.AccountParameters.EventTable = &value
-	case AccountParameterEnableUnredactedQuerySyntaxError:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.EnableUnredactedQuerySyntaxError = b
-	case AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = b
-	case AccountParameterInitialReplicationSizeLimitInTB:
-		opts.Set.LegacyParameters.AccountParameters.InitialReplicationSizeLimitInTB = &value
-	case AccountParameterMinDataRetentionTimeInDays:
-		v, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("MIN_DATA_RETENTION_TIME_IN_DAYS session parameter is an integer, got %v", value)
-		}
-		opts.Set.LegacyParameters.AccountParameters.MinDataRetentionTimeInDays = Pointer(v)
-	case AccountParameterMetricLevel:
-		opts.Set.LegacyParameters.AccountParameters.MetricLevel = Pointer(MetricLevel(value))
-	case AccountParameterNetworkPolicy:
-		opts.Set.LegacyParameters.AccountParameters.NetworkPolicy = &value
-	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.OAuthAddPrivilegedRolesToBlockedList = b
-	case AccountParameterPeriodicDataRekeying:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.PeriodicDataRekeying = b
-	case AccountParameterPreventLoadFromInlineURL:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.PreventLoadFromInlineURL = b
-	case AccountParameterPreventUnloadToInlineURL:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.PreventUnloadToInlineURL = b
-	case AccountParameterPreventUnloadToInternalStages:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.PreventUnloadToInternalStages = b
-	case AccountParameterRequireStorageIntegrationForStageCreation:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageCreation = b
-	case AccountParameterRequireStorageIntegrationForStageOperation:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageOperation = b
-	case AccountParameterSsoLoginPage:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		opts.Set.LegacyParameters.AccountParameters.SSOLoginPage = b
-	default:
-		return v.SetSessionParameterOnAccount(ctx, SessionParameter(parameter), value)
-	}
-	if err := v.client.Accounts.Alter(ctx, &opts); err != nil {
+	legacyAccountParameters := &LegacyAccountParameters{}
+	err, matched := legacyAccountParameters.setParam(parameter, value)
+	if err != nil {
 		return err
+	}
+	if matched {
+		opts := AlterAccountOptions{
+			Set: &AccountSet{
+				LegacyParameters: &AccountLevelParameters{
+					AccountParameters: legacyAccountParameters,
+				},
+			},
+		}
+
+		if err := v.client.Accounts.Alter(ctx, &opts); err != nil {
+			return err
+		}
+	} else {
+		return v.SetSessionParameterOnAccount(ctx, SessionParameter(parameter), value)
 	}
 	return nil
 }

@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"strconv"
 )
 
 func GetSessionParametersFrom(params map[string]any) (*SessionParameters, error) {
@@ -301,4 +302,175 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 	}
 	*unsetField = Bool(true)
 	return nil
+}
+
+func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter AccountParameter, value string) (err error, matched bool) {
+	matched = true
+	switch parameter {
+	case AccountParameterAllowClientMFACaching:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.AllowClientMFACaching = b
+	case AccountParameterAllowIDToken:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.AllowIDToken = b
+	case AccountParameterClientEncryptionKeySize:
+		v, err := strconv.Atoi(value)
+		if err != nil {
+			return fmt.Errorf("CLIENT_ENCRYPTION_KEY_SIZE session parameter is an integer, got %v", value), matched
+		}
+		legacyAccountParameters.ClientEncryptionKeySize = Pointer(v)
+	case AccountParameterCortexEnabledCrossRegion:
+		legacyAccountParameters.CortexEnabledCrossRegion = &value
+	case AccountParameterDisableUserPrivilegeGrants:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.DisableUserPrivilegeGrants = b
+	case AccountParameterEnableIdentifierFirstLogin:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableIdentifierFirstLogin = b
+	case AccountParameterEnableInternalStagesPrivatelink:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableInternalStagesPrivatelink = b
+	case AccountParameterEnablePersonalDatabase:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnablePersonalDatabase = b
+	case AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = b
+	case AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = b
+	case AccountParameterEnableUnhandledExceptionsReporting:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableUnhandledExceptionsReporting = b
+	case AccountParameterEnableUnredactedQuerySyntaxError:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableUnredactedQuerySyntaxError = b
+	case AccountParameterEnforceNetworkRulesForInternalStages:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnforceNetworkRulesForInternalStages = b
+	case AccountParameterEventTable:
+		legacyAccountParameters.EventTable = &value
+	case AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = b
+	case AccountParameterInitialReplicationSizeLimitInTB:
+		legacyAccountParameters.InitialReplicationSizeLimitInTB = &value
+	case AccountParameterMetricLevel:
+		legacyAccountParameters.MetricLevel = Pointer(MetricLevel(value))
+	case AccountParameterMinDataRetentionTimeInDays:
+		v, err := strconv.Atoi(value)
+		if err != nil {
+			return fmt.Errorf("MIN_DATA_RETENTION_TIME_IN_DAYS session parameter is an integer, got %v", value), matched
+		}
+		legacyAccountParameters.MinDataRetentionTimeInDays = Pointer(v)
+	case AccountParameterNetworkPolicy:
+		legacyAccountParameters.NetworkPolicy = &value
+	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.OAuthAddPrivilegedRolesToBlockedList = b
+	case AccountParameterPeriodicDataRekeying:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.PeriodicDataRekeying = b
+	case AccountParameterPreventLoadFromInlineURL:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.PreventLoadFromInlineURL = b
+	case AccountParameterPreventUnloadToInlineURL:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.PreventUnloadToInlineURL = b
+	case AccountParameterPreventUnloadToInternalStages:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.PreventUnloadToInternalStages = b
+	case AccountParameterRequireStorageIntegrationForStageCreation:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.RequireStorageIntegrationForStageCreation = b
+	case AccountParameterRequireStorageIntegrationForStageOperation:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.RequireStorageIntegrationForStageOperation = b
+	case AccountParameterSsoLoginPage:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.SSOLoginPage = b
+	default:
+		matched = false
+	}
+	return nil, matched
 }
