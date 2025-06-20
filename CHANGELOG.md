@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.1...v1.2.2) (2025-06-20)
+
+
+### 🔧 **Misc**
+
+* prepare v1.2.2 release ([f8445d8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f8445d89799f856e839b3a7c0fb8035fe71bbf6b))
+
 ## [1.2.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.0...v1.2.1) (2025-04-22)
 
 
