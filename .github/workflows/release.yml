@@ -53,7 +53,6 @@ jobs:
         with:
           default-branch: release_v1.1.1
           release-type: simple
-          release-as: v1.1.1
           changelog-types: ${{ steps.configure-changelog.outputs.result }}
           token: ${{ steps.create-token.outputs.token }}
 
