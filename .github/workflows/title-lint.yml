@@ -17,7 +17,7 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            const validator = /^(chore|feat|fix|revert|docs|style)(\([a-z ]+\))?(!)?: (.)+$/
+            const validator = /^(chore|feat|fix|revert|docs|style)(\([a-z0-9_. ]+\))?(!)?: (.)+$/
             const title = context.payload.pull_request.title
             const is_valid = validator.test(title)
 
