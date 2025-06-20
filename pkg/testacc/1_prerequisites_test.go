@@ -2,8 +2,9 @@ package testacc
 
 import (
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"testing"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 )
 
 func TestEnsureValidAccountIsUsed(t *testing.T) {
