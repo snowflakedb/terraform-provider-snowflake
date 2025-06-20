@@ -85,7 +85,7 @@ func (v *parameters) SetAccountParameter(ctx context.Context, parameter AccountP
 		if err != nil {
 			return err
 		}
-		opts.Set.LegacyParameters.AccountParameters.AllowIDToken = b
+		opts.Set.LegacyParameters.AccountParameters.EnableInternalStagesPrivatelink = b
 	case AccountParameterEnablePersonalDatabase:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {

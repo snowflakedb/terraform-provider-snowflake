@@ -20,6 +20,14 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, v2.0.1, and v2.1.1.
+
 ### *(bugfix)* Fix grant_ownership resource for serverless tasks
 
 Previously, it wasn't possible to use the `snowflake_grant_ownership` resource to grant ownership of serverless tasks.
