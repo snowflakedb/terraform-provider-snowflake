@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main
-    tags:
-      - '*'
+      - release_v1.0.6
+    tags: # Trigger on new tags that follow semantic versioning with `v` prefix (supports any postfix, e.g. `-rc1`)
+      - 'v[0-9]+.[0-9]+.[0-9]+(-.+)?'
 
 jobs:
   release-please:
@@ -30,39 +31,46 @@ jobs:
         id: create-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.CZI_RELEASE_PLEASE_APP_ID }}
-          private-key: ${{ secrets.CZI_RELEASE_PLEASE_PK }}
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@d6f3f49f3345e29369fe57596a3ca8f94c4d2ca7 # v5
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --no-tty --yes
+          fingerprint=$(gpg --list-secret-keys --with-colons | awk -F: '$1 == "fpr" {print $10}' | head -n 1)
+
+          if [[ -z "$fingerprint" ]]; then
+            echo "Error: Failed to extract GPG fingerprint."
+            exit 1
+          fi
+
+          echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
 
       - name: Release please
         uses: googleapis/release-please-action@db8f2c60ee802b3748b512940dde88eabd7b7e01 # v3
         id: release
         with:
+          default-branch: release_v1.0.6
           release-type: simple
-          bump-minor-pre-major: true
           changelog-types: ${{ steps.configure-changelog.outputs.result }}
           token: ${{ steps.create-token.outputs.token }}
 
       - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
         # we need to fetch all history and tags
         # so we build the proper version
         with:
           persist-credentials: false
           fetch-depth: 0
-        if: ${{ steps.release.outputs.release_created }}
 
       - uses: actions/setup-go@v5
+        if: ${{ steps.release.outputs.release_created }}
         with:
           go-version-file: ./go.mod
-        if: ${{ steps.release.outputs.release_created }}
 
       - name: Run GoReleaser
+        if: ${{ steps.release.outputs.releases_created }}
         uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5
         with:
           version: latest
@@ -70,4 +78,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.create-token.outputs.token }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-        if: ${{ steps.release.outputs.release_created }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

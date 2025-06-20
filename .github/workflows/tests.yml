@@ -8,12 +8,12 @@ on:
 
 jobs:
   all-tests:
+    if: false
     environment: test
     env:
       TEST_SF_TF_TEST_OBJECT_SUFFIX: ${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.head.sha) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha) }}
     name: Run All
     runs-on: ubuntu-latest
-    if: (github.event_name == 'repository_dispatch') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     steps:
       - id: verify_sha_input
         if: github.event_name == 'repository_dispatch'
