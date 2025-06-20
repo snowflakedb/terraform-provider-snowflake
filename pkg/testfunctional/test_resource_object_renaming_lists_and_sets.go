@@ -1,4 +1,4 @@
-package resources
+package testfunctional
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -190,7 +191,7 @@ var objectRenamingListsAndSetsSchema = map[string]*schema.Schema{
 				"type": {
 					Type:     schema.TypeString,
 					Required: true,
-					ValidateDiagFunc: sdkValidation(func(value string) (string, error) {
+					ValidateDiagFunc: resources.SdkValidation(func(value string) (string, error) {
 						if slices.Contains([]string{"INT", "NUMBER", "STRING", "TEXT"}, value) {
 							return value, nil
 						}
@@ -210,7 +211,7 @@ var objectRenamingListsAndSetsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Optional: true,
 		Default:  "ERROR",
-		ValidateDiagFunc: sdkValidation(func(value string) (string, error) {
+		ValidateDiagFunc: resources.SdkValidation(func(value string) (string, error) {
 			if slices.Contains([]string{"ERROR", "FORCE_NEW"}, value) {
 				return value, nil
 			}
@@ -253,7 +254,7 @@ var objectRenamingListsAndSetsSchema = map[string]*schema.Schema{
 	},
 }
 
-func ObjectRenamingListsAndSets() *schema.Resource {
+func TestResourceObjectRenamingListsAndSets() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: CreateObjectRenamingListsAndSets,
 		UpdateContext: UpdateObjectRenamingListsAndSets,
@@ -283,7 +284,7 @@ func UpdateObjectRenamingListsAndSets(ctx context.Context, d *schema.ResourceDat
 		oldListMapped := mapObjectRenamingDatabaseListItemFromValue(oldList)
 		newListMapped := mapObjectRenamingDatabaseListItemFromValue(newList)
 
-		addedItems, removedItems := ListDiff(oldListMapped, newListMapped)
+		addedItems, removedItems := resources.ListDiff(oldListMapped, newListMapped)
 
 		for _, removedItem := range removedItems {
 			ObjectRenamingDatabaseInstance.List = slices.DeleteFunc(ObjectRenamingDatabaseInstance.List, func(item ObjectRenamingDatabaseListItem) bool {
@@ -314,7 +315,7 @@ func UpdateObjectRenamingListsAndSets(ctx context.Context, d *schema.ResourceDat
 		oldOrderedListMapped := mapObjectRenamingDatabaseOrderedListItemFromValue(oldOrderedList)
 		newOrderedListMapped := mapObjectRenamingDatabaseOrderedListItemFromValue(newOrderedList)
 
-		itemsToAdd, itemsToRemove := ListDiff(oldOrderedListMapped, newOrderedListMapped)
+		itemsToAdd, itemsToRemove := resources.ListDiff(oldOrderedListMapped, newOrderedListMapped)
 		for _, removedItem := range itemsToRemove {
 			ObjectRenamingDatabaseInstance.OrderedList = slices.DeleteFunc(ObjectRenamingDatabaseInstance.OrderedList, func(item objectRenamingDatabaseOrderedListItem) bool {
 				return item == removedItem
@@ -478,7 +479,7 @@ func ReadObjectRenamingListsAndSets(withExternalChangesMarking bool) schema.Read
 
 		if d.GetRawState().IsNull() {
 			// For the first read, let's "copy-paste" config into state
-			if err := setStateToValuesFromConfig(d, objectRenamingListsAndSetsSchema, []string{"manually_ordered_list"}); err != nil {
+			if err := resources.SetStateToValuesFromConfig(d, objectRenamingListsAndSetsSchema, []string{"manually_ordered_list"}); err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
@@ -522,7 +523,7 @@ func ReadObjectRenamingListsAndSets(withExternalChangesMarking bool) schema.Read
 	}
 }
 
-func DeleteObjectRenamingListsAndSets(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func DeleteObjectRenamingListsAndSets(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
 	ObjectRenamingDatabaseInstance.List = nil
 	ObjectRenamingDatabaseInstance.OrderedList = nil
 	ObjectRenamingDatabaseInstance.ManuallyOrderedList = nil

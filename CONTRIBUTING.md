@@ -78,10 +78,11 @@ There is also environment flag `TEST_SF_TF_SIMPLIFIED_INTEGRATION_TESTS_SETUP` a
 **⚠️ Important ⚠️** Some of the tests require the privileged role (like `ACCOUNTADMIN`). Otherwise, the managed objects may not be created. If you want to use lower role, you have to make sure it has all the necessary privileges added.
 
 To run the tests we have the following commands:
-- `make test` run unit and integration tests (without account-level ones)
+- `make test` run unit tests
 - `make test-acceptance` run acceptance tests (without account-level ones)
 - `make test-integration` run integration tests (without account-level ones)
 - `make test-account-level-features` run both integration and acceptance tests verifying account-level features
+- `make test-functional` run functional tests of the underlying terraform libraries (currently SDKv2)
 
 The tests distinction between account-level and non-account-level tests is currently achieved by go build directive:
 - `//go:build account_level_tests` for account-level tests;

@@ -7,8 +7,7 @@ export LATEST_GIT_TAG=$(shell git tag --sort=-version:refname | head -n 1)
 export CURRENT_OS := $(shell uname -s)
 export CURRENT_ARCH := $(shell arch)
 
-# TODO [next PRs]:  ./pkg/resources ./pkg/datasources ./pkg/provider will be removed when all the tests are transferred
-UNIT_TESTS_EXCLUDE_PACKAGES=./pkg/testacc ./pkg/sdk/testint ./pkg/resources ./pkg/provider
+UNIT_TESTS_EXCLUDE_PACKAGES=./pkg/testacc ./pkg/sdk/testint ./pkg/testfunctional ./pkg/manual_tests
 UNIT_TESTS_EXCLUDE_PATTERN=$(shell echo $(UNIT_TESTS_EXCLUDE_PACKAGES) | sed 's/ /|/g')
 
 default: help
@@ -68,38 +67,26 @@ sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 			else echo "Aborting..."; \
 		fi;
 
-# TODO [next PRs]: this will be replaced by test-unit-tmp
-test: ## run unit and integration tests
-	go test -v -cover -timeout=60m ./...
-
-test-unit-tmp: ## run unit tests - temporary to prove it's working
+test-unit: ## run unit tests - temporary to prove it's working
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)")
 
-# TODO [next PRs]: this will be replaced by test-acceptance-tmp
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./pkg/resources ./pkg/provider
-
-test-acceptance-tmp: ## run acceptance tests - temporary to prove it's working
 	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./pkg/testacc
 
-# TODO [next PRs]: this will be replaced by test-account-level-features-tmp
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/resources ./pkg/provider ./pkg/sdk/testint
-
-test-account-level-features-tmp: ## run integration and acceptance test modifying account - temporary to prove it's working; add  ./pkg/sdk/testint later
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/testacc
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/testacc ./pkg/sdk/testint
 
 test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint
 
+test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
+	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -run "^TestAcc_SdkV2Functional_" -v -cover -timeout=10m ./pkg/testfunctional
+
 test-architecture: ## check architecture constraints between packages
 	go test ./pkg/architests/... -v
 
-test-object-renaming: ## runs tests in object_renaming_acceptance_test.go
-	TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test ./pkg/resources/object_renaming_acceptace_test.go -v
-
 test-acceptance-%: ## run acceptance tests for the given resource only, e.g. test-acceptance-Warehouse
-	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run ^TestAcc_$*_ -v -timeout=20m ./pkg/resources
+	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run ^TestAcc_$*_ -v -timeout=20m ./pkg/testacc
 
 build-local: ## build the binary locally
 	go build -o $(BASE_BINARY_NAME) .
