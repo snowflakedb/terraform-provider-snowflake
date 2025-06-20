@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -18,7 +17,7 @@ import (
 )
 
 func TestAcc_CurrentAccount_Parameters(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	warehouseId := testClient().Ids.WarehouseId()
 
@@ -437,7 +436,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 }
 
 func TestAcc_CurrentAccount_EmptyParameters(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
 
@@ -472,7 +471,7 @@ func TestAcc_CurrentAccount_EmptyParameters(t *testing.T) {
 }
 
 func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
 	t.Cleanup(resourceMonitorCleanup)
@@ -645,7 +644,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 }
 
 func TestAcc_CurrentAccount_Complete(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	warehouseId := testClient().Ids.WarehouseId()
 

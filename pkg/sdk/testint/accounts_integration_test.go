@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -23,7 +22,7 @@ import (
 // - Shouldn't be any of the "main" accounts/admin users, because those tests alter the current account.
 
 func TestInt_Account(t *testing.T) {
-	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClientHelper().EnsureValidNonProdAccountIsUsed(t)
 
 	client := testClient(t)
 	ctx := testContext(t)
@@ -452,8 +451,7 @@ func TestInt_Account(t *testing.T) {
 }
 
 func TestInt_Account_SelfAlter(t *testing.T) {
-	t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
-	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClientHelper().EnsureValidNonProdAccountIsUsed(t)
 
 	// This client should be operating on a different account than the "main" one (because it will be altered here).
 	// Cannot use a newly created account because ORGADMIN role is necessary,
