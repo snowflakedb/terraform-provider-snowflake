@@ -3,7 +3,6 @@
 package testint
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -29,8 +28,7 @@ func TestInt_Account(t *testing.T) {
 	ctx := testContext(t)
 	currentAccountId := testClientHelper().Context.CurrentAccountId(t)
 	currentAccountName := currentAccountId.AccountName()
-	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
-	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", currentAccountId.OrganizationName())
+	defaultConsumptionBillingEntity := testClientHelper().Ids.DefaultConsumptionBillingEntity(t).Name()
 
 	assertAccountQueriedByOrgAdmin := func(t *testing.T, account sdk.Account, accountName string) {
 		t.Helper()
