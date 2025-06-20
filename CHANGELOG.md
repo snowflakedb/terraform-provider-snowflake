@@ -1,5 +1,89 @@
 # Changelog
 
+## [1.0.6](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.1.0...v1.0.6) (2025-06-20)
+
+
+### 🎉 **What's new:**
+
+* Add Compute Pool resource ([#3689](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3689)) ([c6f0429](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c6f04298cb43eeb7e1c75ed3fb518ae32e533f0d))
+* Add Compute Pools data source ([#3707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3707)) ([44a8639](https://github.com/snowflakedb/terraform-provider-snowflake/commit/44a8639f1338e5c781ebdad23bdd729ab336ba4e))
+* Add compute pools integration tests ([#3680](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3680)) ([c249f55](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c249f557cbafe6f03215a8181aa70eef6c87d1fb))
+* Add compute pools to SDK ([#3678](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3678)) ([2baf141](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2baf141c2018f2bf464a39131bd5a6d15ada42b7))
+* Add current account resource ([#3745](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3745)) ([9914a9b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9914a9b7dd12d4db0f958dcd0a8befb7c2a0ea87))
+* Add embedding model support to Cortex Search Service ([#3711](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3711)) ([169b942](https://github.com/snowflakedb/terraform-provider-snowflake/commit/169b94298e0df9f1f2c3aef4e7e3925e63af9bf1))
+* Add EXECUTE JOB support to SDK ([#3738](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3738)) ([92c4fda](https://github.com/snowflakedb/terraform-provider-snowflake/commit/92c4fda387267d64e7b212169e1ef77722fea980))
+* Add git repository datasource ([#3746](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3746)) ([73835ff](https://github.com/snowflakedb/terraform-provider-snowflake/commit/73835ffc542206a16f99c9dbe16f5831c77675da))
+* Add git repository definition ([#3705](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3705)) ([cdd600d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/cdd600d4568584ca9e7cb9a4536587c992b98a8a))
+* Add git repository resource ([#3739](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3739)) ([a3d333d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a3d333d12f8932fd21f3693d4e7472003198843e))
+* Add Image Repository data source ([#3661](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3661)) ([957691f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/957691f2b336f194e34daa42a54043e626737c2c))
+* Add Image Repository resource ([#3660](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3660)) ([adda1c9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/adda1c98320e3422264e4e77be5d88728f69b147))
+* Add job service resource ([#3747](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3747)) ([3efbbc2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3efbbc25ab426dd439be6b20f425ffce0ffe7e1e))
+* Add managing tags and integration tests for git repositories ([#3723](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3723)) ([2f1172d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2f1172d05521f2d27f0dd07f03cf848ea13942e8))
+* Add service resource ([#3732](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3732)) ([c3bfef9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c3bfef967ab039ec1a76c263b91e38b33ad1b5f4))
+* Add services data source ([#3752](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3752)) ([9f7f5ac](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9f7f5ac1c52fe7c36b4b4186e358c8f4361c8b3d))
+* Add services to SDK part 1 ([#3706](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3706)) ([9e1e31b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9e1e31b8524f7907f8e93eaa33321511aaf8c718))
+* Add tag association support for services ([#3726](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3726)) ([30cf1b8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/30cf1b8a27080929b486e6adca66685b9213c5b1))
+* Add templates support to services and job services ([#3763](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3763)) ([7558b90](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7558b900286a6b546448e9b0131229b14e88916a))
+* Allow granting privileges on future cortex search services ([#3760](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3760)) ([e96d097](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e96d097930f319002287f3eba77763468e8b8c37))
+* get datasource tables on par with views ([#3249](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3249)) ([d5b8dca](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d5b8dca48490900589c1902258a476b4927e16d5))
+* Git repository code refactor ([#3753](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3753)) ([daeb8cf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/daeb8cf7cfd3a4a0cd9fe646143dc5a597fe8ab8))
+* Recreate service objects on externally changed type ([#3748](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3748)) ([8597e35](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8597e3593d0876bd96840ef46cffb3c4b53c527a))
+* Support managing tags for image repositories ([#3662](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3662)) ([8c4aed2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8c4aed2aad527fdcc0334abf0fb9029b251999ad))
+
+
+### 🔧 **Misc**
+
+* Account resource parameters ([#3736](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3736)) ([1e3ff03](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1e3ff034870ca0ddfef3dc8d24d9c87af78adcf7))
+* Add auto label assignment workflow ([#3712](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3712)) ([20394d5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/20394d56560434827d4e14498522d061b6f4077b))
+* Add current account resource policies ([#3768](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3768)) ([92cfa5a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/92cfa5a1e0cc59a13daad59e840351cbcec46437))
+* Add location identifier ([#3721](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3721)) ([39c79db](https://github.com/snowflakedb/terraform-provider-snowflake/commit/39c79dba78f201e32b25b90670ef9b86d8339901))
+* Add new roadmap entry ([#3702](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3702)) ([5bdcd12](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5bdcd127d9288212b10ea7b138bebc0cb770c5b9))
+* Add PAT authentication method to the documentation ([#3749](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3749)) ([44cb288](https://github.com/snowflakedb/terraform-provider-snowflake/commit/44cb2887e43087da856467ec67e3fd2987d2cd81))
+* Add service integration tests ([#3725](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3725)) ([8cd7e78](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8cd7e78cc52a5f2114cad8c0c6cd3dc11eacfb63))
+* Add tag propagation limitation to the tag resource documentation ([#3770](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3770)) ([4f38421](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4f38421d4cbc02e3f4d87e6bf6e71553b4455450))
+* Add TOML config generator ([#3619](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3619)) ([7685d5a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7685d5ada21cce838ba6205a6a84156e010ddcc0))
+* Add variable model builder ([#3663](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3663)) ([112587b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/112587bda4fff948c187643d38057530b2099843))
+* Adjust resource assertions ([#3715](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3715)) ([ab74816](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ab7481609246c5ccc95705c6f07f788dce13c30b))
+* Adjust resource assertions follow up ([#3716](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3716)) ([b1e4faf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b1e4fafbb5b49308d64c0e102aa03c6c764e4690))
+* Adjust trace level possible values ([#3737](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3737)) ([7d5447b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7d5447b0cb9d4220726755a39aa27c50d367134d))
+* Clarify SDK generator future ([#3771](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3771)) ([6cfa554](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6cfa554b7415edcdcced4f0430ae186f9e8cb31f)), closes [#3671](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3671)
+* Clean old acceptance test methods ([#3727](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3727)) ([f94e773](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f94e7734a8a699377c5cc7d0799ffdeb26c263e7))
+* enhance privilege-granting resource documentation ([#3700](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3700)) ([0168e70](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0168e70a194baf21e4e47e7f7d55eac1e3acdc3e))
+* Extract a separate directory for the acceptance tests ([#3679](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3679)) ([6b75033](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6b750336a6c15c9b9854943e9e038d92fdb759c0))
+* Fix tests that run on secondary account profile ([#3666](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3666)) ([976b36c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/976b36c5702b5566eef7a1db04142f7920b7c188))
+* Implement double dollar quotes in SDK builders ([#3720](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3720)) ([e2fa6c5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e2fa6c57f6de57c612df2657890fa63f00aa02d2))
+* Introduce account parameters ([#3734](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3734)) ([4b6ec2f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4b6ec2f871d4a160fdffdc83715d32161b2b4901))
+* Regenerate resource assertions ([#3713](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3713)) ([53cb291](https://github.com/snowflakedb/terraform-provider-snowflake/commit/53cb2918f950a8e0754ed0dec6c4d447d1f87cf0))
+* Rename acceptance tests files ([#3701](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3701)) ([4ae3eac](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4ae3eac836c472ad4dde3b49a18f023aca62e596))
+* Rename account parameters field name ([#3708](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3708)) ([bb83144](https://github.com/snowflakedb/terraform-provider-snowflake/commit/bb83144cd0a5cae64fdf97861fab2be12b61d650))
+* Rename account unset parameters ([#3728](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3728)) ([57176e3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/57176e36280a084359a2cc45a25189699f0f689e))
+* Show output assertion adjustments ([#3718](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3718)) ([f25db1d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f25db1d169745a335c6bb57bffc77da2087ab5a9))
+* Show output assertion adjustments follow up ([#3719](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3719)) ([842526b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/842526b9c85ecfc70d6bd2e7b52a5f7d804dd21a))
+* Simplify constructor and builder method generation ([#3640](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3640)) ([697bacf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/697bacfa0406f67d7f75382768ab46aa265eaf7c))
+* Small improvements ([#3730](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3730)) ([5abb2f9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5abb2f960279577b29683693d2fe3fe251e7400f))
+* Stabilize object assertions generation ([#3722](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3722)) ([cf907df](https://github.com/snowflakedb/terraform-provider-snowflake/commit/cf907df794f7569bc1a7f03365a8433248526a65))
+* Test fixes ([#3740](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3740)) ([2d0c915](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2d0c915ac520ee2a82dfaf0341510e5d29b2c5a7))
+* Test provider config tri-value booleans ([#3765](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3765)) ([33b50c2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/33b50c2c3791eb634790cf6cfc011251e72502f7))
+* Update docs ([#3758](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3758)) ([f3e43a0](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f3e43a025f97e168199d0d387a88ca53446bb981))
+* Use common setup and cleanup for acceptance tests - data sources ([#3691](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3691)) ([2226369](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2226369ec746e13d2b4f0b7195b30589306028b4))
+* Use common setup and cleanup for acceptance tests - provider ([#3724](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3724)) ([403368e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/403368e6d426efbba2bd52c696a5abda02d64230))
+* Use common setup and cleanup for acceptance tests - resources ([#3692](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3692)) ([5e2fd24](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5e2fd24c01401cda3334202faa1ef3118dc9465e))
+
+
+### 🐛 **Bug fixes:**
+
+* Adjust function and procedure tests ([#3693](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3693)) ([702d6df](https://github.com/snowflakedb/terraform-provider-snowflake/commit/702d6dfad0cb56f9a916aed105d324f475beb76f))
+* Correct error handling in CreateContextExternalVolume function ([#3636](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3636)) ([2be1b43](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2be1b433a9a21e3a84bc714f3b7c8e5727a0804f))
+* Empty privileges ([#3695](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3695)) ([ae1a621](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ae1a62165156823fbb85159092fbbc7f92c5d003)), closes [#3690](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3690)
+* Fix external oauth integration issuer tests ([#3769](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3769)) ([74e23cf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/74e23cf76cafe88c61e578122c1de2dbf6545f0c))
+* Fix external oauth test ([#3773](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3773)) ([8cbd052](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8cbd0526feb550fe44195aec4287ad9a2e81515e))
+* Fix image repositories cleanup ([#3694](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3694)) ([e602615](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e602615a9a979f1656e2e41ddb8c1e8c952438e3))
+* Fix parsing username in handling grants ([#3688](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3688)) ([d52b98b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d52b98bb962fc59d10914789035c8baa3f479bf3))
+* Grant ownership on serverless tasks ([#3772](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3772)) ([0a457bc](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0a457bc0dfc144da6c98b1da0114e4db49d7483b))
+* Table test ([#3696](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3696)) ([420a673](https://github.com/snowflakedb/terraform-provider-snowflake/commit/420a673284956b697a942a5ccc4aebea49cd91b5))
+* Update streamlit docs and fix view rename with modification ([#3766](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3766)) ([0e89dfd](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0e89dfd317bdfdc3e1374def962776e76cf6c7a8)), closes [#3676](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3676)
+* user authentication policy attachment ([#3697](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3697)) ([5b2412f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5b2412f915d22e8578419ca55817b36815c591ad)), closes [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
+
 ## [2.1.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.0.0...v2.1.0) (2025-05-12)
 
 
