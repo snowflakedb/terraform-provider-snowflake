@@ -1,12 +1,16 @@
 package helpers
 
 import (
+	"context"
+	"fmt"
 	"strings"
+	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/stretchr/testify/require"
 )
 
 type IdsGenerator struct {
@@ -151,4 +155,11 @@ func (c *IdsGenerator) AlphaWithPrefix(prefix string) string {
 
 func (c *IdsGenerator) WithTestObjectSuffix(text string) string {
 	return text + c.context.testObjectSuffix
+}
+
+func (c *IdsGenerator) DefaultConsumptionBillingEntity(t *testing.T) sdk.AccountObjectIdentifier {
+	t.Helper()
+	orgName, err := c.context.client.ContextFunctions.CurrentOrganizationName(context.Background())
+	require.NoError(t, err)
+	return sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_DefaultBE", orgName))
 }
