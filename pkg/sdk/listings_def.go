@@ -71,12 +71,12 @@ var ListingsDef = g.NewInterface(
 			IfNotExists().
 			Name().
 			PredefinedQueryStructField("With", "*ListingWith", g.KeywordOptions()).
-			TextAssignment("As", g.ParameterOptions().NoEquals().DoubleDollarQuotes().Required().SQL("AS")).
+			TextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes().Required()).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ValidateValueSet, "With"),
+			WithValidation(g.ValidateValue, "With"),
 		listingWithDef,
 	).
 	CustomOperation(

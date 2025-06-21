@@ -21,7 +21,7 @@ type CreateListingOptions struct {
 	IfNotExists     *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name            AccountObjectIdentifier `ddl:"identifier"`
 	With            *ListingWith            `ddl:"keyword"`
-	As              string                  `ddl:"parameter,no_equals,double_dollar_quotes" sql:"AS"`
+	As              string                  `ddl:"parameter,double_dollar_quotes,no_equals" sql:"As"`
 	Publish         *bool                   `ddl:"parameter" sql:"PUBLISH"`
 	Review          *bool                   `ddl:"parameter" sql:"REVIEW"`
 	Comment         *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -60,7 +60,7 @@ type AlterListingOptions struct {
 }
 
 type AlterListingAs struct {
-	As      string  `ddl:"keyword,double_dollar_quotes" sql:"AS"`
+	As      string  `ddl:"keyword,double_dollar_quotes"`
 	Publish *bool   `ddl:"parameter" sql:"PUBLISH"`
 	Review  *bool   `ddl:"parameter" sql:"REVIEW"`
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`

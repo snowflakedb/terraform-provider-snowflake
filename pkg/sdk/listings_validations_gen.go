@@ -17,6 +17,9 @@ func (opts *CreateListingOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !valueSet(opts.With) {
+		errs = append(errs, errNotSet("CreateListingOptions", "With"))
+	}
 	return JoinErrors(errs...)
 }
 
