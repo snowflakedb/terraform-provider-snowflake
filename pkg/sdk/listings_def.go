@@ -114,7 +114,7 @@ var ListingsDef = g.NewInterface(
 				"AddVersion",
 				g.NewQueryStruct("AddListingVersion").
 					IfNotExists().
-					OptionalText("VersionName", g.KeywordOptions()).
+					OptionalText("VersionName", g.KeywordOptions().Required()).
 					PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().NoQuotes().NoEquals().SQL("FROM")).
 					OptionalComment(),
 				g.KeywordOptions().SQL("ADD VERSION"),
@@ -168,3 +168,4 @@ var ListingsDef = g.NewInterface(
 	// TODO: Show available listings
 	// TODO: Show versions in listing
 	// TODO: Describe available listing
+	// TODO: Listing manifest builder - https://docs.snowflake.com/en/progaccess/listing-manifest-reference
