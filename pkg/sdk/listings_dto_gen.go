@@ -14,17 +14,22 @@ var (
 type CreateListingRequest struct {
 	IfNotExists *bool
 	name        AccountObjectIdentifier // required
-	With        *ListingWith
+	With        *ListingWithRequest
 	As          string // required
 	Publish     *bool
 	Review      *bool
 	Comment     *string
 }
 
+type ListingWithRequest struct {
+	Share              *SchemaObjectIdentifier
+	ApplicationPackage *SchemaObjectIdentifier
+}
+
 type CreateFromStageListingRequest struct {
 	IfNotExists *bool
 	name        AccountObjectIdentifier // required
-	With        *ListingWith
+	With        *ListingWithRequest
 	From        Location // required
 	Publish     *bool
 	Review      *bool

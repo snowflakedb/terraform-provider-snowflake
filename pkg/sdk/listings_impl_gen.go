@@ -75,11 +75,17 @@ func (r *CreateListingRequest) toOpts() *CreateListingOptions {
 	opts := &CreateListingOptions{
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		With:        r.With,
-		As:          r.As,
-		Publish:     r.Publish,
-		Review:      r.Review,
-		Comment:     r.Comment,
+
+		As:      r.As,
+		Publish: r.Publish,
+		Review:  r.Review,
+		Comment: r.Comment,
+	}
+	if r.With != nil {
+		opts.With = &ListingWith{
+			Share:              r.With.Share,
+			ApplicationPackage: r.With.ApplicationPackage,
+		}
 	}
 	return opts
 }
@@ -88,10 +94,16 @@ func (r *CreateFromStageListingRequest) toOpts() *CreateFromStageListingOptions 
 	opts := &CreateFromStageListingOptions{
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		With:        r.With,
-		From:        r.From,
-		Publish:     r.Publish,
-		Review:      r.Review,
+
+		From:    r.From,
+		Publish: r.Publish,
+		Review:  r.Review,
+	}
+	if r.With != nil {
+		opts.With = &ListingWith{
+			Share:              r.With.Share,
+			ApplicationPackage: r.With.ApplicationPackage,
+		}
 	}
 	return opts
 }

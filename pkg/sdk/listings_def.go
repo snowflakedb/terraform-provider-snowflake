@@ -70,14 +70,12 @@ var ListingsDef = g.NewInterface(
 			SQL("EXTERNAL LISTING").
 			IfNotExists().
 			Name().
-			PredefinedQueryStructField("With", "*ListingWith", g.KeywordOptions()).
+			OptionalQueryStructField("With", listingWithDef, g.KeywordOptions()).
 			TextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes().Required()).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
 			OptionalComment().
-			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ValidateValue, "With"),
-		listingWithDef,
+			WithValidation(g.ValidIdentifier, "name"),
 	).
 	CustomOperation(
 		"CreateFromStage",
@@ -87,7 +85,7 @@ var ListingsDef = g.NewInterface(
 			SQL("EXTERNAL LISTING").
 			IfNotExists().
 			Name().
-			PredefinedQueryStructField("With", "*ListingWith", g.KeywordOptions()).
+			OptionalQueryStructField("With", listingWithDef, g.KeywordOptions()).
 			PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().NoQuotes().NoEquals().SQL("FROM")).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).

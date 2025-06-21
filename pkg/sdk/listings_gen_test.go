@@ -22,6 +22,23 @@ func TestListings_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.With = &ListingWith{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
+	})
+
+	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present", func(t *testing.T) {
+		shareId := randomSchemaObjectIdentifier()
+		applicationPackageId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.With = &ListingWith{
+			Share:              &shareId,
+			ApplicationPackage: &applicationPackageId,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.As = `
@@ -111,6 +128,23 @@ func TestListings_CreateFromStage(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = invalidAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.With = &ListingWith{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateFromStageListingOptions.With", "Share", "ApplicationPackage"))
+	})
+
+	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present", func(t *testing.T) {
+		shareId := randomSchemaObjectIdentifier()
+		applicationPackageId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.With = &ListingWith{
+			Share:              &shareId,
+			ApplicationPackage: &applicationPackageId,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateFromStageListingOptions.With", "Share", "ApplicationPackage"))
 	})
 
 	t.Run("basic", func(t *testing.T) {

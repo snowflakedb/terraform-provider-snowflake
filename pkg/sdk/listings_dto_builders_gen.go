@@ -19,7 +19,7 @@ func (s *CreateListingRequest) WithIfNotExists(IfNotExists bool) *CreateListingR
 	return s
 }
 
-func (s *CreateListingRequest) WithWith(With ListingWith) *CreateListingRequest {
+func (s *CreateListingRequest) WithWith(With ListingWithRequest) *CreateListingRequest {
 	s.With = &With
 	return s
 }
@@ -39,6 +39,20 @@ func (s *CreateListingRequest) WithComment(Comment string) *CreateListingRequest
 	return s
 }
 
+func NewListingWithRequest() *ListingWithRequest {
+	return &ListingWithRequest{}
+}
+
+func (s *ListingWithRequest) WithShare(Share SchemaObjectIdentifier) *ListingWithRequest {
+	s.Share = &Share
+	return s
+}
+
+func (s *ListingWithRequest) WithApplicationPackage(ApplicationPackage SchemaObjectIdentifier) *ListingWithRequest {
+	s.ApplicationPackage = &ApplicationPackage
+	return s
+}
+
 func NewCreateFromStageListingRequest(
 	name AccountObjectIdentifier,
 	From Location,
@@ -54,7 +68,7 @@ func (s *CreateFromStageListingRequest) WithIfNotExists(IfNotExists bool) *Creat
 	return s
 }
 
-func (s *CreateFromStageListingRequest) WithWith(With ListingWith) *CreateFromStageListingRequest {
+func (s *CreateFromStageListingRequest) WithWith(With ListingWithRequest) *CreateFromStageListingRequest {
 	s.With = &With
 	return s
 }

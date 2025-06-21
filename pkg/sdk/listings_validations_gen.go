@@ -17,8 +17,10 @@ func (opts *CreateListingOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !valueSet(opts.With) {
-		errs = append(errs, errNotSet("CreateListingOptions", "With"))
+	if valueSet(opts.With) {
+		if !exactlyOneValueSet(opts.With.Share, opts.With.ApplicationPackage) {
+			errs = append(errs, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -30,6 +32,11 @@ func (opts *CreateFromStageListingOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.With) {
+		if !exactlyOneValueSet(opts.With.Share, opts.With.ApplicationPackage) {
+			errs = append(errs, errExactlyOneOf("CreateFromStageListingOptions.With", "Share", "ApplicationPackage"))
+		}
 	}
 	return JoinErrors(errs...)
 }
