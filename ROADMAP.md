@@ -1,5 +1,77 @@
 # Our roadmap
 
+## (2025-05-22) Roadmap after GA
+
+Recent efforts concentrated on stabilization, SnowflakeDB migration, and the Terraform provider's GA release, which delayed [feature parity](#feature-gap-closing---the-current-approach) and [grants migration](#grants-migration). With the provider now GA and officially supported by Snowflake, we can prioritize further improvements.
+
+In the upcoming months, our focus will be on the following topics:
+
+* [Migration help and solving reported issues for the 2.0.0 versions of the provider](#migration-help)
+* [Security-related improvements (PAT support)](#pat-support)
+* [Organization accounts adaptation](#organization-accounts)
+* Feature gap:
+    * [SPCS](#spcs)
+    * [Listings](#listings)
+    * [Account](#account)
+    * [Missing functionalities in stable resources](#missing-functionalities-in-stable-resources)
+* [Research and PoC of Plugin Framework](#plugin-framework)
+* [Research and PoC of Snowflake REST APIs](#snowflake-rest-apis)
+
+Further topics (these are the currently expected next topics, but they are still subject to change):
+
+* Feature gap:
+    * Tables stabilization
+    * Iceberg tables
+    * Function and procedure stabilization
+* Improved error handling
+* Improved logging
+
+### Migration help
+
+The v1.0.0 release and later the v2.0.0 GA release were essential steps in maturing the provider. It’s really important for us to move the majority of our users to these versions. The previous [entry already covered multiple reasons](#reasons-to-migrate-to-v1). Also, it’s connected with the [old namespace deprecation](#snowflakedb-migration).
+
+We are committed to resolving your migration challenges. Please contact us if you encounter any migration difficulties. Before starting, be sure to consult the [migration guide](./MIGRATION_GUIDE.md).
+
+### PAT support
+
+Programmatic access tokens are one of the newest authentication methods supported by the Snowflake ecosystem ([2025-04-30-programmatic-access-tokens](https://docs.snowflake.com/en/release-notes/2025/other/2025-04-30-programmatic-access-tokens)). As Snowflake is pushing users away from weak user password authentication, we want to have a wide choice of stronger options inside the provider. You can read more in [Using programmatic access tokens for authentication](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens).
+
+### Organization accounts
+
+Organization accounts were introduced some time ago ([2024-10-01-organization-account](https://docs.snowflake.com/en/release-notes/2024/other/2024-10-01-organization-account)). We believe that the provider's widest use case is account-level work. [Organization accounts](https://docs.snowflake.com/en/user-guide/organization-accounts) offer a new way of managing multi-account setups. We want to allow the provider's users to benefit from their current and future potential.
+
+### SPCS
+
+SPCS is a widely requested area for the Snowflake Terraform Provider (e.g. [#2478](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2478)). We want to provide the following object support (first in preview, later as stable):
+
+* Image repository;
+* Compute pool;
+* Service.
+
+### Listings
+
+Listings are the object that is also highly anticipated (e.g. [#2379](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2379)). We will share later if we will support all variants right away (e.g. [create-organization-listing](https://docs.snowflake.com/en/sql-reference/sql/create-organization-listing) vs [create-listing](https://docs.snowflake.com/en/sql-reference/sql/create-listing)).
+
+### Account
+
+The [snowflake_account](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account) resource was reworked [before the V1 release](./MIGRATION_GUIDE.md#snowflake_account-resource-changes). It offers only the creation capabilities and not certain attribute modifications (as explained in [this comment](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3425#issuecomment-2690179698)). We would like to fill this gap.
+
+### Missing functionalities in stable resources
+
+The stable resources have new features (e.g., `resource_constraint` in warehouses [#3258](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3258)). While this roadmap entry won't detail every planned feature, we will focus on ensuring our stable resources offer the same functionality as their SQL counterparts.
+
+### Plugin Framework
+
+Our provider was written using [Terraform SDKv2](https://developer.hashicorp.com/terraform/plugin/sdkv2). There is a new, [recommended](https://developer.hashicorp.com/terraform/plugin/framework-benefits) way of writing plugins: the [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework), which opens more possibilities for plugin writers. This can improve the usability and reliability of our provider (check e.g. [#3327](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3327#issuecomment-2597989866) or [#3366](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3366#issuecomment-2622223398)). We also hope to tackle some limitations listed in the [Decisions before V1](./v1-preparations/CHANGES_BEFORE_V1.md). SDKv2 is not yet deprecated by HashiCorp, but the new features for the Terraform ecosystem are added only to the new framework (e.g. [moved block support](https://github.com/hashicorp/terraform-plugin-sdk/issues/1411#issuecomment-2599203301)).
+
+Transitioning to the new framework will require significant time. Initially, our focus will be on research and developing a PoC for a subset of resources. This will enable us to create a more informed implementation plan.
+
+### Snowflake REST APIs
+
+The current provider was developed due to the initial lack of alternatives for managing Snowflake objects beyond executing SQL commands via a dedicated driver. However, Snowflake now offers [REST APIs](https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/snowflake-rest-api), which present significant advantages for the provider's resources and data sources. Utilizing REST endpoints could lead to improved generation capabilities, faster development cycles, and quicker adoption of new Snowflake features, potentially accelerating the closure of existing feature gaps.
+
+Adopting this new provider represents a significant change. We intend to proceed cautiously, initially focusing on validating its benefits and limitations through a proof of concept involving a limited number of resources. This approach will allow us to assess its viability without impacting the stability of the existing provider, as we anticipate running duplicate resources during this phase. We may also seek user feedback on these new resources to inform our decision-making process.
+
 ## (2025-04-23) v2.0.0 release - GA
 <a name="23042025-v200-release---ga"></a>
 

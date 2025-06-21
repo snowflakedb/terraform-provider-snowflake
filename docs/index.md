@@ -285,6 +285,8 @@ When a `default` profile is not present in the TOML file, it is treated as "empt
 
 Read [TOML](https://toml.io/en/) specification for more details on the syntax.
 
+-> **Note**: This configuration file is distinct from the ones used to configure [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/connecting/configure-cli) or [SnowSQL](https://docs.snowflake.com/en/user-guide/snowsql-config).
+
 Example content of the Terraform file configuration:
 
 ```terraform
