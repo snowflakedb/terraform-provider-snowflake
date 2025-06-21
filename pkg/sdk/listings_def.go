@@ -13,10 +13,50 @@ const (
 	ListingRevisionPublished ListingRevision = "PUBLISHED"
 )
 
-var listingFromDef = g.NewQueryStruct("ListingFrom").
+var listingWithDef = g.NewQueryStruct("ListingWith").
 	OptionalIdentifier("Share", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SHARE")).
 	OptionalIdentifier("ApplicationPackage", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION PACKAGE")).
 	WithValidation(g.ExactlyOneValueSet, "Share", "ApplicationPackage")
+
+var listingDbRow = g.DbStruct("listingDBRow").
+	Text("global_name").
+	Text("name").
+	Text("title").
+	Text("subtitle").
+	Text("profile").
+	Text("created_on").
+	Text("updated_on").
+	Text("published_on").
+	Text("state").
+	Text("review_state").
+	Text("comment").
+	Text("owner").
+	Text("owner_role_type").
+	Text("regions").
+	Text("target_accounts").
+	Text("is_monetized").
+	Text("is_application").
+	Text("is_targeted")
+
+var listing = g.PlainStruct("Listing").
+	Text("GlobalName").
+	Text("Name").
+	Text("Title").
+	Text("Subtitle").
+	Text("Profile").
+	Text("CreatedOn").
+	Text("UpdatedOn").
+	Text("PublishedOn").
+	Text("State").
+	Text("ReviewState").
+	Text("Comment").
+	Text("Owner").
+	Text("OwnerRoleType").
+	Text("Regions").
+	Text("TargetAccounts").
+	Text("IsMonetized").
+	Text("IsApplication").
+	Text("IsTargeted")
 
 var ListingsDef = g.NewInterface(
 	"Listings",
@@ -30,13 +70,14 @@ var ListingsDef = g.NewInterface(
 			SQL("EXTERNAL LISTING").
 			IfNotExists().
 			Name().
-			PredefinedQueryStructField("From", "*ApplicationPackage", g.KeywordOptions()).
-			Text("As", g.KeywordOptions().DoubleDollarQuotes().Required().SQL("AS")).
+			PredefinedQueryStructField("With", "*ListingWith", g.KeywordOptions()).
+			TextAssignment("As", g.ParameterOptions().NoEquals().DoubleDollarQuotes().Required().SQL("AS")).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
 			OptionalComment().
-			WithValidation(g.ValidIdentifier, "name"),
-		listingFromDef,
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ValidateValueSet, "With"),
+		listingWithDef,
 	).
 	CustomOperation(
 		"CreateFromStage",
@@ -46,11 +87,11 @@ var ListingsDef = g.NewInterface(
 			SQL("EXTERNAL LISTING").
 			IfNotExists().
 			Name().
-			PredefinedQueryStructField("From", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
+			PredefinedQueryStructField("With", "*ListingWith", g.KeywordOptions()).
+			PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().NoQuotes().NoEquals().SQL("FROM")).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
 			WithValidation(g.ValidIdentifier, "name"),
-		listingFromDef,
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-listing",
@@ -65,20 +106,20 @@ var ListingsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AlterListingAs",
 				g.NewQueryStruct("AlterListingAs").
-					Text("As", g.KeywordOptions().Required().DoubleDollarQuotes().SQL("AS")).
+					Text("As", g.KeywordOptions().Required().DoubleDollarQuotes()).
 					OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 					OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
 					OptionalComment(),
-				g.KeywordOptions(),
+				g.KeywordOptions().SQL("AS"),
 			).
-			QueryStructField(
-				"ADD VERSION",
+			OptionalQueryStructField(
+				"AddVersion",
 				g.NewQueryStruct("AddListingVersion").
 					IfNotExists().
 					OptionalText("VersionName", g.KeywordOptions()).
-					PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().NoQuotes().NoEquals()).
+					PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().NoQuotes().NoEquals().SQL("FROM")).
 					OptionalComment(),
-				g.KeywordOptions(),
+				g.KeywordOptions().SQL("ADD VERSION"),
 			).
 			OptionalIdentifier("RenameTo", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalQueryStructField(
@@ -87,23 +128,23 @@ var ListingsDef = g.NewInterface(
 					OptionalComment(),
 				g.KeywordOptions().SQL("SET"),
 			).
-			//TODO validations
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfExists", "AddVersion").
-			WithValidation(g.ExactlyOneValueSet, "Set", "AddVersion"),
+			WithValidation(g.ExactlyOneValueSet, "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-listing",
-		g.NewQueryStruct("DropTask").
+		g.NewQueryStruct("DropListing").
 			Drop().
 			SQL("LISTING").
+			IfExists().
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	ShowOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-listings",
-		taskDbRow, //todo
-		task,      //todo
+		listingDbRow,
+		listing,
 		g.NewQueryStruct("ShowListings").
 			Show().
 			SQL("LISTINGS").
@@ -115,8 +156,8 @@ var ListingsDef = g.NewInterface(
 	DescribeOperation(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-listing",
-		taskDbRow, //todo
-		task,      //todo
+		listingDbRow,
+		listing,
 		g.NewQueryStruct("DescribeListing").
 			Describe().
 			SQL("LISTING").
