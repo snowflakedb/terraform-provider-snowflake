@@ -451,6 +451,7 @@ func TestInt_Account(t *testing.T) {
 }
 
 func TestInt_Account_SelfAlter(t *testing.T) {
+	// TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one
 	testClientHelper().EnsureValidNonProdAccountIsUsed(t)
 
 	// This client should be operating on a different account than the "main" one (because it will be altered here).
