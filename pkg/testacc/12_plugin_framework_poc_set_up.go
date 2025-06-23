@@ -10,9 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 )
 
-var (
-	testAccProtoV6ProviderFactoriesWithPluginPoc map[string]func() (tfprotov6.ProviderServer, error)
-)
+var testAccProtoV6ProviderFactoriesWithPluginPoc map[string]func() (tfprotov6.ProviderServer, error)
 
 // TODO [mux-PR]: use the provider with custom configure method
 func init() {
@@ -25,7 +23,6 @@ func init() {
 				ctx,
 				provider.Provider().GRPCProvider,
 			)
-
 			if err != nil {
 				return nil, err
 			}
@@ -38,7 +35,6 @@ func init() {
 			}
 
 			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
-
 			if err != nil {
 				return nil, err
 			}
