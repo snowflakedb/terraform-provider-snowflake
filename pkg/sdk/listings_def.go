@@ -14,8 +14,8 @@ const (
 )
 
 var listingWithDef = g.NewQueryStruct("ListingWith").
-	OptionalIdentifier("Share", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SHARE")).
-	OptionalIdentifier("ApplicationPackage", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION PACKAGE")).
+	OptionalIdentifier("Share", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("SHARE")).
+	OptionalIdentifier("ApplicationPackage", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION PACKAGE")).
 	WithValidation(g.ExactlyOneValueSet, "Share", "ApplicationPackage")
 
 var listingDbRow = g.DbStruct("listingDBRow").
