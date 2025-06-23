@@ -218,7 +218,7 @@ func TestInt_Account(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
 
-		require.Equal(t, false, *account.IsOrgAdmin)
+		require.False(t, *account.IsOrgAdmin)
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Name: sdk.Pointer(account.ID()),
@@ -228,7 +228,7 @@ func TestInt_Account(t *testing.T) {
 
 		acc, err := client.Accounts.ShowByID(ctx, account.ID())
 		require.NoError(t, err)
-		require.Equal(t, true, *acc.IsOrgAdmin)
+		require.True(t, *acc.IsOrgAdmin)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Name: sdk.Pointer(account.ID()),
@@ -238,7 +238,7 @@ func TestInt_Account(t *testing.T) {
 
 		acc, err = client.Accounts.ShowByID(ctx, account.ID())
 		require.NoError(t, err)
-		require.Equal(t, false, *acc.IsOrgAdmin)
+		require.False(t, *acc.IsOrgAdmin)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
@@ -414,7 +414,7 @@ func TestInt_Account(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(accounts))
+		assert.Len(t, accounts, 1)
 		assertAccountQueriedByOrgAdmin(t, accounts[0], currentAccountName)
 	})
 
@@ -427,7 +427,7 @@ func TestInt_Account(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(accounts))
+		assert.Len(t, accounts, 1)
 		assertHistoryAccount(t, accounts[0], currentAccountName)
 	})
 
@@ -446,7 +446,7 @@ func TestInt_Account(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(accounts))
+		assert.Len(t, accounts, 1)
 		assertAccountQueriedByAccountAdmin(t, accounts[0], currentAccountName)
 	})
 }
@@ -955,7 +955,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		t.Helper()
 
 		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount)
-		require.Len(t, policies, 0)
+		require.Empty(t, policies)
 		require.NoError(t, err)
 	}
 

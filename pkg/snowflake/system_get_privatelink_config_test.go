@@ -21,7 +21,7 @@ func TestSystemGetPrivateLinkGetStructuredConfigAws(t *testing.T) {
 	}
 
 	c, e := raw.GetStructuredConfig()
-	r.Nil(e)
+	r.NoError(e)
 
 	r.Equal("ab1234.eu-west-1.privatelink", c.AccountName)
 	r.Equal("com.amazonaws.vpce.eu-west-1.vpce-svc-123456789abcdef12", c.AwsVpceID)
@@ -42,7 +42,7 @@ func TestSystemGetPrivateLinkGetStructuredConfigAwsAsPerDocumentation(t *testing
 	}
 
 	c, e := raw.GetStructuredConfig()
-	r.Nil(e)
+	r.NoError(e)
 
 	r.Equal("ab1234.eu-west-1.privatelink", c.AccountName)
 	r.Equal("com.amazonaws.vpce.eu-west-1.vpce-svc-123456789abcdef12", c.AwsVpceID)
@@ -59,7 +59,7 @@ func TestSystemGetPrivateLinkGetStructuredConfigAzure(t *testing.T) {
 	}
 
 	c, e := raw.GetStructuredConfig()
-	r.Nil(e)
+	r.NoError(e)
 
 	r.Equal("ab1234.east-us-2.azure.privatelink", c.AccountName)
 	r.Equal("", c.AwsVpceID)

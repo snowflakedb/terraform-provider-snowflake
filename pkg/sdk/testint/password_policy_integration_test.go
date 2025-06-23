@@ -37,7 +37,7 @@ func TestInt_PasswordPoliciesShow(t *testing.T) {
 		require.NoError(t, err)
 		assert.Contains(t, passwordPolicies, *passwordPolicyTest)
 		assert.Contains(t, passwordPolicies, *passwordPolicy2Test)
-		assert.Equal(t, 2, len(passwordPolicies))
+		assert.Len(t, passwordPolicies, 2)
 	})
 
 	t.Run("with show options and like", func(t *testing.T) {
@@ -52,7 +52,7 @@ func TestInt_PasswordPoliciesShow(t *testing.T) {
 		passwordPolicies, err := client.PasswordPolicies.Show(ctx, showOptions)
 		require.NoError(t, err)
 		assert.Contains(t, passwordPolicies, *passwordPolicyTest)
-		assert.Equal(t, 1, len(passwordPolicies))
+		assert.Len(t, passwordPolicies, 1)
 	})
 
 	t.Run("when searching a non-existent password policy", func(t *testing.T) {
@@ -63,7 +63,7 @@ func TestInt_PasswordPoliciesShow(t *testing.T) {
 		}
 		passwordPolicies, err := client.PasswordPolicies.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(passwordPolicies))
+		assert.Empty(t, passwordPolicies)
 	})
 
 	/* there appears to be a bug in the Snowflake API. LIMIT is not actually limiting the number of results

@@ -2065,7 +2065,7 @@ def filter_by_role(session, table_name, role):
 		procedures, err := client.Procedures.Show(ctx, sdk.NewShowProcedureRequest().WithLike(sdk.Like{Pattern: &p1.Name}))
 		require.NoError(t, err)
 
-		require.Equal(t, 1, len(procedures))
+		require.Len(t, procedures, 1)
 		require.Contains(t, procedures, *p1)
 		require.NotContains(t, procedures, *p2)
 	})
@@ -2075,7 +2075,7 @@ def filter_by_role(session, table_name, role):
 			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: testClientHelper().Ids.SchemaId()}}).
 			WithLike(sdk.Like{Pattern: sdk.String(NonExistingSchemaObjectIdentifier.Name())}))
 		require.NoError(t, err)
-		require.Equal(t, 0, len(procedures))
+		require.Empty(t, procedures)
 	})
 
 	t.Run("describe procedure: for SQL", func(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -125,8 +126,8 @@ func Test_ToBoolProperty(t *testing.T) {
 			Description:  "desc",
 		}
 		prop := row.toBoolProperty()
-		assert.Equal(t, true, prop.Value)
-		assert.Equal(t, false, prop.DefaultValue)
+		assert.True(t, prop.Value)
+		assert.False(t, prop.DefaultValue)
 		assert.Equal(t, row.Description, prop.Description)
 	})
 }
@@ -163,7 +164,7 @@ func Test_ToFloatProperty(t *testing.T) {
 			Description:  "desc",
 		}
 		prop := row.toFloatProperty()
-		assert.Equal(t, 10.5, *prop.Value)
+		assert.InDelta(t, 10.5, *prop.Value, testvars.FloatEpsilon)
 		assert.Nil(t, prop.DefaultValue)
 		assert.Equal(t, prop.Description, row.Description)
 	})
@@ -175,8 +176,8 @@ func Test_ToFloatProperty(t *testing.T) {
 			Description:  "desc",
 		}
 		prop := row.toFloatProperty()
-		assert.Equal(t, 10.1, *prop.Value)
-		assert.Equal(t, 10.5, *prop.DefaultValue)
+		assert.InDelta(t, 10.1, *prop.Value, testvars.FloatEpsilon)
+		assert.InDelta(t, 10.5, *prop.DefaultValue, testvars.FloatEpsilon)
 		assert.Equal(t, prop.Description, row.Description)
 	})
 
@@ -187,8 +188,8 @@ func Test_ToFloatProperty(t *testing.T) {
 			Description:  "desc",
 		}
 		prop := row.toFloatProperty()
-		assert.Equal(t, float64(-1), *prop.Value)
-		assert.Equal(t, float64(0), *prop.DefaultValue)
+		assert.InDelta(t, float64(-1), *prop.Value, testvars.FloatEpsilon)
+		assert.InDelta(t, float64(0), *prop.DefaultValue, testvars.FloatEpsilon)
 		assert.Equal(t, prop.Description, row.Description)
 	})
 }

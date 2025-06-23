@@ -199,7 +199,7 @@ func TestInt_RolesUseSecondaryRoles(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, sdk.SecondaryRolesNone, secondaryRolesAfter.Value)
-	assert.Equal(t, 0, len(secondaryRolesAfter.Roles))
+	assert.Empty(t, secondaryRolesAfter.Roles)
 
 	t.Cleanup(func() {
 		err = client.Sessions.UseRole(ctx, currentRole)

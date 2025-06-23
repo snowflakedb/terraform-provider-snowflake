@@ -134,7 +134,7 @@ func TestInt_ShowRegions(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(regions))
+		assert.Len(t, regions, 1)
 		region := regions[0]
 		assert.Equal(t, "AWS_US_WEST_2", region.SnowflakeRegion)
 		assert.Equal(t, sdk.CloudTypeAWS, region.CloudType)
