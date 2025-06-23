@@ -67,7 +67,7 @@ sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 			else echo "Aborting..."; \
 		fi;
 
-test-unit: ## run unit tests - temporary to prove it's working
+test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)")
 
 test-acceptance: ## run acceptance tests
@@ -80,7 +80,7 @@ test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint
 
 test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
-	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -run "^TestAcc_SdkV2Functional_" -v -cover -timeout=10m ./pkg/testfunctional
+	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional
 
 test-architecture: ## check architecture constraints between packages
 	go test ./pkg/architests/... -v
