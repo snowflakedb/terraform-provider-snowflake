@@ -117,7 +117,7 @@ func TestInt_Listings(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id, manifest))
 		assert.NoError(t, err)
-		t.Cleanup(testClientHelper().Listing.DropFunc(id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		// TODO: Assert
 
@@ -146,7 +146,7 @@ func TestInt_Listings(t *testing.T) {
 		comment := random.Comment()
 		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id, manifest))
 		assert.NoError(t, err)
-		t.Cleanup(testClientHelper().Listing.DropFunc(id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		// TODO: Assert
 
@@ -168,7 +168,7 @@ func TestInt_Listings(t *testing.T) {
 
 		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id, manifest))
 		assert.NoError(t, err)
-		t.Cleanup(testClientHelper().Listing.DropFunc(id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		// TODO: Assert
 

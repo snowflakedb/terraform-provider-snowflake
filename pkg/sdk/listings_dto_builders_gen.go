@@ -43,12 +43,12 @@ func NewListingWithRequest() *ListingWithRequest {
 	return &ListingWithRequest{}
 }
 
-func (s *ListingWithRequest) WithShare(Share SchemaObjectIdentifier) *ListingWithRequest {
+func (s *ListingWithRequest) WithShare(Share AccountObjectIdentifier) *ListingWithRequest {
 	s.Share = &Share
 	return s
 }
 
-func (s *ListingWithRequest) WithApplicationPackage(ApplicationPackage SchemaObjectIdentifier) *ListingWithRequest {
+func (s *ListingWithRequest) WithApplicationPackage(ApplicationPackage AccountObjectIdentifier) *ListingWithRequest {
 	s.ApplicationPackage = &ApplicationPackage
 	return s
 }
@@ -155,20 +155,17 @@ func (s *AlterListingAsRequest) WithComment(Comment string) *AlterListingAsReque
 }
 
 func NewAddListingVersionRequest(
+	VersionName *string,
 	From Location,
 ) *AddListingVersionRequest {
 	s := AddListingVersionRequest{}
+	s.VersionName = VersionName
 	s.From = From
 	return &s
 }
 
 func (s *AddListingVersionRequest) WithIfNotExists(IfNotExists bool) *AddListingVersionRequest {
 	s.IfNotExists = &IfNotExists
-	return s
-}
-
-func (s *AddListingVersionRequest) WithVersionName(VersionName string) *AddListingVersionRequest {
-	s.VersionName = &VersionName
 	return s
 }
 

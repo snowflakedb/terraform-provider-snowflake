@@ -28,8 +28,8 @@ type CreateListingOptions struct {
 }
 
 type ListingWith struct {
-	Share              *SchemaObjectIdentifier `ddl:"identifier" sql:"SHARE"`
-	ApplicationPackage *SchemaObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
+	Share              *AccountObjectIdentifier `ddl:"identifier" sql:"SHARE"`
+	ApplicationPackage *AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
 }
 
 // CreateFromStageListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-listing.

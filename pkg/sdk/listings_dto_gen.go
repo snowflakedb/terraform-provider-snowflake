@@ -22,8 +22,8 @@ type CreateListingRequest struct {
 }
 
 type ListingWithRequest struct {
-	Share              *SchemaObjectIdentifier
-	ApplicationPackage *SchemaObjectIdentifier
+	Share              *AccountObjectIdentifier
+	ApplicationPackage *AccountObjectIdentifier
 }
 
 type CreateFromStageListingRequest struct {
@@ -56,7 +56,7 @@ type AlterListingAsRequest struct {
 
 type AddListingVersionRequest struct {
 	IfNotExists *bool
-	VersionName *string
+	VersionName *string  // required
 	From        Location // required
 	Comment     *string
 }
