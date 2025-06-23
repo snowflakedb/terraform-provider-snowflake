@@ -33,8 +33,6 @@ subtitle: "Subtitle for MyListing"
 description: "Description for MyListing"
 listing_terms:
  type: "OFFLINE"
-targets:
-  regions: ["PUBLIC.AWS_US_EAST_1"]
 `
 }
 

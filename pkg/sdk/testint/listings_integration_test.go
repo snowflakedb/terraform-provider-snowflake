@@ -29,7 +29,9 @@ func TestInt_Listings(t *testing.T) {
 
 	t.Run("create from manifest: no optionals", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id, manifest))
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id, manifest).
+			WithReview(false).
+			WithPublish(false))
 		assert.NoError(t, err)
 
 		// TODO: Assert
@@ -187,13 +189,13 @@ func TestInt_Listings(t *testing.T) {
 
 		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id, manifest))
 		assert.NoError(t, err)
-		t.Cleanup(testClientHelper().Listing.DropFunc(id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		// TODO: Assert
 
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithRenameTo(newId))
 		assert.NoError(t, err)
-		t.Cleanup(testClientHelper().Listing.DropFunc(newId))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, newId))
 
 		// TODO: Assert
 	})
@@ -205,7 +207,7 @@ func TestInt_Listings(t *testing.T) {
 
 		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id, manifest).WithComment(comment))
 		assert.NoError(t, err)
-		t.Cleanup(testClientHelper().Listing.DropFunc(id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		// TODO: Assert
 
@@ -216,15 +218,43 @@ func TestInt_Listings(t *testing.T) {
 	})
 
 	t.Run("drop: existing", func(t *testing.T) {
+		listing, listingCleanup := testClientHelper().Listing.Create(t)
+		t.Cleanup(listingCleanup)
 
+		err := client.Listings.Drop(ctx, sdk.NewDropListingRequest(listing.ID()))
+		assert.NoError(t, err)
+
+		listingAfterDrop, err := client.Listings.ShowByID(ctx, listing.ID())
+		assert.NoError(t, err)
+		// TODO: Assert listingAfterDrop
+		_ = listingAfterDrop
 	})
 
-	t.Run("show: default", func(t *testing.T) {
-
-	})
+	//t.Run("show: default", func(t *testing.T) {
+	//	listing, listingCleanup := testClientHelper().Listing.Create(t)
+	//	t.Cleanup(listingCleanup)
+	//
+	//	listings, err := client.Listings.Show(ctx, sdk.NewShowListingRequest())
+	//	assert.NoError(t, err)
+	//	assert.Greater(t, len(listings), 1)
+	//
+	//	listingFound, err := collections.FindFirst(listings, func(l sdk.Listing) bool { return l.ID() == listing.ID() })
+	//	assert.NoError(t, err)
+	//})
 
 	t.Run("show: with options", func(t *testing.T) {
+		listing, listingCleanup := testClientHelper().Listing.Create(t)
+		t.Cleanup(listingCleanup)
 
+		listings, err := client.Listings.Show(ctx, sdk.NewShowListingRequest().
+			WithLike(sdk.Like{Pattern: sdk.String(listing.ID().Name())}).
+			WithStartsWith(listing.ID().Name()).
+			WithLimit(sdk.LimitFrom{
+				Rows: sdk.Int(1),
+				From: sdk.String(listing.ID().Name()),
+			}))
+		assert.NoError(t, err)
+		assert.Equal(t, len(listings), 1)
 	})
 
 	t.Run("describe: default", func(t *testing.T) {

@@ -58,6 +58,76 @@ var listing = g.PlainStruct("Listing").
 	Text("IsApplication").
 	Text("IsTargeted")
 
+var listingDetailsDbRow = g.DbStruct("listingDBRow").
+	Text("global_name").
+	Text("name").
+	Text("owner").
+	Text("owner_role_type").
+	Text("created_on").
+	Text("updated_on").
+	Text("published_on").
+	Text("title").
+	Text("subtitle").
+	Text("description").
+	Text("target_accounts").
+	Text("is_monetized").
+	Text("is_application").
+	Text("is_targeted").
+	Text("state").
+	Text("revisions").
+	Text("comment").
+	Text("refreshed_schedule").
+	Text("refresh_type").
+	Text("business_needs").
+	Text("usage_examples").
+	Text("listing_terms").
+	Text("profile").
+	Text("customized_contact_info").
+	Text("application_package").
+	Text("data_dictionary").
+	Text("regions").
+	Text("manifest_yaml").
+	Text("review_state").
+	Text("rejection_reason").
+	Text("categories").
+	Text("resources").
+	Text("unpublished_by_admin_reasons")
+
+var listingDetails = g.PlainStruct("ListingDetails").
+	Text("GlobalName").
+	Text("Name").
+	Text("Owner").
+	Text("OwnerRoleType").
+	Text("CreatedOn").
+	Text("UpdatedOn").
+	Text("PublishedOn").
+	Text("Title").
+	Text("Subtitle").
+	Text("Description").
+	Text("TargetAccounts").
+	Text("IsMonetized").
+	Text("IsApplication").
+	Text("IsTargeted").
+	Text("State").
+	Text("Revisions").
+	Text("Comment").
+	Text("RefreshedSchedule").
+	Text("RefreshType").
+	Text("BusinessNeeds").
+	Text("UsageExamples").
+	Text("ListingTerms").
+	Text("Profile").
+	Text("CustomizedContactInfo").
+	Text("ApplicationPackage").
+	Text("DataDictionary").
+	Text("Regions").
+	Text("ManifestYaml").
+	Text("ReviewState").
+	Text("RejectionReason").
+	Text("Categories").
+	Text("Resources").
+	Text("UnpublishedByAdminReasons")
+
 var ListingsDef = g.NewInterface(
 	"Listings",
 	"Listing",
@@ -154,8 +224,8 @@ var ListingsDef = g.NewInterface(
 	DescribeOperation(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-listing",
-		listingDbRow,
-		listing,
+		listingDetailsDbRow,
+		listingDetails,
 		g.NewQueryStruct("DescribeListing").
 			Describe().
 			SQL("LISTING").

@@ -155,7 +155,7 @@ func (s *AlterListingAsRequest) WithComment(Comment string) *AlterListingAsReque
 }
 
 func NewAddListingVersionRequest(
-	VersionName *string,
+	VersionName string,
 	From Location,
 ) *AddListingVersionRequest {
 	s := AddListingVersionRequest{}

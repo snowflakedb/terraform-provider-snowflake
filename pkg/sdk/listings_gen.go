@@ -68,7 +68,7 @@ type AlterListingAs struct {
 
 type AddListingVersion struct {
 	IfNotExists *bool    `ddl:"keyword" sql:"IF NOT EXISTS"`
-	VersionName *string  `ddl:"keyword"`
+	VersionName string   `ddl:"keyword"`
 	From        Location `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
 	Comment     *string  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }

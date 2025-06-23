@@ -160,8 +160,26 @@ func (r *ShowListingRequest) toOpts() *ShowListingOptions {
 }
 
 func (r listingDBRow) convert() *Listing {
-	// TODO: Mapping
-	return &Listing{}
+	return &Listing{
+		GlobalName:     "",
+		Name:           "",
+		Title:          "",
+		Subtitle:       "",
+		Profile:        "",
+		CreatedOn:      "",
+		UpdatedOn:      "",
+		PublishedOn:    "",
+		State:          "",
+		ReviewState:    "",
+		Comment:        "",
+		Owner:          "",
+		OwnerRoleType:  "",
+		Regions:        "",
+		TargetAccounts: "",
+		IsMonetized:    "",
+		IsApplication:  "",
+		IsTargeted:     "",
+	}
 }
 
 func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
