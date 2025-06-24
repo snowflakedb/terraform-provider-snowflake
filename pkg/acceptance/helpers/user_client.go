@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -190,4 +191,20 @@ func (c *UserClient) UnsetDefaultSecondaryRoles(t *testing.T, id sdk.AccountObje
 		},
 	})
 	require.NoError(t, err)
+}
+
+func (c *UserClient) AddProgrammaticAccessToken(t *testing.T, id sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier) string {
+	t.Helper()
+	ctx := context.Background()
+
+	type resultSchema struct {
+		TokenName   string `db:"token_name"`
+		TokenSecret string `db:"token_secret"`
+	}
+	var result []resultSchema
+	err := c.context.client.QueryForTests(ctx, &result, fmt.Sprintf("ALTER USER %s ADD PROGRAMMATIC ACCESS TOKEN TEST ROLE_RESTRICTION = %s", id.FullyQualifiedName(), roleId.FullyQualifiedName()))
+	require.NoError(t, err)
+	require.Len(t, result, 1)
+
+	return result[0].TokenSecret
 }
