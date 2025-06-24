@@ -1,6 +1,9 @@
 package sdk
 
-import "context"
+import (
+	"context"
+	"database/sql"
+)
 
 type Listings interface {
 	Create(ctx context.Context, request *CreateListingRequest) error
@@ -95,45 +98,61 @@ type ShowListingOptions struct {
 }
 
 type listingDBRow struct {
-	GlobalName     string `db:"global_name"`
-	Name           string `db:"name"`
-	Title          string `db:"title"`
-	Subtitle       string `db:"subtitle"`
-	Profile        string `db:"profile"`
-	CreatedOn      string `db:"created_on"`
-	UpdatedOn      string `db:"updated_on"`
-	PublishedOn    string `db:"published_on"`
-	State          string `db:"state"`
-	ReviewState    string `db:"review_state"`
-	Comment        string `db:"comment"`
-	Owner          string `db:"owner"`
-	OwnerRoleType  string `db:"owner_role_type"`
-	Regions        string `db:"regions"`
-	TargetAccounts string `db:"target_accounts"`
-	IsMonetized    string `db:"is_monetized"`
-	IsApplication  string `db:"is_application"`
-	IsTargeted     string `db:"is_targeted"`
+	GlobalName              string         `db:"global_name"`
+	Name                    string         `db:"name"`
+	Title                   string         `db:"title"`
+	Subtitle                sql.NullString `db:"subtitle"`
+	Profile                 string         `db:"profile"`
+	CreatedOn               string         `db:"created_on"`
+	UpdatedOn               string         `db:"updated_on"`
+	PublishedOn             sql.NullString `db:"published_on"`
+	State                   string         `db:"state"`
+	ReviewState             string         `db:"review_state"`
+	Comment                 sql.NullString `db:"comment"`
+	Owner                   string         `db:"owner"`
+	OwnerRoleType           string         `db:"owner_role_type"`
+	Regions                 sql.NullString `db:"regions"`
+	TargetAccounts          string         `db:"target_accounts"`
+	IsMonetized             bool           `db:"is_monetized"`
+	IsApplication           bool           `db:"is_application"`
+	IsTargeted              bool           `db:"is_targeted"`
+	IsLimitedTrial          sql.NullBool   `db:"is_limited_trial"`
+	IsByRequest             sql.NullBool   `db:"is_by_request"`
+	Distribution            sql.NullString `db:"distribution"`
+	IsMountlessQueryable    sql.NullBool   `db:"is_mountless_queryable"`
+	RejectedOn              sql.NullString `db:"rejected_on"`
+	OrganizationProfileName sql.NullString `db:"organization_profile_name"`
+	UniformListingLocator   sql.NullString `db:"uniform_listing_locator"`
+	DetailedTargetAccounts  sql.NullString `db:"detailed_target_accounts"`
 }
 
 type Listing struct {
-	GlobalName     string
-	Name           string
-	Title          string
-	Subtitle       string
-	Profile        string
-	CreatedOn      string
-	UpdatedOn      string
-	PublishedOn    string
-	State          string
-	ReviewState    string
-	Comment        string
-	Owner          string
-	OwnerRoleType  string
-	Regions        string
-	TargetAccounts string
-	IsMonetized    string
-	IsApplication  string
-	IsTargeted     string
+	GlobalName              string
+	Name                    string
+	Title                   string
+	Subtitle                *string
+	Profile                 string
+	CreatedOn               string
+	UpdatedOn               string
+	PublishedOn             *string
+	State                   ListingState
+	ReviewState             string
+	Comment                 *string
+	Owner                   string
+	OwnerRoleType           string
+	Regions                 *string
+	TargetAccounts          string
+	IsMonetized             bool
+	IsApplication           bool
+	IsTargeted              bool
+	IsLimitedTrial          *bool
+	IsByRequest             *bool
+	Distribution            *string
+	IsMountlessQueryable    *bool
+	RejectedOn              *string
+	OrganizationProfileName *string
+	UniformListingLocator   *string
+	DetailedTargetAccounts  *string
 }
 
 func (v *Listing) ID() AccountObjectIdentifier {
@@ -152,73 +171,125 @@ type DescribeListingOptions struct {
 }
 
 type listingDetailsDBRow struct {
-	GlobalName                string `db:"global_name"`
-	Name                      string `db:"name"`
-	Owner                     string `db:"owner"`
-	OwnerRoleType             string `db:"owner_role_type"`
-	CreatedOn                 string `db:"created_on"`
-	UpdatedOn                 string `db:"updated_on"`
-	PublishedOn               string `db:"published_on"`
-	Title                     string `db:"title"`
-	Subtitle                  string `db:"subtitle"`
-	Description               string `db:"description"`
-	TargetAccounts            string `db:"target_accounts"`
-	IsMonetized               string `db:"is_monetized"`
-	IsApplication             string `db:"is_application"`
-	IsTargeted                string `db:"is_targeted"`
-	State                     string `db:"state"`
-	Revisions                 string `db:"revisions"`
-	Comment                   string `db:"comment"`
-	RefreshedSchedule         string `db:"refreshed_schedule"`
-	RefreshType               string `db:"refresh_type"`
-	BusinessNeeds             string `db:"business_needs"`
-	UsageExamples             string `db:"usage_examples"`
-	ListingTerms              string `db:"listing_terms"`
-	Profile                   string `db:"profile"`
-	CustomizedContactInfo     string `db:"customized_contact_info"`
-	ApplicationPackage        string `db:"application_package"`
-	DataDictionary            string `db:"data_dictionary"`
-	Regions                   string `db:"regions"`
-	ManifestYaml              string `db:"manifest_yaml"`
-	ReviewState               string `db:"review_state"`
-	RejectionReason           string `db:"rejection_reason"`
-	Categories                string `db:"categories"`
-	Resources                 string `db:"resources"`
-	UnpublishedByAdminReasons string `db:"unpublished_by_admin_reasons"`
+	GlobalName                   string         `db:"global_name"`
+	Name                         string         `db:"name"`
+	Owner                        string         `db:"owner"`
+	OwnerRoleType                string         `db:"owner_role_type"`
+	CreatedOn                    string         `db:"created_on"`
+	UpdatedOn                    string         `db:"updated_on"`
+	PublishedOn                  sql.NullString `db:"published_on"`
+	Title                        string         `db:"title"`
+	Subtitle                     sql.NullString `db:"subtitle"`
+	Description                  sql.NullString `db:"description"`
+	ListingTerms                 sql.NullString `db:"listing_terms"`
+	State                        string         `db:"state"`
+	Share                        sql.NullString `db:"share"`
+	ApplicationPackage           sql.NullString `db:"application_package"`
+	BusinessNeeds                sql.NullString `db:"business_needs"`
+	UsageExamples                sql.NullString `db:"usage_examples"`
+	DataAttributes               sql.NullString `db:"data_attributes"`
+	Categories                   sql.NullString `db:"categories"`
+	Resources                    sql.NullString `db:"resources"`
+	Profile                      sql.NullString `db:"profile"`
+	CustomizedContactInfo        sql.NullString `db:"customized_contact_info"`
+	DataDictionary               sql.NullString `db:"data_dictionary"`
+	DataPreview                  sql.NullString `db:"data_preview"`
+	Comment                      sql.NullString `db:"comment"`
+	Revisions                    string         `db:"revisions"`
+	TargetAccounts               sql.NullString `db:"target_accounts"`
+	Regions                      sql.NullString `db:"regions"`
+	RefreshSchedule              sql.NullString `db:"refresh_schedule"`
+	RefreshType                  sql.NullString `db:"refresh_type"`
+	ReviewState                  string         `db:"review_state"`
+	RejectionReason              sql.NullString `db:"rejection_reason"`
+	UnpublishedByAdminReasons    sql.NullString `db:"unpublished_by_admin_reasons"`
+	IsMonetized                  bool           `db:"is_monetized"`
+	IsApplication                bool           `db:"is_application"`
+	IsTargeted                   bool           `db:"is_targeted"`
+	IsLimitedTrial               sql.NullBool   `db:"is_limited_trial"`
+	IsByRequest                  sql.NullBool   `db:"is_by_request"`
+	LimitedTrialPlan             sql.NullString `db:"limited_trial_plan"`
+	RetriedOn                    sql.NullString `db:"retried_on"`
+	ScheduledDropTime            sql.NullString `db:"scheduled_drop_time"`
+	ManifestYaml                 string         `db:"manifest_yaml"`
+	Distribution                 sql.NullString `db:"distribution"`
+	IsMountlessQueryable         sql.NullBool   `db:"is_mountless_queryable"`
+	OrganizationProfileName      sql.NullString `db:"organization_profile_name"`
+	UniformListingLocator        sql.NullString `db:"uniform_listing_locator"`
+	TrialDetails                 sql.NullString `db:"trial_details"`
+	ApproverContact              sql.NullString `db:"approver_contact"`
+	SupportContact               sql.NullString `db:"support_contact"`
+	LiveVersionUri               sql.NullString `db:"live_version_uri"`
+	LastCommittedVersionUri      sql.NullString `db:"last_committed_version_uri"`
+	LastCommittedVersionName     sql.NullString `db:"last_committed_version_name"`
+	LastCommittedVersionAlias    sql.NullString `db:"last_committed_version_alias"`
+	PublishedVersionUri          sql.NullString `db:"published_version_uri"`
+	PublishedVersionName         sql.NullString `db:"published_version_name"`
+	PublishedVersionAlias        sql.NullString `db:"published_version_alias"`
+	IsShare                      sql.NullBool   `db:"is_share"`
+	RequestApprovalType          sql.NullString `db:"request_approval_type"`
+	MonetizationDisplayOrder     sql.NullString `db:"monetization_display_order"`
+	LegacyUniformListingLocators sql.NullString `db:"legacy_uniform_listing_locators"`
 }
 
 type ListingDetails struct {
-	GlobalName                string
-	Name                      string
-	Owner                     string
-	OwnerRoleType             string
-	CreatedOn                 string
-	UpdatedOn                 string
-	PublishedOn               string
-	Title                     string
-	Subtitle                  string
-	Description               string
-	TargetAccounts            string
-	IsMonetized               string
-	IsApplication             string
-	IsTargeted                string
-	State                     string
-	Revisions                 string
-	Comment                   string
-	RefreshedSchedule         string
-	RefreshType               string
-	BusinessNeeds             string
-	UsageExamples             string
-	ListingTerms              string
-	Profile                   string
-	CustomizedContactInfo     string
-	ApplicationPackage        string
-	DataDictionary            string
-	Regions                   string
-	ManifestYaml              string
-	ReviewState               string
-	RejectionReason           string
-	Categories                string
-	Resources                 string
-	UnpublishedByAdminReasons string
+	GlobalName                   string
+	Name                         string
+	Owner                        string
+	OwnerRoleType                string
+	CreatedOn                    string
+	UpdatedOn                    string
+	PublishedOn                  *string
+	Title                        string
+	Subtitle                     *string
+	Description                  *string
+	ListingTerms                 *string
+	State                        ListingState
+	Share                        *AccountObjectIdentifier
+	ApplicationPackage           *AccountObjectIdentifier
+	BusinessNeeds                *string
+	UsageExamples                *string
+	DataAttributes               *string
+	Categories                   *string
+	Resources                    *string
+	Profile                      *string
+	CustomizedContactInfo        *string
+	DataDictionary               *string
+	DataPreview                  *string
+	Comment                      *string
+	Revisions                    string
+	TargetAccounts               *string
+	Regions                      *string
+	RefreshSchedule              *string
+	RefreshType                  *string
+	ReviewState                  string
+	RejectionReason              *string
+	UnpublishedByAdminReasons    *string
+	IsMonetized                  bool
+	IsApplication                bool
+	IsTargeted                   bool
+	IsLimitedTrial               *bool
+	IsByRequest                  *bool
+	LimitedTrialPlan             *string
+	RetriedOn                    *string
+	ScheduledDropTime            *string
+	ManifestYaml                 string
+	Distribution                 *string
+	IsMountlessQueryable         *bool
+	OrganizationProfileName      *string
+	UniformListingLocator        *string
+	TrialDetails                 *string
+	ApproverContact              *string
+	SupportContact               *string
+	LiveVersionUri               *string
+	LastCommittedVersionUri      *string
+	LastCommittedVersionName     *string
+	LastCommittedVersionAlias    *string
+	PublishedVersionUri          *string
+	PublishedVersionName         *string
+	PublishedVersionAlias        *string
+	IsShare                      *bool
+	RequestApprovalType          *string
+	MonetizationDisplayOrder     *string
+	LegacyUniformListingLocators *string
 }

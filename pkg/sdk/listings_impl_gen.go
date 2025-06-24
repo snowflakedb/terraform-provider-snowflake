@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"context"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
@@ -160,26 +159,38 @@ func (r *ShowListingRequest) toOpts() *ShowListingOptions {
 }
 
 func (r listingDBRow) convert() *Listing {
-	return &Listing{
-		GlobalName:     "",
-		Name:           "",
-		Title:          "",
-		Subtitle:       "",
-		Profile:        "",
-		CreatedOn:      "",
-		UpdatedOn:      "",
-		PublishedOn:    "",
-		State:          "",
-		ReviewState:    "",
-		Comment:        "",
-		Owner:          "",
-		OwnerRoleType:  "",
-		Regions:        "",
-		TargetAccounts: "",
-		IsMonetized:    "",
-		IsApplication:  "",
-		IsTargeted:     "",
+	l := &Listing{
+		GlobalName:     r.GlobalName,
+		Name:           r.Name,
+		Title:          r.Title,
+		Profile:        r.Profile,
+		CreatedOn:      r.CreatedOn,
+		UpdatedOn:      r.UpdatedOn,
+		ReviewState:    r.ReviewState,
+		Owner:          r.Owner,
+		OwnerRoleType:  r.OwnerRoleType,
+		TargetAccounts: r.TargetAccounts,
+		IsMonetized:    r.IsMonetized,
+		IsApplication:  r.IsApplication,
+		IsTargeted:     r.IsTargeted,
 	}
+	if state, err := ToListingState(r.State); err == nil {
+		l.State = state
+	}
+	mapStringIfNotNil(&l.Subtitle, r.Subtitle)
+	mapStringIfNotNil(&l.PublishedOn, r.PublishedOn)
+	mapStringIfNotNil(&l.Comment, r.Comment)
+	mapStringIfNotNil(&l.Regions, r.Regions)
+	mapBoolIfNotNil(&l.IsLimitedTrial, r.IsLimitedTrial)
+	mapBoolIfNotNil(&l.IsByRequest, r.IsByRequest)
+	mapStringIfNotNil(&l.Distribution, r.Distribution)
+	mapBoolIfNotNil(&l.IsMountlessQueryable, r.IsMountlessQueryable)
+	mapStringIfNotNil(&l.RejectedOn, r.RejectedOn)
+	mapStringIfNotNil(&l.OrganizationProfileName, r.OrganizationProfileName)
+	mapStringIfNotNil(&l.UniformListingLocator, r.UniformListingLocator)
+	mapStringIfNotNil(&l.DetailedTargetAccounts, r.DetailedTargetAccounts)
+
+	return l
 }
 
 func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
@@ -191,5 +202,68 @@ func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
 }
 
 func (r listingDetailsDBRow) convert() *ListingDetails {
-	return &ListingDetails{}
+	ld := &ListingDetails{
+		GlobalName:    r.GlobalName,
+		Name:          r.Name,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
+		CreatedOn:     r.CreatedOn,
+		UpdatedOn:     r.UpdatedOn,
+		Title:         r.Title,
+		Revisions:     r.Revisions,
+		ReviewState:   r.ReviewState,
+		ManifestYaml:  r.ManifestYaml,
+		IsMonetized:   r.IsMonetized,
+		IsApplication: r.IsApplication,
+		IsTargeted:    r.IsTargeted,
+	}
+
+	mapStringIfNotNil(&ld.PublishedOn, r.PublishedOn)
+	mapStringIfNotNil(&ld.Subtitle, r.Subtitle)
+	mapStringIfNotNil(&ld.Description, r.Description)
+	mapStringIfNotNil(&ld.ListingTerms, r.ListingTerms)
+	mapStringWithMapping(&ld.State, r.State, ToListingState)
+	mapStringWithMappingIfNotNil(&ld.Share, r.Share, ParseAccountObjectIdentifier)
+	mapStringWithMappingIfNotNil(&ld.ApplicationPackage, r.ApplicationPackage, ParseAccountObjectIdentifier)
+	mapStringIfNotNil(&ld.BusinessNeeds, r.BusinessNeeds)
+	mapStringIfNotNil(&ld.UsageExamples, r.UsageExamples)
+	mapStringIfNotNil(&ld.DataAttributes, r.DataAttributes)
+	mapStringIfNotNil(&ld.Categories, r.Categories)
+	mapStringIfNotNil(&ld.Resources, r.Resources)
+	mapStringIfNotNil(&ld.Profile, r.Profile)
+	mapStringIfNotNil(&ld.CustomizedContactInfo, r.CustomizedContactInfo)
+	mapStringIfNotNil(&ld.DataDictionary, r.DataDictionary)
+	mapStringIfNotNil(&ld.DataPreview, r.DataPreview)
+	mapStringIfNotNil(&ld.Comment, r.Comment)
+	mapStringIfNotNil(&ld.TargetAccounts, r.TargetAccounts)
+	mapStringIfNotNil(&ld.Regions, r.Regions)
+	mapStringIfNotNil(&ld.RefreshSchedule, r.RefreshSchedule)
+	mapStringIfNotNil(&ld.RefreshType, r.RefreshType)
+	mapStringIfNotNil(&ld.RejectionReason, r.RejectionReason)
+	mapStringIfNotNil(&ld.UnpublishedByAdminReasons, r.UnpublishedByAdminReasons)
+	mapBoolIfNotNil(&ld.IsLimitedTrial, r.IsLimitedTrial)
+	mapBoolIfNotNil(&ld.IsByRequest, r.IsByRequest)
+	mapStringIfNotNil(&ld.LimitedTrialPlan, r.LimitedTrialPlan)
+	mapStringIfNotNil(&ld.RetriedOn, r.RetriedOn)
+	mapStringIfNotNil(&ld.ScheduledDropTime, r.ScheduledDropTime)
+	mapStringIfNotNil(&ld.Distribution, r.Distribution)
+	mapBoolIfNotNil(&ld.IsMountlessQueryable, r.IsMountlessQueryable)
+	mapStringIfNotNil(&ld.OrganizationProfileName, r.OrganizationProfileName)
+	mapStringIfNotNil(&ld.UniformListingLocator, r.UniformListingLocator)
+	mapStringIfNotNil(&ld.TrialDetails, r.TrialDetails)
+	mapStringIfNotNil(&ld.ApproverContact, r.ApproverContact)
+	mapStringIfNotNil(&ld.SupportContact, r.SupportContact)
+	mapStringIfNotNil(&ld.LiveVersionUri, r.LiveVersionUri)
+	mapStringIfNotNil(&ld.LastCommittedVersionUri, r.LastCommittedVersionUri)
+	mapStringIfNotNil(&ld.LastCommittedVersionName, r.LastCommittedVersionName)
+	mapStringIfNotNil(&ld.LastCommittedVersionAlias, r.LastCommittedVersionAlias)
+	mapStringIfNotNil(&ld.PublishedVersionUri, r.PublishedVersionUri)
+	mapStringIfNotNil(&ld.PublishedVersionName, r.PublishedVersionName)
+	mapStringIfNotNil(&ld.PublishedVersionAlias, r.PublishedVersionAlias)
+	mapBoolIfNotNil(&ld.IsShare, r.IsShare)
+	mapStringIfNotNil(&ld.RequestApprovalType, r.RequestApprovalType)
+	mapStringIfNotNil(&ld.MonetizationDisplayOrder, r.MonetizationDisplayOrder)
+	mapStringIfNotNil(&ld.LegacyUniformListingLocators, r.LegacyUniformListingLocators)
+
+	return ld
 }
