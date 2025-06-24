@@ -6,6 +6,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -81,7 +82,7 @@ func TestInt_NetworkRules(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = client.NetworkRules.ShowByID(ctx, id)
-		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+		require.ErrorIs(t, err, collections.ErrObjectNotFound)
 	})
 
 	t.Run("Show", func(t *testing.T) {
