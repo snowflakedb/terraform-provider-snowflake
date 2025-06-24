@@ -193,6 +193,7 @@ func (c *UserClient) UnsetDefaultSecondaryRoles(t *testing.T, id sdk.AccountObje
 	require.NoError(t, err)
 }
 
+// TODO (SNOW-2173061): Use the SDK client.
 func (c *UserClient) AddProgrammaticAccessToken(t *testing.T, id sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier) string {
 	t.Helper()
 	ctx := context.Background()

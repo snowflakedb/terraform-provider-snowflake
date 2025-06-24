@@ -67,14 +67,14 @@ func (c *TestClient) TempTomlConfigWithCustomPermissionsForServiceUser(t *testin
 	}, permissions)
 }
 
-func (c *TestClient) TempTomlConfigForServiceUserWithPat(t *testing.T, serviceUser *UserWithPat) *TmpTomlConfig {
+func (c *TestClient) TempTomlConfigForServiceUserWithPat(t *testing.T, serviceUser *TmpServiceUserWithPat) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
 		return TomlConfigForServiceUserWithPat(t, profile, serviceUser.TmpUser.UserId, serviceUser.TmpUser.RoleId, serviceUser.TmpUser.WarehouseId, serviceUser.TmpUser.AccountId, serviceUser.Pat)
 	})
 }
 
-func (c *TestClient) TempTomlConfigForServiceUserWithPatAsPassword(t *testing.T, serviceUser *UserWithPat) *TmpTomlConfig {
+func (c *TestClient) TempTomlConfigForServiceUserWithPatAsPassword(t *testing.T, serviceUser *TmpServiceUserWithPat) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
 		return TomlConfigForLegacyServiceUser(t, profile, serviceUser.TmpUser.UserId, serviceUser.TmpUser.RoleId, serviceUser.TmpUser.WarehouseId, serviceUser.TmpUser.AccountId, serviceUser.Pat)
