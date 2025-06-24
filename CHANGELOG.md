@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.6](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.0.5...v1.0.6) (2025-06-24)
+
+
+### 🔧 **Misc**
+
+* prepare v1.0.6 release ([dc2f79e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/dc2f79e141c9a1914219d39068be81d8ec63543f))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix account parameter mapping ([#3794](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3794)) ([1d13b91](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1d13b9183c95848d1526777e59d041923a4ec185))
+
 ## [1.0.5](https://github.com/Snowflake-Labs/terraform-provider-snowflake/compare/v1.0.4...v1.0.5) (2025-03-25)
 
 
