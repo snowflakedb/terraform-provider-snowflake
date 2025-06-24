@@ -29,8 +29,8 @@ func TestListings_Create(t *testing.T) {
 	})
 
 	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present", func(t *testing.T) {
-		shareId := randomSchemaObjectIdentifier()
-		applicationPackageId := randomSchemaObjectIdentifier()
+		shareId := randomAccountObjectIdentifier()
+		applicationPackageId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.With = &ListingWith{
 			Share:              &shareId,
@@ -58,7 +58,7 @@ usage_examples:
 	})
 
 	t.Run("all options with stage", func(t *testing.T) {
-		shareId := randomSchemaObjectIdentifier()
+		shareId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.With = &ListingWith{
@@ -84,7 +84,7 @@ usage_examples:
 	})
 
 	t.Run("all options with application package", func(t *testing.T) {
-		applicationPackageId := randomSchemaObjectIdentifier()
+		applicationPackageId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.With = &ListingWith{
@@ -137,8 +137,8 @@ func TestListings_CreateFromStage(t *testing.T) {
 	})
 
 	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present", func(t *testing.T) {
-		shareId := randomSchemaObjectIdentifier()
-		applicationPackageId := randomSchemaObjectIdentifier()
+		shareId := randomAccountObjectIdentifier()
+		applicationPackageId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.With = &ListingWith{
 			Share:              &shareId,
@@ -159,7 +159,7 @@ func TestListings_CreateFromStage(t *testing.T) {
 
 	t.Run("all options with share", func(t *testing.T) {
 		stageId := randomSchemaObjectIdentifier()
-		shareId := randomSchemaObjectIdentifier()
+		shareId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.With = &ListingWith{
@@ -176,7 +176,7 @@ func TestListings_CreateFromStage(t *testing.T) {
 
 	t.Run("all options with application package", func(t *testing.T) {
 		stageId := randomSchemaObjectIdentifier()
-		applicationPackage := randomSchemaObjectIdentifier()
+		applicationPackage := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.With = &ListingWith{
@@ -278,7 +278,7 @@ func TestListings_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.AddVersion = &AddListingVersion{
 			IfNotExists: Bool(true),
-			VersionName: String("version-name"),
+			VersionName: "version-name",
 			From: StageLocation{
 				stage: stageId,
 				path:  "dir/subdir",

@@ -158,6 +158,7 @@ type Listing struct {
 func (v *Listing) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
+
 func (v *Listing) ObjectType() ObjectType {
 	return ObjectTypeListing
 }
