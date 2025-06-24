@@ -26,17 +26,25 @@ var listingDbRow = g.DbStruct("listingDBRow").
 	Text("profile").
 	Text("created_on").
 	Text("updated_on").
-	Text("published_on").
+	OptionalText("published_on").
 	Text("state").
 	Text("review_state").
-	Text("comment").
+	OptionalText("comment").
 	Text("owner").
 	Text("owner_role_type").
-	Text("regions").
+	OptionalText("regions").
 	Text("target_accounts").
-	Text("is_monetized").
-	Text("is_application").
-	Text("is_targeted")
+	Bool("is_monetized").
+	Bool("is_application").
+	Bool("is_targeted").
+	OptionalBool("is_limited_trial").
+	OptionalBool("is_by_request").
+	OptionalText("distribution").
+	OptionalBool("is_mountless_queryable").
+	OptionalText("rejected_on").
+	OptionalText("organization_profile_name").
+	OptionalText("uniform_listing_locator").
+	OptionalText("detailed_target_accounts")
 
 var listing = g.PlainStruct("Listing").
 	Text("GlobalName").
@@ -46,17 +54,25 @@ var listing = g.PlainStruct("Listing").
 	Text("Profile").
 	Text("CreatedOn").
 	Text("UpdatedOn").
-	Text("PublishedOn").
+	OptionalText("PublishedOn").
 	Text("State").
 	Text("ReviewState").
-	Text("Comment").
+	OptionalText("Comment").
 	Text("Owner").
 	Text("OwnerRoleType").
-	Text("Regions").
+	OptionalText("Regions").
 	Text("TargetAccounts").
-	Text("IsMonetized").
-	Text("IsApplication").
-	Text("IsTargeted")
+	Bool("IsMonetized").
+	Bool("IsApplication").
+	Bool("IsTargeted").
+	OptionalBool("IsLimitedTrial").
+	OptionalBool("IsByRequest").
+	OptionalText("Distribution").
+	OptionalBool("IsMountlessQueryable").
+	OptionalText("RejectedOn").
+	OptionalText("OrganizationProfileName").
+	OptionalText("UniformListingLocator").
+	OptionalText("DetailedTargetAccounts")
 
 var listingDetailsDbRow = g.DbStruct("listingDetailsDBRow").
 	Text("global_name").
@@ -75,13 +91,13 @@ var listingDetailsDbRow = g.DbStruct("listingDetailsDBRow").
 	Text("application_package").
 	Text("business_needs").
 	Text("usage_examples").
-	Text("data_attributes"). // TODO: Not documented
+	OptionalText("data_attributes"). // TODO: Not documented
 	Text("categories").
 	Text("resources").
 	Text("profile").
 	Text("customized_contact_info").
 	Text("data_dictionary").
-	Text("data_preview"). // TODO: Not documented
+	OptionalText("data_preview"). // TODO: Not documented
 	Text("comment").
 	Text("revisions").
 	Text("target_accounts").
@@ -94,93 +110,93 @@ var listingDetailsDbRow = g.DbStruct("listingDetailsDBRow").
 	Text("is_monetized").
 	Text("is_application").
 	Text("is_targeted").
-	Text("is_limited_trial").    // TODO: Not documented
-	Text("is_by_request").       // TODO: Not documented
-	Text("limited_trial_plan").  // TODO: Not documented
-	Text("retried_on").          // TODO: Not documented
-	Text("scheduled_drop_time"). // TODO: Not documented
+	OptionalText("is_limited_trial").    // TODO: Not documented
+	OptionalText("is_by_request").       // TODO: Not documented
+	OptionalText("limited_trial_plan").  // TODO: Not documented
+	OptionalText("retried_on").          // TODO: Not documented
+	OptionalText("scheduled_drop_time"). // TODO: Not documented
 	Text("manifest_yaml").
-	Text("distribution").                   // TODO: Not documented
-	Text("is_mountless_queryable").         // TODO: Not documented
-	Text("organization_profile_name").      // TODO: Not documented
-	Text("uniform_listing_locator").        // TODO: Not documented
-	Text("trial_details").                  // TODO: Not documented
-	Text("trial_details").                  // TODO: Not documented
-	Text("approver_contact").               // TODO: Not documented
-	Text("support_contact").                // TODO: Not documented
-	Text("live_version_uri").               // TODO: Not documented
-	Text("last_committed_version_uri").     // TODO: Not documented
-	Text("last_committed_version_name").    // TODO: Not documented
-	Text("last_committed_version_alias").   // TODO: Not documented
-	Text("published_version_uri").          // TODO: Not documented
-	Text("published_version_name").         // TODO: Not documented
-	Text("published_version_alias").        // TODO: Not documented
-	Text("is_share").                       // TODO: Not documented
-	Text("request_approval_type").          // TODO: Not documented
-	Text("monetization_display_order").     // TODO: Not documented
-	Text("legacy_uniform_listing_locators") // TODO: Not documented
+	OptionalText("distribution").                   // TODO: Not documented
+	OptionalText("is_mountless_queryable").         // TODO: Not documented
+	OptionalText("organization_profile_name").      // TODO: Not documented
+	OptionalText("uniform_listing_locator").        // TODO: Not documented
+	OptionalText("trial_details").                  // TODO: Not documented
+	OptionalText("trial_details").                  // TODO: Not documented
+	OptionalText("approver_contact").               // TODO: Not documented
+	OptionalText("support_contact").                // TODO: Not documented
+	OptionalText("live_version_uri").               // TODO: Not documented
+	OptionalText("last_committed_version_uri").     // TODO: Not documented
+	OptionalText("last_committed_version_name").    // TODO: Not documented
+	OptionalText("last_committed_version_alias").   // TODO: Not documented
+	OptionalText("published_version_uri").          // TODO: Not documented
+	OptionalText("published_version_name").         // TODO: Not documented
+	OptionalText("published_version_alias").        // TODO: Not documented
+	OptionalText("is_share").                       // TODO: Not documented
+	OptionalText("request_approval_type").          // TODO: Not documented
+	OptionalText("monetization_display_order").     // TODO: Not documented
+	OptionalText("legacy_uniform_listing_locators") // TODO: Not documented
 
 var listingDetails = g.PlainStruct("ListingDetails").
-	Text("global_name").
-	Text("name").
-	Text("owner").
-	Text("owner_role_type").
-	Text("created_on").
-	Text("updated_on").
-	Text("published_on").
-	Text("title").
-	Text("subtitle").
-	Text("description").
-	Text("listing_terms").
-	Text("state").
-	Text("share").
-	Text("application_package").
-	Text("business_needs").
-	Text("usage_examples").
-	Text("data_attributes").
-	Text("categories").
-	Text("resources").
-	Text("profile").
-	Text("customized_contact_info").
-	Text("data_dictionary").
-	Text("data_preview").
-	Text("comment").
-	Text("revisions").
-	Text("target_accounts").
-	Text("regions").
-	Text("refresh_schedule").
-	Text("refresh_type").
-	Text("review_state").
-	Text("rejection_reason").
-	Text("unpublished_by_admin_reasons").
-	Text("is_monetized").
-	Text("is_application").
-	Text("is_targeted").
-	Text("is_limited_trial").
-	Text("is_by_request").
-	Text("limited_trial_plan").
-	Text("retried_on").
-	Text("scheduled_drop_time").
-	Text("manifest_yaml").
-	Text("distribution").
-	Text("is_mountless_queryable").
-	Text("organization_profile_name").
-	Text("uniform_listing_locator").
-	Text("trial_details").
-	Text("trial_details").
-	Text("approver_contact").
-	Text("support_contact").
-	Text("live_version_uri").
-	Text("last_committed_version_uri").
-	Text("last_committed_version_name").
-	Text("last_committed_version_alias").
-	Text("published_version_uri").
-	Text("published_version_name").
-	Text("published_version_alias").
-	Text("is_share").
-	Text("request_approval_type").
-	Text("monetization_display_order").
-	Text("legacy_uniform_listing_locators")
+	Text("GlobalName").
+	Text("Name").
+	Text("Owner").
+	Text("OwnerRoleType").
+	Text("CreatedOn").
+	Text("UpdatedOn").
+	Text("PublishedOn").
+	Text("Title").
+	Text("Subtitle").
+	Text("Description").
+	Text("ListingTerms").
+	Text("State").
+	Text("Share").
+	Text("ApplicationPackage").
+	Text("BusinessNeeds").
+	Text("UsageExamples").
+	OptionalText("DataAttributes").
+	Text("Categories").
+	Text("Resources").
+	Text("Profile").
+	Text("CustomizedContactInfo").
+	Text("DataDictionary").
+	OptionalText("DataPreview").
+	Text("Comment").
+	Text("Revisions").
+	Text("TargetAccounts").
+	Text("Regions").
+	Text("RefreshSchedule").
+	Text("RefreshType").
+	Text("ReviewState").
+	Text("RejectionReason").
+	Text("UnpublishedByAdminReasons").
+	Text("IsMonetized").
+	Text("IsApplication").
+	Text("IsTargeted").
+	OptionalText("IsLimitedTrial").
+	OptionalText("IsByRequest").
+	OptionalText("LimitedTrialPlan").
+	OptionalText("RetriedOn").
+	OptionalText("ScheduledDropTime").
+	Text("ManifestYaml").
+	OptionalText("Distribution").
+	OptionalText("IsMountlessQueryable").
+	OptionalText("OrganizationProfileName").
+	OptionalText("UniformListingLocator").
+	OptionalText("TrialDetails").
+	OptionalText("TrialDetails").
+	OptionalText("ApproverContact").
+	OptionalText("SupportContact").
+	OptionalText("LiveVersionUri").
+	OptionalText("LastCommittedVersionUri").
+	OptionalText("LastCommittedVersionName").
+	OptionalText("LastCommittedVersionAlias").
+	OptionalText("PublishedVersionUri").
+	OptionalText("PublishedVersionName").
+	OptionalText("PublishedVersionAlias").
+	OptionalText("IsShare").
+	OptionalText("RequestApprovalType").
+	OptionalText("MonetizationDisplayOrder").
+	OptionalText("LegacyUniformListingLocators")
 
 var ListingsDef = g.NewInterface(
 	"Listings",
