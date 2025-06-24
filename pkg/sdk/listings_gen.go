@@ -11,7 +11,7 @@ type Listings interface {
 	Show(ctx context.Context, request *ShowListingRequest) ([]Listing, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
-	Describe(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
+	Describe(ctx context.Context, id AccountObjectIdentifier) (*ListingDetails, error)
 }
 
 // CreateListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-listing.
@@ -149,4 +149,76 @@ type DescribeListingOptions struct {
 	listing  bool                    `ddl:"static" sql:"LISTING"`
 	name     AccountObjectIdentifier `ddl:"identifier"`
 	Revision *ListingRevision        `ddl:"parameter,no_quotes" sql:"REVISION"`
+}
+
+type listingDetailsDBRow struct {
+	GlobalName                string `db:"global_name"`
+	Name                      string `db:"name"`
+	Owner                     string `db:"owner"`
+	OwnerRoleType             string `db:"owner_role_type"`
+	CreatedOn                 string `db:"created_on"`
+	UpdatedOn                 string `db:"updated_on"`
+	PublishedOn               string `db:"published_on"`
+	Title                     string `db:"title"`
+	Subtitle                  string `db:"subtitle"`
+	Description               string `db:"description"`
+	TargetAccounts            string `db:"target_accounts"`
+	IsMonetized               string `db:"is_monetized"`
+	IsApplication             string `db:"is_application"`
+	IsTargeted                string `db:"is_targeted"`
+	State                     string `db:"state"`
+	Revisions                 string `db:"revisions"`
+	Comment                   string `db:"comment"`
+	RefreshedSchedule         string `db:"refreshed_schedule"`
+	RefreshType               string `db:"refresh_type"`
+	BusinessNeeds             string `db:"business_needs"`
+	UsageExamples             string `db:"usage_examples"`
+	ListingTerms              string `db:"listing_terms"`
+	Profile                   string `db:"profile"`
+	CustomizedContactInfo     string `db:"customized_contact_info"`
+	ApplicationPackage        string `db:"application_package"`
+	DataDictionary            string `db:"data_dictionary"`
+	Regions                   string `db:"regions"`
+	ManifestYaml              string `db:"manifest_yaml"`
+	ReviewState               string `db:"review_state"`
+	RejectionReason           string `db:"rejection_reason"`
+	Categories                string `db:"categories"`
+	Resources                 string `db:"resources"`
+	UnpublishedByAdminReasons string `db:"unpublished_by_admin_reasons"`
+}
+
+type ListingDetails struct {
+	GlobalName                string
+	Name                      string
+	Owner                     string
+	OwnerRoleType             string
+	CreatedOn                 string
+	UpdatedOn                 string
+	PublishedOn               string
+	Title                     string
+	Subtitle                  string
+	Description               string
+	TargetAccounts            string
+	IsMonetized               string
+	IsApplication             string
+	IsTargeted                string
+	State                     string
+	Revisions                 string
+	Comment                   string
+	RefreshedSchedule         string
+	RefreshType               string
+	BusinessNeeds             string
+	UsageExamples             string
+	ListingTerms              string
+	Profile                   string
+	CustomizedContactInfo     string
+	ApplicationPackage        string
+	DataDictionary            string
+	Regions                   string
+	ManifestYaml              string
+	ReviewState               string
+	RejectionReason           string
+	Categories                string
+	Resources                 string
+	UnpublishedByAdminReasons string
 }
