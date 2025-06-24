@@ -206,4 +206,10 @@ clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-
 
 generate-all-assertions-and-config-models: generate-snowflake-object-assertions generate-snowflake-object-parameters-assertions generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions generate-resource-model-builders generate-provider-model-builders generate-datasource-model-builders ## generate all assertions and config models
 
+generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and schema for Plugin Framework PoC
+	go generate ./pkg/testacc/13_generate_poc_provider_model_and_schema.go
+
+clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
+	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
+
 .PHONY: build-local clean-generator-poc dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf

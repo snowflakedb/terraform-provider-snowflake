@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // ------ provider interface implementation ------
@@ -23,24 +22,15 @@ type pluginFrameworkPocProvider struct {
 	version string
 }
 
-type pluginFrameworkPocProviderModelV0 struct {
-	Todo types.String `tfsdk:"todo"`
-}
-
 func (p *pluginFrameworkPocProvider) Metadata(_ context.Context, _ provider.MetadataRequest, response *provider.MetadataResponse) {
 	response.TypeName = "snowflake"
 	response.Version = p.version
 }
 
 func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.SchemaRequest, response *provider.SchemaResponse) {
-	// TODO [mux-PR]: schema needs to match based on https://developer.hashicorp.com/terraform/plugin/framework/migrating/mux#preparedconfig-response-from-multiple-servers
+	// schema needs to match based on https://developer.hashicorp.com/terraform/plugin/framework/migrating/mux#preparedconfig-response-from-multiple-servers
 	response.Schema = schema.Schema{
-		Attributes: map[string]schema.Attribute{
-			"todo": schema.StringAttribute{
-				Description: "TODO",
-				Optional:    true,
-			},
-		},
+		Attributes: pluginFrameworkPocProviderSchemaV0,
 	}
 }
 
@@ -54,14 +44,15 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 	// Read configuration data into model
 	response.Diagnostics.Append(request.Config.Get(ctx, &configModel)...)
 
-	var todo string
-	if !configModel.Todo.IsNull() {
-		todo = configModel.Todo.ValueString()
+	// TODO [mux-PR]: configure other attributes
+	var authenticator string
+	if !configModel.Authenticator.IsNull() {
+		authenticator = configModel.Authenticator.ValueString()
 	} else {
-		todo = todoFromEnv
+		authenticator = todoFromEnv
 	}
 
-	if todo == "" {
+	if authenticator == "" {
 		response.Diagnostics.AddError(
 			"TODO summary",
 			"TODO details",
