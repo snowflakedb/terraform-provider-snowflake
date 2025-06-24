@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.1.0...v2.1.1) (2025-06-24)
+
+
+### 🔧 **Misc**
+
+* prepare v2.1.1 release ([f6561a4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f6561a4c1ed019c47b0168d65fc74158ac74e6ee))
+
+
+### 🐛 **Bug fixes:**
+
+* account parameter mapping ([e52be9b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e52be9b857408f4c3918a9b32c54e13881ed5cf5))
+
 ## [2.1.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.0.0...v2.1.0) (2025-05-12)
 
 
@@ -47,6 +59,18 @@
 * Set value into correct field for field transformers ([#3646](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3646)) ([1da734f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1da734f7c298a85c14c4e1b1ec889e83817d3ccf))
 * Suppress diff for network policy in user resources ([#3657](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3657)) ([b4900c6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b4900c6665e86208564762b4a5adc1765ad202d5)), closes [#3655](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3655)
 
+## [2.0.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.0.0...v2.0.1) (2025-06-24)
+
+
+### 🔧 **Misc**
+
+* prepare v2.0.1 release ([d17bcec](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d17bcec7ed9f79b8345c9ca0dff50f8a6e0c6ee0))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix account parameter mapping ([#3797](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3797)) ([837bf9e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/837bf9ecf01b8320855695db1c9a0997c8e06267))
+
 ## [2.0.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.1...v2.0.0) (2025-04-23)
 
 
@@ -71,6 +95,18 @@
 ### 🐛 **Bug fixes:**
 
 * Add single quotes to CSV_TIMESTAMP_FORMAT parameter value ([#3582](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3582)) ([bad52e3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/bad52e378b1c823240756c9c6444f55842d9189b))
+
+## [1.2.2](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.1...v1.2.2) (2025-06-24)
+
+
+### 🔧 **Misc**
+
+* prepare v1.2.2 release ([f8445d8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f8445d89799f856e839b3a7c0fb8035fe71bbf6b))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix account parameter mapping ([#3796](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3796)) ([44ed482](https://github.com/snowflakedb/terraform-provider-snowflake/commit/44ed482ed10afe577fa07668ca8921cdecff57fb))
 
 ## [1.2.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.0...v1.2.1) (2025-04-22)
 
@@ -106,6 +142,18 @@
 * Fix identifier tests ([#3561](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3561)) ([fd295a5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/fd295a56b7f9c6a5d719858db062f7fbe9bcfde0))
 * Handle drop operation safely ([#3570](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3570)) ([7bd15fd](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7bd15fd1ad13048e1d075310ad52356ac3affaad))
 * Split acceptance tests ([#3562](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3562)) ([73ad5d9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/73ad5d9f8563993730899ecf4c6d0aff324da445))
+
+## [1.1.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.1.0...v1.1.1) (2025-06-24)
+
+### 🔧 **Misc**
+
+* prepare v1.1.1 release ([96454d7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/96454d7b1e6e1d3c4d162d8487d85b9a20d0497f))
+* update gosnowflake driver version ([0daa7b9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0daa7b9cfa087450dae4af28672c67f689ab68d4))
+* update gosnowflake driver version ([a0289d4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a0289d48a53db2b4bbd3d1947fe3df61f6f11402))
+
+### 🐛 **Bug fixes:**
+
+* Fix account parameter mapping ([#3795](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3795)) ([e953bad](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e953bad901bdd97985a0bacb43173103743b62c6))
 
 ## [1.1.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.0.5...v1.1.0) (2025-04-10)
 
@@ -165,6 +213,18 @@
 * ok-to-test permission ([#3475](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3475)) ([0630eb9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0630eb97903ab5f3197c28cd7029e87f065d0709))
 * Remove the outdated section from README's ToC ([#3471](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3471)) ([8398a44](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8398a44acbb875d29c7b285fd5e8746911d5a1b6))
 * Return a warning when grant_privileges_to_account_role is used with all_privileges ([#3512](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3512)) ([a2981b1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a2981b10fd5a9dcbd9aa2eee5bd275f4e2bcbc77))
+
+## [1.0.6](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.0.5...v1.0.6) (2025-06-24)
+
+
+### 🔧 **Misc**
+
+* prepare v1.0.6 release ([dc2f79e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/dc2f79e141c9a1914219d39068be81d8ec63543f))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix account parameter mapping ([#3794](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3794)) ([1d13b91](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1d13b9183c95848d1526777e59d041923a4ec185))
 
 ## [1.0.5](https://github.com/Snowflake-Labs/terraform-provider-snowflake/compare/v1.0.4...v1.0.5) (2025-03-25)
 
