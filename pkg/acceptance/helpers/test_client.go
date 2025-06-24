@@ -41,7 +41,6 @@ type TestClient struct {
 	HybridTable                  *HybridTableClient
 	ImageRepository              *ImageRepositoryClient
 	InformationSchema            *InformationSchemaClient
-	Listing                      *ListingClient
 	MaskingPolicy                *MaskingPolicyClient
 	MaterializedView             *MaterializedViewClient
 	NetworkPolicy                *NetworkPolicyClient
@@ -124,7 +123,6 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		HybridTable:                  NewHybridTableClient(context, idsGenerator),
 		ImageRepository:              NewImageRepositoryClient(context, idsGenerator),
 		InformationSchema:            NewInformationSchemaClient(context, idsGenerator),
-		Listing:                      NewListingClient(context, idsGenerator),
 		MaskingPolicy:                NewMaskingPolicyClient(context, idsGenerator),
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
