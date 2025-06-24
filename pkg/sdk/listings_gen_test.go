@@ -242,7 +242,7 @@ func TestListings_Alter(t *testing.T) {
 			},
 			Comment: String("comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s ADD VERSION IF NOT EXISTS version-name FROM @%s/dir/subdir COMMENT = 'comment'", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s ADD VERSION IF NOT EXISTS \"version-name\" FROM @%s/dir/subdir COMMENT = 'comment'", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
 	})
 
 	t.Run("rename to", func(t *testing.T) {
@@ -315,6 +315,40 @@ func TestListings_Show(t *testing.T) {
 			From: String("from"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW LISTINGS LIKE 'pattern' STARTS WITH 'startsWith' LIMIT 10 FROM 'from'")
+	})
+}
+
+func TestListings_ShowVersions(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+	// Minimal valid ShowVersionsListingOptions
+	defaultOpts := func() *ShowVersionsListingOptions {
+		return &ShowVersionsListingOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *ShowVersionsListingOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("invalid identifier", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = invalidAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "SHOW VERSIONS IN LISTING %s", id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Limit = &LimitFrom{
+			Rows: Int(5),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW VERSIONS IN LISTING %s LIMIT 5", id.FullyQualifiedName())
 	})
 }
 

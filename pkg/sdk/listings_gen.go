@@ -14,6 +14,7 @@ type Listings interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*ListingDetails, error)
+	ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error)
 }
 
 // CreateListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-listing.
@@ -60,7 +61,7 @@ type AlterListingAs struct {
 
 type AddListingVersion struct {
 	IfNotExists *bool    `ddl:"keyword" sql:"IF NOT EXISTS"`
-	VersionName string   `ddl:"keyword"`
+	VersionName string   `ddl:"keyword,double_quotes"`
 	From        Location `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
 	Comment     *string  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -100,7 +101,7 @@ type listingDBRow struct {
 	UpdatedOn               string         `db:"updated_on"`
 	PublishedOn             sql.NullString `db:"published_on"`
 	State                   string         `db:"state"`
-	ReviewState             string         `db:"review_state"`
+	ReviewState             sql.NullString `db:"review_state"`
 	Comment                 sql.NullString `db:"comment"`
 	Owner                   string         `db:"owner"`
 	OwnerRoleType           string         `db:"owner_role_type"`
@@ -129,7 +130,7 @@ type Listing struct {
 	UpdatedOn               string
 	PublishedOn             *string
 	State                   ListingState
-	ReviewState             string
+	ReviewState             *string
 	Comment                 *string
 	Owner                   string
 	OwnerRoleType           string
@@ -194,7 +195,7 @@ type listingDetailsDBRow struct {
 	Regions                      sql.NullString `db:"regions"`
 	RefreshSchedule              sql.NullString `db:"refresh_schedule"`
 	RefreshType                  sql.NullString `db:"refresh_type"`
-	ReviewState                  string         `db:"review_state"`
+	ReviewState                  sql.NullString `db:"review_state"`
 	RejectionReason              sql.NullString `db:"rejection_reason"`
 	UnpublishedByAdminReasons    sql.NullString `db:"unpublished_by_admin_reasons"`
 	IsMonetized                  bool           `db:"is_monetized"`
@@ -256,7 +257,7 @@ type ListingDetails struct {
 	Regions                      *string
 	RefreshSchedule              *string
 	RefreshType                  *string
-	ReviewState                  string
+	ReviewState                  *string
 	RejectionReason              *string
 	UnpublishedByAdminReasons    *string
 	IsMonetized                  bool
@@ -286,4 +287,40 @@ type ListingDetails struct {
 	RequestApprovalType          *string
 	MonetizationDisplayOrder     *string
 	LegacyUniformListingLocators *string
+}
+
+// ShowVersionsListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-versions-in-listing.
+type ShowVersionsListingOptions struct {
+	show              bool                    `ddl:"static" sql:"SHOW"`
+	versionsInListing bool                    `ddl:"static" sql:"VERSIONS IN LISTING"`
+	name              AccountObjectIdentifier `ddl:"identifier"`
+	Limit             *LimitFrom              `ddl:"keyword" sql:"LIMIT"`
+}
+
+type listingVersionDBRow struct {
+	CreatedOn         string         `db:"created_on"`
+	Name              string         `db:"name"`
+	Alias             string         `db:"alias"`
+	LocationUrl       string         `db:"location_url"`
+	IsDefault         bool           `db:"is_default"`
+	IsLive            bool           `db:"is_live"`
+	IsFirst           bool           `db:"is_first"`
+	IsLast            bool           `db:"is_last"`
+	Comment           string         `db:"comment"`
+	SourceLocationUrl string         `db:"source_location_url"`
+	GitCommitHash     sql.NullString `db:"git_commit_hash"`
+}
+
+type ListingVersion struct {
+	CreatedOn         string
+	Name              string
+	Alias             string
+	LocationUrl       string
+	IsDefault         bool
+	IsLive            bool
+	IsFirst           bool
+	IsLast            bool
+	Comment           string
+	SourceLocationUrl string
+	GitCommitHash     *string
 }
