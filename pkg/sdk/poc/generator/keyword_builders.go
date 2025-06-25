@@ -51,6 +51,11 @@ func (v *QueryStruct) OptionalNumber(name string, transformer *KeywordTransforme
 	return v
 }
 
+func (v *QueryStruct) OptionalBool(name string, transformer *KeywordTransformer) *QueryStruct {
+	v.fields = append(v.fields, NewField(name, "*bool", Tags().Keyword(), transformer))
+	return v
+}
+
 func (v *QueryStruct) OptionalLimitFrom() *QueryStruct {
 	return v.PredefinedQueryStructField("Limit", "*LimitFrom", KeywordOptions().SQL("LIMIT"))
 }
