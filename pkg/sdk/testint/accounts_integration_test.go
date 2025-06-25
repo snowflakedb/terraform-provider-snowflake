@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -28,7 +29,7 @@ func TestInt_Account(t *testing.T) {
 	ctx := testContext(t)
 	currentAccountId := testClientHelper().Context.CurrentAccountId(t)
 	currentAccountName := currentAccountId.AccountName()
-	defaultConsumptionBillingEntity := testClientHelper().Ids.DefaultConsumptionBillingEntity(t).Name()
+	defaultConsumptionBillingEntity := testClientHelper().Context.DefaultConsumptionBillingEntity(t).Name()
 
 	assertAccountQueriedByOrgAdmin := func(t *testing.T, account sdk.Account, accountName string) {
 		t.Helper()
@@ -956,5 +957,24 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}, Force: sdk.Bool(true)}})
 		require.NoError(t, err)
 		assertThatPolicyIsSetOnAccount(t, newFeaturePolicyId)
+	})
+
+	t.Run("unset policy safely", func(t *testing.T) {
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}})
+		assert.ErrorContains(t, err, fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", sdk.PolicyKindFeaturePolicy))
+
+		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindFeaturePolicy)
+		assert.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, featurePolicyId)
+
+		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindFeaturePolicy)
+		assert.NoError(t, err)
+		assertThatNoPolicyIsSetOnAccount(t)
 	})
 }

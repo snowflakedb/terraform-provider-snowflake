@@ -31,7 +31,7 @@ import (
 func TestAcc_Account_Minimal(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
-	defaultConsumptionBillingEntity := testClient().Ids.DefaultConsumptionBillingEntity(t).Name()
+	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := sdk.NewAccountObjectIdentifier(random.AccountName())
 	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
@@ -134,7 +134,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 func TestAcc_Account_Complete(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
-	defaultConsumptionBillingEntity := testClient().Ids.DefaultConsumptionBillingEntity(t).Name()
+	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
 	accountId := sdk.NewAccountIdentifier(organizationName, id)
@@ -432,7 +432,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 func TestAcc_Account_UpdatingConsumptionBillingEntity(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
-	defaultConsumptionBillingEntity := testClient().Ids.DefaultConsumptionBillingEntity(t).Name()
+	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
 	accountId := sdk.NewAccountIdentifier(organizationName, id)
@@ -775,7 +775,7 @@ resource "snowflake_account" "test" {
 func TestAcc_Account_UpgradeFrom_v210(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
-	defaultConsumptionBillingEntity := testClient().Ids.DefaultConsumptionBillingEntity(t).Name()
+	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
 	accountId := sdk.NewAccountIdentifier(organizationName, id)

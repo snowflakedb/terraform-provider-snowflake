@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -96,6 +97,7 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	handlePolicyCreate := func(kind sdk.PolicyKind, policyIdFieldPointerGetter func(*sdk.AccountSet) **sdk.SchemaObjectIdentifier, hasForce bool) error {
+		key := strings.ToLower(string(kind))
 		set := new(sdk.AccountSet)
 		if kind == sdk.PolicyKindFeaturePolicy {
 			set.FeaturePolicySet = new(sdk.AccountFeaturePolicySet)
@@ -104,17 +106,20 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		if hasForce {
 			set.Force = sdk.Bool(true)
 		} else {
+			log.Printf("[DEBUG] Unsetting %s as it doens't support setting with force", kind)
 			if err := client.Accounts.UnsetPolicySafely(ctx, kind); err != nil {
 				return err
 			}
 		}
 
 		policySetFieldPointer := policyIdFieldPointerGetter(set)
-		if err := schemaObjectIdentifierAttributeCreate(d, strings.ToLower(string(kind)), policySetFieldPointer); err != nil {
+		log.Printf("[DEBUG] Checking if %s is present in the configuration", key)
+		if err := schemaObjectIdentifierAttributeCreate(d, key, policySetFieldPointer); err != nil {
 			return err
 		}
 
 		if *policySetFieldPointer != nil {
+			log.Printf("[DEBUG] Setting %s to the new value", key)
 			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: set}); err != nil {
 				return err
 			}
@@ -211,6 +216,7 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 			}
 
 			setFieldPointer, unsetBoolFlag := setFieldGetter(set), sdk.Bool(false)
+			log.Printf("[DEBUG] Checking for updates in %s", key)
 			if err := schemaObjectIdentifierAttributeUpdate(d, key, setFieldPointer, &unsetBoolFlag); err != nil {
 				return err
 			}
@@ -219,15 +225,18 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 				if hasForce {
 					set.Force = sdk.Bool(true)
 				} else {
+					log.Printf("[DEBUG] Unsetting %s as it doens't support setting with force", kind)
 					if err := client.Accounts.UnsetPolicySafely(ctx, kind); err != nil {
 						return err
 					}
 				}
 
+				log.Printf("[DEBUG] Setting %s to the new value", kind)
 				if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: set}); err != nil {
 					return err
 				}
 			} else if *unsetBoolFlag {
+				log.Printf("[DEBUG] Unsetting %s as it was removed from the configuration", kind)
 				if err := client.Accounts.UnsetPolicySafely(ctx, kind); err != nil {
 					return err
 				}
@@ -267,7 +276,7 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 
 func DeleteCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	if err := client.Accounts.UnsetAllAttachments(ctx); err != nil {
+	if err := client.Accounts.UnsetAll(ctx); err != nil {
 		return diag.FromErr(err)
 	}
 

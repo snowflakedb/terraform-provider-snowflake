@@ -32,9 +32,13 @@ type Accounts interface {
 	Undrop(ctx context.Context, id AccountObjectIdentifier) error
 	ShowParameters(ctx context.Context) ([]*Parameter, error)
 	UnsetAllParameters(ctx context.Context) error
+	// UnsetAllPoliciesSafely calls UnsetPolicySafely for every policy that can be unset from the current account.
 	UnsetAllPoliciesSafely(ctx context.Context) error
+	// UnsetPolicySafely unsets a policy on the current account by a given supported kind.
+	// It ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.
 	UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
-	UnsetAllAttachments(ctx context.Context) error
+	// UnsetAll unsets all policies and parameters that can be attached to the current account.
+	UnsetAll(ctx context.Context) error
 }
 
 var _ Accounts = (*accounts)(nil)
@@ -786,7 +790,7 @@ func (c *accounts) UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
 	return err
 }
 
-func (c *accounts) UnsetAllAttachments(ctx context.Context) error {
+func (c *accounts) UnsetAll(ctx context.Context) error {
 	return errors.Join(
 		c.UnsetAllParameters(ctx),
 		c.UnsetAllPoliciesSafely(ctx),
