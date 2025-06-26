@@ -45,8 +45,8 @@ type AlterOrganizationAccountOptions struct {
 type OrganizationAccountSet struct {
 	Parameters      *AccountParameters       `ddl:"list,no_parentheses"`
 	ResourceMonitor *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
-	PasswordPolicy  *AccountObjectIdentifier `ddl:"identifier" sql:"PASSWORD POLICY"`
-	SessionPolicy   *AccountObjectIdentifier `ddl:"identifier" sql:"SESSION POLICY"`
+	PasswordPolicy  *SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
+	SessionPolicy   *SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
 }
 
 type OrganizationAccountUnset struct {
@@ -116,6 +116,10 @@ type OrganizationAccount struct {
 	OrganizationOldUrlLastUsed           *string
 	IsEventsAccount                      bool
 	IsOrganizationAccount                bool
+}
+
+func (v *OrganizationAccount) ID() AccountIdentifier {
+	return NewAccountIdentifier(v.OrganizationName, v.AccountName)
 }
 
 func (v *OrganizationAccount) ObjectType() ObjectType {

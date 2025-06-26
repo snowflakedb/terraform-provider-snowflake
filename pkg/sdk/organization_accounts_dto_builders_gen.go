@@ -111,12 +111,12 @@ func (s *OrganizationAccountSetRequest) WithResourceMonitor(ResourceMonitor Acco
 	return s
 }
 
-func (s *OrganizationAccountSetRequest) WithPasswordPolicy(PasswordPolicy AccountObjectIdentifier) *OrganizationAccountSetRequest {
+func (s *OrganizationAccountSetRequest) WithPasswordPolicy(PasswordPolicy SchemaObjectIdentifier) *OrganizationAccountSetRequest {
 	s.PasswordPolicy = &PasswordPolicy
 	return s
 }
 
-func (s *OrganizationAccountSetRequest) WithSessionPolicy(SessionPolicy AccountObjectIdentifier) *OrganizationAccountSetRequest {
+func (s *OrganizationAccountSetRequest) WithSessionPolicy(SessionPolicy SchemaObjectIdentifier) *OrganizationAccountSetRequest {
 	s.SessionPolicy = &SessionPolicy
 	return s
 }

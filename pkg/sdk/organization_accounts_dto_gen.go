@@ -36,8 +36,8 @@ type AlterOrganizationAccountRequest struct {
 type OrganizationAccountSetRequest struct {
 	Parameters      *AccountParameters
 	ResourceMonitor *AccountObjectIdentifier
-	PasswordPolicy  *AccountObjectIdentifier
-	SessionPolicy   *AccountObjectIdentifier
+	PasswordPolicy  *SchemaObjectIdentifier
+	SessionPolicy   *SchemaObjectIdentifier
 }
 
 type OrganizationAccountUnsetRequest struct {

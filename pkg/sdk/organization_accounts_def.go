@@ -66,8 +66,8 @@ var OrganizationAccountsDef = g.NewInterface(
 					// Currently, Organization Accounts use the same set of parameters as regular accounts
 					PredefinedQueryStructField("Parameters", g.KindOfTPointer[AccountParameters](), g.ListOptions().NoParentheses()).
 					OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
-					OptionalIdentifier("PasswordPolicy", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
-					OptionalIdentifier("SessionPolicy", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
+					OptionalIdentifier("PasswordPolicy", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
+					OptionalIdentifier("SessionPolicy", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
 					WithValidation(g.AtLeastOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"),
 				g.KeywordOptions().SQL("SET"),
 			).

@@ -412,7 +412,7 @@ func TestOrganizationAccounts_Alter(t *testing.T) {
 	})
 
 	t.Run("set password policy", func(t *testing.T) {
-		passwordPolicyId := randomAccountObjectIdentifier()
+		passwordPolicyId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.Set = &OrganizationAccountSet{
 			PasswordPolicy: &passwordPolicyId,
@@ -429,7 +429,7 @@ func TestOrganizationAccounts_Alter(t *testing.T) {
 	})
 
 	t.Run("set session policy", func(t *testing.T) {
-		sessionPolicyId := randomAccountObjectIdentifier()
+		sessionPolicyId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.Set = &OrganizationAccountSet{
 			SessionPolicy: &sessionPolicyId,

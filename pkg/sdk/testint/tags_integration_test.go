@@ -296,7 +296,7 @@ func TestInt_TagsShowByID(t *testing.T) {
 	})
 }
 
-type IDProvider[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier] interface {
+type IDProvider[T sdk.AccountIdentifier | sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier] interface {
 	ID() T
 }
 
@@ -374,6 +374,40 @@ func TestInt_TagsAssociations(t *testing.T) {
 	})
 
 	t.Run("TestInt_TagAssociationForAccount", func(t *testing.T) {
+		id := testClientHelper().Context.CurrentAccountIdentifier(t)
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeAccount, id).WithSetTags(tags))
+		require.NoError(t, err)
+
+		assertTagSet(id, sdk.ObjectTypeAccount)
+
+		err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeAccount, id).WithUnsetTags(unsetTags))
+		require.NoError(t, err)
+
+		assertTagUnset(id, sdk.ObjectTypeAccount)
+	})
+
+	t.Run("for Organization Account with locator", func(t *testing.T) {
+		// TODO: Ensure GlobalOrdAdmin in session or skip
+		testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+
+		id := testClientHelper().Ids.AccountIdentifierWithLocator()
+		err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSetTags(tags))
+		require.NoError(t, err)
+
+		assertTagSet(id, sdk.ObjectTypeAccount)
+
+		err = client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithUnsetTags(unsetTags))
+		require.NoError(t, err)
+
+		assertTagUnset(id, sdk.ObjectTypeAccount)
+	})
+
+	// The test is the same as TestInt_TagAssociationForAccount.
+	// They are separated as they intend to test different objects and could be later split to different files if needed.
+	t.Run("for Organization Account with account identifier", func(t *testing.T) {
+		// TODO: Ensure GlobalOrdAdmin in session or skip
+		testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+
 		id := testClientHelper().Context.CurrentAccountIdentifier(t)
 		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeAccount, id).WithSetTags(tags))
 		require.NoError(t, err)
