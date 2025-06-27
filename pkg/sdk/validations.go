@@ -11,13 +11,17 @@ func IsValidDataType(v string) bool {
 	return err == nil
 }
 
-func ValidObjectIdentifier(objectIdentifier ObjectIdentifier) bool {
+func ValidObjectName(name string) bool {
 	// https://docs.snowflake.com/en/sql-reference/identifiers-syntax#double-quoted-identifiers
-	l := len(objectIdentifier.Name())
+	l := len(name)
 	if l == 0 || l > 255 {
 		return false
 	}
 	return true
+}
+
+func ValidObjectIdentifier(objectIdentifier ObjectIdentifier) bool {
+	return ValidObjectName(objectIdentifier.Name())
 }
 
 func anyValueSet(values ...interface{}) bool {
