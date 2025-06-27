@@ -58,6 +58,7 @@ type Client struct {
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
 	NotificationIntegrations     NotificationIntegrations
+	OrganizationAccounts         OrganizationAccounts
 	Parameters                   Parameters
 	PasswordPolicies             PasswordPolicies
 	Pipes                        Pipes
@@ -194,6 +195,7 @@ func (c *Client) initialize() {
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
 	c.NotificationIntegrations = &notificationIntegrations{client: c}
+	c.OrganizationAccounts = &organizationAccounts{client: c}
 	c.Parameters = &parameters{client: c}
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
