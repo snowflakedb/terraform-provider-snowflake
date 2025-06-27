@@ -22,7 +22,6 @@ type Client struct {
 
 	// System-Defined Functions
 	ContextFunctions     ContextFunctions
-	ConversionFunctions  ConversionFunctions
 	SystemFunctions      SystemFunctions
 	ReplicationFunctions ReplicationFunctions
 
@@ -172,7 +171,6 @@ func (c *Client) initialize() {
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
-	c.ConversionFunctions = &conversionFunctions{client: c}
 	c.CortexSearchServices = &cortexSearchServices{client: c}
 	c.DatabaseRoles = &databaseRoles{client: c}
 	c.Databases = &databases{client: c}
