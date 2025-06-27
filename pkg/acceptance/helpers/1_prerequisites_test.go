@@ -9,18 +9,16 @@ import (
 )
 
 func TestEnsureValidAccountIsUsed(t *testing.T) {
-	client := sdk.Client{}
+	accountLocator := "ABC123123"
+	clientBuilder := sdk.NewClientBuilder().WithAccountLocator(accountLocator)
 
 	testClient := TestClient{
 		context: &TestClientContext{
-			client: &client,
+			client: clientBuilder.Build(),
 		},
 	}
 
 	t.Run("valid account: the test shouldn't be skipped", func(t *testing.T) {
-		accountLocator := "ABC123123"
-		client.SetAccountLocatorForTests(accountLocator)
-
 		t.Setenv(string(testenvs.TestAccountCreate), "1")
 		t.Setenv(string(testenvs.TestNonProdModifiableAccountLocator), accountLocator)
 		defer func() {
@@ -32,8 +30,6 @@ func TestEnsureValidAccountIsUsed(t *testing.T) {
 	})
 
 	t.Run(fmt.Sprintf("invalid account is used: should skip the tests as %s is not set", testenvs.TestAccountCreate), func(t *testing.T) {
-		accountLocator := "ABC123123"
-		client.SetAccountLocatorForTests(accountLocator)
 		t.Setenv(string(testenvs.TestNonProdModifiableAccountLocator), accountLocator)
 		t.Setenv(string(testenvs.TestAccountCreate), "")
 		defer func() {
