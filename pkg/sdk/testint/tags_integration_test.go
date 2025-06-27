@@ -387,8 +387,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 	})
 
 	t.Run("for Organization Account with locator", func(t *testing.T) {
-		// TODO: Ensure GlobalOrdAdmin in session or skip
-		testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+		testClientHelper().EnsureValidNonProdOrganizationAccountIsUsed(t)
 
 		id := testClientHelper().Ids.AccountIdentifierWithLocator()
 		err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSetTags(tags))
@@ -405,8 +404,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 	// The test is the same as TestInt_TagAssociationForAccount.
 	// They are separated as they intend to test different objects and could be later split to different files if needed.
 	t.Run("for Organization Account with account identifier", func(t *testing.T) {
-		// TODO: Ensure GlobalOrdAdmin in session or skip
-		testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+		testClientHelper().EnsureValidNonProdOrganizationAccountIsUsed(t)
 
 		id := testClientHelper().Context.CurrentAccountIdentifier(t)
 		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeAccount, id).WithSetTags(tags))

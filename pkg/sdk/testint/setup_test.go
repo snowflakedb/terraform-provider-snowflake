@@ -13,7 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/snowflakedb/gosnowflake"
 )
@@ -135,15 +134,6 @@ func (itc *integrationTestContext) initialize() error {
 	itc.client = c
 	itc.ctx = context.Background()
 
-	// TODO(SNOW-1842271): Adjust test setup to work properly with Accountadmin role for object tests and Orgadmin for account tests
-	if os.Getenv(string(testenvs.TestAccountCreate)) != "" {
-		err = c.Sessions.UseRole(context.Background(), snowflakeroles.Accountadmin)
-		if err != nil {
-			return err
-		}
-		defer func() { _ = c.Sessions.UseRole(context.Background(), snowflakeroles.Orgadmin) }()
-	}
-
 	// TODO [SNOW-1763603]: we can't use test client because of the testing.T parameter that is not present here; discuss
 	itc.testClient = helpers.NewTestClient(c, TestDatabaseName, TestSchemaName, TestWarehouseName, integrationtests.ObjectsSuffix)
 
@@ -218,16 +208,13 @@ func (itc *integrationTestContext) initialize() error {
 			return err
 		}
 
-		// TODO(SNOW-1842271): Adjust test setup to work properly with Accountadmin role for object tests and Orgadmin for account tests
-		if os.Getenv(string(testenvs.TestAccountCreate)) == "" {
-			err = testClientHelper().EnsureScimProvisionerRolesExist(itc.ctx)
-			if err != nil {
-				return err
-			}
-			err = secondaryTestClientHelper().EnsureScimProvisionerRolesExist(itc.secondaryCtx)
-			if err != nil {
-				return err
-			}
+		err = testClientHelper().EnsureScimProvisionerRolesExist(itc.ctx)
+		if err != nil {
+			return err
+		}
+		err = secondaryTestClientHelper().EnsureScimProvisionerRolesExist(itc.secondaryCtx)
+		if err != nil {
+			return err
 		}
 
 		err = testClientHelper().EnsureImageRepositoryExist(itc.ctx)
