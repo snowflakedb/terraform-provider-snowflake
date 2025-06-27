@@ -60,7 +60,7 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpSe
 	pat := c.User.AddProgrammaticAccessToken(t, tmpUser.UserId, tmpUser.RoleId)
 
 	return &TmpServiceUserWithPat{
-		Pat:     pat,
+		Pat:     pat.TokenSecret,
 		TmpUser: tmpUser,
 	}
 }
