@@ -1,4 +1,4 @@
-package resources
+package testfunctional
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,9 +30,9 @@ var testResourceDataTypeDiffHandlingListSchema = map[string]*schema.Schema{
 					Type:             schema.TypeString,
 					Required:         true,
 					Description:      "An example nested field being a data type.",
-					DiffSuppressFunc: DiffSuppressDataTypes,
-					ValidateDiagFunc: IsDataTypeValid,
-					StateFunc:        DataTypeStateFunc,
+					DiffSuppressFunc: resources.DiffSuppressDataTypes,
+					ValidateDiagFunc: resources.IsDataTypeValid,
+					StateFunc:        resources.DataTypeStateFunc,
 					// TODO [SNOW-2054235]: all current use cases have force new on nested data types; try without the force new
 					ForceNew: true,
 				},
@@ -61,7 +62,7 @@ func TestResourceDataTypeDiffHandlingListCreate(ctx context.Context, d *schema.R
 
 	var dataTypes []datatypes.DataType
 	var err error
-	if dataTypes, err = handleNestedDataTypeCreate(d, "nesting_list", "nested_datatype", func(v map[string]any, dataType datatypes.DataType) (datatypes.DataType, error) {
+	if dataTypes, err = resources.HandleNestedDataTypeCreate(d, "nesting_list", "nested_datatype", func(v map[string]any, dataType datatypes.DataType) (datatypes.DataType, error) {
 		return dataType, nil
 	}); err != nil {
 		return diag.FromErr(err)
@@ -94,7 +95,7 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 			return diag.FromErr(err)
 		}
 		if envExists {
-			if err := handleNestedDataTypeSet(d, "nesting_list", "nested_datatype", externalDataTypes,
+			if err := resources.HandleNestedDataTypeSet(d, "nesting_list", "nested_datatype", externalDataTypes,
 				func(externalItem datatypes.DataType) datatypes.DataType { return externalItem },
 				func(externalItem datatypes.DataType, item map[string]any) {},
 			); err != nil {

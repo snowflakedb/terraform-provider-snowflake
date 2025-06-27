@@ -193,7 +193,7 @@ func CreateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 
 	var args []sdk.CreateRowAccessPolicyArgsRequest
 	var err error
-	if args, err = handleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.CreateRowAccessPolicyArgsRequest, error) {
+	if args, err = HandleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.CreateRowAccessPolicyArgsRequest, error) {
 		return *sdk.NewCreateRowAccessPolicyArgsRequest(v["name"].(string), dataType), nil
 	}); err != nil {
 		return diag.FromErr(err)
@@ -254,7 +254,7 @@ func ReadRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	if err := handleNestedDataTypeSet(d, "argument", "type", rowAccessPolicyDescription.Signature,
+	if err := HandleNestedDataTypeSet(d, "argument", "type", rowAccessPolicyDescription.Signature,
 		func(signature sdk.TableColumnSignature) datatypes.DataType { return signature.Type },
 		func(signature sdk.TableColumnSignature, arg map[string]any) { arg["name"] = signature.Name },
 	); err != nil {

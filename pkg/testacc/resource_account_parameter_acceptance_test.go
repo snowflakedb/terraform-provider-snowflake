@@ -199,6 +199,7 @@ func TestAcc_AccountParameter_CSV_TIMESTAMP_FORMAT(t *testing.T) {
 }
 
 func TestAcc_AccountParameter_DISABLE_USER_PRIVILEGE_GRANTS(t *testing.T) {
+	t.Skip("TODO(SNOW-2081651): re-enable this if the test is still relevant without the BCR bundle update as now it's enabled by default in Snowflake")
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)

@@ -26,7 +26,7 @@ func TestInt_AlertsShow(t *testing.T) {
 	t.Run("without show options", func(t *testing.T) {
 		alerts, err := client.Alerts.Show(ctx, nil)
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(alerts))
+		assert.Len(t, alerts, 2)
 	})
 
 	t.Run("with show options", func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestInt_AlertsShow(t *testing.T) {
 		require.NoError(t, err)
 		assert.Contains(t, alerts, *alertTest)
 		assert.Contains(t, alerts, *alert2Test)
-		assert.Equal(t, 2, len(alerts))
+		assert.Len(t, alerts, 2)
 	})
 
 	t.Run("with show options and like", func(t *testing.T) {
@@ -54,7 +54,7 @@ func TestInt_AlertsShow(t *testing.T) {
 		alerts, err := client.Alerts.Show(ctx, showOptions)
 		require.NoError(t, err)
 		assert.Contains(t, alerts, *alertTest)
-		assert.Equal(t, 1, len(alerts))
+		assert.Len(t, alerts, 1)
 	})
 
 	t.Run("when searching a non-existent alert", func(t *testing.T) {
@@ -65,7 +65,7 @@ func TestInt_AlertsShow(t *testing.T) {
 		}
 		alerts, err := client.Alerts.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(alerts))
+		assert.Empty(t, alerts)
 	})
 
 	t.Run("when limiting the number of results", func(t *testing.T) {
@@ -77,7 +77,7 @@ func TestInt_AlertsShow(t *testing.T) {
 		}
 		alerts, err := client.Alerts.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alerts))
+		assert.Len(t, alerts, 1)
 	})
 }
 
@@ -116,7 +116,7 @@ func TestInt_AlertCreate(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alert))
+		assert.Len(t, alert, 1)
 		assert.Equal(t, name, alert[0].Name)
 		assert.Equal(t, comment, *alert[0].Comment)
 	})
@@ -152,7 +152,7 @@ func TestInt_AlertCreate(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alert))
+		assert.Len(t, alert, 1)
 		assert.Equal(t, name, alert[0].Name)
 		assert.Equal(t, comment, *alert[0].Comment)
 	})
@@ -182,7 +182,7 @@ func TestInt_AlertCreate(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alert))
+		assert.Len(t, alert, 1)
 		assert.Equal(t, name, alert[0].Name)
 		assert.Equal(t, "", *alert[0].Comment)
 	})
@@ -220,7 +220,7 @@ func TestInt_AlertCreate(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alert))
+		assert.Len(t, alert, 1)
 		assert.Equal(t, name, alert[0].Name)
 		assert.Equal(t, "", *alert[0].Comment)
 	})
@@ -271,7 +271,7 @@ func TestInt_AlertAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alerts))
+		assert.Len(t, alerts, 1)
 		assert.Equal(t, newSchedule, alerts[0].Schedule)
 	})
 
@@ -295,7 +295,7 @@ func TestInt_AlertAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alerts))
+		assert.Len(t, alerts, 1)
 		assert.Equal(t, newCondition, alerts[0].Condition)
 
 		newAction := "create table FOO(ID INT)"
@@ -315,7 +315,7 @@ func TestInt_AlertAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alerts))
+		assert.Len(t, alerts, 1)
 		assert.Equal(t, newAction, alerts[0].Action)
 	})
 
@@ -338,8 +338,8 @@ func TestInt_AlertAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alerts))
-		assert.True(t, alerts[0].State == sdk.AlertStateStarted)
+		assert.Len(t, alerts, 1)
+		assert.Equal(t, alerts[0].State, sdk.AlertStateStarted)
 
 		alterOptions = &sdk.AlterAlertOptions{
 			Action: &sdk.AlertActionSuspend,
@@ -356,8 +356,8 @@ func TestInt_AlertAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(alerts))
-		assert.True(t, alerts[0].State == sdk.AlertStateSuspended)
+		assert.Len(t, alerts, 1)
+		assert.Equal(t, alerts[0].State, sdk.AlertStateSuspended)
 	})
 }
 

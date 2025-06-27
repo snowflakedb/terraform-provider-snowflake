@@ -61,7 +61,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 
 		policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(tag.ID(), sdk.PolicyEntityDomainTag))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(policyReferences))
+		require.Len(t, policyReferences, 1)
 		require.Equal(t, maskingPolicy.ID().Name(), policyReferences[0].PolicyName)
 		require.Equal(t, sdk.PolicyKindMaskingPolicy, policyReferences[0].PolicyKind)
 

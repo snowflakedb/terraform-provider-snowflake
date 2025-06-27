@@ -148,7 +148,7 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 
 		assertTable(t, table, id)
-		assert.Equal(t, table.Comment, comment)
+		assert.Equal(t, comment, table.Comment)
 		assert.Equal(t, 30, table.RetentionTime)
 
 		param, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMaxDataExtensionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeTable, Name: table.ID()})
@@ -522,7 +522,7 @@ func TestInt_Table(t *testing.T) {
 		tableDetails, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(id))
 		require.NoError(t, err)
 
-		require.Equal(t, 2, len(tableDetails))
+		require.Len(t, tableDetails, 2)
 		// TODO [SNOW-1348114]: make nicer during the table rework
 		assert.Equal(t, maskingPolicy.ID().FullyQualifiedName(), sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(*tableDetails[0].PolicyName).FullyQualifiedName())
 
@@ -534,7 +534,7 @@ func TestInt_Table(t *testing.T) {
 		tableDetails, err = client.Tables.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(id))
 		require.NoError(t, err)
 
-		require.Equal(t, 2, len(tableDetails))
+		require.Len(t, tableDetails, 2)
 		assert.Empty(t, tableDetails[0].PolicyName)
 	})
 
@@ -563,7 +563,7 @@ func TestInt_Table(t *testing.T) {
 		}
 		assertColumns(t, expectedColumns, currentColumns)
 
-		assert.Equal(t, table.Comment, "")
+		assert.Equal(t, "", table.Comment)
 	})
 
 	// TODO [SNOW-1007542]: check added constraints
@@ -747,7 +747,7 @@ func TestInt_Table(t *testing.T) {
 		table, err := client.Tables.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, table.Comment, "")
+		assert.Equal(t, "", table.Comment)
 		currentColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
 		expectedColumns := []expectedColumn{
 			{"COLUMN_3", sdk.DataTypeVARCHAR},
@@ -836,10 +836,10 @@ func TestInt_Table(t *testing.T) {
 		table, err := client.Tables.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, table.Comment, comment)
-		assert.Equal(t, table.RetentionTime, 30)
-		assert.Equal(t, table.ChangeTracking, false)
-		assert.Equal(t, table.EnableSchemaEvolution, true)
+		assert.Equal(t, comment, table.Comment)
+		assert.Equal(t, 30, table.RetentionTime)
+		assert.False(t, table.ChangeTracking)
+		assert.True(t, table.EnableSchemaEvolution)
 	})
 
 	t.Run("drop table", func(t *testing.T) {
@@ -920,7 +920,7 @@ func TestInt_Table(t *testing.T) {
 			Pattern: sdk.String(table.Name),
 		}))
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(tables))
+		assert.Len(t, tables, 1)
 
 		assertTableTerse(t, &tables[0], table.ID())
 	})
@@ -931,7 +931,7 @@ func TestInt_Table(t *testing.T) {
 
 		tables, err := client.Tables.Show(ctx, sdk.NewShowTableRequest().WithStartsWith(table.Name))
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(tables))
+		assert.Len(t, tables, 1)
 
 		assertTable(t, &tables[0], table.ID())
 	})
@@ -941,7 +941,7 @@ func TestInt_Table(t *testing.T) {
 			Pattern: sdk.String("non-existent"),
 		}))
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(tables))
+		assert.Empty(t, tables)
 	})
 }
 

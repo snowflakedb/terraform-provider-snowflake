@@ -86,6 +86,10 @@ type Client struct {
 	Warehouses                   Warehouses
 }
 
+func (c *Client) SetAccountLocatorForTests(accountLocator string) {
+	c.accountLocator = accountLocator
+}
+
 func (c *Client) GetAccountLocator() string {
 	return c.accountLocator
 }

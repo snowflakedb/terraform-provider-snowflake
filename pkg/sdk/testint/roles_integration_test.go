@@ -166,7 +166,7 @@ func TestInt_Roles(t *testing.T) {
 
 		roles, err := client.Roles.Show(ctx, sdk.NewShowRoleRequest().WithLike(sdk.NewLikeRequest(role.Name)))
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(roles))
+		assert.Len(t, roles, 1)
 		assert.Equal(t, role.Name, roles[0].Name)
 	})
 
@@ -175,7 +175,7 @@ func TestInt_Roles(t *testing.T) {
 			Class: sdk.NewSchemaObjectIdentifier("SNOWFLAKE", "ML", "ANOMALY_DETECTION"),
 		}))
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(roles))
+		assert.Len(t, roles, 1)
 		assert.Equal(t, "USER", roles[0].Name)
 	})
 

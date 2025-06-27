@@ -29,7 +29,7 @@ func TestInt_ManagedAccounts(t *testing.T) {
 		assert.NotEmpty(t, managedAccount.CreatedOn)
 		assert.NotEmpty(t, managedAccount.URL)
 		assert.NotEmpty(t, managedAccount.AccountLocatorURL)
-		assert.Equal(t, true, managedAccount.IsReader)
+		assert.True(t, managedAccount.IsReader)
 		assert.Equal(t, comment, managedAccount.Comment)
 	}
 
@@ -117,7 +117,7 @@ func TestInt_ManagedAccounts(t *testing.T) {
 		returnedManagedAccounts, err := client.ManagedAccounts.Show(ctx, showRequest)
 		require.NoError(t, err)
 
-		assert.Equal(t, 2, len(returnedManagedAccounts))
+		assert.Len(t, returnedManagedAccounts, 2)
 		assert.Contains(t, returnedManagedAccounts, *managedAccount1)
 		assert.Contains(t, returnedManagedAccounts, *managedAccount2)
 	})
@@ -131,7 +131,7 @@ func TestInt_ManagedAccounts(t *testing.T) {
 		returnedManagedAccounts, err := client.ManagedAccounts.Show(ctx, showRequest)
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedManagedAccounts))
+		assert.Len(t, returnedManagedAccounts, 1)
 		assert.Contains(t, returnedManagedAccounts, *managedAccount1)
 		assert.NotContains(t, returnedManagedAccounts, *managedAccount2)
 	})

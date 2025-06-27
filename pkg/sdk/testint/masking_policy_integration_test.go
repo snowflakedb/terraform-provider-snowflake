@@ -43,7 +43,7 @@ func TestInt_MaskingPoliciesShow(t *testing.T) {
 		require.NoError(t, err)
 		assert.Contains(t, maskingPolicies, *maskingPolicyTest)
 		assert.Contains(t, maskingPolicies, *maskingPolicy2Test)
-		assert.Equal(t, 2, len(maskingPolicies))
+		assert.Len(t, maskingPolicies, 2)
 	})
 
 	t.Run("with show options and like", func(t *testing.T) {
@@ -60,7 +60,7 @@ func TestInt_MaskingPoliciesShow(t *testing.T) {
 		maskingPolicies, err := client.MaskingPolicies.Show(ctx, showOptions)
 		require.NoError(t, err)
 		assert.Contains(t, maskingPolicies, *maskingPolicyTest)
-		assert.Equal(t, 1, len(maskingPolicies))
+		assert.Len(t, maskingPolicies, 1)
 	})
 
 	t.Run("when searching a non-existent masking policy", func(t *testing.T) {
@@ -71,7 +71,7 @@ func TestInt_MaskingPoliciesShow(t *testing.T) {
 		}
 		maskingPolicies, err := client.MaskingPolicies.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(maskingPolicies))
+		assert.Empty(t, maskingPolicies)
 	})
 
 	t.Run("when limiting the number of results", func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestInt_MaskingPoliciesShow(t *testing.T) {
 		}
 		maskingPolicies, err := client.MaskingPolicies.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(maskingPolicies))
+		assert.Len(t, maskingPolicies, 1)
 	})
 }
 
@@ -136,7 +136,7 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(maskingPolicy))
+		assert.Len(t, maskingPolicy, 1)
 		assert.Equal(t, name, maskingPolicy[0].Name)
 		assert.Equal(t, comment, maskingPolicy[0].Comment)
 		assert.Equal(t, exemptOtherPolicies, maskingPolicy[0].ExemptOtherPolicies)
@@ -182,10 +182,10 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(maskingPolicy))
+		assert.Len(t, maskingPolicy, 1)
 		assert.Equal(t, name, maskingPolicy[0].Name)
 		assert.Equal(t, comment, maskingPolicy[0].Comment)
-		assert.Equal(t, true, maskingPolicy[0].ExemptOtherPolicies)
+		assert.True(t, maskingPolicy[0].ExemptOtherPolicies)
 	})
 
 	t.Run("test no options", func(t *testing.T) {
@@ -218,10 +218,10 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(maskingPolicy))
+		assert.Len(t, maskingPolicy, 1)
 		assert.Equal(t, name, maskingPolicy[0].Name)
 		assert.Equal(t, "", maskingPolicy[0].Comment)
-		assert.Equal(t, false, maskingPolicy[0].ExemptOtherPolicies)
+		assert.False(t, maskingPolicy[0].ExemptOtherPolicies)
 	})
 
 	t.Run("test multiline expression", func(t *testing.T) {
@@ -299,7 +299,7 @@ func TestInt_MaskingPolicyAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(maskingPolicies))
+		assert.Len(t, maskingPolicies, 1)
 		assert.Equal(t, comment, maskingPolicies[0].Comment)
 
 		err = client.MaskingPolicies.Alter(ctx, maskingPolicy.ID(), alterOptions)
@@ -322,7 +322,7 @@ func TestInt_MaskingPolicyAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(maskingPolicies))
+		assert.Len(t, maskingPolicies, 1)
 		assert.Equal(t, "", maskingPolicies[0].Comment)
 	})
 
@@ -426,7 +426,7 @@ func TestInt_MaskingPoliciesShowByID(t *testing.T) {
 		assert.Equal(t, "MASKING_POLICY", mp.Kind)
 		assert.Equal(t, "ACCOUNTADMIN", mp.Owner)
 		assert.Equal(t, "", mp.Comment)
-		assert.Equal(t, false, mp.ExemptOtherPolicies)
+		assert.False(t, mp.ExemptOtherPolicies)
 		assert.Equal(t, "ROLE", mp.OwnerRoleType)
 	}
 

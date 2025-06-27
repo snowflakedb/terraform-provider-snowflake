@@ -35,7 +35,7 @@ func TestInt_SharesShow(t *testing.T) {
 		}
 		shares, err := client.Shares.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 		assert.Contains(t, shares, *shareTest)
 	})
 
@@ -47,7 +47,7 @@ func TestInt_SharesShow(t *testing.T) {
 		}
 		shares, err := client.Shares.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(shares))
+		assert.Empty(t, shares)
 	})
 
 	t.Run("when limiting the number of results", func(t *testing.T) {
@@ -58,7 +58,7 @@ func TestInt_SharesShow(t *testing.T) {
 		}
 		shares, err := client.Shares.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 	})
 }
 
@@ -82,7 +82,7 @@ func TestInt_SharesCreate(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 		assert.Equal(t, id.Name(), shares[0].Name.Name())
 		assert.Equal(t, "test comment", shares[0].Comment)
 
@@ -157,7 +157,7 @@ func TestInt_SharesAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 		share := shares[0]
 		assert.Equal(t, accountsToAdd, share.To)
 
@@ -175,9 +175,9 @@ func TestInt_SharesAlter(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 		share = shares[0]
-		assert.Equal(t, 0, len(share.To))
+		assert.Empty(t, share.To)
 	})
 
 	t.Run("set accounts", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestInt_SharesAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 		share := shares[0]
 		assert.Equal(t, accountsToSet, share.To)
 	})
@@ -254,7 +254,7 @@ func TestInt_SharesAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 		share := shares[0]
 		assert.Equal(t, comment, share.Comment)
 
@@ -274,7 +274,7 @@ func TestInt_SharesAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 		share = shares[0]
 		assert.Equal(t, "", share.Comment)
 	})
@@ -302,7 +302,7 @@ func TestInt_ShareDescribeProvider(t *testing.T) {
 		shareDetails, err := client.Shares.DescribeProvider(ctx, shareTest.ID())
 		require.NoError(t, err)
 
-		assert.Equal(t, 1, len(shareDetails.SharedObjects))
+		assert.Len(t, shareDetails.SharedObjects, 1)
 		sharedObject := shareDetails.SharedObjects[0]
 		assert.Equal(t, sdk.ObjectTypeDatabase, sharedObject.Kind)
 		assert.Equal(t, testClientHelper().Ids.DatabaseId(), sharedObject.Name)
@@ -345,7 +345,7 @@ func TestInt_ShareDescribeConsumer(t *testing.T) {
 		shareDetails, err := consumerClient.Shares.DescribeConsumer(ctx, shareTest.ExternalID())
 		require.NoError(t, err)
 
-		assert.Equal(t, 1, len(shareDetails.SharedObjects))
+		assert.Len(t, shareDetails.SharedObjects, 1)
 		sharedObject := shareDetails.SharedObjects[0]
 		assert.Equal(t, sdk.ObjectTypeDatabase, sharedObject.Kind)
 		assert.Equal(t, ids.DatabasePlaceholder, sharedObject.Name)

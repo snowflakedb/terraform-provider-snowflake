@@ -84,7 +84,7 @@ func TestIsValidIdentifier(t *testing.T) {
 				assert.Len(t, diag, 1)
 				assert.Contains(t, diag[0].Detail, tt.Error)
 			} else {
-				assert.Len(t, diag, 0)
+				assert.Empty(t, diag)
 			}
 		})
 	}

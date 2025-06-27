@@ -1799,7 +1799,7 @@ func TestInt_Functions(t *testing.T) {
 		functions, err := client.Functions.Show(ctx, sdk.NewShowFunctionRequest().WithLike(sdk.Like{Pattern: &f1.Name}))
 		require.NoError(t, err)
 
-		require.Equal(t, 1, len(functions))
+		require.Len(t, functions, 1)
 		require.Contains(t, functions, *f1)
 		require.NotContains(t, functions, *f2)
 	})
@@ -1809,7 +1809,7 @@ func TestInt_Functions(t *testing.T) {
 			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: testClientHelper().Ids.SchemaId()}}).
 			WithLike(sdk.Like{Pattern: sdk.String(NonExistingSchemaObjectIdentifier.Name())}))
 		require.NoError(t, err)
-		require.Equal(t, 0, len(functions))
+		require.Empty(t, functions)
 	})
 
 	t.Run("describe function: for Java - minimal", func(t *testing.T) {

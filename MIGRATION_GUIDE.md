@@ -20,7 +20,15 @@ across different versions.
 
 ## v2.1.0 ➞ v2.2.0
 
-### *(bugfix) Fix grant_ownership resource for serverless tasks
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, v2.0.1, and v2.1.1.
+
+### *(bugfix)* Fix grant_ownership resource for serverless tasks
 
 Previously, it wasn't possible to use the `snowflake_grant_ownership` resource to grant ownership of serverless tasks.
 In this version, we fixed the issue, and now you can use the resource to grant ownership of serverless tasks.
@@ -29,7 +37,33 @@ No configuration changes are needed.
 
 References: [#3750](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3750)
 
-### *(new feature) New fields in snowflake_cortex_search_service resource
+### *(bugfix)* Fix external volume creation error handling
+
+Errors in [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/external_volume) resource creation were not handled and propagated properly, resulting in provider errors similar to:
+```
+Warning: Failed to query external volume. Marking the resource as removed.
+│ 
+│   with snowflake_external_volume.s3_volume,
+│   on main.tf line 62, in resource "snowflake_external_volume" "s3_volume":
+│   62: resource "snowflake_external_volume" "s3_volume" {
+│ 
+│ External Volume: "MY_S3_EXTERNAL_VOLUME", Err: object does not exist
+╵
+╷
+│ Error: Provider produced inconsistent result after apply
+│ 
+│ When applying changes to snowflake_external_volume.s3_volume, provider
+│ "provider[\"registry.terraform.io/snowflakedb/snowflake\"]" produced an unexpected new value: Root object
+│ was present, but now absent.
+│ 
+│ This is a bug in the provider, which should be reported in the provider's own issue tracker.
+```
+
+Starting with this version, creation errors in `snowflake_external_volume` will be handled and propagated properly to the user.
+
+No configuration changes are needed.
+
+### *(new feature)* New fields in snowflake_cortex_search_service resource
 
 We added a new `embedding_model` field to the `snowflake_cortex_search_service`. This field specifies the embedding model to use in the Cortex Search Service.
 We updated the examples of using the resource with this field.
@@ -180,6 +214,16 @@ No configuration changes are necessary.
 
 As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
 
+## v2.1.0 -> v2.1.1
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, and v2.0.1.
+
 ## v2.0.0 ➞ v2.1.0
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
@@ -223,6 +267,16 @@ when a database role was granted to a user. This version resolves the issue.
 No configuration changes are necessary.
 
 References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
+
+## v2.0.0 -> v2.0.1
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6, v1.1.1, and v1.2.2.
 
 ## v1.2.1 ➞ v2.0.0
 
@@ -375,6 +429,16 @@ References: [#3580](https://github.com/snowflakedb/terraform-provider-snowflake/
 ## v1.2.0 ➞ v1.2.1
 No migration needed.
 
+## v1.2.1 -> v1.2.2
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6 and v1.1.1.
+
 ## v1.1.0 ➞ v1.2.0
 
 ### New behavior for Read and Delete operations when removing high-hierarchy objects
@@ -446,6 +510,16 @@ This version fixes this behavior. No action should be required on user side.
 
 References: [#3522](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3522)
 
+## v1.1.0 -> v1.1.1
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to version v1.0.6.
+
 ## v1.0.5 ➞ v1.1.0
 
 ### Timeouts in resources
@@ -468,6 +542,14 @@ Using `grant_privileges_to_account_role` with `all_privileges=true` and `on_acco
 Instead of failing the whole action, we return a warning instead and the operation execution continues, which aligns with the behavior in Snowsight. Note that for `all_privileges=true` the privileges list in the state is not populated, like before. If you want to detect differences in the privileges, use `privileges` list instead. If you want to make sure that the maximum privileges are granted, enable `always_apply`.
 
 References: [#3507](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3507)
+
+## v1.0.5 -> v1.0.6
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
 
 ## v1.0.4 ➞ v1.0.5
 

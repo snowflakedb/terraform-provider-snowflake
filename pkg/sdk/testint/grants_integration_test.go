@@ -62,7 +62,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(grants))
+		assert.Len(t, grants, 2)
 		// The order of the grants is not guaranteed
 		for _, grant := range grants {
 			switch grant.Privilege {
@@ -84,7 +84,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(grants))
+		assert.Empty(t, grants)
 	})
 
 	t.Run("on account object", func(t *testing.T) {
@@ -108,7 +108,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(grants))
+		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeMonitor.String(), grants[0].Privilege)
 
 		// now revoke and verify that the grant(s) are gone
@@ -120,7 +120,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(grants))
+		assert.Empty(t, grants)
 	})
 
 	t.Run("on schema", func(t *testing.T) {
@@ -142,7 +142,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(grants))
+		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaPrivilegeCreateAlert.String(), grants[0].Privilege)
 
 		// now revoke and verify that the grant(s) are gone
@@ -154,7 +154,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(grants))
+		assert.Empty(t, grants)
 	})
 
 	t.Run("on schema object", func(t *testing.T) {
@@ -194,7 +194,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(grants))
+		assert.Empty(t, grants)
 	})
 
 	t.Run("on schema object: cortex search service", func(t *testing.T) {
@@ -237,7 +237,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(grants))
+		assert.Empty(t, grants)
 	})
 
 	t.Run("on all: cortex search service", func(t *testing.T) {
@@ -284,7 +284,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(grants))
+		assert.Empty(t, grants)
 	})
 
 	t.Run("on future schema object", func(t *testing.T) {
@@ -310,7 +310,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(grants))
+		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grants[0].Privilege)
 
 		// now revoke and verify that the grant(s) are gone
@@ -322,7 +322,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(grants))
+		assert.Empty(t, grants)
 	})
 
 	t.Run("on future: cortex search service", func(t *testing.T) {
@@ -350,7 +350,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(grants))
+		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeUsage.String(), grants[0].Privilege)
 		assert.Equal(t, sdk.ObjectTypeCortexSearchService, grants[0].GrantOn)
 
@@ -364,7 +364,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(grants))
+		assert.Empty(t, grants)
 	})
 
 	t.Run("grant and revoke on all pipes", func(t *testing.T) {
@@ -535,7 +535,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		})
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
-		require.Equal(t, 2, len(returnedGrants))
+		require.Len(t, returnedGrants, 2)
 
 		usagePrivilege, err := collections.FindFirst[sdk.Grant](returnedGrants, func(g sdk.Grant) bool { return g.Privilege == sdk.AccountObjectPrivilegeUsage.String() })
 		require.NoError(t, err)
@@ -556,7 +556,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedGrants))
+		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
 	})
 
@@ -583,7 +583,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		})
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
-		require.Equal(t, 2, len(returnedGrants))
+		require.Len(t, returnedGrants, 2)
 
 		usagePrivilege, err := collections.FindFirst[sdk.Grant](returnedGrants, func(g sdk.Grant) bool { return g.Privilege == sdk.AccountObjectPrivilegeUsage.String() })
 		require.NoError(t, err)
@@ -604,7 +604,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedGrants))
+		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
 	})
 
@@ -657,7 +657,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedGrants))
+		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
 	})
 
@@ -709,7 +709,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedGrants))
+		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
 	})
 
@@ -738,7 +738,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		require.Equal(t, 1, len(returnedGrants))
+		require.Len(t, returnedGrants, 1)
 
 		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), returnedGrants[0].Privilege)
 		assert.Equal(t, sdk.ObjectTypeExternalTable, returnedGrants[0].GrantOn)
@@ -755,7 +755,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(returnedGrants))
+		assert.Empty(t, returnedGrants)
 	})
 
 	t.Run("on schema object: cortex search service", func(t *testing.T) {
@@ -782,7 +782,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedGrants))
+		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
 		assert.Equal(t, sdk.ObjectTypeCortexSearchService, returnedGrants[0].GrantOn)
 
@@ -796,7 +796,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(returnedGrants))
+		assert.Empty(t, returnedGrants)
 	})
 
 	t.Run("grant and revoke on all pipes", func(t *testing.T) {
@@ -1320,7 +1320,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		})
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
-		require.Equal(t, 2, len(returnedGrants))
+		require.Len(t, returnedGrants, 2)
 
 		usagePrivilege, err := collections.FindFirst[sdk.Grant](returnedGrants, func(g sdk.Grant) bool { return g.Privilege == sdk.AccountObjectPrivilegeUsage.String() })
 		require.NoError(t, err)
@@ -1358,7 +1358,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		require.Equal(t, 1, len(returnedGrants))
+		require.Len(t, returnedGrants, 1)
 
 		assert.Equal(t, sdk.SchemaObjectOwnership.String(), returnedGrants[0].Privilege)
 		assert.Equal(t, sdk.ObjectTypeExternalTable, returnedGrants[0].GrantOn)
@@ -1396,7 +1396,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		require.Equal(t, 1, len(returnedGrants))
+		require.Len(t, returnedGrants, 1)
 
 		assert.Equal(t, sdk.SchemaObjectOwnership.String(), returnedGrants[0].Privilege)
 		assert.Equal(t, sdk.ObjectTypeWarehouse, returnedGrants[0].GrantedOn)

@@ -29,7 +29,7 @@ import (
 )
 
 func TestAcc_Account_Minimal(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
@@ -132,7 +132,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 }
 
 func TestAcc_Account_Complete(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
@@ -247,7 +247,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 }
 
 func TestAcc_Account_Rename(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
@@ -311,7 +311,7 @@ func TestAcc_Account_Rename(t *testing.T) {
 }
 
 func TestAcc_Account_IsOrgAdmin(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
@@ -513,7 +513,7 @@ func TestAcc_Account_UpdatingConsumptionBillingEntity(t *testing.T) {
 }
 
 func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
@@ -593,7 +593,7 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 }
 
 func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	id := random.AccountName()
 	email := random.Email()
@@ -625,7 +625,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 }
 
 func TestAcc_Account_InvalidValues(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	id := random.AccountName()
 	email := random.Email()
@@ -670,7 +670,7 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 }
 
 func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	id := random.AccountName()
 	email := random.Email()

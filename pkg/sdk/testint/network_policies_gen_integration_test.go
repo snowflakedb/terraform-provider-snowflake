@@ -376,7 +376,7 @@ func TestInt_NetworkPolicies(t *testing.T) {
 		desc, err := client.NetworkPolicies.Describe(ctx, req.GetName())
 		require.NoError(t, err)
 
-		assert.Equal(t, 2, len(desc))
+		assert.Len(t, desc, 2)
 		assert.Contains(t, desc, sdk.NetworkPolicyProperty{Name: "ALLOWED_IP_LIST", Value: allowedIP.IP})
 		assert.Contains(t, desc, sdk.NetworkPolicyProperty{Name: "BLOCKED_IP_LIST", Value: fmt.Sprintf("%s,%s", blockedIP.IP, blockedIP2.IP)})
 	})

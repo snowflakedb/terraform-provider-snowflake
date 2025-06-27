@@ -89,7 +89,7 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 		pipes, err := itc.client.Pipes.Show(itc.ctx, &sdk.ShowPipeOptions{})
 
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(pipes))
+		assert.Len(t, pipes, 2)
 		assert.Contains(t, pipes, *pipe1)
 		assert.Contains(t, pipes, *pipe2)
 	})
@@ -103,7 +103,7 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 		pipes, err := itc.client.Pipes.Show(itc.ctx, showOptions)
 
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(pipes))
+		assert.Len(t, pipes, 2)
 		assert.Contains(t, pipes, *pipe1)
 		assert.Contains(t, pipes, *pipe2)
 	})
@@ -117,7 +117,7 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 		pipes, err := itc.client.Pipes.Show(itc.ctx, showOptions)
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(pipes))
+		assert.Len(t, pipes, 1)
 		assert.Contains(t, pipes, *pipe1)
 	})
 
@@ -130,7 +130,7 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 		pipes, err := itc.client.Pipes.Show(itc.ctx, showOptions)
 
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(pipes))
+		assert.Empty(t, pipes)
 	})
 
 	t.Run("describe: existing pipe", func(t *testing.T) {
