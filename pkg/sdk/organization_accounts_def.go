@@ -2,9 +2,10 @@ package sdk
 
 import (
 	"fmt"
-	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 	"slices"
 	"strings"
+
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
 //go:generate go run ./poc/main.go

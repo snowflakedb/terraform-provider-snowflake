@@ -4,13 +4,14 @@ package testint
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
@@ -61,7 +62,7 @@ func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
 		t.Helper()
 
 		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount)
-		require.Len(t, policies, 0)
+		require.Empty(t, policies)
 		require.NoError(t, err)
 	}
 
