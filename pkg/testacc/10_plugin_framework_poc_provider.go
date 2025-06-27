@@ -79,7 +79,7 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 
 func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) {
 	// TODO [mux-PR]: implement (populate in *gosnowflake.Config)
-	// TODO [mux-PR]: us os wrapper
+	// TODO [mux-PR]: use os wrapper
 	// TODO [mux-PR]: handle envs
 	// todoFromEnv := os.Getenv("SNOWFLAKE_TODO")
 

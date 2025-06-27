@@ -39,7 +39,7 @@ func (r *SomeResource) Schema(_ context.Context, _ resource.SchemaRequest, respo
 				Computed:    true,
 				Description: "Identifier for this example resource.",
 				PlanModifiers: []planmodifier.String{
-					// TODO[mux-PR]: how it behaves with renames?
+					// TODO [mux-PR]: how it behaves with renames?
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
