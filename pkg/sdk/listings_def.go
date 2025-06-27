@@ -17,19 +17,6 @@ const (
 	ListingRevisionPublished ListingRevision = "PUBLISHED"
 )
 
-var AllListingRevisions = []ListingRevision{
-	ListingRevisionDraft,
-	ListingRevisionPublished,
-}
-
-func ToListingRevision(s string) (ListingRevision, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(AllListingRevisions, ListingRevision(s)) {
-		return "", fmt.Errorf("invalid listing revision: %s", s)
-	}
-	return ListingRevision(s), nil
-}
-
 type ListingState string
 
 const (
@@ -57,6 +44,8 @@ var listingWithDef = g.NewQueryStruct("ListingWith").
 	OptionalIdentifier("ApplicationPackage", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION PACKAGE")).
 	WithValidation(g.ExactlyOneValueSet, "Share", "ApplicationPackage")
 
+// There are more fields listed than in https://docs.snowflake.com/en/sql-reference/sql/show-listings.
+// They are mapped straight from the SHOW LISTINGS output.
 var listingDbRow = g.DbStruct("listingDBRow").
 	Text("global_name").
 	Text("name").
@@ -113,6 +102,8 @@ var listing = g.PlainStruct("Listing").
 	OptionalText("UniformListingLocator").
 	OptionalText("DetailedTargetAccounts")
 
+// There are more fields listed than in https://docs.snowflake.com/en/sql-reference/sql/desc-listing
+// They are mapped straight from the DESC LISTING output.
 var listingDetailsDbRow = g.DbStruct("listingDetailsDBRow").
 	Text("global_name").
 	Text("name").
@@ -249,24 +240,12 @@ var ListingsDef = g.NewInterface(
 			Name().
 			OptionalQueryStructField("With", listingWithDef, g.KeywordOptions()).
 			TextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes().Required()).
-			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
-			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
-			OptionalComment().
-			WithValidation(g.ValidIdentifier, "name"),
-	).
-	CustomOperation(
-		"CreateFromStage",
-		"https://docs.snowflake.com/en/sql-reference/sql/create-listing",
-		g.NewQueryStruct("CreateListingFromStage").
-			Create().
-			SQL("EXTERNAL LISTING").
-			IfNotExists().
-			Name().
-			OptionalQueryStructField("With", listingWithDef, g.KeywordOptions()).
 			PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().NoQuotes().NoEquals().SQL("FROM")).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
-			WithValidation(g.ValidIdentifier, "name"),
+			OptionalComment().
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ExactlyOneValueSet, "As", "From"),
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-listing",
@@ -303,9 +282,15 @@ var ListingsDef = g.NewInterface(
 					OptionalComment(),
 				g.KeywordOptions().SQL("SET"),
 			).
+			OptionalQueryStructField(
+				"Unset",
+				g.NewQueryStruct("ListingUnset").
+					OptionalSQL("COMMENT"),
+				g.KeywordOptions().SQL("UNSET"),
+			).
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfExists", "AddVersion").
-			WithValidation(g.ExactlyOneValueSet, "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set"),
+			WithValidation(g.ExactlyOneValueSet, "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-listing",
