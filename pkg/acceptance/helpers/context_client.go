@@ -133,3 +133,10 @@ func (c *ContextClient) LastQueryId(t *testing.T) string {
 
 	return id
 }
+
+func (c *ContextClient) DefaultConsumptionBillingEntity(t *testing.T) sdk.AccountObjectIdentifier {
+	t.Helper()
+	orgName, err := c.context.client.ContextFunctions.CurrentOrganizationName(context.Background())
+	require.NoError(t, err)
+	return sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_DefaultBE", orgName))
+}
