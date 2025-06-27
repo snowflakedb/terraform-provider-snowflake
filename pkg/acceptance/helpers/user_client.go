@@ -203,7 +203,8 @@ func (c *UserClient) AddProgrammaticAccessToken(t *testing.T, id sdk.AccountObje
 		TokenSecret string `db:"token_secret"`
 	}
 	var result []resultSchema
-	err := c.context.client.QueryForTests(ctx, &result, fmt.Sprintf("ALTER USER %s ADD PROGRAMMATIC ACCESS TOKEN TEST ROLE_RESTRICTION = %s", id.FullyQualifiedName(), roleId.FullyQualifiedName()))
+	// Expire the token after 1 day to avoid valid leftover tokens.
+	err := c.context.client.QueryForTests(ctx, &result, fmt.Sprintf("ALTER USER %s ADD PROGRAMMATIC ACCESS TOKEN TEST ROLE_RESTRICTION = %s DAYS_TO_EXPIRY = 1", id.FullyQualifiedName(), roleId.FullyQualifiedName()))
 	require.NoError(t, err)
 	require.Len(t, result, 1)
 

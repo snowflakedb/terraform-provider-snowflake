@@ -171,7 +171,7 @@ func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.Acc
 		WithOrganizationName(accountIdentifier.OrganizationName()).
 		WithAccountName(accountIdentifier.AccountName()).
 		WithWarehouse(warehouseId.Name()).
-		WithAuthenticator("SNOWFLAKE"),
+		WithAuthenticator(string(sdk.AuthenticationTypeSnowflake)),
 	)
 }
 
@@ -179,15 +179,16 @@ func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.Acc
 func TomlConfigForServiceUserWithModifiers(t *testing.T, profile string, serviceUser *TmpServiceUser, configDtoModifier func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+	configDto := sdk.NewConfigDTO().
 		WithOrganizationName(serviceUser.AccountId.OrganizationName()).
 		WithAccountName(serviceUser.AccountId.AccountName()).
 		WithUser(serviceUser.UserId.Name()).
 		WithRole(serviceUser.RoleId.Name()).
 		WithWarehouse(serviceUser.WarehouseId.Name()).
 		WithPrivateKey(serviceUser.PrivateKey).
-		WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
-	)
+		WithAuthenticator(string(sdk.AuthenticationTypeJwt))
+
+	return configDtoToTomlString(t, profile, configDtoModifier(configDto))
 }
 
 func configDtoToTomlString(t *testing.T, profile string, config *sdk.ConfigDTO) string {
