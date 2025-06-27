@@ -81,6 +81,7 @@ type Client struct {
 	Tags                         Tags
 	Tasks                        Tasks
 	Users                        Users
+	UserProgrammaticAccessTokens UserProgrammaticAccessTokens
 	Views                        Views
 	Warehouses                   Warehouses
 }
@@ -218,6 +219,7 @@ func (c *Client) initialize() {
 	c.Tags = &tags{client: c}
 	c.Tasks = &tasks{client: c}
 	c.Users = &users{client: c}
+	c.UserProgrammaticAccessTokens = &userProgrammaticAccessTokens{client: c}
 	c.Views = &views{client: c}
 	c.Warehouses = &warehouses{client: c}
 }
