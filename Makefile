@@ -67,7 +67,7 @@ sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 			else echo "Aborting..."; \
 		fi;
 
-test-unit: ## run unit tests - temporary to prove it's working
+test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)")
 
 test-acceptance: ## run acceptance tests
@@ -80,7 +80,7 @@ test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint
 
 test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
-	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -run "^TestAcc_SdkV2Functional_" -v -cover -timeout=10m ./pkg/testfunctional
+	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional
 
 test-architecture: ## check architecture constraints between packages
 	go test ./pkg/architests/... -v
@@ -205,5 +205,11 @@ generate-all-config-model-builders-check: clean-all-config-model-builders genera
 clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-snowflake-object-parameters-assertions clean-resource-assertions clean-resource-parameters-assertions clean-resource-show-output-assertions clean-resource-model-builders clean-provider-model-builders clean-datasource-model-builders ## clean all generated assertions and config models
 
 generate-all-assertions-and-config-models: generate-snowflake-object-assertions generate-snowflake-object-parameters-assertions generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions generate-resource-model-builders generate-provider-model-builders generate-datasource-model-builders ## generate all assertions and config models
+
+generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and schema for Plugin Framework PoC
+	go generate ./pkg/testacc/13_generate_poc_provider_model_and_schema.go
+
+clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
+	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
 .PHONY: build-local clean-generator-poc dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf

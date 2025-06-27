@@ -1,0 +1,11 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testacc/poc/gen.PluginFrameworkProviderModel*/ -}}
+
+var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
+{{- range .SchemaEntries }}
+    "{{ .Key }}": {{ .PluginFrameworkSchemaAttributeType }}{
+        Description: "{{ .Description }}",
+        Optional:    {{ .Optional }},
+        Sensitive:   {{ .Sensitive }},
+    },
+{{- end }}
+}
