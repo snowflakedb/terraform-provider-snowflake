@@ -41,3 +41,13 @@ var WarehouseParameters = []ObjectParameter{
 	ObjectParameterStatementQueuedTimeoutInSeconds,
 	ObjectParameterStatementTimeoutInSeconds,
 }
+
+// ValidWarehouseResourceConstraint is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties
+var ValidWarehouseResourceConstraint = []string{
+	string(ResourceConstraintSize1X),
+	string(ResourceConstraintSize1XX86),
+	string(ResourceConstraintSize16X),
+	string(ResourceConstraintSize16XX86),
+	string(ResourceConstraintSize64X),
+	string(ResourceConstraintSize64XX86),
+}
