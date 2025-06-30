@@ -24,7 +24,12 @@ usage_examples:
 
 func TestListings_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
+	stageId := randomSchemaObjectIdentifier()
 	manifest := sampleListingManifest()
+	stageLocation := StageLocation{
+		stage: stageId,
+		path:  "dir/subdir",
+	}
 
 	// Minimal valid CreateListingOptions
 	defaultOpts := func() *CreateListingOptions {
@@ -44,6 +49,18 @@ func TestListings_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: exactly one field from [opts.As opts.From] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions", "As", "From"))
+	})
+
+	t.Run("validation: exactly one field from [opts.As opts.From] should be present - two set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.As = &manifest
+		opts.From = &stageLocation
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions", "As", "From"))
+	})
+
 	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present - none set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.With = &ListingWith{}
@@ -61,120 +78,72 @@ func TestListings_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("basic with As", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.As = manifest
+		opts.As = &manifest
 		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING %s AS $$%s$$", opts.name.FullyQualifiedName(), manifest)
 	})
 
-	t.Run("all options with stage", func(t *testing.T) {
+	t.Run("basic with From", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.From = &stageLocation
+		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING %s FROM @%s/dir/subdir", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
+	})
+
+	t.Run("all As options with stage", func(t *testing.T) {
 		shareId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.With = &ListingWith{
 			Share: &shareId,
 		}
-		opts.As = manifest
+		opts.As = &manifest
 		opts.Publish = Bool(true)
 		opts.Review = Bool(true)
 		opts.Comment = String("comment")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), manifest)
 	})
 
-	t.Run("all options with application package", func(t *testing.T) {
+	t.Run("all As options with application package", func(t *testing.T) {
 		applicationPackageId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.With = &ListingWith{
 			ApplicationPackage: &applicationPackageId,
 		}
-		opts.As = manifest
+		opts.As = &manifest
 		opts.Publish = Bool(true)
 		opts.Review = Bool(true)
 		opts.Comment = String("comment")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), manifest)
 	})
-}
 
-func TestListings_CreateFromStage(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateFromStageListingOptions
-	defaultOpts := func() *CreateFromStageListingOptions {
-		return &CreateFromStageListingOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *CreateFromStageListingOptions = nil
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = invalidAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present - none set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.With = &ListingWith{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateFromStageListingOptions.With", "Share", "ApplicationPackage"))
-	})
-
-	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present - two set", func(t *testing.T) {
-		shareId := randomAccountObjectIdentifier()
-		applicationPackageId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.With = &ListingWith{
-			Share:              &shareId,
-			ApplicationPackage: &applicationPackageId,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateFromStageListingOptions.With", "Share", "ApplicationPackage"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		stageId := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.From = StageLocation{
-			stage: stageId,
-			path:  "dir/subdir",
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING %s FROM @%s/dir/subdir", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
-	})
-
-	t.Run("all options with share", func(t *testing.T) {
-		stageId := randomSchemaObjectIdentifier()
+	t.Run("all From options with stage", func(t *testing.T) {
 		shareId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.With = &ListingWith{
 			Share: &shareId,
 		}
-		opts.From = StageLocation{
-			stage: stageId,
-			path:  "dir/subdir",
-		}
+		opts.As = &manifest
 		opts.Publish = Bool(true)
 		opts.Review = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s FROM @%s/dir/subdir PUBLISH = true REVIEW = true", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), stageId.FullyQualifiedName())
+		opts.Comment = String("comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), manifest)
 	})
 
-	t.Run("all options with application package", func(t *testing.T) {
-		stageId := randomSchemaObjectIdentifier()
-		applicationPackage := randomAccountObjectIdentifier()
+	t.Run("all From options with application package", func(t *testing.T) {
+		applicationPackageId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.With = &ListingWith{
-			ApplicationPackage: &applicationPackage,
+			ApplicationPackage: &applicationPackageId,
 		}
-		opts.From = StageLocation{
-			stage: stageId,
-			path:  "dir/subdir",
-		}
+		opts.As = &manifest
 		opts.Publish = Bool(true)
 		opts.Review = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s FROM @%s/dir/subdir PUBLISH = true REVIEW = true", opts.name.FullyQualifiedName(), applicationPackage.FullyQualifiedName(), stageId.FullyQualifiedName())
+		opts.Comment = String("comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), manifest)
 	})
 }
 

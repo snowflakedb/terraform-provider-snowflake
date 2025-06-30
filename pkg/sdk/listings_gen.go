@@ -7,7 +7,6 @@ import (
 
 type Listings interface {
 	Create(ctx context.Context, request *CreateListingRequest) error
-	CreateFromStage(ctx context.Context, request *CreateFromStageListingRequest) error
 	Alter(ctx context.Context, request *AlterListingRequest) error
 	Drop(ctx context.Context, request *DropListingRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
@@ -24,7 +23,8 @@ type CreateListingOptions struct {
 	IfNotExists     *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name            AccountObjectIdentifier `ddl:"identifier"`
 	With            *ListingWith            `ddl:"keyword"`
-	As              string                  `ddl:"parameter,double_dollar_quotes,no_equals" sql:"AS"`
+	As              *string                 `ddl:"parameter,double_dollar_quotes,no_equals" sql:"AS"`
+	From            Location                `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
 	Publish         *bool                   `ddl:"parameter" sql:"PUBLISH"`
 	Review          *bool                   `ddl:"parameter" sql:"REVIEW"`
 	Comment         *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -33,18 +33,6 @@ type CreateListingOptions struct {
 type ListingWith struct {
 	Share              *AccountObjectIdentifier `ddl:"identifier" sql:"SHARE"`
 	ApplicationPackage *AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
-}
-
-// CreateFromStageListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-listing.
-type CreateFromStageListingOptions struct {
-	create          bool                    `ddl:"static" sql:"CREATE"`
-	externalListing bool                    `ddl:"static" sql:"EXTERNAL LISTING"`
-	IfNotExists     *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name            AccountObjectIdentifier `ddl:"identifier"`
-	With            *ListingWith            `ddl:"keyword"`
-	From            Location                `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
-	Publish         *bool                   `ddl:"parameter" sql:"PUBLISH"`
-	Review          *bool                   `ddl:"parameter" sql:"REVIEW"`
 }
 
 // AlterListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-listing.
@@ -60,6 +48,7 @@ type AlterListingOptions struct {
 	AddVersion     *AddListingVersion       `ddl:"keyword" sql:"ADD VERSION"`
 	RenameTo       *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set            *ListingSet              `ddl:"keyword" sql:"SET"`
+	Unset          *ListingUnset            `ddl:"keyword" sql:"UNSET"`
 }
 
 type AlterListingAs struct {
@@ -78,6 +67,10 @@ type AddListingVersion struct {
 
 type ListingSet struct {
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type ListingUnset struct {
+	Comment *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-listing.
@@ -158,7 +151,6 @@ type Listing struct {
 func (v *Listing) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
-
 func (v *Listing) ObjectType() ObjectType {
 	return ObjectTypeListing
 }

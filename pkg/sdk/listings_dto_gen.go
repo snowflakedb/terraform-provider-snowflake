@@ -3,19 +3,19 @@ package sdk
 //go:generate go run ./dto-builder-generator/main.go
 
 var (
-	_ optionsProvider[CreateListingOptions]          = new(CreateListingRequest)
-	_ optionsProvider[CreateFromStageListingOptions] = new(CreateFromStageListingRequest)
-	_ optionsProvider[AlterListingOptions]           = new(AlterListingRequest)
-	_ optionsProvider[DropListingOptions]            = new(DropListingRequest)
-	_ optionsProvider[ShowListingOptions]            = new(ShowListingRequest)
-	_ optionsProvider[DescribeListingOptions]        = new(DescribeListingRequest)
+	_ optionsProvider[CreateListingOptions]   = new(CreateListingRequest)
+	_ optionsProvider[AlterListingOptions]    = new(AlterListingRequest)
+	_ optionsProvider[DropListingOptions]     = new(DropListingRequest)
+	_ optionsProvider[ShowListingOptions]     = new(ShowListingRequest)
+	_ optionsProvider[DescribeListingOptions] = new(DescribeListingRequest)
 )
 
 type CreateListingRequest struct {
 	IfNotExists *bool
 	name        AccountObjectIdentifier // required
 	With        *ListingWithRequest
-	As          string // required
+	As          string   // required
+	From        Location // required
 	Publish     *bool
 	Review      *bool
 	Comment     *string
@@ -24,15 +24,6 @@ type CreateListingRequest struct {
 type ListingWithRequest struct {
 	Share              *AccountObjectIdentifier
 	ApplicationPackage *AccountObjectIdentifier
-}
-
-type CreateFromStageListingRequest struct {
-	IfNotExists *bool
-	name        AccountObjectIdentifier // required
-	With        *ListingWithRequest
-	From        Location // required
-	Publish     *bool
-	Review      *bool
 }
 
 type AlterListingRequest struct {
@@ -45,6 +36,7 @@ type AlterListingRequest struct {
 	AddVersion     *AddListingVersionRequest
 	RenameTo       *AccountObjectIdentifier
 	Set            *ListingSetRequest
+	Unset          *ListingUnsetRequest
 }
 
 type AlterListingAsRequest struct {
@@ -63,6 +55,10 @@ type AddListingVersionRequest struct {
 
 type ListingSetRequest struct {
 	Comment *string
+}
+
+type ListingUnsetRequest struct {
+	Comment *bool
 }
 
 type DropListingRequest struct {

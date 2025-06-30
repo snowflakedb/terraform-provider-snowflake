@@ -7,10 +7,12 @@ import ()
 func NewCreateListingRequest(
 	name AccountObjectIdentifier,
 	As string,
+	From Location,
 ) *CreateListingRequest {
 	s := CreateListingRequest{}
 	s.name = name
 	s.As = As
+	s.From = From
 	return &s
 }
 
@@ -50,36 +52,6 @@ func (s *ListingWithRequest) WithShare(Share AccountObjectIdentifier) *ListingWi
 
 func (s *ListingWithRequest) WithApplicationPackage(ApplicationPackage AccountObjectIdentifier) *ListingWithRequest {
 	s.ApplicationPackage = &ApplicationPackage
-	return s
-}
-
-func NewCreateFromStageListingRequest(
-	name AccountObjectIdentifier,
-	From Location,
-) *CreateFromStageListingRequest {
-	s := CreateFromStageListingRequest{}
-	s.name = name
-	s.From = From
-	return &s
-}
-
-func (s *CreateFromStageListingRequest) WithIfNotExists(IfNotExists bool) *CreateFromStageListingRequest {
-	s.IfNotExists = &IfNotExists
-	return s
-}
-
-func (s *CreateFromStageListingRequest) WithWith(With ListingWithRequest) *CreateFromStageListingRequest {
-	s.With = &With
-	return s
-}
-
-func (s *CreateFromStageListingRequest) WithPublish(Publish bool) *CreateFromStageListingRequest {
-	s.Publish = &Publish
-	return s
-}
-
-func (s *CreateFromStageListingRequest) WithReview(Review bool) *CreateFromStageListingRequest {
-	s.Review = &Review
 	return s
 }
 
@@ -131,6 +103,11 @@ func (s *AlterListingRequest) WithSet(Set ListingSetRequest) *AlterListingReques
 	return s
 }
 
+func (s *AlterListingRequest) WithUnset(Unset ListingUnsetRequest) *AlterListingRequest {
+	s.Unset = &Unset
+	return s
+}
+
 func NewAlterListingAsRequest(
 	As string,
 ) *AlterListingAsRequest {
@@ -179,6 +156,15 @@ func NewListingSetRequest() *ListingSetRequest {
 }
 
 func (s *ListingSetRequest) WithComment(Comment string) *ListingSetRequest {
+	s.Comment = &Comment
+	return s
+}
+
+func NewListingUnsetRequest() *ListingUnsetRequest {
+	return &ListingUnsetRequest{}
+}
+
+func (s *ListingUnsetRequest) WithComment(Comment bool) *ListingUnsetRequest {
 	s.Comment = &Comment
 	return s
 }

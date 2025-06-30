@@ -17,11 +17,6 @@ func (v *listings) Create(ctx context.Context, request *CreateListingRequest) er
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *listings) CreateFromStage(ctx context.Context, request *CreateFromStageListingRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
 func (v *listings) Alter(ctx context.Context, request *AlterListingRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -76,28 +71,13 @@ func (r *CreateListingRequest) toOpts() *CreateListingOptions {
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
 
-		As:      r.As,
+		From:    r.From,
 		Publish: r.Publish,
 		Review:  r.Review,
 		Comment: r.Comment,
 	}
-	if r.With != nil {
-		opts.With = &ListingWith{
-			Share:              r.With.Share,
-			ApplicationPackage: r.With.ApplicationPackage,
-		}
-	}
-	return opts
-}
-
-func (r *CreateFromStageListingRequest) toOpts() *CreateFromStageListingOptions {
-	opts := &CreateFromStageListingOptions{
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-
-		From:    r.From,
-		Publish: r.Publish,
-		Review:  r.Review,
+	if r.As != nil {
+		opts.As = *r.As
 	}
 	if r.With != nil {
 		opts.With = &ListingWith{
@@ -137,6 +117,11 @@ func (r *AlterListingRequest) toOpts() *AlterListingOptions {
 	if r.Set != nil {
 		opts.Set = &ListingSet{
 			Comment: r.Set.Comment,
+		}
+	}
+	if r.Unset != nil {
+		opts.Unset = &ListingUnset{
+			Comment: r.Unset.Comment,
 		}
 	}
 	return opts
