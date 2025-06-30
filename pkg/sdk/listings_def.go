@@ -239,8 +239,8 @@ var ListingsDef = g.NewInterface(
 			IfNotExists().
 			Name().
 			OptionalQueryStructField("With", listingWithDef, g.KeywordOptions()).
-			OptionalTextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes().Required()).
-			PredefinedQueryStructField("From", g.KindOfT[Location](), g.ParameterOptions().Required().NoQuotes().NoEquals().SQL("FROM")).
+			OptionalTextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes()).
+			PredefinedQueryStructField("From", g.KindOfTPointer[Location](), g.ParameterOptions().NoQuotes().NoEquals().SQL("FROM")).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
 			OptionalComment().

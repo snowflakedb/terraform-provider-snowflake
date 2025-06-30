@@ -14,8 +14,8 @@ type CreateListingRequest struct {
 	IfNotExists *bool
 	name        AccountObjectIdentifier // required
 	With        *ListingWithRequest
-	As          string   // required
-	From        Location // required
+	As          *string
+	From        Location
 	Publish     *bool
 	Review      *bool
 	Comment     *string

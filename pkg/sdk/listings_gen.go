@@ -24,7 +24,7 @@ type CreateListingOptions struct {
 	name            AccountObjectIdentifier `ddl:"identifier"`
 	With            *ListingWith            `ddl:"keyword"`
 	As              *string                 `ddl:"parameter,double_dollar_quotes,no_equals" sql:"AS"`
-	From            Location                `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
+	From            *Location               `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
 	Publish         *bool                   `ddl:"parameter" sql:"PUBLISH"`
 	Review          *bool                   `ddl:"parameter" sql:"REVIEW"`
 	Comment         *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`

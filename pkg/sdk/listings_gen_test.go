@@ -26,7 +26,7 @@ func TestListings_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	stageId := randomSchemaObjectIdentifier()
 	manifest := sampleListingManifest()
-	stageLocation := StageLocation{
+	var stageLocation Location = &StageLocation{
 		stage: stageId,
 		path:  "dir/subdir",
 	}
@@ -125,11 +125,11 @@ func TestListings_Create(t *testing.T) {
 		opts.With = &ListingWith{
 			Share: &shareId,
 		}
-		opts.As = &manifest
+		opts.From = &stageLocation
 		opts.Publish = Bool(true)
 		opts.Review = Bool(true)
 		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), manifest)
+		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s FROM @%s/dir/subdir PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), stageId.FullyQualifiedName())
 	})
 
 	t.Run("all From options with application package", func(t *testing.T) {
@@ -139,11 +139,11 @@ func TestListings_Create(t *testing.T) {
 		opts.With = &ListingWith{
 			ApplicationPackage: &applicationPackageId,
 		}
-		opts.As = &manifest
+		opts.From = &stageLocation
 		opts.Publish = Bool(true)
 		opts.Review = Bool(true)
 		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), manifest)
+		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s FROM @%s/dir/subdir PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), stageId.FullyQualifiedName())
 	})
 }
 
@@ -178,14 +178,14 @@ func TestListings_Alter(t *testing.T) {
 
 	t.Run("validation: exactly one field from [opts.Publish opts.Unpublish opts.Review opts.AlterListingAs opts.AddVersion opts.RenameTo opts.Set] should be present - none set", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Publish opts.Unpublish opts.Review opts.AlterListingAs opts.AddVersion opts.RenameTo opts.Set] should be present - two set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Publish = Bool(true)
 		opts.Unpublish = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"))
 	})
 
 	t.Run("publish", func(t *testing.T) {

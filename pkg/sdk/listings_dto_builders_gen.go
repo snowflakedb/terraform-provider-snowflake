@@ -6,13 +6,9 @@ import ()
 
 func NewCreateListingRequest(
 	name AccountObjectIdentifier,
-	As string,
-	From Location,
 ) *CreateListingRequest {
 	s := CreateListingRequest{}
 	s.name = name
-	s.As = As
-	s.From = From
 	return &s
 }
 
@@ -23,6 +19,16 @@ func (s *CreateListingRequest) WithIfNotExists(IfNotExists bool) *CreateListingR
 
 func (s *CreateListingRequest) WithWith(With ListingWithRequest) *CreateListingRequest {
 	s.With = &With
+	return s
+}
+
+func (s *CreateListingRequest) WithAs(As string) *CreateListingRequest {
+	s.As = &As
+	return s
+}
+
+func (s *CreateListingRequest) WithFrom(From Location) *CreateListingRequest {
+	s.From = From
 	return s
 }
 
