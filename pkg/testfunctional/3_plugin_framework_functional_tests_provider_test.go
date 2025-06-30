@@ -64,6 +64,7 @@ func (p *pluginFrameworkFunctionalTestsProvider) DataSources(_ context.Context) 
 func (p *pluginFrameworkFunctionalTestsProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		testfunctional.NewSomeResource,
+		testfunctional.NewZeroValuesResource,
 	}
 }
 
