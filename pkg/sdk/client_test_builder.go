@@ -8,7 +8,7 @@ import (
 //go:generate go run ./dto-builder-generator/main.go
 
 // TestClientBuilder is a builder for creating a test Client instance.
-// It's main purpose is to use this builder in unit tests to create a Client with mock data to test certain features.
+// Its main purpose is to use this builder in unit tests to create a Client with mock data to test certain features.
 // For building real Client instances, one of its constructors should be used instead.
 type TestClientBuilder struct {
 	Config         *gosnowflake.Config
