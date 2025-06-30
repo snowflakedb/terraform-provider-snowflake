@@ -5,10 +5,12 @@ import (
 	"github.com/snowflakedb/gosnowflake"
 )
 
-// TODO: Extend dto builder to support generating a new builder type from a struct (e.g. below code could be entirely generated out of Client struct).
 //go:generate go run ./dto-builder-generator/main.go
 
-type ClientBuilder struct {
+// TestClientBuilder is a builder for creating a test Client instance.
+// It's main purpose is to use this builder in unit tests to create a Client with mock data to test certain features.
+// For building real Client instances, one of its constructors should be used instead.
+type TestClientBuilder struct {
 	Config         *gosnowflake.Config
 	Db             *sqlx.DB
 	SessionID      string
@@ -82,7 +84,7 @@ type ClientBuilder struct {
 	Warehouses                   Warehouses
 }
 
-func (s *ClientBuilder) Build() *Client {
+func (s *TestClientBuilder) Build() *Client {
 	return &Client{
 		config:         s.Config,
 		db:             s.Db,

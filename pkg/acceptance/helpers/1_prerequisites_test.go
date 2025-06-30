@@ -10,7 +10,7 @@ import (
 
 func TestEnsureValidAccountIsUsed(t *testing.T) {
 	accountLocator := "ABC123123"
-	clientBuilder := sdk.NewClientBuilder().WithAccountLocator(accountLocator)
+	clientBuilder := sdk.NewTestClientBuilder().WithAccountLocator(accountLocator)
 
 	testClient := TestClient{
 		context: &TestClientContext{
