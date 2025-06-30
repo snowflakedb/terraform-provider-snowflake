@@ -25,6 +25,12 @@ type zeroValuesResourceModelV0 struct {
 	Id          types.String `tfsdk:"id"`
 }
 
+type zeroValuesOpts struct {
+	BoolValue   *bool
+	IntValue    *int
+	StringValue *string
+}
+
 func (r *ZeroValuesResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
 	response.TypeName = request.ProviderTypeName + "_zero_values"
 }
@@ -67,6 +73,11 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 	name := data.Name.ValueString()
 	id := sdk.NewAccountObjectIdentifier(name)
 	data.Id = types.StringValue(id.FullyQualifiedName())
+
+	opts := &zeroValuesOpts{}
+	booleanAttributeCreate(data.BoolValue, &opts.BoolValue)
+	int64AttributeCreate(data.IntValue, &opts.IntValue)
+	stringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	if response.Diagnostics.HasError() {
 		return
