@@ -80,7 +80,6 @@ const (
 	ObjectTypeGitRepository        ObjectType = "GIT REPOSITORY"
 	ObjectTypeModel                ObjectType = "MODEL"
 	ObjectTypeService              ObjectType = "SERVICE"
-	ObjectTypeOrganizationAccount  ObjectType = "ORGANIZATION_ACCOUNT"
 )
 
 func (o ObjectType) String() string {

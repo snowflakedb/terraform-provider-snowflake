@@ -123,5 +123,5 @@ func (v *OrganizationAccount) ID() AccountIdentifier {
 }
 
 func (v *OrganizationAccount) ObjectType() ObjectType {
-	return ObjectTypeOrganizationAccount
+	return ObjectTypeAccount
 }
