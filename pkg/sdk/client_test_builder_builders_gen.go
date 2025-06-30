@@ -46,11 +46,6 @@ func (s *TestClientBuilder) WithContextFunctions(ContextFunctions ContextFunctio
 	return s
 }
 
-func (s *TestClientBuilder) WithConversionFunctions(ConversionFunctions ConversionFunctions) *TestClientBuilder {
-	s.ConversionFunctions = ConversionFunctions
-	return s
-}
-
 func (s *TestClientBuilder) WithSystemFunctions(SystemFunctions SystemFunctions) *TestClientBuilder {
 	s.SystemFunctions = SystemFunctions
 	return s

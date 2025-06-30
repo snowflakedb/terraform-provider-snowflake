@@ -20,7 +20,6 @@ type TestClientBuilder struct {
 
 	// System-Defined Functions
 	ContextFunctions     ContextFunctions
-	ConversionFunctions  ConversionFunctions
 	SystemFunctions      SystemFunctions
 	ReplicationFunctions ReplicationFunctions
 
@@ -95,7 +94,6 @@ func (s *TestClientBuilder) Build() *Client {
 
 		// System-Defined Functions
 		ContextFunctions:     s.ContextFunctions,
-		ConversionFunctions:  s.ConversionFunctions,
 		SystemFunctions:      s.SystemFunctions,
 		ReplicationFunctions: s.ReplicationFunctions,
 
