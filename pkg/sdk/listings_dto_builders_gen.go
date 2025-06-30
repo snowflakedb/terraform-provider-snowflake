@@ -28,7 +28,7 @@ func (s *CreateListingRequest) WithAs(As string) *CreateListingRequest {
 }
 
 func (s *CreateListingRequest) WithFrom(From Location) *CreateListingRequest {
-	s.From = From
+	s.From = &From
 	return s
 }
 

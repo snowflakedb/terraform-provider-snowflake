@@ -71,8 +71,8 @@ func (r *CreateListingRequest) toOpts() *CreateListingOptions {
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
 
-		As: r.As,
-		//From:    r.From,
+		As:      r.As,
+		From:    r.From,
 		Publish: r.Publish,
 		Review:  r.Review,
 		Comment: r.Comment,

@@ -15,7 +15,7 @@ type CreateListingRequest struct {
 	name        AccountObjectIdentifier // required
 	With        *ListingWithRequest
 	As          *string
-	From        Location
+	From        *Location
 	Publish     *bool
 	Review      *bool
 	Comment     *string
