@@ -640,8 +640,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.Canonical())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -727,8 +727,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.Canonical())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
