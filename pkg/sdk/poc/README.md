@@ -64,7 +64,7 @@ Most of the topics listed here aim to reduce the manual work needed after the ge
     ```
   - generation for lists is not recursive, so we're only supporting one-level mapping
     ```go
-    []Request1{ foo Request2, bar int } // won't be converted 
+    []Request1{ foo Request2, bar int } // won't be converted
     []Request1{ foo string, bar int } // will
     ```
   - optional structs inside slices are not being checked for nil in the toOpts() methods in the implementation file
@@ -137,6 +137,9 @@ find a better solution to solve the issue (add more logic to the templates ?)
   - more clear definition of lists that can be empty vs cannot be empty
 - add empty ids in generated tests (TODO in random_test.go)
 - add optional imports (currently they have to be added manually, e.g. `datatypes.DataType`)
+- handle objects that do not have ids
+- improve handling operations that return one row
+- add more context to validated identifiers, so that error contains the affected field
 
 ##### Known issues
 - generating two converts when Show and Desc use the same data structure

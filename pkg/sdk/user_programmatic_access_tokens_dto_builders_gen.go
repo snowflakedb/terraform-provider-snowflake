@@ -5,20 +5,17 @@ package sdk
 import ()
 
 func NewAddUserProgrammaticAccessTokenRequest(
-	name string,
+	UserName AccountObjectIdentifier,
+	name AccountObjectIdentifier,
 ) *AddUserProgrammaticAccessTokenRequest {
 	s := AddUserProgrammaticAccessTokenRequest{}
+	s.UserName = UserName
 	s.name = name
 	return &s
 }
 
 func (s *AddUserProgrammaticAccessTokenRequest) WithIfExists(IfExists bool) *AddUserProgrammaticAccessTokenRequest {
 	s.IfExists = &IfExists
-	return s
-}
-
-func (s *AddUserProgrammaticAccessTokenRequest) WithUser(User AccountObjectIdentifier) *AddUserProgrammaticAccessTokenRequest {
-	s.User = &User
 	return s
 }
 
@@ -43,20 +40,17 @@ func (s *AddUserProgrammaticAccessTokenRequest) WithComment(Comment string) *Add
 }
 
 func NewModifyUserProgrammaticAccessTokenRequest(
-	name string,
+	UserName AccountObjectIdentifier,
+	name AccountObjectIdentifier,
 ) *ModifyUserProgrammaticAccessTokenRequest {
 	s := ModifyUserProgrammaticAccessTokenRequest{}
+	s.UserName = UserName
 	s.name = name
 	return &s
 }
 
 func (s *ModifyUserProgrammaticAccessTokenRequest) WithIfExists(IfExists bool) *ModifyUserProgrammaticAccessTokenRequest {
 	s.IfExists = &IfExists
-	return s
-}
-
-func (s *ModifyUserProgrammaticAccessTokenRequest) WithUser(User AccountObjectIdentifier) *ModifyUserProgrammaticAccessTokenRequest {
-	s.User = &User
 	return s
 }
 
@@ -114,9 +108,11 @@ func (s *ModifyProgrammaticAccessTokenUnsetRequest) WithComment(Comment bool) *M
 }
 
 func NewRotateUserProgrammaticAccessTokenRequest(
-	name string,
+	UserName AccountObjectIdentifier,
+	name AccountObjectIdentifier,
 ) *RotateUserProgrammaticAccessTokenRequest {
 	s := RotateUserProgrammaticAccessTokenRequest{}
+	s.UserName = UserName
 	s.name = name
 	return &s
 }
@@ -126,20 +122,17 @@ func (s *RotateUserProgrammaticAccessTokenRequest) WithIfExists(IfExists bool) *
 	return s
 }
 
-func (s *RotateUserProgrammaticAccessTokenRequest) WithUser(User AccountObjectIdentifier) *RotateUserProgrammaticAccessTokenRequest {
-	s.User = &User
-	return s
-}
-
 func (s *RotateUserProgrammaticAccessTokenRequest) WithExpireRotatedTokenAfterHours(ExpireRotatedTokenAfterHours int) *RotateUserProgrammaticAccessTokenRequest {
 	s.ExpireRotatedTokenAfterHours = &ExpireRotatedTokenAfterHours
 	return s
 }
 
 func NewRemoveUserProgrammaticAccessTokenRequest(
-	name string,
+	UserName AccountObjectIdentifier,
+	name AccountObjectIdentifier,
 ) *RemoveUserProgrammaticAccessTokenRequest {
 	s := RemoveUserProgrammaticAccessTokenRequest{}
+	s.UserName = UserName
 	s.name = name
 	return &s
 }
@@ -149,16 +142,11 @@ func (s *RemoveUserProgrammaticAccessTokenRequest) WithIfExists(IfExists bool) *
 	return s
 }
 
-func (s *RemoveUserProgrammaticAccessTokenRequest) WithUser(User AccountObjectIdentifier) *RemoveUserProgrammaticAccessTokenRequest {
-	s.User = &User
-	return s
-}
-
 func NewShowUserProgrammaticAccessTokenRequest() *ShowUserProgrammaticAccessTokenRequest {
 	return &ShowUserProgrammaticAccessTokenRequest{}
 }
 
-func (s *ShowUserProgrammaticAccessTokenRequest) WithUser(User AccountObjectIdentifier) *ShowUserProgrammaticAccessTokenRequest {
-	s.User = &User
+func (s *ShowUserProgrammaticAccessTokenRequest) WithUserName(UserName AccountObjectIdentifier) *ShowUserProgrammaticAccessTokenRequest {
+	s.UserName = &UserName
 	return s
 }

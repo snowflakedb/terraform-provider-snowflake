@@ -4,15 +4,28 @@
 
 {{ range .Operations }}
     {{ if .ShowMapping }}
-        func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error) {
-            opts := request.toOpts()
-            dbRows, err := validateAndQuery[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
-            if err != nil {
-                return nil, err
-            }
-            resultList := convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
-            return resultList, nil
-        }
+        {{ if .ShowKind }}
+            {{ if eq (show_mapping_deref .ShowKind) "single_value" }}
+                func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .ShowMapping.To.Name }}, error) {
+                    opts := request.toOpts()
+                    result, err := validateAndQueryOne[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
+                    if err != nil {
+                        return nil, err
+                    }
+                    return result.convert(), nil
+                }
+            {{ else if eq (show_mapping_deref .ShowKind) "slice" }}
+                func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error) {
+                    opts := request.toOpts()
+                    dbRows, err := validateAndQuery[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
+                    if err != nil {
+                        return nil, err
+                    }
+                    resultList := convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
+                    return resultList, nil
+                }
+            {{ end }}
+        {{ end }}
     {{ else if eq .Name "ShowByID" }}
         func (v *{{ $impl }}) ShowByID(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error) {
             request := NewShow{{ .ObjectInterface.NameSingular }}Request()

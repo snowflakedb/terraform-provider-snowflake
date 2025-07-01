@@ -12,8 +12,8 @@ var (
 
 type AddUserProgrammaticAccessTokenRequest struct {
 	IfExists                             *bool
-	User                                 *AccountObjectIdentifier
-	name                                 string // required
+	UserName                             AccountObjectIdentifier // required
+	name                                 AccountObjectIdentifier // required
 	RoleRestriction                      *AccountObjectIdentifier
 	DaysToExpiry                         *int
 	MinsToBypassNetworkPolicyRequirement *int
@@ -22,8 +22,8 @@ type AddUserProgrammaticAccessTokenRequest struct {
 
 type ModifyUserProgrammaticAccessTokenRequest struct {
 	IfExists *bool
-	User     *AccountObjectIdentifier
-	name     string // required
+	UserName AccountObjectIdentifier // required
+	name     AccountObjectIdentifier // required
 	Set      *ModifyProgrammaticAccessTokenSetRequest
 	Unset    *ModifyProgrammaticAccessTokenUnsetRequest
 	RenameTo *string
@@ -43,17 +43,17 @@ type ModifyProgrammaticAccessTokenUnsetRequest struct {
 
 type RotateUserProgrammaticAccessTokenRequest struct {
 	IfExists                     *bool
-	User                         *AccountObjectIdentifier
-	name                         string // required
+	UserName                     AccountObjectIdentifier // required
+	name                         AccountObjectIdentifier // required
 	ExpireRotatedTokenAfterHours *int
 }
 
 type RemoveUserProgrammaticAccessTokenRequest struct {
 	IfExists *bool
-	User     *AccountObjectIdentifier
-	name     string // required
+	UserName AccountObjectIdentifier // required
+	name     AccountObjectIdentifier // required
 }
 
 type ShowUserProgrammaticAccessTokenRequest struct {
-	User *AccountObjectIdentifier
+	UserName *AccountObjectIdentifier
 }

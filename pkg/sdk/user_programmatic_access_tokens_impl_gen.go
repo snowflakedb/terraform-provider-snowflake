@@ -11,14 +11,13 @@ type userProgrammaticAccessTokens struct {
 	client *Client
 }
 
-func (v *userProgrammaticAccessTokens) Add(ctx context.Context, request *AddUserProgrammaticAccessTokenRequest) ([]AddProgrammaticAccessTokenResult, error) {
+func (v *userProgrammaticAccessTokens) Add(ctx context.Context, request *AddUserProgrammaticAccessTokenRequest) (*AddProgrammaticAccessTokenResult, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[addProgrammaticAccessTokenResultDBRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[addProgrammaticAccessTokenResultDBRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[addProgrammaticAccessTokenResultDBRow, AddProgrammaticAccessTokenResult](dbRows)
-	return resultList, nil
+	return result.convert(), nil
 }
 
 func (v *userProgrammaticAccessTokens) Modify(ctx context.Context, request *ModifyUserProgrammaticAccessTokenRequest) error {
@@ -26,14 +25,13 @@ func (v *userProgrammaticAccessTokens) Modify(ctx context.Context, request *Modi
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *userProgrammaticAccessTokens) Rotate(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) ([]RotateProgrammaticAccessTokenResult, error) {
+func (v *userProgrammaticAccessTokens) Rotate(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) (*RotateProgrammaticAccessTokenResult, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[rotateProgrammaticAccessTokenResultDBRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[rotateProgrammaticAccessTokenResultDBRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[rotateProgrammaticAccessTokenResultDBRow, RotateProgrammaticAccessTokenResult](dbRows)
-	return resultList, nil
+	return result.convert(), nil
 }
 
 func (v *userProgrammaticAccessTokens) Remove(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
@@ -54,7 +52,7 @@ func (v *userProgrammaticAccessTokens) Show(ctx context.Context, request *ShowUs
 func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAccessTokenOptions {
 	opts := &AddUserProgrammaticAccessTokenOptions{
 		IfExists:                             r.IfExists,
-		User:                                 r.User,
+		UserName:                             r.UserName,
 		name:                                 r.name,
 		RoleRestriction:                      r.RoleRestriction,
 		DaysToExpiry:                         r.DaysToExpiry,
@@ -74,7 +72,7 @@ func (r addProgrammaticAccessTokenResultDBRow) convert() *AddProgrammaticAccessT
 func (r *ModifyUserProgrammaticAccessTokenRequest) toOpts() *ModifyUserProgrammaticAccessTokenOptions {
 	opts := &ModifyUserProgrammaticAccessTokenOptions{
 		IfExists: r.IfExists,
-		User:     r.User,
+		UserName: r.UserName,
 		name:     r.name,
 
 		RenameTo: r.RenameTo,
@@ -99,7 +97,7 @@ func (r *ModifyUserProgrammaticAccessTokenRequest) toOpts() *ModifyUserProgramma
 func (r *RotateUserProgrammaticAccessTokenRequest) toOpts() *RotateUserProgrammaticAccessTokenOptions {
 	opts := &RotateUserProgrammaticAccessTokenOptions{
 		IfExists:                     r.IfExists,
-		User:                         r.User,
+		UserName:                     r.UserName,
 		name:                         r.name,
 		ExpireRotatedTokenAfterHours: r.ExpireRotatedTokenAfterHours,
 	}
@@ -117,7 +115,7 @@ func (r rotateProgrammaticAccessTokenResultDBRow) convert() *RotateProgrammaticA
 func (r *RemoveUserProgrammaticAccessTokenRequest) toOpts() *RemoveUserProgrammaticAccessTokenOptions {
 	opts := &RemoveUserProgrammaticAccessTokenOptions{
 		IfExists: r.IfExists,
-		User:     r.User,
+		UserName: r.UserName,
 		name:     r.name,
 	}
 	return opts
@@ -125,7 +123,7 @@ func (r *RemoveUserProgrammaticAccessTokenRequest) toOpts() *RemoveUserProgramma
 
 func (r *ShowUserProgrammaticAccessTokenRequest) toOpts() *ShowUserProgrammaticAccessTokenOptions {
 	opts := &ShowUserProgrammaticAccessTokenOptions{
-		User: r.User,
+		UserName: r.UserName,
 	}
 	return opts
 }

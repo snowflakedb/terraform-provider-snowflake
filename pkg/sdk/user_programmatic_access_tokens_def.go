@@ -77,9 +77,14 @@ var rotateProgrammaticAccessTokenResultDef = g.PlainStruct("RotateProgrammaticAc
 var UserProgrammaticAccessTokensDef = g.NewInterface(
 	"UserProgrammaticAccessTokens",
 	"UserProgrammaticAccessToken",
+	// This works on an assumption that every object has an identifier. PATs do not have identifiers, and they cannot be referenced like "USER"."PAT", but their name part behaves like an identifier.
+	// This means that we can use double quotes, the name must be non-empty and no longer than 255 characters.
+	// We use AccountObjectIdentifier as a kind of identifier for convenience.
+	// TODO(SNOW-2183032) Handle objects that do not have identifiers.
 	g.KindOfT[AccountObjectIdentifier](),
 ).CustomShowOperation(
 	"Add",
+	g.ShowMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token",
 	addProgrammaticAccessTokenResultDBRowDef,
 	addProgrammaticAccessTokenResultDef,
@@ -87,14 +92,15 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Alter().
 		SQL("USER").
 		IfExists().
-		OptionalIdentifier("User", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions()).
+		Identifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("ADD PROGRAMMATIC ACCESS TOKEN").
-		Text("name", g.KeywordOptions().DoubleQuotes().Required()).
+		Name().
 		OptionalIdentifier("RoleRestriction", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("ROLE_RESTRICTION").Equals()).
 		OptionalNumberAssignment("DAYS_TO_EXPIRY", g.ParameterOptions()).
 		OptionalNumberAssignment("MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT", g.ParameterOptions()).
 		OptionalComment().
-		WithValidation(g.ValidIdentifierIfSet, "User").
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "UserName").
 		WithValidation(g.ValidIdentifierIfSet, "RoleRestriction"),
 ).CustomOperation(
 	"Modify",
@@ -103,9 +109,9 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Alter().
 		SQL("USER").
 		IfExists().
-		OptionalIdentifier("User", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions()).
+		Identifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("MODIFY PROGRAMMATIC ACCESS TOKEN").
-		Text("name", g.KeywordOptions().DoubleQuotes().Required()).
+		Name().
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("ModifyProgrammaticAccessTokenSet").
@@ -123,10 +129,12 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		OptionalTextAssignment("RENAME TO", g.ParameterOptions().DoubleQuotes().NoEquals()).
-		WithValidation(g.ValidIdentifierIfSet, "User").
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "UserName").
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo"),
 ).CustomShowOperation(
 	"Rotate",
+	g.ShowMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-user-rotate-programmatic-access-token",
 	rotateProgrammaticAccessTokenResultDBRowDef,
 	rotateProgrammaticAccessTokenResultDef,
@@ -134,11 +142,12 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Alter().
 		SQL("USER").
 		IfExists().
-		OptionalIdentifier("User", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions()).
+		Identifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("ROTATE PROGRAMMATIC ACCESS TOKEN").
-		Text("name", g.KeywordOptions().DoubleQuotes().Required()).
+		Name().
 		OptionalNumberAssignment("EXPIRE_ROTATED_TOKEN_AFTER_HOURS", g.ParameterOptions()).
-		WithValidation(g.ValidIdentifierIfSet, "User"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "UserName"),
 ).CustomOperation(
 	"Remove",
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-user-remove-programmatic-access-token",
@@ -146,10 +155,11 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Alter().
 		SQL("USER").
 		IfExists().
-		OptionalIdentifier("User", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions()).
+		Identifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("REMOVE PROGRAMMATIC ACCESS TOKEN").
-		Text("name", g.KeywordOptions().DoubleQuotes().Required()).
-		WithValidation(g.ValidIdentifierIfSet, "User"),
+		Name().
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "UserName"),
 ).ShowOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens",
 	programmaticAccessTokenResultDBRowDef,
@@ -157,5 +167,5 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 	g.NewQueryStruct("ShowUserProgrammaticAccessTokens").
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
-		OptionalIdentifier("User", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
+		OptionalIdentifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
 )

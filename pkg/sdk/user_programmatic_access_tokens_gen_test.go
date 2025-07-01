@@ -3,12 +3,11 @@ package sdk
 import (
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAddProgrammaticAccessToken(t *testing.T) {
-	name := random.AlphaN(10)
+	name := randomAccountObjectIdentifier()
 	roleId := randomAccountObjectIdentifier()
 	userId := randomAccountObjectIdentifier()
 
@@ -20,6 +19,14 @@ func TestAddProgrammaticAccessToken(t *testing.T) {
 	t.Run("validation: valid object name", func(t *testing.T) {
 		opts := &AddUserProgrammaticAccessTokenOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: invalid user name", func(t *testing.T) {
+		opts := &AddUserProgrammaticAccessTokenOptions{
+			name:     name,
+			UserName: emptyAccountObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("AddUserProgrammaticAccessTokenOptions", "UserName"))
 	})
 
 	t.Run("validation: invalid days to expiry", func(t *testing.T) {
@@ -40,26 +47,27 @@ func TestAddProgrammaticAccessToken(t *testing.T) {
 
 	t.Run("with only required attributes", func(t *testing.T) {
 		opts := &AddUserProgrammaticAccessTokenOptions{
-			name: name,
+			UserName: userId,
+			name:     name,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER ADD PROGRAMMATIC ACCESS TOKEN "%s"`, name)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ADD PROGRAMMATIC ACCESS TOKEN %s`, userId.FullyQualifiedName(), name.FullyQualifiedName())
 	})
 
 	t.Run("with all attributes", func(t *testing.T) {
 		opts := &AddUserProgrammaticAccessTokenOptions{
-			User:                                 &userId,
+			UserName:                             userId,
 			name:                                 name,
 			RoleRestriction:                      &roleId,
 			DaysToExpiry:                         Int(30),
 			MinsToBypassNetworkPolicyRequirement: Int(10),
 			Comment:                              String("test comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ADD PROGRAMMATIC ACCESS TOKEN "%s" ROLE_RESTRICTION = %s DAYS_TO_EXPIRY = 30 MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT = 10 COMMENT = 'test comment'`, userId.FullyQualifiedName(), name, roleId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ADD PROGRAMMATIC ACCESS TOKEN %s ROLE_RESTRICTION = %s DAYS_TO_EXPIRY = 30 MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT = 10 COMMENT = 'test comment'`, userId.FullyQualifiedName(), name.FullyQualifiedName(), roleId.FullyQualifiedName())
 	})
 }
 
 func TestModifyProgrammaticAccessToken(t *testing.T) {
-	name := random.AlphaN(10)
+	name := randomAccountObjectIdentifier()
 	userId := randomAccountObjectIdentifier()
 
 	t.Run("validation: nil options", func(t *testing.T) {
@@ -70,6 +78,14 @@ func TestModifyProgrammaticAccessToken(t *testing.T) {
 	t.Run("validation: valid object name", func(t *testing.T) {
 		opts := &ModifyUserProgrammaticAccessTokenOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: invalid user name", func(t *testing.T) {
+		opts := &ModifyUserProgrammaticAccessTokenOptions{
+			name:     name,
+			UserName: emptyAccountObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("ModifyUserProgrammaticAccessTokenOptions", "UserName"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo] should be present: none set", func(t *testing.T) {
@@ -103,50 +119,44 @@ func TestModifyProgrammaticAccessToken(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errIntValue("ModifyUserProgrammaticAccessTokenOptions", "Set.MinsToBypassNetworkPolicyRequirement", IntErrGreaterOrEqual, 1))
 	})
 
-	t.Run("with user", func(t *testing.T) {
-		opts := &ModifyUserProgrammaticAccessTokenOptions{
-			User:     &userId,
-			name:     name,
-			RenameTo: String("new_token"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN "%s" RENAME TO "new_token"`, userId.FullyQualifiedName(), name)
-	})
-
 	t.Run("with rename to", func(t *testing.T) {
 		opts := &ModifyUserProgrammaticAccessTokenOptions{
+			UserName: userId,
 			name:     name,
 			RenameTo: String("new_token"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER MODIFY PROGRAMMATIC ACCESS TOKEN "%s" RENAME TO "new_token"`, name)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN %s RENAME TO "new_token"`, userId.FullyQualifiedName(), name.FullyQualifiedName())
 	})
 
 	t.Run("with set: all attributes", func(t *testing.T) {
 		opts := &ModifyUserProgrammaticAccessTokenOptions{
-			name: name,
+			UserName: userId,
+			name:     name,
 			Set: &ModifyProgrammaticAccessTokenSet{
 				Disabled:                             Bool(true),
 				MinsToBypassNetworkPolicyRequirement: Int(10),
 				Comment:                              String("new comment"),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER MODIFY PROGRAMMATIC ACCESS TOKEN "%s" SET DISABLED = true MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT = 10 COMMENT = 'new comment'`, name)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN %s SET DISABLED = true MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT = 10 COMMENT = 'new comment'`, userId.FullyQualifiedName(), name.FullyQualifiedName())
 	})
 
 	t.Run("with unset: all attributes", func(t *testing.T) {
 		opts := &ModifyUserProgrammaticAccessTokenOptions{
-			name: name,
+			UserName: userId,
+			name:     name,
 			Unset: &ModifyProgrammaticAccessTokenUnset{
 				Disabled:                             Bool(true),
 				MinsToBypassNetworkPolicyRequirement: Bool(true),
 				Comment:                              Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER MODIFY PROGRAMMATIC ACCESS TOKEN "%s" UNSET DISABLED, MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT, COMMENT`, name)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN %s UNSET DISABLED, MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT, COMMENT`, userId.FullyQualifiedName(), name.FullyQualifiedName())
 	})
 }
 
 func TestRotateProgrammaticAccessToken(t *testing.T) {
-	name := random.AlphaN(10)
+	name := randomAccountObjectIdentifier()
 	userId := randomAccountObjectIdentifier()
 	t.Run("validation: nil options", func(t *testing.T) {
 		var opts *RotateUserProgrammaticAccessTokenOptions = nil
@@ -156,6 +166,14 @@ func TestRotateProgrammaticAccessToken(t *testing.T) {
 	t.Run("validation: valid object name", func(t *testing.T) {
 		opts := &RotateUserProgrammaticAccessTokenOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: invalid user name", func(t *testing.T) {
+		opts := &RotateUserProgrammaticAccessTokenOptions{
+			name:     name,
+			UserName: emptyAccountObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("RotateUserProgrammaticAccessTokenOptions", "UserName"))
 	})
 
 	t.Run("validation: invalid expire rotated token after hours", func(t *testing.T) {
@@ -168,23 +186,24 @@ func TestRotateProgrammaticAccessToken(t *testing.T) {
 
 	t.Run("with required attributes", func(t *testing.T) {
 		opts := &RotateUserProgrammaticAccessTokenOptions{
-			name: name,
+			UserName: userId,
+			name:     name,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER ROTATE PROGRAMMATIC ACCESS TOKEN "%s"`, name)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ROTATE PROGRAMMATIC ACCESS TOKEN %s`, userId.FullyQualifiedName(), name.FullyQualifiedName())
 	})
 
 	t.Run("with all attributes", func(t *testing.T) {
 		opts := &RotateUserProgrammaticAccessTokenOptions{
-			User:                         &userId,
+			UserName:                     userId,
 			name:                         name,
 			ExpireRotatedTokenAfterHours: Int(1),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ROTATE PROGRAMMATIC ACCESS TOKEN "%s" EXPIRE_ROTATED_TOKEN_AFTER_HOURS = 1`, userId.FullyQualifiedName(), name)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ROTATE PROGRAMMATIC ACCESS TOKEN %s EXPIRE_ROTATED_TOKEN_AFTER_HOURS = 1`, userId.FullyQualifiedName(), name.FullyQualifiedName())
 	})
 }
 
 func TestRemoveProgrammaticAccessToken(t *testing.T) {
-	name := random.AlphaN(10)
+	name := randomAccountObjectIdentifier()
 	userId := randomAccountObjectIdentifier()
 
 	t.Run("validation: nil options", func(t *testing.T) {
@@ -197,19 +216,20 @@ func TestRemoveProgrammaticAccessToken(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("with required attributes", func(t *testing.T) {
+	t.Run("validation: invalid user name", func(t *testing.T) {
 		opts := &RemoveUserProgrammaticAccessTokenOptions{
-			name: name,
+			name:     name,
+			UserName: emptyAccountObjectIdentifier,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER REMOVE PROGRAMMATIC ACCESS TOKEN "%s"`, name)
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("RemoveUserProgrammaticAccessTokenOptions", "UserName"))
 	})
 
-	t.Run("with user", func(t *testing.T) {
+	t.Run("with all attributes", func(t *testing.T) {
 		opts := &RemoveUserProgrammaticAccessTokenOptions{
-			User: &userId,
-			name: name,
+			UserName: userId,
+			name:     name,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s REMOVE PROGRAMMATIC ACCESS TOKEN "%s"`, userId.FullyQualifiedName(), name)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s REMOVE PROGRAMMATIC ACCESS TOKEN %s`, userId.FullyQualifiedName(), name.FullyQualifiedName())
 	})
 }
 
@@ -223,7 +243,7 @@ func TestShowProgrammaticAccessTokens(t *testing.T) {
 
 	t.Run("with optional attributes", func(t *testing.T) {
 		opts := &ShowUserProgrammaticAccessTokenOptions{
-			User: &id,
+			UserName: &id,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW USER PROGRAMMATIC ACCESS TOKENS FOR USER %s`, id.FullyQualifiedName())
 	})

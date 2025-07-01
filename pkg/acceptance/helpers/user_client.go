@@ -195,15 +195,14 @@ func (c *UserClient) UnsetDefaultSecondaryRoles(t *testing.T, id sdk.AccountObje
 func (c *UserClient) AddProgrammaticAccessToken(t *testing.T, id sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier) sdk.AddProgrammaticAccessTokenResult {
 	t.Helper()
 	ctx := context.Background()
-	name := c.ids.Alpha()
+	name := c.ids.RandomAccountObjectIdentifier()
 
-	token, err := c.context.client.UserProgrammaticAccessTokens.Add(ctx, sdk.NewAddUserProgrammaticAccessTokenRequest(name).
-		WithUser(id).
+	token, err := c.context.client.UserProgrammaticAccessTokens.Add(ctx, sdk.NewAddUserProgrammaticAccessTokenRequest(id, name).
 		WithRoleRestriction(roleId).
 		// Expire the token after 1 day to avoid valid leftover tokens.
 		WithDaysToExpiry(1),
 	)
 	require.NoError(t, err)
-	require.Len(t, token, 1)
-	return token[0]
+	require.NotNil(t, token)
+	return *token
 }

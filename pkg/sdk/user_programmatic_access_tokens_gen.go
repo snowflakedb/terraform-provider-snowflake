@@ -7,9 +7,9 @@ import (
 )
 
 type UserProgrammaticAccessTokens interface {
-	Add(ctx context.Context, request *AddUserProgrammaticAccessTokenRequest) ([]AddProgrammaticAccessTokenResult, error)
+	Add(ctx context.Context, request *AddUserProgrammaticAccessTokenRequest) (*AddProgrammaticAccessTokenResult, error)
 	Modify(ctx context.Context, request *ModifyUserProgrammaticAccessTokenRequest) error
-	Rotate(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) ([]RotateProgrammaticAccessTokenResult, error)
+	Rotate(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) (*RotateProgrammaticAccessTokenResult, error)
 	Remove(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 	Show(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
 }
@@ -19,9 +19,9 @@ type AddUserProgrammaticAccessTokenOptions struct {
 	alter                                bool                     `ddl:"static" sql:"ALTER"`
 	user                                 bool                     `ddl:"static" sql:"USER"`
 	IfExists                             *bool                    `ddl:"keyword" sql:"IF EXISTS"`
-	User                                 *AccountObjectIdentifier `ddl:"identifier"`
+	UserName                             AccountObjectIdentifier  `ddl:"identifier"`
 	addProgrammaticAccessToken           bool                     `ddl:"static" sql:"ADD PROGRAMMATIC ACCESS TOKEN"`
-	name                                 string                   `ddl:"keyword,double_quotes"`
+	name                                 AccountObjectIdentifier  `ddl:"identifier"`
 	RoleRestriction                      *AccountObjectIdentifier `ddl:"identifier,equals" sql:"ROLE_RESTRICTION"`
 	DaysToExpiry                         *int                     `ddl:"parameter" sql:"DAYS_TO_EXPIRY"`
 	MinsToBypassNetworkPolicyRequirement *int                     `ddl:"parameter" sql:"MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT"`
@@ -43,9 +43,9 @@ type ModifyUserProgrammaticAccessTokenOptions struct {
 	alter                         bool                                `ddl:"static" sql:"ALTER"`
 	user                          bool                                `ddl:"static" sql:"USER"`
 	IfExists                      *bool                               `ddl:"keyword" sql:"IF EXISTS"`
-	User                          *AccountObjectIdentifier            `ddl:"identifier"`
+	UserName                      AccountObjectIdentifier             `ddl:"identifier"`
 	modifyProgrammaticAccessToken bool                                `ddl:"static" sql:"MODIFY PROGRAMMATIC ACCESS TOKEN"`
-	name                          string                              `ddl:"keyword,double_quotes"`
+	name                          AccountObjectIdentifier             `ddl:"identifier"`
 	Set                           *ModifyProgrammaticAccessTokenSet   `ddl:"keyword" sql:"SET"`
 	Unset                         *ModifyProgrammaticAccessTokenUnset `ddl:"list,no_parentheses" sql:"UNSET"`
 	RenameTo                      *string                             `ddl:"parameter,double_quotes,no_equals" sql:"RENAME TO"`
@@ -65,13 +65,13 @@ type ModifyProgrammaticAccessTokenUnset struct {
 
 // RotateUserProgrammaticAccessTokenOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-user-rotate-programmatic-access-token.
 type RotateUserProgrammaticAccessTokenOptions struct {
-	alter                         bool                     `ddl:"static" sql:"ALTER"`
-	user                          bool                     `ddl:"static" sql:"USER"`
-	IfExists                      *bool                    `ddl:"keyword" sql:"IF EXISTS"`
-	User                          *AccountObjectIdentifier `ddl:"identifier"`
-	rotateProgrammaticAccessToken bool                     `ddl:"static" sql:"ROTATE PROGRAMMATIC ACCESS TOKEN"`
-	name                          string                   `ddl:"keyword,double_quotes"`
-	ExpireRotatedTokenAfterHours  *int                     `ddl:"parameter" sql:"EXPIRE_ROTATED_TOKEN_AFTER_HOURS"`
+	alter                         bool                    `ddl:"static" sql:"ALTER"`
+	user                          bool                    `ddl:"static" sql:"USER"`
+	IfExists                      *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	UserName                      AccountObjectIdentifier `ddl:"identifier"`
+	rotateProgrammaticAccessToken bool                    `ddl:"static" sql:"ROTATE PROGRAMMATIC ACCESS TOKEN"`
+	name                          AccountObjectIdentifier `ddl:"identifier"`
+	ExpireRotatedTokenAfterHours  *int                    `ddl:"parameter" sql:"EXPIRE_ROTATED_TOKEN_AFTER_HOURS"`
 }
 
 type rotateProgrammaticAccessTokenResultDBRow struct {
@@ -88,19 +88,19 @@ type RotateProgrammaticAccessTokenResult struct {
 
 // RemoveUserProgrammaticAccessTokenOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-user-remove-programmatic-access-token.
 type RemoveUserProgrammaticAccessTokenOptions struct {
-	alter                         bool                     `ddl:"static" sql:"ALTER"`
-	user                          bool                     `ddl:"static" sql:"USER"`
-	IfExists                      *bool                    `ddl:"keyword" sql:"IF EXISTS"`
-	User                          *AccountObjectIdentifier `ddl:"identifier"`
-	removeProgrammaticAccessToken bool                     `ddl:"static" sql:"REMOVE PROGRAMMATIC ACCESS TOKEN"`
-	name                          string                   `ddl:"keyword,double_quotes"`
+	alter                         bool                    `ddl:"static" sql:"ALTER"`
+	user                          bool                    `ddl:"static" sql:"USER"`
+	IfExists                      *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	UserName                      AccountObjectIdentifier `ddl:"identifier"`
+	removeProgrammaticAccessToken bool                    `ddl:"static" sql:"REMOVE PROGRAMMATIC ACCESS TOKEN"`
+	name                          AccountObjectIdentifier `ddl:"identifier"`
 }
 
 // ShowUserProgrammaticAccessTokenOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens.
 type ShowUserProgrammaticAccessTokenOptions struct {
 	show                         bool                     `ddl:"static" sql:"SHOW"`
 	userProgrammaticAccessTokens bool                     `ddl:"static" sql:"USER PROGRAMMATIC ACCESS TOKENS"`
-	User                         *AccountObjectIdentifier `ddl:"identifier" sql:"FOR USER"`
+	UserName                     *AccountObjectIdentifier `ddl:"identifier" sql:"FOR USER"`
 }
 
 type programmaticAccessTokenResultDBRow struct {

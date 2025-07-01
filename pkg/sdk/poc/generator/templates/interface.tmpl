@@ -5,7 +5,13 @@ import "context"
 type {{ .Name }} interface {
 	{{- range .Operations }}
 		{{- if .ShowMapping }}
-			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error)
+			{{- if .ShowKind}}
+				{{- if eq (show_mapping_deref .ShowKind) "single_value" }}
+					{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .ShowMapping.To.Name }}, error)
+				{{- else if eq (show_mapping_deref .ShowKind) "slice" }}
+					{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error)
+				{{- end }}
+			{{- end }}
 		{{- else if eq .Name "ShowByID" }}
 			{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)
 			{{ .Name }}Safely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)

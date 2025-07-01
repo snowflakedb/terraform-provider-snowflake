@@ -113,6 +113,7 @@ var GitRepositoriesDef = g.NewInterface(
 	g.ShowByIDInFiltering,
 ).CustomShowOperation(
 	"ShowGitBranches",
+	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-git-branches",
 	g.DbStruct("gitBranchesRow").
 		Text("name").
@@ -132,6 +133,7 @@ var GitRepositoriesDef = g.NewInterface(
 		Name(),
 ).CustomShowOperation(
 	"ShowGitTags",
+	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-git-tags",
 	g.DbStruct("gitTagsRow").
 		Text("name").

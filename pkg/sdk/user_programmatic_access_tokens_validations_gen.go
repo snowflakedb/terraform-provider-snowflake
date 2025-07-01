@@ -1,7 +1,5 @@
 package sdk
 
-import "fmt"
-
 var (
 	_ validatable = new(AddUserProgrammaticAccessTokenOptions)
 	_ validatable = new(ModifyUserProgrammaticAccessTokenOptions)
@@ -15,12 +13,12 @@ func (opts *AddUserProgrammaticAccessTokenOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	// adjusted manually
-	if !ValidObjectName(opts.name) {
+	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if opts.User != nil && !ValidObjectIdentifier(opts.User) {
-		errs = append(errs, fmt.Errorf("invalid user: %s", opts.User.FullyQualifiedName()))
+	// adjusted manually
+	if !ValidObjectIdentifier(opts.UserName) {
+		errs = append(errs, errInvalidIdentifier("AddUserProgrammaticAccessTokenOptions", "UserName"))
 	}
 	// adjusted manually
 	if valueSet(opts.DaysToExpiry) {
@@ -45,13 +43,12 @@ func (opts *ModifyUserProgrammaticAccessTokenOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	// adjusted manually
-	if !ValidObjectName(opts.name) {
+	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	// adjusted manually
-	if opts.User != nil && !ValidObjectIdentifier(opts.User) {
-		errs = append(errs, fmt.Errorf("invalid user: %s", opts.User.FullyQualifiedName()))
+	if !ValidObjectIdentifier(opts.UserName) {
+		errs = append(errs, errInvalidIdentifier("ModifyUserProgrammaticAccessTokenOptions", "UserName"))
 	}
 	// adjusted manually
 	if valueSet(opts.Set) && valueSet(opts.Set.MinsToBypassNetworkPolicyRequirement) {
@@ -70,13 +67,12 @@ func (opts *RotateUserProgrammaticAccessTokenOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	// adjusted manually
-	if !ValidObjectName(opts.name) {
+	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	// adjusted manually
-	if opts.User != nil && !ValidObjectIdentifier(opts.User) {
-		errs = append(errs, fmt.Errorf("invalid user: %s", opts.User.FullyQualifiedName()))
+	if !ValidObjectIdentifier(opts.UserName) {
+		errs = append(errs, errInvalidIdentifier("RotateUserProgrammaticAccessTokenOptions", "UserName"))
 	}
 	// adjusted manually
 	if valueSet(opts.ExpireRotatedTokenAfterHours) {
@@ -92,13 +88,12 @@ func (opts *RemoveUserProgrammaticAccessTokenOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	// adjusted manually
-	if !ValidObjectName(opts.name) {
+	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	// adjusted manually
-	if opts.User != nil && !ValidObjectIdentifier(opts.User) {
-		errs = append(errs, fmt.Errorf("invalid user: %s", opts.User.FullyQualifiedName()))
+	if !ValidObjectIdentifier(opts.UserName) {
+		errs = append(errs, errInvalidIdentifier("RemoveUserProgrammaticAccessTokenOptions", "UserName"))
 	}
 	return JoinErrors(errs...)
 }
