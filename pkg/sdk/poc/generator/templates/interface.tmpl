@@ -17,9 +17,9 @@ type {{ .Name }} interface {
 			{{ .Name }}Safely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)
 		{{- else if and (eq .Name "Describe") .DescribeMapping }}
 			{{- if .DescribeKind }}
-				{{- if eq (deref .DescribeKind) "single_value" }}
+				{{- if eq (describe_mapping_deref .DescribeKind) "single_value" }}
 					{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .DescribeMapping.To.Name }}, error)
-				{{- else if eq (deref .DescribeKind) "slice" }}
+				{{- else if eq (describe_mapping_deref .DescribeKind) "slice" }}
 					{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) ([]{{ .DescribeMapping.To.Name }}, error)
 				{{- end }}
 			{{- end }}

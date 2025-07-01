@@ -44,7 +44,7 @@
         }
     {{ else if and (eq .Name "Describe") .DescribeMapping }}
         {{ if .DescribeKind }}
-            {{ if eq (deref .DescribeKind) "single_value" }}
+            {{ if eq (describe_mapping_deref .DescribeKind) "single_value" }}
                 func (v *{{ $impl }}) Describe(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .DescribeMapping.To.Name }}, error) {
                     opts := &{{ .OptsField.Name }}{
                         name: id,
@@ -55,7 +55,7 @@
                     }
                     return result.convert(), nil
                 }
-            {{ else if eq (deref .DescribeKind) "slice" }}
+            {{ else if eq (describe_mapping_deref .DescribeKind) "slice" }}
                 func (v *{{ $impl }}) Describe(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) ([]{{ .DescribeMapping.To.Name }}, error) {
                     opts := &{{ .OptsField.Name }}{
                         name: id,
