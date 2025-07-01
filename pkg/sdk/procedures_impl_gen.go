@@ -506,6 +506,7 @@ func (r procedureRow) convert() *Procedure {
 	}
 	arguments := strings.TrimLeft(r.Arguments, r.Name)
 	returnIndex := strings.Index(arguments, ") RETURN ")
+	e.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
 	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
 	if err != nil {
 		log.Printf("[DEBUG] failed to parse procedure arguments, err = %s", err)

@@ -3,14 +3,11 @@ package datasources
 import (
 	"context"
 	"fmt"
-	"regexp"
-	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -106,12 +103,10 @@ func ReadContextProcedures(ctx context.Context, d *schema.ResourceData, meta int
 		procedureMap["database"] = procedure.CatalogName
 		procedureMap["schema"] = procedure.SchemaName
 		procedureMap["comment"] = procedure.Description
-		procedureSignatureMap, err := parseArguments(procedure.ArgumentsRaw)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		procedureMap["argument_types"] = procedureSignatureMap["argumentTypes"].([]string)
-		procedureMap["return_type"] = procedureSignatureMap["returnType"].(string)
+		procedureMap["argument_types"] = collections.Map(procedure.ArgumentsOld, func(a sdk.DataType) string {
+			return string(a)
+		})
+		procedureMap["return_type"] = string(procedure.ReturnTypeOld)
 		proceduresList = append(proceduresList, procedureMap)
 	}
 
@@ -120,21 +115,4 @@ func ReadContextProcedures(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 	return nil
-}
-
-func parseArguments(arguments string) (map[string]interface{}, error) {
-	r := regexp.MustCompile(`(?P<callable_name>[^(]+)\((?P<argument_signature>[^)]*)\) RETURN (?P<return_type>.*)`)
-	matches := r.FindStringSubmatch(arguments)
-	if len(matches) == 0 {
-		return nil, fmt.Errorf(`could not parse arguments: %v`, arguments)
-	}
-	callableSignatureMap := make(map[string]interface{})
-
-	argumentTypes := strings.Split(matches[2], ", ")
-
-	callableSignatureMap["callableName"] = matches[1]
-	callableSignatureMap["argumentTypes"] = argumentTypes
-	callableSignatureMap["returnType"] = matches[3]
-
-	return callableSignatureMap, nil
 }
