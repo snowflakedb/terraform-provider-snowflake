@@ -4,6 +4,9 @@ This document is meant to help you migrate your Terraform config to the new newe
 describe deprecations or breaking changes and help you to change your configuration to keep the same (or similar) behavior
 across different versions.
 
+To keep your configuration up to date, we also recommend reading the [Snowflake BCR migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md)
+for changes required after enabling a certain [Snowflake BCR Bundle](https://docs.snowflake.com/en/release-notes/behavior-changes#upcoming-pending-changes).
+
 > [!TIP]
 > We highly recommend upgrading the versions one by one instead of bulk upgrades.
 >
