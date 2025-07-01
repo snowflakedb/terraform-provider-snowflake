@@ -55,6 +55,8 @@ func Test_ParseFunctionAndProcedureArguments(t *testing.T) {
 		{Arguments: `FLOAT, NUMBER(10, 2), TIME`, Expected: []ParsedArgument{dtOnly(DataTypeFloat), dtOnly("NUMBER(10, 2)"), dtOnly(DataTypeTime)}},
 		{Arguments: `FLOAT, NUMBER(10, 2)`, Expected: []ParsedArgument{dtOnly(DataTypeFloat), dtOnly("NUMBER(10, 2)")}},
 		{Arguments: `NUMBER(10, 2), FLOAT`, Expected: []ParsedArgument{dtOnly("NUMBER(10, 2)"), dtOnly(DataTypeFloat)}},
+		{Arguments: `FLOAT, NUMBER, VECTOR()`, Expected: []ParsedArgument{dtOnly(DataTypeFloat), dtOnly(DataTypeNumber), dtOnly("VECTOR()")}},
+		{Arguments: `NUMBER, VECTOR)2(, FLOAT`, Expected: []ParsedArgument{dtOnly(DataTypeNumber), dtOnly("VECTOR)2("), dtOnly(DataTypeFloat)}},
 
 		// with defaults
 		{Arguments: `DEFAULT FLOAT, DEFAULT NUMBER, DEFAULT TIME`, Expected: []ParsedArgument{dtDefault(DataTypeFloat), dtDefault(DataTypeNumber), dtDefault(DataTypeTime)}},
@@ -122,11 +124,11 @@ func Test_ParseFunctionAndProcedureArguments(t *testing.T) {
 			body(testCase.Arguments)
 		})
 
-		t.Run(fmt.Sprintf("parsing function and procedure arguments, wrapped in paretheses: `%s`", argumentsWithParentheses), func(t *testing.T) {
+		t.Run(fmt.Sprintf("parsing function and procedure arguments, wrapped in parentheses: `%s`", argumentsWithParentheses), func(t *testing.T) {
 			body(argumentsWithParentheses)
 		})
 
-		t.Run(fmt.Sprintf("parsing function and procedure arguments, wrapped in paretheses and with additional spacing: `%s`", argumentsWithParenthesesAndSpaces), func(t *testing.T) {
+		t.Run(fmt.Sprintf("parsing function and procedure arguments, wrapped in parentheses and with additional spacing: `%s`", argumentsWithParenthesesAndSpaces), func(t *testing.T) {
 			body(argumentsWithParenthesesAndSpaces)
 		})
 	}

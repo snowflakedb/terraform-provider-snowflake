@@ -20,7 +20,7 @@ type ParsedArgument struct {
 // - enclosing parentheses are optional
 // - DEFAULT string is optional
 // - argName is optional and should not contain commas, parentheses, or spaces
-// - argType has optional attributes specifying the type; they are not empty and comma-separated
+// - argType has optional attributes specifying the type; they are not empty and comma-separated; wrapping double quotes are currently not supported
 // - various spaces around the whole string, DEFAULT, argName, argType, and attributes are allowed to some extent
 func ParseFunctionAndProcedureArguments(arguments string) ([]ParsedArgument, error) {
 	log.Printf("[DEBUG] Parsing arguments string: `%s`", arguments)
@@ -48,16 +48,10 @@ func ParseFunctionAndProcedureArguments(arguments string) ([]ParsedArgument, err
 		// argName is optional
 		firstSpaceIdx := strings.Index(arg, " ")
 		firstParenthesesIdx := strings.Index(arg, "(")
-		spacePresent := func() bool {
-			return firstSpaceIdx != -1
-		}
-		noParen := func() bool {
-			return firstParenthesesIdx == -1
-		}
-		firstSpaceBeforeParen := func() bool {
-			return firstParenthesesIdx != -1 && firstSpaceIdx < firstParenthesesIdx
-		}
-		if spacePresent() && (firstSpaceBeforeParen() || noParen()) {
+		spacePresent := firstSpaceIdx != -1
+		noParen := firstParenthesesIdx == -1
+		firstSpaceBeforeParen := firstParenthesesIdx != -1 && firstSpaceIdx < firstParenthesesIdx
+		if spacePresent && (firstSpaceBeforeParen || noParen) {
 			parsedArgument.ArgName = arg[:firstSpaceIdx]
 			arg = arg[firstSpaceIdx+1:]
 		}
