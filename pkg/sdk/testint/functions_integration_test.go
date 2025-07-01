@@ -96,8 +96,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -196,8 +196,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -274,8 +274,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -364,8 +364,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -476,7 +476,7 @@ func TestInt_Functions(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())),
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())),
 		)
 
 		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
@@ -667,8 +667,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -831,8 +831,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -918,8 +918,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -997,8 +997,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1094,8 +1094,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1171,8 +1171,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1258,8 +1258,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1977,45 +1977,52 @@ func TestInt_Functions(t *testing.T) {
 	})
 
 	// This test shows behavior of detailed types (e.g. VARCHAR(20) and NUMBER(10, 0)) on Snowflake side for functions.
-	// For SHOW, data type is generalized both for argument and return type (to e.g. VARCHAR and NUMBER).
+	// For SHOW, it changed after 2025_03 Bundle:
+	//  - if defaults are not used:
+	//    - it's not generalized for NUMBER, VARCHAR, BINARY, TIMESTAMP_LTZ, TIMESTAMP_NTZ, TIMESTAMP_TZ, and TIME.
+	//    - it's generalized for other types.
+	//  - if defaults are used it's generalized for all types.
 	// FOR DESCRIBE, data type is generalized for argument and works weirdly for the return type: type is generalized to the canonical one, but we also get the attributes.
-	for _, tc := range []string{
-		"NUMBER(36, 5)",
-		"NUMBER(36)",
-		"NUMBER",
-		"DECIMAL",
-		"INTEGER",
-		"FLOAT",
-		"DOUBLE",
-		"VARCHAR",
-		"VARCHAR(20)",
-		"CHAR",
-		"CHAR(10)",
-		"TEXT",
-		"BINARY",
-		"BINARY(1000)",
-		"VARBINARY",
-		"BOOLEAN",
-		"DATE",
-		"DATETIME",
-		"TIME",
-		"TIMESTAMP_LTZ",
-		"TIMESTAMP_NTZ",
-		"TIMESTAMP_TZ",
-		"VARIANT",
-		"OBJECT",
-		"ARRAY",
-		"GEOGRAPHY",
-		"GEOMETRY",
-		"VECTOR(INT, 16)",
-		"VECTOR(FLOAT, 8)",
+	for _, tc := range []struct {
+		input             string
+		expectedShowValue string
+	}{
+		{"NUMBER(36, 5)", "NUMBER"},
+		{"NUMBER(36)", "NUMBER"},
+		{"NUMBER", "NUMBER"},
+		{"DECIMAL", "NUMBER"},
+		{"INTEGER", "NUMBER"},
+		{"FLOAT", "FLOAT"},
+		{"DOUBLE", "FLOAT"},
+		{"VARCHAR", "VARCHAR"},
+		{"VARCHAR(20)", "VARCHAR(20)"},
+		{"CHAR", "VARCHAR(1)"},
+		{"CHAR(10)", "VARCHAR(10)"},
+		{"TEXT", "VARCHAR"},
+		{"BINARY", "BINARY"},
+		{"BINARY(1000)", "BINARY(1000)"},
+		{"VARBINARY", "BINARY"},
+		{"BOOLEAN", "BOOLEAN"},
+		{"DATE", "DATE"},
+		{"DATETIME", "TIMESTAMP_NTZ"},
+		{"TIME", "TIME"},
+		{"TIMESTAMP_LTZ", "TIMESTAMP_LTZ"},
+		{"TIMESTAMP_NTZ", "TIMESTAMP_NTZ"},
+		{"TIMESTAMP_TZ", "TIMESTAMP_TZ"},
+		{"VARIANT", "VARIANT"},
+		{"OBJECT", "OBJECT"},
+		{"ARRAY", "ARRAY"},
+		{"GEOGRAPHY", "GEOGRAPHY"},
+		{"GEOMETRY", "GEOMETRY"},
+		{"VECTOR(INT, 16)", "VECTOR(INT, 16)"},
+		{"VECTOR(FLOAT, 8)", "VECTOR(FLOAT, 8)"},
 	} {
 		tc := tc
-		t.Run(fmt.Sprintf("function returns non detailed data types of arguments for %s", tc), func(t *testing.T) {
+		t.Run(fmt.Sprintf("function returns non detailed data types of arguments for %s", tc.input), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			argName := "A"
 			funcName := "identity"
-			dataType, err := datatypes.ParseDataType(tc)
+			dataType, err := datatypes.ParseDataType(tc.input)
 			require.NoError(t, err)
 			args := []sdk.FunctionArgumentRequest{
 				*sdk.NewFunctionArgumentRequest(argName, dataType),
@@ -2037,8 +2044,8 @@ func TestInt_Functions(t *testing.T) {
 
 			function, err := client.Functions.ShowByID(ctx, idWithArguments)
 			require.NoError(t, err)
-			assert.Equal(t, []sdk.DataType{oldDataType}, function.ArgumentsOld)
-			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), oldDataType), function.ArgumentsRaw)
+			assert.Equal(t, []sdk.DataType{sdk.DataType(tc.expectedShowValue)}, function.ArgumentsOld)
+			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), tc.expectedShowValue), function.ArgumentsRaw)
 
 			details, err := client.Functions.Describe(ctx, idWithArguments)
 			require.NoError(t, err)
