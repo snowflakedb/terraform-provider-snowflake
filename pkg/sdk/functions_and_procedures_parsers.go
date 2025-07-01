@@ -21,11 +21,14 @@ type ParsedArgument struct {
 // - DEFAULT string is optional
 // - argName is optional and should not contain commas, parentheses, or spaces
 // - argType has optional attributes specifying the type; they are not empty and comma-separated
+// - various spaces around the whole string, DEFAULT, argName, argType, and attributes are allowed to some extent
 func ParseFunctionAndProcedureArguments(arguments string) ([]ParsedArgument, error) {
 	log.Printf("[DEBUG] Parsing arguments string: `%s`", arguments)
+	arguments = strings.TrimSpace(arguments)
 	if len(arguments) > 0 && arguments[0] == '(' && arguments[len(arguments)-1] == ')' {
 		arguments = arguments[1 : len(arguments)-1]
 	}
+	arguments = strings.TrimSpace(arguments)
 
 	args, err := splitArgs(arguments)
 	if err != nil {

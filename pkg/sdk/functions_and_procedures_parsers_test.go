@@ -71,7 +71,7 @@ func Test_ParseFunctionAndProcedureArguments(t *testing.T) {
 		{Arguments: `DEFAULT NUMBER(10), DEFAULT x FLOAT, aBc FLOAT`, Expected: []ParsedArgument{dtDefault("NUMBER(10)"), full(DataTypeFloat, "x"), dtName(DataTypeFloat, "aBc")}},
 
 		// various spaces
-		{Arguments: `  `, Expected: []ParsedArgument{dtOnly("")}},
+		{Arguments: `  `, Expected: []ParsedArgument{}},
 		{Arguments: `FLOAT `, Expected: []ParsedArgument{dtOnly(DataTypeFloat)}},
 		{Arguments: `  FLOAT,    NUMBER   , TIME`, Expected: []ParsedArgument{dtOnly(DataTypeFloat), dtOnly(DataTypeNumber), dtOnly(DataTypeTime)}},
 		{Arguments: `VARCHAR(  200), FLOAT`, Expected: []ParsedArgument{dtOnly("VARCHAR(  200)"), dtOnly(DataTypeFloat)}},
@@ -104,25 +104,30 @@ func Test_ParseFunctionAndProcedureArguments(t *testing.T) {
 		{Arguments: `FLOAT, NUMBER,`, Error: "can't end arguments list with a comma"},
 		{Arguments: `FLOAT, NUMBER,,`, Error: "can't end arguments list with a comma"},
 	}
-
 	for _, testCase := range testCases {
-		t.Run(fmt.Sprintf("parsing function and procedure arguments: `%s`", testCase.Arguments), func(t *testing.T) {
-			dataTypes, err := ParseFunctionAndProcedureArguments(testCase.Arguments)
-			if testCase.Error != "" {
-				assert.ErrorContains(t, err, testCase.Error)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, testCase.Expected, dataTypes)
-			}
+		argumentsWithParentheses := "(" + testCase.Arguments + ")"
+		argumentsWithParenthesesAndSpaces := "  (" + testCase.Arguments + " )   "
 
-			// now check if the input is wrapped
-			dataTypes, err = ParseFunctionAndProcedureArguments("(" + testCase.Arguments + ")")
+		body := func(arguments string) {
+			dataTypes, err := ParseFunctionAndProcedureArguments(arguments)
 			if testCase.Error != "" {
 				assert.ErrorContains(t, err, testCase.Error)
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, testCase.Expected, dataTypes)
 			}
+		}
+
+		t.Run(fmt.Sprintf("parsing function and procedure arguments: `%s`", testCase.Arguments), func(t *testing.T) {
+			body(testCase.Arguments)
+		})
+
+		t.Run(fmt.Sprintf("parsing function and procedure arguments, wrapped in paretheses: `%s`", argumentsWithParentheses), func(t *testing.T) {
+			body(argumentsWithParentheses)
+		})
+
+		t.Run(fmt.Sprintf("parsing function and procedure arguments, wrapped in paretheses and with additional spacing: `%s`", argumentsWithParenthesesAndSpaces), func(t *testing.T) {
+			body(argumentsWithParenthesesAndSpaces)
 		})
 	}
 }
