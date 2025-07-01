@@ -190,7 +190,7 @@ func ParseSchemaObjectIdentifierWithArgumentsAndReturnType(fullyQualifiedName st
 	if returnTypeIndex != -1 {
 		argsRaw = argsRaw[:returnTypeIndex]
 	}
-	dataTypes, err := ParseFunctionArgumentsFromString(argsRaw)
+	parsedArguments, err := ParseFunctionAndProcedureArguments(argsRaw)
 	if err != nil {
 		return SchemaObjectIdentifierWithArguments{}, err
 	}
@@ -198,7 +198,9 @@ func ParseSchemaObjectIdentifierWithArgumentsAndReturnType(fullyQualifiedName st
 		parts[0],
 		parts[1],
 		functionName,
-		dataTypes...,
+		collections.Map(parsedArguments, func(a ParsedArgument) DataType {
+			return DataType(a.ArgType)
+		})...,
 	), nil
 }
 
