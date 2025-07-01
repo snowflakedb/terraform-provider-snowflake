@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 const IdDelimiter = '.'
@@ -156,7 +158,7 @@ func ParseSchemaObjectIdentifierWithArguments(fullyQualifiedName string) (Schema
 	if err != nil {
 		return SchemaObjectIdentifierWithArguments{}, err
 	}
-	dataTypes, err := ParseFunctionArgumentsFromString(fullyQualifiedName[splitIdIndex:])
+	parsedArguments, err := ParseFunctionAndProcedureArguments(fullyQualifiedName[splitIdIndex:])
 	if err != nil {
 		return SchemaObjectIdentifierWithArguments{}, err
 	}
@@ -164,7 +166,9 @@ func ParseSchemaObjectIdentifierWithArguments(fullyQualifiedName string) (Schema
 		parts[0],
 		parts[1],
 		parts[2],
-		dataTypes...,
+		collections.Map(parsedArguments, func(a ParsedArgument) DataType {
+			return DataType(a.ArgType)
+		})...,
 	), nil
 }
 
