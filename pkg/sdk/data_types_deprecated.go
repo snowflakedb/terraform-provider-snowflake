@@ -61,3 +61,11 @@ func LegacyDataTypeWithAttrs(newDataType datatypes.DataType) DataType {
 	}
 	return DataType(newDataType.ToSql())
 }
+
+func LegacyDataTypeWithAttrsCanonical(newDataType datatypes.DataType) DataType {
+	// TODO [SNOW-1850370]: remove this check?
+	if newDataType == nil {
+		return ""
+	}
+	return DataType(newDataType.Canonical())
+}

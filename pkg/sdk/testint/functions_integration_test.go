@@ -667,8 +667,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.Canonical())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -755,8 +755,8 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.Canonical())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1967,7 +1967,12 @@ func TestInt_Functions(t *testing.T) {
 		for i, arg := range args {
 			dataType, err := datatypes.ParseDataType(string(arg.ArgDataTypeOld))
 			require.NoError(t, err)
-			dataTypes[i] = sdk.LegacyDataTypeFrom(dataType)
+			switch arg.ArgName {
+			case "A", "F", "G":
+				dataTypes[i] = sdk.LegacyDataTypeWithAttrsCanonical(dataType)
+			default:
+				dataTypes[i] = sdk.LegacyDataTypeFrom(dataType)
+			}
 		}
 		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataTypes...)
 
@@ -1987,8 +1992,8 @@ func TestInt_Functions(t *testing.T) {
 		input             string
 		expectedShowValue string
 	}{
-		{"NUMBER(36, 5)", "NUMBER"},
-		{"NUMBER(36)", "NUMBER"},
+		{"NUMBER(36, 5)", "NUMBER(36,5)"},
+		{"NUMBER(36)", "NUMBER(36,0)"},
 		{"NUMBER", "NUMBER"},
 		{"DECIMAL", "NUMBER"},
 		{"INTEGER", "NUMBER"},
