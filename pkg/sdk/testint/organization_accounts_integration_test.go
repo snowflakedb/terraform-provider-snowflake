@@ -15,18 +15,12 @@ import (
 )
 
 func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
-	testClientHelper().EnsureValidNonProdAccountIsUsed(t)
+	testClientHelper().EnsureValidNonProdOrganizationAccountIsUsed(t)
 
 	client := testClient(t)
 	ctx := testContext(t)
 
-	err := client.Sessions.UseRole(ctx, snowflakeroles.GlobalOrgAdmin)
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		err := client.Sessions.UseRole(ctx, snowflakeroles.Accountadmin)
-		require.NoError(t, err)
-	})
+	t.Cleanup(testClientHelper().Role.UseRoleWithClient(t, client, snowflakeroles.GlobalOrgAdmin))
 	t.Cleanup(testClientHelper().Role.UseRole(t, snowflakeroles.GlobalOrgAdmin))
 
 	assertParameterValueSetOnAccount := func(t *testing.T, parameters []*sdk.Parameter, parameterKey string, parameterValue string) {

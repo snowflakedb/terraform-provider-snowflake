@@ -69,17 +69,17 @@ var OrganizationAccountsDef = g.NewInterface(
 					OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
 					OptionalIdentifier("PasswordPolicy", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
 					OptionalIdentifier("SessionPolicy", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
-					WithValidation(g.AtLeastOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"),
+					WithValidation(g.ExactlyOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"),
 				g.KeywordOptions().SQL("SET"),
 			).
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("OrganizationAccountUnset").
 					PredefinedQueryStructField("Parameters", g.KindOfTPointer[AccountParametersUnset](), g.ListOptions().NoParentheses()).
-					OptionalBool("ResourceMonitor", g.KeywordOptions().SQL("RESOURCE_MONITOR")).
-					OptionalBool("PasswordPolicy", g.KeywordOptions().SQL("PASSWORD POLICY")).
-					OptionalBool("SessionPolicy", g.KeywordOptions().SQL("SESSION POLICY")).
-					WithValidation(g.AtLeastOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"),
+					OptionalSQL("RESOURCE_MONITOR").
+					OptionalSQL("PASSWORD POLICY").
+					OptionalSQL("SESSION POLICY").
+					WithValidation(g.ExactlyOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"),
 				g.KeywordOptions().SQL("UNSET"),
 			).
 			OptionalSetTags().
