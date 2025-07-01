@@ -47,6 +47,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Databases().Schema,
 	},
 	{
+		name:   "Functions",
+		schema: datasources.Functions().Schema,
+	},
+	{
 		name:   "GitRepositories",
 		schema: datasources.GitRepositories().Schema,
 	},
