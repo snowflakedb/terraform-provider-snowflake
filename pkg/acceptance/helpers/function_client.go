@@ -139,6 +139,20 @@ func (c *FunctionClient) CreateJava(t *testing.T) (*sdk.Function, func()) {
 	return function, c.DropFunctionFunc(t, id)
 }
 
+func (c *FunctionClient) CreatePythonWithRequest(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments, req *sdk.CreateForPythonFunctionRequest) *sdk.Function {
+	t.Helper()
+	ctx := context.Background()
+	err := c.client().CreateForPython(ctx, req)
+	require.NoError(t, err)
+
+	t.Cleanup(c.DropFunctionFunc(t, id))
+
+	function, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return function
+}
+
 func (c *FunctionClient) CreateScalaStaged(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments, dataType datatypes.DataType, importPath string, handler string) (*sdk.Function, func()) {
 	t.Helper()
 	ctx := context.Background()
