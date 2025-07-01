@@ -1,12 +1,9 @@
 package sdk
 
 import (
-	"bytes"
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -202,94 +199,4 @@ func ParseSchemaObjectIdentifierWithArgumentsAndReturnType(fullyQualifiedName st
 			return DataType(a.ArgType)
 		})...,
 	), nil
-}
-
-// ParseFunctionArgumentsFromString parses function argument from arguments string with optional argument names.
-// Varying types are not supported (e.g. VARCHAR(200)), because Snowflake outputs them in a shortened version
-// (VARCHAR in this case). The only exception is newly added type VECTOR that has the following structure
-// VECTOR(<type>, n) where <type> right now can be either INT or FLOAT and n is the number of elements in the VECTOR.
-// Snowflake returns vectors with their exact type, and this function supports it.
-func ParseFunctionArgumentsFromString(arguments string) ([]DataType, error) {
-	dataTypes := make([]DataType, 0)
-
-	if len(arguments) > 0 && arguments[0] == '(' && arguments[len(arguments)-1] == ')' {
-		arguments = arguments[1 : len(arguments)-1]
-	}
-	stringBuffer := bytes.NewBufferString(arguments)
-
-	for stringBuffer.Len() > 0 {
-		stringBuffer = bytes.NewBufferString(strings.TrimSpace(stringBuffer.String()))
-
-		// When a function is created with a default value for an argument, in the SHOW output ("arguments" column)
-		// the argument's data type is prefixed with "DEFAULT ", e.g. "(DEFAULT INT, DEFAULT VARCHAR)".
-		if strings.HasPrefix(stringBuffer.String(), "DEFAULT") {
-			if _, err := stringBuffer.ReadString(' '); err != nil {
-				return nil, fmt.Errorf("failed to skip default keyword, err = %w", err)
-			}
-		}
-
-		// We use another buffer to peek into next data type (needed for vector parsing)
-		peekDataType, _ := bytes.NewBufferString(stringBuffer.String()).ReadString(',')
-		// Skip argument name, if present
-		if strings.ContainsRune(peekDataType, ' ') && !strings.HasPrefix(peekDataType, "VECTOR(") {
-			// Ignore err, because stringBuffer always contains ' ' here
-			_, _ = stringBuffer.ReadString(' ')
-			peekDataType, _ = bytes.NewBufferString(stringBuffer.String()).ReadString(',')
-		}
-
-		switch {
-		// For now, only vectors need special parsing behavior
-		case strings.HasPrefix(peekDataType, "VECTOR"):
-			vectorDataType, err := stringBuffer.ReadString(')')
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse vector type, couldn't find the closing bracket, err = %w", err)
-			}
-
-			vectorDataType = strings.TrimSpace(vectorDataType)
-			vectorTypeBuffer := bytes.NewBufferString(vectorDataType)
-			if _, err := vectorTypeBuffer.ReadString('('); err != nil {
-				return nil, fmt.Errorf("failed to parse vector type, couldn't find the opening bracket, err = %w", err)
-			}
-
-			vectorInnerType, err := vectorTypeBuffer.ReadString(',')
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse vector inner type: %w", err)
-			}
-
-			vectorInnerType = vectorInnerType[:len(vectorInnerType)-1]
-			if !slices.Contains(allowedVectorInnerTypes, DataType(vectorInnerType)) {
-				return nil, fmt.Errorf("invalid vector inner type: %s, allowed vector types are: %v", vectorInnerType, allowedVectorInnerTypes)
-			}
-
-			vectorSize, err := vectorTypeBuffer.ReadString(')')
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse vector size: %w", err)
-			}
-
-			vectorSize = strings.TrimSpace(vectorSize[:len(vectorSize)-1])
-			_, err = strconv.ParseInt(vectorSize, 0, 8)
-			if err != nil {
-				return nil, fmt.Errorf("invalid vector size: %s (not a number): %w", vectorSize, err)
-			}
-
-			if stringBuffer.Len() > 0 {
-				commaByte, err := stringBuffer.ReadByte()
-				if commaByte != ',' {
-					return nil, fmt.Errorf("expected a comma delimited string but found %s", string(commaByte))
-				}
-				if err != nil {
-					return nil, err
-				}
-			}
-			dataTypes = append(dataTypes, DataType(vectorDataType))
-		default:
-			argument, err := stringBuffer.ReadString(',')
-			if err == nil {
-				argument = argument[:len(argument)-1]
-			}
-			dataTypes = append(dataTypes, DataType(argument))
-		}
-	}
-
-	return dataTypes, nil
 }
