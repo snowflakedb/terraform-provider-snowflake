@@ -127,3 +127,33 @@ func TestInt_SafeShowByIdOnSchemaObjectIdentifierWithArguments(t *testing.T) {
 	assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 }
+
+func TestInt_SafeShowProgrammaticAccessTokenByName(t *testing.T) {
+	tokenShowByName := func(ctx context.Context, userName sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) (*sdk.ProgrammaticAccessToken, error) {
+		return testClient(t).UserProgrammaticAccessTokens.ShowByID(ctx, userName, tokenName)
+	}
+
+	user, cleanupUser := testClientHelper().User.CreateUser(t)
+	t.Cleanup(cleanupUser)
+
+	token, cleanupToken := testClientHelper().User.AddProgrammaticAccessToken(t, user.ID())
+	t.Cleanup(cleanupToken)
+
+	value, err := sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), tokenShowByName, testContext(t), user.ID(), token.ID())
+	assert.NotNil(t, value)
+	assert.NoError(t, err)
+
+	cleanupToken()
+
+	_, err = sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), tokenShowByName, testContext(t), user.ID(), token.ID())
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
+
+	invalidUserId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	invalidTokenId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+	_, err = sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), tokenShowByName, testContext(t), invalidUserId, invalidTokenId)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+}
