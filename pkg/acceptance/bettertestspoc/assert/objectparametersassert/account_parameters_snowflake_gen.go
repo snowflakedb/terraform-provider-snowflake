@@ -11,22 +11,22 @@ import (
 )
 
 type AccountParametersAssert struct {
-	*assert.SnowflakeParametersAssert[sdk.AccountObjectIdentifier]
+	*assert.SnowflakeParametersAssert[sdk.AccountIdentifier]
 }
 
-func AccountParameters(t *testing.T, id sdk.AccountObjectIdentifier) *AccountParametersAssert {
+func AccountParameters(t *testing.T, id sdk.AccountIdentifier) *AccountParametersAssert {
 	t.Helper()
 	return &AccountParametersAssert{
-		assert.NewSnowflakeParametersAssertWithTestClientParametersProvider(id, sdk.ObjectTypeAccount, func(testClient *helpers.TestClient) assert.ParametersProvider[sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeParametersAssertWithTestClientParametersProvider(id, sdk.ObjectTypeAccount, func(testClient *helpers.TestClient) assert.ParametersProvider[sdk.AccountIdentifier] {
 			// modified manually
-			return func(t *testing.T, _ sdk.AccountObjectIdentifier) []*sdk.Parameter {
+			return func(t *testing.T, _ sdk.AccountIdentifier) []*sdk.Parameter {
 				return testClient.Parameter.ShowAccountParameters(t)
 			}
 		}),
 	}
 }
 
-func AccountParametersPrefetched(t *testing.T, id sdk.AccountObjectIdentifier, parameters []*sdk.Parameter) *AccountParametersAssert {
+func AccountParametersPrefetched(t *testing.T, id sdk.AccountIdentifier, parameters []*sdk.Parameter) *AccountParametersAssert {
 	t.Helper()
 	return &AccountParametersAssert{
 		assert.NewSnowflakeParametersAssertWithParameters(id, sdk.ObjectTypeAccount, parameters),
@@ -71,20 +71,832 @@ func (a *AccountParametersAssert) HasDefaultParameterValueOnLevel(parameterName 
 // - have an expected level
 func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 	return a.
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableUnredactedQuerySyntaxError, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowClientMFACaching, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowIDToken, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientEnableLogInfoStatementParameters, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientMetadataRequestUseConnectionCtx, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientMetadataUseSessionDatabase, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientResultColumnCaseInsensitive, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientSessionKeepAlive, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDisableUiDownloadButton, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDisableUserPrivilegeGrants, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableEgressCostOptimizer, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableIdentifierFirstLogin, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableInternalStagesPrivatelink, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableUnhandledExceptionsReporting, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableUnredactedQuerySyntaxError, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableUnredactedSecureObjectError, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnforceNetworkRulesForInternalStages, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterErrorOnNondeterministicMerge, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterErrorOnNondeterministicUpdate, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterJdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterJdbcUseSessionTimezone, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterJsTreatIntegerAsBigInt, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterPeriodicDataRekeying, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterPipeExecutionPaused, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterPreventUnloadToInlineURL, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterPreventUnloadToInternalStages, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterReplaceInvalidCharacters, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterRequireStorageIntegrationForStageCreation, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterRequireStorageIntegrationForStageOperation, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterSsoLoginPage, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterStrictJsonOutput, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampDayIsAlways24h, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTransactionAbortOnError, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterUseCachedResult, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientEncryptionKeySize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientMemoryLimit, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientPrefetchThreads, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientResultChunkSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDataRetentionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterHybridTableLockTimeout, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterMaxConcurrencyLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterMaxDataExtensionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterMinDataRetentionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterMultiStatementCount, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterRowsPerResultset, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTwoDigitCenturyStart, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterUserTaskTimeoutMs, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterWeekOfYearPolicy, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterWeekStart, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterActivePythonProfiler, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterBaseLocationPrefix, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterBinaryInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterBinaryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterCatalog, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterCatalogSync, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterCortexEnabledCrossRegion, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterCortexModelsAllowlist, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterCsvTimestampFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDateInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDateOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultDDLCollation, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNullOrdering, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultStreamlitNotebookWarehouse, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEventTable, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterExternalVolume, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterGeographyOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterGeometryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterInitialReplicationSizeLimitInTB, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterMetricLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterNetworkPolicy, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterPythonProfilerModules, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterPythonProfilerTargetStage, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterQueryTag, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterS3StageVpceDnsName, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterSamlIdentityProvider, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterSearchPath, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterServerlessTaskMaxStatementSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterServerlessTaskMinStatementSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterSimulatedDataSharingConsumer, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterStorageSerializationPolicy, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampLtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampNtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampTzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimezone, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimeInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimeOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterTransactionDefaultIsolationLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterUnsupportedDdlAction, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault)
 }
 
 func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAssert {
 	return a.
-		HasDefaultEnableUnredactedQuerySyntaxErrorValueExplicit()
+		HasDefaultAbortDetachedQueryValueExplicit().
+		HasDefaultAllowClientMfaCachingValueExplicit().
+		HasDefaultAllowIdTokenValueExplicit().
+		HasDefaultAutocommitValueExplicit().
+		HasDefaultClientEnableLogInfoStatementParametersValueExplicit().
+		HasDefaultClientMetadataRequestUseConnectionCtxValueExplicit().
+		HasDefaultClientMetadataUseSessionDatabaseValueExplicit().
+		HasDefaultClientResultColumnCaseInsensitiveValueExplicit().
+		HasDefaultClientSessionKeepAliveValueExplicit().
+		HasDefaultDisableUiDownloadButtonValueExplicit().
+		HasDefaultDisableUserPrivilegeGrantsValueExplicit().
+		HasDefaultEnableAutomaticSensitiveDataClassificationLogValueExplicit().
+		HasDefaultEnableEgressCostOptimizerValueExplicit().
+		HasDefaultEnableIdentifierFirstLoginValueExplicit().
+		HasDefaultEnableInternalStagesPrivatelinkValueExplicit().
+		HasDefaultEnableTriSecretAndRekeyOptOutForImageRepositoryValueExplicit().
+		HasDefaultEnableTriSecretAndRekeyOptOutForSpcsBlockStorageValueExplicit().
+		HasDefaultEnableUnhandledExceptionsReportingValueExplicit().
+		HasDefaultEnableUnloadPhysicalTypeOptimizationValueExplicit().
+		HasDefaultEnableUnredactedQuerySyntaxErrorValueExplicit().
+		HasDefaultEnableUnredactedSecureObjectErrorValueExplicit().
+		HasDefaultEnforceNetworkRulesForInternalStagesValueExplicit().
+		HasDefaultErrorOnNondeterministicMergeValueExplicit().
+		HasDefaultErrorOnNondeterministicUpdateValueExplicit().
+		HasDefaultExternalOauthAddPrivilegedRolesToBlockedListValueExplicit().
+		HasDefaultJdbcTreatDecimalAsIntValueExplicit().
+		HasDefaultJdbcTreatTimestampNtzAsUtcValueExplicit().
+		HasDefaultJdbcUseSessionTimezoneValueExplicit().
+		HasDefaultJsTreatIntegerAsBigintValueExplicit().
+		HasDefaultNoorderSequenceAsDefaultValueExplicit().
+		HasDefaultOauthAddPrivilegedRolesToBlockedListValueExplicit().
+		HasDefaultOdbcTreatDecimalAsIntValueExplicit().
+		HasDefaultPeriodicDataRekeyingValueExplicit().
+		HasDefaultPipeExecutionPausedValueExplicit().
+		HasDefaultPreventUnloadToInlineUrlValueExplicit().
+		HasDefaultPreventUnloadToInternalStagesValueExplicit().
+		HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
+		HasDefaultReplaceInvalidCharactersValueExplicit().
+		HasDefaultRequireStorageIntegrationForStageCreationValueExplicit().
+		HasDefaultRequireStorageIntegrationForStageOperationValueExplicit().
+		HasDefaultSsoLoginPageValueExplicit().
+		HasDefaultStrictJsonOutputValueExplicit().
+		HasDefaultTimestampDayIsAlways24hValueExplicit().
+		HasDefaultTransactionAbortOnErrorValueExplicit().
+		HasDefaultUseCachedResultValueExplicit().
+		HasDefaultClientEncryptionKeySizeValueExplicit().
+		HasDefaultClientMemoryLimitValueExplicit().
+		HasDefaultClientPrefetchThreadsValueExplicit().
+		HasDefaultClientResultChunkSizeValueExplicit().
+		HasDefaultClientSessionKeepAliveHeartbeatFrequencyValueExplicit().
+		HasDefaultDataRetentionTimeInDaysValueExplicit().
+		HasDefaultHybridTableLockTimeoutValueExplicit().
+		HasDefaultJsonIndentValueExplicit().
+		HasDefaultLockTimeoutValueExplicit().
+		HasDefaultMaxConcurrencyLevelValueExplicit().
+		HasDefaultMaxDataExtensionTimeInDaysValueExplicit().
+		HasDefaultMinDataRetentionTimeInDaysValueExplicit().
+		HasDefaultMultiStatementCountValueExplicit().
+		HasDefaultRowsPerResultsetValueExplicit().
+		HasDefaultStatementQueuedTimeoutInSecondsValueExplicit().
+		HasDefaultStatementTimeoutInSecondsValueExplicit().
+		HasDefaultSuspendTaskAfterNumFailuresValueExplicit().
+		HasDefaultTaskAutoRetryAttemptsValueExplicit().
+		HasDefaultTwoDigitCenturyStartValueExplicit().
+		HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit().
+		HasDefaultUserTaskTimeoutMsValueExplicit().
+		HasDefaultWeekOfYearPolicyValueExplicit().
+		HasDefaultWeekStartValueExplicit().
+		HasDefaultActivePythonProfilerValueExplicit().
+		HasDefaultBaseLocationPrefixValueExplicit().
+		HasDefaultBinaryInputFormatValueExplicit().
+		HasDefaultBinaryOutputFormatValueExplicit().
+		HasDefaultCatalogValueExplicit().
+		HasDefaultCatalogSyncValueExplicit().
+		HasDefaultClientTimestampTypeMappingValueExplicit().
+		HasDefaultCortexEnabledCrossRegionValueExplicit().
+		HasDefaultCortexModelsAllowlistValueExplicit().
+		HasDefaultCsvTimestampFormatValueExplicit().
+		HasDefaultDateInputFormatValueExplicit().
+		HasDefaultDateOutputFormatValueExplicit().
+		HasDefaultDefaultDdlCollationValueExplicit().
+		HasDefaultDefaultNotebookComputePoolCpuValueExplicit().
+		HasDefaultDefaultNotebookComputePoolGpuValueExplicit().
+		HasDefaultDefaultNullOrderingValueExplicit().
+		HasDefaultDefaultStreamlitNotebookWarehouseValueExplicit().
+		HasDefaultEventTableValueExplicit().
+		HasDefaultExternalVolumeValueExplicit().
+		HasDefaultGeographyOutputFormatValueExplicit().
+		HasDefaultGeometryOutputFormatValueExplicit().
+		HasDefaultInitialReplicationSizeLimitInTbValueExplicit().
+		HasDefaultListingAutoFulfillmentReplicationRefreshScheduleValueExplicit().
+		HasDefaultLogLevelValueExplicit().
+		HasDefaultMetricLevelValueExplicit().
+		HasDefaultNetworkPolicyValueExplicit().
+		HasDefaultPythonProfilerModulesValueExplicit().
+		HasDefaultPythonProfilerTargetStageValueExplicit().
+		HasDefaultQueryTagValueExplicit().
+		HasDefaultS3StageVpceDnsNameValueExplicit().
+		HasDefaultSamlIdentityProviderValueExplicit().
+		HasDefaultSearchPathValueExplicit().
+		HasDefaultServerlessTaskMaxStatementSizeValueExplicit().
+		HasDefaultServerlessTaskMinStatementSizeValueExplicit().
+		HasDefaultSimulatedDataSharingConsumerValueExplicit().
+		HasDefaultStorageSerializationPolicyValueExplicit().
+		HasDefaultTimestampInputFormatValueExplicit().
+		HasDefaultTimestampLtzOutputFormatValueExplicit().
+		HasDefaultTimestampNtzOutputFormatValueExplicit().
+		HasDefaultTimestampOutputFormatValueExplicit().
+		HasDefaultTimestampTypeMappingValueExplicit().
+		HasDefaultTimestampTzOutputFormatValueExplicit().
+		HasDefaultTimezoneValueExplicit().
+		HasDefaultTimeInputFormatValueExplicit().
+		HasDefaultTimeOutputFormatValueExplicit().
+		HasDefaultTraceLevelValueExplicit().
+		HasDefaultTransactionDefaultIsolationLevelValueExplicit().
+		HasDefaultUnsupportedDdlActionValueExplicit().
+		HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit()
 }
 
 ////////////////////////////
 // Parameter value checks //
 ////////////////////////////
 
+func (a *AccountParametersAssert) HasAbortDetachedQuery(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAbortDetachedQuery, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasAllowClientMfaCaching(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAllowClientMFACaching, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasAllowIdToken(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAllowIDToken, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasAutocommit(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAutocommit, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientEnableLogInfoStatementParameters(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterClientEnableLogInfoStatementParameters, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterClientMetadataRequestUseConnectionCtx, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientMetadataUseSessionDatabase(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterClientMetadataUseSessionDatabase, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientResultColumnCaseInsensitive(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterClientResultColumnCaseInsensitive, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientSessionKeepAlive(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterClientSessionKeepAlive, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDisableUiDownloadButton(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterDisableUiDownloadButton, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDisableUserPrivilegeGrants(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterDisableUserPrivilegeGrants, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableAutomaticSensitiveDataClassificationLog(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableEgressCostOptimizer(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableEgressCostOptimizer, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableIdentifierFirstLogin(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableIdentifierFirstLogin, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableInternalStagesPrivatelink(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableInternalStagesPrivatelink, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableTriSecretAndRekeyOptOutForImageRepository(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorage(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableUnhandledExceptionsReporting(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableUnhandledExceptionsReporting, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasEnableUnredactedQuerySyntaxError(expected bool) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableUnredactedQuerySyntaxError, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableUnredactedSecureObjectError(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableUnredactedSecureObjectError, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnforceNetworkRulesForInternalStages(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnforceNetworkRulesForInternalStages, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasErrorOnNondeterministicMerge(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterErrorOnNondeterministicMerge, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasErrorOnNondeterministicUpdate(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterErrorOnNondeterministicUpdate, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedList(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJdbcTreatDecimalAsInt(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterJdbcTreatDecimalAsInt, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJdbcUseSessionTimezone(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterJdbcUseSessionTimezone, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJsTreatIntegerAsBigint(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterJsTreatIntegerAsBigInt, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasNoorderSequenceAsDefault(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterNoorderSequenceAsDefault, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasOauthAddPrivilegedRolesToBlockedList(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasOdbcTreatDecimalAsInt(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterOdbcTreatDecimalAsInt, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPeriodicDataRekeying(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterPeriodicDataRekeying, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPipeExecutionPaused(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterPipeExecutionPaused, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPreventUnloadToInlineUrl(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterPreventUnloadToInlineURL, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPreventUnloadToInternalStages(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterPreventUnloadToInternalStages, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterQuotedIdentifiersIgnoreCase, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasReplaceInvalidCharacters(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterReplaceInvalidCharacters, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasRequireStorageIntegrationForStageCreation(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterRequireStorageIntegrationForStageCreation, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasRequireStorageIntegrationForStageOperation(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterRequireStorageIntegrationForStageOperation, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSsoLoginPage(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterSsoLoginPage, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasStrictJsonOutput(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterStrictJsonOutput, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampDayIsAlways24h(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterTimestampDayIsAlways24h, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTransactionAbortOnError(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterTransactionAbortOnError, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUseCachedResult(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterUseCachedResult, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientEncryptionKeySize(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterClientEncryptionKeySize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientMemoryLimit(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterClientMemoryLimit, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientPrefetchThreads(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterClientPrefetchThreads, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientResultChunkSize(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterClientResultChunkSize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientSessionKeepAliveHeartbeatFrequency(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDataRetentionTimeInDays(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterDataRetentionTimeInDays, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasHybridTableLockTimeout(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterHybridTableLockTimeout, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJsonIndent(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterJsonIndent, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasLockTimeout(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterLockTimeout, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMaxConcurrencyLevel(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterMaxConcurrencyLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMaxDataExtensionTimeInDays(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterMaxDataExtensionTimeInDays, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMinDataRetentionTimeInDays(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterMinDataRetentionTimeInDays, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMultiStatementCount(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterMultiStatementCount, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasRowsPerResultset(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterRowsPerResultset, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasStatementQueuedTimeoutInSeconds(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterStatementQueuedTimeoutInSeconds, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasStatementTimeoutInSeconds(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterStatementTimeoutInSeconds, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterSuspendTaskAfterNumFailures, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTaskAutoRetryAttempts(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterTaskAutoRetryAttempts, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTwoDigitCenturyStart(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterTwoDigitCenturyStart, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUserTaskTimeoutMs(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterUserTaskTimeoutMs, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasWeekOfYearPolicy(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterWeekOfYearPolicy, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasWeekStart(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterWeekStart, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasActivePythonProfiler(expected sdk.ActivePythonProfiler) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterActivePythonProfiler, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasBaseLocationPrefix(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterBaseLocationPrefix, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasBinaryInputFormat(expected sdk.BinaryInputFormat) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterBinaryInputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasBinaryOutputFormat(expected sdk.BinaryOutputFormat) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterBinaryOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCatalog(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterCatalog, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCatalogSync(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterCatalogSync, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientTimestampTypeMapping(expected sdk.ClientTimestampTypeMapping) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterClientTimestampTypeMapping, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCortexEnabledCrossRegion(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterCortexEnabledCrossRegion, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCortexModelsAllowlist(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterCortexModelsAllowlist, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCsvTimestampFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterCsvTimestampFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDateInputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDateInputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDateOutputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDateOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultDdlCollation(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDefaultDDLCollation, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultNotebookComputePoolCpu(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDefaultNotebookComputePoolCpu, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultNotebookComputePoolGpu(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDefaultNotebookComputePoolGpu, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultNullOrdering(expected sdk.DefaultNullOrdering) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterDefaultNullOrdering, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultStreamlitNotebookWarehouse(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDefaultStreamlitNotebookWarehouse, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEventTable(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterEventTable, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasExternalVolume(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterExternalVolume, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasGeographyOutputFormat(expected sdk.GeographyOutputFormat) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterGeographyOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasGeometryOutputFormat(expected sdk.GeometryOutputFormat) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterGeometryOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasInitialReplicationSizeLimitInTb(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterInitialReplicationSizeLimitInTB, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasListingAutoFulfillmentReplicationRefreshSchedule(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasLogLevel(expected sdk.LogLevel) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterLogLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMetricLevel(expected sdk.MetricLevel) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterMetricLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasNetworkPolicy(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterNetworkPolicy, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPythonProfilerModules(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterPythonProfilerModules, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPythonProfilerTargetStage(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterPythonProfilerTargetStage, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasQueryTag(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterQueryTag, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasS3StageVpceDnsName(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterS3StageVpceDnsName, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSamlIdentityProvider(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterSamlIdentityProvider, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSearchPath(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterSearchPath, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk.WarehouseSize) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterServerlessTaskMaxStatementSize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasServerlessTaskMinStatementSize(expected sdk.WarehouseSize) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterServerlessTaskMinStatementSize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSimulatedDataSharingConsumer(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterSimulatedDataSharingConsumer, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasStorageSerializationPolicy(expected sdk.StorageSerializationPolicy) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterStorageSerializationPolicy, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampInputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTimestampInputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampLtzOutputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTimestampLtzOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampNtzOutputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTimestampNtzOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampOutputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTimestampOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampTypeMapping(expected sdk.TimestampTypeMapping) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterTimestampTypeMapping, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampTzOutputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTimestampTzOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimezone(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTimezone, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimeInputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTimeInputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimeOutputFormat(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTimeOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterTraceLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTransactionDefaultIsolationLevel(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterTransactionDefaultIsolationLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUnsupportedDdlAction(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterUnsupportedDdlAction, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterUserTaskManagedInitialWarehouseSize, expected))
 	return a
 }
 
@@ -92,8 +904,588 @@ func (a *AccountParametersAssert) HasEnableUnredactedQuerySyntaxError(expected b
 // Parameter level checks //
 ////////////////////////////
 
+func (a *AccountParametersAssert) HasAbortDetachedQueryLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAbortDetachedQuery, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasAllowClientMfaCachingLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAllowClientMFACaching, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasAllowIdTokenLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAllowIDToken, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasAutocommitLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAutocommit, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientEnableLogInfoStatementParametersLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientEnableLogInfoStatementParameters, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientMetadataRequestUseConnectionCtxLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientMetadataRequestUseConnectionCtx, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientMetadataUseSessionDatabaseLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientMetadataUseSessionDatabase, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientResultColumnCaseInsensitiveLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientResultColumnCaseInsensitive, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientSessionKeepAliveLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientSessionKeepAlive, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDisableUiDownloadButtonLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDisableUiDownloadButton, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDisableUserPrivilegeGrantsLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDisableUserPrivilegeGrants, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableAutomaticSensitiveDataClassificationLogLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableEgressCostOptimizerLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableEgressCostOptimizer, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableIdentifierFirstLoginLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableIdentifierFirstLogin, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableInternalStagesPrivatelinkLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableInternalStagesPrivatelink, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableTriSecretAndRekeyOptOutForImageRepositoryLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableUnhandledExceptionsReportingLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableUnhandledExceptionsReporting, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableUnloadPhysicalTypeOptimizationLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasEnableUnredactedQuerySyntaxErrorLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableUnredactedQuerySyntaxError, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableUnredactedSecureObjectErrorLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableUnredactedSecureObjectError, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnforceNetworkRulesForInternalStagesLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnforceNetworkRulesForInternalStages, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasErrorOnNondeterministicMergeLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterErrorOnNondeterministicMerge, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasErrorOnNondeterministicUpdateLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterErrorOnNondeterministicUpdate, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJdbcTreatDecimalAsIntLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterJdbcTreatDecimalAsInt, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJdbcTreatTimestampNtzAsUtcLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJdbcUseSessionTimezoneLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterJdbcUseSessionTimezone, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJsTreatIntegerAsBigintLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterJsTreatIntegerAsBigInt, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasNoorderSequenceAsDefaultLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterNoorderSequenceAsDefault, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasOdbcTreatDecimalAsIntLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterOdbcTreatDecimalAsInt, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPeriodicDataRekeyingLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterPeriodicDataRekeying, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPipeExecutionPausedLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterPipeExecutionPaused, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPreventUnloadToInlineUrlLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterPreventUnloadToInlineURL, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPreventUnloadToInternalStagesLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterPreventUnloadToInternalStages, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterQuotedIdentifiersIgnoreCase, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasReplaceInvalidCharactersLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterReplaceInvalidCharacters, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasRequireStorageIntegrationForStageCreationLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterRequireStorageIntegrationForStageCreation, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasRequireStorageIntegrationForStageOperationLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterRequireStorageIntegrationForStageOperation, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSsoLoginPageLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSsoLoginPage, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasStrictJsonOutputLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterStrictJsonOutput, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampDayIsAlways24hLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimestampDayIsAlways24h, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTransactionAbortOnErrorLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTransactionAbortOnError, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUseCachedResultLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterUseCachedResult, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientEncryptionKeySizeLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientEncryptionKeySize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientMemoryLimitLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientMemoryLimit, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientPrefetchThreadsLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientPrefetchThreads, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientResultChunkSizeLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientResultChunkSize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientSessionKeepAliveHeartbeatFrequencyLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDataRetentionTimeInDaysLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDataRetentionTimeInDays, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasHybridTableLockTimeoutLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterHybridTableLockTimeout, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasJsonIndentLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterJsonIndent, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasLockTimeoutLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterLockTimeout, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMaxConcurrencyLevelLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterMaxConcurrencyLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMaxDataExtensionTimeInDaysLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterMaxDataExtensionTimeInDays, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMinDataRetentionTimeInDaysLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterMinDataRetentionTimeInDays, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMultiStatementCountLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterMultiStatementCount, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasRowsPerResultsetLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterRowsPerResultset, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasStatementQueuedTimeoutInSecondsLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterStatementQueuedTimeoutInSeconds, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasStatementTimeoutInSecondsLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterStatementTimeoutInSeconds, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSuspendTaskAfterNumFailures, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTaskAutoRetryAttempts, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTwoDigitCenturyStartLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTwoDigitCenturyStart, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterUserTaskTimeoutMs, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasWeekOfYearPolicyLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterWeekOfYearPolicy, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasWeekStartLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterWeekStart, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasActivePythonProfilerLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterActivePythonProfiler, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasBaseLocationPrefixLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterBaseLocationPrefix, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasBinaryInputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterBinaryInputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasBinaryOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterBinaryOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCatalogLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterCatalog, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCatalogSyncLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterCatalogSync, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasClientTimestampTypeMappingLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterClientTimestampTypeMapping, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCortexEnabledCrossRegionLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterCortexEnabledCrossRegion, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCortexModelsAllowlistLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterCortexModelsAllowlist, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCsvTimestampFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterCsvTimestampFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDateInputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDateInputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDateOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDateOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultDDLCollation, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultNotebookComputePoolCpuLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultNotebookComputePoolCpu, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultNotebookComputePoolGpuLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultNotebookComputePoolGpu, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultNullOrderingLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultNullOrdering, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultStreamlitNotebookWarehouseLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultStreamlitNotebookWarehouse, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEventTableLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEventTable, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasExternalVolumeLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterExternalVolume, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasGeographyOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterGeographyOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasGeometryOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterGeometryOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasInitialReplicationSizeLimitInTbLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterInitialReplicationSizeLimitInTB, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasListingAutoFulfillmentReplicationRefreshScheduleLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterLogLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasMetricLevelLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterMetricLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasNetworkPolicyLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterNetworkPolicy, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPythonProfilerModulesLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterPythonProfilerModules, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasPythonProfilerTargetStageLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterPythonProfilerTargetStage, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasQueryTagLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterQueryTag, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterS3StageVpceDnsName, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSamlIdentityProviderLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSamlIdentityProvider, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSearchPath, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasServerlessTaskMaxStatementSizeLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterServerlessTaskMaxStatementSize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasServerlessTaskMinStatementSizeLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterServerlessTaskMinStatementSize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSimulatedDataSharingConsumerLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSimulatedDataSharingConsumer, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasStorageSerializationPolicyLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterStorageSerializationPolicy, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampInputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimestampInputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampLtzOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimestampLtzOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampNtzOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimestampNtzOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimestampOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampTypeMappingLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimestampTypeMapping, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimestampTzOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimestampTzOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimezoneLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimezone, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimeInputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTimeOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTraceLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasTransactionDefaultIsolationLevelLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterTransactionDefaultIsolationLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUnsupportedDdlActionLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterUnsupportedDdlAction, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterUserTaskManagedInitialWarehouseSize, expected))
 	return a
 }
 
@@ -101,14 +1493,942 @@ func (a *AccountParametersAssert) HasEnableUnredactedQuerySyntaxErrorLevel(expec
 // Parameter default value checks //
 ////////////////////////////////////
 
+func (a *AccountParametersAssert) HasDefaultAbortDetachedQueryValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterAbortDetachedQuery)
+}
+
+func (a *AccountParametersAssert) HasDefaultAllowClientMfaCachingValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterAllowClientMFACaching)
+}
+
+func (a *AccountParametersAssert) HasDefaultAllowIdTokenValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterAllowIDToken)
+}
+
+func (a *AccountParametersAssert) HasDefaultAutocommitValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterAutocommit)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientEnableLogInfoStatementParametersValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientEnableLogInfoStatementParameters)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientMetadataRequestUseConnectionCtxValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientMetadataRequestUseConnectionCtx)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientMetadataUseSessionDatabaseValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientMetadataUseSessionDatabase)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientResultColumnCaseInsensitiveValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientResultColumnCaseInsensitive)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientSessionKeepAliveValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientSessionKeepAlive)
+}
+
+func (a *AccountParametersAssert) HasDefaultDisableUiDownloadButtonValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDisableUiDownloadButton)
+}
+
+func (a *AccountParametersAssert) HasDefaultDisableUserPrivilegeGrantsValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDisableUserPrivilegeGrants)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableAutomaticSensitiveDataClassificationLogValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableEgressCostOptimizerValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableEgressCostOptimizer)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableIdentifierFirstLoginValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableIdentifierFirstLogin)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableInternalStagesPrivatelinkValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableInternalStagesPrivatelink)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableTriSecretAndRekeyOptOutForImageRepositoryValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableTriSecretAndRekeyOptOutForSpcsBlockStorageValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableUnhandledExceptionsReportingValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableUnhandledExceptionsReporting)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableUnloadPhysicalTypeOptimizationValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization)
+}
+
 func (a *AccountParametersAssert) HasDefaultEnableUnredactedQuerySyntaxErrorValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterEnableUnredactedQuerySyntaxError)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableUnredactedSecureObjectErrorValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableUnredactedSecureObjectError)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnforceNetworkRulesForInternalStagesValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnforceNetworkRulesForInternalStages)
+}
+
+func (a *AccountParametersAssert) HasDefaultErrorOnNondeterministicMergeValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterErrorOnNondeterministicMerge)
+}
+
+func (a *AccountParametersAssert) HasDefaultErrorOnNondeterministicUpdateValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterErrorOnNondeterministicUpdate)
+}
+
+func (a *AccountParametersAssert) HasDefaultExternalOauthAddPrivilegedRolesToBlockedListValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList)
+}
+
+func (a *AccountParametersAssert) HasDefaultJdbcTreatDecimalAsIntValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterJdbcTreatDecimalAsInt)
+}
+
+func (a *AccountParametersAssert) HasDefaultJdbcTreatTimestampNtzAsUtcValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc)
+}
+
+func (a *AccountParametersAssert) HasDefaultJdbcUseSessionTimezoneValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterJdbcUseSessionTimezone)
+}
+
+func (a *AccountParametersAssert) HasDefaultJsTreatIntegerAsBigintValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterJsTreatIntegerAsBigInt)
+}
+
+func (a *AccountParametersAssert) HasDefaultNoorderSequenceAsDefaultValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterNoorderSequenceAsDefault)
+}
+
+func (a *AccountParametersAssert) HasDefaultOauthAddPrivilegedRolesToBlockedListValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList)
+}
+
+func (a *AccountParametersAssert) HasDefaultOdbcTreatDecimalAsIntValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterOdbcTreatDecimalAsInt)
+}
+
+func (a *AccountParametersAssert) HasDefaultPeriodicDataRekeyingValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterPeriodicDataRekeying)
+}
+
+func (a *AccountParametersAssert) HasDefaultPipeExecutionPausedValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterPipeExecutionPaused)
+}
+
+func (a *AccountParametersAssert) HasDefaultPreventUnloadToInlineUrlValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterPreventUnloadToInlineURL)
+}
+
+func (a *AccountParametersAssert) HasDefaultPreventUnloadToInternalStagesValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterPreventUnloadToInternalStages)
+}
+
+func (a *AccountParametersAssert) HasDefaultQuotedIdentifiersIgnoreCaseValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterQuotedIdentifiersIgnoreCase)
+}
+
+func (a *AccountParametersAssert) HasDefaultReplaceInvalidCharactersValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterReplaceInvalidCharacters)
+}
+
+func (a *AccountParametersAssert) HasDefaultRequireStorageIntegrationForStageCreationValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterRequireStorageIntegrationForStageCreation)
+}
+
+func (a *AccountParametersAssert) HasDefaultRequireStorageIntegrationForStageOperationValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterRequireStorageIntegrationForStageOperation)
+}
+
+func (a *AccountParametersAssert) HasDefaultSsoLoginPageValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterSsoLoginPage)
+}
+
+func (a *AccountParametersAssert) HasDefaultStrictJsonOutputValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterStrictJsonOutput)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampDayIsAlways24hValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimestampDayIsAlways24h)
+}
+
+func (a *AccountParametersAssert) HasDefaultTransactionAbortOnErrorValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTransactionAbortOnError)
+}
+
+func (a *AccountParametersAssert) HasDefaultUseCachedResultValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterUseCachedResult)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientEncryptionKeySizeValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientEncryptionKeySize)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientMemoryLimitValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientMemoryLimit)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientPrefetchThreadsValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientPrefetchThreads)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientResultChunkSizeValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientResultChunkSize)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientSessionKeepAliveHeartbeatFrequencyValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency)
+}
+
+func (a *AccountParametersAssert) HasDefaultDataRetentionTimeInDaysValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDataRetentionTimeInDays)
+}
+
+func (a *AccountParametersAssert) HasDefaultHybridTableLockTimeoutValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterHybridTableLockTimeout)
+}
+
+func (a *AccountParametersAssert) HasDefaultJsonIndentValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterJsonIndent)
+}
+
+func (a *AccountParametersAssert) HasDefaultLockTimeoutValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterLockTimeout)
+}
+
+func (a *AccountParametersAssert) HasDefaultMaxConcurrencyLevelValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterMaxConcurrencyLevel)
+}
+
+func (a *AccountParametersAssert) HasDefaultMaxDataExtensionTimeInDaysValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterMaxDataExtensionTimeInDays)
+}
+
+func (a *AccountParametersAssert) HasDefaultMinDataRetentionTimeInDaysValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterMinDataRetentionTimeInDays)
+}
+
+func (a *AccountParametersAssert) HasDefaultMultiStatementCountValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterMultiStatementCount)
+}
+
+func (a *AccountParametersAssert) HasDefaultRowsPerResultsetValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterRowsPerResultset)
+}
+
+func (a *AccountParametersAssert) HasDefaultStatementQueuedTimeoutInSecondsValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterStatementQueuedTimeoutInSeconds)
+}
+
+func (a *AccountParametersAssert) HasDefaultStatementTimeoutInSecondsValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterStatementTimeoutInSeconds)
+}
+
+func (a *AccountParametersAssert) HasDefaultSuspendTaskAfterNumFailuresValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterSuspendTaskAfterNumFailures)
+}
+
+func (a *AccountParametersAssert) HasDefaultTaskAutoRetryAttemptsValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTaskAutoRetryAttempts)
+}
+
+func (a *AccountParametersAssert) HasDefaultTwoDigitCenturyStartValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTwoDigitCenturyStart)
+}
+
+func (a *AccountParametersAssert) HasDefaultUserTaskMinimumTriggerIntervalInSecondsValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds)
+}
+
+func (a *AccountParametersAssert) HasDefaultUserTaskTimeoutMsValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterUserTaskTimeoutMs)
+}
+
+func (a *AccountParametersAssert) HasDefaultWeekOfYearPolicyValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterWeekOfYearPolicy)
+}
+
+func (a *AccountParametersAssert) HasDefaultWeekStartValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterWeekStart)
+}
+
+func (a *AccountParametersAssert) HasDefaultActivePythonProfilerValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterActivePythonProfiler)
+}
+
+func (a *AccountParametersAssert) HasDefaultBaseLocationPrefixValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterBaseLocationPrefix)
+}
+
+func (a *AccountParametersAssert) HasDefaultBinaryInputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterBinaryInputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultBinaryOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterBinaryOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultCatalogValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterCatalog)
+}
+
+func (a *AccountParametersAssert) HasDefaultCatalogSyncValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterCatalogSync)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientTimestampTypeMappingValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterClientTimestampTypeMapping)
+}
+
+func (a *AccountParametersAssert) HasDefaultCortexEnabledCrossRegionValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterCortexEnabledCrossRegion)
+}
+
+func (a *AccountParametersAssert) HasDefaultCortexModelsAllowlistValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterCortexModelsAllowlist)
+}
+
+func (a *AccountParametersAssert) HasDefaultCsvTimestampFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterCsvTimestampFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultDateInputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDateInputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultDateOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDateOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultDdlCollationValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultDDLCollation)
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultNotebookComputePoolCpuValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultNotebookComputePoolCpu)
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultNotebookComputePoolGpuValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultNotebookComputePoolGpu)
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultNullOrderingValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultNullOrdering)
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultStreamlitNotebookWarehouseValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultStreamlitNotebookWarehouse)
+}
+
+func (a *AccountParametersAssert) HasDefaultEventTableValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEventTable)
+}
+
+func (a *AccountParametersAssert) HasDefaultExternalVolumeValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterExternalVolume)
+}
+
+func (a *AccountParametersAssert) HasDefaultGeographyOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterGeographyOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultGeometryOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterGeometryOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultInitialReplicationSizeLimitInTbValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterInitialReplicationSizeLimitInTB)
+}
+
+func (a *AccountParametersAssert) HasDefaultListingAutoFulfillmentReplicationRefreshScheduleValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule)
+}
+
+func (a *AccountParametersAssert) HasDefaultLogLevelValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterLogLevel)
+}
+
+func (a *AccountParametersAssert) HasDefaultMetricLevelValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterMetricLevel)
+}
+
+func (a *AccountParametersAssert) HasDefaultNetworkPolicyValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterNetworkPolicy)
+}
+
+func (a *AccountParametersAssert) HasDefaultPythonProfilerModulesValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterPythonProfilerModules)
+}
+
+func (a *AccountParametersAssert) HasDefaultPythonProfilerTargetStageValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterPythonProfilerTargetStage)
+}
+
+func (a *AccountParametersAssert) HasDefaultQueryTagValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterQueryTag)
+}
+
+func (a *AccountParametersAssert) HasDefaultS3StageVpceDnsNameValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterS3StageVpceDnsName)
+}
+
+func (a *AccountParametersAssert) HasDefaultSamlIdentityProviderValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterSamlIdentityProvider)
+}
+
+func (a *AccountParametersAssert) HasDefaultSearchPathValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterSearchPath)
+}
+
+func (a *AccountParametersAssert) HasDefaultServerlessTaskMaxStatementSizeValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterServerlessTaskMaxStatementSize)
+}
+
+func (a *AccountParametersAssert) HasDefaultServerlessTaskMinStatementSizeValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterServerlessTaskMinStatementSize)
+}
+
+func (a *AccountParametersAssert) HasDefaultSimulatedDataSharingConsumerValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterSimulatedDataSharingConsumer)
+}
+
+func (a *AccountParametersAssert) HasDefaultStorageSerializationPolicyValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterStorageSerializationPolicy)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampInputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimestampInputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampLtzOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimestampLtzOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampNtzOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimestampNtzOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimestampOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampTypeMappingValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimestampTypeMapping)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampTzOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimestampTzOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimezoneValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimezone)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimeInputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimeInputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimeOutputFormatValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTimeOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultTraceLevelValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTraceLevel)
+}
+
+func (a *AccountParametersAssert) HasDefaultTransactionDefaultIsolationLevelValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterTransactionDefaultIsolationLevel)
+}
+
+func (a *AccountParametersAssert) HasDefaultUnsupportedDdlActionValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterUnsupportedDdlAction)
+}
+
+func (a *AccountParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterUserTaskManagedInitialWarehouseSize)
 }
 
 /////////////////////////////////////////////
 // Parameter explicit default value checks //
 /////////////////////////////////////////////
 
+func (a *AccountParametersAssert) HasDefaultAbortDetachedQueryValueExplicit() *AccountParametersAssert {
+	return a.HasAbortDetachedQuery(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultAllowClientMfaCachingValueExplicit() *AccountParametersAssert {
+	return a.HasAllowClientMfaCaching(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultAllowIdTokenValueExplicit() *AccountParametersAssert {
+	return a.HasAllowIdToken(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultAutocommitValueExplicit() *AccountParametersAssert {
+	return a.HasAutocommit(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientEnableLogInfoStatementParametersValueExplicit() *AccountParametersAssert {
+	return a.HasClientEnableLogInfoStatementParameters(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientMetadataRequestUseConnectionCtxValueExplicit() *AccountParametersAssert {
+	return a.HasClientMetadataRequestUseConnectionCtx(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientMetadataUseSessionDatabaseValueExplicit() *AccountParametersAssert {
+	return a.HasClientMetadataUseSessionDatabase(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientResultColumnCaseInsensitiveValueExplicit() *AccountParametersAssert {
+	return a.HasClientResultColumnCaseInsensitive(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientSessionKeepAliveValueExplicit() *AccountParametersAssert {
+	return a.HasClientSessionKeepAlive(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultDisableUiDownloadButtonValueExplicit() *AccountParametersAssert {
+	return a.HasDisableUiDownloadButton(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultDisableUserPrivilegeGrantsValueExplicit() *AccountParametersAssert {
+	return a.HasDisableUserPrivilegeGrants(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableAutomaticSensitiveDataClassificationLogValueExplicit() *AccountParametersAssert {
+	return a.HasEnableAutomaticSensitiveDataClassificationLog(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableEgressCostOptimizerValueExplicit() *AccountParametersAssert {
+	return a.HasEnableEgressCostOptimizer(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableIdentifierFirstLoginValueExplicit() *AccountParametersAssert {
+	return a.HasEnableIdentifierFirstLogin(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableInternalStagesPrivatelinkValueExplicit() *AccountParametersAssert {
+	return a.HasEnableInternalStagesPrivatelink(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableTriSecretAndRekeyOptOutForImageRepositoryValueExplicit() *AccountParametersAssert {
+	return a.HasEnableTriSecretAndRekeyOptOutForImageRepository(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableTriSecretAndRekeyOptOutForSpcsBlockStorageValueExplicit() *AccountParametersAssert {
+	return a.HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorage(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableUnhandledExceptionsReportingValueExplicit() *AccountParametersAssert {
+	return a.HasEnableUnhandledExceptionsReporting(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableUnloadPhysicalTypeOptimizationValueExplicit() *AccountParametersAssert {
+	return a.HasEnableUnloadPhysicalTypeOptimization(true)
+}
+
 func (a *AccountParametersAssert) HasDefaultEnableUnredactedQuerySyntaxErrorValueExplicit() *AccountParametersAssert {
 	return a.HasEnableUnredactedQuerySyntaxError(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableUnredactedSecureObjectErrorValueExplicit() *AccountParametersAssert {
+	return a.HasEnableUnredactedSecureObjectError(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnforceNetworkRulesForInternalStagesValueExplicit() *AccountParametersAssert {
+	return a.HasEnforceNetworkRulesForInternalStages(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultErrorOnNondeterministicMergeValueExplicit() *AccountParametersAssert {
+	return a.HasErrorOnNondeterministicMerge(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultErrorOnNondeterministicUpdateValueExplicit() *AccountParametersAssert {
+	return a.HasErrorOnNondeterministicUpdate(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultExternalOauthAddPrivilegedRolesToBlockedListValueExplicit() *AccountParametersAssert {
+	return a.HasExternalOauthAddPrivilegedRolesToBlockedList(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultJdbcTreatDecimalAsIntValueExplicit() *AccountParametersAssert {
+	return a.HasJdbcTreatDecimalAsInt(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultJdbcTreatTimestampNtzAsUtcValueExplicit() *AccountParametersAssert {
+	return a.HasJdbcTreatTimestampNtzAsUtc(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultJdbcUseSessionTimezoneValueExplicit() *AccountParametersAssert {
+	return a.HasJdbcUseSessionTimezone(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultJsTreatIntegerAsBigintValueExplicit() *AccountParametersAssert {
+	return a.HasJsTreatIntegerAsBigint(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultNoorderSequenceAsDefaultValueExplicit() *AccountParametersAssert {
+	return a.HasNoorderSequenceAsDefault(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultOauthAddPrivilegedRolesToBlockedListValueExplicit() *AccountParametersAssert {
+	return a.HasOauthAddPrivilegedRolesToBlockedList(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultOdbcTreatDecimalAsIntValueExplicit() *AccountParametersAssert {
+	return a.HasOdbcTreatDecimalAsInt(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultPeriodicDataRekeyingValueExplicit() *AccountParametersAssert {
+	return a.HasPeriodicDataRekeying(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultPipeExecutionPausedValueExplicit() *AccountParametersAssert {
+	return a.HasPipeExecutionPaused(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultPreventUnloadToInlineUrlValueExplicit() *AccountParametersAssert {
+	return a.HasPreventUnloadToInlineUrl(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultPreventUnloadToInternalStagesValueExplicit() *AccountParametersAssert {
+	return a.HasPreventUnloadToInternalStages(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit() *AccountParametersAssert {
+	return a.HasQuotedIdentifiersIgnoreCase(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultReplaceInvalidCharactersValueExplicit() *AccountParametersAssert {
+	return a.HasReplaceInvalidCharacters(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultRequireStorageIntegrationForStageCreationValueExplicit() *AccountParametersAssert {
+	return a.HasRequireStorageIntegrationForStageCreation(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultRequireStorageIntegrationForStageOperationValueExplicit() *AccountParametersAssert {
+	return a.HasRequireStorageIntegrationForStageOperation(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultSsoLoginPageValueExplicit() *AccountParametersAssert {
+	return a.HasSsoLoginPage(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultStrictJsonOutputValueExplicit() *AccountParametersAssert {
+	return a.HasStrictJsonOutput(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampDayIsAlways24hValueExplicit() *AccountParametersAssert {
+	return a.HasTimestampDayIsAlways24h(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultTransactionAbortOnErrorValueExplicit() *AccountParametersAssert {
+	return a.HasTransactionAbortOnError(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultUseCachedResultValueExplicit() *AccountParametersAssert {
+	return a.HasUseCachedResult(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientEncryptionKeySizeValueExplicit() *AccountParametersAssert {
+	return a.HasClientEncryptionKeySize(128)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientMemoryLimitValueExplicit() *AccountParametersAssert {
+	return a.HasClientMemoryLimit(1536)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientPrefetchThreadsValueExplicit() *AccountParametersAssert {
+	return a.HasClientPrefetchThreads(4)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientResultChunkSizeValueExplicit() *AccountParametersAssert {
+	return a.HasClientResultChunkSize(160)
+}
+
+func (a *AccountParametersAssert) HasDefaultClientSessionKeepAliveHeartbeatFrequencyValueExplicit() *AccountParametersAssert {
+	return a.HasClientSessionKeepAliveHeartbeatFrequency(3600)
+}
+
+func (a *AccountParametersAssert) HasDefaultDataRetentionTimeInDaysValueExplicit() *AccountParametersAssert {
+	return a.HasDataRetentionTimeInDays(1)
+}
+
+func (a *AccountParametersAssert) HasDefaultHybridTableLockTimeoutValueExplicit() *AccountParametersAssert {
+	return a.HasHybridTableLockTimeout(3600)
+}
+
+func (a *AccountParametersAssert) HasDefaultJsonIndentValueExplicit() *AccountParametersAssert {
+	return a.HasJsonIndent(2)
+}
+
+func (a *AccountParametersAssert) HasDefaultLockTimeoutValueExplicit() *AccountParametersAssert {
+	return a.HasLockTimeout(43200)
+}
+
+func (a *AccountParametersAssert) HasDefaultMaxConcurrencyLevelValueExplicit() *AccountParametersAssert {
+	return a.HasMaxConcurrencyLevel(14)
+}
+
+func (a *AccountParametersAssert) HasDefaultMaxDataExtensionTimeInDaysValueExplicit() *AccountParametersAssert {
+	return a.HasMaxDataExtensionTimeInDays(14)
+}
+
+func (a *AccountParametersAssert) HasDefaultMinDataRetentionTimeInDaysValueExplicit() *AccountParametersAssert {
+	return a.HasMinDataRetentionTimeInDays(1)
+}
+
+func (a *AccountParametersAssert) HasDefaultMultiStatementCountValueExplicit() *AccountParametersAssert {
+	return a.HasMultiStatementCount(1)
+}
+
+func (a *AccountParametersAssert) HasDefaultRowsPerResultsetValueExplicit() *AccountParametersAssert {
+	return a.HasRowsPerResultset(0)
+}
+
+func (a *AccountParametersAssert) HasDefaultStatementQueuedTimeoutInSecondsValueExplicit() *AccountParametersAssert {
+	return a.HasStatementQueuedTimeoutInSeconds(0)
+}
+
+func (a *AccountParametersAssert) HasDefaultStatementTimeoutInSecondsValueExplicit() *AccountParametersAssert {
+	return a.HasStatementTimeoutInSeconds(172800)
+}
+
+func (a *AccountParametersAssert) HasDefaultSuspendTaskAfterNumFailuresValueExplicit() *AccountParametersAssert {
+	return a.HasSuspendTaskAfterNumFailures(10)
+}
+
+func (a *AccountParametersAssert) HasDefaultTaskAutoRetryAttemptsValueExplicit() *AccountParametersAssert {
+	return a.HasTaskAutoRetryAttempts(0)
+}
+
+func (a *AccountParametersAssert) HasDefaultTwoDigitCenturyStartValueExplicit() *AccountParametersAssert {
+	return a.HasTwoDigitCenturyStart(1970)
+}
+
+func (a *AccountParametersAssert) HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit() *AccountParametersAssert {
+	return a.HasUserTaskMinimumTriggerIntervalInSeconds(30)
+}
+
+func (a *AccountParametersAssert) HasDefaultUserTaskTimeoutMsValueExplicit() *AccountParametersAssert {
+	return a.HasUserTaskTimeoutMs(3600000)
+}
+
+func (a *AccountParametersAssert) HasDefaultWeekOfYearPolicyValueExplicit() *AccountParametersAssert {
+	return a.HasWeekOfYearPolicy(0)
+}
+
+func (a *AccountParametersAssert) HasDefaultWeekStartValueExplicit() *AccountParametersAssert {
+	return a.HasWeekStart(0)
+}
+
+func (a *AccountParametersAssert) HasDefaultActivePythonProfilerValueExplicit() *AccountParametersAssert {
+	return a.HasActivePythonProfiler(sdk.ActivePythonProfilerLine)
+}
+
+func (a *AccountParametersAssert) HasDefaultBaseLocationPrefixValueExplicit() *AccountParametersAssert {
+	return a.HasBaseLocationPrefix("")
+}
+
+func (a *AccountParametersAssert) HasDefaultBinaryInputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasBinaryInputFormat(sdk.BinaryInputFormatHex)
+}
+
+func (a *AccountParametersAssert) HasDefaultBinaryOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasBinaryOutputFormat(sdk.BinaryOutputFormatHex)
+}
+
+func (a *AccountParametersAssert) HasDefaultCatalogValueExplicit() *AccountParametersAssert {
+	return a.HasCatalog("")
+}
+
+func (a *AccountParametersAssert) HasDefaultCatalogSyncValueExplicit() *AccountParametersAssert {
+	return a.HasCatalogSync("")
+}
+
+func (a *AccountParametersAssert) HasDefaultClientTimestampTypeMappingValueExplicit() *AccountParametersAssert {
+	return a.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingLtz)
+}
+
+func (a *AccountParametersAssert) HasDefaultCortexEnabledCrossRegionValueExplicit() *AccountParametersAssert {
+	return a.HasCortexEnabledCrossRegion("DISABLED")
+}
+
+func (a *AccountParametersAssert) HasDefaultCortexModelsAllowlistValueExplicit() *AccountParametersAssert {
+	return a.HasCortexModelsAllowlist("ALL")
+}
+
+func (a *AccountParametersAssert) HasDefaultCsvTimestampFormatValueExplicit() *AccountParametersAssert {
+	return a.HasCsvTimestampFormat("")
+}
+
+func (a *AccountParametersAssert) HasDefaultDateInputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasDateInputFormat("AUTO")
+}
+
+func (a *AccountParametersAssert) HasDefaultDateOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasDateOutputFormat("YYYY-MM-DD")
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultDdlCollationValueExplicit() *AccountParametersAssert {
+	return a.HasDefaultDdlCollation("")
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultNotebookComputePoolCpuValueExplicit() *AccountParametersAssert {
+	return a.HasDefaultNotebookComputePoolCpu("SYSTEM_COMPUTE_POOL_CPU")
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultNotebookComputePoolGpuValueExplicit() *AccountParametersAssert {
+	return a.HasDefaultNotebookComputePoolGpu("SYSTEM_COMPUTE_POOL_GPU")
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultNullOrderingValueExplicit() *AccountParametersAssert {
+	return a.HasDefaultNullOrdering(sdk.DefaultNullOrderingLast)
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultStreamlitNotebookWarehouseValueExplicit() *AccountParametersAssert {
+	return a.HasDefaultStreamlitNotebookWarehouse("REGRESS")
+}
+
+func (a *AccountParametersAssert) HasDefaultEventTableValueExplicit() *AccountParametersAssert {
+	return a.HasEventTable("snowflake.telemetry.events")
+}
+
+func (a *AccountParametersAssert) HasDefaultExternalVolumeValueExplicit() *AccountParametersAssert {
+	return a.HasExternalVolume("")
+}
+
+func (a *AccountParametersAssert) HasDefaultGeographyOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJSON)
+}
+
+func (a *AccountParametersAssert) HasDefaultGeometryOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJSON)
+}
+
+func (a *AccountParametersAssert) HasDefaultInitialReplicationSizeLimitInTbValueExplicit() *AccountParametersAssert {
+	return a.HasInitialReplicationSizeLimitInTb("10")
+}
+
+func (a *AccountParametersAssert) HasDefaultListingAutoFulfillmentReplicationRefreshScheduleValueExplicit() *AccountParametersAssert {
+	return a.HasListingAutoFulfillmentReplicationRefreshSchedule("1440 MINUTE")
+}
+
+func (a *AccountParametersAssert) HasDefaultLogLevelValueExplicit() *AccountParametersAssert {
+	return a.HasLogLevel(sdk.LogLevelOff)
+}
+
+func (a *AccountParametersAssert) HasDefaultMetricLevelValueExplicit() *AccountParametersAssert {
+	return a.HasMetricLevel(sdk.MetricLevelNone)
+}
+
+func (a *AccountParametersAssert) HasDefaultNetworkPolicyValueExplicit() *AccountParametersAssert {
+	return a.HasNetworkPolicy("")
+}
+
+func (a *AccountParametersAssert) HasDefaultPythonProfilerModulesValueExplicit() *AccountParametersAssert {
+	return a.HasPythonProfilerModules("")
+}
+
+func (a *AccountParametersAssert) HasDefaultPythonProfilerTargetStageValueExplicit() *AccountParametersAssert {
+	return a.HasPythonProfilerTargetStage("")
+}
+
+func (a *AccountParametersAssert) HasDefaultQueryTagValueExplicit() *AccountParametersAssert {
+	return a.HasQueryTag("")
+}
+
+func (a *AccountParametersAssert) HasDefaultS3StageVpceDnsNameValueExplicit() *AccountParametersAssert {
+	return a.HasS3StageVpceDnsName("")
+}
+
+func (a *AccountParametersAssert) HasDefaultSamlIdentityProviderValueExplicit() *AccountParametersAssert {
+	return a.HasSamlIdentityProvider("")
+}
+
+func (a *AccountParametersAssert) HasDefaultSearchPathValueExplicit() *AccountParametersAssert {
+	return a.HasSearchPath("$current, $public")
+}
+
+func (a *AccountParametersAssert) HasDefaultServerlessTaskMaxStatementSizeValueExplicit() *AccountParametersAssert {
+	return a.HasServerlessTaskMaxStatementSize(sdk.WarehouseSize("X2Large"))
+}
+
+func (a *AccountParametersAssert) HasDefaultServerlessTaskMinStatementSizeValueExplicit() *AccountParametersAssert {
+	return a.HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall)
+}
+
+func (a *AccountParametersAssert) HasDefaultSimulatedDataSharingConsumerValueExplicit() *AccountParametersAssert {
+	return a.HasSimulatedDataSharingConsumer("")
+}
+
+func (a *AccountParametersAssert) HasDefaultStorageSerializationPolicyValueExplicit() *AccountParametersAssert {
+	return a.HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampInputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasTimestampInputFormat("AUTO")
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampLtzOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasTimestampLtzOutputFormat("")
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampNtzOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS.FF3")
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM")
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampTypeMappingValueExplicit() *AccountParametersAssert {
+	return a.HasTimestampTypeMapping(sdk.TimestampTypeMappingNtz)
+}
+
+func (a *AccountParametersAssert) HasDefaultTimestampTzOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasTimestampTzOutputFormat("")
+}
+
+func (a *AccountParametersAssert) HasDefaultTimezoneValueExplicit() *AccountParametersAssert {
+	return a.HasTimezone("America/Los_Angeles")
+}
+
+func (a *AccountParametersAssert) HasDefaultTimeInputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasTimeInputFormat("AUTO")
+}
+
+func (a *AccountParametersAssert) HasDefaultTimeOutputFormatValueExplicit() *AccountParametersAssert {
+	return a.HasTimeOutputFormat("HH24:MI:SS")
+}
+
+func (a *AccountParametersAssert) HasDefaultTraceLevelValueExplicit() *AccountParametersAssert {
+	return a.HasTraceLevel(sdk.TraceLevelOff)
+}
+
+func (a *AccountParametersAssert) HasDefaultTransactionDefaultIsolationLevelValueExplicit() *AccountParametersAssert {
+	return a.HasTransactionDefaultIsolationLevel("READ COMMITTED")
+}
+
+func (a *AccountParametersAssert) HasDefaultUnsupportedDdlActionValueExplicit() *AccountParametersAssert {
+	return a.HasUnsupportedDdlAction("ignore")
+}
+
+func (a *AccountParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit() *AccountParametersAssert {
+	return a.HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)
 }
