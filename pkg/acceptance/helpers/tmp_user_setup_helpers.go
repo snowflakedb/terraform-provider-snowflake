@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -57,7 +58,9 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpSe
 			Type: sdk.Pointer(sdk.UserTypeLegacyService),
 		}})
 	})
-	pat := c.User.AddProgrammaticAccessToken(t, tmpUser.UserId, tmpUser.RoleId)
+	req := sdk.NewAddUserProgrammaticAccessTokenRequest(tmpUser.UserId, c.Ids.RandomAccountObjectIdentifier()).WithRoleRestriction(snowflakeroles.Public)
+	pat, cleanupPat := c.User.AddProgrammaticAccessTokenWithRequest(t, tmpUser.UserId, req)
+	t.Cleanup(cleanupPat)
 
 	return &TmpServiceUserWithPat{
 		Pat:     pat.TokenSecret,

@@ -88,3 +88,25 @@ func TestInt_SafeDropOnSchemaObjectIdentifierWithArguments(t *testing.T) {
 	err = sdk.SafeDrop(testClient(t), procedureDrop(invalidProcedureId), ctx, invalidProcedureId)
 	assert.NoError(t, err)
 }
+
+func TestInt_SafeRemoveProgrammaticAccessToken(t *testing.T) {
+	user, cleanupUser := testClientHelper().User.CreateUser(t)
+	t.Cleanup(cleanupUser)
+
+	token, cleanupToken := testClientHelper().User.AddProgrammaticAccessToken(t, user.ID())
+	t.Cleanup(cleanupToken)
+
+	ctx := context.Background()
+	removeProgrammaticAccessToken := func(userId, tokenId sdk.AccountObjectIdentifier) func() error {
+		return func() error {
+			return testClient(t).Users.RemoveProgrammaticAccessToken(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(userId, tokenId))
+		}
+	}
+
+	err := sdk.SafeRemoveProgrammaticAccessToken(testClient(t), removeProgrammaticAccessToken(user.ID(), token.ID()), ctx, user.ID())
+	assert.NoError(t, err)
+
+	invalidUserId := NonExistingAccountObjectIdentifier
+	err = sdk.SafeRemoveProgrammaticAccessToken(testClient(t), removeProgrammaticAccessToken(invalidUserId, token.ID()), ctx, invalidUserId)
+	assert.NoError(t, err)
+}

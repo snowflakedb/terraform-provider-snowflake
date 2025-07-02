@@ -7,6 +7,7 @@ var (
 	Accountadmin   = sdk.NewAccountObjectIdentifier("ACCOUNTADMIN")
 	SecurityAdmin  = sdk.NewAccountObjectIdentifier("SECURITYADMIN")
 	PentestingRole = sdk.NewAccountObjectIdentifier("PENTESTING_ROLE")
+	Public         = sdk.NewAccountObjectIdentifier("PUBLIC")
 
 	OktaProvisioner        = sdk.NewAccountObjectIdentifier("OKTA_PROVISIONER")
 	AadProvisioner         = sdk.NewAccountObjectIdentifier("AAD_PROVISIONER")

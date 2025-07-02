@@ -34,7 +34,10 @@ type Users interface {
 	ModifyProgrammaticAccessToken(ctx context.Context, request *ModifyUserProgrammaticAccessTokenRequest) error
 	RotateProgrammaticAccessToken(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) (*RotateProgrammaticAccessTokenResult, error)
 	RemoveProgrammaticAccessToken(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
+	RemoveProgrammaticAccessTokenSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 	ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
+	ShowProgrammaticAccessTokenByName(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
+	ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 }
 
 var _ Users = (*users)(nil)
@@ -738,8 +741,23 @@ func (v *users) RemoveProgrammaticAccessToken(ctx context.Context, request *Remo
 	return v.client.UserProgrammaticAccessTokens.Remove(ctx, request)
 }
 
+func (v *users) RemoveProgrammaticAccessTokenSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
+	removeProgrammaticAccessToken := func() error {
+		return v.RemoveProgrammaticAccessToken(ctx, request)
+	}
+	return SafeRemoveProgrammaticAccessToken(v.client, removeProgrammaticAccessToken, ctx, request.UserName)
+}
+
 func (v *users) ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error) {
 	return v.client.UserProgrammaticAccessTokens.Show(ctx, request)
+}
+
+func (v *users) ShowProgrammaticAccessTokenByName(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
+	return v.client.UserProgrammaticAccessTokens.ShowByID(ctx, userId, tokenName)
+}
+
+func (v *users) ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
+	return SafeShowProgrammaticAccessTokenByName(v.client, v.ShowProgrammaticAccessTokenByName, ctx, userId, tokenName)
 }
 
 type SecondaryRolesOption string
