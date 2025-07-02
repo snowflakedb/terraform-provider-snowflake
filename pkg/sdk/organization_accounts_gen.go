@@ -9,6 +9,10 @@ type OrganizationAccounts interface {
 	Create(ctx context.Context, request *CreateOrganizationAccountRequest) error
 	Alter(ctx context.Context, request *AlterOrganizationAccountRequest) error
 	Show(ctx context.Context, request *ShowOrganizationAccountRequest) ([]OrganizationAccount, error)
+	// ShowParameters added manually
+	ShowParameters(ctx context.Context) ([]*Parameter, error)
+	// UnsetAllParameters added manually
+	UnsetAllParameters(ctx context.Context) error
 }
 
 // CreateOrganizationAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-organization-account.

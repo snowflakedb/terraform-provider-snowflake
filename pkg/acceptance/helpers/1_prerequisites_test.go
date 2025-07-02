@@ -75,6 +75,14 @@ func (m *mockOrganizationAccounts) Alter(ctx context.Context, request *sdk.Alter
 	return nil
 }
 
+func (m *mockOrganizationAccounts) ShowParameters(ctx context.Context) ([]*sdk.Parameter, error) {
+	return nil, nil
+}
+
+func (m *mockOrganizationAccounts) UnsetAllParameters(ctx context.Context) error {
+	return nil
+}
+
 func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 	accountLocator := "ABC123123"
 	anotherAccountLocator := "DEF456456"
