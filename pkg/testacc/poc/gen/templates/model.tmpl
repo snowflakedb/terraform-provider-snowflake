@@ -1,0 +1,7 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testacc/poc/gen.PluginFrameworkProviderModel*/ -}}
+
+type pluginFrameworkPocProviderModelV0 struct {
+{{- range .ModelFields }}
+    {{ .StructName }} {{ .PluginFrameworkSchemaType }} `tfsdk:"{{ .TfsdkTagValue }}"`
+{{- end }}
+}

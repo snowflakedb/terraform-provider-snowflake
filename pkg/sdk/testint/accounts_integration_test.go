@@ -28,8 +28,7 @@ func TestInt_Account(t *testing.T) {
 	ctx := testContext(t)
 	currentAccountId := testClientHelper().Context.CurrentAccountId(t)
 	currentAccountName := currentAccountId.AccountName()
-	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
-	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", currentAccountId.OrganizationName())
+	defaultConsumptionBillingEntity := testClientHelper().Context.DefaultConsumptionBillingEntity(t).Name()
 
 	assertAccountQueriedByOrgAdmin := func(t *testing.T, account sdk.Account, accountName string) {
 		t.Helper()
@@ -805,129 +804,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterWeekOfYearPolicy), "1")
 		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterWeekStart), "1")
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				Parameters: &sdk.AccountParametersUnset{
-					AbortDetachedQuery:                               sdk.Bool(true),
-					ActivePythonProfiler:                             sdk.Bool(true),
-					AllowClientMFACaching:                            sdk.Bool(true),
-					AllowIDToken:                                     sdk.Bool(true),
-					Autocommit:                                       sdk.Bool(true),
-					BaseLocationPrefix:                               sdk.Bool(true),
-					BinaryInputFormat:                                sdk.Bool(true),
-					BinaryOutputFormat:                               sdk.Bool(true),
-					Catalog:                                          sdk.Bool(true),
-					CatalogSync:                                      sdk.Bool(true),
-					ClientEnableLogInfoStatementParameters:           sdk.Bool(true),
-					ClientEncryptionKeySize:                          sdk.Bool(true),
-					ClientMemoryLimit:                                sdk.Bool(true),
-					ClientMetadataRequestUseConnectionCtx:            sdk.Bool(true),
-					ClientMetadataUseSessionDatabase:                 sdk.Bool(true),
-					ClientPrefetchThreads:                            sdk.Bool(true),
-					ClientResultChunkSize:                            sdk.Bool(true),
-					ClientResultColumnCaseInsensitive:                sdk.Bool(true),
-					ClientSessionKeepAlive:                           sdk.Bool(true),
-					ClientSessionKeepAliveHeartbeatFrequency:         sdk.Bool(true),
-					ClientTimestampTypeMapping:                       sdk.Bool(true),
-					CortexEnabledCrossRegion:                         sdk.Bool(true),
-					CortexModelsAllowlist:                            sdk.Bool(true),
-					CsvTimestampFormat:                               sdk.Bool(true),
-					DataRetentionTimeInDays:                          sdk.Bool(true),
-					DateInputFormat:                                  sdk.Bool(true),
-					DateOutputFormat:                                 sdk.Bool(true),
-					DefaultDDLCollation:                              sdk.Bool(true),
-					DefaultNotebookComputePoolCpu:                    sdk.Bool(true),
-					DefaultNotebookComputePoolGpu:                    sdk.Bool(true),
-					DefaultNullOrdering:                              sdk.Bool(true),
-					DefaultStreamlitNotebookWarehouse:                sdk.Bool(true),
-					DisableUiDownloadButton:                          sdk.Bool(true),
-					DisableUserPrivilegeGrants:                       sdk.Bool(true),
-					EnableAutomaticSensitiveDataClassificationLog:    sdk.Bool(true),
-					EnableEgressCostOptimizer:                        sdk.Bool(true),
-					EnableIdentifierFirstLogin:                       sdk.Bool(true),
-					EnableInternalStagesPrivatelink:                  sdk.Bool(true),
-					EnableTriSecretAndRekeyOptOutForImageRepository:  sdk.Bool(true),
-					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: sdk.Bool(true),
-					EnableUnhandledExceptionsReporting:               sdk.Bool(true),
-					EnableUnloadPhysicalTypeOptimization:             sdk.Bool(true),
-					EnableUnredactedQuerySyntaxError:                 sdk.Bool(true),
-					EnableUnredactedSecureObjectError:                sdk.Bool(true),
-					EnforceNetworkRulesForInternalStages:             sdk.Bool(true),
-					ErrorOnNondeterministicMerge:                     sdk.Bool(true),
-					ErrorOnNondeterministicUpdate:                    sdk.Bool(true),
-					EventTable:                                       sdk.Bool(true),
-					ExternalOAuthAddPrivilegedRolesToBlockedList:     sdk.Bool(true),
-					ExternalVolume:                                   sdk.Bool(true),
-					GeographyOutputFormat:                            sdk.Bool(true),
-					GeometryOutputFormat:                             sdk.Bool(true),
-					HybridTableLockTimeout:                           sdk.Bool(true),
-					InitialReplicationSizeLimitInTB:                  sdk.Bool(true),
-					JdbcTreatDecimalAsInt:                            sdk.Bool(true),
-					JdbcTreatTimestampNtzAsUtc:                       sdk.Bool(true),
-					JdbcUseSessionTimezone:                           sdk.Bool(true),
-					JsonIndent:                                       sdk.Bool(true),
-					JsTreatIntegerAsBigInt:                           sdk.Bool(true),
-					ListingAutoFulfillmentReplicationRefreshSchedule: sdk.Bool(true),
-					LockTimeout:                                      sdk.Bool(true),
-					LogLevel:                                         sdk.Bool(true),
-					MaxConcurrencyLevel:                              sdk.Bool(true),
-					MaxDataExtensionTimeInDays:                       sdk.Bool(true),
-					MetricLevel:                                      sdk.Bool(true),
-					MinDataRetentionTimeInDays:                       sdk.Bool(true),
-					MultiStatementCount:                              sdk.Bool(true),
-					NetworkPolicy:                                    sdk.Bool(true),
-					NoorderSequenceAsDefault:                         sdk.Bool(true),
-					OAuthAddPrivilegedRolesToBlockedList:             sdk.Bool(true),
-					OdbcTreatDecimalAsInt:                            sdk.Bool(true),
-					PeriodicDataRekeying:                             sdk.Bool(true),
-					PipeExecutionPaused:                              sdk.Bool(true),
-					PreventUnloadToInlineURL:                         sdk.Bool(true),
-					PreventUnloadToInternalStages:                    sdk.Bool(true),
-					PythonProfilerModules:                            sdk.Bool(true),
-					PythonProfilerTargetStage:                        sdk.Bool(true),
-					QueryTag:                                         sdk.Bool(true),
-					QuotedIdentifiersIgnoreCase:                      sdk.Bool(true),
-					ReplaceInvalidCharacters:                         sdk.Bool(true),
-					RequireStorageIntegrationForStageCreation:        sdk.Bool(true),
-					RequireStorageIntegrationForStageOperation:       sdk.Bool(true),
-					RowsPerResultset:                                 sdk.Bool(true),
-					S3StageVpceDnsName:                               sdk.Bool(true),
-					SamlIdentityProvider:                             sdk.Bool(true),
-					SearchPath:                                       sdk.Bool(true),
-					ServerlessTaskMaxStatementSize:                   sdk.Bool(true),
-					ServerlessTaskMinStatementSize:                   sdk.Bool(true),
-					SimulatedDataSharingConsumer:                     sdk.Bool(true),
-					SsoLoginPage:                                     sdk.Bool(true),
-					StatementQueuedTimeoutInSeconds:                  sdk.Bool(true),
-					StatementTimeoutInSeconds:                        sdk.Bool(true),
-					StorageSerializationPolicy:                       sdk.Bool(true),
-					StrictJsonOutput:                                 sdk.Bool(true),
-					SuspendTaskAfterNumFailures:                      sdk.Bool(true),
-					TaskAutoRetryAttempts:                            sdk.Bool(true),
-					TimestampDayIsAlways24h:                          sdk.Bool(true),
-					TimestampInputFormat:                             sdk.Bool(true),
-					TimestampLtzOutputFormat:                         sdk.Bool(true),
-					TimestampNtzOutputFormat:                         sdk.Bool(true),
-					TimestampOutputFormat:                            sdk.Bool(true),
-					TimestampTypeMapping:                             sdk.Bool(true),
-					TimestampTzOutputFormat:                          sdk.Bool(true),
-					Timezone:                                         sdk.Bool(true),
-					TimeInputFormat:                                  sdk.Bool(true),
-					TimeOutputFormat:                                 sdk.Bool(true),
-					TraceLevel:                                       sdk.Bool(true),
-					TransactionAbortOnError:                          sdk.Bool(true),
-					TransactionDefaultIsolationLevel:                 sdk.Bool(true),
-					TwoDigitCenturyStart:                             sdk.Bool(true),
-					UnsupportedDdlAction:                             sdk.Bool(true),
-					UserTaskManagedInitialWarehouseSize:              sdk.Bool(true),
-					UserTaskMinimumTriggerIntervalInSeconds:          sdk.Bool(true),
-					UserTaskTimeoutMs:                                sdk.Bool(true),
-					UseCachedResult:                                  sdk.Bool(true),
-					WeekOfYearPolicy:                                 sdk.Bool(true),
-					WeekStart:                                        sdk.Bool(true),
-				},
-			},
-		})
+		err = client.Accounts.UnsetAllParameters(ctx)
 		require.NoError(t, err)
 
 		parameters, err = client.Accounts.ShowParameters(ctx)
@@ -1003,58 +880,32 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
 		t.Cleanup(packagesPolicyCleanup)
 
+		t.Cleanup(func() {
+			err := client.Accounts.UnsetAllPoliciesSafely(ctx)
+			assert.NoError(t, err)
+			assertThatNoPolicyIsSetOnAccount(t)
+		})
+
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
 		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}}))
-		})
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
 		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}}))
-		})
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
 		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}}))
-		})
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
 		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PasswordPolicy: sdk.Bool(true)}}))
-		})
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
 		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{SessionPolicy: sdk.Bool(true)}}))
-		})
 
 		assertThatPolicyIsSetOnAccount(t, featurePolicyId)
 		assertThatPolicyIsSetOnAccount(t, authPolicy.ID())
 		assertThatPolicyIsSetOnAccount(t, passwordPolicy.ID())
 		assertThatPolicyIsSetOnAccount(t, sessionPolicy.ID())
 		assertThatPolicyIsSetOnAccount(t, packagesPolicyId)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}})
-		require.NoError(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}})
-		require.NoError(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PasswordPolicy: sdk.Bool(true)}})
-		require.NoError(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{SessionPolicy: sdk.Bool(true)}})
-		require.NoError(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}})
-		require.NoError(t, err)
-
-		assertThatNoPolicyIsSetOnAccount(t)
 	})
 
 	t.Run("force new packages policy", func(t *testing.T) {
@@ -1105,5 +956,217 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}, Force: sdk.Bool(true)}})
 		require.NoError(t, err)
 		assertThatPolicyIsSetOnAccount(t, newFeaturePolicyId)
+	})
+
+	t.Run("unset policy safely", func(t *testing.T) {
+		authenticationPolicy, authenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authenticationPolicyCleanup)
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}})
+		assert.ErrorContains(t, err, fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", sdk.PolicyKindAuthenticationPolicy))
+
+		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
+		assert.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authenticationPolicy.ID())}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, authenticationPolicy.ID())
+
+		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
+		assert.NoError(t, err)
+		assertThatNoPolicyIsSetOnAccount(t)
+	})
+
+	t.Run("unset all", func(t *testing.T) {
+		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authPolicyCleanup)
+
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
+		passwordPolicy, passwordPolicyCleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
+		t.Cleanup(passwordPolicyCleanup)
+
+		sessionPolicy, sessionPolicyCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
+		t.Cleanup(sessionPolicyCleanup)
+
+		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
+		t.Cleanup(packagesPolicyCleanup)
+
+		warehouseId := testClientHelper().Ids.WarehouseId()
+
+		eventTable, eventTableCleanup := testClientHelper().EventTable.Create(t)
+		t.Cleanup(eventTableCleanup)
+
+		externalVolumeId, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
+		t.Cleanup(externalVolumeCleanup)
+
+		createNetworkPolicyRequest := sdk.NewCreateNetworkPolicyRequest(testClientHelper().Ids.RandomAccountObjectIdentifier()).WithAllowedIpList([]sdk.IPRequest{*sdk.NewIPRequest("0.0.0.0/0")})
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, createNetworkPolicyRequest)
+		t.Cleanup(networkPolicyCleanup)
+
+		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
+		t.Cleanup(stageCleanup)
+
+		t.Cleanup(func() {
+			err := client.Accounts.UnsetAllPoliciesSafely(ctx)
+			assert.NoError(t, err)
+			err = client.Accounts.UnsetAllParameters(ctx)
+			require.NoError(t, err)
+		})
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
+		require.NoError(t, err)
+
+		// TODO(SNOW-2138715): Test all parameters, the following parameters were not tested due to more complex setup:
+		// - ActivePythonProfiler
+		// - CatalogSync
+		// - EnableInternalStagesPrivatelink
+		// - PythonProfilerModules
+		// - S3StageVpceDnsName
+		// - SamlIdentityProvider
+		// - SimulatedDataSharingConsumer
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Set: &sdk.AccountSet{
+				Parameters: &sdk.AccountParameters{
+					AbortDetachedQuery:                               sdk.Bool(true),
+					AllowClientMFACaching:                            sdk.Bool(true),
+					AllowIDToken:                                     sdk.Bool(true),
+					Autocommit:                                       sdk.Bool(false),
+					BaseLocationPrefix:                               sdk.String("STORAGE_BASE_URL/"),
+					BinaryInputFormat:                                sdk.Pointer(sdk.BinaryInputFormatBase64),
+					BinaryOutputFormat:                               sdk.Pointer(sdk.BinaryOutputFormatBase64),
+					Catalog:                                          sdk.String(helpers.TestDatabaseCatalog.Name()),
+					ClientEnableLogInfoStatementParameters:           sdk.Bool(true),
+					ClientEncryptionKeySize:                          sdk.Int(256),
+					ClientMemoryLimit:                                sdk.Int(1540),
+					ClientMetadataRequestUseConnectionCtx:            sdk.Bool(true),
+					ClientMetadataUseSessionDatabase:                 sdk.Bool(true),
+					ClientPrefetchThreads:                            sdk.Int(5),
+					ClientResultChunkSize:                            sdk.Int(159),
+					ClientResultColumnCaseInsensitive:                sdk.Bool(true),
+					ClientSessionKeepAlive:                           sdk.Bool(true),
+					ClientSessionKeepAliveHeartbeatFrequency:         sdk.Int(3599),
+					ClientTimestampTypeMapping:                       sdk.Pointer(sdk.ClientTimestampTypeMappingNtz),
+					CortexEnabledCrossRegion:                         sdk.String("ANY_REGION"),
+					CortexModelsAllowlist:                            sdk.String("All"),
+					CsvTimestampFormat:                               sdk.String("YYYY-MM-DD"),
+					DataRetentionTimeInDays:                          sdk.Int(2),
+					DateInputFormat:                                  sdk.String("YYYY-MM-DD"),
+					DateOutputFormat:                                 sdk.String("YYYY-MM-DD"),
+					DefaultDDLCollation:                              sdk.String("en-cs"),
+					DefaultNotebookComputePoolCpu:                    sdk.String("CPU_X64_S"),
+					DefaultNotebookComputePoolGpu:                    sdk.String("GPU_NV_S"),
+					DefaultNullOrdering:                              sdk.Pointer(sdk.DefaultNullOrderingFirst),
+					DefaultStreamlitNotebookWarehouse:                sdk.Pointer(warehouseId),
+					DisableUiDownloadButton:                          sdk.Bool(true),
+					DisableUserPrivilegeGrants:                       sdk.Bool(true),
+					EnableAutomaticSensitiveDataClassificationLog:    sdk.Bool(false),
+					EnableEgressCostOptimizer:                        sdk.Bool(false),
+					EnableIdentifierFirstLogin:                       sdk.Bool(false),
+					EnableTriSecretAndRekeyOptOutForImageRepository:  sdk.Bool(true),
+					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: sdk.Bool(true),
+					EnableUnhandledExceptionsReporting:               sdk.Bool(false),
+					EnableUnloadPhysicalTypeOptimization:             sdk.Bool(false),
+					EnableUnredactedQuerySyntaxError:                 sdk.Bool(true),
+					EnableUnredactedSecureObjectError:                sdk.Bool(true),
+					EnforceNetworkRulesForInternalStages:             sdk.Bool(true),
+					ErrorOnNondeterministicMerge:                     sdk.Bool(false),
+					ErrorOnNondeterministicUpdate:                    sdk.Bool(true),
+					EventTable:                                       sdk.Pointer(eventTable.ID()),
+					ExternalOAuthAddPrivilegedRolesToBlockedList:     sdk.Bool(false),
+					ExternalVolume:                                   sdk.Pointer(externalVolumeId),
+					GeographyOutputFormat:                            sdk.Pointer(sdk.GeographyOutputFormatWKT),
+					GeometryOutputFormat:                             sdk.Pointer(sdk.GeometryOutputFormatWKT),
+					HybridTableLockTimeout:                           sdk.Int(3599),
+					InitialReplicationSizeLimitInTB:                  sdk.String("9.9"),
+					JdbcTreatDecimalAsInt:                            sdk.Bool(false),
+					JdbcTreatTimestampNtzAsUtc:                       sdk.Bool(true),
+					JdbcUseSessionTimezone:                           sdk.Bool(false),
+					JsonIndent:                                       sdk.Int(4),
+					JsTreatIntegerAsBigInt:                           sdk.Bool(true),
+					ListingAutoFulfillmentReplicationRefreshSchedule: sdk.String("2 minutes"),
+					LockTimeout:                                      sdk.Int(43201),
+					LogLevel:                                         sdk.Pointer(sdk.LogLevelInfo),
+					MaxConcurrencyLevel:                              sdk.Int(7),
+					MaxDataExtensionTimeInDays:                       sdk.Int(13),
+					MetricLevel:                                      sdk.Pointer(sdk.MetricLevelAll),
+					MinDataRetentionTimeInDays:                       sdk.Int(1),
+					MultiStatementCount:                              sdk.Int(0),
+					NetworkPolicy:                                    sdk.Pointer(networkPolicy.ID()),
+					NoorderSequenceAsDefault:                         sdk.Bool(false),
+					OAuthAddPrivilegedRolesToBlockedList:             sdk.Bool(false),
+					OdbcTreatDecimalAsInt:                            sdk.Bool(true),
+					PeriodicDataRekeying:                             sdk.Bool(false),
+					PipeExecutionPaused:                              sdk.Bool(true),
+					PreventUnloadToInlineURL:                         sdk.Bool(true),
+					PreventUnloadToInternalStages:                    sdk.Bool(true),
+					PythonProfilerTargetStage:                        sdk.Pointer(stage.ID()),
+					QueryTag:                                         sdk.String("test-query-tag"),
+					QuotedIdentifiersIgnoreCase:                      sdk.Bool(true),
+					ReplaceInvalidCharacters:                         sdk.Bool(true),
+					RequireStorageIntegrationForStageCreation:        sdk.Bool(true),
+					RequireStorageIntegrationForStageOperation:       sdk.Bool(true),
+					RowsPerResultset:                                 sdk.Int(1000),
+					SearchPath:                                       sdk.String("$current, $public"),
+					ServerlessTaskMaxStatementSize:                   sdk.Pointer(sdk.WarehouseSize("6X-LARGE")),
+					ServerlessTaskMinStatementSize:                   sdk.Pointer(sdk.WarehouseSizeSmall),
+					SsoLoginPage:                                     sdk.Bool(true),
+					StatementQueuedTimeoutInSeconds:                  sdk.Int(1),
+					StatementTimeoutInSeconds:                        sdk.Int(1),
+					StorageSerializationPolicy:                       sdk.Pointer(sdk.StorageSerializationPolicyOptimized),
+					StrictJsonOutput:                                 sdk.Bool(true),
+					SuspendTaskAfterNumFailures:                      sdk.Int(3),
+					TaskAutoRetryAttempts:                            sdk.Int(3),
+					TimestampDayIsAlways24h:                          sdk.Bool(true),
+					TimestampInputFormat:                             sdk.String("YYYY-MM-DD"),
+					TimestampLtzOutputFormat:                         sdk.String("YYYY-MM-DD"),
+					TimestampNtzOutputFormat:                         sdk.String("YYYY-MM-DD"),
+					TimestampOutputFormat:                            sdk.String("YYYY-MM-DD"),
+					TimestampTypeMapping:                             sdk.Pointer(sdk.TimestampTypeMappingLtz),
+					TimestampTzOutputFormat:                          sdk.String("YYYY-MM-DD"),
+					Timezone:                                         sdk.String("Europe/London"),
+					TimeInputFormat:                                  sdk.String("YYYY-MM-DD"),
+					TimeOutputFormat:                                 sdk.String("YYYY-MM-DD"),
+					TraceLevel:                                       sdk.Pointer(sdk.TraceLevelPropagate),
+					TransactionAbortOnError:                          sdk.Bool(true),
+					TransactionDefaultIsolationLevel:                 sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
+					TwoDigitCenturyStart:                             sdk.Int(1971),
+					UnsupportedDdlAction:                             sdk.Pointer(sdk.UnsupportedDDLActionFail),
+					UserTaskManagedInitialWarehouseSize:              sdk.Pointer(sdk.WarehouseSizeX6Large),
+					UserTaskMinimumTriggerIntervalInSeconds:          sdk.Int(10),
+					UserTaskTimeoutMs:                                sdk.Int(10),
+					UseCachedResult:                                  sdk.Bool(false),
+					WeekOfYearPolicy:                                 sdk.Int(1),
+					WeekStart:                                        sdk.Int(1),
+				},
+			},
+		})
+		require.NoError(t, err)
+
+		err = client.Accounts.UnsetAll(ctx)
+		require.NoError(t, err)
+
+		parameters, err := client.Accounts.ShowParameters(ctx)
+		require.NoError(t, err)
+		require.NotEmpty(t, parameters)
+
+		for _, parameter := range sdk.AllAccountParameters {
+			assertParameterIsDefault(t, parameters, string(parameter))
+		}
+
+		assertThatNoPolicyIsSetOnAccount(t)
 	})
 }

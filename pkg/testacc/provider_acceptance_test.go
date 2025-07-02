@@ -967,6 +967,38 @@ func TestAcc_Provider_SnowflakeAuth(t *testing.T) {
 	})
 }
 
+func TestAcc_Provider_ProgrammaticAccessTokenAuth(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
+	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
+
+	userWithPatAsPasswordConfig := testClient().TempTomlConfigForServiceUserWithPatAsPassword(t, userWithPat)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Authenticate with PROGRAMMATIC_ACCESS_TOKEN authenticator and PAT passed in token field
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile), datasourceModel()),
+			},
+			// Authenticate with the default authenticator and PAT passed in password field
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, userWithPatAsPasswordConfig.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatAsPasswordConfig.Profile), datasourceModel()),
+			},
+		},
+	})
+}
+
 func TestAcc_Provider_invalidConfigurations(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 

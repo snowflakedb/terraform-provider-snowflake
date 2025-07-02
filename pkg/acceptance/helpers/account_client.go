@@ -93,8 +93,11 @@ func (c *AccountClient) CreateWithRequest(t *testing.T, id sdk.AccountObjectIden
 
 func (c *AccountClient) Alter(t *testing.T, opts *sdk.AlterAccountOptions) {
 	t.Helper()
-	revertRole := c.UseOrgadmin(t)
-	defer revertRole()
+	// Only alters that change other accounts (which require passing account name) require the ORGADMIN role.
+	if opts.Name != nil {
+		revertRole := c.UseOrgadmin(t)
+		defer revertRole()
+	}
 	err := c.client().Alter(context.Background(), opts)
 	require.NoError(t, err)
 }

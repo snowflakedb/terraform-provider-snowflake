@@ -92,13 +92,26 @@ You must fulfill the following prerequisites to generate and use programmatic ac
 - [Authentication policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-authentication)
 
 To generate PAT, you use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
-It will generate a new token and return it in the output console. To use it in the provider,
-follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
+It will generate a new token and return it in the output console. To use it in the provider, you have the following options:
+- Follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
 but instead of password, use the generated token.
+- Use the `PROGRAMMATIC_ACCESS_TOKEN` authenticator and pass the generated token in the `token` field, like:
+```terraform
+provider "snowflake" {
+  organization_name = "<organization_name>"
+  account_name      = "<account_name>"
+  user              = "<user_name>"
+  authenticator     = "PROGRAMMATIC_ACCESS_TOKEN"
+  token             = var.token
+}
+
+variable "token" {
+  type      = string
+  sensitive = true
+}
+```
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more information on PAT authentication.
-
-> Note: Currently, PAT authentication is not natively supported by the provider (only through default Snowflake authenticator), but it's planned to be fully supported in the future (see [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#pat-support)).
 
 ### JWT authenticator flow
 

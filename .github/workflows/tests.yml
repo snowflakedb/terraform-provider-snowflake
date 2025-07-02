@@ -31,7 +31,6 @@ jobs:
               - 'framework/**'
               - 'tools/**'
               - 'Makefile'
-              - 'CHANGELOG.md'
               - 'main.go'
               - 'go.mod'
 
