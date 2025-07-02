@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -71,9 +70,19 @@ func (c *InformationSchemaClient) mapQueryHistory(t *testing.T, queryResult map[
 
 func (c *InformationSchemaClient) GetFunctionDataType(t *testing.T, functionId sdk.SchemaObjectIdentifierWithArguments) string {
 	t.Helper()
+	return c.getDataType(t, functionId, "FUNCTIONS", "function_name")
+}
 
-	viewId := sdk.NewSchemaObjectIdentifier(functionId.DatabaseName(), "INFORMATION_SCHEMA", "FUNCTIONS")
-	rows, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf(`SELECT DATA_TYPE FROM %s WHERE function_name = '%s'`, viewId.FullyQualifiedName(), functionId.Name()))
+func (c *InformationSchemaClient) GetProcedureDataType(t *testing.T, procedureId sdk.SchemaObjectIdentifierWithArguments) string {
+	t.Helper()
+	return c.getDataType(t, procedureId, "PROCEDURES", "procedure_name")
+}
+
+func (c *InformationSchemaClient) getDataType(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments, viewName string, nameString string) string {
+	t.Helper()
+
+	viewId := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), "INFORMATION_SCHEMA", viewName)
+	rows, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf(`SELECT DATA_TYPE FROM %s WHERE %s = '%s'`, viewId.FullyQualifiedName(), nameString, id.Name()))
 	require.NoError(t, err)
 	require.Len(t, rows, 1)
 

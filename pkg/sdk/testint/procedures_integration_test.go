@@ -2332,6 +2332,121 @@ def filter_by_role(session, table_name, role):
 			assert.Equal(t, dataType.Canonical(), pairs["returns"])
 		})
 	}
+
+	// This test differs from the previous one in the Snowflake interaction. In the previous one we use our hardcoded defaults, in this one, we pass explicit data types to Snowflake.
+	for _, tc := range []struct {
+		input                           string
+		expectedShowValue               string
+		expectedDescribeReturnsOverride string
+	}{
+		{input: "NUMBER", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(38)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(38,0)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(36)", expectedShowValue: "NUMBER(36,0)"},
+		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER(36,2)"},
+		{input: "DECIMAL", expectedShowValue: "NUMBER"},
+		{input: "VARCHAR", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
+		{input: "TEXT", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
+		{input: "CHAR", expectedShowValue: "VARCHAR(1)"},
+		{input: "BINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
+		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
+	} {
+		tc := tc
+		t.Run(fmt.Sprintf("procedure returns after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
+			procName := "add"
+			argName := "A"
+			dataType, err := datatypes.ParseDataType(tc.input)
+			require.NoError(t, err)
+
+			// we fall back to the direct data type specification on purpose
+			explicitDataType := sdk.DataType(tc.input)
+
+			args := []sdk.ProcedureArgumentRequest{
+				*sdk.NewProcedureArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
+			}
+			idWithArguments := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+
+			packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
+			definition := fmt.Sprintf("def add(%[1]s): %[1]s", argName)
+
+			err = client.Procedures.CreateForPython(ctx, sdk.NewCreateForPythonProcedureRequest(
+				idWithArguments.SchemaObjectId(),
+				*sdk.NewProcedureReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
+				testvars.PythonRuntime,
+				packages,
+				procName,
+			).
+				WithArguments(args).
+				WithProcedureDefinitionWrapped(definition),
+			)
+			require.NoError(t, err)
+
+			procedure, err := client.Procedures.ShowByID(ctx, idWithArguments)
+			require.NoError(t, err)
+			assert.Equal(t, []sdk.DataType{sdk.DataType(tc.expectedShowValue)}, procedure.ArgumentsOld)
+			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", idWithArguments.Name(), tc.expectedShowValue), procedure.ArgumentsRaw)
+
+			details, err := client.Procedures.Describe(ctx, idWithArguments)
+			require.NoError(t, err)
+			pairs := make(map[string]string)
+			for _, detail := range details {
+				pairs[detail.Property] = *detail.Value
+			}
+			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, sdk.LegacyDataTypeFrom(dataType)), pairs["signature"])
+			if tc.expectedDescribeReturnsOverride != "" {
+				assert.Equal(t, tc.expectedDescribeReturnsOverride, pairs["returns"])
+			} else {
+				assert.Equal(t, dataType.Canonical(), pairs["returns"])
+			}
+		})
+	}
+
+	for _, tc := range []struct {
+		input        string
+		expectedSize string
+	}{
+		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength)},
+		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize)},
+	} {
+		tc := tc
+		t.Run(fmt.Sprintf("procedure default data types after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
+			procName := "add"
+			argName := "A"
+			dataType, err := datatypes.ParseDataType(tc.input)
+			require.NoError(t, err)
+
+			// we fall back to the direct data type specification on purpose
+			explicitDataType := sdk.DataType(tc.input)
+
+			args := []sdk.ProcedureArgumentRequest{
+				*sdk.NewProcedureArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
+			}
+			idWithArguments := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+
+			packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
+			definition := fmt.Sprintf("def add(%[1]s): %[1]s", argName)
+
+			err = client.Procedures.CreateForPython(ctx, sdk.NewCreateForPythonProcedureRequest(
+				idWithArguments.SchemaObjectId(),
+				*sdk.NewProcedureReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
+				testvars.PythonRuntime,
+				packages,
+				procName,
+			).
+				WithArguments(args).
+				WithProcedureDefinitionWrapped(definition),
+			)
+			require.NoError(t, err)
+
+			returnDataTypeFromInformationSchema := testClientHelper().InformationSchema.GetProcedureDataType(t, idWithArguments)
+
+			require.Equal(t, tc.expectedSize, returnDataTypeFromInformationSchema)
+		})
+	}
 }
 
 func TestInt_CallProcedure(t *testing.T) {
