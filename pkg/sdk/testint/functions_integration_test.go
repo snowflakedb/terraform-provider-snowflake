@@ -2005,6 +2005,7 @@ func TestInt_Functions(t *testing.T) {
 	//    - it's generalized for other types.
 	//  - if defaults are used it's generalized for all types.
 	// FOR DESCRIBE, data type is generalized for argument and works weirdly for the return type: type is generalized to the canonical one, but we also get the attributes.
+	// Not on defaults changed in 2025_03 Bundle: our logic still uses the hardcoded defaults, that's why in this test VARCHAR and BINARY return the type with sizes.
 	for _, tc := range []struct {
 		input             string
 		expectedShowValue string
@@ -2016,14 +2017,17 @@ func TestInt_Functions(t *testing.T) {
 		{"INTEGER", "NUMBER"},
 		{"FLOAT", "FLOAT"},
 		{"DOUBLE", "FLOAT"},
-		{"VARCHAR", "VARCHAR"},
+		{"VARCHAR", fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
 		{"VARCHAR(20)", "VARCHAR(20)"},
+		{fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), "VARCHAR"},
 		{"CHAR", "VARCHAR(1)"},
 		{"CHAR(10)", "VARCHAR(10)"},
-		{"TEXT", "VARCHAR"},
-		{"BINARY", "BINARY"},
+		{"TEXT", fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
+		{"BINARY", fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
 		{"BINARY(1000)", "BINARY(1000)"},
-		{"VARBINARY", "BINARY"},
+		{fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
+		{fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), "BINARY"},
+		{"VARBINARY", fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
 		{"BOOLEAN", "BOOLEAN"},
 		{"DATE", "DATE"},
 		{"DATETIME", "TIMESTAMP_NTZ"},
@@ -2077,6 +2081,76 @@ func TestInt_Functions(t *testing.T) {
 			}
 			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, oldDataType), pairs["signature"])
 			assert.Equal(t, dataType.Canonical(), pairs["returns"])
+		})
+	}
+
+	// This test differs from the previous one in the Snowflake interaction. In the previous one we use our hardcoded defaults, in this one, we pass explicit data types to Snowflake.
+	for _, tc := range []struct {
+		input                           string
+		expectedShowValue               string
+		expectedDescribeReturnsOverride string
+	}{
+		{input: "NUMBER", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(38)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(38,0)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(36)", expectedShowValue: "NUMBER(36,0)"},
+		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER(36,2)"},
+		{input: "DECIMAL", expectedShowValue: "NUMBER"},
+		{input: "VARCHAR", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
+		{input: "TEXT", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
+		{input: "CHAR", expectedShowValue: "VARCHAR(1)"},
+		{input: "BINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
+		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
+	} {
+		tc := tc
+		t.Run(fmt.Sprintf("function returns after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
+			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			argName := "A"
+			funcName := "identity"
+			dataType, err := datatypes.ParseDataType(tc.input)
+			require.NoError(t, err)
+
+			// we fall back to the direct data type specification on purpose
+			explicitDataType := sdk.DataType(tc.input)
+
+			args := []sdk.FunctionArgumentRequest{
+				*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
+			}
+
+			err = client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
+				id,
+				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
+				testvars.PythonRuntime,
+				funcName,
+			).
+				WithArguments(args).
+				WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
+			)
+			require.NoError(t, err)
+
+			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
+
+			function, err := client.Functions.ShowByID(ctx, idWithArguments)
+			require.NoError(t, err)
+			assert.Equal(t, []sdk.DataType{sdk.DataType(tc.expectedShowValue)}, function.ArgumentsOld)
+			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), tc.expectedShowValue), function.ArgumentsRaw)
+
+			details, err := client.Functions.Describe(ctx, idWithArguments)
+			require.NoError(t, err)
+			pairs := make(map[string]string)
+			for _, detail := range details {
+				pairs[detail.Property] = *detail.Value
+			}
+			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, sdk.LegacyDataTypeFrom(dataType)), pairs["signature"])
+			if tc.expectedDescribeReturnsOverride != "" {
+				assert.Equal(t, tc.expectedDescribeReturnsOverride, pairs["returns"])
+			} else {
+				assert.Equal(t, dataType.Canonical(), pairs["returns"])
+			}
 		})
 	}
 
