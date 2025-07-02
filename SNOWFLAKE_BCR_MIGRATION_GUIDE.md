@@ -1,10 +1,10 @@
 # Snowflake BCR migration guide
 
-This document is meant to help you migrate your Terraform config after applying a certain [Snowflake BCR Bundle](https://docs.snowflake.com/en/release-notes/behavior-changes). 
+This document is meant to help you migrate your Terraform config after applying one of the upcoming [Snowflake BCR Bundle](https://docs.snowflake.com/en/release-notes/behavior-changes). 
 Some of the breaking changes on Snowflake side may be not compatible with the current version of the Terraform provider, so you may need to update your Terraform config to adapt to the new behavior.
 Also, some changes may require you to update your Terraform provider version to the latest one as the changes had to be applied internally.
 We advise you to always use the latest version of the provider to avoid any issues and follow [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md) when migrating to newer versions.
-According to the [Bundle Lifecycle](https://docs.snowflake.com/en/release-notes/intro-bcr-releases#bundle-lifecycle), changes are eventually enabled by default without the possibility to disable them, so it's important to know what is going to be introduced.
+According to the [Bundle Lifecycle](https://docs.snowflake.com/en/release-notes/intro-bcr-releases#bundle-lifecycle), changes are eventually enabled by default without the possibility to disable them, so it's important to know what is going to be introduced beforehand.
 If you would like to test the new behavior before it is enabled by default, you can use the [SYSTEM\$ENABLE_BEHAVIOR_CHANGE_BUNDLE](https://docs.snowflake.com/en/sql-reference/functions/system_enable_behavior_change_bundle)
 command to enable the bundle manually, and then the [SYSTEM\$DISABLE_BEHAVIOR_CHANGE_BUNDLE](https://docs.snowflake.com/en/sql-reference/functions/system_disable_behavior_change_bundle) command to disable it.
 
@@ -22,7 +22,7 @@ Reference: [BCR-1926](https://docs.snowflake.com/en/release-notes/bcr-bundles/20
 
 ### Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands
 
-(wip)
+(will be filled in soon)
 
 Reference: [BCR-1944](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03/bcr-1944)
 
