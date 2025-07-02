@@ -6,7 +6,11 @@ import (
 	"strings"
 )
 
-const DefaultBinarySize = 8388608
+const (
+	DefaultBinarySize = 8388608
+
+	MaxBinarySize = 67108864
+)
 
 // BinaryDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-text#data-types-for-binary-strings
 // It does have synonyms that allow specifying size.

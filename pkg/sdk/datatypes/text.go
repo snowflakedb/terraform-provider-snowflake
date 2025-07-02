@@ -10,6 +10,8 @@ import (
 const (
 	DefaultVarcharLength = 16777216
 	DefaultCharLength    = 1
+
+	MaxVarcharLength = 134217728
 )
 
 // TextDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-text#data-types-for-text-strings
