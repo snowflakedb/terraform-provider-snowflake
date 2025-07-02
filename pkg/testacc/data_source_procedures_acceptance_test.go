@@ -4,12 +4,17 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -70,4 +75,56 @@ data "snowflake_procedures" "procedures" {
   depends_on = [snowflake_procedure_java.p1, snowflake_procedure_java.p2]
 }
 `, functionsSetup, TestDatabaseName, TestSchemaName)
+}
+
+func TestAcc_Procedures_gh3822_bcr2025_03(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	schema, schemaCleanup := secondaryTestClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	_, procedureCleanup := secondaryTestClient().Procedure.CreatePythonInSchema(t, schema.ID())
+	t.Cleanup(procedureCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
+		WithPreviewFeaturesEnabled(string(previewfeatures.ProceduresDatasource))
+	proceduresModel := datasourcemodel.Procedures("test", schema.ID().DatabaseName(), schema.ID().Name())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.2.0"),
+				PreConfig: func() {
+					secondaryTestClient().BcrBundles.DisableBcrBundle(t, "2025_03")
+				},
+				Config: config.FromModels(t, providerModel, proceduresModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(proceduresModel.DatasourceReference(), "database", schema.ID().DatabaseName()),
+					resource.TestCheckResourceAttr(proceduresModel.DatasourceReference(), "schema", schema.ID().Name()),
+					resource.TestCheckResourceAttrSet(proceduresModel.DatasourceReference(), "procedures.#"),
+				),
+			},
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.2.0"),
+				PreConfig: func() {
+					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2025_03")
+				},
+				Config:      config.FromModels(t, providerModel, proceduresModel),
+				ExpectError: regexp.MustCompile("could not parse arguments"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, providerModel, proceduresModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(proceduresModel.DatasourceReference(), "database", schema.ID().DatabaseName()),
+					resource.TestCheckResourceAttr(proceduresModel.DatasourceReference(), "schema", schema.ID().Name()),
+					resource.TestCheckResourceAttrSet(proceduresModel.DatasourceReference(), "procedures.#"),
+				),
+			},
+		},
+	})
 }

@@ -107,7 +107,6 @@ func TestAcc_Functions_gh3822_bcr2025_03(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.FunctionJava),
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.2.0"),
