@@ -1,4 +1,4 @@
-package testacc
+package testfunctional
 
 import (
 	"context"
@@ -23,7 +23,6 @@ type someResourceModelV0 struct {
 }
 
 func (r *SomeResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
-	// TODO [mux-PR]: add method for this logic
 	response.TypeName = request.ProviderTypeName + "_some"
 }
 
@@ -39,7 +38,6 @@ func (r *SomeResource) Schema(_ context.Context, _ resource.SchemaRequest, respo
 				Computed:    true,
 				Description: "Identifier for this example resource.",
 				PlanModifiers: []planmodifier.String{
-					// TODO [mux-PR]: how it behaves with renames?
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
@@ -62,13 +60,10 @@ func (r *SomeResource) Create(ctx context.Context, request resource.CreateReques
 }
 
 func (r *SomeResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
-	// TODO [mux-PR]: implement
 }
 
 func (r *SomeResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
-	// TODO [mux-PR]: implement
 }
 
 func (r *SomeResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
-	// TODO [mux-PR]: implement
 }
