@@ -14,10 +14,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -82,21 +80,8 @@ func TestAcc_Functions_gh3822_bcr2025_03(t *testing.T) {
 	schema, schemaCleanup := secondaryTestClient().Schema.CreateSchema(t)
 	t.Cleanup(schemaCleanup)
 
-	funcName := "some_function"
-	argName := "x"
-	dataType := testdatatypes.DataTypeNumber_36_2
-
-	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schema.ID(), dataType)
-	definition := secondaryTestClient().Function.SamplePythonDefinition(t, funcName, argName)
-
-	dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
-	returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
-	argument := sdk.NewFunctionArgumentRequest(argName, dataType)
-	request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, funcName).
-		WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-		WithFunctionDefinitionWrapped(definition)
-
-	secondaryTestClient().Function.CreatePythonWithRequest(t, id, request)
+	_, functionCleanup := secondaryTestClient().Function.CreatePythonInSchema(t, schema.ID())
+	t.Cleanup(functionCleanup)
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
 		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionsDatasource))

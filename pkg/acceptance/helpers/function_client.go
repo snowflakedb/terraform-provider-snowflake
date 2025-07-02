@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/require"
@@ -139,18 +140,31 @@ func (c *FunctionClient) CreateJava(t *testing.T) (*sdk.Function, func()) {
 	return function, c.DropFunctionFunc(t, id)
 }
 
-func (c *FunctionClient) CreatePythonWithRequest(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments, req *sdk.CreateForPythonFunctionRequest) *sdk.Function {
+func (c *FunctionClient) CreatePythonInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.Function, func()) {
 	t.Helper()
 	ctx := context.Background()
-	err := c.client().CreateForPython(ctx, req)
-	require.NoError(t, err)
 
-	t.Cleanup(c.DropFunctionFunc(t, id))
+	dataType := testdatatypes.DataTypeNumber_36_2
+	id := c.ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
+
+	funcName := "some_function"
+	argName := "x"
+	definition := c.SamplePythonDefinition(t, funcName, argName)
+
+	dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
+	returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
+	argument := sdk.NewFunctionArgumentRequest(argName, dataType)
+	request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, funcName).
+		WithArguments([]sdk.FunctionArgumentRequest{*argument}).
+		WithFunctionDefinitionWrapped(definition)
+
+	err := c.client().CreateForPython(ctx, request)
+	require.NoError(t, err)
 
 	function, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 
-	return function
+	return function, c.DropFunctionFunc(t, id)
 }
 
 func (c *FunctionClient) CreateScalaStaged(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments, dataType datatypes.DataType, importPath string, handler string) (*sdk.Function, func()) {
