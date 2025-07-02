@@ -2154,6 +2154,44 @@ func TestInt_Functions(t *testing.T) {
 		})
 	}
 
+	for _, tc := range []struct {
+		input        string
+		expectedSize string
+	}{
+		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength)},
+		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize)},
+	} {
+		tc := tc
+		t.Run(fmt.Sprintf("function default data types after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
+			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			argName := "A"
+			funcName := "identity"
+
+			// we fall back to the direct data type specification on purpose
+			explicitDataType := sdk.DataType(tc.input)
+
+			args := []sdk.FunctionArgumentRequest{
+				*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
+			}
+
+			err := client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
+				id,
+				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
+				testvars.PythonRuntime,
+				funcName,
+			).
+				WithArguments(args).
+				WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
+			)
+			require.NoError(t, err)
+
+			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), explicitDataType)
+			returnDataTypeFromInformationSchema := testClientHelper().InformationSchema.GetFunctionDataType(t, idWithArguments)
+
+			require.Equal(t, tc.expectedSize, returnDataTypeFromInformationSchema)
+		})
+	}
+
 	t.Run("create function for SQL - return table data type", func(t *testing.T) {
 		argName := "x"
 

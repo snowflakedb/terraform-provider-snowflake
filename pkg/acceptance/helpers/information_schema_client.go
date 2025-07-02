@@ -68,3 +68,20 @@ func (c *InformationSchemaClient) mapQueryHistory(t *testing.T, queryResult map[
 	}
 	return queryHistory
 }
+
+func (c *InformationSchemaClient) GetFunctionDataType(t *testing.T, functionId sdk.SchemaObjectIdentifierWithArguments) string {
+	t.Helper()
+
+	viewId := sdk.NewSchemaObjectIdentifier(functionId.DatabaseName(), "INFORMATION_SCHEMA", "FUNCTIONS")
+	rows, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf(`SELECT DATA_TYPE FROM %s WHERE function_name = '%s'`, viewId.FullyQualifiedName(), functionId.Name()))
+	require.NoError(t, err)
+	require.Len(t, rows, 1)
+
+	row := rows[0]
+	require.NotNil(t, row["DATA_TYPE"])
+
+	dataType, ok := (*rows[0]["DATA_TYPE"]).(string)
+	require.True(t, ok)
+
+	return dataType
+}
