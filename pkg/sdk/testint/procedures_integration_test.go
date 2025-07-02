@@ -2253,6 +2253,7 @@ def filter_by_role(session, table_name, role):
 	//    - it's generalized for other types.
 	//  - if defaults are used it's generalized for all types.
 	// FOR DESCRIBE, data type is generalized for argument and works weirdly for the return type: type is generalized to the canonical one, but we also get the attributes.
+	// Note on defaults changed in 2025_03 Bundle: our logic still uses the hardcoded defaults, that's why in this test VARCHAR and BINARY return the type with sizes.
 	for _, tc := range []struct {
 		input             string
 		expectedShowValue string
@@ -2264,14 +2265,16 @@ def filter_by_role(session, table_name, role):
 		{"INTEGER", "NUMBER"},
 		{"FLOAT", "FLOAT"},
 		{"DOUBLE", "FLOAT"},
-		{"VARCHAR", "VARCHAR"},
+		{"VARCHAR", fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
+		{fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), "VARCHAR"},
 		{"VARCHAR(20)", "VARCHAR(20)"},
+		{"TEXT", fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
 		{"CHAR", "VARCHAR(1)"},
 		{"CHAR(10)", "VARCHAR(10)"},
-		{"TEXT", "VARCHAR"},
-		{"BINARY", "BINARY"},
+		{"BINARY", fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
+		{fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), "BINARY"},
 		{"BINARY(1000)", "BINARY(1000)"},
-		{"VARBINARY", "BINARY"},
+		{"VARBINARY", fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
 		{"BOOLEAN", "BOOLEAN"},
 		{"DATE", "DATE"},
 		{"DATETIME", "TIMESTAMP_NTZ"},

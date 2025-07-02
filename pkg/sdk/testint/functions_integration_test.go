@@ -2005,7 +2005,7 @@ func TestInt_Functions(t *testing.T) {
 	//    - it's generalized for other types.
 	//  - if defaults are used it's generalized for all types.
 	// FOR DESCRIBE, data type is generalized for argument and works weirdly for the return type: type is generalized to the canonical one, but we also get the attributes.
-	// Not on defaults changed in 2025_03 Bundle: our logic still uses the hardcoded defaults, that's why in this test VARCHAR and BINARY return the type with sizes.
+	// Note on defaults changed in 2025_03 Bundle: our logic still uses the hardcoded defaults, that's why in this test VARCHAR and BINARY return the type with sizes.
 	for _, tc := range []struct {
 		input             string
 		expectedShowValue string
