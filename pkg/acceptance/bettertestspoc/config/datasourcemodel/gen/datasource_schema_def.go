@@ -71,6 +71,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.NetworkPolicies().Schema,
 	},
 	{
+		name:   "Procedures",
+		schema: datasources.Procedures().Schema,
+	},
+	{
 		name:   "ResourceMonitors",
 		schema: datasources.ResourceMonitors().Schema,
 	},
