@@ -207,10 +207,18 @@ func (c *UserClient) AddProgrammaticAccessTokenWithRequest(t *testing.T, userId 
 	// Expire the token after 1 day to avoid valid leftover tokens.
 	request.WithDaysToExpiry(1)
 
-	token, err := c.context.client.Users.AddProgrammaticAccessToken(ctx, request)
+	token, err := c.client().AddProgrammaticAccessToken(ctx, request)
 	require.NoError(t, err)
 	require.NotNil(t, token)
 	return *token, c.RemoveProgrammaticAccessTokenFunc(t, userId, sdk.NewAccountObjectIdentifier(token.TokenName))
+}
+
+func (c *UserClient) ModifyProgrammaticAccessToken(t *testing.T, request *sdk.ModifyUserProgrammaticAccessTokenRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().ModifyProgrammaticAccessToken(ctx, request)
+	require.NoError(t, err)
 }
 
 func (c *UserClient) RemoveProgrammaticAccessTokenFunc(t *testing.T, userId sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) func() {
@@ -218,9 +226,18 @@ func (c *UserClient) RemoveProgrammaticAccessTokenFunc(t *testing.T, userId sdk.
 	ctx := context.Background()
 
 	return func() {
-		err := c.context.client.Users.RemoveProgrammaticAccessToken(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(userId, tokenName))
+		err := c.client().RemoveProgrammaticAccessToken(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(userId, tokenName))
 		if err != nil && !errors.Is(err, sdk.ErrNotFound) {
 			t.Errorf("failed to remove programmatic access token: %v", err)
 		}
 	}
+}
+
+func (c *UserClient) ShowProgrammaticAccessTokenByID(t *testing.T, userId sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) *sdk.ProgrammaticAccessToken {
+	t.Helper()
+	ctx := context.Background()
+
+	token, err := c.client().ShowProgrammaticAccessTokenByNameSafely(ctx, userId, tokenName)
+	require.NoError(t, err)
+	return token
 }

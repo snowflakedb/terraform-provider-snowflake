@@ -1,0 +1,319 @@
+package resources
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
+
+var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
+	"user": {
+		Type:             schema.TypeString,
+		Required:         true,
+		ForceNew:         true,
+		Description:      blocklistedCharactersFieldDescription("The name of the user that the token is associated with. A user cannot use another user's programmatic access token to authenticate."),
+		DiffSuppressFunc: suppressIdentifierQuoting,
+	},
+	"name": {
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      blocklistedCharactersFieldDescription("Specifies the name for the programmatic access token; must be unique for the user."),
+		DiffSuppressFunc: suppressIdentifierQuoting,
+	},
+	"role_restriction": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		Description:      blocklistedCharactersFieldDescription("The name of the role used for privilege evaluation and object creation. This must be one of the roles that has already been granted to the user."),
+		DiffSuppressFunc: suppressIdentifierQuoting,
+	},
+	"days_to_expiry": {
+		Type:             schema.TypeInt,
+		Optional:         true,
+		Description:      "The number of days that the programmatic access token can be used for authentication.",
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+	},
+	"mins_to_bypass_network_policy_requirement": {
+		Type:             schema.TypeInt,
+		Optional:         true,
+		Description:      "The number of minutes during which a user can use this token to access Snowflake without being subject to an active network policy.",
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		DiffSuppressFunc: IgnoreAfterCreation,
+	},
+	"disabled": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Disables or enables the programmatic access token."),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShowWithMapping("status", func(x any) any {
+			return x.(string) == string(sdk.ProgrammaticAccessTokenStatusDisabled)
+		}),
+	},
+	// TODO(next PR): add support for this field
+	// "expire_rotated_token_after_hours": {
+	// 	Type:             schema.TypeInt,
+	// 	Optional:         true,
+	// 	Description:      "Sets the expiration time of the existing token secret to expire after the specified number of hours. You can set this to a value of 0 to expire the current token secret immediately.",
+	// 	DiffSuppressFunc: IgnoreAfterCreation,
+	// ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
+	// },
+	"comment": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Descriptive comment about the programmatic access token.",
+	},
+	"token": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Sensitive:   true,
+		Description: "The token itself. Use this to authenticate to an endpoint.",
+	},
+	ShowOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `SHOW USER PROGRAMMATIC ACCESS TOKENS` for the given user programmatic access token.",
+		Elem: &schema.Resource{
+			Schema: schemas.ShowProgrammaticAccessTokenSchema,
+		},
+	},
+}
+
+func UserProgrammaticAccessToken() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.UserProgrammaticAccessTokenResource), TrackingCreateWrapper(resources.UserProgrammaticAccessToken, CreateUserProgrammaticAccessToken)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.UserProgrammaticAccessTokenResource), TrackingReadWrapper(resources.UserProgrammaticAccessToken, ReadUserProgrammaticAccessToken(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.UserProgrammaticAccessTokenResource), TrackingUpdateWrapper(resources.UserProgrammaticAccessToken, UpdateUserProgrammaticAccessToken)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.UserProgrammaticAccessTokenResource), TrackingDeleteWrapper(resources.UserProgrammaticAccessToken, DeleteUserProgrammaticAccessToken)),
+		Description: joinWithSpace(
+			"Resource used to manage user programmatic access tokens. For more information, check [user programmatic access tokens documentation](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token).",
+			"A programmatic access token is a token that can be used to authenticate to an endpoint.",
+			"See [Using programmatic access tokens for authentication](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) user guide for more details.",
+		),
+
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.UserProgrammaticAccessToken,
+			ComputedIfAnyAttributeChanged(userProgrammaticAccessTokenSchema, ShowOutputAttributeName, "mins_to_bypass_network_policy_requirement", "disabled", "comment"),
+		),
+
+		Schema: userProgrammaticAccessTokenSchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: TrackingImportWrapper(resources.UserProgrammaticAccessToken, ImportUserProgrammaticAccessToken),
+		},
+
+		Timeouts: defaultTimeouts,
+	}
+}
+
+func ImportUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	client := meta.(*provider.Context).Client
+	ids := helpers.ParseResourceIdentifier(d.Id())
+	userId := sdk.NewAccountObjectIdentifier(ids[0])
+	tokenName := sdk.NewAccountObjectIdentifier(ids[1])
+
+	token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, userId, tokenName)
+	if err != nil {
+		return nil, err
+	}
+
+	errs := errors.Join(
+		d.Set("name", token.Name),
+		d.Set("user", userId.Name()),
+		// d.Set("role_restriction", token.RoleRestriction.Name()),
+		// d.Set("days_to_expiry", token.DaysToExpiry),
+		d.Set("mins_to_bypass_network_policy_requirement", token.MinsToBypassNetworkPolicyRequirement),
+		d.Set("disabled", booleanStringFromBool(token.Status == sdk.ProgrammaticAccessTokenStatusDisabled)),
+		// d.Set("comment", token.Comment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return []*schema.ResourceData{d}, nil
+}
+
+func CreateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+	user := d.Get("user").(string)
+	name := d.Get("name").(string)
+	resourceId := UserProgrammaticAccessTokenId{
+		UserName:  sdk.NewAccountObjectIdentifier(user),
+		TokenName: sdk.NewAccountObjectIdentifier(name),
+	}
+
+	request := sdk.NewAddUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName)
+	errs := errors.Join(
+		accountObjectIdentifierAttributeCreate(d, "role_restriction", &request.RoleRestriction),
+		intAttributeCreateBuilder(d, "days_to_expiry", request.WithDaysToExpiry),
+		intAttributeCreateBuilder(d, "mins_to_bypass_network_policy_requirement", request.WithMinsToBypassNetworkPolicyRequirement),
+		// disabled is handled separately
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	token, err := client.Users.AddProgrammaticAccessToken(ctx, request)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if v := d.Get("disabled").(string); v != BooleanDefault {
+		parsed, err := booleanStringToBool(v)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		request := sdk.NewModifyProgrammaticAccessTokenSetRequest().WithDisabled(parsed)
+		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithSet(*request)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	d.SetId(resourceId.String())
+	errs = errors.Join(
+		d.Set("token", token.TokenSecret),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+	return ReadUserProgrammaticAccessToken(false)(ctx, d, meta)
+}
+
+func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		client := meta.(*provider.Context).Client
+		resourceId := userProgrammaticAccessTokenIdFromData(d)
+		token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, resourceId.UserName, resourceId.TokenName)
+		if err != nil {
+			if errors.Is(err, sdk.ErrNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query user programmatic access token. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("User programmatic access token name: %s for user: %s, Err: %s", resourceId.TokenName.FullyQualifiedName(), resourceId.UserName.FullyQualifiedName(), err),
+					},
+				}
+			}
+		}
+		if token.Comment != nil && strings.HasPrefix(*token.Comment, "DUPA") {
+			fmt.Println("DUPA")
+		}
+
+		if withExternalChangesMarking {
+			if err = handleExternalChangesToObjectInShow(d,
+				// outputMapping{"days_to_expiry", "days_to_expiry", token.DaysToExpiry, token.DaysToExpiry, nil},
+				// outputMapping{"mins_to_bypass_network_policy_requirement", "mins_to_bypass_network_policy_requirement", token.MinsToBypassNetworkPolicyRequirement, token.MinsToBypassNetworkPolicyRequirement, nil},
+				// TODO: check the third status (expired)
+				outputMapping{"status", "disabled", string(token.Status), booleanStringFromBool(token.Status == sdk.ProgrammaticAccessTokenStatusDisabled), nil},
+			); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if err = setStateToValuesFromConfig(d, userProgrammaticAccessTokenSchema, []string{
+			// "days_to_expiry",
+			// "mins_to_bypass_network_policy_requirement",
+			"disabled",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
+
+		roleRestriction := ""
+		if token.RoleRestriction != nil {
+			roleRestriction = token.RoleRestriction.Name()
+		}
+
+		errs := errors.Join(
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ProgrammaticAccessTokenToSchema(token)}),
+			d.Set("role_restriction", roleRestriction),
+			d.Set("comment", token.Comment),
+			// d.Set("mins_to_bypass_network_policy_requirement", token.MinsToBypassNetworkPolicyRequirement),
+			// days to expiry
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
+		}
+		return nil
+	}
+}
+
+func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+	resourceId := userProgrammaticAccessTokenIdFromData(d)
+
+	if d.HasChange("name") {
+		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
+
+		// TODO: rename to should be account identifier
+		err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithRenameTo(newId.Name()))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error renaming user programmatic access token %v err = %w", d.Id(), err))
+		}
+
+		resourceId.TokenName = newId
+		d.SetId(resourceId.String())
+	}
+
+	set, unset := sdk.NewModifyProgrammaticAccessTokenSetRequest(), sdk.NewModifyProgrammaticAccessTokenUnsetRequest()
+	errs := errors.Join(
+		// role_restriction and days_to_expiry are not supported for update
+		// intAttributeUpdate(d, "mins_to_bypass_network_policy_requirement", &set.MinsToBypassNetworkPolicyRequirement, &unset.MinsToBypassNetworkPolicyRequirement),
+		booleanStringAttributeUpdate(d, "disabled", &set.Disabled, &unset.Disabled),
+		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if (*set != sdk.ModifyProgrammaticAccessTokenSetRequest{}) {
+		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithSet(*set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if (*unset != sdk.ModifyProgrammaticAccessTokenUnsetRequest{}) {
+		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithUnset(*unset)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	return ReadUserProgrammaticAccessToken(false)(ctx, d, meta)
+}
+
+func DeleteUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+	resourceId := userProgrammaticAccessTokenIdFromData(d)
+
+	err := client.Users.RemoveProgrammaticAccessTokenSafely(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId("")
+	return nil
+}
+
+type UserProgrammaticAccessTokenId struct {
+	UserName  sdk.AccountObjectIdentifier
+	TokenName sdk.AccountObjectIdentifier
+}
+
+func (id *UserProgrammaticAccessTokenId) String() string {
+	return helpers.EncodeResourceIdentifier(id.UserName.FullyQualifiedName(), id.TokenName.FullyQualifiedName())
+}
+
+func userProgrammaticAccessTokenIdFromData(d *schema.ResourceData) UserProgrammaticAccessTokenId {
+	idRaw := helpers.ParseResourceIdentifier(d.Id())
+	return UserProgrammaticAccessTokenId{
+		UserName:  sdk.NewAccountObjectIdentifier(idRaw[0]),
+		TokenName: sdk.NewAccountObjectIdentifier(idRaw[1]),
+	}
+}
