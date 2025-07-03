@@ -26,7 +26,7 @@ type ModifyUserProgrammaticAccessTokenRequest struct {
 	name     AccountObjectIdentifier // required
 	Set      *ModifyProgrammaticAccessTokenSetRequest
 	Unset    *ModifyProgrammaticAccessTokenUnsetRequest
-	RenameTo *string
+	RenameTo *AccountObjectIdentifier
 }
 
 type ModifyProgrammaticAccessTokenSetRequest struct {

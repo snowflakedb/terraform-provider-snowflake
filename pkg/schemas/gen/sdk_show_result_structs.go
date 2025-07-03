@@ -56,6 +56,7 @@ var SdkShowResultStructs = []any{
 	sdk.Tag{},
 	sdk.Task{},
 	sdk.User{},
+	sdk.ProgrammaticAccessToken{},
 	sdk.View{},
 	sdk.Warehouse{},
 }
