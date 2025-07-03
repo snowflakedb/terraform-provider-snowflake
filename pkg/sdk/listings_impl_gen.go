@@ -143,8 +143,38 @@ func (r *ShowListingRequest) toOpts() *ShowListingOptions {
 }
 
 func (r listingDBRow) convert() *Listing {
-	// TODO: Mapping
-	return &Listing{}
+	l := &Listing{
+		GlobalName:     r.GlobalName,
+		Name:           r.Name,
+		Title:          r.Title,
+		Profile:        r.Profile,
+		CreatedOn:      r.CreatedOn,
+		UpdatedOn:      r.UpdatedOn,
+		ReviewState:    r.ReviewState,
+		Owner:          r.Owner,
+		OwnerRoleType:  r.OwnerRoleType,
+		TargetAccounts: r.TargetAccounts,
+		IsMonetized:    r.IsMonetized,
+		IsApplication:  r.IsApplication,
+		IsTargeted:     r.IsTargeted,
+	}
+	if state, err := ToListingState(r.State); err == nil {
+		l.State = state
+	}
+	mapNullString(&l.Subtitle, r.Subtitle)
+	mapNullString(&l.PublishedOn, r.PublishedOn)
+	mapNullString(&l.Comment, r.Comment)
+	mapNullString(&l.Regions, r.Regions)
+	mapNullBool(&l.IsLimitedTrial, r.IsLimitedTrial)
+	mapNullBool(&l.IsByRequest, r.IsByRequest)
+	mapNullString(&l.Distribution, r.Distribution)
+	mapNullBool(&l.IsMountlessQueryable, r.IsMountlessQueryable)
+	mapNullString(&l.RejectedOn, r.RejectedOn)
+	mapNullString(&l.OrganizationProfileName, r.OrganizationProfileName)
+	mapNullString(&l.UniformListingLocator, r.UniformListingLocator)
+	mapNullString(&l.DetailedTargetAccounts, r.DetailedTargetAccounts)
+
+	return l
 }
 
 func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
@@ -156,6 +186,68 @@ func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
 }
 
 func (r listingDetailsDBRow) convert() *ListingDetails {
-	// TODO: Mapping
-	return &ListingDetails{}
+	ld := &ListingDetails{
+		GlobalName:    r.GlobalName,
+		Name:          r.Name,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
+		CreatedOn:     r.CreatedOn,
+		UpdatedOn:     r.UpdatedOn,
+		Title:         r.Title,
+		Revisions:     r.Revisions,
+		ReviewState:   r.ReviewState,
+		ManifestYaml:  r.ManifestYaml,
+		IsMonetized:   r.IsMonetized,
+		IsApplication: r.IsApplication,
+		IsTargeted:    r.IsTargeted,
+	}
+
+	mapNullString(&ld.PublishedOn, r.PublishedOn)
+	mapNullString(&ld.Subtitle, r.Subtitle)
+	mapNullString(&ld.Description, r.Description)
+	mapNullString(&ld.ListingTerms, r.ListingTerms)
+	mapStringWithMapping(&ld.State, r.State, ToListingState)
+	mapNullStringWithMapping(&ld.Share, r.Share, ParseAccountObjectIdentifier)
+	mapNullStringWithMapping(&ld.ApplicationPackage, r.ApplicationPackage, ParseAccountObjectIdentifier)
+	mapNullString(&ld.BusinessNeeds, r.BusinessNeeds)
+	mapNullString(&ld.UsageExamples, r.UsageExamples)
+	mapNullString(&ld.DataAttributes, r.DataAttributes)
+	mapNullString(&ld.Categories, r.Categories)
+	mapNullString(&ld.Resources, r.Resources)
+	mapNullString(&ld.Profile, r.Profile)
+	mapNullString(&ld.CustomizedContactInfo, r.CustomizedContactInfo)
+	mapNullString(&ld.DataDictionary, r.DataDictionary)
+	mapNullString(&ld.DataPreview, r.DataPreview)
+	mapNullString(&ld.Comment, r.Comment)
+	mapNullString(&ld.TargetAccounts, r.TargetAccounts)
+	mapNullString(&ld.Regions, r.Regions)
+	mapNullString(&ld.RefreshSchedule, r.RefreshSchedule)
+	mapNullString(&ld.RefreshType, r.RefreshType)
+	mapNullString(&ld.RejectionReason, r.RejectionReason)
+	mapNullString(&ld.UnpublishedByAdminReasons, r.UnpublishedByAdminReasons)
+	mapNullBool(&ld.IsLimitedTrial, r.IsLimitedTrial)
+	mapNullBool(&ld.IsByRequest, r.IsByRequest)
+	mapNullString(&ld.LimitedTrialPlan, r.LimitedTrialPlan)
+	mapNullString(&ld.RetriedOn, r.RetriedOn)
+	mapNullString(&ld.ScheduledDropTime, r.ScheduledDropTime)
+	mapNullString(&ld.Distribution, r.Distribution)
+	mapNullBool(&ld.IsMountlessQueryable, r.IsMountlessQueryable)
+	mapNullString(&ld.OrganizationProfileName, r.OrganizationProfileName)
+	mapNullString(&ld.UniformListingLocator, r.UniformListingLocator)
+	mapNullString(&ld.TrialDetails, r.TrialDetails)
+	mapNullString(&ld.ApproverContact, r.ApproverContact)
+	mapNullString(&ld.SupportContact, r.SupportContact)
+	mapNullString(&ld.LiveVersionUri, r.LiveVersionUri)
+	mapNullString(&ld.LastCommittedVersionUri, r.LastCommittedVersionUri)
+	mapNullString(&ld.LastCommittedVersionName, r.LastCommittedVersionName)
+	mapNullString(&ld.LastCommittedVersionAlias, r.LastCommittedVersionAlias)
+	mapNullString(&ld.PublishedVersionUri, r.PublishedVersionUri)
+	mapNullString(&ld.PublishedVersionName, r.PublishedVersionName)
+	mapNullString(&ld.PublishedVersionAlias, r.PublishedVersionAlias)
+	mapNullBool(&ld.IsShare, r.IsShare)
+	mapNullString(&ld.RequestApprovalType, r.RequestApprovalType)
+	mapNullString(&ld.MonetizationDisplayOrder, r.MonetizationDisplayOrder)
+	mapNullString(&ld.LegacyUniformListingLocators, r.LegacyUniformListingLocators)
+
+	return ld
 }
