@@ -1985,6 +1985,7 @@ func TestInt_Functions(t *testing.T) {
 			dataType, err := datatypes.ParseDataType(string(arg.ArgDataTypeOld))
 			require.NoError(t, err)
 			switch arg.ArgName {
+			// modifying arguments for which Snowflake will return datatype attributes (as we create them with attributes, check above)
 			case "A", "F", "G":
 				dataTypes[i] = sdk.LegacyDataTypeWithAttrsCanonical(dataType)
 			default:

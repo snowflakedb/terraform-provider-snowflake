@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	DefaultBinarySize = 8388608
+	DefaultBinarySize = 8 * 1024 * 1024
 
-	MaxBinarySize = 67108864
+	MaxBinarySize = 64 * 1024 * 1024
 )
 
 // BinaryDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-text#data-types-for-binary-strings

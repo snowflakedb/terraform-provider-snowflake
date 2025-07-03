@@ -34,8 +34,7 @@ func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
 	definition := secondaryTestClient().Function.SamplePythonDefinition(t, funcName, argName)
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionPythonResource)).
-		WithDriverTracing("debug")
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionPythonResource))
 	functionModel := model.FunctionPythonBasicInline("test", id, testvars.PythonRuntime, dataType, funcName, definition).
 		WithArgument(argName, dataType)
 
@@ -66,6 +65,17 @@ func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
 						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
+				// This error is pretty unclear, so these are the reasons why it happens:
+				// - function is created without the bundle, bundle is enabled after
+				// - when terraform tries to read the state of this function:
+				//   - function output from SHOW cannot be parsed
+				//   - `convert` function does not return error
+				//   - `NewSchemaObjectIdentifierWithArguments` function does not return error
+				//   - comparison in ShowByID method does not find a match (as the arguments list is empty)
+				//   - ErrObjectNotFound is returned
+				//   - terraform marks the object as removed from state
+				//   - terraform tries to create it again (but it exists in Snowflake already)
+				//   - the compilation error is thrown by Snowflake (as object already exists)
 				ExpectError: regexp.MustCompile("SQL compilation error"),
 			},
 		},
@@ -86,8 +96,7 @@ func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
 	definition := secondaryTestClient().Function.SamplePythonDefinition(t, funcName, argName)
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionPythonResource)).
-		WithDriverTracing("debug")
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionPythonResource))
 	functionModel := model.FunctionPythonBasicInline("test", id, testvars.PythonRuntime, dataType, funcName, definition).
 		WithArgument(argName, dataType)
 

@@ -29,7 +29,7 @@ func (c *BcrBundlesClient) EnableBcrBundle(t *testing.T, name string) {
 	err := c.client().EnableBehaviorChangeBundle(ctx, name)
 	require.NoError(t, err)
 
-	t.Cleanup(c.DisableBcrBundleFunc(t, name))
+	t.Cleanup(c.disableBcrBundleFunc(t, name))
 }
 
 func (c *BcrBundlesClient) DisableBcrBundle(t *testing.T, name string) {
@@ -39,10 +39,10 @@ func (c *BcrBundlesClient) DisableBcrBundle(t *testing.T, name string) {
 	err := c.client().DisableBehaviorChangeBundle(ctx, name)
 	require.NoError(t, err)
 
-	t.Cleanup(c.EnableBcrBundleFunc(t, name))
+	t.Cleanup(c.enableBcrBundleFunc(t, name))
 }
 
-func (c *BcrBundlesClient) DisableBcrBundleFunc(t *testing.T, name string) func() {
+func (c *BcrBundlesClient) disableBcrBundleFunc(t *testing.T, name string) func() {
 	t.Helper()
 	ctx := context.Background()
 
@@ -52,7 +52,7 @@ func (c *BcrBundlesClient) DisableBcrBundleFunc(t *testing.T, name string) func(
 	}
 }
 
-func (c *BcrBundlesClient) EnableBcrBundleFunc(t *testing.T, name string) func() {
+func (c *BcrBundlesClient) enableBcrBundleFunc(t *testing.T, name string) func() {
 	t.Helper()
 	ctx := context.Background()
 
