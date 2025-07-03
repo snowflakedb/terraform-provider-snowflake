@@ -171,11 +171,13 @@ func (r externalFunctionRow) convert() *ExternalFunction {
 	}
 	arguments := strings.TrimLeft(r.Arguments, r.Name)
 	returnIndex := strings.Index(arguments, ") RETURN ")
-	dataTypes, err := ParseFunctionArgumentsFromString(arguments[:returnIndex+1])
+	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
 	if err != nil {
 		log.Printf("[DEBUG] failed to parse external function arguments, err = %s", err)
 	} else {
-		e.Arguments = dataTypes
+		e.Arguments = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
+			return DataType(a.ArgType)
+		})
 	}
 	if r.SchemaName.Valid {
 		e.SchemaName = strings.Trim(r.SchemaName.String, `"`)

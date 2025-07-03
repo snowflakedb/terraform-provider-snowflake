@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/require"
@@ -82,10 +83,39 @@ func (c *ProcedureClient) CreateJava(t *testing.T) (*sdk.Procedure, func()) {
 	err := c.client().CreateForJava(ctx, request)
 	require.NoError(t, err)
 
-	function, err := c.client().ShowByID(ctx, id)
+	procedure, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 
-	return function, c.DropProcedureFunc(t, id)
+	return procedure, c.DropProcedureFunc(t, id)
+}
+
+func (c *ProcedureClient) CreatePythonInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.Procedure, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	dataType := testdatatypes.DataTypeNumber_36_2
+	id := c.ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
+
+	argName := "i"
+	funcName := "dump"
+	definition := c.SamplePythonDefinition(t, funcName, argName)
+	dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
+	returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
+	argument := sdk.NewProcedureArgumentRequest(argName, dataType)
+	packages := []sdk.ProcedurePackageRequest{
+		*sdk.NewProcedurePackageRequest("snowflake-snowpark-python==1.14.0"),
+	}
+	request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, funcName).
+		WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
+		WithProcedureDefinitionWrapped(definition)
+
+	err := c.client().CreateForPython(ctx, request)
+	require.NoError(t, err)
+
+	procedure, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return procedure, c.DropProcedureFunc(t, id)
 }
 
 func (c *ProcedureClient) CreateScalaStaged(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments, dataType datatypes.DataType, importPath string, handler string) (*sdk.Procedure, func()) {

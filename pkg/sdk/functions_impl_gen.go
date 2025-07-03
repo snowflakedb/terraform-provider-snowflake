@@ -494,11 +494,14 @@ func (r functionRow) convert() *Function {
 	}
 	arguments := strings.TrimLeft(r.Arguments, r.Name)
 	returnIndex := strings.Index(arguments, ") RETURN ")
-	dataTypes, err := ParseFunctionArgumentsFromString(arguments[:returnIndex+1])
+	e.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
+	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
 	if err != nil {
 		log.Printf("[DEBUG] failed to parse function arguments, err = %s", err)
 	} else {
-		e.ArgumentsOld = dataTypes
+		e.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
+			return DataType(a.ArgType)
+		})
 	}
 
 	if r.IsSecure.Valid {

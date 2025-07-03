@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -60,4 +59,31 @@ func (c *InformationSchemaClient) mapQueryHistory(t *testing.T, queryResult map[
 		QueryText: (*queryResult["QUERY_TEXT"]).(string),
 		QueryTag:  (*queryResult["QUERY_TAG"]).(string),
 	}
+}
+
+func (c *InformationSchemaClient) GetFunctionDataType(t *testing.T, functionId sdk.SchemaObjectIdentifierWithArguments) string {
+	t.Helper()
+	return c.getDataType(t, functionId, "FUNCTIONS", "function_name")
+}
+
+func (c *InformationSchemaClient) GetProcedureDataType(t *testing.T, procedureId sdk.SchemaObjectIdentifierWithArguments) string {
+	t.Helper()
+	return c.getDataType(t, procedureId, "PROCEDURES", "procedure_name")
+}
+
+func (c *InformationSchemaClient) getDataType(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments, viewName string, nameString string) string {
+	t.Helper()
+
+	viewId := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), "INFORMATION_SCHEMA", viewName)
+	rows, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf(`SELECT DATA_TYPE FROM %s WHERE %s = '%s'`, viewId.FullyQualifiedName(), nameString, id.Name()))
+	require.NoError(t, err)
+	require.Len(t, rows, 1)
+
+	row := rows[0]
+	require.NotNil(t, row["DATA_TYPE"])
+
+	dataType, ok := (*rows[0]["DATA_TYPE"]).(string)
+	require.True(t, ok)
+
+	return dataType
 }
