@@ -5,7 +5,7 @@ describe deprecations or breaking changes and help you to change your configurat
 across different versions.
 
 To keep your configuration up to date, we also recommend reading the [Snowflake BCR migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md)
-for changes required after enabling one of the upcoming [Snowflake BCR Bundle](https://docs.snowflake.com/en/release-notes/behavior-changes#upcoming-pending-changes).
+for changes required after enabling given [Snowflake BCR Bundle](https://docs.snowflake.com/en/release-notes/behavior-changes).
 
 > [!TIP]
 > We highly recommend upgrading the versions one by one instead of bulk upgrades.
