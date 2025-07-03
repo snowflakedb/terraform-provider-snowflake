@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - release_v1.2.2
+      - release_v1.2.3
     tags: # Trigger on new tags that follow semantic versioning with `v` prefix (supports any postfix, e.g. `-rc1`)
       - 'v[0-9]+.[0-9]+.[0-9]+(-.+)?'
 
@@ -51,7 +51,7 @@ jobs:
         uses: googleapis/release-please-action@db8f2c60ee802b3748b512940dde88eabd7b7e01 # v3
         id: release
         with:
-          default-branch: release_v1.2.2
+          default-branch: release_v1.2.3
           release-type: simple
           changelog-types: ${{ steps.configure-changelog.outputs.result }}
           token: ${{ steps.create-token.outputs.token }}
