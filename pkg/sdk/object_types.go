@@ -80,7 +80,7 @@ const (
 	ObjectTypeGitRepository           ObjectType = "GIT REPOSITORY"
 	ObjectTypeModel                   ObjectType = "MODEL"
 	ObjectTypeService                 ObjectType = "SERVICE"
-	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN"
+	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
 )
 
 func (o ObjectType) String() string {

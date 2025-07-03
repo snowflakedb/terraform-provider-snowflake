@@ -152,11 +152,10 @@ func TestAcc_GitRepositories_Filtering(t *testing.T) {
 					resource.TestCheckResourceAttr(gitRepositoriesWithInModel.DatasourceReference(), "git_repositories.#", "3"),
 				),
 			},
-			// TODO(SNOW-2146279): fix limit in show git repositories
 			{
 				Config: accconfig.FromModels(t, gitRepositoryModel1, gitRepositoryModel2, gitRepositoryModel3, gitRepositoriesWithLimitModel),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(gitRepositoriesWithLimitModel.DatasourceReference(), "git_repositories.#", "3"),
+					resource.TestCheckResourceAttr(gitRepositoriesWithLimitModel.DatasourceReference(), "git_repositories.#", "2"),
 				),
 			},
 		},

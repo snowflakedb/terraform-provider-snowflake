@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -41,15 +40,15 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 	"days_to_expiry": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		Description:      "The number of days that the programmatic access token can be used for authentication.",
+		ForceNew:         true,
+		Description:      externalChangesNotDetectedFieldDescription("The number of days that the programmatic access token can be used for authentication."),
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 	},
 	"mins_to_bypass_network_policy_requirement": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		Description:      "The number of minutes during which a user can use this token to access Snowflake without being subject to an active network policy.",
+		Description:      externalChangesNotDetectedFieldDescription("The number of minutes during which a user can use this token to access Snowflake without being subject to an active network policy."),
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		DiffSuppressFunc: IgnoreAfterCreation,
 	},
 	"disabled": {
 		Type:             schema.TypeString,
@@ -75,10 +74,11 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 		Description: "Descriptive comment about the programmatic access token.",
 	},
 	"token": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Sensitive:   true,
-		Description: "The token itself. Use this to authenticate to an endpoint.",
+		Type:      schema.TypeString,
+		Computed:  true,
+		Sensitive: true,
+		// TODO(next PR): update this description
+		Description: "The token itself. Use this to authenticate to an endpoint. The data in this field is updated only when the token is created.",
 	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -103,7 +103,7 @@ func UserProgrammaticAccessToken() *schema.Resource {
 		),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.UserProgrammaticAccessToken,
-			ComputedIfAnyAttributeChanged(userProgrammaticAccessTokenSchema, ShowOutputAttributeName, "mins_to_bypass_network_policy_requirement", "disabled", "comment"),
+			ComputedIfAnyAttributeChanged(userProgrammaticAccessTokenSchema, ShowOutputAttributeName, "disabled", "comment"),
 		),
 
 		Schema: userProgrammaticAccessTokenSchema,
@@ -117,23 +117,18 @@ func UserProgrammaticAccessToken() *schema.Resource {
 
 func ImportUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
-	ids := helpers.ParseResourceIdentifier(d.Id())
-	userId := sdk.NewAccountObjectIdentifier(ids[0])
-	tokenName := sdk.NewAccountObjectIdentifier(ids[1])
+	id := userProgrammaticAccessTokenIdFromData(d)
 
-	token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, userId, tokenName)
+	token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, id.UserName, id.TokenName)
 	if err != nil {
 		return nil, err
 	}
 
 	errs := errors.Join(
 		d.Set("name", token.Name),
-		d.Set("user", userId.Name()),
-		// d.Set("role_restriction", token.RoleRestriction.Name()),
-		// d.Set("days_to_expiry", token.DaysToExpiry),
-		d.Set("mins_to_bypass_network_policy_requirement", token.MinsToBypassNetworkPolicyRequirement),
+		d.Set("user", id.UserName.Name()),
+		// not reading mins_to_bypass_network_policy_requirement on purpose (it always changes)
 		d.Set("disabled", booleanStringFromBool(token.Status == sdk.ProgrammaticAccessTokenStatusDisabled)),
-		// d.Set("comment", token.Comment),
 	)
 	if errs != nil {
 		return nil, errs
@@ -179,11 +174,11 @@ func CreateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(resourceId.String())
-	errs = errors.Join(
+	err = errors.Join(
 		d.Set("token", token.TokenSecret),
 	)
-	if errs != nil {
-		return diag.FromErr(errs)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 	return ReadUserProgrammaticAccessToken(false)(ctx, d, meta)
 }
@@ -205,15 +200,9 @@ func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.Rea
 				}
 			}
 		}
-		if token.Comment != nil && strings.HasPrefix(*token.Comment, "DUPA") {
-			fmt.Println("DUPA")
-		}
 
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInShow(d,
-				// outputMapping{"days_to_expiry", "days_to_expiry", token.DaysToExpiry, token.DaysToExpiry, nil},
-				// outputMapping{"mins_to_bypass_network_policy_requirement", "mins_to_bypass_network_policy_requirement", token.MinsToBypassNetworkPolicyRequirement, token.MinsToBypassNetworkPolicyRequirement, nil},
-				// TODO: check the third status (expired)
 				outputMapping{"status", "disabled", string(token.Status), booleanStringFromBool(token.Status == sdk.ProgrammaticAccessTokenStatusDisabled), nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -221,8 +210,6 @@ func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.Rea
 		}
 
 		if err = setStateToValuesFromConfig(d, userProgrammaticAccessTokenSchema, []string{
-			// "days_to_expiry",
-			// "mins_to_bypass_network_policy_requirement",
 			"disabled",
 		}); err != nil {
 			return diag.FromErr(err)
@@ -237,8 +224,8 @@ func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.Rea
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ProgrammaticAccessTokenToSchema(token)}),
 			d.Set("role_restriction", roleRestriction),
 			d.Set("comment", token.Comment),
-			// d.Set("mins_to_bypass_network_policy_requirement", token.MinsToBypassNetworkPolicyRequirement),
-			// days to expiry
+			// not reading mins_to_bypass_network_policy_requirement on purpose (it always changes)
+			// not reading days_to_expiry on purpose (Snowflake returns expires_at which is a timestamp)
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -254,8 +241,7 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("name") {
 		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
-		// TODO: rename to should be account identifier
-		err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithRenameTo(newId.Name()))
+		err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming user programmatic access token %v err = %w", d.Id(), err))
 		}
@@ -266,8 +252,8 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 
 	set, unset := sdk.NewModifyProgrammaticAccessTokenSetRequest(), sdk.NewModifyProgrammaticAccessTokenUnsetRequest()
 	errs := errors.Join(
-		// role_restriction and days_to_expiry are not supported for update
-		// intAttributeUpdate(d, "mins_to_bypass_network_policy_requirement", &set.MinsToBypassNetworkPolicyRequirement, &unset.MinsToBypassNetworkPolicyRequirement),
+		// role_restriction and days_to_expiry are handled by forcenew
+		intAttributeUpdate(d, "mins_to_bypass_network_policy_requirement", &set.MinsToBypassNetworkPolicyRequirement, &unset.MinsToBypassNetworkPolicyRequirement),
 		booleanStringAttributeUpdate(d, "disabled", &set.Disabled, &unset.Disabled),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 	)

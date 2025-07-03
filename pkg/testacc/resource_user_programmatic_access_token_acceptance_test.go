@@ -8,6 +8,8 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -16,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -28,24 +31,25 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 	t.Cleanup(userCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	// resourceId := helpers.EncodeResourceIdentifier(user.ID().FullyQualifiedName(), id.FullyQualifiedName())
+	resourceId := helpers.EncodeResourceIdentifier(user.ID().FullyQualifiedName(), id.FullyQualifiedName())
 	comment, changedComment := random.Comment(), random.Comment()
 
 	modelBasic := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name())
-	modelWithRoleRestriction := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
-		WithRoleRestriction(snowflakeroles.Public.Name())
-	// modelComplete := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
-	// 	WithRoleRestriction(snowflakeroles.Public.Name()).
-	// 	WithDaysToExpiry(30).
-	// 	WithMinsToBypassNetworkPolicyRequirement(10).
-	// 	WithDisabled("true").
-	// 	WithComment(comment)
+	modelComplete := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithRoleRestriction(snowflakeroles.Public.Name()).
+		WithDaysToExpiry(10).
+		WithMinsToBypassNetworkPolicyRequirement(10).
+		WithDisabled("true").
+		WithComment(comment)
 	modelCompleteWithDifferentValues := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
 		WithRoleRestriction(snowflakeroles.Public.Name()).
-		WithDaysToExpiry(40).
+		WithDaysToExpiry(10).
 		WithMinsToBypassNetworkPolicyRequirement(20).
 		WithDisabled("false").
 		WithComment(changedComment)
+	modelWithForceNewOptionals := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithDaysToExpiry(10).
+		WithRoleRestriction(snowflakeroles.Public.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -55,120 +59,120 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 		},
 		CheckDestroy: CheckUserProgrammaticAccessTokenDestroy(t),
 		Steps: []resource.TestStep{
-			// // create with empty optionals
-			// {
-			// 	Config: accconfig.FromModels(t, modelBasic),
-			// 	Check: assertThat(t,
-			// 		resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
-			// 			HasNameString(id.Name()).
-			// 			HasUserString(user.ID().Name()).
-			// 			HasRoleRestrictionString("").
-			// 			HasNoDaysToExpiry().
-			// 			// TODO: use tolerance
-			// 			// HasMinsToBypassNetworkPolicyRequirementString("10").
-			// 			HasDisabledString(r.BooleanDefault).
-			// 			HasCommentString("").
-			// 			HasTokenNotEmpty(),
-			// 		resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelBasic.ResourceReference()).
-			// 			HasName(id.Name()).
-			// 			HasUserName(user.ID()).
-			// 			HasRoleRestrictionEmpty().
-			// 			HasExpiresAtNotEmpty().
-			// 			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			// 			HasComment("").
-			// 			HasCreatedOnNotEmpty().
-			// 			HasCreatedBy(currentUser.Name()).
-			// 			// TODO: use tolerance
-			// 			// HasMinsToBypassNetworkPolicyRequirementNotEmpty().
-			// 			HasRotatedTo(""),
-			// 	),
-			// },
-			// // import - without optionals
-			// {
-			// 	Config:       accconfig.FromModels(t, modelBasic),
-			// 	ResourceName: modelBasic.ResourceReference(),
-			// 	ImportState:  true,
-			// 	ImportStateCheck: assertThatImport(t,
-			// 		resourceassert.ImportedUserProgrammaticAccessTokenResource(t, resourceId).
-			// 			HasNameString(id.Name()).
-			// 			HasUserString(user.ID().Name()).
-			// 			HasRoleRestrictionString("").
-			// 			HasNoDaysToExpiry().
-			// 			// TODO: use tolerance
-			// 			// HasMinsToBypassNetworkPolicyRequirementString("10").
-			// 			HasDisabledString(r.BooleanFalse).
-			// 			HasCommentString("").
-			// 			HasNoToken(),
-			// 		resourceshowoutputassert.ImportedProgrammaticAccessTokenShowOutput(t, resourceId).
-			// 			HasName(id.Name()).
-			// 			HasUserName(user.ID()).
-			// 			HasRoleRestrictionEmpty().
-			// 			HasExpiresAtNotEmpty().
-			// 			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			// 			HasComment("").
-			// 			HasCreatedOnNotEmpty().
-			// 			HasCreatedBy(currentUser.Name()).
-			// 			// TODO: use tolerance
-			// 			// HasMinsToBypassNetworkPolicyRequirementNotEmpty().
-			// 			HasRotatedTo(""),
-			// 	),
-			// },
-			// // set optionals
-			// {
-			// 	Config: accconfig.FromModels(t, modelComplete),
-			// 	Check: assertThat(t,
-			// 		resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
-			// 			HasNameString(id.Name()).
-			// 			HasUserString(user.ID().Name()).
-			// 			HasRoleRestrictionString(snowflakeroles.Public.Name()).
-			// 			HasDaysToExpiryString("30").
-			// 			// TODO: use tolerance
-			// 			// HasMinsToBypassNetworkPolicyRequirementString("10").
-			// 			HasDisabledString("true").
-			// 			HasCommentString(comment).
-			// 			HasTokenNotEmpty(),
-			// 		resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelBasic.ResourceReference()).
-			// 			HasName(id.Name()).
-			// 			HasUserName(user.ID()).
-			// 			HasRoleRestriction(snowflakeroles.Public).
-			// 			HasExpiresAtNotEmpty().
-			// 			HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled).
-			// 			HasComment(comment).
-			// 			HasCreatedOnNotEmpty().
-			// 			HasCreatedBy(currentUser.Name()).
-			// 			// TODO: use tolerance
-			// 			// HasMinsToBypassNetworkPolicyRequirementNotEmpty().
-			// 			HasRotatedTo(""),
-			// 	),
-			// },
-			// // import - complete
-			// {
-			// 	Config:                  accconfig.FromModels(t, modelComplete),
-			// 	ResourceName:            modelComplete.ResourceReference(),
-			// 	ImportState:             true,
-			// 	ImportStateVerify:       true,
-			// 	ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_bypass_network_policy_requirement", "token"},
-			// },
-			// alter
+			// create with empty optionals
 			{
-				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				// ConfigPlanChecks: resource.ConfigPlanChecks{
-				// 	PreApply: []plancheck.PlanCheck{
-				// 		plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
-				// 	},
-				// },
+				Config: accconfig.FromModels(t, modelBasic),
 				Check: assertThat(t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
+						HasRoleRestrictionString("").
+						HasNoDaysToExpiry().
+						HasNoMinsToBypassNetworkPolicyRequirement().
+						HasDisabledString(r.BooleanDefault).
+						HasCommentString("").
+						HasTokenNotEmpty(),
+					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelBasic.ResourceReference()).
+						HasName(id.Name()).
+						HasUserName(user.ID()).
+						HasRoleRestrictionEmpty().
+						HasExpiresAtNotEmpty().
+						HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+						HasComment("").
+						HasCreatedOnNotEmpty().
+						HasCreatedBy(currentUser.Name()).
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasRotatedTo(""),
+				),
+			},
+			// import - without optionals
+			{
+				Config:       accconfig.FromModels(t, modelBasic),
+				ResourceName: modelBasic.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedUserProgrammaticAccessTokenResource(t, resourceId).
+						HasNameString(id.Name()).
+						HasUserString(user.ID().Name()).
+						HasRoleRestrictionString("").
+						HasNoDaysToExpiry().
+						HasNoMinsToBypassNetworkPolicyRequirement().
+						HasDisabledString(r.BooleanFalse).
+						HasCommentString("").
+						HasNoToken(),
+					resourceshowoutputassert.ImportedProgrammaticAccessTokenShowOutput(t, resourceId).
+						HasName(id.Name()).
+						HasUserName(user.ID()).
+						HasRoleRestrictionEmpty().
+						HasExpiresAtNotEmpty().
+						HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+						HasComment("").
+						HasCreatedOnNotEmpty().
+						HasCreatedBy(currentUser.Name()).
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasRotatedTo(""),
+				),
+			},
+			// set optionals
+			{
+				Config: accconfig.FromModels(t, modelComplete),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(modelCompleteWithDifferentValues.ResourceReference(), "days_to_expiry", tfjson.ActionCreate, nil, sdk.String("10")),
+						planchecks.ExpectChange(modelCompleteWithDifferentValues.ResourceReference(), "role_restriction", tfjson.ActionCreate, nil, sdk.String("PUBLIC")),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelComplete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasUserString(user.ID().Name()).
 						HasRoleRestrictionString(snowflakeroles.Public.Name()).
-						HasDaysToExpiryString("40").
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementString("10").
+						HasDaysToExpiryString("10").
+						HasMinsToBypassNetworkPolicyRequirementString("10").
+						HasDisabledString("true").
+						HasCommentString(comment).
+						HasTokenNotEmpty(),
+					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelComplete.ResourceReference()).
+						HasName(id.Name()).
+						HasUserName(user.ID()).
+						HasRoleRestriction(snowflakeroles.Public).
+						HasExpiresAtNotEmpty().
+						HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled).
+						HasComment(comment).
+						HasCreatedOnNotEmpty().
+						HasCreatedBy(currentUser.Name()).
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasRotatedTo(""),
+				),
+			},
+			// import - complete
+			{
+				Config:                  accconfig.FromModels(t, modelComplete),
+				ResourceName:            modelComplete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_bypass_network_policy_requirement", "token"},
+			},
+			// alter
+			{
+				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteWithDifferentValues.ResourceReference()).
+						HasNameString(id.Name()).
+						HasUserString(user.ID().Name()).
+						HasRoleRestrictionString(snowflakeroles.Public.Name()).
+						HasDaysToExpiryString("10").
+						HasMinsToBypassNetworkPolicyRequirementString("20").
 						HasDisabledString(r.BooleanFalse).
 						HasCommentString(changedComment).
 						HasTokenNotEmpty(),
-					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelBasic.ResourceReference()).
+					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
 						HasUserName(user.ID()).
 						HasRoleRestriction(snowflakeroles.Public).
@@ -177,8 +181,7 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						HasComment(changedComment).
 						HasCreatedOnNotEmpty().
 						HasCreatedBy(currentUser.Name()).
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
 						HasRotatedTo(""),
 				),
 			},
@@ -189,23 +192,22 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().
 							WithDisabled(true).
 							WithMinsToBypassNetworkPolicyRequirement(30).
-							WithComment("DUPA" + comment),
+							WithComment(comment),
 						)
 					testClient().User.ModifyProgrammaticAccessToken(t, setRequest)
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				Check: assertThat(t,
-					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
 						HasRoleRestrictionString(snowflakeroles.Public.Name()).
-						HasDaysToExpiryString("40").
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementString("10").
+						HasDaysToExpiryString("10").
+						HasMinsToBypassNetworkPolicyRequirementString("20").
 						HasDisabledString(r.BooleanFalse).
 						HasCommentString(changedComment).
 						HasTokenNotEmpty(),
-					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelBasic.ResourceReference()).
+					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
 						HasUserName(user.ID()).
 						HasRoleRestriction(snowflakeroles.Public).
@@ -214,49 +216,69 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						HasComment(changedComment).
 						HasCreatedOnNotEmpty().
 						HasCreatedBy(currentUser.Name()).
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
 						HasRotatedTo(""),
 				),
 			},
-			// mins_to_bypass_network_policy_requirement does not cause plans
-			// {
-			// 	ConfigPlanChecks: resource.ConfigPlanChecks{
-			// 		PreApply: []plancheck.PlanCheck{
-			// 			plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionNoop),
-			// 		},
-			// 	},
-			// 	Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-			// 	Check: assertThat(t,
-			// 		resourceassert.ComputePoolResource(t, modelCompleteWithDifferentValues.ResourceReference()).
-			// 			HasNameString(id.Name()).
-			// 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-			// 		resourceshowoutputassert.ComputePoolShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
-			// 			HasCreatedOnNotEmpty().
-			// 			HasName(id.Name()).
-			// 			HasComment(changedComment),
-			// 	),
-			// },
-			// unset
+			// external changes on days_to_expiry and mins_to_bypass_network_policy_requirement are not detected
 			{
-				Config: accconfig.FromModels(t, modelWithRoleRestriction),
+				PreConfig: func() {
+					testClient().User.RemoveProgrammaticAccessTokenFunc(t, user.ID(), id)()
+					request := sdk.NewAddUserProgrammaticAccessTokenRequest(user.ID(), id).
+						WithRoleRestriction(snowflakeroles.Public).
+						WithDaysToExpiry(42).
+						WithComment(changedComment).
+						WithMinsToBypassNetworkPolicyRequirement(22)
+					testClient().User.AddProgrammaticAccessTokenWithRequest(t, user.ID(), request)
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithRoleRestriction.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
+				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				Check: assertThat(t,
-					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithRoleRestriction.ResourceReference()).
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
 						HasRoleRestrictionString(snowflakeroles.Public.Name()).
-						HasDaysToExpiryString("0").
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementString("10").
+						HasDaysToExpiryString("10").
+						HasMinsToBypassNetworkPolicyRequirementString("20").
+						HasDisabledString(r.BooleanFalse).
+						HasCommentString(changedComment).
+						HasTokenNotEmpty(),
+					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
+						HasName(id.Name()).
+						HasUserName(user.ID()).
+						HasRoleRestriction(snowflakeroles.Public).
+						HasExpiresAtNotEmpty().
+						HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+						HasComment(changedComment).
+						HasCreatedOnNotEmpty().
+						HasCreatedBy(currentUser.Name()).
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasRotatedTo(""),
+				),
+			},
+			// unset
+			{
+				Config: accconfig.FromModels(t, modelWithForceNewOptionals),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithForceNewOptionals.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithForceNewOptionals.ResourceReference()).
+						HasNameString(id.Name()).
+						HasUserString(user.ID().Name()).
+						HasRoleRestrictionString(snowflakeroles.Public.Name()).
+						HasDaysToExpiryString("10").
+						HasMinsToBypassNetworkPolicyRequirementString("0").
 						HasDisabledString(r.BooleanDefault).
 						HasCommentString("").
 						HasTokenNotEmpty(),
-					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelWithRoleRestriction.ResourceReference()).
+					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelWithForceNewOptionals.ResourceReference()).
 						HasName(id.Name()).
 						HasUserName(user.ID()).
 						HasRoleRestriction(snowflakeroles.Public).
@@ -265,12 +287,11 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						HasComment("").
 						HasCreatedOnNotEmpty().
 						HasCreatedBy(currentUser.Name()).
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
 						HasRotatedTo(""),
 				),
 			},
-			// forcenew - unset role restriction
+			// forcenew - unset all
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -284,8 +305,7 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						HasUserString(user.ID().Name()).
 						HasRoleRestrictionString("").
 						HasNoDaysToExpiry().
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementString("10").
+						HasNoMinsToBypassNetworkPolicyRequirement().
 						HasDisabledString(r.BooleanDefault).
 						HasCommentString("").
 						HasTokenNotEmpty(),
@@ -298,8 +318,7 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						HasComment("").
 						HasCreatedOnNotEmpty().
 						HasCreatedBy(currentUser.Name()).
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
 						HasRotatedTo(""),
 				),
 			},
@@ -382,8 +401,7 @@ func TestAcc_UserProgrammaticAccessToken_complete(t *testing.T) {
 						HasUserString(user.ID().Name()).
 						HasRoleRestrictionString(snowflakeroles.Public.Name()).
 						HasDaysToExpiryString("30").
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementString("10").
+						HasMinsToBypassNetworkPolicyRequirementString("10").
 						HasDisabledString("true").
 						HasCommentString(comment).
 						HasTokenNotEmpty(),
@@ -396,8 +414,7 @@ func TestAcc_UserProgrammaticAccessToken_complete(t *testing.T) {
 						HasComment(comment).
 						HasCreatedOnNotEmpty().
 						HasCreatedBy(currentUser.Name()).
-						// TODO: use tolerance
-						// HasMinsToBypassNetworkPolicyRequirementNotEmpty().
+						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
 						HasRotatedTo(""),
 				),
 			},

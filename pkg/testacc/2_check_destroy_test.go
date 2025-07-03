@@ -668,8 +668,9 @@ func CheckUserProgrammaticAccessTokenDestroy(t *testing.T) func(*terraform.State
 			userId := sdk.NewAccountObjectIdentifier(ids[0])
 			tokenName := sdk.NewAccountObjectIdentifier(ids[1])
 			token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(context.Background(), userId, tokenName)
-			if token != nil || (err != nil && !errors.Is(err, sdk.ErrObjectNotFound)) {
-				return fmt.Errorf("user programmatic access token %v for user %s still exists", token, userId.Name())
+			if token != nil ||
+				(err != nil && !errors.Is(err, sdk.ErrObjectNotFound)) {
+				return fmt.Errorf("programmatic access token %v for user %s still exists", token, userId.Name())
 			}
 		}
 		return nil

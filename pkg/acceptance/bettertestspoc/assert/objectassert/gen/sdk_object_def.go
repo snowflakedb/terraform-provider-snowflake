@@ -124,6 +124,7 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeProgrammaticAccessToken,
 		ObjectStruct: sdk.ProgrammaticAccessToken{},
 	},
 }

@@ -59,7 +59,7 @@ type ModifyUserProgrammaticAccessTokenOptions struct {
 	name                          AccountObjectIdentifier             `ddl:"identifier"`
 	Set                           *ModifyProgrammaticAccessTokenSet   `ddl:"keyword" sql:"SET"`
 	Unset                         *ModifyProgrammaticAccessTokenUnset `ddl:"list,no_parentheses" sql:"UNSET"`
-	RenameTo                      *string                             `ddl:"parameter,double_quotes,no_equals" sql:"RENAME TO"`
+	RenameTo                      *AccountObjectIdentifier            `ddl:"identifier,no_equals" sql:"RENAME TO"`
 }
 
 type ModifyProgrammaticAccessTokenSet struct {

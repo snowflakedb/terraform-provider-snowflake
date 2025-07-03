@@ -15,7 +15,7 @@ resource "snowflake_user_programmatic_access_token" "complete" {
   comment                                   = "COMMENT"
 }
 
-# use the token returned from Snowflake
+# use the token returned from Snowflake and remember to mark it as sensitive
 output "token" {
   value     = snowflake_user_programmatic_access_token.complete.token
   sensitive = true
