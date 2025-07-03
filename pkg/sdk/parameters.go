@@ -45,22 +45,16 @@ func (v *parameters) SetAccountParameter(ctx context.Context, parameter AccountP
 	if err != nil {
 		return err
 	}
-	if matched {
-		opts := AlterAccountOptions{
-			Set: &AccountSet{
-				LegacyParameters: &AccountLevelParameters{
-					AccountParameters: legacyAccountParameters,
-				},
-			},
-		}
-
-		if err := v.client.Accounts.Alter(ctx, &opts); err != nil {
-			return err
-		}
-	} else {
+	if !matched {
 		return v.SetSessionParameterOnAccount(ctx, SessionParameter(parameter), value)
 	}
-	return nil
+	return v.client.Accounts.Alter(ctx, &AlterAccountOptions{
+		Set: &AccountSet{
+			LegacyParameters: &AccountLevelParameters{
+				AccountParameters: legacyAccountParameters,
+			},
+		},
+	})
 }
 
 // TODO(SNOW-1866453): add integration tests
