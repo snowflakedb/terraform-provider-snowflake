@@ -50,6 +50,7 @@ const (
 	Tags                           datasource = "snowflake_tags"
 	Tasks                          datasource = "snowflake_tasks"
 	Users                          datasource = "snowflake_users"
+	UserProgrammaticAccessTokens   datasource = "snowflake_user_programmatic_access_tokens"
 	Views                          datasource = "snowflake_views"
 	Warehouses                     datasource = "snowflake_warehouses"
 )

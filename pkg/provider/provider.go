@@ -551,6 +551,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_tags":                               datasources.Tags(),
 		"snowflake_tasks":                              datasources.Tasks(),
 		"snowflake_users":                              datasources.Users(),
+		"snowflake_user_programmatic_access_tokens":    datasources.UserProgrammaticAccessTokens(),
 		"snowflake_views":                              datasources.Views(),
 		"snowflake_warehouses":                         datasources.Warehouses(),
 	}

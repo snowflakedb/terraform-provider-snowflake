@@ -23,6 +23,11 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.2.0 ➞ v2.3.0
 
+### *(new feature)* snowflake_user_programmatic_access_tokens data source
+Added a new preview data source for user programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_tokens_datasource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* snowflake_user_programmatic_access_token resource
 Added a new preview resource for managing users' programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) and a [user guide](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more details.
 
