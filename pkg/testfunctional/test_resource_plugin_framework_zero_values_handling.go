@@ -2,8 +2,10 @@ package testfunctional
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -22,6 +24,7 @@ type zeroValuesResourceModelV0 struct {
 	BoolValue   types.Bool   `tfsdk:"bool_value"`
 	IntValue    types.Int64  `tfsdk:"int_value"`
 	StringValue types.String `tfsdk:"string_value"`
+	ActionsLog  types.List   `tfsdk:"actions_log"`
 	Id          types.String `tfsdk:"id"`
 }
 
@@ -44,16 +47,20 @@ func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Required:    true,
 			},
 			"bool_value": schema.BoolAttribute{
-				Description: "Name for this resource.",
-				Required:    true,
+				Description: "Boolean value.",
+				Optional:    true,
 			},
 			"int_value": schema.Int64Attribute{
-				Description: "Name for this resource.",
-				Required:    true,
+				Description: "Int value.",
+				Optional:    true,
 			},
 			"string_value": schema.StringAttribute{
-				Description: "Name for this resource.",
-				Required:    true,
+				Description: "String value.",
+				Optional:    true,
+			},
+			"actions_log": schema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
 			},
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -79,10 +86,35 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 	int64AttributeCreate(data.IntValue, &opts.IntValue)
 	stringAttributeCreate(data.StringValue, &opts.StringValue)
 
+	setActionsOutput(ctx, response, opts, data)
+
 	if response.Diagnostics.HasError() {
 		return
 	}
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+}
+
+func setActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *zeroValuesOpts, data *zeroValuesResourceModelV0) {
+	var actions []string
+	diag := data.ActionsLog.ElementsAs(ctx, &actions, false)
+	if diag.HasError() {
+		response.Diagnostics.Append(diag...)
+		return
+	}
+	if opts.BoolValue != nil {
+		actions = append(actions, actionlog.NewLogEntry("CREATE", "BOOL", strconv.FormatBool(*opts.BoolValue)).ToString())
+	}
+	if opts.IntValue != nil {
+		actions = append(actions, actionlog.NewLogEntry("CREATE", "INT", strconv.Itoa(*opts.IntValue)).ToString())
+	}
+	if opts.StringValue != nil {
+		actions = append(actions, actionlog.NewLogEntry("CREATE", "STRING", *opts.StringValue).ToString())
+	}
+	data.ActionsLog, diag = types.ListValueFrom(ctx, types.StringType, actions)
+	if diag.HasError() {
+		response.Diagnostics.Append(diag...)
+		return
+	}
 }
 
 func (r *ZeroValuesResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
