@@ -5,8 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -21,10 +19,11 @@ func NewComputedNestedListResource() resource.Resource {
 type computedNestedListResource struct{}
 
 type computedNestedListResourceModelV0 struct {
-	Name       types.String `tfsdk:"name"`
-	Option     types.String `tfsdk:"option"`
-	ActionsLog types.List   `tfsdk:"actions_log"`
-	Id         types.String `tfsdk:"id"`
+	Name   types.String `tfsdk:"name"`
+	Option types.String `tfsdk:"option"`
+	Id     types.String `tfsdk:"id"`
+
+	actionlog.ActionsLogEmbeddable
 }
 
 func (r *computedNestedListResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
@@ -43,12 +42,6 @@ func (r *computedNestedListResource) Schema(_ context.Context, _ resource.Schema
 				Description: "Which implementation option should be tested. Available values: STRUCT, EXPLICIT",
 				Required:    true,
 			},
-			"actions_log": schema.ListNestedAttribute{
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: actionlog.GetActionLogEntrySchema(),
-				},
-				Computed: true,
-			},
 			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "Identifier for this resource.",
@@ -56,6 +49,7 @@ func (r *computedNestedListResource) Schema(_ context.Context, _ resource.Schema
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			actionlog.ActionsLogPropertyName: actionlog.GetActionsLogSchema(),
 		},
 	}
 }
@@ -101,30 +95,12 @@ func setActionsOutputThroughStruct(ctx context.Context, response *resource.Creat
 }
 
 func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {
-	existingEntries := data.ActionsLog.Elements()
-
-	actions := make([]actionlog.ActionLogEntry, 0)
-	actions = append(actions, actionlog.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
-	actions = append(actions, actionlog.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
-
-	for _, a := range actions {
-		entry, diags := types.ObjectValue(actionlog.GetActionLogEntryTypes(), map[string]attr.Value{
-			"action": a.Action,
-			"field":  a.Field,
-			"value":  a.Value,
-		})
-		if diags.HasError() {
-			response.Diagnostics.Append(diags...)
-			return
-		}
-		existingEntries = append(existingEntries, entry)
-	}
-	var diags diag.Diagnostics
-	data.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: actionlog.GetActionLogEntryTypes()}, actions)
-	if diags.HasError() {
-		response.Diagnostics.Append(diags...)
-		return
-	}
+	response.Diagnostics.Append(actionlog.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
+		actions := make([]actionlog.ActionLogEntry, 0)
+		actions = append(actions, actionlog.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
+		actions = append(actions, actionlog.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
+		return actions
+	})...)
 }
 
 func (r *computedNestedListResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
