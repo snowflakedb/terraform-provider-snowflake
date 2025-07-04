@@ -42,10 +42,10 @@ func (w *WarehouseResourceAssert) HasDefaultMaxConcurrencyLevel() *WarehouseReso
 The generated resource assertions are available in the `assert/resourceassert/gen` package.
 The generated assertions provide a set of methods that can be used to assert the state of the resource.
 Here's a short description of every generated assertion:
-- HasX methods check that a field is set with the provided value. 
+- HasX methods check that a field is set with the provided value.
 - HasNoX methods check that a field is not set (not present in state or is empty in case of lists/sets).
 - HasXEmpty methods are generated only for string type fields and are checking if a given field is set to empty string.
-- HasXNotEmpty methods check that a field is set with any value. 
+- HasXNotEmpty methods check that a field is set with any value.
 
 ### Adding new resource show output assertions
 Resource show output assertions can be generated automatically. For object `abc` do the following:
@@ -372,7 +372,9 @@ it will result in:
 - Replace `acceptance/snowflakechecks` with the new proposed Snowflake objects assertions.
 - Support `showOutputValueUnset` and add a second function for each `show_output` attribute.
 - Support `resourceAssertionTypeValueNotSet` for import checks (`panic` left currently).
-- Add assertions for the `describe_output` and handle describe objects too.
+- Add assertions for
+  - The `describe_output` and handle describe objects too.
+  - Custom objects: functions using `NewSnowflakeObjectAssertWithTestClientObjectProvider` can handle only objects that have proper identifiers. Not all of them have such IDs (check user PAT), so this function can't be used.
 - Add support for datasource tests (assertions and config builders).
 - Consider overriding the assertions when invoking same check multiple times with different params (e.g. `Warehouse(...).HasType(X).HasType(Y)`; it could use the last-check-wins approach, to more easily reuse complex checks between the test steps).
 - Consider not adding the check for `show_output` presence on creation (same with `parameters`). The majority of the use cases need it to be present but there are a few others (like conditional presence in the datasources). Currently, it seems that they should be always present in the resources, so no change is made. Later, with adding the support for the datasource tests, consider simple destructive implementation like:

@@ -81,6 +81,7 @@ func Test_ToObjectType(t *testing.T) {
 		{input: "GIT REPOSITORY", want: ObjectTypeGitRepository},
 		{input: "MODEL", want: ObjectTypeModel},
 		{input: "SERVICE", want: ObjectTypeService},
+		{input: "PROGRAMMATIC ACCESS TOKEN", want: ObjectTypeProgrammaticAccessToken},
 	}
 
 	invalid := []test{
