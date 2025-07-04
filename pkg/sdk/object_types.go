@@ -82,7 +82,7 @@ const (
 	ObjectTypeService              ObjectType = "SERVICE"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
-	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN"
+	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
 )
 
 func (o ObjectType) String() string {
@@ -347,7 +347,7 @@ const (
 	PluralObjectTypeGitRepositories          PluralObjectType = "GIT REPOSITORIES"
 	PluralObjectTypeModels                   PluralObjectType = "MODELS"
 	PluralObjectTypeServices                 PluralObjectType = "SERVICES"
-	PluralObjectTypeProgrammaticAccessTokens PluralObjectType = "PROGRAMMATIC ACCESS TOKENS"
+	PluralObjectTypeProgrammaticAccessTokens PluralObjectType = "PROGRAMMATIC ACCESS TOKENS" //nolint:gosec
 )
 
 func (p PluralObjectType) String() string {
