@@ -106,6 +106,9 @@ func TestInt_SafeRemoveProgrammaticAccessToken(t *testing.T) {
 	err := sdk.SafeRemoveProgrammaticAccessToken(testClient(t), removeProgrammaticAccessToken(user.ID(), token.ID()), ctx, user.ID())
 	assert.NoError(t, err)
 
+	err = sdk.SafeRemoveProgrammaticAccessToken(testClient(t), removeProgrammaticAccessToken(user.ID(), token.ID()), ctx, user.ID())
+	assert.NoError(t, err)
+
 	invalidUserId := NonExistingAccountObjectIdentifier
 	err = sdk.SafeRemoveProgrammaticAccessToken(testClient(t), removeProgrammaticAccessToken(invalidUserId, token.ID()), ctx, invalidUserId)
 	assert.NoError(t, err)

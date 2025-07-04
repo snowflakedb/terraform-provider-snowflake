@@ -19,7 +19,8 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	currentUser := testClientHelper().Context.CurrentUser(t)
+	currentUser, err := client.ContextFunctions.CurrentUser(ctx)
+	require.NoError(t, err)
 
 	user, userCleanup := testClientHelper().User.CreateUser(t)
 	t.Cleanup(userCleanup)
@@ -83,7 +84,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 			HasName(id.Name()).
 			HasUserName(user.ID()).
 			HasRoleRestriction(snowflakeroles.Public).
-			// Assert that WithDaysToExpiry(1) takes effect.
+			// Assert that WithDaysToExpiry(1) takes effect - the expires_at date is before 2 days from now.
 			HasExpiresAtBefore(time.Now().Add(time.Hour*24*2)).
 			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
 			HasComment(comment).

@@ -295,3 +295,21 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		})
 	}
 }
+
+func TestInt_SnowflakeReturnsACustomErrorOnInvalidUserProgrammaticAccessToken(t *testing.T) {
+	ctx := context.Background()
+
+	user, userCleanup := testClientHelper().User.CreateUser(t)
+	t.Cleanup(userCleanup)
+
+	invalidUserId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	invalidTokenName := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+	err := testClient(t).Users.RemoveProgrammaticAccessToken(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(user.ID(), invalidTokenName))
+	assert.ErrorIs(t, err, sdk.ErrNotFound)
+	assert.NotErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	assert.NotErrorIs(t, err, sdk.ErrObjectNotFound)
+
+	err = testClient(t).Users.RemoveProgrammaticAccessToken(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(invalidUserId, invalidTokenName))
+	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+}

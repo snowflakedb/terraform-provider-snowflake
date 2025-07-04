@@ -65,9 +65,14 @@ func SafeRemoveProgrammaticAccessToken(
 ) error {
 	err := removeProgrammaticAccessToken()
 
+	// Tokens can't be removed with IF EXISTS, so we return nil if the token is not found.
+	if errors.Is(err, ErrNotFound) {
+		return nil
+	}
+
 	// ErrObjectNotExistOrAuthorized can only happen
 	// when the user object is not accessible for some reason during the "main" removeProgrammaticAccessToken.
-	shouldCheckHigherHierarchies := errors.Is(err, ErrObjectNotExistOrAuthorized)
+	shouldCheckHigherHierarchies := errors.Is(err, ErrObjectNotExistOrAuthorized) || errors.Is(err, ErrDoesNotExistOrOperationCannotBePerformed)
 	if !shouldCheckHigherHierarchies {
 		return err
 	}
@@ -143,12 +148,12 @@ func SafeShowById[T any, ID ObjectIdentifierConstraint](
 // SafeShowProgrammaticAccessTokenByName is a helper function with specific implementation for PATs.
 func SafeShowProgrammaticAccessTokenByName(
 	client *Client,
-	showByName func(ctx context.Context, userName AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error),
+	showByName func(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error),
 	ctx context.Context,
-	userName AccountObjectIdentifier,
+	userId AccountObjectIdentifier,
 	tokenName AccountObjectIdentifier,
 ) (*ProgrammaticAccessToken, error) {
-	result, err := showByName(ctx, userName, tokenName)
+	result, err := showByName(ctx, userId, tokenName)
 
 	// ErrObjectNotExistOrAuthorized or ErrDoesNotExistOrOperationCannotBePerformed can only happen
 	// when the user object is not accessible for some reason during the "main" showById.
@@ -158,7 +163,7 @@ func SafeShowProgrammaticAccessTokenByName(
 	}
 	if err != nil {
 		errs := []error{err}
-		if _, err := client.Users.ShowByID(ctx, userName); err != nil {
+		if _, err := client.Users.ShowByID(ctx, userId); err != nil {
 			errs = append(errs, err)
 		}
 		return nil, errors.Join(errs...)

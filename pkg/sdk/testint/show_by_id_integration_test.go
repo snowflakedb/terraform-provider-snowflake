@@ -145,14 +145,15 @@ func TestInt_SafeShowProgrammaticAccessTokenByName(t *testing.T) {
 
 	cleanupToken()
 
+	// the token does not exist, so it should return an error
 	_, err = sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), tokenShowByName, testContext(t), user.ID(), token.ID())
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 
-	invalidUserId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-	invalidTokenId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	cleanupUser()
 
-	_, err = sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), tokenShowByName, testContext(t), invalidUserId, invalidTokenId)
+	// the user and the token do not exist, so it should return an error
+	_, err = sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), tokenShowByName, testContext(t), user.ID(), token.ID())
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
