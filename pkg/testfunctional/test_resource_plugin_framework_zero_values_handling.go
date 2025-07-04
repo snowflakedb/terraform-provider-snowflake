@@ -2,10 +2,9 @@ package testfunctional
 
 import (
 	"context"
-	"strconv"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -96,23 +95,28 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 
 func setActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *zeroValuesOpts, data *zeroValuesResourceModelV0) {
 	var actions []string
-	diag := data.ActionsLog.ElementsAs(ctx, &actions, false)
-	if diag.HasError() {
-		response.Diagnostics.Append(diag...)
-		return
+	//diag := data.ActionsLog.ElementsAs(ctx, &actions, false)
+	//if diag.HasError() {
+	//	response.Diagnostics.Append(diag...)
+	//	return
+	//}
+	//if opts.BoolValue != nil {
+	//	actions = append(actions, actionlog.ActionEntry("CREATE", "BOOL", strconv.FormatBool(*opts.BoolValue)).ToString())
+	//}
+	//if opts.IntValue != nil {
+	//	actions = append(actions, actionlog.ActionEntry("CREATE", "INT", strconv.Itoa(*opts.IntValue)).ToString())
+	//}
+	//if opts.StringValue != nil {
+	//	actions = append(actions, actionlog.ActionEntry("CREATE", "STRING", *opts.StringValue).ToString())
+	//}
+	actionValues := make([]attr.Value, len(actions))
+	for i, a := range actions {
+		actionValues[i] = types.StringValue(a)
 	}
-	if opts.BoolValue != nil {
-		actions = append(actions, actionlog.NewLogEntry("CREATE", "BOOL", strconv.FormatBool(*opts.BoolValue)).ToString())
-	}
-	if opts.IntValue != nil {
-		actions = append(actions, actionlog.NewLogEntry("CREATE", "INT", strconv.Itoa(*opts.IntValue)).ToString())
-	}
-	if opts.StringValue != nil {
-		actions = append(actions, actionlog.NewLogEntry("CREATE", "STRING", *opts.StringValue).ToString())
-	}
-	data.ActionsLog, diag = types.ListValueFrom(ctx, types.StringType, actions)
-	if diag.HasError() {
-		response.Diagnostics.Append(diag...)
+	var diags diag.Diagnostics
+	data.ActionsLog, diags = types.ListValue(types.StringType, actionValues)
+	if diags.HasError() {
+		response.Diagnostics.Append(diags...)
 		return
 	}
 }

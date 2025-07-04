@@ -1,48 +1,43 @@
 package actionlog
 
 import (
-	"encoding/csv"
-	"fmt"
-	"strings"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const separator = '|'
-
-type LogEntry struct {
-	Action string
-	Field  string
-	Value  string
+type ActionLogEntry struct {
+	Action types.String `tfsdk:"action"`
+	Field  types.String `tfsdk:"field"`
+	Value  types.String `tfsdk:"value"`
 }
 
-func (e *LogEntry) ToString() string {
-	return fmt.Sprintf("%s%c%s%c%s", e.Action, separator, e.Field, separator, e.Value)
+func GetActionLogEntrySchema() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"action": schema.StringAttribute{
+			Required: true,
+		},
+		"field": schema.StringAttribute{
+			Required: true,
+		},
+		"value": schema.StringAttribute{
+			Required: true,
+		},
+	}
 }
 
-func FromString(s string) (*LogEntry, error) {
-	reader := csv.NewReader(strings.NewReader(s))
-	reader.Comma = separator
-	lines, err := reader.ReadAll()
-	if err != nil {
-		return nil, fmt.Errorf("log entry creation failed: %w", err)
+func GetActionLogEntryTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"action": types.StringType,
+		"field":  types.StringType,
+		"value":  types.StringType,
 	}
-	if len(lines) != 1 {
-		return nil, fmt.Errorf("log entry creation expected 1 row, got %d", len(lines))
-	}
-	line := lines[0]
-	if len(line) != 3 {
-		return nil, fmt.Errorf("log entry creation expected 3 rows, got %d", len(line))
-	}
-	return &LogEntry{
-		Action: line[0],
-		Field:  line[1],
-		Value:  line[2],
-	}, nil
 }
 
-func NewLogEntry(action, field, value string) *LogEntry {
-	return &LogEntry{
-		Action: action,
-		Field:  field,
-		Value:  value,
+func ActionEntry(action string, field string, value string) ActionLogEntry {
+	return ActionLogEntry{
+		Action: types.StringValue(action),
+		Field:  types.StringValue(field),
+		Value:  types.StringValue(value),
 	}
 }
