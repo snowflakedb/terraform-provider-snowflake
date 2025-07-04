@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/computednestedlisterror"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/computednestedlist"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -66,7 +66,7 @@ func (p *pluginFrameworkFunctionalTestsProvider) Resources(_ context.Context) []
 	return []func() resource.Resource{
 		testfunctional.NewSomeResource,
 		testfunctional.NewZeroValuesResource,
-		computednestedlisterror.NewComputedNestedListResource,
+		computednestedlist.NewComputedNestedListResource,
 	}
 }
 
