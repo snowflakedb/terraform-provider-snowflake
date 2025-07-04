@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.3](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.2...v1.2.3) (2025-07-04)
+
+
+### 🔧 **Misc**
+
+* Add Snowflake BCR migration guide ([#3829](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3829)) ([9564239](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9564239f19fccf8049dcc3a207bb9fef46a30246))
+* Set version to v1.2.3 ([00da002](https://github.com/snowflakedb/terraform-provider-snowflake/commit/00da00201c608d6494772c4a663e27e7475410a0))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix data types parsing for functions and procedures with 2025_03 Bundle ([#3827](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3827)) ([b9768d7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b9768d715439d6ec74bb911e66de9a384b150aee))
+* Introduce a new function and procedure parsing function ([#3825](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3825)) ([8119d5f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8119d5fa71316639622b1f154376e811432151a4))
+
 ## [1.2.2](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v1.2.1...v1.2.2) (2025-06-24)
 
 
