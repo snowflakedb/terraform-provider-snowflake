@@ -2,8 +2,6 @@ package httpserver
 
 import (
 	"context"
-	"io"
-	"net/http"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
@@ -99,19 +97,14 @@ func (r *httpServerResource) Read(ctx context.Context, request resource.ReadRequ
 
 func (r *httpServerResource) read(data *httpServerResourceModelV0) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	resp, err := http.Get(r.serverUrl + "/http_server_example")
-	if err != nil {
-		diags.AddError("Could not read resources state", err.Error())
-		return diags
-	}
-	defer resp.Body.Close()
 
-	buf, err := io.ReadAll(resp.Body)
+	exampleRead := Read{}
+	err := common.Get(r.serverUrl, "http_server_example", &exampleRead)
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-		return diags
+	} else {
+		data.Response = types.StringValue(exampleRead.Msg)
 	}
-	data.Response = types.StringValue(string(buf[:]))
 	return diags
 }
 

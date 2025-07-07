@@ -2,26 +2,21 @@ package testfunctional_test
 
 import (
 	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/httpserver"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-var currentResponse *string
+var (
+	httpServerExampleHandler = common.NewDynamicHandler[httpserver.Read]()
+)
 
 func init() {
-	allTestHandlers["http_server_example"] = &httpServerExampleHandler{}
-}
-
-type httpServerExampleHandler struct{}
-
-func (h *httpServerExampleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	d, err := w.Write([]byte(*currentResponse))
-	functionalTestLog.Printf("[DEBUG] Bytes written: %d, err: %v", d, err)
+	allTestHandlers["http_server_example"] = httpServerExampleHandler
 }
 
 func TestAcc_TerraformPluginFrameworkFunctional_HttpServer(t *testing.T) {
@@ -37,7 +32,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_HttpServer(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					currentResponse = sdk.Pointer("aaa")
+					httpServerExampleHandler.SetCurrentValue(httpserver.Read{Msg: "aaa"})
 				},
 				Config: httpServerExampleConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
@@ -47,7 +42,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_HttpServer(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					currentResponse = sdk.Pointer("bbb")
+					httpServerExampleHandler.SetCurrentValue(httpserver.Read{Msg: "bbb"})
 				},
 				Config: httpServerExampleConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
