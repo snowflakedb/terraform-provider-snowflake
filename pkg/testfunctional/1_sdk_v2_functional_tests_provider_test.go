@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -40,15 +41,10 @@ func testDataSources() map[string]*schema.Resource {
 }
 
 func configureTestProvider(_ context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
-	providerCtx := &testProviderContext{}
-
+	var testName string
 	if v, ok := s.GetOk("test_name"); ok {
-		providerCtx.testName = v.(string)
+		testName = v.(string)
 	}
 
-	return providerCtx, nil
-}
-
-type testProviderContext struct {
-	testName string
+	return common.NewTestProviderContext(testName, server.URL), nil
 }
