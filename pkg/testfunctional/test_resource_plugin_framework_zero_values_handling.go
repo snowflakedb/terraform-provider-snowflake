@@ -6,6 +6,8 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -13,11 +15,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+var _ resource.ResourceWithConfigure = &ZeroValuesResource{}
+
 func NewZeroValuesResource() resource.Resource {
 	return &ZeroValuesResource{}
 }
 
-type ZeroValuesResource struct{}
+type ZeroValuesResource struct {
+	serverUrl string
+}
 
 type zeroValuesResourceModelV0 struct {
 	Name        types.String `tfsdk:"name"`
@@ -29,7 +35,7 @@ type zeroValuesResourceModelV0 struct {
 	actionlog.ActionsLogEmbeddable
 }
 
-type zeroValuesOpts struct {
+type ZeroValuesOpts struct {
 	BoolValue   *bool
 	IntValue    *int
 	StringValue *string
@@ -37,6 +43,20 @@ type zeroValuesOpts struct {
 
 func (r *ZeroValuesResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
 	response.TypeName = request.ProviderTypeName + "_zero_values"
+}
+
+func (r *ZeroValuesResource) Configure(_ context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
+	if request.ProviderData == nil {
+		return
+	}
+
+	providerContext, ok := request.ProviderData.(*common.TestProviderContext)
+	if !ok {
+		response.Diagnostics.AddError("Provider context is broken", "Set up the context correctly in the provider's Configure func.")
+		return
+	}
+
+	r.serverUrl = providerContext.ServerUrl()
 }
 
 func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest, response *resource.SchemaResponse) {
@@ -47,6 +67,7 @@ func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description: "Name for this resource.",
 				Required:    true,
 			},
+			// TODO [mux-PRs]: another setup for Optional+Computed combo
 			"bool_value": schema.BoolAttribute{
 				Description: "Boolean value.",
 				Optional:    true,
@@ -79,20 +100,26 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 	id := sdk.NewAccountObjectIdentifier(name)
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
-	opts := &zeroValuesOpts{}
+	opts := &ZeroValuesOpts{}
 	booleanAttributeCreate(data.BoolValue, &opts.BoolValue)
 	int64AttributeCreate(data.IntValue, &opts.IntValue)
 	stringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	setActionsOutput(ctx, response, opts, data)
 
+	response.Diagnostics.Append(r.create(opts)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	response.Diagnostics.Append(r.read(data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func setActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *zeroValuesOpts, data *zeroValuesResourceModelV0) {
+func setActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *ZeroValuesOpts, data *zeroValuesResourceModelV0) {
 	response.Diagnostics.Append(actionlog.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
 		actions := make([]actionlog.ActionLogEntry, 0)
 		if opts.BoolValue != nil {
@@ -108,7 +135,44 @@ func setActionsOutput(ctx context.Context, response *resource.CreateResponse, op
 	})...)
 }
 
-func (r *ZeroValuesResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
+func (r *ZeroValuesResource) create(opts *ZeroValuesOpts) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	err := common.Post(r.serverUrl, "zero_values_handling", *opts)
+	if err != nil {
+		diags.AddError("Could not create resource", err.Error())
+	}
+	return diags
+}
+
+func (r *ZeroValuesResource) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
+	var data *zeroValuesResourceModelV0
+	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
+
+	response.Diagnostics.Append(r.read(data)...)
+
+	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+}
+
+func (r *ZeroValuesResource) read(data *zeroValuesResourceModelV0) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	opts := ZeroValuesOpts{}
+	err := common.Get(r.serverUrl, "zero_values_handling", &opts)
+	if err != nil {
+		diags.AddError("Could not read resources state", err.Error())
+	} else {
+		if opts.BoolValue != nil {
+			data.BoolValue = types.BoolValue(*opts.BoolValue)
+		}
+		if opts.IntValue != nil {
+			data.IntValue = types.Int64Value(int64(*opts.IntValue))
+		}
+		if opts.StringValue != nil {
+			data.StringValue = types.StringValue(*opts.StringValue)
+		}
+	}
+	return diags
 }
 
 func (r *ZeroValuesResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {

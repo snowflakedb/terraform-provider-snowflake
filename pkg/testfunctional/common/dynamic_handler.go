@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// TODO [mux-PRs]: make it possible to reuse simultaneously from multiple tests (e.g. map per test)
 type DynamicHandler[T any] struct {
 	currentValue T
 }

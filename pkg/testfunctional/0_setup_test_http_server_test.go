@@ -29,6 +29,7 @@ func setUpTestHttpServer() error {
 
 	server = httptest.NewServer(mux)
 	serverCleanup = func() {
+		functionalTestLog.Printf("[INFO] Closing server at %s", server.URL)
 		server.Close()
 	}
 

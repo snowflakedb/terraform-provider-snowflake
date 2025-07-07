@@ -5,9 +5,24 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+var (
+	// TODO [mux-PRs]: handle default values properly
+	zeroValuesHandler = common.NewDynamicHandlerWithInitialValue[testfunctional.ZeroValuesOpts](testfunctional.ZeroValuesOpts{
+		BoolValue:   sdk.Pointer(true),
+		IntValue:    sdk.Pointer(5),
+		StringValue: sdk.Pointer("default value"),
+	})
+)
+
+func init() {
+	allTestHandlers["zero_values_handling"] = zeroValuesHandler
+}
 
 func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Basic(t *testing.T) {
 	id := sdk.NewAccountObjectIdentifier("abc")
@@ -24,10 +39,16 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Basic(t *testing.T) {
 				Config: zeroValuesConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+
+					resource.TestCheckResourceAttr(resourceReference, "bool_value", "false"),
+					resource.TestCheckResourceAttr(resourceReference, "int_value", "0"),
+					//resource.TestCheckResourceAttr(resourceReference, "string_value", "default value"),
+
+					// check actions
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.action", "CREATE"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.field", "bool_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", "true"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", "false"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.action", "CREATE"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.field", "int_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", "0"),
@@ -43,7 +64,7 @@ resource "%[2]s" "test" {
   provider = "%[3]s"
 
   name = "%[1]s"
-  bool_value = "true"
+  bool_value = false
   int_value = 0
 }
 `, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
