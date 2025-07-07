@@ -25,6 +25,12 @@ func (r *HttpServerEmbeddable[T]) Configure(_ context.Context, request resource.
 	r.serverUrl = providerContext.ServerUrl()
 }
 
+func NewHttpServerEmbeddable[T any](path string) *HttpServerEmbeddable[T] {
+	return &HttpServerEmbeddable[T]{
+		path: path,
+	}
+}
+
 func (r *HttpServerEmbeddable[T]) SetPath(path string) {
 	r.path = path
 }
