@@ -134,6 +134,17 @@ func (f *FunctionAssert) HasArgumentsOld(expected ...sdk.DataType) *FunctionAsse
 	return f
 }
 
+func (f *FunctionAssert) HasReturnTypeOld(expected sdk.DataType) *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if o.ReturnTypeOld != expected {
+			return fmt.Errorf("expected return type old: %v; got: %v", expected, o.ReturnTypeOld)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FunctionAssert) HasArgumentsRaw(expected string) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()

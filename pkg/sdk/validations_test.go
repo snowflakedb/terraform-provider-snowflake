@@ -3,6 +3,7 @@ package sdk
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,6 +37,30 @@ func TestValidObjectIdentifier(t *testing.T) {
 
 	t.Run("with 255 characters in each of db, schema and name", func(t *testing.T) {
 		ok := ValidObjectIdentifier(longSchemaObjectIdentifier)
+		assert.True(t, ok)
+	})
+}
+
+func TestValidObjectName(t *testing.T) {
+	t.Run("with valid object name", func(t *testing.T) {
+		ok := ValidObjectName("test_name")
+		assert.True(t, ok)
+	})
+
+	t.Run("with empty name", func(t *testing.T) {
+		ok := ValidObjectName("")
+		assert.False(t, ok)
+	})
+
+	t.Run("with name over 255 characters", func(t *testing.T) {
+		longName := random.AlphaN(256)
+		ok := ValidObjectName(longName)
+		assert.False(t, ok)
+	})
+
+	t.Run("with name exactly 255 characters", func(t *testing.T) {
+		name := random.AlphaN(255)
+		ok := ValidObjectName(name)
 		assert.True(t, ok)
 	})
 }
