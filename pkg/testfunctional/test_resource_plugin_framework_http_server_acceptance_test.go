@@ -31,23 +31,20 @@ func TestAcc_TerraformPluginFrameworkFunctional_HttpServer(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig: func() {
-					httpServerExampleHandler.SetCurrentValue(httpserver.Read{Msg: "aaa"})
-				},
 				Config: httpServerExampleConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceReference, "response", "aaa"),
+					resource.TestCheckResourceAttr(resourceReference, "message", "set through resource"),
 				),
 			},
 			{
 				PreConfig: func() {
-					httpServerExampleHandler.SetCurrentValue(httpserver.Read{Msg: "bbb"})
+					httpServerExampleHandler.SetCurrentValue(httpserver.Read{Msg: "set externally"})
 				},
 				Config: httpServerExampleConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceReference, "response", "bbb"),
+					resource.TestCheckResourceAttr(resourceReference, "message", "set externally"),
 				),
 			},
 		},

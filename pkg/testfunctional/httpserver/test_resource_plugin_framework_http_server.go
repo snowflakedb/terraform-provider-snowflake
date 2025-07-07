@@ -24,9 +24,9 @@ type httpServerResource struct {
 }
 
 type httpServerResourceModelV0 struct {
-	Name     types.String `tfsdk:"name"`
-	Id       types.String `tfsdk:"id"`
-	Response types.String `tfsdk:"response"`
+	Name    types.String `tfsdk:"name"`
+	Id      types.String `tfsdk:"id"`
+	Message types.String `tfsdk:"message"`
 }
 
 func (r *httpServerResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
@@ -48,9 +48,9 @@ func (r *httpServerResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"response": schema.StringAttribute{
+			"message": schema.StringAttribute{
 				Computed:    true,
-				Description: "External value.",
+				Description: "Externally settable value.",
 			},
 		},
 	}
@@ -78,12 +78,29 @@ func (r *httpServerResource) Create(ctx context.Context, request resource.Create
 	id := sdk.NewAccountObjectIdentifier(name)
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
-	response.Diagnostics.Append(r.read(data)...)
+	response.Diagnostics.Append(r.create()...)
+	if response.Diagnostics.HasError() {
+		return
+	}
 
+	response.Diagnostics.Append(r.read(data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+}
+
+func (r *httpServerResource) create() diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	exampleRead := Read{
+		Msg: "set through resource",
+	}
+	err := common.Post(r.serverUrl, "http_server_example", &exampleRead)
+	if err != nil {
+		diags.AddError("Could not create resource", err.Error())
+	}
+	return diags
 }
 
 func (r *httpServerResource) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
@@ -103,7 +120,7 @@ func (r *httpServerResource) read(data *httpServerResourceModelV0) diag.Diagnost
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
 	} else {
-		data.Response = types.StringValue(exampleRead.Msg)
+		data.Message = types.StringValue(exampleRead.Msg)
 	}
 	return diags
 }
