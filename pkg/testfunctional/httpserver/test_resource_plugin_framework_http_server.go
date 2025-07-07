@@ -16,11 +16,13 @@ import (
 var _ resource.ResourceWithConfigure = &httpServerResource{}
 
 func NewHttpServerResource() resource.Resource {
-	return &httpServerResource{}
+	res := httpServerResource{}
+	res.HttpServerEmbeddable.SetPath("http_server_example")
+	return &res
 }
 
 type httpServerResource struct {
-	serverUrl string
+	common.HttpServerEmbeddable[Read]
 }
 
 type httpServerResourceModelV0 struct {
@@ -56,20 +58,6 @@ func (r *httpServerResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	}
 }
 
-func (r *httpServerResource) Configure(_ context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
-	if request.ProviderData == nil {
-		return
-	}
-
-	providerContext, ok := request.ProviderData.(*common.TestProviderContext)
-	if !ok {
-		response.Diagnostics.AddError("Provider context is broken", "Set up the context correctly in the provider's Configure func.")
-		return
-	}
-
-	r.serverUrl = providerContext.ServerUrl()
-}
-
 func (r *httpServerResource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
 	var data *httpServerResourceModelV0
 	response.Diagnostics.Append(request.Plan.Get(ctx, &data)...)
@@ -96,7 +84,7 @@ func (r *httpServerResource) create() diag.Diagnostics {
 	exampleRead := Read{
 		Msg: "set through resource",
 	}
-	err := common.Post(r.serverUrl, "http_server_example", &exampleRead)
+	err := r.Post(exampleRead)
 	if err != nil {
 		diags.AddError("Could not create resource", err.Error())
 	}
@@ -115,8 +103,7 @@ func (r *httpServerResource) Read(ctx context.Context, request resource.ReadRequ
 func (r *httpServerResource) read(data *httpServerResourceModelV0) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	exampleRead := Read{}
-	err := common.Get(r.serverUrl, "http_server_example", &exampleRead)
+	exampleRead, err := r.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
 	} else {
