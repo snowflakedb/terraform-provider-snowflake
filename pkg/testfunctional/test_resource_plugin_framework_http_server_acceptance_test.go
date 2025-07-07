@@ -2,12 +2,27 @@ package testfunctional_test
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+var currentResponse *string
+
+func init() {
+	allTestHandlers["http_server_example"] = &httpServerExampleHandler{}
+}
+
+type httpServerExampleHandler struct{}
+
+func (h *httpServerExampleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	d, err := w.Write([]byte(*currentResponse))
+	functionalTestLog.Printf("[DEBUG] Bytes written: %d, err: %v", d, err)
+}
 
 func TestAcc_TerraformPluginFrameworkFunctional_HttpServer(t *testing.T) {
 	id := sdk.NewAccountObjectIdentifier("abc")
@@ -21,10 +36,23 @@ func TestAcc_TerraformPluginFrameworkFunctional_HttpServer(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
+				PreConfig: func() {
+					currentResponse = sdk.Pointer("aaa")
+				},
 				Config: httpServerExampleConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceReference, "response", "{\"message\": \"test1\"}"),
+					resource.TestCheckResourceAttr(resourceReference, "response", "aaa"),
+				),
+			},
+			{
+				PreConfig: func() {
+					currentResponse = sdk.Pointer("bbb")
+				},
+				Config: httpServerExampleConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "response", "bbb"),
 				),
 			},
 		},
