@@ -29,7 +29,11 @@ func (h *DynamicHandler[T]) SetCurrentValue(valueProvider T) {
 }
 
 func NewDynamicHandler[T any]() *DynamicHandler[T] {
-	return &DynamicHandler[T]{}
+	return &DynamicHandler[T]{
+		replaceWithFunc: func(_ T, t2 T) T {
+			return t2
+		},
+	}
 }
 
 func NewDynamicHandlerWithInitialValue[T any](initialValue T) *DynamicHandler[T] {
