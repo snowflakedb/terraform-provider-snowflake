@@ -51,6 +51,7 @@ type Client struct {
 	GitRepositories              GitRepositories
 	Grants                       Grants
 	ImageRepositories            ImageRepositories
+	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
@@ -188,6 +189,7 @@ func (c *Client) initialize() {
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
+	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
