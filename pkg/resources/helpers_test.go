@@ -64,7 +64,7 @@ func Test_GetPropertyAsPointer(t *testing.T) {
 
 	assert.Equal(t, 123, *resources.GetPropertyAsPointer[int](d, "integer"))
 	assert.Equal(t, "some string", *resources.GetPropertyAsPointer[string](d, "string"))
-	assert.Equal(t, true, *resources.GetPropertyAsPointer[bool](d, "boolean"))
+	assert.True(t, *resources.GetPropertyAsPointer[bool](d, "boolean"))
 	assert.Nil(t, resources.GetPropertyAsPointer[bool](d, "invalid"))
 
 	assert.Equal(t, 123, *resources.GetPropertyAsPointer[int](d, "integer"))
@@ -73,7 +73,7 @@ func Test_GetPropertyAsPointer(t *testing.T) {
 	assert.Equal(t, "some string", *resources.GetPropertyAsPointer[string](d, "string"))
 	assert.Nil(t, resources.GetPropertyAsPointer[string](d, "second_integer"))
 	assert.Nil(t, resources.GetPropertyAsPointer[string](d, "third_string"))
-	assert.Equal(t, true, *resources.GetPropertyAsPointer[bool](d, "boolean"))
+	assert.True(t, *resources.GetPropertyAsPointer[bool](d, "boolean"))
 	assert.Nil(t, resources.GetPropertyAsPointer[bool](d, "second_boolean"))
 	assert.Nil(t, resources.GetPropertyAsPointer[bool](d, "third_boolean"))
 	assert.Nil(t, resources.GetPropertyAsPointer[bool](d, "invalid"))
@@ -135,8 +135,8 @@ func Test_GetConfigPropertyAsPointerAllowingZeroValue(t *testing.T) {
 	assert.Equal(t, "some string", *resources.GetConfigPropertyAsPointerAllowingZeroValue[string](d, "string"))
 	assert.Equal(t, "", *resources.GetConfigPropertyAsPointerAllowingZeroValue[string](d, "second_integer"))
 	assert.Nil(t, resources.GetConfigPropertyAsPointerAllowingZeroValue[string](d, "third_string"))
-	assert.Equal(t, true, *resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "boolean"))
-	assert.Equal(t, false, *resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "second_boolean"))
+	assert.True(t, *resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "boolean"))
+	assert.False(t, *resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "second_boolean"))
 	assert.Nil(t, resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "third_boolean"))
 	assert.Nil(t, resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "invalid"))
 }

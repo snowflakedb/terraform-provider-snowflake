@@ -289,6 +289,7 @@ type Function struct {
 	MinNumArguments            int
 	MaxNumArguments            int
 	ArgumentsOld               []DataType
+	ReturnTypeOld              DataType
 	ArgumentsRaw               string
 	Description                string
 	CatalogName                string

@@ -535,7 +535,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		externalVolumes, err := client.ExternalVolumes.Show(ctx, req)
 		require.NoError(t, err)
 
-		assert.Equal(t, 1, len(externalVolumes))
+		assert.Len(t, externalVolumes, 1)
 		assertExternalVolumeShowResult(t, &externalVolumes[0], id, allowWrites, comment)
 	})
 }

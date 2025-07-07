@@ -1,13 +1,10 @@
-//go:build !account_level_tests
-
-package resources_test
+package testfunctional_test
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -21,23 +18,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [SNOW-2054208]: merge setups/test cases with TestAcc_TestResource_DataTypeDiffHandlingList during the package cleanup.
-func TestAcc_TestResource_DataTypeDiffHandling(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-
+// TODO [SNOW-2054208]: merge setups/test cases with TestAcc_TestResource_DataTypeDiffHandling during the package cleanup.
+func TestAcc_SdkV2Functional_TestResource_DataTypeDiffHandlingList(t *testing.T) {
 	envName := fmt.Sprintf("%s_%s", testenvs.TestResourceDataTypeDiffHandlingEnv, strings.ToUpper(random.AlphaN(10)))
-	resourceType := "snowflake_test_resource_data_type_diff_handling"
+	resourceType := "snowflake_test_resource_data_type_diff_handling_list"
 	resourceName := "test"
 	resourceReference := fmt.Sprintf("%s.%s", resourceType, resourceName)
-	propertyName := "top_level_datatype"
+	listPropertyName := "nesting_list"
+	propertyName := "nested_datatype"
+	nestedPropertyAddress := fmt.Sprintf("%s.0.%s", listPropertyName, propertyName)
 
 	testConfig := func(configValue string) string {
 		return fmt.Sprintf(`
 resource "%[3]s" "%[4]s" {
+	provider = "%[7]s"
+
 	env_name = "%[2]s"
-	%[5]s = "%[1]s"
+	%[5]s {
+		%[6]s = "%[1]s"
+	}
 }
-`, configValue, envName, resourceType, resourceName, propertyName)
+`, configValue, envName, resourceType, resourceName, listPropertyName, propertyName, SdkV2FunctionalTestsProviderName)
 	}
 
 	type DataTypeDiffHandlingTestCase struct {
@@ -161,7 +162,7 @@ resource "%[3]s" "%[4]s" {
 
 	for _, testCase := range testCases {
 		tc := testCase
-		t.Run(fmt.Sprintf("TestAcc_TestResource_DataTypeDiffHandling config value: %s, new config value: %s, external value: %s, expecting changes: %t", tc.ConfigValue, tc.NewConfigValue, tc.ExternalValue, tc.ExpectChanges), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestAcc_SdkV2Functional_TestResource_DataTypeDiffHandlingList config value: %s, new config value: %s, external value: %s, expecting changes: %t", tc.ConfigValue, tc.NewConfigValue, tc.ExternalValue, tc.ExpectChanges), func(t *testing.T) {
 			configValueDataType, err := datatypes.ParseDataType(tc.ConfigValue)
 			require.NoError(t, err)
 
@@ -182,14 +183,16 @@ resource "%[3]s" "%[4]s" {
 			if tc.ExpectChanges {
 				if tc.ExternalValue != "" {
 					checks = []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, propertyName, sdk.String(expectedStateFirstStep), sdk.String(tc.ExternalValue)),
-						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, sdk.String(tc.ExternalValue), sdk.String(expectedStateFirstStep)),
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(resourceReference, nestedPropertyAddress, sdk.String(expectedStateFirstStep), sdk.String(tc.ExternalValue)),
+						// TODO [SNOW-1473409]: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
+						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, sdk.String(tc.ExternalValue), sdk.String(expectedStateFirstStep)),
 					}
 				} else {
 					checks = []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, sdk.String(expectedStateFirstStep), sdk.String(expectedStateSecondStep)),
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionDestroyBeforeCreate),
+						// TODO [SNOW-1473409]: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
+						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, sdk.String(expectedStateFirstStep), sdk.String(expectedStateSecondStep)),
 					}
 				}
 			} else {
@@ -199,7 +202,7 @@ resource "%[3]s" "%[4]s" {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
@@ -211,7 +214,7 @@ resource "%[3]s" "%[4]s" {
 						},
 						Config: testConfig(tc.ConfigValue),
 						Check: resource.ComposeTestCheckFunc(
-							resource.TestCheckResourceAttr(resourceReference, propertyName, expectedStateFirstStep),
+							resource.TestCheckResourceAttr(resourceReference, nestedPropertyAddress, expectedStateFirstStep),
 						),
 					},
 					{
@@ -225,7 +228,7 @@ resource "%[3]s" "%[4]s" {
 						},
 						Config: testConfig(newConfigValue),
 						Check: resource.ComposeTestCheckFunc(
-							resource.TestCheckResourceAttr(resourceReference, propertyName, expectedStateSecondStep),
+							resource.TestCheckResourceAttr(resourceReference, nestedPropertyAddress, expectedStateSecondStep),
 						),
 					},
 				},

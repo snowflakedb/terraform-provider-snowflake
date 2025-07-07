@@ -29,7 +29,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 	assertNotificationIntegration := func(t *testing.T, s *sdk.NotificationIntegration, name sdk.AccountObjectIdentifier, notificationType string, comment string) {
 		t.Helper()
 		assert.Equal(t, name.Name(), s.Name)
-		assert.Equal(t, true, s.Enabled)
+		assert.True(t, s.Enabled)
 		assert.Equal(t, notificationType, s.NotificationType)
 		assert.Equal(t, "NOTIFICATION", s.Category)
 		assert.Equal(t, comment, s.Comment)

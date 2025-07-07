@@ -17,7 +17,6 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "SNOWFLAKE_CURRENT_ACCOUNT_DATASOURCE", want: CurrentAccountDatasource},
 
 		// Supported Values.
-		{input: "snowflake_current_account_datasource", want: CurrentAccountDatasource},
 		{input: "snowflake_account_password_policy_attachment_resource", want: AccountPasswordPolicyAttachmentResource},
 		{input: "snowflake_alert_resource", want: AlertResource},
 		{input: "snowflake_alerts_datasource", want: AlertsDatasource},
@@ -26,6 +25,8 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_compute_pools_datasource", want: ComputePoolsDatasource},
 		{input: "snowflake_cortex_search_service_resource", want: CortexSearchServiceResource},
 		{input: "snowflake_cortex_search_services_datasource", want: CortexSearchServicesDatasource},
+		{input: "snowflake_current_account_resource", want: CurrentAccountResource},
+		{input: "snowflake_current_account_datasource", want: CurrentAccountDatasource},
 		{input: "snowflake_database_datasource", want: DatabaseDatasource},
 		{input: "snowflake_database_role_datasource", want: DatabaseRoleDatasource},
 		{input: "snowflake_dynamic_table_resource", want: DynamicTableResource},
@@ -57,6 +58,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_pipes_datasource", want: PipesDatasource},
 		{input: "snowflake_current_role_datasource", want: CurrentRoleDatasource},
 		{input: "snowflake_service_resource", want: ServiceResource},
+		{input: "snowflake_services_datasource", want: ServicesDatasource},
 		{input: "snowflake_sequence_resource", want: SequenceResource},
 		{input: "snowflake_sequences_datasource", want: SequencesDatasource},
 		{input: "snowflake_share_resource", want: ShareResource},

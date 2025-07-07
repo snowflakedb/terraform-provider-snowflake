@@ -893,7 +893,7 @@ func TestInt_Tasks(t *testing.T) {
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(5)}))
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedTasks))
+		assert.Len(t, returnedTasks, 1)
 		assert.Contains(t, returnedTasks, *task1)
 		assert.NotContains(t, returnedTasks, *task2)
 	})

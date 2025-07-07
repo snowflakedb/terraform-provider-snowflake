@@ -321,7 +321,6 @@ func pointerTimeInSecondsAttributeSet(src *int, dst *time.Duration) {
 	}
 }
 
-// TODO [SNOW-1827312]: fix this method
 func pointerConfigBoolAttributeSet(src *bool, dst *gosnowflake.ConfigBool) {
 	if src != nil {
 		*dst = boolToConfigBool(*src)
@@ -410,13 +409,14 @@ func ParsePrivateKey(privateKeyBytes []byte, passphrase []byte) (*rsa.PrivateKey
 type AuthenticationType string
 
 const (
-	AuthenticationTypeSnowflake           AuthenticationType = "SNOWFLAKE"
-	AuthenticationTypeOauth               AuthenticationType = "OAUTH"
-	AuthenticationTypeExternalBrowser     AuthenticationType = "EXTERNALBROWSER"
-	AuthenticationTypeOkta                AuthenticationType = "OKTA"
-	AuthenticationTypeJwt                 AuthenticationType = "SNOWFLAKE_JWT"
-	AuthenticationTypeTokenAccessor       AuthenticationType = "TOKENACCESSOR"
-	AuthenticationTypeUsernamePasswordMfa AuthenticationType = "USERNAMEPASSWORDMFA"
+	AuthenticationTypeSnowflake               AuthenticationType = "SNOWFLAKE"
+	AuthenticationTypeOauth                   AuthenticationType = "OAUTH"
+	AuthenticationTypeExternalBrowser         AuthenticationType = "EXTERNALBROWSER"
+	AuthenticationTypeOkta                    AuthenticationType = "OKTA"
+	AuthenticationTypeJwt                     AuthenticationType = "SNOWFLAKE_JWT"
+	AuthenticationTypeTokenAccessor           AuthenticationType = "TOKENACCESSOR"
+	AuthenticationTypeUsernamePasswordMfa     AuthenticationType = "USERNAMEPASSWORDMFA"
+	AuthenticationTypeProgrammaticAccessToken AuthenticationType = "PROGRAMMATIC_ACCESS_TOKEN" //nolint:gosec
 
 	AuthenticationTypeEmpty AuthenticationType = ""
 )
@@ -429,6 +429,7 @@ var AllAuthenticationTypes = []AuthenticationType{
 	AuthenticationTypeJwt,
 	AuthenticationTypeTokenAccessor,
 	AuthenticationTypeUsernamePasswordMfa,
+	AuthenticationTypeProgrammaticAccessToken,
 }
 
 func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
@@ -447,6 +448,8 @@ func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 		return gosnowflake.AuthTypeTokenAccessor, nil
 	case string(AuthenticationTypeUsernamePasswordMfa):
 		return gosnowflake.AuthTypeUsernamePasswordMFA, nil
+	case string(AuthenticationTypeProgrammaticAccessToken):
+		return gosnowflake.AuthTypePat, nil
 	default:
 		return gosnowflake.AuthType(0), fmt.Errorf("invalid authenticator type: %s", s)
 	}
@@ -462,6 +465,8 @@ func ToExtendedAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 		return ToAuthenticatorType(s)
 	}
 }
+
+const GosnowflakeBoolConfigDefault = gosnowflake.ConfigBool(0)
 
 type DriverLogLevel string
 

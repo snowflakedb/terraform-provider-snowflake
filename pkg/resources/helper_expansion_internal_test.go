@@ -24,5 +24,5 @@ func TestExpandBlankStringList(t *testing.T) {
 	in := []interface{}{}
 	out := expandStringList(in)
 
-	r.Equal(0, len(out))
+	r.Empty(out)
 }

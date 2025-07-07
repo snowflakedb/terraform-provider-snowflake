@@ -214,7 +214,7 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	var columnSignatures []sdk.TableColumnSignature
 	var err error
-	if columnSignatures, err = handleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.TableColumnSignature, error) {
+	if columnSignatures, err = HandleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.TableColumnSignature, error) {
 		return sdk.TableColumnSignature{
 			Name: v["name"].(string),
 			Type: dataType,
@@ -224,7 +224,7 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	var returns datatypes.DataType
-	if err := handleDatatypeCreate(d, "return_data_type", func(dataType datatypes.DataType) error {
+	if err := HandleDatatypeCreate(d, "return_data_type", func(dataType datatypes.DataType) error {
 		returns = dataType
 		return nil
 	}); err != nil {
@@ -292,11 +292,11 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err := handleDatatypeSet(d, "return_data_type", maskingPolicyDescription.ReturnType); err != nil {
+		if err := HandleDatatypeSet(d, "return_data_type", maskingPolicyDescription.ReturnType); err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err := handleNestedDataTypeSet(d, "argument", "type", maskingPolicyDescription.Signature,
+		if err := HandleNestedDataTypeSet(d, "argument", "type", maskingPolicyDescription.Signature,
 			func(signature sdk.TableColumnSignature) datatypes.DataType { return signature.Type },
 			func(signature sdk.TableColumnSignature, arg map[string]any) { arg["name"] = signature.Name },
 		); err != nil {

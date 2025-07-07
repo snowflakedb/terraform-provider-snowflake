@@ -28,21 +28,22 @@ func TestAccountCreate(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		key := random.Password()
 		opts := &CreateAccountOptions{
-			name:               id,
-			AdminName:          "someadmin",
-			AdminRSAPublicKey:  String(key),
-			AdminUserType:      Pointer(UserTypeService),
-			FirstName:          String("Ad"),
-			LastName:           String("Min"),
-			Email:              "admin@example.com",
-			MustChangePassword: Bool(true),
-			Edition:            EditionBusinessCritical,
-			RegionGroup:        String("groupid"),
-			Region:             String("regionid"),
-			Comment:            String("Test account"),
-			Polaris:            Bool(true),
+			name:                     id,
+			AdminName:                "someadmin",
+			AdminRSAPublicKey:        String(key),
+			AdminUserType:            Pointer(UserTypeService),
+			FirstName:                String("Ad"),
+			LastName:                 String("Min"),
+			Email:                    "admin@example.com",
+			MustChangePassword:       Bool(true),
+			Edition:                  EditionBusinessCritical,
+			RegionGroup:              String("groupid"),
+			Region:                   String("regionid"),
+			Comment:                  String("Test account"),
+			ConsumptionBillingEntity: String("be-name"),
+			Polaris:                  Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE ACCOUNT %s ADMIN_NAME = 'someadmin' ADMIN_RSA_PUBLIC_KEY = '%s' ADMIN_USER_TYPE = SERVICE FIRST_NAME = 'Ad' LAST_NAME = 'Min' EMAIL = 'admin@example.com' MUST_CHANGE_PASSWORD = true EDITION = BUSINESS_CRITICAL REGION_GROUP = groupid REGION = regionid COMMENT = 'Test account' POLARIS = true`, id.FullyQualifiedName(), key)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ACCOUNT %s ADMIN_NAME = 'someadmin' ADMIN_RSA_PUBLIC_KEY = '%s' ADMIN_USER_TYPE = SERVICE FIRST_NAME = 'Ad' LAST_NAME = 'Min' EMAIL = 'admin@example.com' MUST_CHANGE_PASSWORD = true EDITION = BUSINESS_CRITICAL REGION_GROUP = groupid REGION = regionid COMMENT = 'Test account' CONSUMPTION_BILLING_ENTITY = "be-name" POLARIS = true`, id.FullyQualifiedName(), key)
 	})
 
 	t.Run("static password", func(t *testing.T) {
@@ -66,29 +67,68 @@ func TestAccountCreate(t *testing.T) {
 }
 
 func TestAccountAlter(t *testing.T) {
+	t.Run("validation: exactly one value - nothing set", func(t *testing.T) {
+		opts := &AlterAccountOptions{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename"))
+	})
+
 	t.Run("validation: exactly one value set in AccountSet - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
+	})
+
+	t.Run("validation: no name passed when setting consumption billing entity", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				ConsumptionBillingEntity: String("be-name"),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: no name passed when unsetting consumption billing entity", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				ConsumptionBillingEntity: Bool(true),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: no name passed when dropping account", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Drop: &AccountDrop{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: no name passed when renaming account", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Rename: &AccountRename{
+				NewName: randomAccountObjectIdentifier(),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one value set in AccountSet - multiple set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PasswordPolicy:       randomSchemaObjectIdentifier(),
-				SessionPolicy:        randomSchemaObjectIdentifier(),
-				AuthenticationPolicy: randomSchemaObjectIdentifier(),
+				PasswordPolicy:       Pointer(randomSchemaObjectIdentifier()),
+				SessionPolicy:        Pointer(randomSchemaObjectIdentifier()),
+				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - multiple set", func(t *testing.T) {
@@ -99,7 +139,7 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("with legacy set params", func(t *testing.T) {
@@ -252,6 +292,7 @@ func TestAccountAlter(t *testing.T) {
 				},
 			},
 		}
+
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET ABORT_DETACHED_QUERY = true, ACTIVE_PYTHON_PROFILER = "MEMORY", ALLOW_CLIENT_MFA_CACHING = true, ALLOW_ID_TOKEN = true, AUTOCOMMIT = false, BASE_LOCATION_PREFIX = "STORAGE_BASE_URL/", BINARY_INPUT_FORMAT = "BASE64", BINARY_OUTPUT_FORMAT = "BASE64", CATALOG = "SNOWFLAKE", CATALOG_SYNC = "CATALOG_SYNC", CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS = true, CLIENT_ENCRYPTION_KEY_SIZE = 256, CLIENT_MEMORY_LIMIT = 1540, CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX = true, CLIENT_METADATA_USE_SESSION_DATABASE = true, CLIENT_PREFETCH_THREADS = 5, CLIENT_RESULT_CHUNK_SIZE = 159, CLIENT_RESULT_COLUMN_CASE_INSENSITIVE = true, CLIENT_SESSION_KEEP_ALIVE = true, CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY = 3599, CLIENT_TIMESTAMP_TYPE_MAPPING = "TIMESTAMP_NTZ", CORTEX_ENABLED_CROSS_REGION = "ANY_REGION", CORTEX_MODELS_ALLOWLIST = "All", CSV_TIMESTAMP_FORMAT = "YYYY-MM-DD", DATA_RETENTION_TIME_IN_DAYS = 2, DATE_INPUT_FORMAT = "YYYY-MM-DD", DATE_OUTPUT_FORMAT = "YYYY-MM-DD", DEFAULT_DDL_COLLATION = "en-cs", DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = "CPU_X64_S", DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = "GPU_NV_S", DEFAULT_NULL_ORDERING = "FIRST", DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE = %[1]s, DISABLE_UI_DOWNLOAD_BUTTON = true, DISABLE_USER_PRIVILEGE_GRANTS = true, ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG = false, ENABLE_EGRESS_COST_OPTIMIZER = false, ENABLE_IDENTIFIER_FIRST_LOGIN = false, ENABLE_INTERNAL_STAGES_PRIVATELINK = true, ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY = true, ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE = true, ENABLE_UNHANDLED_EXCEPTIONS_REPORTING = false, ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION = false, ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true, ENABLE_UNREDACTED_SECURE_OBJECT_ERROR = true, ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES = true, ERROR_ON_NONDETERMINISTIC_MERGE = false, ERROR_ON_NONDETERMINISTIC_UPDATE = true, EVENT_TABLE = %[4]s, EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST = false, EXTERNAL_VOLUME = %[3]s, GEOGRAPHY_OUTPUT_FORMAT = "WKT", GEOMETRY_OUTPUT_FORMAT = "WKT", HYBRID_TABLE_LOCK_TIMEOUT = 3599, INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 9.9, JDBC_TREAT_DECIMAL_AS_INT = false, JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC = true, JDBC_USE_SESSION_TIMEZONE = false, JSON_INDENT = 4, JS_TREAT_INTEGER_AS_BIGINT = true, LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE = "2 minutes", LOCK_TIMEOUT = 43201, LOG_LEVEL = "INFO", MAX_CONCURRENCY_LEVEL = 7, MAX_DATA_EXTENSION_TIME_IN_DAYS = 13, METRIC_LEVEL = "ALL", MIN_DATA_RETENTION_TIME_IN_DAYS = 1, MULTI_STATEMENT_COUNT = 0, NETWORK_POLICY = %[2]s, NOORDER_SEQUENCE_AS_DEFAULT = false, OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST = false, ODBC_TREAT_DECIMAL_AS_INT = true, PERIODIC_DATA_REKEYING = false, PIPE_EXECUTION_PAUSED = true, PREVENT_UNLOAD_TO_INLINE_URL = true, PREVENT_UNLOAD_TO_INTERNAL_STAGES = true, PYTHON_PROFILER_MODULES = "module1, module2", PYTHON_PROFILER_TARGET_STAGE = %[5]s, QUERY_TAG = "test-query-tag", QUOTED_IDENTIFIERS_IGNORE_CASE = true, REPLACE_INVALID_CHARACTERS = true, REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION = true, REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION = true, ROWS_PER_RESULTSET = 1000, S3_STAGE_VPCE_DNS_NAME = "s3-vpce-dns-name", SAML_IDENTITY_PROVIDER = "saml-idp", SEARCH_PATH = "$current, $public", SERVERLESS_TASK_MAX_STATEMENT_SIZE = "XLARGE", SERVERLESS_TASK_MIN_STATEMENT_SIZE = "SMALL", SIMULATED_DATA_SHARING_CONSUMER = "simulated-consumer", SSO_LOGIN_PAGE = true, STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 1, STATEMENT_TIMEOUT_IN_SECONDS = 1, STORAGE_SERIALIZATION_POLICY = "OPTIMIZED", STRICT_JSON_OUTPUT = true, SUSPEND_TASK_AFTER_NUM_FAILURES = 3, TASK_AUTO_RETRY_ATTEMPTS = 3, TIMESTAMP_DAY_IS_ALWAYS_24H = true, TIMESTAMP_INPUT_FORMAT = "YYYY-MM-DD", TIMESTAMP_LTZ_OUTPUT_FORMAT = "YYYY-MM-DD", TIMESTAMP_NTZ_OUTPUT_FORMAT = "YYYY-MM-DD", TIMESTAMP_OUTPUT_FORMAT = "YYYY-MM-DD", TIMESTAMP_TYPE_MAPPING = "TIMESTAMP_LTZ", TIMESTAMP_TZ_OUTPUT_FORMAT = "YYYY-MM-DD", TIMEZONE = "Europe/London", TIME_INPUT_FORMAT = "YYYY-MM-DD", TIME_OUTPUT_FORMAT = "YYYY-MM-DD", TRACE_LEVEL = "PROPAGATE", TRANSACTION_ABORT_ON_ERROR = true, TRANSACTION_DEFAULT_ISOLATION_LEVEL = "READ COMMITTED", TWO_DIGIT_CENTURY_START = 1971, UNSUPPORTED_DDL_ACTION = "FAIL", USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = "SMALL", USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10, USER_TASK_TIMEOUT_MS = 10, USE_CACHED_RESULT = false, WEEK_OF_YEAR_POLICY = 1, WEEK_START = 1`,
 			warehouseId.FullyQualifiedName(),
 			networkPolicyId.FullyQualifiedName(),
@@ -412,17 +453,27 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with set resource monitor", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				ResourceMonitor: NewAccountObjectIdentifier("mymonitor"),
+				ResourceMonitor: Pointer(NewAccountObjectIdentifier("mymonitor")),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET RESOURCE_MONITOR = "mymonitor"`)
+	})
+
+	t.Run("with set feature policy", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				FeaturePolicySet: &AccountFeaturePolicySet{FeaturePolicy: &id},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET FEATURE POLICY %s FOR ALL APPLICATIONS`, id.FullyQualifiedName())
 	})
 
 	t.Run("with set packages policy", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PackagesPolicy: id,
+				PackagesPolicy: &id,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET PACKAGES POLICY %s`, id.FullyQualifiedName())
@@ -432,7 +483,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PackagesPolicy: id,
+				PackagesPolicy: &id,
 				Force:          Bool(true),
 			},
 		}
@@ -443,18 +494,18 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PasswordPolicy: id,
+				PasswordPolicy: &id,
 				Force:          Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("force can only be set with PackagesPolicy field"))
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("force can only be set with PackagesPolicy and FeaturePolicy"))
 	})
 
 	t.Run("with set password policy", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PasswordPolicy: id,
+				PasswordPolicy: &id,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET PASSWORD POLICY %s`, id.FullyQualifiedName())
@@ -464,7 +515,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				SessionPolicy: id,
+				SessionPolicy: &id,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET SESSION POLICY %s`, id.FullyQualifiedName())
@@ -474,10 +525,32 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				AuthenticationPolicy: id,
+				AuthenticationPolicy: &id,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET AUTHENTICATION POLICY %s`, id.FullyQualifiedName())
+	})
+
+	t.Run("with set consumption billing entity", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Name: &id,
+			Set: &AccountSet{
+				ConsumptionBillingEntity: String("my_consumption_billing_entity"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s SET CONSUMPTION_BILLING_ENTITY = "my_consumption_billing_entity"`, id.FullyQualifiedName())
+	})
+
+	t.Run("with unset consumption billing entity", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Name: &id,
+			Unset: &AccountUnset{
+				ConsumptionBillingEntity: Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s UNSET CONSUMPTION_BILLING_ENTITY`, id.FullyQualifiedName())
 	})
 
 	t.Run("with unset packages policy", func(t *testing.T) {
@@ -487,6 +560,15 @@ func TestAccountAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET PACKAGES POLICY`)
+	})
+
+	t.Run("with unset feature policy", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				FeaturePolicyUnset: &AccountFeaturePolicyUnset{FeaturePolicy: Bool(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET FEATURE POLICY FOR ALL APPLICATIONS`)
 	})
 
 	t.Run("with unset password policy", func(t *testing.T) {
@@ -556,10 +638,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("set is_org_admin", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			SetIsOrgAdmin: &AccountSetIsOrgAdmin{
-				Name:     id,
-				OrgAdmin: true,
-			},
+			Name: &id,
+			Set:  &AccountSet{OrgAdmin: Bool(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s SET IS_ORG_ADMIN = true`, id.FullyQualifiedName())
 	})
@@ -568,8 +648,8 @@ func TestAccountAlter(t *testing.T) {
 		oldName := randomAccountObjectIdentifier()
 		newName := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &oldName,
 			Rename: &AccountRename{
-				Name:       oldName,
 				NewName:    newName,
 				SaveOldURL: Bool(false),
 			},
@@ -580,9 +660,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: drop no url set", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			Drop: &AccountDrop{
-				Name: id,
-			},
+			Name: &id,
+			Drop: &AccountDrop{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountDrop", "OldUrl", "OldOrganizationUrl"))
 	})
@@ -590,8 +669,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: drop all url options set", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:               id,
 				OldUrl:             Bool(true),
 				OldOrganizationUrl: Bool(true),
 			},
@@ -602,8 +681,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("drop old url", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:   id,
 				OldUrl: Bool(true),
 			},
 		}
@@ -613,8 +692,8 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("drop organization old url", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
+			Name: &id,
 			Drop: &AccountDrop{
-				Name:               id,
 				OldOrganizationUrl: Bool(true),
 			},
 		}

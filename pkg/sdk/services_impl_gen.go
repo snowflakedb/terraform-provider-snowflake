@@ -34,7 +34,7 @@ func (v *services) Drop(ctx context.Context, request *DropServiceRequest) error 
 }
 
 func (v *services) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropServiceRequest(id).WithIfExists(true)) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropServiceRequest(id).WithIfExists(true).WithForce(true)) }, ctx, id)
 }
 
 func (v *services) Show(ctx context.Context, request *ShowServiceRequest) ([]Service, error) {

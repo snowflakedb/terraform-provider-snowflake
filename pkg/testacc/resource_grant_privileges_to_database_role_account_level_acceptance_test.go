@@ -21,6 +21,7 @@ import (
 
 // proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629 (UBAC) doesn't affect the grant privileges to database role resource
 func TestAcc_GrantPrivilegesToDatabaseRole_OnDatabase_WithPrivilegesGrantedOnDatabaseToUser(t *testing.T) {
+	t.Skip("TODO(SNOW-2081651): re-enable this if the test is still relevant without the BCR bundle update as now it's enabled by default in Snowflake")
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	databaseRole, databaseRoleCleanup := secondaryTestClient().DatabaseRole.CreateDatabaseRole(t)

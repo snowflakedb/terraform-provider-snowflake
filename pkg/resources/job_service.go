@@ -74,6 +74,7 @@ func CreateJobService(ctx context.Context, d *schema.ResourceData, meta any) dia
 	request := sdk.NewExecuteJobServiceRequest(computePoolId, id)
 	errs := errors.Join(
 		attributeMappedValueCreateBuilder(d, "from_specification", request.WithJobServiceFromSpecification, ToJobServiceFromSpecificationRequest),
+		attributeMappedValueCreateBuilder(d, "from_specification_template", request.WithJobServiceFromSpecificationTemplate, ToJobServiceFromSpecificationTemplateRequest),
 		accountObjectIdentifierAttributeCreate(d, "query_warehouse", &request.QueryWarehouse),
 		attributeMappedValueCreateBuilder(d, "external_access_integrations", request.WithExternalAccessIntegrations, ToServiceExternalAccessIntegrationsRequest),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),

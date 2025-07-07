@@ -77,6 +77,11 @@ func (s *ServiceResourceAssert) HasFromSpecificationString(expected string) *Ser
 	return s
 }
 
+func (s *ServiceResourceAssert) HasFromSpecificationTemplateString(expected string) *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("from_specification_template", expected))
+	return s
+}
+
 func (s *ServiceResourceAssert) HasFullyQualifiedNameString(expected string) *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return s
@@ -202,6 +207,11 @@ func (s *ServiceResourceAssert) HasExternalAccessIntegrationsEmpty() *ServiceRes
 
 func (s *ServiceResourceAssert) HasFromSpecificationEmpty() *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueSet("from_specification.#", "0"))
+	return s
+}
+
+func (s *ServiceResourceAssert) HasFromSpecificationTemplateEmpty() *ServiceResourceAssert {
+	s.AddAssertion(assert.ValueSet("from_specification_template.#", "0"))
 	return s
 }
 

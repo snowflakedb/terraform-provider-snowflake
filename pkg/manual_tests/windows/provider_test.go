@@ -6,8 +6,6 @@ import (
 	"regexp"
 	"testing"
 
-	acc "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -15,13 +13,14 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/manual_tests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
+	_ = testenvs.GetOrSkipTest(t, testenvs.EnableManual)
 	if !oswrapper.IsRunningOnWindows() {
 		t.Skip("checking file permissions on other platforms is currently done in the provider package")
 	}
@@ -32,7 +31,7 @@ func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
 	configPath := testhelpers.TestFileWithCustomPermissions(t, random.AlphaN(10), random.Bytes(), permissions)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: manual_tests.ManualTestProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

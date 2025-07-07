@@ -3,12 +3,13 @@ resource "snowflake_account_role" "test" {
 }
 
 resource "snowflake_task" "test" {
-  database      = var.database
-  schema        = var.schema
-  name          = var.task
-  warehouse     = var.warehouse
-  started       = false
-  sql_statement = "SELECT CURRENT_TIMESTAMP"
+  database                                 = var.database
+  schema                                   = var.schema
+  name                                     = var.task
+  warehouse                                = var.warehouse
+  user_task_managed_initial_warehouse_size = var.warehouse_init_size
+  started                                  = false
+  sql_statement                            = "SELECT CURRENT_TIMESTAMP"
 }
 
 resource "snowflake_grant_ownership" "test" {

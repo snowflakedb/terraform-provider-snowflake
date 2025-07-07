@@ -3,12 +3,13 @@
 package testint
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +34,7 @@ func TestInt_DataMetricFunctionReferences(t *testing.T) {
 
 		dmfs, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequest(view.ID(), sdk.DataMetricFunctionRefEntityDomainView))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(dmfs))
+		require.Len(t, dmfs, 1)
 		dmf := dmfs[0]
 		assert.Equal(t, string(sdk.DataMetricFunctionRefEntityDomainView), strings.ToUpper(dmf.RefEntityDomain))
 		assert.Equal(t, functionId.DatabaseName(), dmf.MetricDatabaseName)
@@ -42,7 +43,7 @@ func TestInt_DataMetricFunctionReferences(t *testing.T) {
 		assert.Equal(t, view.ID().DatabaseName(), dmf.RefEntityDatabaseName)
 		assert.Equal(t, view.ID().SchemaName(), dmf.RefEntitySchemaName)
 		assert.Equal(t, view.ID().Name(), dmf.RefEntityName)
-		assert.Equal(t, "TABLE(VARCHAR)", dmf.ArgumentSignature)
+		assert.Equal(t, fmt.Sprintf("TABLE(VARCHAR(%d))", datatypes.DefaultVarcharLength), dmf.ArgumentSignature)
 		assert.Equal(t, "NUMBER(38,0)", dmf.DataType)
 		assert.NotEmpty(t, dmf.RefArguments)
 		assert.NotEmpty(t, dmf.RefId)

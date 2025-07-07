@@ -112,6 +112,21 @@ authenticator = 'SNOWFLAKE_JWT'
 `, profile, userId.Name(), roleId.Name(), warehouseId.Name(), accountIdentifier.OrganizationName(), accountIdentifier.AccountName(), privateKey)
 }
 
+// TomlConfigForServiceUserWithPat is a temporary function used to test provider configuration
+func TomlConfigForServiceUserWithPat(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, token string) string {
+	t.Helper()
+
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithUser(userId.Name()).
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithWarehouse(warehouseId.Name()).
+		WithAuthenticator(string(sdk.AuthenticationTypeProgrammaticAccessToken)).
+		WithToken(token),
+	)
+}
+
 // TomlConfigForServiceUserWithEncryptedKey is a temporary function used to test provider configuration
 func TomlConfigForServiceUserWithEncryptedKey(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, privateKey string, pass string) string {
 	t.Helper()
@@ -149,14 +164,36 @@ authenticator = 'SNOWFLAKE_JWT'
 func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, pass string) string {
 	t.Helper()
 
-	config := sdk.NewConfigDTO().
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
 		WithUser(userId.Name()).
 		WithPassword(pass).
 		WithRole(roleId.Name()).
 		WithOrganizationName(accountIdentifier.OrganizationName()).
 		WithAccountName(accountIdentifier.AccountName()).
 		WithWarehouse(warehouseId.Name()).
-		WithAuthenticator("SNOWFLAKE")
+		WithAuthenticator(string(sdk.AuthenticationTypeSnowflake)),
+	)
+}
+
+// TomlConfigForServiceUserWithModifiers is a temporary function used to test provider configuration allowing to modify the toml config
+func TomlConfigForServiceUserWithModifiers(t *testing.T, profile string, serviceUser *TmpServiceUser, configDtoModifier func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO) string {
+	t.Helper()
+
+	configDto := sdk.NewConfigDTO().
+		WithOrganizationName(serviceUser.AccountId.OrganizationName()).
+		WithAccountName(serviceUser.AccountId.AccountName()).
+		WithUser(serviceUser.UserId.Name()).
+		WithRole(serviceUser.RoleId.Name()).
+		WithWarehouse(serviceUser.WarehouseId.Name()).
+		WithPrivateKey(serviceUser.PrivateKey).
+		WithAuthenticator(string(sdk.AuthenticationTypeJwt))
+
+	return configDtoToTomlString(t, profile, configDtoModifier(configDto))
+}
+
+func configDtoToTomlString(t *testing.T, profile string, config *sdk.ConfigDTO) string {
+	t.Helper()
+
 	cfg := sdk.NewConfigFile().WithProfiles(map[string]sdk.ConfigDTO{profile: *config})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)

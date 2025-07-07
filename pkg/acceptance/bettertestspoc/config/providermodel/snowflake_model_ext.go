@@ -43,8 +43,28 @@ func (m *SnowflakeModel) WithPrivateKeyMultiline(privateKey string) *SnowflakeMo
 	return m.WithPrivateKeyValue(config.MultilineWrapperVariable(privateKey))
 }
 
+func (m *SnowflakeModel) WithValidateDefaultParametersBool(validateDefaultParameters bool) *SnowflakeModel {
+	m.ValidateDefaultParameters = tfconfig.BoolVariable(validateDefaultParameters)
+	return m
+}
+
+func (m *SnowflakeModel) WithClientRequestMfaTokenBool(clientRequestMfaToken bool) *SnowflakeModel {
+	m.ClientRequestMfaToken = tfconfig.BoolVariable(clientRequestMfaToken)
+	return m
+}
+
 func (m *SnowflakeModel) WithClientStoreTemporaryCredentialBool(clientStoreTemporaryCredential bool) *SnowflakeModel {
 	m.ClientStoreTemporaryCredential = tfconfig.BoolVariable(clientStoreTemporaryCredential)
+	return m
+}
+
+func (m *SnowflakeModel) WithIncludeRetryReasonBool(includeRetryReason bool) *SnowflakeModel {
+	m.IncludeRetryReason = tfconfig.BoolVariable(includeRetryReason)
+	return m
+}
+
+func (m *SnowflakeModel) WithDisableConsoleLoginBool(disableConsoleLogin bool) *SnowflakeModel {
+	m.DisableConsoleLogin = tfconfig.BoolVariable(disableConsoleLogin)
 	return m
 }
 

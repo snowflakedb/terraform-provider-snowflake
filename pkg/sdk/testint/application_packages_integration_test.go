@@ -127,7 +127,7 @@ func TestInt_ApplicationPackages(t *testing.T) {
 
 		packages, err := client.ApplicationPackages.Show(ctx, sdk.NewShowApplicationPackageRequest().WithLike(sdk.Like{Pattern: &e.Name}))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(packages))
+		require.Len(t, packages, 1)
 		require.Equal(t, *e, packages[0])
 	})
 }
@@ -180,7 +180,7 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		err := client.ApplicationPackages.Alter(ctx, r1)
 		require.NoError(t, err)
 		versions := testClientHelper().ApplicationPackage.ShowVersions(t, e.ID())
-		require.Equal(t, 1, len(versions))
+		require.Len(t, versions, 1)
 		require.Equal(t, version, versions[0].Version)
 		require.Equal(t, 0, versions[0].Patch)
 
@@ -190,7 +190,7 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		err = client.ApplicationPackages.Alter(ctx, r2)
 		require.NoError(t, err)
 		versions = testClientHelper().ApplicationPackage.ShowVersions(t, e.ID())
-		require.Equal(t, 2, len(versions))
+		require.Len(t, versions, 2)
 		require.Equal(t, version, versions[0].Version)
 		require.Equal(t, 0, versions[0].Patch)
 		require.Equal(t, version, versions[1].Version)
@@ -201,7 +201,7 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		err = client.ApplicationPackages.Alter(ctx, r3)
 		require.NoError(t, err)
 		versions = testClientHelper().ApplicationPackage.ShowVersions(t, e.ID())
-		require.Equal(t, 0, len(versions))
+		require.Empty(t, versions)
 	})
 
 	t.Run("alter application package: set default release directive", func(t *testing.T) {
@@ -220,7 +220,7 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		err := client.ApplicationPackages.Alter(ctx, r1)
 		require.NoError(t, err)
 		versions := testClientHelper().ApplicationPackage.ShowVersions(t, e.ID())
-		require.Equal(t, 1, len(versions))
+		require.Len(t, versions, 1)
 		require.Equal(t, version, versions[0].Version)
 		require.Equal(t, 0, versions[0].Patch)
 

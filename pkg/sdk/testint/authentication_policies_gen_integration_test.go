@@ -39,7 +39,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		description, err := collections.FindFirst(descriptions, func(description sdk.AuthenticationPolicyDescription) bool {
 			return description.Property == name
 		})
-		require.NoError(t, err, fmt.Sprintf("unable to find property %s", name))
+		require.NoError(t, err, "unable to find property %s", name)
 		assert.Equal(t, value, description.Value)
 	}
 

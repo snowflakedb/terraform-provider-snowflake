@@ -7,11 +7,98 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+func serviceFromSpecificationTemplateSchema(allFieldsForceNew, isTemplate bool) map[string]*schema.Schema {
+	fieldName := "from_specification"
+	if isTemplate {
+		fieldName = "from_specification_template"
+	}
+	objectNameInDescription := "specification"
+	if isTemplate {
+		objectNameInDescription = "specification template"
+	}
+	stageFieldName := fmt.Sprintf("%s.0.stage", fieldName)
+	fileFieldName := fmt.Sprintf("%s.0.file", fieldName)
+	textFieldName := fmt.Sprintf("%s.0.text", fieldName)
+	subSchema := map[string]*schema.Schema{
+		// Accepted configurations:
+		// - stage, file, and optional path
+		// - text
+		"stage": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+			ForceNew:         allFieldsForceNew,
+			RequiredWith:     []string{fileFieldName},
+			Description:      relatedResourceDescription(fmt.Sprintf("The fully qualified name of the stage containing the service %s file. At symbol (`@`) is added automatically. %s", objectNameInDescription, exampleSchemaObjectIdentifier("stage")), resources.Stage),
+		},
+		"path": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     allFieldsForceNew,
+			RequiredWith: []string{stageFieldName, fileFieldName},
+			Description:  fmt.Sprintf("The path to the service %s file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.", objectNameInDescription),
+		},
+		"file": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     allFieldsForceNew,
+			RequiredWith: []string{stageFieldName},
+			ExactlyOneOf: []string{textFieldName, fileFieldName},
+			Description:  fmt.Sprintf("The file name of the service %s. Example: `spec.yaml`.", objectNameInDescription),
+		},
+		"text": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     allFieldsForceNew,
+			Description:  fmt.Sprintf("The embedded text of the service %s.", objectNameInDescription),
+			ExactlyOneOf: []string{textFieldName, fileFieldName},
+		},
+	}
+	if isTemplate {
+		subSchema["using"] = &schema.Schema{
+			Type:     schema.TypeList,
+			MinItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "The name of the template variable. The provider wraps it in double quotes by default, so be aware of that while referencing the argument in the spec definition.",
+					},
+					"value": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "The value to assign to the variable in the template. The provider wraps it in `$$` by default, so be aware of that while referencing the argument in the spec definition. The value must either be alphanumeric or valid JSON.",
+					},
+				},
+			},
+			Required:    true,
+			Description: "List of the specified template variables and the values of those variables.",
+		}
+	}
+
+	return map[string]*schema.Schema{
+		fieldName: {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			ForceNew:    allFieldsForceNew,
+			Description: fmt.Sprintf("Specifies the service %s to use for the service. Note that external changes on this field and nested fields are not detected. Use correctly formatted YAML files. Watch out for the space/tabs indentation. See [service specification](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/specification-reference#general-guidelines) for more information.", objectNameInDescription),
+			Elem: &schema.Resource{
+				Schema: subSchema,
+			},
+			ExactlyOneOf: []string{"from_specification", "from_specification_template"},
+		},
+	}
+}
 
 func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 	schema := map[string]*schema.Schema{
@@ -44,44 +131,6 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
-		"from_specification": {
-			Type:        schema.TypeList,
-			MaxItems:    1,
-			Optional:    true,
-			ForceNew:    allFieldsForceNew,
-			Description: "Specifies the service specification to use for the service. Note that external changes on this field and nested fields are not detected.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"stage": {
-						Type:             schema.TypeString,
-						Optional:         true,
-						ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-						DiffSuppressFunc: suppressIdentifierQuoting,
-						ForceNew:         allFieldsForceNew,
-						Description:      "The fully qualified name of the stage containing the service specification file. At symbol (`@`) is added automatically.",
-					},
-					"path": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						ForceNew:    allFieldsForceNew,
-						Description: "The path to the service specification file on the given stage. When the path is specified, the `/` character is automatically added as a path prefix. Example: `path/to/spec`.",
-					},
-					"file": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						ForceNew:    allFieldsForceNew,
-						Description: "The file name of the service specification.",
-					},
-					"text": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						ForceNew:    allFieldsForceNew,
-						Description: "The embedded text of the service specification.",
-					},
-				},
-			},
-		},
-		// TODO (next PR): add from_specification_template
 		"external_access_integrations": {
 			Type:        schema.TypeSet,
 			Optional:    true,
@@ -133,7 +182,7 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			},
 		},
 	}
-	return schema
+	return collections.MergeMaps(schema, serviceFromSpecificationTemplateSchema(allFieldsForceNew, false), serviceFromSpecificationTemplateSchema(allFieldsForceNew, true))
 }
 
 func ImportServiceFunc(customFieldsHandler func(d *schema.ResourceData, service *sdk.Service) error) schema.StateContextFunc {
@@ -268,4 +317,41 @@ func ToJobServiceFromSpecificationRequest(value any) (sdk.JobServiceFromSpecific
 		return sdk.JobServiceFromSpecificationRequest{}, err
 	}
 	return sdk.JobServiceFromSpecificationRequest(spec), nil
+}
+
+func ToServiceFromSpecificationTemplateRequest(value any) (sdk.ServiceFromSpecificationTemplateRequest, error) {
+	base, err := ToServiceFromSpecificationRequest(value)
+	if err != nil {
+		return sdk.ServiceFromSpecificationTemplateRequest{}, err
+	}
+	serviceFromSpecificationTemplate := sdk.ServiceFromSpecificationTemplateRequest{
+		Location:                  base.Location,
+		SpecificationTemplateFile: base.SpecificationFile,
+		SpecificationTemplate:     base.Specification,
+	}
+	for _, v := range value.([]any) {
+		fromSpecificationConfig := v.(map[string]any)
+		if using := fromSpecificationConfig["using"].([]any); using != nil {
+			serviceFromSpecificationTemplate.Using = collections.Map(using, func(v any) sdk.ListItem {
+				m := v.(map[string]any)
+				var item sdk.ListItem
+				if value := m["key"].(string); value != "" {
+					item.Key = value
+				}
+				if value := m["value"].(string); value != "" {
+					item.Value = fmt.Sprintf("$$%s$$", value)
+				}
+				return item
+			})
+		}
+	}
+	return serviceFromSpecificationTemplate, nil
+}
+
+func ToJobServiceFromSpecificationTemplateRequest(value any) (sdk.JobServiceFromSpecificationTemplateRequest, error) {
+	spec, err := ToServiceFromSpecificationTemplateRequest(value)
+	if err != nil {
+		return sdk.JobServiceFromSpecificationTemplateRequest{}, err
+	}
+	return sdk.JobServiceFromSpecificationTemplateRequest(spec), nil
 }

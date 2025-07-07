@@ -330,7 +330,7 @@ func TestInt_Views(t *testing.T) {
 		alteredView, err = client.Views.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, true, alteredView.IsSecure)
+		assert.True(t, alteredView.IsSecure)
 
 		alterRequest = sdk.NewAlterViewRequest(id).WithSetChangeTracking(true)
 		err = client.Views.Alter(ctx, alterRequest)
@@ -357,7 +357,7 @@ func TestInt_Views(t *testing.T) {
 		alteredView, err = client.Views.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, false, alteredView.IsSecure)
+		assert.False(t, alteredView.IsSecure)
 
 		alterRequest = sdk.NewAlterViewRequest(id).WithSetChangeTracking(false)
 		err = client.Views.Alter(ctx, alterRequest)
@@ -530,7 +530,7 @@ func TestInt_Views(t *testing.T) {
 
 		dataMetricFunctionReferences = testClientHelper().DataMetricFunctionReferences.GetDataMetricFunctionReferences(t, view.ID(), sdk.DataMetricFunctionRefEntityDomainView)
 		require.NoError(t, err)
-		require.Len(t, dataMetricFunctionReferences, 0)
+		require.Empty(t, dataMetricFunctionReferences)
 
 		// add two functions
 		alterRequest = sdk.NewAlterViewRequest(id).WithAddDataMetricFunction(*sdk.NewViewAddDataMetricFunctionRequest([]sdk.ViewDataMetricFunction{
@@ -640,7 +640,7 @@ func TestInt_Views(t *testing.T) {
 		returnedViews, err := client.Views.Show(ctx, showRequest)
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedViews))
+		assert.Len(t, returnedViews, 1)
 		assert.Contains(t, returnedViews, *view1)
 		assert.NotContains(t, returnedViews, *view2)
 	})
@@ -675,7 +675,7 @@ func TestInt_Views(t *testing.T) {
 		returnedViewDetails, err := client.Views.Describe(ctx, view.ID())
 		require.NoError(t, err)
 
-		assert.Equal(t, 1, len(returnedViewDetails))
+		assert.Len(t, returnedViewDetails, 1)
 		assertViewDetailsRow(t, &returnedViewDetails[0])
 	})
 

@@ -175,7 +175,7 @@ func TestInt_GitRepositories(t *testing.T) {
 		pattern := gitRepositoryId.Name()
 		gitRepositories, err := client.GitRepositories.Show(ctx, sdk.NewShowGitRepositoryRequest().WithLike(sdk.Like{Pattern: &pattern}))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(gitRepositories))
+		require.Len(t, gitRepositories, 1)
 		require.Equal(t, *gitRepository, gitRepositories[0])
 	})
 
@@ -209,7 +209,7 @@ func TestInt_GitRepositories(t *testing.T) {
 
 		tags, err := client.GitRepositories.ShowGitTags(ctx, sdk.NewShowGitTagsGitRepositoryRequest(gitRepositoryId))
 		require.NoError(t, err)
-		require.Zero(t, len(tags))
+		require.Empty(t, tags)
 	})
 
 	t.Run("describe", func(t *testing.T) {
@@ -244,7 +244,7 @@ func TestInt_GitRepositories(t *testing.T) {
 
 		branches, err := client.GitRepositories.ShowGitBranches(ctx, sdk.NewShowGitBranchesGitRepositoryRequest(gitRepositoryId))
 		require.NoError(t, err)
-		require.NotZero(t, len(branches))
+		require.NotEmpty(t, branches)
 
 		var branchNames []string
 		for _, b := range branches {

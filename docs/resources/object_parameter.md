@@ -7,14 +7,15 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+!> **Warning** This resource shouldn't be used with `snowflake_current_account` resource in the same configuration to set parameters on the current account, as it may lead to unexpected behavior. Unless this resource is only used to manage the following parameters that are not supported by `snowflake_current_account`. More details in the [snowflake_current_account](./current_account) resource documentation.
+
+-> **Note** This resource does not support all account parameters. The supported ones are listed below. This feature gap will be addressed in future releases.
+
 # snowflake_object_parameter (Resource)
 
 
 
 ## Example Usage
-
--> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
-<!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
 resource "snowflake_database" "d" {
@@ -73,6 +74,8 @@ resource "snowflake_object_parameter" "o4" {
   on_account = true
 }
 ```
+-> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
+<!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 

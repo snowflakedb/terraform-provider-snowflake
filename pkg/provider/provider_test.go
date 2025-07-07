@@ -2,11 +2,7 @@ package provider
 
 import (
 	"testing"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-var TestAccProvider *schema.Provider
 
 func TestProvider_impl(t *testing.T) {
 	_ = Provider()

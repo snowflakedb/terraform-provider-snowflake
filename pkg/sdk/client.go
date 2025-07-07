@@ -22,7 +22,6 @@ type Client struct {
 
 	// System-Defined Functions
 	ContextFunctions     ContextFunctions
-	ConversionFunctions  ConversionFunctions
 	SystemFunctions      SystemFunctions
 	ReplicationFunctions ReplicationFunctions
 
@@ -83,8 +82,13 @@ type Client struct {
 	Tags                         Tags
 	Tasks                        Tasks
 	Users                        Users
+	UserProgrammaticAccessTokens UserProgrammaticAccessTokens
 	Views                        Views
 	Warehouses                   Warehouses
+}
+
+func (c *Client) SetAccountLocatorForTests(accountLocator string) {
+	c.accountLocator = accountLocator
 }
 
 func (c *Client) GetAccountLocator() string {
@@ -169,7 +173,6 @@ func (c *Client) initialize() {
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
-	c.ConversionFunctions = &conversionFunctions{client: c}
 	c.CortexSearchServices = &cortexSearchServices{client: c}
 	c.DatabaseRoles = &databaseRoles{client: c}
 	c.Databases = &databases{client: c}
@@ -218,6 +221,7 @@ func (c *Client) initialize() {
 	c.Tags = &tags{client: c}
 	c.Tasks = &tasks{client: c}
 	c.Users = &users{client: c}
+	c.UserProgrammaticAccessTokens = &userProgrammaticAccessTokens{client: c}
 	c.Views = &views{client: c}
 	c.Warehouses = &warehouses{client: c}
 }

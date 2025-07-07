@@ -412,7 +412,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		s := struct{}{}
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
-		assert.Len(t, clauses, 0)
+		assert.Empty(t, clauses)
 	})
 
 	t.Run("test struct with all fields", func(t *testing.T) {
@@ -454,7 +454,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		}{}
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
-		assert.Len(t, clauses, 0)
+		assert.Empty(t, clauses)
 	})
 
 	t.Run("struct with a slice field using ddl: - (no_parentheses)", func(t *testing.T) {

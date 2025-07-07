@@ -135,7 +135,7 @@ func TestInt_ImageRepositories(t *testing.T) {
 
 		imageRepositories, err := client.ImageRepositories.Show(ctx, sdk.NewShowImageRepositoryRequest().WithLike(sdk.Like{Pattern: &imageRepository.Name}))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(imageRepositories))
+		require.Len(t, imageRepositories, 1)
 		require.Equal(t, *imageRepository, imageRepositories[0])
 	})
 

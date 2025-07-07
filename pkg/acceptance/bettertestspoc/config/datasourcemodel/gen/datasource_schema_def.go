@@ -47,6 +47,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Databases().Schema,
 	},
 	{
+		name:   "Functions",
+		schema: datasources.Functions().Schema,
+	},
+	{
 		name:   "GitRepositories",
 		schema: datasources.GitRepositories().Schema,
 	},
@@ -67,6 +71,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.NetworkPolicies().Schema,
 	},
 	{
+		name:   "Procedures",
+		schema: datasources.Procedures().Schema,
+	},
+	{
 		name:   "ResourceMonitors",
 		schema: datasources.ResourceMonitors().Schema,
 	},
@@ -81,6 +89,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "SecurityIntegrations",
 		schema: datasources.SecurityIntegrations().Schema,
+	},
+	{
+		name:   "Services",
+		schema: datasources.Services().Schema,
 	},
 	{
 		name:   "Streamlits",

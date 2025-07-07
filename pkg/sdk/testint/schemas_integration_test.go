@@ -297,7 +297,7 @@ func TestInt_Schemas(t *testing.T) {
 
 		schemaDetails, err := client.Schemas.Describe(ctx, swapSchema.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(schemaDetails))
+		assert.Len(t, schemaDetails, 1)
 		assert.Equal(t, "TABLE", schemaDetails[0].Kind)
 		assert.Equal(t, table.Name, schemaDetails[0].Name)
 	})
@@ -460,7 +460,7 @@ func TestInt_Schemas(t *testing.T) {
 		s, err := client.Schemas.ShowByID(ctx, schema.ID())
 		require.NoError(t, err)
 		assert.Equal(t, schema.Name, s.Name)
-		assert.True(t, true, s.IsManagedAccess())
+		assert.True(t, s.IsManagedAccess())
 	})
 
 	t.Run("alter: disable managed access", func(t *testing.T) {

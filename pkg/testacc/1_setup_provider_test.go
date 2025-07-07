@@ -25,6 +25,11 @@ var (
 
 	configureClientErrorDiag diag.Diagnostics
 	configureProviderCtx     *internalprovider.Context
+
+	// temporary unsafe way to get the last configuration for the provider (to verify in tests);
+	// should be used with caution as it is not prepared for the parallel tests
+	// should be replaced in the future (e.g. map with test name as key)
+	lastConfiguredProviderContext *internalprovider.Context
 )
 
 // TODO [next PRs]: rework this when working on terraform plugin framework PoC
@@ -49,8 +54,21 @@ func setUpProvider() error {
 			return v6Server, nil
 		},
 	}
+	_ = testAccProtoV6ProviderFactoriesNew
 
 	return nil
+}
+
+// TODO [next PRs]: investigate this (it was moved from the old testing.go file)
+// if we do not reuse the created objects there is no `Previously configured provider being re-configured.` warning
+// currently left for possible usage after other improvements
+var testAccProtoV6ProviderFactoriesNew = map[string]func() (tfprotov6.ProviderServer, error){
+	"snowflake": func() (tfprotov6.ProviderServer, error) {
+		return tf5to6server.UpgradeServer(
+			context.Background(),
+			provider.Provider().GRPCProvider,
+		)
+	},
 }
 
 // TODO [next PRs]: it's currently an exact copy of acceptance.ConfigureProviderWithConfigCache; adjust after moving the tests
@@ -92,6 +110,9 @@ func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 	} else {
 		configureProviderCtx = nil
 		configureClientErrorDiag = make(diag.Diagnostics, 0)
+	}
+	if v, ok := providerCtx.(*internalprovider.Context); ok {
+		lastConfiguredProviderContext = v
 	}
 
 	if clientErrorDiag.HasError() {

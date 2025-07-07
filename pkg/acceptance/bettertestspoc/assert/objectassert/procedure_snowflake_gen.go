@@ -134,6 +134,17 @@ func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAs
 	return p
 }
 
+func (p *ProcedureAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.ReturnTypeOld != expected {
+			return fmt.Errorf("expected return type old: %v; got: %v", expected, o.ReturnTypeOld)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProcedureAssert) HasArgumentsRaw(expected string) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()

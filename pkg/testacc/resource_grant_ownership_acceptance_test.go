@@ -1340,6 +1340,49 @@ func TestAcc_GrantOwnership_OnAllTasks(t *testing.T) {
 	})
 }
 
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3750 is fixed
+func TestAcc_GrantOwnership_OnServerlessTask(t *testing.T) {
+	taskId := testClient().Ids.RandomSchemaObjectIdentifier()
+	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	configVariables := config.Variables{
+		"account_role_name":   config.StringVariable(accountRoleId.Name()),
+		"database":            config.StringVariable(taskId.DatabaseName()),
+		"schema":              config.StringVariable(taskId.SchemaName()),
+		"task":                config.StringVariable(taskId.Name()),
+		"warehouse_init_size": config.StringVariable("XSMALL"),
+	}
+
+	resourceName := "snowflake_grant_ownership.test"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnTask"),
+				ConfigVariables: configVariables,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleId.Name()),
+					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", sdk.ObjectTypeTask.String()),
+					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", taskId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TASK|%s", accountRoleId.FullyQualifiedName(), taskId.FullyQualifiedName())),
+					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
+						On: &sdk.ShowGrantsOn{
+							Object: &sdk.Object{
+								ObjectType: sdk.ObjectTypeTask,
+								Name:       taskId,
+							},
+						},
+					}, sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_GrantOwnership_OnDatabaseRole(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)

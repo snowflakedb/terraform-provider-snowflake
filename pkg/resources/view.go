@@ -868,12 +868,6 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		return diag.FromErr(err)
 	}
 
-	// change on these fields can not be ForceNew because then view is dropped explicitly and copying grants does not have effect
-	if keys := changedKeys(d, "statement", "is_temporary", "is_recursive", "column"); len(keys) > 0 {
-		log.Printf("[DEBUG] Detected change on %q, recreating...", keys)
-		return CreateView(true)(ctx, d, meta)
-	}
-
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
@@ -884,6 +878,12 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
+	}
+
+	// change on these fields can not be ForceNew because then view is dropped explicitly and copying grants does not have effect
+	if keys := changedKeys(d, "statement", "is_temporary", "is_recursive", "column"); len(keys) > 0 {
+		log.Printf("[DEBUG] Detected change on %q, recreating...", keys)
+		return CreateView(true)(ctx, d, meta)
 	}
 
 	if d.HasChange("comment") {

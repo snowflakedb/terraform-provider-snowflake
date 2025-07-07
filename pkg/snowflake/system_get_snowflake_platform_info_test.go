@@ -21,7 +21,7 @@ func TestSystemGetSnowflakePlatformInfoGetStructuredConfigAws(t *testing.T) {
 	}
 
 	c, e := raw.GetStructuredConfig()
-	r.Nil(e)
+	r.NoError(e)
 
 	r.Equal([]string{"vpc-1", "vpc-2"}, c.AwsVpcIds)
 	r.Equal([]string(nil), c.AzureVnetSubnetIds)
@@ -35,7 +35,7 @@ func TestSystemGetSnowflakePlatformInfoGetStructuredConfigAzure(t *testing.T) {
 	}
 
 	c, e := raw.GetStructuredConfig()
-	r.Nil(e)
+	r.NoError(e)
 
 	r.Equal([]string{"/subscription/1/1", "/subscription/1/2"}, c.AzureVnetSubnetIds)
 	r.Equal([]string(nil), c.AwsVpcIds)
