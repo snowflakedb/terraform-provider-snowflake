@@ -11,9 +11,9 @@ description: |-
 
 -> **Note** External changes to `days_to_expiry` are not handled by the provider because Snowflake returns `expires_at` which is the token expiration date. Also, the provider does not handle expired tokens automatically. Please change the value of `days_to_expiry` to force a new expiration date.
 
--> **Note** External changes to `token_value` are not handled by the provider because the data in this field can be updated only when the token is created.
+-> **Note** External changes to `token` are not handled by the provider because the data in this field can be updated only when the token is created or rotated.
 
-<!-- TODO(next PR): Add a note about rotating tokens and provide a simple example. Adjust the note of `token_value`.-->
+-> **Note** Rotating a token can be done by changing the value of `keepers` field. See an example below.
 
 # snowflake_user_programmatic_access_token (Resource)
 
@@ -47,6 +47,21 @@ output "token" {
   value     = snowflake_user_programmatic_access_token.complete.token
   sensitive = true
 }
+
+# rotate the token regularly using the keepers field and time_rotating resource
+resource "snowflake_user_programmatic_access_token" "rotating" {
+  user = "USER"
+  name = "TOKEN"
+  keepers = {
+    rotation_schedule = time_rotating.rotation_schedule.rotation_rfc3339
+  }
+}
+
+# Note that the fields of this resource are updated only when Terraform is run.
+# This means that the schedule may not be respected if Terraform is not run regularly.
+resource "time_rotating" "rotation_schedule" {
+  rotation_days = 30
+}
 ```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
@@ -64,6 +79,8 @@ output "token" {
 - `comment` (String) Descriptive comment about the programmatic access token.
 - `days_to_expiry` (Number) The number of days that the programmatic access token can be used for authentication. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 - `disabled` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Disables or enables the programmatic access token. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `expire_rotated_token_after_hours` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Sets the expiration time of the existing token secret to expire after the specified number of hours. You can set this to a value of 0 to expire the current token secret immediately. This field is only used when the token is rotated with `keepers` field.
+- `keepers` (Map of String) Arbitrary map of values that, when changed, will trigger a new key to be generated.
 - `mins_to_bypass_network_policy_requirement` (Number) The number of minutes during which a user can use this token to access Snowflake without being subject to an active network policy. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 - `role_restriction` (String) The name of the role used for privilege evaluation and object creation. This must be one of the roles that has already been granted to the user. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -71,8 +88,9 @@ output "token" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `rotated_token_name` (String) Name of the token that represents the prior secret. This field is updated only when the token is rotated.
 - `show_output` (List of Object) Outputs the result of `SHOW USER PROGRAMMATIC ACCESS TOKENS` for the given user programmatic access token. (see [below for nested schema](#nestedatt--show_output))
-- `token` (String, Sensitive) The token itself. Use this to authenticate to an endpoint. The data in this field is updated only when the token is created.
+- `token` (String, Sensitive) The token itself. Use this to authenticate to an endpoint. The data in this field is updated only when the token is created or rotated.
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

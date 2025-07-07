@@ -60,25 +60,34 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 			return x.(string) == string(sdk.ProgrammaticAccessTokenStatusDisabled)
 		}),
 	},
-	// TODO(next PR): add support for this field
-	// "expire_rotated_token_after_hours": {
-	// 	Type:             schema.TypeInt,
-	// 	Optional:         true,
-	// 	Description:      "Sets the expiration time of the existing token secret to expire after the specified number of hours. You can set this to a value of 0 to expire the current token secret immediately.",
-	// 	DiffSuppressFunc: IgnoreAfterCreation,
-	// ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-	// },
+	"expire_rotated_token_after_hours": {
+		Type:             schema.TypeInt,
+		Optional:         true,
+		Description:      "Sets the expiration time of the existing token secret to expire after the specified number of hours. You can set this to a value of 0 to expire the current token secret immediately. This field is only used when the token is rotated with `keepers` field.",
+		DiffSuppressFunc: IgnoreAfterCreation,
+		Default:          IntDefault,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
+	},
+	"keepers": {
+		Type:        schema.TypeMap,
+		Optional:    true,
+		Description: "Arbitrary map of values that, when changed, will trigger a new key to be generated.",
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Descriptive comment about the programmatic access token.",
 	},
 	"token": {
-		Type:      schema.TypeString,
-		Computed:  true,
-		Sensitive: true,
-		// TODO(next PR): update this description
-		Description: "The token itself. Use this to authenticate to an endpoint. The data in this field is updated only when the token is created.",
+		Type:        schema.TypeString,
+		Computed:    true,
+		Sensitive:   true,
+		Description: "The token itself. Use this to authenticate to an endpoint. The data in this field is updated only when the token is created or rotated.",
+	},
+	"rotated_token_name": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "Name of the token that represents the prior secret. This field is updated only when the token is rotated.",
 	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -271,6 +280,30 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 	}
+	// TODO: assert rotated_token_name in tests
+
+	if d.HasChange("keepers") {
+		request := sdk.NewRotateUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName)
+		// Handle expire_rotated_token_after_hours. It can't be done with the usual d.Get.
+		// The value is not set in the state, and we allow zero values, so we need to handle it from the raw config.
+		if ctyValue, ok := d.GetRawConfig().AsValueMap()["expire_rotated_token_after_hours"]; ok && !ctyValue.IsNull() {
+			if int64Value, _ := ctyValue.AsBigFloat().Int64(); int64Value != IntDefault {
+				request.WithExpireRotatedTokenAfterHours(int(int64Value))
+			}
+		}
+		token, err := client.Users.RotateProgrammaticAccessToken(ctx, request)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		errs := errors.Join(
+			d.Set("token", token.TokenSecret),
+			d.Set("rotated_token_name", token.RotatedTokenName),
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
+		}
+	}
+
 	return ReadUserProgrammaticAccessToken(false)(ctx, d, meta)
 }
 
