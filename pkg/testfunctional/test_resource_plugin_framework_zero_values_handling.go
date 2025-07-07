@@ -45,6 +45,7 @@ func (r *ZeroValuesResource) Metadata(_ context.Context, request resource.Metada
 	response.TypeName = request.ProviderTypeName + "_zero_values"
 }
 
+// TODO [mux-PRs]: extract Configure helper
 func (r *ZeroValuesResource) Configure(_ context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
 	if request.ProviderData == nil {
 		return

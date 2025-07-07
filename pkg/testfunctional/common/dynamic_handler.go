@@ -7,7 +7,8 @@ import (
 
 // TODO [mux-PRs]: make it possible to reuse simultaneously from multiple tests (e.g. map per test)
 type DynamicHandler[T any] struct {
-	currentValue T
+	currentValue    T
+	replaceWithFunc func(T, T) T
 }
 
 func (h *DynamicHandler[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +20,7 @@ func (h *DynamicHandler[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 		var newValue T
 		_ = json.NewDecoder(r.Body).Decode(&newValue)
-		h.currentValue = newValue
+		h.currentValue = h.replaceWithFunc(h.currentValue, newValue)
 	}
 }
 
@@ -34,5 +35,12 @@ func NewDynamicHandler[T any]() *DynamicHandler[T] {
 func NewDynamicHandlerWithInitialValue[T any](initialValue T) *DynamicHandler[T] {
 	return &DynamicHandler[T]{
 		currentValue: initialValue,
+	}
+}
+
+func NewDynamicHandlerWithInitialValueAndReplaceWithFunc[T any](initialValue T, replaceWithFunc func(T, T) T) *DynamicHandler[T] {
+	return &DynamicHandler[T]{
+		currentValue:    initialValue,
+		replaceWithFunc: replaceWithFunc,
 	}
 }
