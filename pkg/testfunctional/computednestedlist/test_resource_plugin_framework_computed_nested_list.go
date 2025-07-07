@@ -5,6 +5,8 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -39,7 +41,7 @@ func (r *computedNestedListResource) Schema(_ context.Context, _ resource.Schema
 				Required:    true,
 			},
 			"option": schema.StringAttribute{
-				Description: "Which implementation option should be tested. Available values: STRUCT, EXPLICIT",
+				Description: "Which implementation option should be tested. Available values: STRUCT, EXPLICIT, DEDICATED",
 				Required:    true,
 			},
 			"id": schema.StringAttribute{
@@ -67,8 +69,10 @@ func (r *computedNestedListResource) Create(ctx context.Context, request resourc
 		setActionsOutputThroughStruct(ctx, response, data)
 	case "EXPLICIT":
 		setActionsOutputExplicit(ctx, response, data)
+	case "DEDICATED":
+		setActionsOutputDedicated(ctx, response, data)
 	default:
-		response.Diagnostics.AddError("Use correct option", "Available options are: STRUCT, EXPLICIT")
+		response.Diagnostics.AddError("Use correct option", "Available options are: STRUCT, EXPLICIT, DEDICATED")
 		return
 	}
 
@@ -95,6 +99,33 @@ func setActionsOutputThroughStruct(ctx context.Context, response *resource.Creat
 }
 
 func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {
+	existingEntries := data.ActionsLog.Elements()
+
+	actions := make([]actionlog.ActionLogEntry, 0)
+	actions = append(actions, actionlog.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
+	actions = append(actions, actionlog.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
+
+	for _, a := range actions {
+		entry, diags := types.ObjectValue(actionlog.GetActionLogEntryTypes(), map[string]attr.Value{
+			"action": a.Action,
+			"field":  a.Field,
+			"value":  a.Value,
+		})
+		if diags.HasError() {
+			response.Diagnostics.Append(diags...)
+			return
+		}
+		existingEntries = append(existingEntries, entry)
+	}
+	var diags diag.Diagnostics
+	data.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: actionlog.GetActionLogEntryTypes()}, actions)
+	if diags.HasError() {
+		response.Diagnostics.Append(diags...)
+		return
+	}
+}
+
+func setActionsOutputDedicated(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {
 	response.Diagnostics.Append(actionlog.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
 		actions := make([]actionlog.ActionLogEntry, 0)
 		actions = append(actions, actionlog.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
