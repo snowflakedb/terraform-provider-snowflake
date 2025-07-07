@@ -13,8 +13,7 @@ func (h *DynamicHandler[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		w.WriteHeader(http.StatusOK)
-		resp, _ := json.Marshal(h.currentValue)
-		_, _ = w.Write(resp)
+		_ = json.NewEncoder(w).Encode(h.currentValue)
 	case http.MethodPost:
 		w.WriteHeader(http.StatusCreated)
 		var newValue T

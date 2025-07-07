@@ -3,7 +3,6 @@ package common
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
 )
 
@@ -14,20 +13,17 @@ func Get[T any](serverUrl string, path string, target *T) error {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(body, &target)
+	return json.NewDecoder(resp.Body).Decode(target)
 }
 
 func Post[T any](serverUrl string, path string, target T) error {
-	body, err := json.Marshal(target)
+	body := new(bytes.Buffer)
+	err := json.NewEncoder(body).Encode(target)
 	if err != nil {
 		return err
 	}
 
-	resp, err := http.Post(serverUrl+"/"+path, "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(serverUrl+"/"+path, "application/json", body)
 	if err != nil {
 		return err
 	}
