@@ -15,9 +15,9 @@ description: |-
 
 -> **Note** External changes to `days_to_expiry` are not handled by the provider because Snowflake returns `expires_at` which is the token expiration date. Also, the provider does not handle expired tokens automatically. Please change the value of `days_to_expiry` to force a new expiration date.
 
--> **Note** External changes to `token_value` are not handled by the provider because the data in this field can be updated only when the token is created.
+-> **Note** External changes to `token` are not handled by the provider because the data in this field can be updated only when the token is created or rotated.
 
-<!-- TODO(next PR): Add a note about rotating tokens and provide a simple example. Adjust the note of `token_value`.-->
+-> **Note** Rotating a token can be done by changing the value of `keepers` field. See an example below.
 
 # {{.Name}} ({{.Type}})
 

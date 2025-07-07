@@ -3,11 +3,14 @@
 package testacc
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -429,7 +432,174 @@ func TestAcc_UserProgrammaticAccessToken_complete(t *testing.T) {
 	})
 }
 
-// TODO(next PR): add tests for rotating the token
+func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
+	user, userCleanup := testClient().User.CreateUser(t)
+	t.Cleanup(userCleanup)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	modelBasic := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name())
+	modelWithKeepers := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithKeepers(map[string]string{"key1": "value1"})
+	modelWithExpireRotatedTokenAfterHours := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithKeepers(map[string]string{"key1": "value1"}).
+		WithExpireRotatedTokenAfterHours(0)
+	modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithKeepers(map[string]string{"key3": "value3"}).
+		WithExpireRotatedTokenAfterHours(0)
+
+	var token string
+	tokenAssertion := func(f resource.CheckResourceAttrWithFunc) assert.TestCheckFuncProvider {
+		return assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "token", f))
+	}
+	assertTokenNotEmpty := tokenAssertion(func(value string) error {
+		if value == "" {
+			return fmt.Errorf("token is empty")
+		}
+		token = value
+		return nil
+	})
+	assertTokenNotRotated := tokenAssertion(func(value string) error {
+		if value != token {
+			return fmt.Errorf("token is rotated")
+		}
+		token = value
+		return nil
+	})
+	assertTokenRotated := tokenAssertion(func(value string) error {
+		if value == token {
+			return fmt.Errorf("token is not rotated")
+		}
+		token = value
+		return nil
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckUserProgrammaticAccessTokenDestroy(t),
+		Steps: []resource.TestStep{
+			// create the token
+			{
+				// This test uses ConfigDirectory and ConfigVariables to avoid using FromModels, which does not support TypeMap.
+				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
+				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelBasic),
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasNoRotatedTokenName().
+						HasUserString(user.ID().Name()),
+					assertTokenNotEmpty,
+				),
+			},
+			// rotate the token with added keepers and check that the token is updated
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
+				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithKeepers),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithKeepers.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeepers.ResourceReference()).
+						HasNameString(id.Name()).
+						HasRotatedTokenNameNotEmpty().
+						HasUserString(user.ID().Name()),
+					assertTokenRotated,
+				),
+			},
+			// do not rotate when only expire_rotated_token_after_hours is changed
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
+				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithExpireRotatedTokenAfterHours),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertThat(t,
+						resourceassert.UserProgrammaticAccessTokenResource(t, modelWithExpireRotatedTokenAfterHours.ResourceReference()).
+							HasNameString(id.Name()).
+							HasRotatedTokenNameNotEmpty().
+							HasUserString(user.ID().Name()),
+						assertTokenNotRotated,
+					),
+				),
+			},
+			// rotate the token with different keepers and check that the token is updated
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
+				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference()).
+						HasNameString(id.Name()).
+						HasRotatedTokenNameNotEmpty().
+						HasUserString(user.ID().Name()),
+					assertTokenRotated,
+					// assert that the rotated token is expired
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "rotated_token_name", func(value string) error {
+						if value == "" {
+							return fmt.Errorf("rotated_token_name is empty")
+						}
+						rotatedTokenId := sdk.NewAccountObjectIdentifier(value)
+						token := testClient().User.ShowProgrammaticAccessTokenByName(t, user.ID(), rotatedTokenId)
+						if token.RotatedTo == nil {
+							return fmt.Errorf("the rotated token is not found")
+						}
+						if token.Status != sdk.ProgrammaticAccessTokenStatusExpired {
+							return fmt.Errorf("the rotated token is not expired")
+						}
+						return nil
+					})),
+				),
+			},
+			// do not rotate the token if the keepers are the same
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
+				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference()).
+						HasNameString(id.Name()).
+						HasRotatedTokenNameNotEmpty().
+						HasUserString(user.ID().Name()),
+					assertTokenNotRotated,
+				),
+			},
+			// rotate the token when the keepers are removed
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
+				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasRotatedTokenNameNotEmpty().
+						HasUserString(user.ID().Name()),
+					assertTokenRotated,
+				),
+			},
+		},
+	})
+}
 
 func TestAcc_UserProgrammaticAccessToken_Validations(t *testing.T) {
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
