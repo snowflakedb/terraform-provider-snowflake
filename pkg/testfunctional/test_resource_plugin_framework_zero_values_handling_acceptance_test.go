@@ -12,13 +12,24 @@ import (
 )
 
 var (
-	// TODO [mux-PRs]: handle default values properly
-	zeroValuesHandler = common.NewDynamicHandlerWithInitialValue[testfunctional.ZeroValuesOpts](testfunctional.ZeroValuesOpts{
-		BoolValue:   sdk.Pointer(true),
-		IntValue:    sdk.Pointer(5),
-		StringValue: sdk.Pointer("default value"),
-	})
+	zeroValuesHandler = common.NewDynamicHandlerWithInitialValueAndReplaceWithFunc[testfunctional.ZeroValuesOpts](
+		testfunctional.ZeroValuesOpts{}, zeroValuesOptsReplaceWith,
+	)
 )
+
+// TODO [mux-PRs]: handle by reflection or generate
+func zeroValuesOptsReplaceWith(base testfunctional.ZeroValuesOpts, replaceWith testfunctional.ZeroValuesOpts) testfunctional.ZeroValuesOpts {
+	if replaceWith.BoolValue != nil {
+		base.BoolValue = replaceWith.BoolValue
+	}
+	if replaceWith.IntValue != nil {
+		base.IntValue = replaceWith.IntValue
+	}
+	if replaceWith.StringValue != nil {
+		base.StringValue = replaceWith.StringValue
+	}
+	return base
+}
 
 func init() {
 	allTestHandlers["zero_values_handling"] = zeroValuesHandler
@@ -42,7 +53,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resourceReference, "bool_value", "false"),
 					resource.TestCheckResourceAttr(resourceReference, "int_value", "0"),
-					//resource.TestCheckResourceAttr(resourceReference, "string_value", "default value"),
+					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
 
 					// check actions
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
