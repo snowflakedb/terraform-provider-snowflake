@@ -25,6 +25,12 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.action", "CREATE"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.field", "bool_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", "true"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.action", "CREATE"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.field", "int_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", "0"),
 				),
 			},
 		},

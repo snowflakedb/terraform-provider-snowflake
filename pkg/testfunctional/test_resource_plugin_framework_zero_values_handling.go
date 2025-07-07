@@ -2,9 +2,10 @@ package testfunctional
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -23,8 +24,9 @@ type zeroValuesResourceModelV0 struct {
 	BoolValue   types.Bool   `tfsdk:"bool_value"`
 	IntValue    types.Int64  `tfsdk:"int_value"`
 	StringValue types.String `tfsdk:"string_value"`
-	ActionsLog  types.List   `tfsdk:"actions_log"`
 	Id          types.String `tfsdk:"id"`
+
+	actionlog.ActionsLogEmbeddable
 }
 
 type zeroValuesOpts struct {
@@ -57,10 +59,6 @@ func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description: "String value.",
 				Optional:    true,
 			},
-			"actions_log": schema.ListAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-			},
 			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "Identifier for this resource.",
@@ -68,6 +66,7 @@ func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			actionlog.ActionsLogPropertyName: actionlog.GetActionsLogSchema(),
 		},
 	}
 }
@@ -94,31 +93,19 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 }
 
 func setActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *zeroValuesOpts, data *zeroValuesResourceModelV0) {
-	var actions []string
-	//diag := data.ActionsLog.ElementsAs(ctx, &actions, false)
-	//if diag.HasError() {
-	//	response.Diagnostics.Append(diag...)
-	//	return
-	//}
-	//if opts.BoolValue != nil {
-	//	actions = append(actions, actionlog.ActionEntry("CREATE", "BOOL", strconv.FormatBool(*opts.BoolValue)).ToString())
-	//}
-	//if opts.IntValue != nil {
-	//	actions = append(actions, actionlog.ActionEntry("CREATE", "INT", strconv.Itoa(*opts.IntValue)).ToString())
-	//}
-	//if opts.StringValue != nil {
-	//	actions = append(actions, actionlog.ActionEntry("CREATE", "STRING", *opts.StringValue).ToString())
-	//}
-	actionValues := make([]attr.Value, len(actions))
-	for i, a := range actions {
-		actionValues[i] = types.StringValue(a)
-	}
-	var diags diag.Diagnostics
-	data.ActionsLog, diags = types.ListValue(types.StringType, actionValues)
-	if diags.HasError() {
-		response.Diagnostics.Append(diags...)
-		return
-	}
+	response.Diagnostics.Append(actionlog.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
+		actions := make([]actionlog.ActionLogEntry, 0)
+		if opts.BoolValue != nil {
+			actions = append(actions, actionlog.ActionEntry("CREATE", "bool_value", strconv.FormatBool(*opts.BoolValue)))
+		}
+		if opts.IntValue != nil {
+			actions = append(actions, actionlog.ActionEntry("CREATE", "int_value", strconv.Itoa(*opts.IntValue)))
+		}
+		if opts.StringValue != nil {
+			actions = append(actions, actionlog.ActionEntry("CREATE", "string_value", *opts.StringValue))
+		}
+		return actions
+	})...)
 }
 
 func (r *ZeroValuesResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
