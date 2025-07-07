@@ -18,11 +18,13 @@ import (
 var _ resource.ResourceWithConfigure = &ZeroValuesResource{}
 
 func NewZeroValuesResource() resource.Resource {
-	return &ZeroValuesResource{}
+	return &ZeroValuesResource{
+		HttpServerEmbeddable: *common.NewHttpServerEmbeddable[ZeroValuesOpts]("zero_values_handling"),
+	}
 }
 
 type ZeroValuesResource struct {
-	serverUrl string
+	common.HttpServerEmbeddable[ZeroValuesOpts]
 }
 
 type zeroValuesResourceModelV0 struct {
@@ -43,21 +45,6 @@ type ZeroValuesOpts struct {
 
 func (r *ZeroValuesResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
 	response.TypeName = request.ProviderTypeName + "_zero_values"
-}
-
-// TODO [mux-PRs]: extract Configure helper
-func (r *ZeroValuesResource) Configure(_ context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
-	if request.ProviderData == nil {
-		return
-	}
-
-	providerContext, ok := request.ProviderData.(*common.TestProviderContext)
-	if !ok {
-		response.Diagnostics.AddError("Provider context is broken", "Set up the context correctly in the provider's Configure func.")
-		return
-	}
-
-	r.serverUrl = providerContext.ServerUrl()
 }
 
 func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest, response *resource.SchemaResponse) {
@@ -139,7 +126,7 @@ func setActionsOutput(ctx context.Context, response *resource.CreateResponse, op
 func (r *ZeroValuesResource) create(opts *ZeroValuesOpts) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	err := common.Post(r.serverUrl, "zero_values_handling", *opts)
+	err := r.HttpServerEmbeddable.Post(*opts)
 	if err != nil {
 		diags.AddError("Could not create resource", err.Error())
 	}
@@ -158,8 +145,7 @@ func (r *ZeroValuesResource) Read(ctx context.Context, request resource.ReadRequ
 func (r *ZeroValuesResource) read(data *zeroValuesResourceModelV0) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	opts := ZeroValuesOpts{}
-	err := common.Get(r.serverUrl, "zero_values_handling", &opts)
+	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
 	} else {

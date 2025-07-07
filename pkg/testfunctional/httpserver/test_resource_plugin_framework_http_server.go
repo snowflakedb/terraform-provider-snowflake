@@ -16,9 +16,9 @@ import (
 var _ resource.ResourceWithConfigure = &httpServerResource{}
 
 func NewHttpServerResource() resource.Resource {
-	res := httpServerResource{}
-	res.HttpServerEmbeddable.SetPath("http_server_example")
-	return &res
+	return &httpServerResource{
+		HttpServerEmbeddable: *common.NewHttpServerEmbeddable[Read]("http_server_example"),
+	}
 }
 
 type httpServerResource struct {
