@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build account_level_tests
 
 package testint
 
@@ -525,9 +525,9 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	})
 
 	t.Run("set / unset parameters",
-		SetAndUnsetAccountParametersTest(
-			func(parameters sdk.AccountParameters) error {
-				return client.Accounts.Alter(context.Background(), &sdk.AlterAccountOptions{
+		setAndUnsetAccountParametersTest(
+			func(ctx context.Context, parameters sdk.AccountParameters) error {
+				return client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 					Set: &sdk.AccountSet{
 						Parameters: &parameters,
 					},

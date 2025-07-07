@@ -26,21 +26,16 @@ func (c *RoleClient) client() sdk.Roles {
 
 func (c *RoleClient) UseRole(t *testing.T, roleId sdk.AccountObjectIdentifier) func() {
 	t.Helper()
-	return c.UseRoleWithClient(t, c.context.client, roleId)
-}
-
-func (c *RoleClient) UseRoleWithClient(t *testing.T, client *sdk.Client, roleId sdk.AccountObjectIdentifier) func() {
-	t.Helper()
 	ctx := context.Background()
 
-	currentRole, err := client.ContextFunctions.CurrentRole(ctx)
+	currentRole, err := c.context.client.ContextFunctions.CurrentRole(ctx)
 	require.NoError(t, err)
 
-	err = client.Sessions.UseRole(ctx, roleId)
+	err = c.context.client.Sessions.UseRole(ctx, roleId)
 	require.NoError(t, err)
 
 	return func() {
-		err = client.Sessions.UseRole(ctx, currentRole)
+		err = c.context.client.Sessions.UseRole(ctx, currentRole)
 		require.NoError(t, err)
 	}
 }

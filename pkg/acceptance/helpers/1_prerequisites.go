@@ -86,10 +86,10 @@ func (c *TestClient) EnsureValidNonProdOrganizationAccountIsUsed(t *testing.T) {
 	}
 	organizationAccounts, err := c.context.client.OrganizationAccounts.Show(context.Background(), sdk.NewShowOrganizationAccountRequest())
 	if err != nil {
-		t.Skipf("Failed to show organization accounts, err = %v.", err)
+		t.Errorf("Failed to show organization accounts, err = %v.", err)
 	}
 	if len(organizationAccounts) != 1 {
-		t.Skipf("Wrong number of organization accounts returned. Expected one, got = %d.", len(organizationAccounts))
+		t.Errorf("Wrong number of organization accounts returned. Expected one, got = %d.", len(organizationAccounts))
 	}
 	if organizationAccounts[0].AccountLocator != nonProdModifiableAccountLocator {
 		t.Skipf("The TEST_SF_TF_NON_PROD_MODIFIABLE_ACCOUNT_LOCATOR does not match the organization account's locator, please adjust the environment variable.")

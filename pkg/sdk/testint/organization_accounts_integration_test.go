@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build account_level_tests
 
 package testint
 
@@ -19,8 +19,10 @@ func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	t.Cleanup(testClientHelper().Role.UseRoleWithClient(t, client, snowflakeroles.GlobalOrgAdmin))
 	t.Cleanup(testClientHelper().Role.UseRole(t, snowflakeroles.GlobalOrgAdmin))
+
+	require.NoError(t, client.Sessions.UseRole(ctx, snowflakeroles.GlobalOrgAdmin))
+	t.Cleanup(func() { require.NoError(t, client.Sessions.UseRole(ctx, snowflakeroles.Accountadmin)) })
 
 	t.Run("set / unset resource monitor", func(t *testing.T) {
 		resourceMonitor, resourceMonitorCleanup := testClientHelper().ResourceMonitor.CreateResourceMonitor(t)
@@ -91,9 +93,9 @@ func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
 	})
 
 	t.Run("set / unset parameters",
-		SetAndUnsetAccountParametersTest(
-			func(parameters sdk.AccountParameters) error {
-				return client.OrganizationAccounts.Alter(context.Background(), sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithParameters(parameters)))
+		setAndUnsetAccountParametersTest(
+			func(ctx context.Context, parameters sdk.AccountParameters) error {
+				return client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithParameters(parameters)))
 			},
 			client.OrganizationAccounts.UnsetAllParameters,
 			client.OrganizationAccounts.ShowParameters,

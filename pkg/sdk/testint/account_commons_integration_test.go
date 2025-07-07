@@ -11,13 +11,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// SetAndUnsetAccountParametersTest is a common test used for different account kinds.
-func SetAndUnsetAccountParametersTest(
-	setParameters func(sdk.AccountParameters) error,
+// setAndUnsetAccountParametersTest is a common test used for different account kinds.
+func setAndUnsetAccountParametersTest(
+	setParameters func(ctx context.Context, parameters sdk.AccountParameters) error,
 	unsetAllParameters func(ctx context.Context) error,
 	showParameters func(ctx context.Context) ([]*sdk.Parameter, error),
 ) func(t *testing.T) {
 	return func(t *testing.T) {
+		t.Helper()
+
 		id := testClientHelper().Context.CurrentAccountId(t)
 
 		warehouseId := testClientHelper().Ids.WarehouseId()
@@ -43,7 +45,7 @@ func SetAndUnsetAccountParametersTest(
 		// - S3StageVpceDnsName
 		// - SamlIdentityProvider
 		// - SimulatedDataSharingConsumer
-		err := setParameters(sdk.AccountParameters{
+		err := setParameters(context.Background(), sdk.AccountParameters{
 			AbortDetachedQuery:                               sdk.Bool(true),
 			AllowClientMFACaching:                            sdk.Bool(true),
 			AllowIDToken:                                     sdk.Bool(true),

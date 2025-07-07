@@ -121,12 +121,12 @@ func (r organizationAccountDbRow) convert() *OrganizationAccount {
 		IsOrganizationAccount:                r.IsOrganizationAccount,
 	}
 	mapStringWithMapping(&oa.Edition, r.Edition, ToOrganizationAccountEdition)
-	mapStringIfNotNil(&oa.MarketplaceConsumerBillingEntityName, r.MarketplaceConsumerBillingEntityName)
-	mapStringIfNotNil(&oa.OldAccountUrl, r.OldAccountUrl)
-	mapStringIfNotNil(&oa.AccountOldUrlSavedOn, r.AccountOldUrlSavedOn)
-	mapStringIfNotNil(&oa.AccountOldUrlLastUsed, r.AccountOldUrlLastUsed)
-	mapStringIfNotNil(&oa.OrganizationOldUrl, r.OrganizationOldUrl)
-	mapStringIfNotNil(&oa.OrganizationOldUrlSavedOn, r.OrganizationOldUrlSavedOn)
-	mapStringIfNotNil(&oa.OrganizationOldUrlLastUsed, r.OrganizationOldUrlLastUsed)
+	mapNullString(&oa.MarketplaceConsumerBillingEntityName, r.MarketplaceConsumerBillingEntityName)
+	mapNullString(&oa.OldAccountUrl, r.OldAccountUrl)
+	mapNullString(&oa.AccountOldUrlSavedOn, r.AccountOldUrlSavedOn)
+	mapNullString(&oa.AccountOldUrlLastUsed, r.AccountOldUrlLastUsed)
+	mapNullString(&oa.OrganizationOldUrl, r.OrganizationOldUrl)
+	mapNullString(&oa.OrganizationOldUrlSavedOn, r.OrganizationOldUrlSavedOn)
+	mapNullString(&oa.OrganizationOldUrlLastUsed, r.OrganizationOldUrlLastUsed)
 	return oa
 }
