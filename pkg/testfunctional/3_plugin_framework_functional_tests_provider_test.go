@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/computednestedlist"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/httpserver"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -53,7 +55,7 @@ func (p *pluginFrameworkFunctionalTestsProvider) Configure(ctx context.Context, 
 		return
 	}
 
-	providerCtx := &testProviderContext{testName: testName}
+	providerCtx := common.NewTestProviderContext(testName, server.URL)
 	response.DataSourceData = providerCtx
 	response.ResourceData = providerCtx
 }
@@ -67,6 +69,7 @@ func (p *pluginFrameworkFunctionalTestsProvider) Resources(_ context.Context) []
 		testfunctional.NewSomeResource,
 		testfunctional.NewZeroValuesResource,
 		computednestedlist.NewComputedNestedListResource,
+		httpserver.NewHttpServerResource,
 	}
 }
 
