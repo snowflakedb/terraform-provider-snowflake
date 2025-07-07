@@ -57,5 +57,9 @@ func initialize() error {
 		return fmt.Errorf("cannot set up test providers for the functional tests, err: %w", err)
 	}
 
+	if err := setUpTestHttpServer(); err != nil {
+		return fmt.Errorf("cannot set up test http server for the functional tests, err: %w", err)
+	}
+
 	return nil
 }

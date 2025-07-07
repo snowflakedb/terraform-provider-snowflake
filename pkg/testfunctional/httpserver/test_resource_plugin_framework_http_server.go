@@ -99,7 +99,7 @@ func (r *httpServerResource) Read(ctx context.Context, request resource.ReadRequ
 
 func (r *httpServerResource) read(data *httpServerResourceModelV0) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	resp, err := http.Get(r.serverUrl + "/test1")
+	resp, err := http.Get(r.serverUrl + "/http_server_example")
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
 		return diags
