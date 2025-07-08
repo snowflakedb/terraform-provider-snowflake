@@ -50,6 +50,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CurrentAccount().Schema,
 	},
 	{
+		name:   "CurrentOrganizationAccount",
+		schema: resources.CurrentOrganizationAccount().Schema,
+	},
+	{
 		name:   "Database",
 		schema: resources.Database().Schema,
 	},
