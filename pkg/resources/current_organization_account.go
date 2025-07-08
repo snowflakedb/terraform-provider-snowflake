@@ -121,7 +121,6 @@ func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 func ReadCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	// TODO: Is it domain account?
 	attachedPolicies, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount))
 	if err != nil {
 		return diag.FromErr(err)
@@ -169,8 +168,13 @@ func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("password_policy") {
-		if v, ok := d.GetOk("password_policy"); ok {
-			passwordPolicyId, err := sdk.ParseSchemaObjectIdentifier(v.(string))
+		if oldValue, newValue := d.GetChange("password_policy"); newValue != nil && newValue.(string) != "" {
+			if oldValue != nil && oldValue.(string) != "" {
+				if err := client.OrganizationAccounts.UnsetPolicySafely(ctx, sdk.PolicyKindPasswordPolicy); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+			passwordPolicyId, err := sdk.ParseSchemaObjectIdentifier(newValue.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -185,8 +189,13 @@ func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("session_policy") {
-		if v, ok := d.GetOk("session_policy"); ok {
-			sessionPolicyId, err := sdk.ParseSchemaObjectIdentifier(v.(string))
+		if oldValue, newValue := d.GetChange("session_policy"); newValue != nil && newValue.(string) != "" {
+			if oldValue != nil && oldValue.(string) != "" {
+				if err := client.OrganizationAccounts.UnsetPolicySafely(ctx, sdk.PolicyKindSessionPolicy); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+			sessionPolicyId, err := sdk.ParseSchemaObjectIdentifier(newValue.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}

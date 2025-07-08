@@ -2,9 +2,10 @@ package helpers
 
 import (
 	"context"
+	"testing"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type OrganizationAccountClient struct {
