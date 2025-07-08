@@ -277,7 +277,7 @@ func CreateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 // ReadFailoverGroup implements schema.ReadFunc.
 func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 	failoverGroup, err := client.FailoverGroups.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
@@ -416,7 +416,7 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 // UpdateFailoverGroup implements schema.UpdateFunc.
 func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	// alter failover group <name> set ...
 	opts := &sdk.AlterSourceFailoverGroupOptions{

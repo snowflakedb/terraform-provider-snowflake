@@ -128,7 +128,7 @@ func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	networkRule, err := client.NetworkRules.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -186,7 +186,7 @@ func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta in
 
 func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	valueList := expandStringList(d.Get("value_list").(*schema.Set).List())
 	networkRuleValues := make([]sdk.NetworkRuleValue, len(valueList))

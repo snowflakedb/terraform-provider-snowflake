@@ -152,7 +152,7 @@ func CreateMaterializedView(ctx context.Context, d *schema.ResourceData, meta an
 func ReadMaterializedView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	materializedView, err := client.MaterializedViews.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -209,7 +209,7 @@ func ReadMaterializedView(ctx context.Context, d *schema.ResourceData, meta any)
 func UpdateMaterializedView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
