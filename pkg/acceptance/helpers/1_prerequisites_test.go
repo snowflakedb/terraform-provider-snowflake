@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEnsureValidAccountIsUsed(t *testing.T) {
@@ -83,12 +84,6 @@ func (m *mockOrganizationAccounts) UnsetAllParameters(ctx context.Context) error
 	return nil
 }
 
-func (m *mockOrganizationAccounts) UnsetPolicySafely(ctx context.Context, kind sdk.PolicyKind) error {
-	return nil
-}
-
-func (m *mockOrganizationAccounts) UnsetAll(ctx context.Context) error { return nil }
-
 func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 	accountLocator := "ABC123123"
 	anotherAccountLocator := "DEF456456"
@@ -139,13 +134,11 @@ func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 		})
 
 		t.Setenv(string(testenvs.TestNonProdModifiableAccountLocator), accountLocator)
-		defer func() {
-			if !t.Skipped() {
-				t.Errorf("Expected test to be skipped due to SHOW ORGANIZATION ACCOUNTS error")
-			}
-		}()
 
-		testClient.EnsureValidNonProdOrganizationAccountIsUsed(t)
+		// New testing.T instance has to be used to avoid failures caused by the check
+		tt := new(testing.T)
+		testClient.EnsureValidNonProdOrganizationAccountIsUsed(tt)
+		assert.True(t, tt.Failed())
 	})
 
 	t.Run("invalid organization account: account locator not matching", func(t *testing.T) {
