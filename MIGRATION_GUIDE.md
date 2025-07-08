@@ -42,7 +42,7 @@ Check for more details and action steps needed in [Argument output changes for S
 References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
 
 ## v2.1.x ➞ v2.2.0
-<a name="v210--v220"></a>
+<a id="v210--v220"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -239,7 +239,7 @@ No configuration changes are necessary.
 As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
 
 ## v2.1.0 ➞ v2.1.1
-<a name="v210---v211"></a>
+<a id="v210---v211"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -250,7 +250,7 @@ No configuration changes are needed. However, the provider won't set back the `A
 This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, and v2.0.1.
 
 ## v2.0.x ➞ v2.1.0
-<a name="v200--v210"></a>
+<a id="v200--v210"></a>
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
 
@@ -295,7 +295,7 @@ No configuration changes are necessary.
 References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
 
 ## v2.0.0 ➞ v2.0.1
-<a name="v200---v201"></a>
+<a id="v200---v201"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -306,7 +306,7 @@ No configuration changes are needed. However, the provider won't set back the `A
 This fix was also backported to versions v1.0.6, v1.1.1, and v1.2.2.
 
 ## v1.2.x ➞ v2.0.0
-<a name="v121--v200"></a>
+<a id="v121--v200"></a>
 
 ### Supported architectures
 
@@ -482,7 +482,7 @@ This fix was also backported to versions v1.0.6 and v1.1.1.
 No migration needed.
 
 ## v1.1.x ➞ v1.2.0
-<a name="v110--v120"></a>
+<a id="v110--v120"></a>
 
 ### New behavior for Read and Delete operations when removing high-hierarchy objects
 Some objects in Snowflake are created in hierarchy, for example, tables (database → schema → table).
@@ -554,7 +554,7 @@ This version fixes this behavior. No action should be required on user side.
 References: [#3522](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3522)
 
 ## v1.1.0 ➞ v1.1.1
-<a name="v110---v111"></a>
+<a id="v110---v111"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -565,7 +565,7 @@ No configuration changes are needed. However, the provider won't set back the `A
 This fix was also backported to version v1.0.6.
 
 ## v1.0.x ➞ v1.1.0
-<a name="v105--v110"></a>
+<a id="v105--v110"></a>
 
 ### Timeouts in resources
 By default, resource operation timeout after 20 minutes ([reference](https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/retries-and-customizable-timeouts#default-timeouts-and-deadline-exceeded-errors)). This caused some long running operations to timeout.
@@ -589,7 +589,7 @@ Instead of failing the whole action, we return a warning instead and the operati
 References: [#3507](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3507)
 
 ## v1.0.5 ➞ v1.0.6
-<a name="v105---v106"></a>
+<a id="v105---v106"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -2689,7 +2689,7 @@ The `comment` attribute is now optional. It was required before, but it is not r
 The `schema` attribute is now required with `database` attribute to match old implementation `SHOW EXTERNAL FUNCTIONS IN SCHEMA "<database>"."<schema>"`. In the future this may change to make schema optional.
 
 ## vX.XX.X ➞ v0.85.0
-<a name="vxxxx---v0850"></a>
+<a id="vxxxx---v0850"></a>
 
 ### Migration from old (grant) resources to new ones
 
