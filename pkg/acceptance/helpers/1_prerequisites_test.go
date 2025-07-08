@@ -84,6 +84,12 @@ func (m *mockOrganizationAccounts) UnsetAllParameters(ctx context.Context) error
 	return nil
 }
 
+func (m *mockOrganizationAccounts) UnsetPolicySafely(ctx context.Context, kind sdk.PolicyKind) error {
+	return nil
+}
+
+func (m *mockOrganizationAccounts) UnsetAll(ctx context.Context) error { return nil }
+
 func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 	accountLocator := "ABC123123"
 	anotherAccountLocator := "DEF456456"
