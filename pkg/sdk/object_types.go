@@ -83,6 +83,7 @@ const (
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
+	ObjectTypeListing                 ObjectType = "LISTING"
 )
 
 func (o ObjectType) String() string {
