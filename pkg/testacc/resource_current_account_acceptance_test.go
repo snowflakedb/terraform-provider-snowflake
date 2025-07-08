@@ -123,7 +123,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 		WithServerlessTaskMinStatementSize(string(sdk.WarehouseSizeSmall)).
 		WithSsoLoginPage(true).
 		WithStatementQueuedTimeoutInSeconds(1).
-		WithStatementTimeoutInSeconds(1).
+		WithStatementTimeoutInSeconds(10).
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
 		WithStrictJsonOutput(true).
 		WithSuspendTaskAfterNumFailures(3).
@@ -262,7 +262,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasSsoLoginPageString("true").
 						HasStatementQueuedTimeoutInSecondsString("1").
-						HasStatementTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("10").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
 						HasStrictJsonOutputString("true").
 						HasSuspendTaskAfterNumFailuresString("3").
@@ -381,7 +381,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasSsoLoginPageString("true").
 						HasStatementQueuedTimeoutInSecondsString("1").
-						HasStatementTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("10").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
 						HasStrictJsonOutputString("true").
 						HasSuspendTaskAfterNumFailuresString("3").
@@ -772,7 +772,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 		WithServerlessTaskMinStatementSize(string(sdk.WarehouseSizeSmall)).
 		WithSsoLoginPage(true).
 		WithStatementQueuedTimeoutInSeconds(1).
-		WithStatementTimeoutInSeconds(1).
+		WithStatementTimeoutInSeconds(10).
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
 		WithStrictJsonOutput(true).
 		WithSuspendTaskAfterNumFailures(3).
@@ -901,7 +901,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasSsoLoginPageString("true").
 						HasStatementQueuedTimeoutInSecondsString("1").
-						HasStatementTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("10").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
 						HasStrictJsonOutputString("true").
 						HasSuspendTaskAfterNumFailuresString("3").
@@ -1025,7 +1025,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasSsoLoginPageString("true").
 						HasStatementQueuedTimeoutInSecondsString("1").
-						HasStatementTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("10").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
 						HasStrictJsonOutputString("true").
 						HasSuspendTaskAfterNumFailuresString("3").
