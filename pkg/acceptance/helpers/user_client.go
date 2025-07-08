@@ -219,7 +219,7 @@ func (c *UserClient) RemoveProgrammaticAccessTokenFunc(t *testing.T, userId sdk.
 
 	return func() {
 		err := c.context.client.Users.RemoveProgrammaticAccessTokenSafely(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(userId, tokenName))
-		if err != nil && !errors.Is(err, sdk.ErrNotFound) {
+		if err != nil && !errors.Is(err, sdk.ErrPatNotFound) {
 			t.Errorf("failed to remove programmatic access token: %v", err)
 		}
 	}

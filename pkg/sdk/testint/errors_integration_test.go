@@ -306,7 +306,7 @@ func TestInt_SnowflakeReturnsACustomErrorOnInvalidUserProgrammaticAccessToken(t 
 	invalidTokenName := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 	err := testClient(t).Users.RemoveProgrammaticAccessToken(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(user.ID(), invalidTokenName))
-	assert.ErrorIs(t, err, sdk.ErrNotFound)
+	assert.ErrorIs(t, err, sdk.ErrPatNotFound)
 	assert.NotErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	assert.NotErrorIs(t, err, sdk.ErrObjectNotFound)
 

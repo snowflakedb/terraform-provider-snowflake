@@ -23,7 +23,7 @@ var (
 	ErrObjectNotExistOrAuthorized               = NewError("object does not exist or not authorized")
 	ErrAccountIsEmpty                           = NewError("account is empty")
 	ErrGrantPartiallyExecuted                   = NewError("grant partially executed")
-	ErrNotFound                                 = NewError("not found")
+	ErrPatNotFound                              = NewError("not found")
 
 	// snowflake-sdk errors.
 	ErrInvalidObjectIdentifier = NewError("invalid object identifier")
@@ -91,7 +91,7 @@ func decodeDriverError(err error) error {
 		"does not exist or not authorized":                        ErrObjectNotExistOrAuthorized,
 		"account is empty":                                        ErrAccountIsEmpty,
 		"Grant partially executed":                                ErrGrantPartiallyExecuted,
-		"not found":                                               ErrNotFound,
+		"not found":                                               ErrPatNotFound,
 	}
 	for k, v := range m {
 		if strings.Contains(err.Error(), k) {

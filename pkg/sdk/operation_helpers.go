@@ -59,25 +59,24 @@ func SafeDrop[ID ObjectIdentifierConstraint](
 // SafeRemoveProgrammaticAccessToken is a helper function with specific implementation for PATs.
 func SafeRemoveProgrammaticAccessToken(
 	client *Client,
-	removeProgrammaticAccessToken func() error,
 	ctx context.Context,
-	userId AccountObjectIdentifier,
+	request *RemoveUserProgrammaticAccessTokenRequest,
 ) error {
-	err := removeProgrammaticAccessToken()
+	err := client.UserProgrammaticAccessTokens.Remove(ctx, request)
 
 	// Tokens can't be removed with IF EXISTS, so we return nil if the token is not found.
-	if errors.Is(err, ErrNotFound) {
+	if errors.Is(err, ErrPatNotFound) {
 		return nil
 	}
 
-	// ErrObjectNotExistOrAuthorized can only happen
+	// ErrObjectNotExistOrAuthorized or ErrDoesNotExistOrOperationCannotBePerformed can only happen
 	// when the user object is not accessible for some reason during the "main" removeProgrammaticAccessToken.
 	shouldCheckHigherHierarchies := errors.Is(err, ErrObjectNotExistOrAuthorized) || errors.Is(err, ErrDoesNotExistOrOperationCannotBePerformed)
 	if !shouldCheckHigherHierarchies {
 		return err
 	}
 	if err != nil {
-		if _, err := client.Users.ShowByID(ctx, userId); err != nil {
+		if _, err := client.Users.ShowByIDSafely(ctx, request.UserName); err != nil {
 			if errors.Is(err, ErrObjectNotFound) {
 				return nil
 			}
@@ -148,12 +147,11 @@ func SafeShowById[T any, ID ObjectIdentifierConstraint](
 // SafeShowProgrammaticAccessTokenByName is a helper function with specific implementation for PATs.
 func SafeShowProgrammaticAccessTokenByName(
 	client *Client,
-	showByName func(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error),
 	ctx context.Context,
 	userId AccountObjectIdentifier,
 	tokenName AccountObjectIdentifier,
 ) (*ProgrammaticAccessToken, error) {
-	result, err := showByName(ctx, userId, tokenName)
+	result, err := client.UserProgrammaticAccessTokens.ShowByID(ctx, userId, tokenName)
 
 	// ErrObjectNotExistOrAuthorized or ErrDoesNotExistOrOperationCannotBePerformed can only happen
 	// when the user object is not accessible for some reason during the "main" showById.
@@ -163,7 +161,7 @@ func SafeShowProgrammaticAccessTokenByName(
 	}
 	if err != nil {
 		errs := []error{err}
-		if _, err := client.Users.ShowByID(ctx, userId); err != nil {
+		if _, err := client.Users.ShowByIDSafely(ctx, userId); err != nil {
 			errs = append(errs, err)
 		}
 		return nil, errors.Join(errs...)
