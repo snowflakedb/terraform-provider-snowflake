@@ -3,6 +3,7 @@ package snowflakeroles
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 var (
+	GlobalOrgAdmin = sdk.NewAccountObjectIdentifier("GLOBALORGADMIN")
 	Orgadmin       = sdk.NewAccountObjectIdentifier("ORGADMIN")
 	Accountadmin   = sdk.NewAccountObjectIdentifier("ACCOUNTADMIN")
 	SecurityAdmin  = sdk.NewAccountObjectIdentifier("SECURITYADMIN")
