@@ -51,12 +51,14 @@ type Client struct {
 	GitRepositories              GitRepositories
 	Grants                       Grants
 	ImageRepositories            ImageRepositories
+	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
 	NotificationIntegrations     NotificationIntegrations
+	OrganizationAccounts         OrganizationAccounts
 	Parameters                   Parameters
 	PasswordPolicies             PasswordPolicies
 	Pipes                        Pipes
@@ -187,12 +189,14 @@ func (c *Client) initialize() {
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
+	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
 	c.NotificationIntegrations = &notificationIntegrations{client: c}
+	c.OrganizationAccounts = &organizationAccounts{client: c}
 	c.Parameters = &parameters{client: c}
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
