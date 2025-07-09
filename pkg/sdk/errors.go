@@ -23,7 +23,7 @@ var (
 	ErrObjectNotExistOrAuthorized               = NewError("object does not exist or not authorized")
 	ErrAccountIsEmpty                           = NewError("account is empty")
 	ErrGrantPartiallyExecuted                   = NewError("grant partially executed")
-	ErrPatNotFound                              = NewError("not found")
+	ErrPatNotFound                              = NewError("programmatic access token not found")
 
 	// snowflake-sdk errors.
 	ErrInvalidObjectIdentifier = NewError("invalid object identifier")
@@ -91,10 +91,18 @@ func decodeDriverError(err error) error {
 		"does not exist or not authorized":                        ErrObjectNotExistOrAuthorized,
 		"account is empty":                                        ErrAccountIsEmpty,
 		"Grant partially executed":                                ErrGrantPartiallyExecuted,
-		"not found":                                               ErrPatNotFound,
 	}
 	for k, v := range m {
 		if strings.Contains(err.Error(), k) {
+			return v
+		}
+	}
+
+	regexes := map[string]error{
+		`Programmatic access .* token not found`: ErrPatNotFound,
+	}
+	for k, v := range regexes {
+		if regexp.MustCompile(k).MatchString(err.Error()) {
 			return v
 		}
 	}
