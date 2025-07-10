@@ -2,6 +2,8 @@ package helpers
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -25,23 +27,12 @@ func (c *ListingClient) client() sdk.Listings {
 	return c.context.client.Listings
 }
 
-func (c *ListingClient) SampleListingManifest(t *testing.T) string {
-	t.Helper()
-	return `
-title: "MyListing"
-subtitle: "Subtitle for MyListing"
-description: "Description for MyListing"
-listing_terms:
- type: "OFFLINE"
-`
-}
-
 func (c *ListingClient) Create(t *testing.T) (*sdk.Listing, func()) {
 	t.Helper()
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	err := c.client().Create(ctx, sdk.NewCreateListingRequest(id, c.SampleListingManifest(t)))
+	err := c.client().Create(ctx, sdk.NewCreateListingRequest(id).WithAs(c.BasicManifest(t)))
 	assert.NoError(t, err)
 
 	listing, err := c.client().ShowByID(ctx, id)
@@ -63,7 +54,87 @@ func (c *ListingClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) f
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropListingRequest(id).WithIfExists(true))
+		err := c.client().DropSafely(ctx, id)
 		assert.NoError(t, err)
 	}
+}
+
+func (c *ListingClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Listing, error) {
+	t.Helper()
+	return c.client().ShowByID(context.Background(), id)
+}
+
+// TODO(ticket): Move to SDk
+
+type ListingManifestBuilder struct {
+	Title            *string
+	Subtitle         *string
+	Description      *string
+	Target           *string
+	ListingTermsType *ListingTermsType
+}
+
+func (b *ListingManifestBuilder) WithTitle(title string) *ListingManifestBuilder {
+	b.Title = &title
+	return b
+}
+
+func (b *ListingManifestBuilder) WithSubtitle(subtitle string) *ListingManifestBuilder {
+	b.Subtitle = &subtitle
+	return b
+}
+
+func (b *ListingManifestBuilder) WithDescription(description string) *ListingManifestBuilder {
+	b.Description = &description
+	return b
+}
+
+func (b *ListingManifestBuilder) WithTarget(accountId sdk.AccountIdentifier) *ListingManifestBuilder {
+	b.Target = sdk.Pointer(fmt.Sprintf("%s.%s", accountId.OrganizationName(), accountId.AccountName()))
+	return b
+}
+
+func (b *ListingManifestBuilder) WithListingTermsType(listingTermsType ListingTermsType) *ListingManifestBuilder {
+	b.ListingTermsType = &listingTermsType
+	return b
+}
+
+func (b *ListingManifestBuilder) Build() string {
+	sb := new(strings.Builder)
+	write(sb, "title: %s\n", b.Title)
+	write(sb, "subtitle: %s\n", b.Subtitle)
+	write(sb, "description: %s\n", b.Description)
+	write(sb, `listing_terms:
+  type: %s
+`, b.ListingTermsType)
+	write(sb, `targets:
+  accounts: [%s]
+`, b.Target)
+	return sb.String()
+}
+
+func write[T ~string](sb *strings.Builder, format string, v *T) {
+	if v != nil {
+		sb.WriteString(fmt.Sprintf(format, *v))
+	}
+}
+
+type ListingTermsType string
+
+const (
+	ListingTermsTypeOffline ListingTermsType = "OFFLINE"
+)
+
+func (c *ListingClient) ManifestBuilder(t *testing.T) *ListingManifestBuilder {
+	t.Helper()
+	return new(ListingManifestBuilder)
+}
+
+func (c *ListingClient) BasicManifest(t *testing.T) string {
+	return c.ManifestBuilder(t).
+		WithTitle("title").
+		WithSubtitle("subtitle").
+		WithDescription("description").
+		WithListingTermsType(ListingTermsTypeOffline).
+		Build()
 }

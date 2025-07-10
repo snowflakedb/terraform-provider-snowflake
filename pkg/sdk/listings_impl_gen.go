@@ -28,6 +28,16 @@ func (v *listings) Drop(ctx context.Context, request *DropListingRequest) error 
 }
 
 func (v *listings) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
+	// Adjusted manually
+	l, err := v.ShowByIDSafely(ctx, id)
+	if err != nil {
+		return err
+	}
+	if l.State == ListingStatePublished {
+		if err := v.Alter(ctx, NewAlterListingRequest(id).WithUnpublish(true)); err != nil {
+			return err
+		}
+	}
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropListingRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
@@ -150,7 +160,6 @@ func (r listingDBRow) convert() *Listing {
 		Profile:        r.Profile,
 		CreatedOn:      r.CreatedOn,
 		UpdatedOn:      r.UpdatedOn,
-		ReviewState:    r.ReviewState,
 		Owner:          r.Owner,
 		OwnerRoleType:  r.OwnerRoleType,
 		TargetAccounts: r.TargetAccounts,
@@ -161,6 +170,7 @@ func (r listingDBRow) convert() *Listing {
 	if state, err := ToListingState(r.State); err == nil {
 		l.State = state
 	}
+	mapNullString(&l.ReviewState, r.ReviewState)
 	mapNullString(&l.Subtitle, r.Subtitle)
 	mapNullString(&l.PublishedOn, r.PublishedOn)
 	mapNullString(&l.Comment, r.Comment)
@@ -195,13 +205,13 @@ func (r listingDetailsDBRow) convert() *ListingDetails {
 		UpdatedOn:     r.UpdatedOn,
 		Title:         r.Title,
 		Revisions:     r.Revisions,
-		ReviewState:   r.ReviewState,
 		ManifestYaml:  r.ManifestYaml,
 		IsMonetized:   r.IsMonetized,
 		IsApplication: r.IsApplication,
 		IsTargeted:    r.IsTargeted,
 	}
 
+	mapNullString(&ld.ReviewState, r.ReviewState)
 	mapNullString(&ld.PublishedOn, r.PublishedOn)
 	mapNullString(&ld.Subtitle, r.Subtitle)
 	mapNullString(&ld.Description, r.Description)

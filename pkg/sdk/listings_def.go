@@ -56,7 +56,7 @@ var listingDbRow = g.DbStruct("listingDBRow").
 	Text("updated_on").
 	OptionalText("published_on").
 	Text("state").
-	Text("review_state").
+	OptionalText("review_state").
 	OptionalText("comment").
 	Text("owner").
 	Text("owner_role_type").
@@ -84,7 +84,7 @@ var listing = g.PlainStruct("Listing").
 	Text("UpdatedOn").
 	OptionalText("PublishedOn").
 	Field("State", g.KindOfT[ListingState]()).
-	Text("ReviewState").
+	OptionalText("ReviewState").
 	OptionalText("Comment").
 	Text("Owner").
 	Text("OwnerRoleType").
@@ -134,7 +134,7 @@ var listingDetailsDbRow = g.DbStruct("listingDetailsDBRow").
 	OptionalText("regions").
 	OptionalText("refresh_schedule").
 	OptionalText("refresh_type").
-	Text("review_state").
+	OptionalText("review_state").
 	OptionalText("rejection_reason").
 	OptionalText("unpublished_by_admin_reasons").
 	Bool("is_monetized").
@@ -195,7 +195,7 @@ var listingDetails = g.PlainStruct("ListingDetails").
 	OptionalText("Regions").
 	OptionalText("RefreshSchedule").
 	OptionalText("RefreshType").
-	Text("ReviewState").
+	OptionalText("ReviewState").
 	OptionalText("RejectionReason").
 	OptionalText("UnpublishedByAdminReasons").
 	Bool("IsMonetized").

@@ -100,7 +100,7 @@ type listingDBRow struct {
 	UpdatedOn               string         `db:"updated_on"`
 	PublishedOn             sql.NullString `db:"published_on"`
 	State                   string         `db:"state"`
-	ReviewState             string         `db:"review_state"`
+	ReviewState             sql.NullString `db:"review_state"`
 	Comment                 sql.NullString `db:"comment"`
 	Owner                   string         `db:"owner"`
 	OwnerRoleType           string         `db:"owner_role_type"`
@@ -129,7 +129,7 @@ type Listing struct {
 	UpdatedOn               string
 	PublishedOn             *string
 	State                   ListingState
-	ReviewState             string
+	ReviewState             *string
 	Comment                 *string
 	Owner                   string
 	OwnerRoleType           string
@@ -194,7 +194,7 @@ type listingDetailsDBRow struct {
 	Regions                      sql.NullString `db:"regions"`
 	RefreshSchedule              sql.NullString `db:"refresh_schedule"`
 	RefreshType                  sql.NullString `db:"refresh_type"`
-	ReviewState                  string         `db:"review_state"`
+	ReviewState                  sql.NullString `db:"review_state"`
 	RejectionReason              sql.NullString `db:"rejection_reason"`
 	UnpublishedByAdminReasons    sql.NullString `db:"unpublished_by_admin_reasons"`
 	IsMonetized                  bool           `db:"is_monetized"`
@@ -256,7 +256,7 @@ type ListingDetails struct {
 	Regions                      *string
 	RefreshSchedule              *string
 	RefreshType                  *string
-	ReviewState                  string
+	ReviewState                  *string
 	RejectionReason              *string
 	UnpublishedByAdminReasons    *string
 	IsMonetized                  bool

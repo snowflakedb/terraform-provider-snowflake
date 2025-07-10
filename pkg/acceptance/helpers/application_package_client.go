@@ -59,6 +59,16 @@ func (c *ApplicationPackageClient) AddApplicationPackageVersion(t *testing.T, id
 	require.NoError(t, err)
 }
 
+func (c *ApplicationPackageClient) SetDefaultReleaseDirective(t *testing.T, id sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithSetDefaultReleaseDirective(
+		sdk.NewSetDefaultReleaseDirectiveRequest("v1_0", 0),
+	))
+	require.NoError(t, err)
+}
+
 func (c *ApplicationPackageClient) ShowVersions(t *testing.T, id sdk.AccountObjectIdentifier) []ApplicationPackageVersion {
 	t.Helper()
 
