@@ -840,7 +840,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, 60*time.Second, got.ExternalBrowserTimeout)
 				assert.Equal(t, 2, got.MaxRetryCount)
 				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
-				assert.True(t, got.InsecureMode)
+				assert.True(t, got.InsecureMode) // nolint:staticcheck
 				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
 				assert.Equal(t, "token", got.Token)
 				assert.True(t, got.KeepSessionAlive)
