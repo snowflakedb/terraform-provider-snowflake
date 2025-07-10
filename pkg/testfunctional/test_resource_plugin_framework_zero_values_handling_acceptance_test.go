@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -55,6 +56,11 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T
 		Steps: []resource.TestStep{
 			// create with valid "zero" values
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
+					},
+				},
 				Config: zeroValuesAllSetConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
@@ -77,6 +83,11 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T
 			},
 			// remove all from config (to validate that unset is run correctly)
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
 				Config: zeroValuesNoneSetConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
@@ -107,6 +118,11 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T
 			},
 			// add valid "zero" values again (to validate if set is run correctly)
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
 				Config: zeroValuesAllSetConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
@@ -134,6 +150,40 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T
 				ImportStateVerify: true,
 				// Ignoring actions_log as they serve testing purpose; ignoring name as we do not fill it in read (import tests will be done separately).
 				ImportStateVerifyIgnore: []string{"actions_log", "name"},
+			},
+			// set externally to non-zero values
+			{
+				PreConfig: func() {
+					zeroValuesHandler.SetCurrentValue(testfunctional.ZeroValuesOpts{
+						BoolValue:   sdk.Pointer(true),
+						IntValue:    sdk.Pointer(10),
+						StringValue: sdk.Pointer("some external text"),
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: zeroValuesAllSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "bool_value", "false"),
+					resource.TestCheckResourceAttr(resourceReference, "int_value", "0"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", ""),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "12"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.9.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.9.field", "bool_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.9.value", "false"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.10.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.10.field", "int_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.10.value", "0"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.11.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.11.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.11.value", ""),
+				),
 			},
 		},
 	})
