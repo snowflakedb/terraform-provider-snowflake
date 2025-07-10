@@ -80,7 +80,7 @@ func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithPasswordPolicy(passwordPolicyId))); err != nil {
+		if err := client.OrganizationAccounts.SetPolicySafely(ctx, sdk.PolicyKindPasswordPolicy, passwordPolicyId); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
@@ -94,7 +94,7 @@ func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithSessionPolicy(sessionPolicyId))); err != nil {
+		if err := client.OrganizationAccounts.SetPolicySafely(ctx, sdk.PolicyKindSessionPolicy, sessionPolicyId); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
@@ -130,8 +130,10 @@ func ReadCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData,
 		switch policy.PolicyKind {
 		case sdk.PolicyKindPasswordPolicy,
 			sdk.PolicyKindSessionPolicy:
-			if err := d.Set(strings.ToLower(string(policy.PolicyKind)), sdk.NewSchemaObjectIdentifier(*policy.PolicyDb, *policy.PolicySchema, policy.PolicyName).FullyQualifiedName()); err != nil {
-				return diag.FromErr(err)
+			if policy.PolicyDb != nil && policy.PolicySchema != nil {
+				if err := d.Set(strings.ToLower(string(policy.PolicyKind)), sdk.NewSchemaObjectIdentifier(*policy.PolicyDb, *policy.PolicySchema, policy.PolicyName).FullyQualifiedName()); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
@@ -168,17 +170,12 @@ func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("password_policy") {
-		if oldValue, newValue := d.GetChange("password_policy"); newValue != nil && newValue.(string) != "" {
-			if oldValue != nil && oldValue.(string) != "" {
-				if err := client.OrganizationAccounts.UnsetPolicySafely(ctx, sdk.PolicyKindPasswordPolicy); err != nil {
-					return diag.FromErr(err)
-				}
-			}
+		if _, newValue := d.GetChange("password_policy"); newValue != nil && newValue.(string) != "" {
 			passwordPolicyId, err := sdk.ParseSchemaObjectIdentifier(newValue.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithPasswordPolicy(passwordPolicyId))); err != nil {
+			if err := client.OrganizationAccounts.SetPolicySafely(ctx, sdk.PolicyKindPasswordPolicy, passwordPolicyId); err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
@@ -189,17 +186,12 @@ func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("session_policy") {
-		if oldValue, newValue := d.GetChange("session_policy"); newValue != nil && newValue.(string) != "" {
-			if oldValue != nil && oldValue.(string) != "" {
-				if err := client.OrganizationAccounts.UnsetPolicySafely(ctx, sdk.PolicyKindSessionPolicy); err != nil {
-					return diag.FromErr(err)
-				}
-			}
+		if _, newValue := d.GetChange("session_policy"); newValue != nil && newValue.(string) != "" {
 			sessionPolicyId, err := sdk.ParseSchemaObjectIdentifier(newValue.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithSessionPolicy(sessionPolicyId))); err != nil {
+			if err := client.OrganizationAccounts.SetPolicySafely(ctx, sdk.PolicyKindSessionPolicy, sessionPolicyId); err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
