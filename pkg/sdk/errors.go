@@ -99,7 +99,7 @@ func decodeDriverError(err error) error {
 	}
 
 	regexes := map[string]error{
-		`Programmatic access .* token not found`: ErrPatNotFound,
+		`Programmatic access token .* not found`: ErrPatNotFound,
 	}
 	for k, v := range regexes {
 		if regexp.MustCompile(k).MatchString(err.Error()) {

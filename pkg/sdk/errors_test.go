@@ -168,7 +168,7 @@ func TestDecodeDriverError(t *testing.T) {
 		},
 		{
 			name:  "Match ErrPatNotFound",
-			input: errors.New("Programmatic access foo token not found"),
+			input: errors.New("Programmatic access token foo not found"),
 			want:  ErrPatNotFound,
 		},
 		{
