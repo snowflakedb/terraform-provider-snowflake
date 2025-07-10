@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -14,43 +13,42 @@ import (
 func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, privateKey string) string {
 	t.Helper()
 
-	return fmt.Sprintf(`
-[%[1]s]
-user = '%[2]s'
-private_key = '''%[7]s'''
-role = '%[3]s'
-organization_name = '%[5]s'
-account_name = '%[6]s'
-warehouse = '%[4]s'
-client_ip = '1.2.3.4'
-protocol = 'https'
-port = 443
-okta_url = '%[8]s'
-client_timeout = 10
-jwt_client_timeout = 20
-login_timeout = 30
-request_timeout = 40
-jwt_expire_timeout = 50
-external_browser_timeout = 60
-max_retry_count = 1
-authenticator = 'SNOWFLAKE_JWT'
-insecure_mode = true
-ocsp_fail_open = true
-token = 'token'
-keep_session_alive = true
-disable_telemetry = true
-validate_default_parameters = true
-client_request_mfa_token = true
-client_store_temporary_credential = true
-driver_tracing = 'warning'
-tmp_dir_path = '.'
-disable_query_context_cache = true
-include_retry_reason = true
-disable_console_login = true
-
-[%[1]s.params]
-foo = 'bar'
-`, profile, userId.Name(), roleId.Name(), warehouseId.Name(), accountIdentifier.OrganizationName(), accountIdentifier.AccountName(), privateKey, testvars.ExampleOktaUrlString)
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithUser(userId.Name()).
+		WithPrivateKey(privateKey).
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithWarehouse(warehouseId.Name()).
+		WithClientIp("1.2.3.4").
+		WithProtocol("https").
+		WithPort(443).
+		WithOktaUrl(testvars.ExampleOktaUrlString).
+		WithClientTimeout(10).
+		WithJwtClientTimeout(20).
+		WithLoginTimeout(30).
+		WithRequestTimeout(40).
+		WithJwtExpireTimeout(50).
+		WithExternalBrowserTimeout(60).
+		WithMaxRetryCount(1).
+		WithAuthenticator(string(sdk.AuthenticationTypeJwt)).
+		WithInsecureMode(true).
+		WithOcspFailOpen(true).
+		WithToken("token").
+		WithKeepSessionAlive(true).
+		WithDisableTelemetry(true).
+		WithValidateDefaultParameters(true).
+		WithClientRequestMfaToken(true).
+		WithClientStoreTemporaryCredential(true).
+		WithDriverTracing(string(sdk.DriverLogLevelWarning)).
+		WithTmpDirPath(".").
+		WithDisableQueryContextCache(true).
+		WithIncludeRetryReason(true).
+		WithDisableConsoleLogin(true).
+		WithParams(map[string]*string{
+			"foo": sdk.Pointer("bar"),
+		}),
+	)
 }
 
 // FullInvalidTomlConfigForServiceUser is a temporary function used to test provider configuration
@@ -58,58 +56,57 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 	t.Helper()
 
 	privateKey, _, _, _ := random.GenerateRSAKeyPair(t, "")
-	return fmt.Sprintf(`
-[%[1]s]
-user = 'invalid'
-private_key = '''%[2]s'''
-role = 'invalid'
-account_name = 'invalid'
-organization_name = 'invalid'
-warehouse = 'invalid'
-client_ip = 'invalid'
-protocol = 'invalid'
-port = -1
-okta_url = 'invalid'
-client_timeout = -1
-jwt_client_timeout = -1
-login_timeout = -1
-request_timeout = -1
-jwt_expire_timeout = -1
-external_browser_timeout = -1
-max_retry_count = -1
-authenticator = 'snowflake'
-insecure_mode = true
-ocsp_fail_open = true
-token = 'token'
-keep_session_alive = true
-disable_telemetry = true
-validate_default_parameters = false
-client_request_mfa_token = true
-client_store_temporary_credential = true
-tracing = 'invalid'
-tmp_dir_path = '.'
-disable_query_context_cache = true
-include_retry_reason = true
-disable_console_login = true
-
-[%[1]s.params]
-foo = 'bar'`, profile, privateKey)
+	dto := sdk.NewConfigDTO().
+		WithUser("invalid").
+		WithPrivateKey(privateKey).
+		WithRole("invalid").
+		WithAccountName("invalid").
+		WithOrganizationName("invalid").
+		WithWarehouse("invalid").
+		WithClientIp("invalid").
+		WithProtocol("invalid").
+		WithPort(-1).
+		WithOktaUrl("invalid").
+		WithClientTimeout(-1).
+		WithJwtClientTimeout(-1).
+		WithLoginTimeout(-1).
+		WithRequestTimeout(-1).
+		WithJwtExpireTimeout(-1).
+		WithExternalBrowserTimeout(-1).
+		WithMaxRetryCount(-1).
+		WithAuthenticator("snowflake").
+		WithInsecureMode(true).
+		WithOcspFailOpen(true).
+		WithToken("token").
+		WithKeepSessionAlive(true).
+		WithDisableTelemetry(true).
+		WithValidateDefaultParameters(false).
+		WithClientRequestMfaToken(true).
+		WithClientStoreTemporaryCredential(true).
+		WithDriverTracing("invalid").
+		WithTmpDirPath(".").
+		WithDisableQueryContextCache(true).
+		WithIncludeRetryReason(true).
+		WithDisableConsoleLogin(true).
+		WithParams(map[string]*string{
+			"foo": sdk.Pointer("bar"),
+		})
+	return configDtoToTomlString(t, profile, dto)
 }
 
 // TomlConfigForServiceUser is a temporary function used to test provider configuration
 func TomlConfigForServiceUser(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, privateKey string) string {
 	t.Helper()
 
-	return fmt.Sprintf(`
-[%[1]s]
-user = '%[2]s'
-private_key = '''%[7]s'''
-role = '%[3]s'
-organization_name = '%[5]s'
-account_name = '%[6]s'
-warehouse = '%[4]s'
-authenticator = 'SNOWFLAKE_JWT'
-`, profile, userId.Name(), roleId.Name(), warehouseId.Name(), accountIdentifier.OrganizationName(), accountIdentifier.AccountName(), privateKey)
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithUser(userId.Name()).
+		WithPrivateKey(privateKey).
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithWarehouse(warehouseId.Name()).
+		WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
+	)
 }
 
 // TomlConfigForServiceUserWithPat is a temporary function used to test provider configuration
@@ -131,17 +128,16 @@ func TomlConfigForServiceUserWithPat(t *testing.T, profile string, userId sdk.Ac
 func TomlConfigForServiceUserWithEncryptedKey(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, privateKey string, pass string) string {
 	t.Helper()
 
-	return fmt.Sprintf(`
-[%[1]s]
-user = '%[2]s'
-private_key = '''%[7]s'''
-private_key_passphrase = '%[8]s'
-role = '%[3]s'
-organization_name = '%[5]s'
-account_name = '%[6]s'
-warehouse = '%[4]s'
-authenticator = 'SNOWFLAKE_JWT'
-`, profile, userId.Name(), roleId.Name(), warehouseId.Name(), accountIdentifier.OrganizationName(), accountIdentifier.AccountName(), privateKey, pass)
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithUser(userId.Name()).
+		WithPrivateKey(privateKey).
+		WithPrivateKeyPassphrase(pass).
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithWarehouse(warehouseId.Name()).
+		WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
+	)
 }
 
 // TomlIncorrectConfigForServiceUser is a temporary function used to test provider configuration
@@ -149,15 +145,14 @@ func TomlIncorrectConfigForServiceUser(t *testing.T, profile string, accountIden
 	t.Helper()
 
 	privateKey, _, _, _ := random.GenerateRSAKeyPair(t, "")
-	return fmt.Sprintf(`
-[%[1]s]
-user = 'non-existing-user'
-private_key = '''%[4]s'''
-role = 'non-existing-role'
-organization_name = '%[2]s'
-account_name = '%[3]s'
-authenticator = 'SNOWFLAKE_JWT'
-`, profile, accountIdentifier.OrganizationName(), accountIdentifier.AccountName(), privateKey)
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithUser("non-existing-user").
+		WithPrivateKey(privateKey).
+		WithRole("non-existing-role").
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
+	)
 }
 
 // TomlConfigForLegacyServiceUser is a temporary function used to test provider configuration
