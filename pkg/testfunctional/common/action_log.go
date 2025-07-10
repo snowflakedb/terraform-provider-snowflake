@@ -1,4 +1,4 @@
-package actionlog
+package common
 
 import (
 	"context"

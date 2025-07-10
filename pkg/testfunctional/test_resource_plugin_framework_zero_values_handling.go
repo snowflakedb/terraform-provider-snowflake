@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -35,7 +34,7 @@ type zeroValuesResourceModelV0 struct {
 	StringValue types.String `tfsdk:"string_value"`
 	Id          types.String `tfsdk:"id"`
 
-	actionlog.ActionsLogEmbeddable
+	common.ActionsLogEmbeddable
 }
 
 type ZeroValuesOpts struct {
@@ -76,7 +75,7 @@ func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			actionlog.ActionsLogPropertyName: actionlog.GetActionsLogSchema(),
+			common.ActionsLogPropertyName: common.GetActionsLogSchema(),
 		},
 	}
 }
@@ -113,16 +112,16 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 }
 
 func setCreateActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *ZeroValuesOpts, data *zeroValuesResourceModelV0) {
-	response.Diagnostics.Append(actionlog.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
-		actions := make([]actionlog.ActionLogEntry, 0)
+	response.Diagnostics.Append(common.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []common.ActionLogEntry {
+		actions := make([]common.ActionLogEntry, 0)
 		if opts.BoolValue != nil {
-			actions = append(actions, actionlog.ActionEntry("CREATE", "bool_value", strconv.FormatBool(*opts.BoolValue)))
+			actions = append(actions, common.ActionEntry("CREATE", "bool_value", strconv.FormatBool(*opts.BoolValue)))
 		}
 		if opts.IntValue != nil {
-			actions = append(actions, actionlog.ActionEntry("CREATE", "int_value", strconv.Itoa(*opts.IntValue)))
+			actions = append(actions, common.ActionEntry("CREATE", "int_value", strconv.Itoa(*opts.IntValue)))
 		}
 		if opts.StringValue != nil {
-			actions = append(actions, actionlog.ActionEntry("CREATE", "string_value", *opts.StringValue))
+			actions = append(actions, common.ActionEntry("CREATE", "string_value", *opts.StringValue))
 		}
 		return actions
 	})...)
@@ -191,22 +190,22 @@ func (r *ZeroValuesResource) Update(ctx context.Context, request resource.Update
 
 func setUpdateActionsOutput(ctx context.Context, response *resource.UpdateResponse, opts *ZeroValuesOpts, plan *zeroValuesResourceModelV0, state *zeroValuesResourceModelV0) {
 	plan.ActionsLogEmbeddable = state.ActionsLogEmbeddable
-	response.Diagnostics.Append(actionlog.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
-		actions := make([]actionlog.ActionLogEntry, 0)
+	response.Diagnostics.Append(common.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []common.ActionLogEntry {
+		actions := make([]common.ActionLogEntry, 0)
 		if opts.BoolValue != nil {
-			actions = append(actions, actionlog.ActionEntry("UPDATE - SET", "bool_value", strconv.FormatBool(*opts.BoolValue)))
+			actions = append(actions, common.ActionEntry("UPDATE - SET", "bool_value", strconv.FormatBool(*opts.BoolValue)))
 		} else {
-			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "bool_value", "nil"))
+			actions = append(actions, common.ActionEntry("UPDATE - UNSET", "bool_value", "nil"))
 		}
 		if opts.IntValue != nil {
-			actions = append(actions, actionlog.ActionEntry("UPDATE - SET", "int_value", strconv.Itoa(*opts.IntValue)))
+			actions = append(actions, common.ActionEntry("UPDATE - SET", "int_value", strconv.Itoa(*opts.IntValue)))
 		} else {
-			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "int_value", "nil"))
+			actions = append(actions, common.ActionEntry("UPDATE - UNSET", "int_value", "nil"))
 		}
 		if opts.StringValue != nil {
-			actions = append(actions, actionlog.ActionEntry("UPDATE - SET", "string_value", *opts.StringValue))
+			actions = append(actions, common.ActionEntry("UPDATE - SET", "string_value", *opts.StringValue))
 		} else {
-			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "string_value", "nil"))
+			actions = append(actions, common.ActionEntry("UPDATE - UNSET", "string_value", "nil"))
 		}
 		return actions
 	})...)
