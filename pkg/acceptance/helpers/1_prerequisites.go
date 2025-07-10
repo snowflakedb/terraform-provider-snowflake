@@ -73,7 +73,7 @@ func (c *TestClient) EnsureValidNonProdAccountIsUsed(t *testing.T) {
 	t.Helper()
 	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 	nonProdModifiableAccountLocator := testenvs.GetOrSkipTest(t, testenvs.TestNonProdModifiableAccountLocator)
-	if c.context.client.GetAccountLocator() != nonProdModifiableAccountLocator {
+	if c.GetAccountLocator() != nonProdModifiableAccountLocator {
 		t.Skipf("Current client account locator does not match the required non-prod modifiable account's locator set in %s env variable. Skipping test.", testenvs.TestNonProdModifiableAccountLocator)
 	}
 }
@@ -81,7 +81,7 @@ func (c *TestClient) EnsureValidNonProdAccountIsUsed(t *testing.T) {
 func (c *TestClient) EnsureValidNonProdOrganizationAccountIsUsed(t *testing.T) {
 	t.Helper()
 	nonProdModifiableAccountLocator := testenvs.GetOrSkipTest(t, testenvs.TestNonProdModifiableAccountLocator)
-	if c.context.client.GetAccountLocator() != nonProdModifiableAccountLocator {
+	if c.GetAccountLocator() != nonProdModifiableAccountLocator {
 		t.Skipf("Current client account locator does not match the required non-prod modifiable account's locator set in %s env variable. Skipping test.", testenvs.TestNonProdModifiableAccountLocator)
 	}
 	organizationAccounts, err := c.context.client.OrganizationAccounts.Show(context.Background(), sdk.NewShowOrganizationAccountRequest())
