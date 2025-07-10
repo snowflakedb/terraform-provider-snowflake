@@ -88,6 +88,10 @@ func (m *mockOrganizationAccounts) UnsetPolicySafely(ctx context.Context, kind s
 	return nil
 }
 
+func (m *mockOrganizationAccounts) SetPolicySafely(ctx context.Context, kind sdk.PolicyKind, id sdk.SchemaObjectIdentifier) error {
+	return nil
+}
+
 func (m *mockOrganizationAccounts) UnsetAll(ctx context.Context) error { return nil }
 
 func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {

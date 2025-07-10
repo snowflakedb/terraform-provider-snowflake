@@ -5,6 +5,8 @@ description: |-
   Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See ALTER ACCOUNT https://docs.snowflake.com/en/sql-reference/sql/alter-account documentation for more information on resource capabilities.
 ---
 
+!> **Warning** During create operation every parameter that is not set in the resource will be unset on the account.
+
 !> **Warning** This resource requires warehouse to be in the context. To use this resource, specify a default warehouse in the provider configuration.
 
 !> **Warning** This resource shouldn't be used with `snowflake_object_parameter` (with `on_account` field set) and `snowflake_account_parameter` resources in the same configuration, as it may lead to unexpected behavior. Unless they're used to manage the following parameters that are not supported by `snowflake_current_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL. They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters). Once they are publicly documented, they will be added to the `snowflake_current_account` resource.

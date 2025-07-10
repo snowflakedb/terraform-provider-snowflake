@@ -16,6 +16,10 @@ type OrganizationAccounts interface {
 	// UnsetPolicySafely unsets a policy on the current account by a given supported kind.
 	// It ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.
 	UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
+	// SetPolicySafely sets a policy on the current account by a given supported kind.
+	// It firstly tries to unset the policy with UnsetPolicySafely method to make sure that the policy is not set,
+	// then proceeds by setting the passed policy on the organization account.
+	SetPolicySafely(ctx context.Context, kind PolicyKind, id SchemaObjectIdentifier) error
 	// UnsetAll added manually
 	UnsetAll(ctx context.Context) error
 }

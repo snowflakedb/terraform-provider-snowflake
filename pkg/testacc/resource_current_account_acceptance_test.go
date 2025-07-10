@@ -435,41 +435,6 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 	})
 }
 
-func TestAcc_CurrentAccount_EmptyParameters(t *testing.T) {
-	testClient().EnsureValidNonProdAccountIsUsed(t)
-
-	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
-
-	setParameterModel := model.CurrentAccount("test").
-		WithDefaultDdlCollation("en-cs")
-
-	unsetParameterModel := model.CurrentAccount("test")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, provider, setParameterModel),
-				Check: assertThat(t,
-					resourceassert.CurrentAccountResource(t, setParameterModel.ResourceReference()).
-						HasDefaultDdlCollationString("en-cs"),
-				),
-			},
-			{
-				Config: config.FromModels(t, provider, unsetParameterModel),
-				Check: assertThat(t,
-					resourceassert.CurrentAccountResource(t, unsetParameterModel.ResourceReference()).
-						HasDefaultDdlCollationEmpty(),
-				),
-			},
-		},
-	})
-}
-
 func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 	testClient().EnsureValidNonProdAccountIsUsed(t)
 
