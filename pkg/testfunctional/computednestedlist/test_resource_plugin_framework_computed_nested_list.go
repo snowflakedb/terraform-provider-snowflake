@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -25,7 +25,7 @@ type computedNestedListResourceModelV0 struct {
 	Option types.String `tfsdk:"option"`
 	Id     types.String `tfsdk:"id"`
 
-	actionlog.ActionsLogEmbeddable
+	common.ActionsLogEmbeddable
 }
 
 func (r *computedNestedListResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
@@ -51,7 +51,7 @@ func (r *computedNestedListResource) Schema(_ context.Context, _ resource.Schema
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			actionlog.ActionsLogPropertyName: actionlog.GetActionsLogSchema(),
+			common.ActionsLogPropertyName: common.GetActionsLogSchema(),
 		},
 	}
 }
@@ -83,7 +83,7 @@ func (r *computedNestedListResource) Create(ctx context.Context, request resourc
 }
 
 func setActionsOutputThroughStruct(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {
-	var actions []actionlog.ActionLogEntry
+	var actions []common.ActionLogEntry
 	diags := data.ActionsLog.ElementsAs(ctx, &actions, false)
 	if diags.HasError() {
 		response.Diagnostics.Append(diags...)
@@ -101,12 +101,12 @@ func setActionsOutputThroughStruct(ctx context.Context, response *resource.Creat
 func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {
 	existingEntries := data.ActionsLog.Elements()
 
-	actions := make([]actionlog.ActionLogEntry, 0)
-	actions = append(actions, actionlog.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
-	actions = append(actions, actionlog.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
+	actions := make([]common.ActionLogEntry, 0)
+	actions = append(actions, common.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
+	actions = append(actions, common.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
 
 	for _, a := range actions {
-		entry, diags := types.ObjectValue(actionlog.GetActionLogEntryTypes(), map[string]attr.Value{
+		entry, diags := types.ObjectValue(common.GetActionLogEntryTypes(), map[string]attr.Value{
 			"action": a.Action,
 			"field":  a.Field,
 			"value":  a.Value,
@@ -118,7 +118,7 @@ func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResp
 		existingEntries = append(existingEntries, entry)
 	}
 	var diags diag.Diagnostics
-	data.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: actionlog.GetActionLogEntryTypes()}, actions)
+	data.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: common.GetActionLogEntryTypes()}, actions)
 	if diags.HasError() {
 		response.Diagnostics.Append(diags...)
 		return
@@ -126,10 +126,10 @@ func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResp
 }
 
 func setActionsOutputDedicated(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {
-	response.Diagnostics.Append(actionlog.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
-		actions := make([]actionlog.ActionLogEntry, 0)
-		actions = append(actions, actionlog.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
-		actions = append(actions, actionlog.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
+	response.Diagnostics.Append(common.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []common.ActionLogEntry {
+		actions := make([]common.ActionLogEntry, 0)
+		actions = append(actions, common.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
+		actions = append(actions, common.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
 		return actions
 	})...)
 }
