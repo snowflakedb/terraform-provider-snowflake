@@ -7,9 +7,11 @@ import (
 	"net/http/httptest"
 )
 
-var server *httptest.Server
-var serverCleanup func()
-var allTestHandlers = make(map[string]http.Handler)
+var (
+	server          *httptest.Server
+	serverCleanup   func()
+	allTestHandlers = make(map[string]http.Handler)
+)
 
 type testHandler struct{}
 
@@ -56,5 +58,5 @@ func fetchTest1Message(baseUrl string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(buf[:]), nil
+	return string(buf), nil
 }

@@ -90,12 +90,12 @@ func setActionsOutputThroughStruct(ctx context.Context, response *resource.Creat
 		return
 	}
 	panic("we return above because of `Value Conversion Error` which happens only for `Computed` list")
-	//actions = append(actions, actionEntry("DOES", "NOT", "MATTER"))
-	//data.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: getActionLogEntryTypes()}, actions)
-	//if diags.HasError() {
+	// actions = append(actions, actionEntry("DOES", "NOT", "MATTER"))
+	// data.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: getActionLogEntryTypes()}, actions)
+	// if diags.HasError() {
 	//	response.Diagnostics.Append(diags...)
 	//	return
-	//}
+	// }
 }
 
 func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {

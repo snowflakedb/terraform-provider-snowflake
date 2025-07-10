@@ -12,18 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-var (
-	zeroValuesHandler = common.NewDynamicHandlerWithInitialValueAndReplaceWithFunc[testfunctional.ZeroValuesOpts](
-		testfunctional.ZeroValuesOpts{}, zeroValuesOptsAlwaysReplace,
-	)
+var zeroValuesHandler = common.NewDynamicHandlerWithInitialValueAndReplaceWithFunc[testfunctional.ZeroValuesOpts](
+	testfunctional.ZeroValuesOpts{}, common.AlwaysReplace,
 )
 
-// TODO [mux-PRs]: handle by reflection or generate
-func zeroValuesOptsAlwaysReplace(_ testfunctional.ZeroValuesOpts, replaceWith testfunctional.ZeroValuesOpts) testfunctional.ZeroValuesOpts {
-	return replaceWith
-}
-
-// TODO [mux-PRs]: handle by reflection or generate
+// TODO [mux-PRs]: handle by reflection or generate (keeping it for the Optional+Computed test)
 func zeroValuesOptsReplaceWithNonNil(base testfunctional.ZeroValuesOpts, replaceWith testfunctional.ZeroValuesOpts) testfunctional.ZeroValuesOpts {
 	if replaceWith.BoolValue != nil {
 		base.BoolValue = replaceWith.BoolValue

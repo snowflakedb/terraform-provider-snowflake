@@ -11,9 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-var (
-	httpServerExampleHandler = common.NewDynamicHandler[httpserver.Read]()
-)
+var httpServerExampleHandler = common.NewDynamicHandler[httpserver.Read]()
 
 func init() {
 	allTestHandlers["http_server_example"] = httpServerExampleHandler

@@ -104,10 +104,6 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 		return
 	}
 
-	//response.Diagnostics.Append(r.read(data)...)
-	//if response.Diagnostics.HasError() {
-	//	return
-	//}
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
