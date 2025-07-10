@@ -52,3 +52,7 @@ func NewDynamicHandlerWithInitialValueAndReplaceWithFunc[T any](initialValue T, 
 		replaceWithFunc: replaceWithFunc,
 	}
 }
+
+func AlwaysReplace[T any](_ T, replaceWith T) T {
+	return replaceWith
+}
