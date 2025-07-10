@@ -79,7 +79,11 @@ func EncodeSnowflakeID(attributes ...interface{}) string {
 	return strings.Join(parts, "|")
 }
 
-// Deprecated: use Parse<level>ObjectIdentifier instead.
+// DecodeSnowflakeIDLegacy decodes a Snowflake ID into an ObjectIdentifier.
+//
+// This is a legacy function. Use Parse<level>ObjectIdentifier instead.
+// This function is still used in the preview resources. The end goal is to use new Parse<level>ObjectIdentifier functions instead.
+// Still, this could be later considered as a test helper in a separate package.
 func DecodeSnowflakeIDLegacy(id string) sdk.ObjectIdentifier {
 	parts := strings.Split(id, IDDelimiter)
 	switch len(parts) {
