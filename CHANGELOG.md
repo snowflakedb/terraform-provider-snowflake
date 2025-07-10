@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.3.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.2.0...v2.3.0) (2025-07-03)
+
+
+### 🎉 **What's new:**
+
+* Add programmatic access token support to SDK ([#3819](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3819)) ([6b8ae55](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6b8ae5504c4a3e5c768e818f02d927ad06fa338e))
+* Add support for PROGRAMMATIC_ACCESS_TOKEN authenticator ([#3805](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3805)) ([2a4379b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2a4379baca95a08f7d9ee291fd9a7dca4ad17286))
+
+
+### 🔧 **Misc**
+
+* Account modificaiton test assertion ([#3759](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3759)) ([6151757](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6151757bca49f02836f57c506e41404aca95c345))
+* Add Snowflake BCR migration guide ([#3829](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3829)) ([305853d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/305853d4929f7051eb7a1e63be79ca8302a8efc5))
+* Configure plugin framework in functional tests ([#3824](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3824)) ([0cfced0](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0cfced0ce1bf8d82b66a2dcbfe725e6795f3a8ab))
+* Do not build the whole project after the changelog entry ([#3817](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3817)) ([d40cc45](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d40cc450b0d177ed672b813e715f9f938e0065d3))
+* Enable testifylint and fix reported issues ([#3793](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3793)) ([605f0cf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/605f0cfdc3475170e222275ae47edb9a1b5e512e))
+* Set up muxing in tests ([#3804](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3804)) ([ab73524](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ab73524df4e2d84634352b504b1119576e351673))
+* Small account adjustments ([#3786](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3786)) ([b561ce5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b561ce53d577c821ccc7def0ccbf4f410f6ef076))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix data types parsing for functions and procedures with 2025_03 Bundle ([#3827](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3827)) ([35bdf1c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/35bdf1c1bf029abb9b54347ff5971bb6d86e4bb1))
+* Introduce a new function and procedure parsing function ([#3825](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3825)) ([75faf30](https://github.com/snowflakedb/terraform-provider-snowflake/commit/75faf302e724e0cd1b5f041fef209e179cf920b2))
+* Remove unused conversion functions interfering with other tests ([#3820](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3820)) ([878a4e7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/878a4e7006e04220dbe62846dce3423adf275c99))
+
 ## [2.2.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.1.0...v2.2.0) (2025-06-25)
 
 

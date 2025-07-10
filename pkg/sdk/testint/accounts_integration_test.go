@@ -1,11 +1,13 @@
-//go:build !account_level_tests
+//go:build account_level_tests
 
 package testint
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -28,8 +30,7 @@ func TestInt_Account(t *testing.T) {
 	ctx := testContext(t)
 	currentAccountId := testClientHelper().Context.CurrentAccountId(t)
 	currentAccountName := currentAccountId.AccountName()
-	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
-	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", currentAccountId.OrganizationName())
+	defaultConsumptionBillingEntity := testClientHelper().Context.DefaultConsumptionBillingEntity(t).Name()
 
 	assertAccountQueriedByOrgAdmin := func(t *testing.T, account sdk.Account, accountName string) {
 		t.Helper()
@@ -461,36 +462,16 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	ctx := testContext(t)
 	t.Cleanup(testClientHelper().Role.UseRole(t, snowflakeroles.Accountadmin))
 
-	assertParameterIsDefault := func(t *testing.T, parameters []*sdk.Parameter, parameterKey string) {
-		t.Helper()
-		param, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == parameterKey })
-		// TODO(SNOW-1325308): Improve collections.FindFirst error message to include more detail about missing item
-		require.NoError(t, err, "parameter %v not found", parameterKey)
-		require.NotNil(t, param)
-		require.Equal(t, (*param).Default, (*param).Value)
-		require.Equal(t, sdk.ParameterType(""), (*param).Level)
-	}
-
-	assertParameterValueSetOnAccount := func(t *testing.T, parameters []*sdk.Parameter, parameterKey string, parameterValue string) {
-		t.Helper()
-		param, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == parameterKey })
-		require.NoError(t, err)
-		require.NotNil(t, param)
-		require.Equal(t, parameterValue, (*param).Value)
-		require.Equal(t, sdk.ParameterTypeAccount, (*param).Level)
-	}
+	id := testClientHelper().Context.CurrentAccountId(t)
 
 	t.Run("set / unset legacy parameters", func(t *testing.T) {
-		parameters, err := client.Accounts.ShowParameters(ctx)
-		require.NoError(t, err)
-		require.NotEmpty(t, parameters)
+		objectparametersassert.AccountParameters(t, id).
+			HasDefaultMinDataRetentionTimeInDaysValue().
+			HasDefaultJsonIndentValue().
+			HasDefaultUserTaskTimeoutMsValue().
+			HasDefaultEnableUnredactedQuerySyntaxErrorValue()
 
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterMinDataRetentionTimeInDays))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterJsonIndent))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError))
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
 				LegacyParameters: &sdk.AccountLevelParameters{
 					AccountParameters: &sdk.LegacyAccountParameters{
@@ -510,14 +491,11 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		parameters, err = client.Accounts.ShowParameters(ctx)
-		require.NoError(t, err)
-		require.NotEmpty(t, parameters)
-
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMinDataRetentionTimeInDays), "15")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterJsonIndent), "8")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs), "100")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError), "true")
+		objectparametersassert.AccountParameters(t, id).
+			HasMinDataRetentionTimeInDays(15).
+			HasJsonIndent(8).
+			HasUserTaskTimeoutMs(100).
+			HasEnableUnredactedQuerySyntaxError(true)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{
@@ -539,17 +517,185 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		parameters, err = client.Accounts.ShowParameters(ctx)
-		require.NoError(t, err)
-		require.NotEmpty(t, parameters)
-
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterMinDataRetentionTimeInDays))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterJsonIndent))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError))
+		objectparametersassert.AccountParameters(t, id).
+			HasDefaultMinDataRetentionTimeInDaysValue().
+			HasDefaultJsonIndentValue().
+			HasDefaultUserTaskTimeoutMsValue().
+			HasDefaultEnableUnredactedQuerySyntaxErrorValue()
 	})
 
-	t.Run("set / unset parameters", func(t *testing.T) {
+	t.Run("set / unset parameters",
+		setAndUnsetAccountParametersTest(
+			func(ctx context.Context, parameters sdk.AccountParameters) error {
+				return client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+					Set: &sdk.AccountSet{
+						Parameters: &parameters,
+					},
+				})
+			},
+			client.Accounts.UnsetAllParameters,
+			client.Accounts.ShowParameters,
+		),
+	)
+
+	t.Run("set / unset resource monitor", func(t *testing.T) {
+		resourceMonitor, resourceMonitorCleanup := testClientHelper().ResourceMonitor.CreateResourceMonitor(t)
+		t.Cleanup(resourceMonitorCleanup)
+
+		require.Nil(t, resourceMonitor.Level)
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Set: &sdk.AccountSet{
+				ResourceMonitor: sdk.Pointer(resourceMonitor.ID()),
+			},
+		})
+		require.NoError(t, err)
+
+		resourceMonitor, err = testClientHelper().ResourceMonitor.Show(t, resourceMonitor.ID())
+		require.NoError(t, err)
+		require.NotNil(t, resourceMonitor.Level)
+		require.Equal(t, sdk.ResourceMonitorLevelAccount, *resourceMonitor.Level)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Unset: &sdk.AccountUnset{
+				ResourceMonitor: sdk.Bool(true),
+			},
+		})
+		require.NoError(t, err)
+
+		resourceMonitor, err = testClientHelper().ResourceMonitor.Show(t, resourceMonitor.ID())
+		require.NoError(t, err)
+		require.Nil(t, resourceMonitor.Level)
+	})
+
+	t.Run("set / unset policies", func(t *testing.T) {
+		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authPolicyCleanup)
+
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
+		passwordPolicy, passwordPolicyCleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
+		t.Cleanup(passwordPolicyCleanup)
+
+		sessionPolicy, sessionPolicyCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
+		t.Cleanup(sessionPolicyCleanup)
+
+		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
+		t.Cleanup(packagesPolicyCleanup)
+
+		t.Cleanup(func() {
+			err := client.Accounts.UnsetAllPoliciesSafely(ctx)
+			assert.NoError(t, err)
+			assertThatNoPolicyIsSetOnAccount(t)
+		})
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
+		require.NoError(t, err)
+
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, featurePolicyId)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPasswordPolicy, passwordPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindSessionPolicy, sessionPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, packagesPolicyId)
+	})
+
+	t.Run("force new packages policy", func(t *testing.T) {
+		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
+		t.Cleanup(packagesPolicyCleanup)
+
+		newPackagesPolicyId, newPackagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
+		t.Cleanup(newPackagesPolicyCleanup)
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, packagesPolicyId)
+		t.Cleanup(func() {
+			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}})
+			require.NoError(t, err)
+			assertThatNoPolicyIsSetOnAccount(t)
+		})
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &newPackagesPolicyId}})
+		require.Error(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &newPackagesPolicyId, Force: sdk.Bool(true)}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, newPackagesPolicyId)
+	})
+
+	t.Run("force new feature policy", func(t *testing.T) {
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
+		newFeaturePolicyId, newFeaturePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(newFeaturePolicyCleanup)
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, featurePolicyId)
+		t.Cleanup(func() {
+			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}})
+			require.NoError(t, err)
+			assertThatNoPolicyIsSetOnAccount(t)
+		})
+
+		// Here we expect to get an error as there is another feature policy set on the account.
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}}})
+		require.Error(t, err)
+
+		// To set a new feature policy on the account without firstly unsetting it, we can use FORCE parameter.
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}, Force: sdk.Bool(true)}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, newFeaturePolicyId)
+	})
+
+	t.Run("unset policy safely", func(t *testing.T) {
+		authenticationPolicy, authenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authenticationPolicyCleanup)
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}})
+		assert.ErrorContains(t, err, fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", sdk.PolicyKindAuthenticationPolicy))
+
+		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
+		assert.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authenticationPolicy.ID())}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authenticationPolicy.ID())
+
+		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
+		assert.NoError(t, err)
+		assertThatNoPolicyIsSetOnAccount(t)
+	})
+
+	t.Run("unset all", func(t *testing.T) {
+		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authPolicyCleanup)
+
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
+		passwordPolicy, passwordPolicyCleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
+		t.Cleanup(passwordPolicyCleanup)
+
+		sessionPolicy, sessionPolicyCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
+		t.Cleanup(sessionPolicyCleanup)
+
+		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
+		t.Cleanup(packagesPolicyCleanup)
+
 		warehouseId := testClientHelper().Ids.WarehouseId()
 
 		eventTable, eventTableCleanup := testClientHelper().EventTable.Create(t)
@@ -565,6 +711,28 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
+		t.Cleanup(func() {
+			err := client.Accounts.UnsetAllPoliciesSafely(ctx)
+			assert.NoError(t, err)
+			err = client.Accounts.UnsetAllParameters(ctx)
+			require.NoError(t, err)
+		})
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
+		require.NoError(t, err)
+
 		// TODO(SNOW-2138715): Test all parameters, the following parameters were not tested due to more complex setup:
 		// - ActivePythonProfiler
 		// - CatalogSync
@@ -573,7 +741,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		// - S3StageVpceDnsName
 		// - SamlIdentityProvider
 		// - SimulatedDataSharingConsumer
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
 				Parameters: &sdk.AccountParameters{
 					AbortDetachedQuery:                               sdk.Bool(true),
@@ -691,419 +859,11 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		parameters, err := client.Accounts.ShowParameters(ctx)
-		require.NoError(t, err)
-		require.NotEmpty(t, parameters)
-
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAbortDetachedQuery), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAllowClientMFACaching), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAllowIDToken), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterAutocommit), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterBaseLocationPrefix), "STORAGE_BASE_URL/")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterBinaryInputFormat), string(sdk.BinaryInputFormatBase64))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterBinaryOutputFormat), string(sdk.BinaryOutputFormatBase64))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterCatalog), helpers.TestDatabaseCatalog.Name())
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientEnableLogInfoStatementParameters), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientEncryptionKeySize), "256")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientMemoryLimit), "1540")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientMetadataRequestUseConnectionCtx), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientMetadataUseSessionDatabase), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientPrefetchThreads), "5")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientResultChunkSize), "159")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientResultColumnCaseInsensitive), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientSessionKeepAlive), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency), "3599")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterClientTimestampTypeMapping), string(sdk.ClientTimestampTypeMappingNtz))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterCortexEnabledCrossRegion), "ANY_REGION")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterCortexModelsAllowlist), "All")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterCsvTimestampFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDataRetentionTimeInDays), "2")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDateInputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDateOutputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultDDLCollation), "en-cs")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultNotebookComputePoolCpu), "CPU_X64_S")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultNotebookComputePoolGpu), "GPU_NV_S")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultNullOrdering), string(sdk.DefaultNullOrderingFirst))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDefaultStreamlitNotebookWarehouse), warehouseId.Name())
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDisableUiDownloadButton), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterDisableUserPrivilegeGrants), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableEgressCostOptimizer), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableIdentifierFirstLogin), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnhandledExceptionsReporting), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnredactedSecureObjectError), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnforceNetworkRulesForInternalStages), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterErrorOnNondeterministicMerge), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterErrorOnNondeterministicUpdate), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEventTable), eventTable.ID().FullyQualifiedName())
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterExternalVolume), externalVolumeId.Name())
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterGeographyOutputFormat), string(sdk.GeographyOutputFormatWKT))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterGeometryOutputFormat), string(sdk.GeometryOutputFormatWKT))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterHybridTableLockTimeout), "3599")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterInitialReplicationSizeLimitInTB), "9.9")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterJdbcTreatDecimalAsInt), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterJdbcUseSessionTimezone), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterJsonIndent), "4")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterJsTreatIntegerAsBigInt), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule), "2 minutes")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterLockTimeout), "43201")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterLogLevel), string(sdk.LogLevelInfo))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMaxConcurrencyLevel), "7")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMaxDataExtensionTimeInDays), "13")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMetricLevel), string(sdk.MetricLevelAll))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMinDataRetentionTimeInDays), "1")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMultiStatementCount), "0")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterNetworkPolicy), networkPolicy.ID().Name())
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterNoorderSequenceAsDefault), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterOdbcTreatDecimalAsInt), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterPeriodicDataRekeying), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterPipeExecutionPaused), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterPreventUnloadToInlineURL), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterPreventUnloadToInternalStages), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterQueryTag), "test-query-tag")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterQuotedIdentifiersIgnoreCase), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterReplaceInvalidCharacters), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRequireStorageIntegrationForStageCreation), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRequireStorageIntegrationForStageOperation), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterRowsPerResultset), "1000")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSearchPath), "$current, $public")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMaxStatementSize), "6X-LARGE")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterServerlessTaskMinStatementSize), string(sdk.WarehouseSizeSmall))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSsoLoginPage), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStatementQueuedTimeoutInSeconds), "1")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStatementTimeoutInSeconds), "1")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStorageSerializationPolicy), string(sdk.StorageSerializationPolicyOptimized))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterStrictJsonOutput), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterSuspendTaskAfterNumFailures), "3")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTaskAutoRetryAttempts), "3")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimestampDayIsAlways24h), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimestampInputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimestampLtzOutputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimestampNtzOutputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimestampOutputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimestampTypeMapping), string(sdk.TimestampTypeMappingLtz))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimestampTzOutputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimezone), "Europe/London")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimeInputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTimeOutputFormat), "YYYY-MM-DD")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTraceLevel), string(sdk.TraceLevelPropagate))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTransactionAbortOnError), "true")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTransactionDefaultIsolationLevel), string(sdk.TransactionDefaultIsolationLevelReadCommitted))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterTwoDigitCenturyStart), "1971")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUnsupportedDdlAction), string(sdk.UnsupportedDDLActionFail))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskManagedInitialWarehouseSize), string(sdk.WarehouseSizeX6Large))
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds), "10")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs), "10")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUseCachedResult), "false")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterWeekOfYearPolicy), "1")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterWeekStart), "1")
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				Parameters: &sdk.AccountParametersUnset{
-					AbortDetachedQuery:                               sdk.Bool(true),
-					ActivePythonProfiler:                             sdk.Bool(true),
-					AllowClientMFACaching:                            sdk.Bool(true),
-					AllowIDToken:                                     sdk.Bool(true),
-					Autocommit:                                       sdk.Bool(true),
-					BaseLocationPrefix:                               sdk.Bool(true),
-					BinaryInputFormat:                                sdk.Bool(true),
-					BinaryOutputFormat:                               sdk.Bool(true),
-					Catalog:                                          sdk.Bool(true),
-					CatalogSync:                                      sdk.Bool(true),
-					ClientEnableLogInfoStatementParameters:           sdk.Bool(true),
-					ClientEncryptionKeySize:                          sdk.Bool(true),
-					ClientMemoryLimit:                                sdk.Bool(true),
-					ClientMetadataRequestUseConnectionCtx:            sdk.Bool(true),
-					ClientMetadataUseSessionDatabase:                 sdk.Bool(true),
-					ClientPrefetchThreads:                            sdk.Bool(true),
-					ClientResultChunkSize:                            sdk.Bool(true),
-					ClientResultColumnCaseInsensitive:                sdk.Bool(true),
-					ClientSessionKeepAlive:                           sdk.Bool(true),
-					ClientSessionKeepAliveHeartbeatFrequency:         sdk.Bool(true),
-					ClientTimestampTypeMapping:                       sdk.Bool(true),
-					CortexEnabledCrossRegion:                         sdk.Bool(true),
-					CortexModelsAllowlist:                            sdk.Bool(true),
-					CsvTimestampFormat:                               sdk.Bool(true),
-					DataRetentionTimeInDays:                          sdk.Bool(true),
-					DateInputFormat:                                  sdk.Bool(true),
-					DateOutputFormat:                                 sdk.Bool(true),
-					DefaultDDLCollation:                              sdk.Bool(true),
-					DefaultNotebookComputePoolCpu:                    sdk.Bool(true),
-					DefaultNotebookComputePoolGpu:                    sdk.Bool(true),
-					DefaultNullOrdering:                              sdk.Bool(true),
-					DefaultStreamlitNotebookWarehouse:                sdk.Bool(true),
-					DisableUiDownloadButton:                          sdk.Bool(true),
-					DisableUserPrivilegeGrants:                       sdk.Bool(true),
-					EnableAutomaticSensitiveDataClassificationLog:    sdk.Bool(true),
-					EnableEgressCostOptimizer:                        sdk.Bool(true),
-					EnableIdentifierFirstLogin:                       sdk.Bool(true),
-					EnableInternalStagesPrivatelink:                  sdk.Bool(true),
-					EnableTriSecretAndRekeyOptOutForImageRepository:  sdk.Bool(true),
-					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: sdk.Bool(true),
-					EnableUnhandledExceptionsReporting:               sdk.Bool(true),
-					EnableUnloadPhysicalTypeOptimization:             sdk.Bool(true),
-					EnableUnredactedQuerySyntaxError:                 sdk.Bool(true),
-					EnableUnredactedSecureObjectError:                sdk.Bool(true),
-					EnforceNetworkRulesForInternalStages:             sdk.Bool(true),
-					ErrorOnNondeterministicMerge:                     sdk.Bool(true),
-					ErrorOnNondeterministicUpdate:                    sdk.Bool(true),
-					EventTable:                                       sdk.Bool(true),
-					ExternalOAuthAddPrivilegedRolesToBlockedList:     sdk.Bool(true),
-					ExternalVolume:                                   sdk.Bool(true),
-					GeographyOutputFormat:                            sdk.Bool(true),
-					GeometryOutputFormat:                             sdk.Bool(true),
-					HybridTableLockTimeout:                           sdk.Bool(true),
-					InitialReplicationSizeLimitInTB:                  sdk.Bool(true),
-					JdbcTreatDecimalAsInt:                            sdk.Bool(true),
-					JdbcTreatTimestampNtzAsUtc:                       sdk.Bool(true),
-					JdbcUseSessionTimezone:                           sdk.Bool(true),
-					JsonIndent:                                       sdk.Bool(true),
-					JsTreatIntegerAsBigInt:                           sdk.Bool(true),
-					ListingAutoFulfillmentReplicationRefreshSchedule: sdk.Bool(true),
-					LockTimeout:                                      sdk.Bool(true),
-					LogLevel:                                         sdk.Bool(true),
-					MaxConcurrencyLevel:                              sdk.Bool(true),
-					MaxDataExtensionTimeInDays:                       sdk.Bool(true),
-					MetricLevel:                                      sdk.Bool(true),
-					MinDataRetentionTimeInDays:                       sdk.Bool(true),
-					MultiStatementCount:                              sdk.Bool(true),
-					NetworkPolicy:                                    sdk.Bool(true),
-					NoorderSequenceAsDefault:                         sdk.Bool(true),
-					OAuthAddPrivilegedRolesToBlockedList:             sdk.Bool(true),
-					OdbcTreatDecimalAsInt:                            sdk.Bool(true),
-					PeriodicDataRekeying:                             sdk.Bool(true),
-					PipeExecutionPaused:                              sdk.Bool(true),
-					PreventUnloadToInlineURL:                         sdk.Bool(true),
-					PreventUnloadToInternalStages:                    sdk.Bool(true),
-					PythonProfilerModules:                            sdk.Bool(true),
-					PythonProfilerTargetStage:                        sdk.Bool(true),
-					QueryTag:                                         sdk.Bool(true),
-					QuotedIdentifiersIgnoreCase:                      sdk.Bool(true),
-					ReplaceInvalidCharacters:                         sdk.Bool(true),
-					RequireStorageIntegrationForStageCreation:        sdk.Bool(true),
-					RequireStorageIntegrationForStageOperation:       sdk.Bool(true),
-					RowsPerResultset:                                 sdk.Bool(true),
-					S3StageVpceDnsName:                               sdk.Bool(true),
-					SamlIdentityProvider:                             sdk.Bool(true),
-					SearchPath:                                       sdk.Bool(true),
-					ServerlessTaskMaxStatementSize:                   sdk.Bool(true),
-					ServerlessTaskMinStatementSize:                   sdk.Bool(true),
-					SimulatedDataSharingConsumer:                     sdk.Bool(true),
-					SsoLoginPage:                                     sdk.Bool(true),
-					StatementQueuedTimeoutInSeconds:                  sdk.Bool(true),
-					StatementTimeoutInSeconds:                        sdk.Bool(true),
-					StorageSerializationPolicy:                       sdk.Bool(true),
-					StrictJsonOutput:                                 sdk.Bool(true),
-					SuspendTaskAfterNumFailures:                      sdk.Bool(true),
-					TaskAutoRetryAttempts:                            sdk.Bool(true),
-					TimestampDayIsAlways24h:                          sdk.Bool(true),
-					TimestampInputFormat:                             sdk.Bool(true),
-					TimestampLtzOutputFormat:                         sdk.Bool(true),
-					TimestampNtzOutputFormat:                         sdk.Bool(true),
-					TimestampOutputFormat:                            sdk.Bool(true),
-					TimestampTypeMapping:                             sdk.Bool(true),
-					TimestampTzOutputFormat:                          sdk.Bool(true),
-					Timezone:                                         sdk.Bool(true),
-					TimeInputFormat:                                  sdk.Bool(true),
-					TimeOutputFormat:                                 sdk.Bool(true),
-					TraceLevel:                                       sdk.Bool(true),
-					TransactionAbortOnError:                          sdk.Bool(true),
-					TransactionDefaultIsolationLevel:                 sdk.Bool(true),
-					TwoDigitCenturyStart:                             sdk.Bool(true),
-					UnsupportedDdlAction:                             sdk.Bool(true),
-					UserTaskManagedInitialWarehouseSize:              sdk.Bool(true),
-					UserTaskMinimumTriggerIntervalInSeconds:          sdk.Bool(true),
-					UserTaskTimeoutMs:                                sdk.Bool(true),
-					UseCachedResult:                                  sdk.Bool(true),
-					WeekOfYearPolicy:                                 sdk.Bool(true),
-					WeekStart:                                        sdk.Bool(true),
-				},
-			},
-		})
+		err = client.Accounts.UnsetAll(ctx)
 		require.NoError(t, err)
 
-		parameters, err = client.Accounts.ShowParameters(ctx)
-		require.NoError(t, err)
-		require.NotEmpty(t, parameters)
-
-		for _, parameter := range sdk.AllAccountParameters {
-			assertParameterIsDefault(t, parameters, string(parameter))
-		}
-	})
-
-	assertThatPolicyIsSetOnAccount := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
-		t.Helper()
-
-		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount)
-		require.NoError(t, err)
-		_, err = collections.FindFirst(policies, func(reference sdk.PolicyReference) bool {
-			return reference.PolicyName == id.Name()
-		})
-		require.NoError(t, err)
-	}
-
-	assertThatNoPolicyIsSetOnAccount := func(t *testing.T) {
-		t.Helper()
-
-		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount)
-		require.Empty(t, policies)
-		require.NoError(t, err)
-	}
-
-	t.Run("set / unset resource monitor", func(t *testing.T) {
-		resourceMonitor, resourceMonitorCleanup := testClientHelper().ResourceMonitor.CreateResourceMonitor(t)
-		t.Cleanup(resourceMonitorCleanup)
-
-		require.Nil(t, resourceMonitor.Level)
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				ResourceMonitor: sdk.Pointer(resourceMonitor.ID()),
-			},
-		})
-		require.NoError(t, err)
-
-		resourceMonitor, err = testClientHelper().ResourceMonitor.Show(t, resourceMonitor.ID())
-		require.NoError(t, err)
-		require.NotNil(t, resourceMonitor.Level)
-		require.Equal(t, sdk.ResourceMonitorLevelAccount, *resourceMonitor.Level)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				ResourceMonitor: sdk.Bool(true),
-			},
-		})
-		require.NoError(t, err)
-
-		resourceMonitor, err = testClientHelper().ResourceMonitor.Show(t, resourceMonitor.ID())
-		require.NoError(t, err)
-		require.Nil(t, resourceMonitor.Level)
-	})
-
-	t.Run("set / unset policies", func(t *testing.T) {
-		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
-		t.Cleanup(authPolicyCleanup)
-
-		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
-		t.Cleanup(featurePolicyCleanup)
-
-		passwordPolicy, passwordPolicyCleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
-		t.Cleanup(passwordPolicyCleanup)
-
-		sessionPolicy, sessionPolicyCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
-		t.Cleanup(sessionPolicyCleanup)
-
-		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
-		t.Cleanup(packagesPolicyCleanup)
-
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}}))
-		})
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}}))
-		})
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}}))
-		})
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PasswordPolicy: sdk.Bool(true)}}))
-		})
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{SessionPolicy: sdk.Bool(true)}}))
-		})
-
-		assertThatPolicyIsSetOnAccount(t, featurePolicyId)
-		assertThatPolicyIsSetOnAccount(t, authPolicy.ID())
-		assertThatPolicyIsSetOnAccount(t, passwordPolicy.ID())
-		assertThatPolicyIsSetOnAccount(t, sessionPolicy.ID())
-		assertThatPolicyIsSetOnAccount(t, packagesPolicyId)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}})
-		require.NoError(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}})
-		require.NoError(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PasswordPolicy: sdk.Bool(true)}})
-		require.NoError(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{SessionPolicy: sdk.Bool(true)}})
-		require.NoError(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}})
-		require.NoError(t, err)
+		objectparametersassert.AccountParameters(t, id).HasAllDefaults()
 
 		assertThatNoPolicyIsSetOnAccount(t)
-	})
-
-	t.Run("force new packages policy", func(t *testing.T) {
-		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
-		t.Cleanup(packagesPolicyCleanup)
-
-		newPackagesPolicyId, newPackagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
-		t.Cleanup(newPackagesPolicyCleanup)
-
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
-		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, packagesPolicyId)
-		t.Cleanup(func() {
-			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}})
-			require.NoError(t, err)
-			assertThatNoPolicyIsSetOnAccount(t)
-		})
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &newPackagesPolicyId}})
-		require.Error(t, err)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &newPackagesPolicyId, Force: sdk.Bool(true)}})
-		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, newPackagesPolicyId)
-	})
-
-	t.Run("force new feature policy", func(t *testing.T) {
-		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
-		t.Cleanup(featurePolicyCleanup)
-
-		newFeaturePolicyId, newFeaturePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
-		t.Cleanup(newFeaturePolicyCleanup)
-
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
-		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, featurePolicyId)
-		t.Cleanup(func() {
-			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}})
-			require.NoError(t, err)
-			assertThatNoPolicyIsSetOnAccount(t)
-		})
-
-		// Here we expect to get an error as there is another feature policy set on the account.
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}}})
-		require.Error(t, err)
-
-		// To set a new feature policy on the account without firstly unsetting it, we can use FORCE parameter.
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}, Force: sdk.Bool(true)}})
-		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, newFeaturePolicyId)
 	})
 }

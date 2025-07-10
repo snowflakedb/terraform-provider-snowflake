@@ -21,7 +21,7 @@ func getSdkV2ProviderSchemas() []gen.SdkV2ProviderSchema {
 	return gen.SdkV2ProviderSchemas
 }
 
-// TODO[mux-PR]: Add version?
+// TODO [mux-PR]: Add version?
 func getFilename(_ gen.SdkV2ProviderSchema, _ gen.PluginFrameworkProviderModel) string {
 	return "13_plugin_framework_model_and_schema_gen.go"
 }

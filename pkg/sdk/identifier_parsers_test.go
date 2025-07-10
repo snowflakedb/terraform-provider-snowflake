@@ -281,51 +281,6 @@ func Test_ParseObjectIdentifierString(t *testing.T) {
 	}
 }
 
-func Test_ParseFunctionArgumentsFromString(t *testing.T) {
-	testCases := []struct {
-		Arguments string
-		Expected  []DataType
-		Error     string
-	}{
-		{Arguments: `()`, Expected: []DataType{}},
-		{Arguments: `(FLOAT, NUMBER, TIME)`, Expected: []DataType{DataTypeFloat, DataTypeNumber, DataTypeTime}},
-		{Arguments: `FLOAT, NUMBER, TIME`, Expected: []DataType{DataTypeFloat, DataTypeNumber, DataTypeTime}},
-		{Arguments: `(DEFAULT FLOAT, DEFAULT NUMBER, DEFAULT TIME)`, Expected: []DataType{DataTypeFloat, DataTypeNumber, DataTypeTime}},
-		{Arguments: `DEFAULT FLOAT, DEFAULT NUMBER, DEFAULT TIME`, Expected: []DataType{DataTypeFloat, DataTypeNumber, DataTypeTime}},
-		{Arguments: `(FLOAT, NUMBER, VECTOR(FLOAT, 20))`, Expected: []DataType{DataTypeFloat, DataTypeNumber, DataType("VECTOR(FLOAT, 20)")}},
-		{Arguments: `FLOAT, NUMBER, VECTOR(FLOAT, 20)`, Expected: []DataType{DataTypeFloat, DataTypeNumber, DataType("VECTOR(FLOAT, 20)")}},
-		{Arguments: `(VECTOR(FLOAT, 10), NUMBER, VECTOR(FLOAT, 20))`, Expected: []DataType{DataType("VECTOR(FLOAT, 10)"), DataTypeNumber, DataType("VECTOR(FLOAT, 20)")}},
-		{Arguments: `VECTOR(FLOAT, 10)| NUMBER, VECTOR(FLOAT, 20)`, Error: "expected a comma delimited string but found |"},
-		{Arguments: `FLOAT, NUMBER, VECTORFLOAT, 20)`, Error: `failed to parse vector type, couldn't find the opening bracket, err = EOF`},
-		{Arguments: `FLOAT, NUMBER, VECTORFLOAT, 20), VECTOR(INT, 10)`, Error: `failed to parse vector type, couldn't find the opening bracket, err = EOF`},
-		{Arguments: `FLOAT, NUMBER, VECTOR(FLOAT, 20`, Error: `failed to parse vector type, couldn't find the closing bracket, err = EOF`},
-		{Arguments: `FLOAT, NUMBER, VECTOR(FLOAT, 20, VECTOR(INT, 10)`, Error: `invalid vector size: 20, VECTOR(INT, 10 (not a number): strconv.ParseInt: parsing "20, VECTOR(INT, 10": invalid syntax`},
-		{Arguments: `(FLOAT, VARCHAR(200), TIME)`, Expected: []DataType{DataTypeFloat, DataType("VARCHAR(200)"), DataTypeTime}},
-		{Arguments: `(FLOAT, VARCHAR(200))`, Expected: []DataType{DataTypeFloat, DataType("VARCHAR(200)")}},
-		{Arguments: `(VARCHAR(200), FLOAT)`, Expected: []DataType{DataType("VARCHAR(200)"), DataTypeFloat}},
-		{Arguments: `(FLOAT, NUMBER, VECTOR(VARCHAR, 20))`, Error: `invalid vector inner type: VARCHAR, allowed vector types are`},
-		{Arguments: `(FLOAT, NUMBER, VECTOR(INT, INT))`, Error: `invalid vector size: INT (not a number): strconv.ParseInt: parsing "INT": invalid syntax`},
-		{Arguments: `FLOAT, NUMBER, VECTOR(20, FLOAT)`, Error: `invalid vector inner type: 20, allowed vector types are`},
-		// As the function is only used for identifiers with arguments the following cases are not supported (because they represent concrete types which are not used as part of the identifiers).
-		{Arguments: `(FLOAT, NUMBER(10, 2), TIME)`, Expected: []DataType{DataTypeFloat, DataType("NUMBER(10"), DataType("2)"), DataTypeTime}},
-		{Arguments: `(FLOAT, NUMBER(10, 2))`, Expected: []DataType{DataTypeFloat, DataType("NUMBER(10"), DataType("2)")}},
-		{Arguments: `(NUMBER(10, 2), FLOAT)`, Expected: []DataType{DataType("NUMBER(10"), DataType("2)"), DataTypeFloat}},
-		{Arguments: `(ab NUMBER(10, 2), x FLOAT, FLOAT)`, Expected: []DataType{DataType("NUMBER(10"), DataType("2)"), DataTypeFloat, DataTypeFloat}},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(fmt.Sprintf("parsing function arguments %s", testCase.Arguments), func(t *testing.T) {
-			dataTypes, err := ParseFunctionArgumentsFromString(testCase.Arguments)
-			if testCase.Error != "" {
-				assert.ErrorContains(t, err, testCase.Error)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, testCase.Expected, dataTypes)
-			}
-		})
-	}
-}
-
 func TestNewSchemaObjectIdentifierWithArgumentsFromFullyQualifiedName(t *testing.T) {
 	testCases := []struct {
 		Input SchemaObjectIdentifierWithArguments

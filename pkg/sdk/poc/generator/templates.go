@@ -2,9 +2,12 @@ package generator
 
 import (
 	_ "embed"
-	"strings"
 	"text/template"
 )
+
+func deref[T ~string](p *T) string {
+	return string(*p)
+}
 
 var (
 	//go:embed templates/package.tmpl
@@ -14,8 +17,8 @@ var (
 	//go:embed templates/interface.tmpl
 	interfaceTemplateContent string
 	InterfaceTemplate, _     = template.New("interfaceTemplate").Funcs(template.FuncMap{
-		"deref":     func(p *DescriptionMappingKind) string { return string(*p) },
-		"hasPrefix": strings.HasPrefix,
+		"describe_mapping_deref": deref[DescriptionMappingKind],
+		"show_mapping_deref":     deref[ShowMappingKind],
 	}).Parse(interfaceTemplateContent)
 
 	//go:embed templates/operation_struct.tmpl
@@ -78,8 +81,8 @@ var (
 
 func init() {
 	subTemplates := template.New("subTemplates").Funcs(template.FuncMap{
-		"deref":     func(p *DescriptionMappingKind) string { return string(*p) },
-		"hasPrefix": strings.HasPrefix,
+		"describe_mapping_deref": deref[DescriptionMappingKind],
+		"show_mapping_deref":     deref[ShowMappingKind],
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
 	subTemplates, _ = subTemplates.New("convert").Parse(convertTemplateContent)

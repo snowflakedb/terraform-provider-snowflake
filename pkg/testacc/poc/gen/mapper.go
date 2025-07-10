@@ -90,7 +90,7 @@ func MapToPluginFrameworkProviderSchema(key string, fieldSchema *schema.Schema) 
 		Key:                                key,
 		PluginFrameworkSchemaAttributeType: pfType.ToSchemaAttributeType(),
 		Description:                        fieldSchema.Description,
-		Optional:                           fieldSchema.Optional || !fieldSchema.Required,
+		Optional:                           fieldSchema.Optional,
 		Sensitive:                          fieldSchema.Sensitive,
 	}, nil
 }

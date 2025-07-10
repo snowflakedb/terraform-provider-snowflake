@@ -20,6 +20,13 @@ const (
 	DescriptionMappingKindSlice       DescriptionMappingKind = "slice"
 )
 
+type ShowMappingKind string
+
+const (
+	ShowMappingKindSingleValue ShowMappingKind = "single_value"
+	ShowMappingKindSlice       ShowMappingKind = "slice"
+)
+
 // Operation defines a single operation for given object or objects family (e.g. CREATE DATABASE ROLE)
 type Operation struct {
 	// Name is the operation's name, e.g. "Create"
@@ -32,6 +39,9 @@ type Operation struct {
 	OptsField *Field
 	// HelperStructs are struct definitions that are not tied to OptsField, but tied to the Operation itself, e.g. Show() return type
 	HelperStructs []*Field
+	// ShowKind defines a kind of mapping that needs to be performed in particular case of Show implementation
+	// TODO(SNOW-2183036) This is a temporary solution to support single value and slice return types for Show operation.
+	ShowKind *ShowMappingKind
 	// ShowMapping is a definition of mapping needed by Operation kind of OperationKindShow
 	ShowMapping *Mapping
 	// DescribeKind defines a kind of mapping that needs to be performed in particular case of Describe implementation
@@ -162,12 +172,15 @@ func (i *Interface) RevokeOperation(doc string, queryStruct *QueryStruct) *Inter
 }
 
 func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
-	i.newOperationWithDBMapping(string(OperationKindShow), doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
+	op := i.newOperationWithDBMapping(string(OperationKindShow), doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
+	kind := ShowMappingKindSlice
+	op.ShowKind = &kind
 	return i
 }
 
-func (i *Interface) CustomShowOperation(operationName string, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
-	i.newOperationWithDBMapping(operationName, doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
+func (i *Interface) CustomShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
+	op := i.newOperationWithDBMapping(operationName, doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
+	op.ShowKind = &showKind
 	return i
 }
 

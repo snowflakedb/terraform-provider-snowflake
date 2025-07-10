@@ -51,12 +51,14 @@ type Client struct {
 	GitRepositories              GitRepositories
 	Grants                       Grants
 	ImageRepositories            ImageRepositories
+	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
 	NotificationIntegrations     NotificationIntegrations
+	OrganizationAccounts         OrganizationAccounts
 	Parameters                   Parameters
 	PasswordPolicies             PasswordPolicies
 	Pipes                        Pipes
@@ -81,6 +83,7 @@ type Client struct {
 	Tags                         Tags
 	Tasks                        Tasks
 	Users                        Users
+	UserProgrammaticAccessTokens UserProgrammaticAccessTokens
 	Views                        Views
 	Warehouses                   Warehouses
 }
@@ -182,12 +185,14 @@ func (c *Client) initialize() {
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
+	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
 	c.NotificationIntegrations = &notificationIntegrations{client: c}
+	c.OrganizationAccounts = &organizationAccounts{client: c}
 	c.Parameters = &parameters{client: c}
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
@@ -214,6 +219,7 @@ func (c *Client) initialize() {
 	c.Tags = &tags{client: c}
 	c.Tasks = &tasks{client: c}
 	c.Users = &users{client: c}
+	c.UserProgrammaticAccessTokens = &userProgrammaticAccessTokens{client: c}
 	c.Views = &views{client: c}
 	c.Warehouses = &warehouses{client: c}
 }
