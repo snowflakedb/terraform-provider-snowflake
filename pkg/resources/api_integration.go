@@ -225,7 +225,7 @@ func CreateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 // ReadAPIIntegration implements schema.ReadFunc.
 func ReadAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	integration, err := client.ApiIntegrations.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -340,7 +340,7 @@ func ReadAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interf
 // UpdateAPIIntegration implements schema.UpdateFunc.
 func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	var runSetStatement bool
 	setRequest := sdk.NewApiIntegrationSetRequest()

@@ -191,7 +191,7 @@ func DynamicTable() *schema.Resource {
 func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 	dynamicTable, err := client.DynamicTables.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
@@ -365,7 +365,7 @@ func CreateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 // UpdateDynamicTable implements schema.UpdateFunc.
 func UpdateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 	request := sdk.NewAlterDynamicTableRequest(id)
 
 	runSet := false

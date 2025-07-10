@@ -134,7 +134,7 @@ func Alert() *schema.Resource {
 // ReadAlert implements schema.ReadContextFunc.
 func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	alert, err := client.Alerts.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -295,7 +295,7 @@ func getAlertSchedule(v interface{}) string {
 // UpdateAlert implements schema.UpdateContextFunc.
 func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	objectIdentifier := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	objectIdentifier := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	enabled := d.Get("enabled").(bool)
 	if d.HasChanges("enabled", "warehouse", "alert_schedule", "condition", "action", "comment") {

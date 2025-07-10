@@ -107,7 +107,7 @@ func CreateEmailNotificationIntegration(ctx context.Context, d *schema.ResourceD
 // ReadEmailNotificationIntegration implements schema.ReadFunc.
 func ReadEmailNotificationIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	integration, err := client.NotificationIntegrations.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -171,7 +171,7 @@ func ReadEmailNotificationIntegration(ctx context.Context, d *schema.ResourceDat
 // UpdateEmailNotificationIntegration implements schema.UpdateFunc.
 func UpdateEmailNotificationIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	var runSetStatement bool
 	var runUnsetStatement bool
