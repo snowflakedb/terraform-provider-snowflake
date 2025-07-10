@@ -4,10 +4,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+type AccountInformation interface {
+	GetAccountLocator() string
+}
+
 type TestClient struct {
 	context *TestClientContext
 
 	Ids *IdsGenerator
+	AccountInformation
 
 	Account                      *AccountClient
 	AggregationPolicy            *AggregationPolicyClient
@@ -88,7 +93,8 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 	return &TestClient{
 		context: context,
 
-		Ids: idsGenerator,
+		Ids:                idsGenerator,
+		AccountInformation: context.client,
 
 		Account:                      NewAccountClient(context, idsGenerator),
 		AggregationPolicy:            NewAggregationPolicyClient(context, idsGenerator),
@@ -164,8 +170,4 @@ type TestClientContext struct {
 	schema           string
 	warehouse        string
 	testObjectSuffix string
-}
-
-func (c *TestClient) GetAccountLocator() string {
-	return c.context.client.GetAccountLocator()
 }

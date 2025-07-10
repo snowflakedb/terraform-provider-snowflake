@@ -11,13 +11,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type MockAccountInformation struct {
+	AccountLocator string
+}
+
+func (m MockAccountInformation) GetAccountLocator() string {
+	return m.AccountLocator
+}
+
 func TestEnsureValidAccountIsUsed(t *testing.T) {
 	accountLocator := "ABC123123"
-	clientBuilder := sdk.NewTestClientBuilder().WithAccountLocator(accountLocator)
 
 	testClient := TestClient{
-		context: &TestClientContext{
-			client: clientBuilder.Build(),
+		AccountInformation: &MockAccountInformation{
+			AccountLocator: accountLocator,
 		},
 	}
 
@@ -95,9 +102,11 @@ func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 	client := sdk.Client{
 		OrganizationAccounts: organizationAccounts,
 	}
-	client.SetAccountLocatorForTests(accountLocator)
 
 	testClient := TestClient{
+		AccountInformation: &MockAccountInformation{
+			AccountLocator: accountLocator,
+		},
 		context: &TestClientContext{
 			client: &client,
 		},
