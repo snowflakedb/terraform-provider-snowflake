@@ -93,21 +93,21 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 	int64AttributeCreate(data.IntValue, &opts.IntValue)
 	stringAttributeCreate(data.StringValue, &opts.StringValue)
 
-	setActionsOutput(ctx, response, opts, data)
+	setCreateActionsOutput(ctx, response, opts, data)
 
 	response.Diagnostics.Append(r.create(opts)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 
-	response.Diagnostics.Append(r.read(data)...)
-	if response.Diagnostics.HasError() {
-		return
-	}
+	//response.Diagnostics.Append(r.read(data)...)
+	//if response.Diagnostics.HasError() {
+	//	return
+	//}
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func setActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *ZeroValuesOpts, data *zeroValuesResourceModelV0) {
+func setCreateActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *ZeroValuesOpts, data *zeroValuesResourceModelV0) {
 	response.Diagnostics.Append(actionlog.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
 		actions := make([]actionlog.ActionLogEntry, 0)
 		if opts.BoolValue != nil {
@@ -162,7 +162,59 @@ func (r *ZeroValuesResource) read(data *zeroValuesResourceModelV0) diag.Diagnost
 	return diags
 }
 
-func (r *ZeroValuesResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
+func (r *ZeroValuesResource) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
+	var config, plan, state *zeroValuesResourceModelV0
+
+	response.Diagnostics.Append(request.Config.Get(ctx, &config)...)
+	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
+	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
+
+	opts := &ZeroValuesOpts{}
+	booleanAttributeUpdate(plan.BoolValue, state.BoolValue, &opts.BoolValue, &opts.BoolValue)
+	int64AttributeUpdate(plan.IntValue, state.IntValue, &opts.IntValue, &opts.IntValue)
+	stringAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue)
+
+	setUpdateActionsOutput(ctx, response, opts, plan, state)
+
+	response.Diagnostics.Append(r.update(opts)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
+}
+
+func setUpdateActionsOutput(ctx context.Context, response *resource.UpdateResponse, opts *ZeroValuesOpts, plan *zeroValuesResourceModelV0, state *zeroValuesResourceModelV0) {
+	plan.ActionsLogEmbeddable = state.ActionsLogEmbeddable
+	response.Diagnostics.Append(actionlog.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []actionlog.ActionLogEntry {
+		actions := make([]actionlog.ActionLogEntry, 0)
+		if opts.BoolValue != nil {
+			actions = append(actions, actionlog.ActionEntry("UPDATE - SET", "bool_value", strconv.FormatBool(*opts.BoolValue)))
+		} else {
+			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "bool_value", "nil"))
+		}
+		if opts.IntValue != nil {
+			actions = append(actions, actionlog.ActionEntry("UPDATE", "int_value", strconv.Itoa(*opts.IntValue)))
+		} else {
+			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "int_value", "nil"))
+		}
+		if opts.StringValue != nil {
+			actions = append(actions, actionlog.ActionEntry("UPDATE", "string_value", *opts.StringValue))
+		} else {
+			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "string_value", "nil"))
+		}
+		return actions
+	})...)
+}
+
+func (r *ZeroValuesResource) update(opts *ZeroValuesOpts) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	err := r.HttpServerEmbeddable.Post(*opts)
+	if err != nil {
+		diags.AddError("Could not create resource", err.Error())
+	}
+	return diags
 }
 
 func (r *ZeroValuesResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {

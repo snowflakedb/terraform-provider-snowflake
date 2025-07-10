@@ -13,12 +13,17 @@ import (
 
 var (
 	zeroValuesHandler = common.NewDynamicHandlerWithInitialValueAndReplaceWithFunc[testfunctional.ZeroValuesOpts](
-		testfunctional.ZeroValuesOpts{}, zeroValuesOptsReplaceWith,
+		testfunctional.ZeroValuesOpts{}, zeroValuesOptsAlwaysReplace,
 	)
 )
 
 // TODO [mux-PRs]: handle by reflection or generate
-func zeroValuesOptsReplaceWith(base testfunctional.ZeroValuesOpts, replaceWith testfunctional.ZeroValuesOpts) testfunctional.ZeroValuesOpts {
+func zeroValuesOptsAlwaysReplace(_ testfunctional.ZeroValuesOpts, replaceWith testfunctional.ZeroValuesOpts) testfunctional.ZeroValuesOpts {
+	return replaceWith
+}
+
+// TODO [mux-PRs]: handle by reflection or generate
+func zeroValuesOptsReplaceWithNonNil(base testfunctional.ZeroValuesOpts, replaceWith testfunctional.ZeroValuesOpts) testfunctional.ZeroValuesOpts {
 	if replaceWith.BoolValue != nil {
 		base.BoolValue = replaceWith.BoolValue
 	}
@@ -35,7 +40,11 @@ func init() {
 	allTestHandlers["zero_values_handling"] = zeroValuesHandler
 }
 
-func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Basic(t *testing.T) {
+// Tests (based on TestAcc_Warehouse_ZeroValues)
+// add valid "zero" values again (to validate if set is run correctly)
+// import zero values
+// set to non zero, change to zero externally
+func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T) {
 	id := sdk.NewAccountObjectIdentifier("abc")
 	resourceType := fmt.Sprintf("%s_zero_values", PluginFrameworkFunctionalTestsProviderName)
 	resourceReference := fmt.Sprintf("%s.test", resourceType)
@@ -46,30 +55,55 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Basic(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
+			// create with valid "zero" values
 			{
-				Config: zeroValuesConfig(id, resourceType),
+				Config: zeroValuesAllSetConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
-
 					resource.TestCheckResourceAttr(resourceReference, "bool_value", "false"),
 					resource.TestCheckResourceAttr(resourceReference, "int_value", "0"),
-					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", ""),
 
 					// check actions
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "3"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.action", "CREATE"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.field", "bool_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", "false"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.action", "CREATE"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.field", "int_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", "0"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.action", "CREATE"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.value", ""),
+				),
+			},
+			// remove all from config (to validate that unset is run correctly)
+			{
+				Config: zeroValuesNoneSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckNoResourceAttr(resourceReference, "bool_value"),
+					resource.TestCheckNoResourceAttr(resourceReference, "int_value"),
+					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "6"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "bool_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", "nil"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.field", "int_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.value", "nil"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.value", "nil"),
 				),
 			},
 		},
 	})
 }
 
-func zeroValuesConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
+func zeroValuesAllSetConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
 	return fmt.Sprintf(`
 resource "%[2]s" "test" {
   provider = "%[3]s"
@@ -77,6 +111,30 @@ resource "%[2]s" "test" {
   name = "%[1]s"
   bool_value = false
   int_value = 0
+  string_value = ""
+}
+`, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
+}
+
+func zeroValuesNoneSetConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
+	return fmt.Sprintf(`
+resource "%[2]s" "test" {
+  provider = "%[3]s"
+
+  name = "%[1]s"
+}
+`, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
+}
+
+func zeroValuesNonZeroValuesConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
+	return fmt.Sprintf(`
+resource "%[2]s" "test" {
+  provider = "%[3]s"
+
+  name = "%[1]s"
+  bool_value = true
+  int_value = 10
+  string_value = "some text"
 }
 `, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
 }
