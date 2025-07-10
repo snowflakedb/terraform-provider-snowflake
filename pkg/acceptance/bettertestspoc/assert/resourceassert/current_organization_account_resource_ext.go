@@ -1,6 +1,9 @@
 package resourceassert
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+)
 
 func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *CurrentOrganizationAccountResourceAssert {
 	return c.
@@ -115,4 +118,118 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasUseCachedResultString("true").
 		HasWeekOfYearPolicyString("0").
 		HasWeekStartString("0")
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredefinedValues(warehouseId sdk.AccountObjectIdentifier, eventTableId sdk.SchemaObjectIdentifier, externalVolumeId sdk.AccountObjectIdentifier, networkPolicyId sdk.AccountObjectIdentifier, stageId sdk.SchemaObjectIdentifier) *CurrentOrganizationAccountResourceAssert {
+	return c.
+		HasAbortDetachedQueryString("true").
+		HasAllowClientMfaCachingString("true").
+		HasAllowIdTokenString("true").
+		HasAutocommitString("false").
+		HasBaseLocationPrefixString("STORAGE_BASE_URL/").
+		HasBinaryInputFormatString(string(sdk.BinaryInputFormatBase64)).
+		HasBinaryOutputFormatString(string(sdk.BinaryOutputFormatBase64)).
+		HasCatalogString(helpers.TestDatabaseCatalog.Name()).
+		HasClientEnableLogInfoStatementParametersString("true").
+		HasClientEncryptionKeySizeString("256").
+		HasClientMemoryLimitString("1540").
+		HasClientMetadataRequestUseConnectionCtxString("true").
+		HasClientMetadataUseSessionDatabaseString("true").
+		HasClientPrefetchThreadsString("5").
+		HasClientResultChunkSizeString("159").
+		HasClientResultColumnCaseInsensitiveString("true").
+		HasClientSessionKeepAliveString("true").
+		HasClientSessionKeepAliveHeartbeatFrequencyString("3599").
+		HasClientTimestampTypeMappingString(string(sdk.ClientTimestampTypeMappingNtz)).
+		HasCortexEnabledCrossRegionString("ANY_REGION").
+		HasCortexModelsAllowlistString("All").
+		HasCsvTimestampFormatString("YYYY-MM-DD").
+		HasDataRetentionTimeInDaysString("2").
+		HasDateInputFormatString("YYYY-MM-DD").
+		HasDateOutputFormatString("YYYY-MM-DD").
+		HasDefaultDdlCollationString("en-cs").
+		HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
+		HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
+		HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingFirst)).
+		HasDefaultStreamlitNotebookWarehouseString(warehouseId.Name()).
+		HasDisableUiDownloadButtonString("true").
+		HasDisableUserPrivilegeGrantsString("true").
+		HasEnableAutomaticSensitiveDataClassificationLogString("false").
+		HasEnableEgressCostOptimizerString("false").
+		HasEnableIdentifierFirstLoginString("false").
+		HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("true").
+		HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("true").
+		HasEnableUnhandledExceptionsReportingString("false").
+		HasEnableUnloadPhysicalTypeOptimizationString("false").
+		HasEnableUnredactedQuerySyntaxErrorString("true").
+		HasEnableUnredactedSecureObjectErrorString("true").
+		HasEnforceNetworkRulesForInternalStagesString("true").
+		HasErrorOnNondeterministicMergeString("false").
+		HasErrorOnNondeterministicUpdateString("true").
+		HasEventTableString(eventTableId.FullyQualifiedName()).
+		HasExternalOauthAddPrivilegedRolesToBlockedListString("false").
+		HasExternalVolumeString(externalVolumeId.Name()).
+		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatWKT)).
+		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatWKT)).
+		HasHybridTableLockTimeoutString("3599").
+		HasInitialReplicationSizeLimitInTbString("9.9").
+		HasJdbcTreatDecimalAsIntString("false").
+		HasJdbcTreatTimestampNtzAsUtcString("true").
+		HasJdbcUseSessionTimezoneString("false").
+		HasJsonIndentString("4").
+		HasJsTreatIntegerAsBigintString("true").
+		HasListingAutoFulfillmentReplicationRefreshScheduleString("2 minutes").
+		HasLockTimeoutString("43201").
+		HasLogLevelString(string(sdk.LogLevelInfo)).
+		HasMaxConcurrencyLevelString("7").
+		HasMaxDataExtensionTimeInDaysString("13").
+		HasMetricLevelString(string(sdk.MetricLevelAll)).
+		HasMinDataRetentionTimeInDaysString("1").
+		HasMultiStatementCountString("0").
+		HasNetworkPolicyString(networkPolicyId.Name()).
+		HasNoorderSequenceAsDefaultString("false").
+		HasOauthAddPrivilegedRolesToBlockedListString("false").
+		HasOdbcTreatDecimalAsIntString("true").
+		HasPeriodicDataRekeyingString("false").
+		HasPipeExecutionPausedString("true").
+		HasPreventUnloadToInlineUrlString("true").
+		HasPreventUnloadToInternalStagesString("true").
+		HasPythonProfilerTargetStageString(stageId.FullyQualifiedName()).
+		HasQueryTagString("test-query-tag").
+		HasQuotedIdentifiersIgnoreCaseString("true").
+		HasReplaceInvalidCharactersString("true").
+		HasRequireStorageIntegrationForStageCreationString("true").
+		HasRequireStorageIntegrationForStageOperationString("true").
+		HasRowsPerResultsetString("1000").
+		HasSearchPathString("$current, $public").
+		HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXLarge)).
+		HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
+		HasSsoLoginPageString("true").
+		HasStatementQueuedTimeoutInSecondsString("1").
+		HasStatementTimeoutInSecondsString("10").
+		HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
+		HasStrictJsonOutputString("true").
+		HasSuspendTaskAfterNumFailuresString("3").
+		HasTaskAutoRetryAttemptsString("3").
+		HasTimestampDayIsAlways24hString("true").
+		HasTimestampInputFormatString("YYYY-MM-DD").
+		HasTimestampLtzOutputFormatString("YYYY-MM-DD").
+		HasTimestampNtzOutputFormatString("YYYY-MM-DD").
+		HasTimestampOutputFormatString("YYYY-MM-DD").
+		HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingLtz)).
+		HasTimestampTzOutputFormatString("YYYY-MM-DD").
+		HasTimezoneString("Europe/London").
+		HasTimeInputFormatString("YYYY-MM-DD").
+		HasTimeOutputFormatString("YYYY-MM-DD").
+		HasTraceLevelString(string(sdk.TraceLevelPropagate)).
+		HasTransactionAbortOnErrorString("true").
+		HasTransactionDefaultIsolationLevelString(string(sdk.TransactionDefaultIsolationLevelReadCommitted)).
+		HasTwoDigitCenturyStartString("1971").
+		HasUnsupportedDdlActionString(string(sdk.UnsupportedDDLActionFail)).
+		HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeSmall)).
+		HasUserTaskMinimumTriggerIntervalInSecondsString("10").
+		HasUserTaskTimeoutMsString("10").
+		HasUseCachedResultString("false").
+		HasWeekOfYearPolicyString("1").
+		HasWeekStartString("1")
 }
