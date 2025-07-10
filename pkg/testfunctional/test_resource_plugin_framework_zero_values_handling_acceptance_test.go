@@ -41,8 +41,7 @@ func init() {
 	allTestHandlers["zero_values_handling"] = zeroValuesHandler
 }
 
-// Tests (based on TestAcc_Warehouse_ZeroValues)
-// set to non zero, change to zero externally
+// This test verifies the behavior of Optional fields with possible zero-values (based on TestAcc_Warehouse_ZeroValues).
 func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T) {
 	id := sdk.NewAccountObjectIdentifier("abc")
 	resourceType := fmt.Sprintf("%s_zero_values", PluginFrameworkFunctionalTestsProviderName)
@@ -183,6 +182,67 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.11.action", "UPDATE - SET"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.11.field", "string_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.11.value", ""),
+				),
+			},
+			// set to non-zero values
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: zeroValuesNonZeroValuesConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "bool_value", "true"),
+					resource.TestCheckResourceAttr(resourceReference, "int_value", "10"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", "some text"),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "15"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.12.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.12.field", "bool_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.12.value", "true"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.13.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.13.field", "int_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.13.value", "10"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.14.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.14.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.14.value", "some text"),
+				),
+			},
+			// set externally to zero values
+			{
+				PreConfig: func() {
+					zeroValuesHandler.SetCurrentValue(testfunctional.ZeroValuesOpts{
+						BoolValue:   sdk.Pointer(false),
+						IntValue:    sdk.Pointer(0),
+						StringValue: sdk.Pointer(""),
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: zeroValuesNonZeroValuesConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "bool_value", "true"),
+					resource.TestCheckResourceAttr(resourceReference, "int_value", "10"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", "some text"),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "18"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.15.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.15.field", "bool_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.15.value", "true"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.16.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.16.field", "int_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.16.value", "10"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.17.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.17.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.17.value", "some text"),
 				),
 			},
 		},
