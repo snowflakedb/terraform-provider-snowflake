@@ -6,6 +6,7 @@ import (
 )
 
 // TODO [mux-PRs]: make it possible to reuse simultaneously from multiple tests (e.g. map per test)
+// TODO [mux-PRs]: https://go.dev/blog/routing-enhancements
 type DynamicHandler[T any] struct {
 	currentValue    T
 	replaceWithFunc func(T, T) T
