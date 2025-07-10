@@ -23,6 +23,7 @@ type computedNestedListResource struct{}
 type computedNestedListResourceModelV0 struct {
 	Name   types.String `tfsdk:"name"`
 	Option types.String `tfsdk:"option"`
+	Param  types.String `tfsdk:"param"`
 	Id     types.String `tfsdk:"id"`
 
 	common.ActionsLogEmbeddable
@@ -42,6 +43,10 @@ func (r *computedNestedListResource) Schema(_ context.Context, _ resource.Schema
 			},
 			"option": schema.StringAttribute{
 				Description: "Which implementation option should be tested. Available values: STRUCT, EXPLICIT, DEDICATED",
+				Required:    true,
+			},
+			"param": schema.StringAttribute{
+				Description: "Parameter allowing us to trigger update.",
 				Required:    true,
 			},
 			"id": schema.StringAttribute{
@@ -118,7 +123,7 @@ func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResp
 		existingEntries = append(existingEntries, entry)
 	}
 	var diags diag.Diagnostics
-	data.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: common.GetActionLogEntryTypes()}, actions)
+	data.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: common.GetActionLogEntryTypes()}, existingEntries)
 	if diags.HasError() {
 		response.Diagnostics.Append(diags...)
 		return
@@ -137,7 +142,28 @@ func setActionsOutputDedicated(ctx context.Context, response *resource.CreateRes
 func (r *computedNestedListResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
 }
 
-func (r *computedNestedListResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
+func (r *computedNestedListResource) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
+	var plan, state *computedNestedListResourceModelV0
+
+	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
+	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
+
+	setActionsOutputUpdate(ctx, response, plan, state)
+
+	if response.Diagnostics.HasError() {
+		return
+	}
+	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
+}
+
+func setActionsOutputUpdate(ctx context.Context, response *resource.UpdateResponse, plan *computedNestedListResourceModelV0, state *computedNestedListResourceModelV0) {
+	plan.ActionsLogEmbeddable = state.ActionsLogEmbeddable
+	response.Diagnostics.Append(common.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []common.ActionLogEntry {
+		actions := make([]common.ActionLogEntry, 0)
+		actions = append(actions, common.ActionEntry("UPDATE: SOME ACTION", "UPDATE: ON FIELD", "UPDATE: WITH VALUE"))
+		actions = append(actions, common.ActionEntry("UPDATE: SOME OTHER ACTION", "UPDATE: ON OTHER FIELD", "UPDATE: WITH OTHER VALUE"))
+		return actions
+	})...)
 }
 
 func (r *computedNestedListResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
