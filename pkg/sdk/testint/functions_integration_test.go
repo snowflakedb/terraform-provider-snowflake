@@ -96,9 +96,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -197,9 +197,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -276,9 +276,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -367,9 +367,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -480,7 +480,7 @@ func TestInt_Functions(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())),
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())),
 		)
 
 		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
@@ -518,7 +518,7 @@ func TestInt_Functions(t *testing.T) {
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
 			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
@@ -673,9 +673,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.Canonical())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -762,9 +762,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.Canonical())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -839,9 +839,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -927,9 +927,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1007,9 +1007,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1105,9 +1105,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1183,9 +1183,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultFunctionComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1271,9 +1271,9 @@ func TestInt_Functions(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1984,13 +1984,7 @@ func TestInt_Functions(t *testing.T) {
 		for i, arg := range args {
 			dataType, err := datatypes.ParseDataType(string(arg.ArgDataTypeOld))
 			require.NoError(t, err)
-			switch arg.ArgName {
-			// modifying arguments for which Snowflake will return datatype attributes (as we create them with attributes, check above)
-			case "A", "F", "G":
-				dataTypes[i] = sdk.LegacyDataTypeWithAttrsCanonical(dataType)
-			default:
-				dataTypes[i] = sdk.LegacyDataTypeFrom(dataType)
-			}
+			dataTypes[i] = sdk.LegacyDataTypeFrom(dataType)
 		}
 		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataTypes...)
 
@@ -2000,6 +1994,7 @@ func TestInt_Functions(t *testing.T) {
 	})
 
 	// This test shows behavior of detailed types (e.g. VARCHAR(20) and NUMBER(10, 0)) on Snowflake side for functions.
+	// NOTE: These changes has been rolled back from 2025_03 bundle and may be reintroduced in the future.
 	// For SHOW, it changed after 2025_03 Bundle:
 	//  - if defaults are not used:
 	//    - it's not generalized for NUMBER, VARCHAR, BINARY, TIMESTAMP_LTZ, TIMESTAMP_NTZ, TIMESTAMP_TZ, and TIME.
@@ -2008,41 +2003,42 @@ func TestInt_Functions(t *testing.T) {
 	// FOR DESCRIBE, data type is generalized for argument and works weirdly for the return type: type is generalized to the canonical one, but we also get the attributes.
 	// Note on defaults changed in 2025_03 Bundle: our logic still uses the hardcoded defaults, that's why in this test VARCHAR and BINARY return the type with sizes.
 	for _, tc := range []struct {
-		input             string
-		expectedShowValue string
+		input                 string
+		expectedShowValue     string
+		expectedDescribeValue string
 	}{
-		{"NUMBER(36, 5)", "NUMBER(36,5)"},
-		{"NUMBER(36)", "NUMBER(36,0)"},
-		{"NUMBER", "NUMBER"},
-		{"DECIMAL", "NUMBER"},
-		{"INTEGER", "NUMBER"},
-		{"FLOAT", "FLOAT"},
-		{"DOUBLE", "FLOAT"},
-		{"VARCHAR", fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
-		{"VARCHAR(20)", "VARCHAR(20)"},
-		{fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), "VARCHAR"},
-		{"CHAR", "VARCHAR(1)"},
-		{"CHAR(10)", "VARCHAR(10)"},
-		{"TEXT", fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
-		{"BINARY", fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
-		{"BINARY(1000)", "BINARY(1000)"},
-		{fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
-		{fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), "BINARY"},
-		{"VARBINARY", fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
-		{"BOOLEAN", "BOOLEAN"},
-		{"DATE", "DATE"},
-		{"DATETIME", "TIMESTAMP_NTZ"},
-		{"TIME", "TIME"},
-		{"TIMESTAMP_LTZ", "TIMESTAMP_LTZ"},
-		{"TIMESTAMP_NTZ", "TIMESTAMP_NTZ"},
-		{"TIMESTAMP_TZ", "TIMESTAMP_TZ"},
-		{"VARIANT", "VARIANT"},
-		{"OBJECT", "OBJECT"},
-		{"ARRAY", "ARRAY"},
-		{"GEOGRAPHY", "GEOGRAPHY"},
-		{"GEOMETRY", "GEOMETRY"},
-		{"VECTOR(INT, 16)", "VECTOR(INT, 16)"},
-		{"VECTOR(FLOAT, 8)", "VECTOR(FLOAT, 8)"},
+		{input: "NUMBER(36, 5)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(36)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER", expectedShowValue: "NUMBER"},
+		{input: "DECIMAL", expectedShowValue: "NUMBER"},
+		{input: "INTEGER", expectedShowValue: "NUMBER"},
+		{input: "FLOAT", expectedShowValue: "FLOAT"},
+		{input: "DOUBLE", expectedShowValue: "FLOAT"},
+		{input: "VARCHAR", expectedShowValue: "VARCHAR"},
+		{input: "VARCHAR(20)", expectedShowValue: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR", expectedDescribeValue: "VARCHAR"},
+		{input: "CHAR", expectedShowValue: "VARCHAR"},
+		{input: "CHAR(10)", expectedShowValue: "VARCHAR"},
+		{input: "TEXT", expectedShowValue: "VARCHAR"},
+		{input: "BINARY", expectedShowValue: "BINARY"},
+		{input: "BINARY(1000)", expectedShowValue: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY", expectedDescribeValue: "BINARY"},
+		{input: "VARBINARY", expectedShowValue: "BINARY"},
+		{input: "BOOLEAN", expectedShowValue: "BOOLEAN"},
+		{input: "DATE", expectedShowValue: "DATE"},
+		{input: "DATETIME", expectedShowValue: "TIMESTAMP_NTZ"},
+		{input: "TIME", expectedShowValue: "TIME"},
+		{input: "TIMESTAMP_LTZ", expectedShowValue: "TIMESTAMP_LTZ"},
+		{input: "TIMESTAMP_NTZ", expectedShowValue: "TIMESTAMP_NTZ"},
+		{input: "TIMESTAMP_TZ", expectedShowValue: "TIMESTAMP_TZ"},
+		{input: "VARIANT", expectedShowValue: "VARIANT"},
+		{input: "OBJECT", expectedShowValue: "OBJECT"},
+		{input: "ARRAY", expectedShowValue: "ARRAY"},
+		{input: "GEOGRAPHY", expectedShowValue: "GEOGRAPHY"},
+		{input: "GEOMETRY", expectedShowValue: "GEOMETRY"},
+		{input: "VECTOR(INT, 16)", expectedShowValue: "VECTOR(INT, 16)"},
+		{input: "VECTOR(FLOAT, 8)", expectedShowValue: "VECTOR(FLOAT, 8)"},
 	} {
 		tc := tc
 		t.Run(fmt.Sprintf("function returns non detailed data types of arguments for %s", tc.input), func(t *testing.T) {
@@ -2081,7 +2077,11 @@ func TestInt_Functions(t *testing.T) {
 				pairs[detail.Property] = *detail.Value
 			}
 			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, oldDataType), pairs["signature"])
-			assert.Equal(t, dataType.Canonical(), pairs["returns"])
+			if tc.expectedDescribeValue != "" {
+				assert.Equal(t, tc.expectedDescribeValue, pairs["returns"])
+			} else {
+				assert.Equal(t, dataType.Canonical(), pairs["returns"])
+			}
 		})
 	}
 
@@ -2094,17 +2094,17 @@ func TestInt_Functions(t *testing.T) {
 		{input: "NUMBER", expectedShowValue: "NUMBER"},
 		{input: "NUMBER(38)", expectedShowValue: "NUMBER"},
 		{input: "NUMBER(38,0)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(36)", expectedShowValue: "NUMBER(36,0)"},
-		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER(36,2)"},
+		{input: "NUMBER(36)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER"},
 		{input: "DECIMAL", expectedShowValue: "NUMBER"},
 		{input: "VARCHAR", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
 		{input: "TEXT", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: "CHAR", expectedShowValue: "VARCHAR(1)"},
+		{input: "CHAR", expectedShowValue: "VARCHAR"},
 		{input: "BINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
 		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
 	} {
 		tc := tc
@@ -2159,8 +2159,8 @@ func TestInt_Functions(t *testing.T) {
 		input        string
 		expectedSize string
 	}{
-		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength)},
-		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize)},
+		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
+		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
 	} {
 		tc := tc
 		t.Run(fmt.Sprintf("function default data types after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {

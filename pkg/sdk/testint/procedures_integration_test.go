@@ -87,9 +87,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, procedure.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, procedure.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -180,9 +180,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -262,9 +262,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -349,9 +349,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -463,7 +463,7 @@ func TestInt_Procedures(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.ProcedureFromObject(t, function).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())),
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -646,9 +646,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.Canonical())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -734,9 +734,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrsCanonical(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.Canonical())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -811,9 +811,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -898,9 +898,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -979,9 +979,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1074,9 +1074,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1152,9 +1152,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription(sdk.DefaultProcedureComment).
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -1241,9 +1241,9 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsAnsi(false).
 			HasMinNumArguments(1).
 			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeWithAttrs(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToSql())).
+			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
@@ -2247,6 +2247,7 @@ def filter_by_role(session, table_name, role):
 	})
 
 	// This test shows behavior of detailed types (e.g. VARCHAR(20) and NUMBER(10, 0)) on Snowflake side for procedures.
+	// NOTE: These changes has been rolled back from 2025_03 bundle and may be reintroduced in the future.
 	// For SHOW, it changed after 2025_03 Bundle:
 	//  - if defaults are not used:
 	//    - it's not generalized for NUMBER, VARCHAR, BINARY, TIMESTAMP_LTZ, TIMESTAMP_NTZ, TIMESTAMP_TZ, and TIME.
@@ -2255,40 +2256,41 @@ def filter_by_role(session, table_name, role):
 	// FOR DESCRIBE, data type is generalized for argument and works weirdly for the return type: type is generalized to the canonical one, but we also get the attributes.
 	// Note on defaults changed in 2025_03 Bundle: our logic still uses the hardcoded defaults, that's why in this test VARCHAR and BINARY return the type with sizes.
 	for _, tc := range []struct {
-		input             string
-		expectedShowValue string
+		input                 string
+		expectedShowValue     string
+		expectedDescribeValue string
 	}{
-		{"NUMBER(36, 5)", "NUMBER(36,5)"},
-		{"NUMBER(36)", "NUMBER(36,0)"},
-		{"NUMBER", "NUMBER"},
-		{"DECIMAL", "NUMBER"},
-		{"INTEGER", "NUMBER"},
-		{"FLOAT", "FLOAT"},
-		{"DOUBLE", "FLOAT"},
-		{"VARCHAR", fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
-		{fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), "VARCHAR"},
-		{"VARCHAR(20)", "VARCHAR(20)"},
-		{"TEXT", fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
-		{"CHAR", "VARCHAR(1)"},
-		{"CHAR(10)", "VARCHAR(10)"},
-		{"BINARY", fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
-		{fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), "BINARY"},
-		{"BINARY(1000)", "BINARY(1000)"},
-		{"VARBINARY", fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
-		{"BOOLEAN", "BOOLEAN"},
-		{"DATE", "DATE"},
-		{"DATETIME", "TIMESTAMP_NTZ"},
-		{"TIME", "TIME"},
-		{"TIMESTAMP_LTZ", "TIMESTAMP_LTZ"},
-		{"TIMESTAMP_NTZ", "TIMESTAMP_NTZ"},
-		{"TIMESTAMP_TZ", "TIMESTAMP_TZ"},
-		{"VARIANT", "VARIANT"},
-		{"OBJECT", "OBJECT"},
-		{"ARRAY", "ARRAY"},
-		{"GEOGRAPHY", "GEOGRAPHY"},
-		{"GEOMETRY", "GEOMETRY"},
-		{"VECTOR(INT, 16)", "VECTOR(INT, 16)"},
-		{"VECTOR(FLOAT, 8)", "VECTOR(FLOAT, 8)"},
+		{input: "NUMBER(36, 5)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(36)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER", expectedShowValue: "NUMBER"},
+		{input: "DECIMAL", expectedShowValue: "NUMBER"},
+		{input: "INTEGER", expectedShowValue: "NUMBER"},
+		{input: "FLOAT", expectedShowValue: "FLOAT"},
+		{input: "DOUBLE", expectedShowValue: "FLOAT"},
+		{input: "VARCHAR", expectedShowValue: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR", expectedDescribeValue: "VARCHAR"},
+		{input: "VARCHAR(20)", expectedShowValue: "VARCHAR"},
+		{input: "TEXT", expectedShowValue: "VARCHAR"},
+		{input: "CHAR", expectedShowValue: "VARCHAR"},
+		{input: "CHAR(10)", expectedShowValue: "VARCHAR"},
+		{input: "BINARY", expectedShowValue: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY", expectedDescribeValue: "BINARY"},
+		{input: "BINARY(1000)", expectedShowValue: "BINARY"},
+		{input: "VARBINARY", expectedShowValue: "BINARY"},
+		{input: "BOOLEAN", expectedShowValue: "BOOLEAN"},
+		{input: "DATE", expectedShowValue: "DATE"},
+		{input: "DATETIME", expectedShowValue: "TIMESTAMP_NTZ"},
+		{input: "TIME", expectedShowValue: "TIME"},
+		{input: "TIMESTAMP_LTZ", expectedShowValue: "TIMESTAMP_LTZ"},
+		{input: "TIMESTAMP_NTZ", expectedShowValue: "TIMESTAMP_NTZ"},
+		{input: "TIMESTAMP_TZ", expectedShowValue: "TIMESTAMP_TZ"},
+		{input: "VARIANT", expectedShowValue: "VARIANT"},
+		{input: "OBJECT", expectedShowValue: "OBJECT"},
+		{input: "ARRAY", expectedShowValue: "ARRAY"},
+		{input: "GEOGRAPHY", expectedShowValue: "GEOGRAPHY"},
+		{input: "GEOMETRY", expectedShowValue: "GEOMETRY"},
+		{input: "VECTOR(INT, 16)", expectedShowValue: "VECTOR(INT, 16)"},
+		{input: "VECTOR(FLOAT, 8)", expectedShowValue: "VECTOR(FLOAT, 8)"},
 	} {
 		tc := tc
 		t.Run(fmt.Sprintf("procedure returns non detailed data types of arguments for %s", tc.input), func(t *testing.T) {
@@ -2329,7 +2331,11 @@ def filter_by_role(session, table_name, role):
 				pairs[detail.Property] = *detail.Value
 			}
 			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, oldDataType), pairs["signature"])
-			assert.Equal(t, dataType.Canonical(), pairs["returns"])
+			if tc.expectedDescribeValue != "" {
+				assert.Equal(t, tc.expectedDescribeValue, pairs["returns"])
+			} else {
+				assert.Equal(t, dataType.Canonical(), pairs["returns"])
+			}
 		})
 	}
 
@@ -2342,17 +2348,17 @@ def filter_by_role(session, table_name, role):
 		{input: "NUMBER", expectedShowValue: "NUMBER"},
 		{input: "NUMBER(38)", expectedShowValue: "NUMBER"},
 		{input: "NUMBER(38,0)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(36)", expectedShowValue: "NUMBER(36,0)"},
-		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER(36,2)"},
+		{input: "NUMBER(36)", expectedShowValue: "NUMBER"},
+		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER"},
 		{input: "DECIMAL", expectedShowValue: "NUMBER"},
 		{input: "VARCHAR", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
 		{input: "TEXT", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: "CHAR", expectedShowValue: "VARCHAR(1)"},
+		{input: "CHAR", expectedShowValue: "VARCHAR"},
 		{input: "BINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
 		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
 	} {
 		tc := tc
@@ -2409,8 +2415,8 @@ def filter_by_role(session, table_name, role):
 		input        string
 		expectedSize string
 	}{
-		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength)},
-		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize)},
+		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
+		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
 	} {
 		tc := tc
 		t.Run(fmt.Sprintf("procedure default data types after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
