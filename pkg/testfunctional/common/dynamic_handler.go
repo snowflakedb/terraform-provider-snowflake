@@ -12,15 +12,18 @@ type DynamicHandler[T any] struct {
 	replaceWithFunc func(T, T) T
 }
 
+// TODO [mux-PRs] Log nicer values (use interface)
 func (h *DynamicHandler[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
+		logger.Printf("[DEBUG] Received get request. Current value %v", h.currentValue)
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(h.currentValue)
 	case http.MethodPost:
 		w.WriteHeader(http.StatusCreated)
 		var newValue T
 		_ = json.NewDecoder(r.Body).Decode(&newValue)
+		logger.Printf("[DEBUG] Received post request. New value %v", newValue)
 		h.currentValue = h.replaceWithFunc(h.currentValue, newValue)
 	}
 }
