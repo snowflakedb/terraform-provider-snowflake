@@ -26,7 +26,7 @@ var currentAccountSchema = map[string]*schema.Schema{
 	"authentication_policy": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "Specifies [authentication policy](https://docs.snowflake.com/en/user-guide/authentication-policies) for the current account.",
+		Description:      relatedResourceDescription("Specifies [authentication policy](https://docs.snowflake.com/en/user-guide/authentication-policies) for the current account.", resources.AuthenticationPolicy),
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -47,7 +47,7 @@ var currentAccountSchema = map[string]*schema.Schema{
 	"password_policy": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "Specifies [password policy](https://docs.snowflake.com/en/user-guide/password-authentication#label-using-password-policies) for the current account.",
+		Description:      relatedResourceDescription("Specifies [password policy](https://docs.snowflake.com/en/user-guide/password-authentication#label-using-password-policies) for the current account.", resources.PasswordPolicy),
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
