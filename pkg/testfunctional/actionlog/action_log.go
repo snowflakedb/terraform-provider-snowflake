@@ -77,6 +77,6 @@ func AppendActions(ctx context.Context, actionsLog *ActionsLogEmbeddable, action
 		existingEntries = append(existingEntries, entry)
 	}
 	var diags diag.Diagnostics
-	actionsLog.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: GetActionLogEntryTypes()}, actions)
+	actionsLog.ActionsLog, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: GetActionLogEntryTypes()}, existingEntries)
 	return diags
 }
