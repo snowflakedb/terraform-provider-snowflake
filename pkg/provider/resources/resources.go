@@ -17,6 +17,7 @@ const (
 	ComputePool                                            resource = "snowflake_compute_pool"
 	CortexSearchService                                    resource = "snowflake_cortex_search_service"
 	CurrentAccount                                         resource = "snowflake_current_account"
+	CurrentOrganizationAccount                             resource = "snowflake_current_organization_account"
 	Database                                               resource = "snowflake_database"
 	DatabaseRole                                           resource = "snowflake_database_role"
 	DynamicTable                                           resource = "snowflake_dynamic_table"

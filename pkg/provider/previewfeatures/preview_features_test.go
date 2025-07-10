@@ -27,6 +27,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_cortex_search_services_datasource", want: CortexSearchServicesDatasource},
 		{input: "snowflake_current_account_resource", want: CurrentAccountResource},
 		{input: "snowflake_current_account_datasource", want: CurrentAccountDatasource},
+		{input: "snowflake_current_organization_account_resource", want: CurrentOrganizationAccountResource},
 		{input: "snowflake_database_datasource", want: DatabaseDatasource},
 		{input: "snowflake_database_role_datasource", want: DatabaseRoleDatasource},
 		{input: "snowflake_dynamic_table_resource", want: DynamicTableResource},

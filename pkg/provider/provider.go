@@ -418,6 +418,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_compute_pool":                                                 resources.ComputePool(),
 		"snowflake_cortex_search_service":                                        resources.CortexSearchService(),
 		"snowflake_current_account":                                              resources.CurrentAccount(),
+		"snowflake_current_organization_account":                                 resources.CurrentOrganizationAccount(),
 		"snowflake_database":                                                     resources.Database(),
 		"snowflake_database_role":                                                resources.DatabaseRole(),
 		"snowflake_dynamic_table":                                                resources.DynamicTable(),
