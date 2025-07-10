@@ -179,9 +179,9 @@ func TestRotateProgrammaticAccessToken(t *testing.T) {
 	t.Run("validation: invalid expire rotated token after hours", func(t *testing.T) {
 		opts := &RotateUserProgrammaticAccessTokenOptions{
 			name:                         name,
-			ExpireRotatedTokenAfterHours: Int(0),
+			ExpireRotatedTokenAfterHours: Int(-1),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("RotateUserProgrammaticAccessTokenOptions", "ExpireRotatedTokenAfterHours", IntErrGreaterOrEqual, 1))
+		assertOptsInvalidJoinedErrors(t, opts, errIntValue("RotateUserProgrammaticAccessTokenOptions", "ExpireRotatedTokenAfterHours", IntErrGreaterOrEqual, 0))
 	})
 
 	t.Run("with required attributes", func(t *testing.T) {

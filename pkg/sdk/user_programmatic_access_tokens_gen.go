@@ -11,7 +11,13 @@ type UserProgrammaticAccessTokens interface {
 	Modify(ctx context.Context, request *ModifyUserProgrammaticAccessTokenRequest) error
 	Rotate(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) (*RotateProgrammaticAccessTokenResult, error)
 	Remove(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
+	// Adjusted manually.
+	RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 	Show(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
+	// Adjusted manually.
+	ShowByID(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
+	// Adjusted manually.
+	ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 }
 
 // AddUserProgrammaticAccessTokenOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token.
@@ -36,6 +42,11 @@ type addProgrammaticAccessTokenResultDBRow struct {
 type AddProgrammaticAccessTokenResult struct {
 	TokenName   string
 	TokenSecret string
+}
+
+// Added manually.
+func (r *AddProgrammaticAccessTokenResult) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(r.TokenName)
 }
 
 // ModifyUserProgrammaticAccessTokenOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-user-modify-programmatic-access-token.
@@ -127,4 +138,9 @@ type ProgrammaticAccessToken struct {
 	CreatedBy                            string
 	MinsToBypassNetworkPolicyRequirement *int
 	RotatedTo                            *string
+}
+
+// Added manually.
+func (v *ProgrammaticAccessToken) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
 }

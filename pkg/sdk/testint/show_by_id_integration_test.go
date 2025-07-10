@@ -127,3 +127,30 @@ func TestInt_SafeShowByIdOnSchemaObjectIdentifierWithArguments(t *testing.T) {
 	assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 }
+
+func TestInt_SafeShowProgrammaticAccessTokenByName(t *testing.T) {
+	user, cleanupUser := testClientHelper().User.CreateUser(t)
+	t.Cleanup(cleanupUser)
+
+	token, cleanupToken := testClientHelper().User.AddProgrammaticAccessToken(t, user.ID())
+	t.Cleanup(cleanupToken)
+
+	value, err := sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), testContext(t), user.ID(), token.ID())
+	assert.NotNil(t, value)
+	assert.NoError(t, err)
+
+	cleanupToken()
+
+	// the token does not exist, so it should return an error
+	_, err = sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), testContext(t), user.ID(), token.ID())
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
+
+	cleanupUser()
+
+	// the user and the token do not exist, so it should return an error
+	_, err = sdk.SafeShowProgrammaticAccessTokenByName(testClient(t), testContext(t), user.ID(), token.ID())
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+}
