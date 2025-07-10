@@ -41,8 +41,6 @@ func init() {
 }
 
 // Tests (based on TestAcc_Warehouse_ZeroValues)
-// add valid "zero" values again (to validate if set is run correctly)
-// import zero values
 // set to non zero, change to zero externally
 func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T) {
 	id := sdk.NewAccountObjectIdentifier("abc")
@@ -98,6 +96,44 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.field", "string_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.value", "nil"),
 				),
+			},
+			// import when empty
+			{
+				ResourceName:      resourceReference,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignoring actions_log as they serve testing purpose; ignoring name as we do not fill it in read (import tests will be done separately).
+				ImportStateVerifyIgnore: []string{"actions_log", "name"},
+			},
+			// add valid "zero" values again (to validate if set is run correctly)
+			{
+				Config: zeroValuesAllSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "bool_value", "false"),
+					resource.TestCheckResourceAttr(resourceReference, "int_value", "0"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", ""),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "9"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.field", "bool_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.value", "false"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.field", "int_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.value", "0"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.8.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.8.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.8.value", ""),
+				),
+			},
+			// import zero values
+			{
+				ResourceName:      resourceReference,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignoring actions_log as they serve testing purpose; ignoring name as we do not fill it in read (import tests will be done separately).
+				ImportStateVerifyIgnore: []string{"actions_log", "name"},
 			},
 		},
 	})

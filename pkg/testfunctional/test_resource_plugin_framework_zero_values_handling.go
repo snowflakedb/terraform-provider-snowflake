@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/actionlog"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -78,6 +79,10 @@ func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			actionlog.ActionsLogPropertyName: actionlog.GetActionsLogSchema(),
 		},
 	}
+}
+
+func (r *ZeroValuesResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), request, response)
 }
 
 func (r *ZeroValuesResource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
@@ -194,12 +199,12 @@ func setUpdateActionsOutput(ctx context.Context, response *resource.UpdateRespon
 			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "bool_value", "nil"))
 		}
 		if opts.IntValue != nil {
-			actions = append(actions, actionlog.ActionEntry("UPDATE", "int_value", strconv.Itoa(*opts.IntValue)))
+			actions = append(actions, actionlog.ActionEntry("UPDATE - SET", "int_value", strconv.Itoa(*opts.IntValue)))
 		} else {
 			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "int_value", "nil"))
 		}
 		if opts.StringValue != nil {
-			actions = append(actions, actionlog.ActionEntry("UPDATE", "string_value", *opts.StringValue))
+			actions = append(actions, actionlog.ActionEntry("UPDATE - SET", "string_value", *opts.StringValue))
 		} else {
 			actions = append(actions, actionlog.ActionEntry("UPDATE - UNSET", "string_value", "nil"))
 		}
