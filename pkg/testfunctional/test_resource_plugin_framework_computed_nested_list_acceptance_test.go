@@ -22,7 +22,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_Error(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:      computedNestedListConfig(id, resourceType, "STRUCT"),
+				Config:      computedNestedListConfig(id, resourceType, "STRUCT", "a"),
 				ExpectError: regexp.MustCompile("Value Conversion Error"),
 			},
 		},
@@ -41,7 +41,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_Explicit(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: computedNestedListConfig(id, resourceType, "EXPLICIT"),
+				Config: computedNestedListConfig(id, resourceType, "EXPLICIT", "a"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
@@ -69,7 +69,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_Dedicated(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: computedNestedListConfig(id, resourceType, "DEDICATED"),
+				Config: computedNestedListConfig(id, resourceType, "DEDICATED", "a"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
@@ -81,17 +81,31 @@ func TestAcc_TerraformPluginFrameworkFunctional_Dedicated(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", "WITH OTHER VALUE"),
 				),
 			},
+			{
+				Config: computedNestedListConfig(id, resourceType, "DEDICATED", "b"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "4"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.action", "UPDATE: SOME ACTION"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.field", "UPDATE: ON FIELD"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.value", "UPDATE: WITH VALUE"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE: SOME OTHER ACTION"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "UPDATE: ON OTHER FIELD"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", "UPDATE: WITH OTHER VALUE"),
+				),
+			},
 		},
 	})
 }
 
-func computedNestedListConfig(id sdk.AccountObjectIdentifier, resourceType string, option string) string {
+func computedNestedListConfig(id sdk.AccountObjectIdentifier, resourceType string, option string, param string) string {
 	return fmt.Sprintf(`
-resource "%[3]s" "test" {
-  provider = "%[4]s"
+resource "%[4]s" "test" {
+  provider = "%[5]s"
 
-  name = "%[1]s"
+  name   = "%[1]s"
   option = "%[2]s"
+  param  = "%[3]s"
 }
-`, id.Name(), option, resourceType, PluginFrameworkFunctionalTestsProviderName)
+`, id.Name(), option, param, resourceType, PluginFrameworkFunctionalTestsProviderName)
 }

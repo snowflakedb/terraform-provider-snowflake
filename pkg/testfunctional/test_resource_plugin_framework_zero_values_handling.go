@@ -163,9 +163,8 @@ func (r *ZeroValuesResource) read(data *zeroValuesResourceModelV0) diag.Diagnost
 }
 
 func (r *ZeroValuesResource) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
-	var config, plan, state *zeroValuesResourceModelV0
+	var plan, state *zeroValuesResourceModelV0
 
-	response.Diagnostics.Append(request.Config.Get(ctx, &config)...)
 	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
 	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
 
