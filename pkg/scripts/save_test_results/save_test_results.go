@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"log"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
+
+// TODO: Process rows to match given test outcome with its start to save test creation timestamp.
 
 type TestType string
 
@@ -21,6 +25,22 @@ const (
 	TestTypeArchitecture TestType = "architecture"
 )
 
+var AllTestTypes = []TestType{
+	TestTypeUnit,
+	TestTypeIntegration,
+	TestTypeAcceptance,
+	TestTypeAccountLevel,
+	TestTypeFunctional,
+	TestTypeArchitecture,
+}
+
+func ToTestType(s string) (TestType, error) {
+	if slices.Contains(AllTestTypes, TestType(s)) {
+		return TestType(s), nil
+	}
+	return "", fmt.Errorf("unknown test type: %s", s)
+}
+
 var (
 	testResultsStageId = sdk.NewSchemaObjectIdentifier("TEST_RESULTS_DATABASE", "TEST_RESULTS_SCHEMA", "TEST_RESULTS_STAGE")
 	testResultsTableId = sdk.NewSchemaObjectIdentifier("TEST_RESULTS_DATABASE", "TEST_RESULTS_SCHEMA", "TEST_RESULTS_TABLE")
@@ -32,6 +52,16 @@ func main() {
 		log.Fatal("Environment variable TEST_SF_TF_TEST_WORKFLOW_ID is not set")
 	}
 	log.Println("Processing with the following workflow id: ", testWorkflowId)
+
+	testTypesInWorkflow, ok := os.LookupEnv("TEST_SF_TF_TEST_TYPES_IN_WORKFLOW")
+	if !ok {
+		log.Fatal("Environment variable TEST_SF_TF_TEST_TYPES_IN_WORKFLOW is not set")
+	}
+
+	testTypesInWorkflowMapped, err := collections.MapErr(strings.Split(testTypesInWorkflow, ","), ToTestType)
+	if err != nil {
+		log.Fatal("Failed to parse TEST_SF_TF_TEST_TYPES_IN_WORKFLOW:", err)
+	}
 
 	dirName, err := os.UserHomeDir()
 	if err != nil {
@@ -49,14 +79,11 @@ func main() {
 		log.Fatal("Failed to create a new client:", err)
 	}
 
-	if errs := errors.Join(
-		processTestResults(TestTypeUnit, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
-		processTestResults(TestTypeIntegration, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
-		processTestResults(TestTypeAcceptance, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
-		processTestResults(TestTypeAccountLevel, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
-		processTestResults(TestTypeFunctional, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
-		processTestResults(TestTypeArchitecture, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
-	); errs != nil {
+	var errs []error
+	for _, testType := range testTypesInWorkflowMapped {
+		errs = append(errs, processTestResults(testType, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName))
+	}
+	if errs != nil {
 		log.Fatal(errs)
 	}
 
