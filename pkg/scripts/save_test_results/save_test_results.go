@@ -51,7 +51,11 @@ func main() {
 
 	if errs := errors.Join(
 		processTestResults(TestTypeUnit, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
-		//processTestResults(TestTypeIntegration, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
+		processTestResults(TestTypeIntegration, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
+		processTestResults(TestTypeAcceptance, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
+		processTestResults(TestTypeAccountLevel, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
+		processTestResults(TestTypeFunctional, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
+		processTestResults(TestTypeArchitecture, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
 	); errs != nil {
 		log.Fatal(errs)
 	}
@@ -78,7 +82,7 @@ func processTestResults(testType TestType, testWorkflowId string, client *sdk.Cl
 	// We have to rename them because it's not possible to pass different target file name in Snowflake,
 	// and we need to have unique file names for each test run (to avoid collisions with other test runs).
 	if err := os.Rename(testResultsFilePath, uniqueTestResultsFilePath); err != nil {
-		return fmt.Errorf("failed to rename test results file, err = %w", err)
+		return fmt.Errorf("failed to rename test results file %s, err = %w", testResultsFilePath, err)
 	}
 
 	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @%s auto_compress = true overwrite = true;", uniqueTestResultsFilePath, testResultsStageId.FullyQualifiedName())); err != nil {
