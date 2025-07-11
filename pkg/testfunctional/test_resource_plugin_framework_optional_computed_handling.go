@@ -5,6 +5,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/tmpplanmodifiers"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -54,6 +55,9 @@ func (r *OptionalComputedResource) Schema(_ context.Context, _ resource.SchemaRe
 				Description: "String value.",
 				Optional:    true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					tmpplanmodifiers.OptionalComputedString(),
+				},
 			},
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -89,7 +93,7 @@ func (r *OptionalComputedResource) Create(ctx context.Context, request resource.
 		return
 	}
 
-	response.Diagnostics.Append(r.read(data)...)
+	response.Diagnostics.Append(r.readCreateUpdate(data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -127,6 +131,26 @@ func (r *OptionalComputedResource) Read(ctx context.Context, request resource.Re
 }
 
 func (r *OptionalComputedResource) read(data *optionalComputedResourceModelV0) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	opts, err := r.HttpServerEmbeddable.Get()
+	if err != nil {
+		diags.AddError("Could not read resources state", err.Error())
+	} else {
+		if opts.StringValue != nil {
+			if data.StringValue.IsNull() {
+				data.StringValue = types.StringValue(*opts.StringValue)
+			} else if data.StringValue.ValueString() != *opts.StringValue {
+				data.StringValue = types.StringNull()
+			}
+		} else {
+			data.StringValue = types.StringNull()
+		}
+	}
+	return diags
+}
+
+func (r *OptionalComputedResource) readCreateUpdate(data *optionalComputedResourceModelV0) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	opts, err := r.HttpServerEmbeddable.Get()
