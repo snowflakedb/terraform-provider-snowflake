@@ -59,6 +59,10 @@ var (
 	//go:embed templates/dto_builder.tmpl
 	dtoBuilderTemplateContent string
 
+	//go:embed templates/enum.tmpl
+	enumTemplateContent string
+	EnumTemplate, _     = template.New("enumTemplate").Parse(enumTemplateContent)
+
 	//go:embed templates/implementation.tmpl
 	implementationTemplateContent string
 	ImplementationTemplate        *template.Template

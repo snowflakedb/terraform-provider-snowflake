@@ -5,6 +5,9 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"slices"
+	"strings"
 	"time"
 )
 
@@ -151,4 +154,26 @@ func (v *ProgrammaticAccessToken) ObjectType() ObjectType {
 // added manually
 func (v *ProgrammaticAccessToken) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
+}
+
+type ProgrammaticAccessTokenStatus string
+
+const (
+	ProgrammaticAccessTokenStatusActive   ProgrammaticAccessTokenStatus = "ACTIVE"
+	ProgrammaticAccessTokenStatusExpired  ProgrammaticAccessTokenStatus = "EXPIRED"
+	ProgrammaticAccessTokenStatusDisabled ProgrammaticAccessTokenStatus = "DISABLED"
+)
+
+var allProgrammaticAccessTokenStatuses = []ProgrammaticAccessTokenStatus{
+	ProgrammaticAccessTokenStatusActive,
+	ProgrammaticAccessTokenStatusExpired,
+	ProgrammaticAccessTokenStatusDisabled,
+}
+
+func toProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(allProgrammaticAccessTokenStatuses, ProgrammaticAccessTokenStatus(s)) {
+		return "", fmt.Errorf("invalid ProgrammaticAccessTokenStatus: %s", s)
+	}
+	return ProgrammaticAccessTokenStatus(s), nil
 }

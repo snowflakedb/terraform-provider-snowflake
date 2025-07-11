@@ -40,6 +40,8 @@ type Interface struct {
 	Operations []*Operation
 	// IdentifierKind keeps identifier of the underlying object (e.g. DatabaseObjectIdentifier)
 	IdentifierKind string
+	// Enums contains all enum definitions for this operation
+	Enums []*Enum
 
 	*genhelpers.PreambleModel
 }
@@ -65,4 +67,9 @@ func (i *Interface) NameLowerCased() string {
 // ObjectIdentifierKind returns the level of the object identifier (e.g. for DatabaseObjectIdentifier, it returns the prefix "Database")
 func (i *Interface) ObjectIdentifierPrefix() idPrefix {
 	return identifierStringToPrefix(i.IdentifierKind)
+}
+
+func (i *Interface) WithEnums(enums ...*Enum) *Interface {
+	i.Enums = append(i.Enums, enums...)
+	return i
 }
