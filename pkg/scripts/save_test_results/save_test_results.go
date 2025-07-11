@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"log"
 	"os"
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -69,7 +70,7 @@ func main() {
 	}
 	testResultsDirName := dirName + "/test_results"
 
-	clientConfig, err := sdk.ProfileConfig("fourth_test_account")
+	clientConfig, err := sdk.ProfileConfig(testprofiles.Fourth)
 	if err != nil {
 		log.Fatal("Failed to get client config:", err)
 	}
@@ -93,7 +94,7 @@ delete from %s where
     test_name is null or
     not (action = 'pass' or action = 'fail');
 `, testResultsTableId.FullyQualifiedName())); err != nil {
-		log.Fatal("failed to put test results file to stage:", err)
+		log.Fatal("Failed to clear invalid test results:", err)
 	}
 
 	log.Println("Successfully processed test results")
@@ -130,7 +131,7 @@ from (
 )
 on_error = 'continue';
 `, testResultsTableId.FullyQualifiedName(), testWorkflowId, testType, testResultsStageId.FullyQualifiedName(), uniqueFileName)); err != nil {
-		return fmt.Errorf("failed to put test results file to stage, err = %w", err)
+		return fmt.Errorf("failed to copy test results file from stage to the target table, err = %w", err)
 	}
 
 	return nil
