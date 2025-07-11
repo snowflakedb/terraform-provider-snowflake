@@ -27,10 +27,11 @@ var (
 )
 
 func main() {
-	testRunId, ok := os.LookupEnv("TEST_SF_TF_TEST_WORKFLOW_ID")
+	testWorkflowId, ok := os.LookupEnv("TEST_SF_TF_TEST_WORKFLOW_ID")
 	if !ok {
 		log.Fatal("Environment variable TEST_SF_TF_TEST_WORKFLOW_ID is not set")
 	}
+	log.Println("Processing with the following workflow id: ", testWorkflowId)
 
 	dirName, err := os.UserHomeDir()
 	if err != nil {
@@ -49,8 +50,8 @@ func main() {
 	}
 
 	if errs := errors.Join(
-		processTestResults(TestTypeUnit, testRunId, client, testResultsStageId, testResultsTableId, testResultsDirName),
-		//processTestResults(TestTypeIntegration, testRunId, client, testResultsStageId, testResultsTableId, testResultsDirName),
+		processTestResults(TestTypeUnit, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
+		//processTestResults(TestTypeIntegration, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName),
 	); errs != nil {
 		log.Fatal(errs)
 	}
@@ -67,11 +68,11 @@ delete from %s where
 	log.Println("Successfully processed test results")
 }
 
-func processTestResults(testType TestType, testRunId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsTableId sdk.SchemaObjectIdentifier, testResultsDirName string) error {
+func processTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsTableId sdk.SchemaObjectIdentifier, testResultsDirName string) error {
 	fileName := fmt.Sprintf("test_%s_output.json", testType)
 	testResultsFilePath := testResultsDirName + "/" + fileName
 
-	uniqueFileName := fmt.Sprintf("%s_test_%s_output.json", testRunId, testType)
+	uniqueFileName := fmt.Sprintf("%s_test_%s_output.json", testWorkflowId, testType)
 	uniqueTestResultsFilePath := testResultsDirName + "/" + uniqueFileName
 
 	// We have to rename them because it's not possible to pass different target file name in Snowflake,
@@ -97,7 +98,7 @@ from (
 	from @%s/%s
 )
 on_error = 'continue';
-`, testResultsTableId.FullyQualifiedName(), testRunId, testType, testResultsStageId.FullyQualifiedName(), uniqueFileName)); err != nil {
+`, testResultsTableId.FullyQualifiedName(), testWorkflowId, testType, testResultsStageId.FullyQualifiedName(), uniqueFileName)); err != nil {
 		return fmt.Errorf("failed to put test results file to stage, err = %w", err)
 	}
 
