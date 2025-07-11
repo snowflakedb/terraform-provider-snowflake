@@ -2003,9 +2003,8 @@ func TestInt_Functions(t *testing.T) {
 	// FOR DESCRIBE, data type is generalized for argument and works weirdly for the return type: type is generalized to the canonical one, but we also get the attributes.
 	// Note on defaults changed in 2025_03 Bundle: our logic still uses the hardcoded defaults, that's why in this test VARCHAR and BINARY return the type with sizes.
 	for _, tc := range []struct {
-		input                 string
-		expectedShowValue     string
-		expectedDescribeValue string
+		input             string
+		expectedShowValue string
 	}{
 		{input: "NUMBER(36, 5)", expectedShowValue: "NUMBER"},
 		{input: "NUMBER(36)", expectedShowValue: "NUMBER"},
@@ -2016,14 +2015,14 @@ func TestInt_Functions(t *testing.T) {
 		{input: "DOUBLE", expectedShowValue: "FLOAT"},
 		{input: "VARCHAR", expectedShowValue: "VARCHAR"},
 		{input: "VARCHAR(20)", expectedShowValue: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR", expectedDescribeValue: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
 		{input: "CHAR", expectedShowValue: "VARCHAR"},
 		{input: "CHAR(10)", expectedShowValue: "VARCHAR"},
 		{input: "TEXT", expectedShowValue: "VARCHAR"},
 		{input: "BINARY", expectedShowValue: "BINARY"},
 		{input: "BINARY(1000)", expectedShowValue: "BINARY"},
 		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY", expectedDescribeValue: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
 		{input: "VARBINARY", expectedShowValue: "BINARY"},
 		{input: "BOOLEAN", expectedShowValue: "BOOLEAN"},
 		{input: "DATE", expectedShowValue: "DATE"},
@@ -2077,11 +2076,7 @@ func TestInt_Functions(t *testing.T) {
 				pairs[detail.Property] = *detail.Value
 			}
 			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, oldDataType), pairs["signature"])
-			if tc.expectedDescribeValue != "" {
-				assert.Equal(t, tc.expectedDescribeValue, pairs["returns"])
-			} else {
-				assert.Equal(t, dataType.Canonical(), pairs["returns"])
-			}
+			assert.Equal(t, dataType.Canonical(), pairs["returns"])
 		})
 	}
 
@@ -2099,12 +2094,12 @@ func TestInt_Functions(t *testing.T) {
 		{input: "DECIMAL", expectedShowValue: "NUMBER"},
 		{input: "VARCHAR", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
 		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
+		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
 		{input: "TEXT", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
 		{input: "CHAR", expectedShowValue: "VARCHAR"},
 		{input: "BINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
 		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
+		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
 		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
 	} {
 		tc := tc
@@ -2159,8 +2154,8 @@ func TestInt_Functions(t *testing.T) {
 		input        string
 		expectedSize string
 	}{
-		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)},
-		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize)},
+		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength)},
+		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize)},
 	} {
 		tc := tc
 		t.Run(fmt.Sprintf("function default data types after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
