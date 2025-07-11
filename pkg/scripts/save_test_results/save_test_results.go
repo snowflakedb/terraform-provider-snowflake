@@ -85,7 +85,7 @@ func processTestResults(testType TestType, testRunId string, client *sdk.Client,
 	}
 	defer func() {
 		// Clean up the staged file after processing
-		if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("delete @%s/%s;", testResultsStageId.FullyQualifiedName(), uniqueFileName)); err != nil {
+		if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("remove @%s/%s;", testResultsStageId.FullyQualifiedName(), uniqueFileName)); err != nil {
 			log.Printf("failed to remove test results from stage, err = %v", err)
 		}
 	}()
