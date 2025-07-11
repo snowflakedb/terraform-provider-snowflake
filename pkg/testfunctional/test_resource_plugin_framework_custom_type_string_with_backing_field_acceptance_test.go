@@ -17,7 +17,7 @@ var stringWithBackingValueHandler = common.NewDynamicHandlerWithInitialValueAndR
 )
 
 func init() {
-	allTestHandlers["custom_type_string_with_backing_field"] = stringWithBackingValueHandler
+	allTestHandlers["string_with_backing_field"] = stringWithBackingValueHandler
 }
 
 func TestAcc_TerraformPluginFrameworkFunctional_CustomTypes_StringWithBackingField(t *testing.T) {
