@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+var _ attr.Value = StringWithBackingFieldValue{}
+
 type StringWithBackingFieldValue struct {
 	basetypes.StringValue
 }

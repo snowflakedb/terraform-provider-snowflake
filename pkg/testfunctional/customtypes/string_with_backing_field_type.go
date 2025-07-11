@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+var _ attr.Type = StringWithBackingFieldType{}
+
 type StringWithBackingFieldType struct {
 	basetypes.StringType
 }
