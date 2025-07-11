@@ -22,7 +22,7 @@ To create a new generator:
     - `main/main.go` file
     - `templates` directory
     - `model.go` containing the model definition and conversion
-    - `templates.go` containing the templates definitions and helper functions 
+    - `templates.go` containing the templates definitions and helper functions
 2. Create `generate.go` file on the same level as the `gen` package above with the following content only (in addition to the package name) `//go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS`.
 3. In the `gen/main/main.go` create and run a new generator. This means:
    - providing an input definition for the source objects
@@ -59,4 +59,5 @@ Implementation improvements:
 - extract a common filter by name filter (TODO left in the `pkg/schemas/gen/main`)
 - describe and test all the template helpers (TODOs left in `templates_commons.go`)
 - test writing to file (TODO left in `util.go`)
-- use commons in the SDK generator
+- use commons in the SDK generator. Currently, it can't be done because this package imports the `sdk` package.
+- extract the file preamble to this package (SNOW-1501905). Dynamically determine the imported packages.

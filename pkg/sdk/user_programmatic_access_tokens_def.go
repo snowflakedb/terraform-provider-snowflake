@@ -1,36 +1,12 @@
 package sdk
 
 import (
-	"fmt"
-	"slices"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
 //go:generate go run ./poc/main.go
 
-type ProgrammaticAccessTokenStatus string
-
-const (
-	ProgrammaticAccessTokenStatusActive   ProgrammaticAccessTokenStatus = "ACTIVE"
-	ProgrammaticAccessTokenStatusExpired  ProgrammaticAccessTokenStatus = "EXPIRED"
-	ProgrammaticAccessTokenStatusDisabled ProgrammaticAccessTokenStatus = "DISABLED"
-)
-
-var allProgrammaticAccessTokenStatuses = []ProgrammaticAccessTokenStatus{
-	ProgrammaticAccessTokenStatusActive,
-	ProgrammaticAccessTokenStatusExpired,
-	ProgrammaticAccessTokenStatusDisabled,
-}
-
-func toProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(allProgrammaticAccessTokenStatuses, ProgrammaticAccessTokenStatus(s)) {
-		return "", fmt.Errorf("invalid programmatic access token status: %s", s)
-	}
-	return ProgrammaticAccessTokenStatus(s), nil
-}
+var ProgrammaticAccessTokenStatusDef = g.NewEnum("ProgrammaticAccessTokenStatus", "ACTIVE", "EXPIRED", "DISABLED").WithPlural("ProgrammaticAccessTokenStatuses")
 
 var programmaticAccessTokenResultDBRowDef = g.DbStruct("programmaticAccessTokenResultDBRow").
 	Text("name").
@@ -168,4 +144,4 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
 		OptionalIdentifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
-)
+).WithEnums(ProgrammaticAccessTokenStatusDef)

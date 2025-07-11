@@ -3,6 +3,9 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"slices"
+	"strings"
 	"time"
 )
 
@@ -127,4 +130,26 @@ type ProgrammaticAccessToken struct {
 	CreatedBy                            string
 	MinsToBypassNetworkPolicyRequirement *int
 	RotatedTo                            *string
+}
+
+type ProgrammaticAccessTokenStatus string
+
+const (
+	ProgrammaticAccessTokenStatusActive   ProgrammaticAccessTokenStatus = "ACTIVE"
+	ProgrammaticAccessTokenStatusExpired  ProgrammaticAccessTokenStatus = "EXPIRED"
+	ProgrammaticAccessTokenStatusDisabled ProgrammaticAccessTokenStatus = "DISABLED"
+)
+
+var allProgrammaticAccessTokenStatuses = []ProgrammaticAccessTokenStatus{
+	ProgrammaticAccessTokenStatusActive,
+	ProgrammaticAccessTokenStatusExpired,
+	ProgrammaticAccessTokenStatusDisabled,
+}
+
+func toProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(allProgrammaticAccessTokenStatuses, ProgrammaticAccessTokenStatus(s)) {
+		return "", fmt.Errorf("invalid ProgrammaticAccessTokenStatus: %s", s)
+	}
+	return ProgrammaticAccessTokenStatus(s), nil
 }
