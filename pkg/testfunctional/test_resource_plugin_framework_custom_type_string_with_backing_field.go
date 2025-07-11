@@ -29,9 +29,9 @@ type StringWithBackingFieldResource struct {
 }
 
 type stringWithBackingFieldResourceModelV0 struct {
-	Name        types.String `tfsdk:"name"`
-	StringValue types.String `tfsdk:"string_value"`
-	Id          types.String `tfsdk:"id"`
+	Name        types.String                            `tfsdk:"name"`
+	StringValue customtypes.StringWithBackingFieldValue `tfsdk:"string_value"`
+	Id          types.String                            `tfsdk:"id"`
 
 	common.ActionsLogEmbeddable
 }
@@ -86,7 +86,7 @@ func (r *StringWithBackingFieldResource) Create(ctx context.Context, request res
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &StringWithBackingFieldOpts{}
-	stringAttributeCreate(data.StringValue, &opts.StringValue)
+	customtypes.StringWithBackingFieldAttributeCreate(data.StringValue, &opts.StringValue)
 
 	response.Diagnostics.Append(r.create(opts)...)
 	if response.Diagnostics.HasError() {
@@ -123,7 +123,7 @@ func (r *StringWithBackingFieldResource) readStringWithBackingFieldResource(data
 		diags.AddError("Could not read resources state", err.Error())
 	} else {
 		if opts.StringValue != nil {
-			data.StringValue = types.StringValue(*opts.StringValue)
+			data.StringValue = customtypes.NewStringWithBackingFieldValueValue(*opts.StringValue)
 		}
 	}
 	return diags
