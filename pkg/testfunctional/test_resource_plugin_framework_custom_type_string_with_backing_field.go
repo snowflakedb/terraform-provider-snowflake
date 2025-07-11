@@ -32,8 +32,6 @@ type stringWithBackingFieldResourceModelV0 struct {
 	Name        types.String                            `tfsdk:"name"`
 	StringValue customtypes.StringWithBackingFieldValue `tfsdk:"string_value"`
 	Id          types.String                            `tfsdk:"id"`
-
-	common.ActionsLogEmbeddable
 }
 
 type StringWithBackingFieldOpts struct {
@@ -68,7 +66,6 @@ func (r *StringWithBackingFieldResource) Schema(_ context.Context, _ resource.Sc
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			common.ActionsLogPropertyName: common.GetActionsLogSchema(),
 		},
 	}
 }
