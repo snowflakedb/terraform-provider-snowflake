@@ -21,6 +21,9 @@ import (
 )
 
 func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
+	// TODO(SNOW-2196333): Resolve these tests after the change rollout is clarified.
+	t.Skip("Skipping because the changes have been reverted from the BCR")
+
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	schema, schemaCleanup := secondaryTestClient().Schema.CreateSchema(t)
