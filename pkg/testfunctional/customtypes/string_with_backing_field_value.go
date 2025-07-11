@@ -13,6 +13,8 @@ var _ attr.Value = StringWithBackingFieldValue{}
 
 type StringWithBackingFieldValue struct {
 	basetypes.StringValue
+
+	InternalValue string // we do not expose it to practitioner in schema
 }
 
 func (v StringWithBackingFieldValue) Type(_ context.Context) attr.Type {
