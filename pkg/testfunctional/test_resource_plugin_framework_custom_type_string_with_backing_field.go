@@ -5,6 +5,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customplanmodifiers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -57,7 +58,7 @@ func (r *StringWithBackingFieldResource) Schema(_ context.Context, _ resource.Sc
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					// TODO: fill
+					customplanmodifiers.NewStringWithBackingFieldModifier(),
 				},
 			},
 			"id": schema.StringAttribute{
