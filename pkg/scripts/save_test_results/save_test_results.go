@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -80,11 +81,9 @@ func main() {
 		log.Fatal("Failed to create a new client:", err)
 	}
 
-	var errs []error
-	for _, testType := range testTypesInWorkflowMapped {
-		errs = append(errs, processTestResults(testType, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName))
-	}
-	if errs != nil {
+	if errs := errors.Join(collections.Map(testTypesInWorkflowMapped, func(testType TestType) error {
+		return processTestResults(testType, testWorkflowId, client, testResultsStageId, testResultsTableId, testResultsDirName)
+	})...); errs != nil {
 		log.Fatal(errs)
 	}
 
@@ -124,9 +123,9 @@ func processTestResults(testType TestType, testWorkflowId string, client *sdk.Cl
 	}()
 
 	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf(`
-copy into %s(test_run_id, test_type, package_name, test_name, action, elapsed)
+copy into %s(test_run_id, test_type, package_name, test_name, action, elapsed, finished_at)
 from (
-    select '%s', '%s', $1:Package::text, $1:Test::text, $1:Action::text, $1:Elapsed::float
+    select '%s', '%s', $1:Package::text, $1:Test::text, $1:Action::text, $1:Elapsed::float, $1:Time::timestamp
 	from @%s/%s
 )
 on_error = 'continue';
