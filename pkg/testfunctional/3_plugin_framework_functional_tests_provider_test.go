@@ -71,6 +71,7 @@ func (p *pluginFrameworkFunctionalTestsProvider) Resources(_ context.Context) []
 		computednestedlist.NewComputedNestedListResource,
 		httpserver.NewHttpServerResource,
 		testfunctional.NewStringWithMetadataResource,
+		testfunctional.NewOptionalWithBackingFieldResource,
 	}
 }
 
