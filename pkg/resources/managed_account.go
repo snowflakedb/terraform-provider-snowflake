@@ -89,7 +89,7 @@ var managedAccountSchema = map[string]*schema.Schema{
 // ManagedAccount returns a pointer to the resource representing a managed account.
 func ManagedAccount() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.ManagedAccounts.DropSafely
 		},

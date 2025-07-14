@@ -87,7 +87,7 @@ var pipeSchema = map[string]*schema.Schema{
 
 func Pipe() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Pipes.DropSafely },
 	)
 

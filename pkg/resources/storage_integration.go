@@ -115,7 +115,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 
 func StorageIntegration() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.StorageIntegrations.DropSafely
 		},

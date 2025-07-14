@@ -141,7 +141,7 @@ var failoverGroupSchema = map[string]*schema.Schema{
 
 func FailoverGroup() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.FailoverGroups.DropSafely
 		},

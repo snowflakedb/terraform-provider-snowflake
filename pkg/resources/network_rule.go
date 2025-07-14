@@ -69,7 +69,7 @@ var networkRuleSchema = map[string]*schema.Schema{
 func NetworkRule() *schema.Resource {
 	// TODO(SNOW-1818849): unassign network rules before dropping
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.NetworkRules.DropSafely
 		},

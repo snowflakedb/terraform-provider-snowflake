@@ -74,7 +74,7 @@ var materializedViewSchema = map[string]*schema.Schema{
 // MaterializedView returns a pointer to the resource representing a view.
 func MaterializedView() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.MaterializedViews.DropSafely
 		},

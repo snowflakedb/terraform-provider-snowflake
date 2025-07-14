@@ -46,7 +46,7 @@ var emailNotificationIntegrationSchema = map[string]*schema.Schema{
 
 func EmailNotificationIntegration() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.NotificationIntegrations.DropSafely
 		},

@@ -100,7 +100,11 @@ func DecodeSnowflakeIDLegacy(id string) sdk.ObjectIdentifier {
 	}
 }
 
-func DecodeSnowflakeIDErr[ID sdk.ObjectIdentifierConstraint](id string) (ID, error) {
+// DecodeSnowflakeIDErrLegacy returns a decoded ObjectIdentifier and an error.
+//
+// This is a legacy function. Use Parse<level>ObjectIdentifier instead.
+// This function is still used in the preview resources. The end goal is to use new Parse<level>ObjectIdentifier functions instead.
+func DecodeSnowflakeIDErrLegacy[ID sdk.ObjectIdentifierConstraint](id string) (ID, error) {
 	return DecodeSnowflakeIDLegacy(id).(ID), nil
 }
 
