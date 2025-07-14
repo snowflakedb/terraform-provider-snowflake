@@ -2,6 +2,8 @@ package testfunctional
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
@@ -13,6 +15,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+type SomeEnumType string
+
+const (
+	SomeEnumTypeVersion1 SomeEnumType = "VERSION_1"
+	SomeEnumTypeVersion2 SomeEnumType = "VERSION_2"
+)
+
+func FromString(s string) (SomeEnumType, error) {
+	switch strings.ToUpper(s) {
+	case string(SomeEnumTypeVersion1):
+		return SomeEnumTypeVersion1, nil
+	case string(SomeEnumTypeVersion2):
+		return SomeEnumTypeVersion2, nil
+	default:
+		return "", fmt.Errorf("invalid some enum type: %s", s)
+	}
+}
 
 var _ resource.ResourceWithConfigure = &EnumHandlingResource{}
 
