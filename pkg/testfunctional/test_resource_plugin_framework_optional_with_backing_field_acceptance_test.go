@@ -37,6 +37,10 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 	resourceType := fmt.Sprintf("%s_optional_with_backing_field", PluginFrameworkFunctionalTestsProviderName)
 	resourceReference := fmt.Sprintf("%s.test", resourceType)
 
+	value := "some value"
+	newValue := "new value"
+	externalValue := "value changed externally"
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerForPluginFrameworkFunctionalTestsFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -50,17 +54,17 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
 					},
 				},
-				Config: optionalWithBackingFieldAllSetConfig(id, resourceType),
+				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, value),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceReference, "string_value", "some value"),
-					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", "some value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", value),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", value),
 
 					// check actions
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "1"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.action", "CREATE"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.field", "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", "some value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", value),
 				),
 			},
 			// import when known value
@@ -82,7 +86,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", "default value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", optionalWithBackingFieldDefaultValue),
 
 					// check actions
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
@@ -97,14 +101,14 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					// when we import, we fill this value with what's available in API
-					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", "default value"),
+					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", optionalWithBackingFieldDefaultValue),
 				),
 			},
 			// change externally when absent in config
 			{
 				PreConfig: func() {
 					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
-						StringValue: sdk.Pointer("value changed externally"),
+						StringValue: &externalValue,
 					})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -116,7 +120,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", "default value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", optionalWithBackingFieldDefaultValue),
 
 					// check actions
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "3"),
@@ -129,29 +133,94 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 			{
 				PreConfig: func() {
 					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
-						StringValue: sdk.Pointer("value changed externally"),
+						StringValue: &externalValue,
 					})
 				},
 				ResourceName: resourceReference,
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					// when we import, we fill this value with what's available in API
-					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", "value changed externally"),
+					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", externalValue),
+				),
+			},
+			// set the value back again
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, value),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", value),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", value),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "4"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", value),
+				),
+			},
+			// change the value
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, newValue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", newValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "5"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.value", newValue),
+				),
+			},
+			// react to external change
+			{
+				PreConfig: func() {
+					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
+						StringValue: &externalValue,
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, newValue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", newValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "6"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.value", newValue),
 				),
 			},
 		},
 	})
 }
 
-func optionalWithBackingFieldAllSetConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
+func optionalWithBackingFieldAllSetConfig(id sdk.AccountObjectIdentifier, resourceType string, value string) string {
 	return fmt.Sprintf(`
-resource "%[2]s" "test" {
-  provider = "%[3]s"
+resource "%[3]s" "test" {
+  provider = "%[4]s"
 
   name = "%[1]s"
-  string_value = "some value"
+  string_value = "%[2]s"
 }
-`, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
+`, id.Name(), value, resourceType, PluginFrameworkFunctionalTestsProviderName)
 }
 
 func optionalWithBackingFieldNotSetConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
