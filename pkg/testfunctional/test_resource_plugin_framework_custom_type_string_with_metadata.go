@@ -126,15 +126,13 @@ func (r *StringWithMetadataResource) readStringWithMetadataResource(data *string
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			meta := customtypes.Metadata{
-				FieldA: time.Now().Format(time.RFC3339),
-			}
-			data.StringValue = customtypes.StringWithMetadataValue{
-				StringValue: types.StringValue(data.StringValue.ValueString()),
-				Metadata:    meta,
-			}
+	} else if opts.StringValue != nil {
+		meta := customtypes.Metadata{
+			FieldA: time.Now().Format(time.RFC3339),
+		}
+		data.StringValue = customtypes.StringWithMetadataValue{
+			StringValue: types.StringValue(data.StringValue.ValueString()),
+			Metadata:    meta,
 		}
 	}
 	return diags
