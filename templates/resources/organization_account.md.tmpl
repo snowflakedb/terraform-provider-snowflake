@@ -9,9 +9,9 @@ description: |-
 {{- end }}
 ---
 
--> **Note** This resource is create-only and cannot be updated or deleted. To update the organization account after creation, use the `snowflake_current_organization_account` resource. To delete an organization accounts, contact Snowflake support.
+-> **Note** This resource should be defined only once per Snowflake organization as you can only have one organization account within a given Snowflake organization.
 
-{{/*-> **Note** TODO more*/}}
+-> **Note** Its purpose is only to create an organization account, it cannot perform updates or delete the organization account. To update the organization account after creation, use the `snowflake_current_organization_account` resource. To delete an organization accounts, contact Snowflake support.
 
 # {{.Name}} ({{.Type}})
 
