@@ -77,10 +77,8 @@ func (r *OptionalWithBackingFieldResource) ImportState(ctx context.Context, requ
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
-		}
+	} else if opts.StringValue != nil {
+		response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
 	}
 }
 
@@ -136,10 +134,8 @@ func (r *OptionalWithBackingFieldResource) readAfterCreateOrUpdate(data *optiona
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			data.StringValueBackingField = types.StringValue(*opts.StringValue)
-		}
+	} else if opts.StringValue != nil {
+		data.StringValueBackingField = types.StringValue(*opts.StringValue)
 	}
 	return diags
 }
@@ -159,14 +155,12 @@ func (r *OptionalWithBackingFieldResource) read(data *optionalWithBackingFieldRe
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			newValue := *opts.StringValue
-			if newValue != data.StringValueBackingField.ValueString() {
-				data.StringValue = types.StringValue(newValue)
-			}
-			data.StringValueBackingField = types.StringValue(newValue)
+	} else if opts.StringValue != nil {
+		newValue := *opts.StringValue
+		if newValue != data.StringValueBackingField.ValueString() {
+			data.StringValue = types.StringValue(newValue)
 		}
+		data.StringValueBackingField = types.StringValue(newValue)
 	}
 	return diags
 }
