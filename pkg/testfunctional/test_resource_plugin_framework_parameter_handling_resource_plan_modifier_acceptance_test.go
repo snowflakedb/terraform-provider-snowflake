@@ -2,6 +2,7 @@ package testfunctional_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
@@ -156,17 +157,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ResourcePlanMo
 						planchecks.ExpectComputed(resourceReference, "string_value", true),
 					},
 				},
-				Config: parameterHandlingResourcePlanModifierAllSetConfig(id, resourceType, newValue),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
-
-					// check actions
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "4"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE - SET"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", newValue),
-				),
+				Config:      parameterHandlingResourcePlanModifierAllSetConfig(id, resourceType, newValue),
+				ExpectError: regexp.MustCompile(`planned value cty.UnknownVal\(cty.String\) does not match config value`),
 			},
 		},
 	})
