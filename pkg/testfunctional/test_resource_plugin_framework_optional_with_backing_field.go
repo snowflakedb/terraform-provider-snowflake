@@ -31,6 +31,8 @@ type optionalWithBackingFieldResourceModelV0 struct {
 	StringValue             types.String `tfsdk:"string_value"`
 	StringValueBackingField types.String `tfsdk:"string_value_backing_field"`
 	Id                      types.String `tfsdk:"id"`
+
+	common.ActionsLogEmbeddable
 }
 
 type OptionalWithBackingFieldOpts struct {
@@ -64,6 +66,7 @@ func (r *OptionalWithBackingFieldResource) Schema(_ context.Context, _ resource.
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			common.ActionsLogPropertyName: common.GetActionsLogSchema(),
 		},
 	}
 }
@@ -83,6 +86,8 @@ func (r *OptionalWithBackingFieldResource) Create(ctx context.Context, request r
 	opts := &OptionalWithBackingFieldOpts{}
 	stringAttributeCreate(data.StringValue, &opts.StringValue)
 
+	r.setCreateActionsOutput(ctx, response, opts, data)
+
 	response.Diagnostics.Append(r.create(opts)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -94,6 +99,16 @@ func (r *OptionalWithBackingFieldResource) Create(ctx context.Context, request r
 	}
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+}
+
+func (r *OptionalWithBackingFieldResource) setCreateActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *OptionalWithBackingFieldOpts, data *optionalWithBackingFieldResourceModelV0) {
+	response.Diagnostics.Append(common.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []common.ActionLogEntry {
+		actions := make([]common.ActionLogEntry, 0)
+		if opts.StringValue != nil {
+			actions = append(actions, common.ActionEntry("CREATE", "string_value", *opts.StringValue))
+		}
+		return actions
+	})...)
 }
 
 func (r *OptionalWithBackingFieldResource) create(opts *OptionalWithBackingFieldOpts) diag.Diagnostics {
@@ -156,6 +171,8 @@ func (r *OptionalWithBackingFieldResource) Update(ctx context.Context, request r
 	opts := &OptionalWithBackingFieldOpts{}
 	stringAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue)
 
+	r.setUpdateActionsOutput(ctx, response, opts, plan, state)
+
 	response.Diagnostics.Append(r.update(opts)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -177,6 +194,19 @@ func (r *OptionalWithBackingFieldResource) update(opts *OptionalWithBackingField
 		diags.AddError("Could not update resource", err.Error())
 	}
 	return diags
+}
+
+func (r *OptionalWithBackingFieldResource) setUpdateActionsOutput(ctx context.Context, response *resource.UpdateResponse, opts *OptionalWithBackingFieldOpts, plan *optionalWithBackingFieldResourceModelV0, state *optionalWithBackingFieldResourceModelV0) {
+	plan.ActionsLogEmbeddable = state.ActionsLogEmbeddable
+	response.Diagnostics.Append(common.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []common.ActionLogEntry {
+		actions := make([]common.ActionLogEntry, 0)
+		if opts.StringValue != nil {
+			actions = append(actions, common.ActionEntry("UPDATE - SET", "string_value", *opts.StringValue))
+		} else {
+			actions = append(actions, common.ActionEntry("UPDATE - UNSET", "string_value", "nil"))
+		}
+		return actions
+	})...)
 }
 
 func (r *OptionalWithBackingFieldResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {

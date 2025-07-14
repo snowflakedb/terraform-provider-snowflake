@@ -52,8 +52,14 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				Config: optionalWithBackingFieldAllSetConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceReference, "string_value", "some_value"),
-					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", "some_value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", "some value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", "some value"),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "1"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.action", "CREATE"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", "some value"),
 				),
 			},
 			// remove value from config
@@ -68,6 +74,37 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
 					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", "default value"),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", "nil"),
+				),
+			},
+			// change externally when absent in config
+			{
+				PreConfig: func() {
+					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
+						StringValue: sdk.Pointer("value changed externally"),
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: optionalWithBackingFieldNotSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", "default value"),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "3"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.value", "nil"),
 				),
 			},
 		},
@@ -80,7 +117,7 @@ resource "%[2]s" "test" {
   provider = "%[3]s"
 
   name = "%[1]s"
-  string_value = "some_value"
+  string_value = "some value"
 }
 `, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
 }
