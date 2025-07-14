@@ -6,7 +6,6 @@ import (
 
 	tfjson "github.com/hashicorp/terraform-json"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
@@ -199,22 +198,21 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 			},
 			// import when param not in config (API default)
 			{
-				ResourceName: resourceReference,
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					// when we import, we fill this value with what's available in API
-					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", optionalWithBackingFieldDefaultValue),
-				),
+				ResourceName:      resourceReference,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignoring actions_log as they serve testing purpose; ignoring name as we do not fill it in read (import tests will be done separately).
+				ImportStateVerifyIgnore: []string{"actions_log", "name"},
 			},
 			// change the param value in config to API default (expecting action because of the different level)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(optionalWithBackingFieldDefaultValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(parameterHandlingBackingFieldDefaultValue)),
 					},
 				},
-				Config: parameterHandlingBackingFieldAllSetConfig(id, resourceType, optionalWithBackingFieldDefaultValue),
+				Config: parameterHandlingBackingFieldAllSetConfig(id, resourceType, parameterHandlingBackingFieldDefaultValue),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "string_value", parameterHandlingBackingFieldDefaultValue),
@@ -225,7 +223,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "6"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.action", "UPDATE - SET"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.field", "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.value", optionalWithBackingFieldDefaultValue),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.value", parameterHandlingBackingFieldDefaultValue),
 				),
 			},
 			// remove the param from config
@@ -233,7 +231,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(optionalWithBackingFieldDefaultValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(parameterHandlingBackingFieldDefaultValue), nil),
 					},
 				},
 				Config: parameterHandlingBackingFieldNotSetConfig(id, resourceType),
@@ -272,6 +270,35 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 
 					// no actions happened since last step (still 7)
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "7"),
+				),
+			},
+			// change level externally to OBJECT level
+			{
+				PreConfig: func() {
+					parameterHandlingBackingFieldHandler.SetCurrentValue(testfunctional.ParameterHandlingBackingFieldOpts{
+						StringValue: sdk.Pointer(parameterHandlingBackingFieldDefaultValue),
+						Level:       "OBJECT",
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(resourceReference, "string_value", nil, sdk.String(parameterHandlingBackingFieldDefaultValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(parameterHandlingBackingFieldDefaultValue), nil),
+					},
+				},
+				Config: parameterHandlingBackingFieldNotSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field.value", parameterHandlingBackingFieldDefaultValue),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field.level", ""),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "8"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.value", "nil"),
 				),
 			},
 		},

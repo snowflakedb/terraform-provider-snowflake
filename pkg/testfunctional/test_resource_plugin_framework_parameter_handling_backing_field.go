@@ -92,8 +92,9 @@ func (r *ParameterHandlingBackingFieldResource) ImportState(ctx context.Context,
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
 	} else {
 		if opts.StringValue != nil {
-			// TODO: set conditionally based on level
-			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
+			if opts.Level == "OBJECT" {
+				response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
+			}
 		}
 	}
 }
