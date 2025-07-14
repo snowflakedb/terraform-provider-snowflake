@@ -130,7 +130,6 @@ func (r *ParameterHandlingResourcePlanModifierResource) ImportState(ctx context.
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
 	} else {
 		if opts.StringValue != nil {
-			// TODO
 			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
 		}
 	}
@@ -210,7 +209,6 @@ func (r *ParameterHandlingResourcePlanModifierResource) Read(ctx context.Context
 func (r *ParameterHandlingResourcePlanModifierResource) read(data *parameterHandlingResourcePlanModifierResourceModelV0) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// TODO: denormalization
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())

@@ -47,7 +47,7 @@ func stringAttributeCreate(stringAttribute types.String, createField **string) {
 
 func stringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **string) {
 	if !planned.Equal(inState) {
-		if planned.IsNull() {
+		if planned.IsNull() || planned.IsUnknown() {
 			*unsetField = nil
 		} else {
 			*setField = planned.ValueStringPointer()

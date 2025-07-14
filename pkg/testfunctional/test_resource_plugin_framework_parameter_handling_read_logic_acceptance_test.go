@@ -172,9 +172,17 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ReadLogic(t *t
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(newValue), nil),
+						planchecks.ExpectComputed(resourceReference, "string_value", true),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						// This documents that the read logic added to handle previous step messes with the logic when the parameter is removed from config.
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, nil),
+						planchecks.ExpectComputed(resourceReference, "string_value", true),
 					},
 				},
-				Config: parameterHandlingReadLogicNotSetConfig(id, resourceType),
+				ExpectNonEmptyPlan: true,
+				Config:             parameterHandlingReadLogicNotSetConfig(id, resourceType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "string_value", parameterHandlingReadLogicDefaultValue),

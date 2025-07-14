@@ -68,6 +68,53 @@ func (r *ParameterHandlingReadLogicResource) Schema(_ context.Context, _ resourc
 	}
 }
 
+// ModifyPlan inlines parts resources.ParameterValueComputedIf which is our previous SDK implementation.
+func (r *ParameterHandlingReadLogicResource) ModifyPlan(ctx context.Context, request resource.ModifyPlanRequest, response *resource.ModifyPlanResponse) {
+	// Do nothing if there is no state (resource is being created).
+	if request.State.Raw.IsNull() {
+		return
+	}
+
+	// Do nothing if there is no plan
+	if request.Plan.Raw.IsNull() {
+		return
+	}
+
+	// Do nothing if there is no config
+	if request.Config.Raw.IsNull() {
+		return
+	}
+
+	var config, plan, state *parameterHandlingResourcePlanModifierResourceModelV0
+	response.Diagnostics.Append(request.Config.Get(ctx, &config)...)
+	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
+	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	foundParameter, err := r.HttpServerEmbeddable.Get()
+	if err != nil {
+		response.Diagnostics.AddError("Could not read resources state", err.Error())
+		return
+	}
+
+	// For all other cases, if a parameter is set in the configuration, we can ignore parts needed for Computed fields.
+	if !config.StringValue.IsNull() {
+		return
+	}
+
+	// If the configuration is not set, perform SetNewComputed for cases like:
+	// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
+	// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
+	if foundParameter.StringValue != nil && *foundParameter.StringValue != state.StringValue.ValueString() || foundParameter.Level == "OBJECT" {
+		plan.StringValue = types.StringUnknown()
+		plan.ActionsLogEmbeddable.ActionsLog = types.ListUnknown(types.ObjectType{AttrTypes: common.GetActionLogEntryTypes()})
+		response.Diagnostics.Append(response.Plan.Set(ctx, &plan)...)
+		return
+	}
+}
+
 func (r *ParameterHandlingReadLogicResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), request, response)
 
@@ -76,7 +123,6 @@ func (r *ParameterHandlingReadLogicResource) ImportState(ctx context.Context, re
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
 	} else {
 		if opts.StringValue != nil {
-			// TODO
 			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
 		}
 	}
@@ -156,7 +202,6 @@ func (r *ParameterHandlingReadLogicResource) Read(ctx context.Context, request r
 func (r *ParameterHandlingReadLogicResource) read(data *parameterHandlingReadLogicResourceModelV0) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// TODO: denormalization
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
@@ -165,6 +210,7 @@ func (r *ParameterHandlingReadLogicResource) read(data *parameterHandlingReadLog
 			// If the level differs we set the state to null, to trigger setting.
 			// It's not ideal as the plan will output null -> value plan.
 			// Can't set to unknown because then "The returned state contains unknown values." error is returned.
+			// It messes with the case when parameter is removed from config.
 			if opts.StringValue != nil && opts.Level == "OBJECT" {
 				data.StringValue = types.StringValue(*opts.StringValue)
 			} else {
