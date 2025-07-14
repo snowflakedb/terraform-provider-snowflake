@@ -35,7 +35,7 @@ type enumHandlingResourceModelV0 struct {
 }
 
 type EnumHandlingOpts struct {
-	StringValue *string
+	StringValue *sdk.WarehouseType
 }
 
 func (r *EnumHandlingResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
@@ -87,7 +87,10 @@ func (r *EnumHandlingResource) Create(ctx context.Context, request resource.Crea
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &EnumHandlingOpts{}
-	stringAttributeCreate(data.StringValue, &opts.StringValue)
+	err := stringEnumAttributeCreate(data.StringValue, &opts.StringValue, sdk.ToWarehouseType)
+	if err != nil {
+		response.Diagnostics.AddError("Error creating warehouse type", err.Error())
+	}
 
 	r.setCreateActionsOutput(ctx, response, opts, data)
 
@@ -108,7 +111,7 @@ func (r *EnumHandlingResource) setCreateActionsOutput(ctx context.Context, respo
 	response.Diagnostics.Append(common.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []common.ActionLogEntry {
 		actions := make([]common.ActionLogEntry, 0)
 		if opts.StringValue != nil {
-			actions = append(actions, common.ActionEntry("CREATE", "string_value", *opts.StringValue))
+			actions = append(actions, common.ActionEntry("CREATE", "string_value", string(*opts.StringValue)))
 		}
 		return actions
 	})...)
@@ -153,8 +156,18 @@ func (r *EnumHandlingResource) read(data *enumHandlingResourceModelV0) diag.Diag
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
 	} else if opts.StringValue != nil {
-		// TODO
-		// data.StringValueBackingField = types.StringValue(newValue)
+		if data.StringValue.IsNull() {
+			data.StringValue = types.StringValue(string(*opts.StringValue))
+		} else {
+			areTheSame, err := sameAfterNormalization(data.StringValue.ValueString(), string(*opts.StringValue), sdk.ToWarehouseType)
+			if err != nil {
+				diags.AddError("Could not read resources state", err.Error())
+				return diags
+			}
+			if !areTheSame {
+				data.StringValue = types.StringValue(string(*opts.StringValue))
+			}
+		}
 	}
 	return diags
 }
@@ -166,7 +179,10 @@ func (r *EnumHandlingResource) Update(ctx context.Context, request resource.Upda
 	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
 
 	opts := &EnumHandlingOpts{}
-	stringAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue)
+	err := stringEnumAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue, sdk.ToWarehouseType)
+	if err != nil {
+		response.Diagnostics.AddError("Error updating warehouse type", err.Error())
+	}
 
 	r.setUpdateActionsOutput(ctx, response, opts, plan, state)
 
@@ -198,7 +214,7 @@ func (r *EnumHandlingResource) setUpdateActionsOutput(ctx context.Context, respo
 	response.Diagnostics.Append(common.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []common.ActionLogEntry {
 		actions := make([]common.ActionLogEntry, 0)
 		if opts.StringValue != nil {
-			actions = append(actions, common.ActionEntry("UPDATE - SET", "string_value", *opts.StringValue))
+			actions = append(actions, common.ActionEntry("UPDATE - SET", "string_value", string(*opts.StringValue)))
 		} else {
 			actions = append(actions, common.ActionEntry("UPDATE - UNSET", "string_value", "nil"))
 		}
