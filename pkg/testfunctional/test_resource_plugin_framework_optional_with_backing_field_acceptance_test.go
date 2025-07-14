@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
@@ -62,6 +63,14 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", "some value"),
 				),
 			},
+			// import when known value
+			{
+				ResourceName:      resourceReference,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignoring actions_log as they serve testing purpose; ignoring name as we do not fill it in read (import tests will be done separately).
+				ImportStateVerifyIgnore: []string{"actions_log", "name"},
+			},
 			// remove value from config
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -80,6 +89,15 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.action", "UPDATE - UNSET"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.field", "string_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", "nil"),
+				),
+			},
+			// import when unset
+			{
+				ResourceName: resourceReference,
+				ImportState:  true,
+				ImportStateCheck: importchecks.ComposeImportStateCheck(
+					// when we import, we fill this value with what's available in API
+					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", "default value"),
 				),
 			},
 			// change externally when absent in config
@@ -105,6 +123,20 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.action", "UPDATE - UNSET"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.field", "string_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.value", "nil"),
+				),
+			},
+			// import when unset and external value is set
+			{
+				PreConfig: func() {
+					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
+						StringValue: sdk.Pointer("value changed externally"),
+					})
+				},
+				ResourceName: resourceReference,
+				ImportState:  true,
+				ImportStateCheck: importchecks.ComposeImportStateCheck(
+					// when we import, we fill this value with what's available in API
+					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", "value changed externally"),
 				),
 			},
 		},

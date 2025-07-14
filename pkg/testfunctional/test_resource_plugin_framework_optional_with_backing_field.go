@@ -73,6 +73,15 @@ func (r *OptionalWithBackingFieldResource) Schema(_ context.Context, _ resource.
 
 func (r *OptionalWithBackingFieldResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), request, response)
+
+	opts, err := r.HttpServerEmbeddable.Get()
+	if err != nil {
+		response.Diagnostics.AddError("Could not read resources state", err.Error())
+	} else {
+		if opts.StringValue != nil {
+			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
+		}
+	}
 }
 
 func (r *OptionalWithBackingFieldResource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
