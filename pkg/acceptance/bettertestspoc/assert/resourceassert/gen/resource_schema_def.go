@@ -122,6 +122,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.OauthIntegrationForPartnerApplications().Schema,
 	},
 	{
+		name:   "OrganizationAccount",
+		schema: resources.OrganizationAccount().Schema,
+	},
+	{
 		name:   "PrimaryConnection",
 		schema: resources.PrimaryConnection().Schema,
 	},

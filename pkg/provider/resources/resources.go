@@ -55,6 +55,7 @@ const (
 	OauthIntegrationForCustomClients                       resource = "snowflake_oauth_integration_for_custom_clients"
 	OauthIntegrationForPartnerApplications                 resource = "snowflake_oauth_integration_for_partner_applications"
 	ObjectParameter                                        resource = "snowflake_object_parameter"
+	OrganizationAccount                                    resource = "snowflake_organization_account"
 	PasswordPolicy                                         resource = "snowflake_password_policy"
 	Pipe                                                   resource = "snowflake_pipe"
 	PrimaryConnection                                      resource = "snowflake_primary_connection"

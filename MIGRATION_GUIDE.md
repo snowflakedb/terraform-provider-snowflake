@@ -23,6 +23,10 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.2.0 ➞ v2.3.0
 
+### *(new feature)* New `organization_account` resource
+
+[//]: # (TODO: )
+
 ### *(new feature)* New `PROGRAMMATIC_ACCESS_TOKEN` authenticator option
 
 We added a new `PROGRAMMATIC_ACCESS_TOKEN` option to the `authenticator` field in the provider. This feature enables authentication with `PROGRAMMATIC_ACCESS_TOKEN` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.

@@ -53,6 +53,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_email_notification_integration_resource", want: EmailNotificationIntegrationResource},
 		{input: "snowflake_notification_integration_resource", want: NotificationIntegrationResource},
 		{input: "snowflake_object_parameter_resource", want: ObjectParameterResource},
+		{input: "snowflake_organization_account_resource", want: OrganizationAccountResource},
 		{input: "snowflake_password_policy_resource", want: PasswordPolicyResource},
 		{input: "snowflake_pipe_resource", want: PipeResource},
 		{input: "snowflake_pipes_datasource", want: PipesDatasource},
