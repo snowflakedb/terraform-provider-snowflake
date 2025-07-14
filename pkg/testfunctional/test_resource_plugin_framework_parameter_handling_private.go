@@ -105,7 +105,7 @@ func (r *ParameterHandlingPrivateResource) Create(ctx context.Context, request r
 		return
 	}
 
-	response.Diagnostics.Append(r.readAfterCreate(ctx, &response)...)
+	response.Diagnostics.Append(r.readAfterCreate(ctx, response)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -133,7 +133,7 @@ func (r *ParameterHandlingPrivateResource) create(opts *ParameterHandlingPrivate
 	return diags
 }
 
-func (r *ParameterHandlingPrivateResource) readAfterCreate(ctx context.Context, response **resource.CreateResponse) diag.Diagnostics {
+func (r *ParameterHandlingPrivateResource) readAfterCreate(ctx context.Context, response *resource.CreateResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	opts, err := r.HttpServerEmbeddable.Get()
@@ -146,7 +146,7 @@ func (r *ParameterHandlingPrivateResource) readAfterCreate(ctx context.Context, 
 				diags.AddError("Could not marshal json", err.Error())
 				return diags
 			}
-			diags.Append((*response).Private.SetKey(ctx, "string_value_parameter", bytes)...)
+			diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
 		}
 	}
 	return diags
@@ -156,12 +156,12 @@ func (r *ParameterHandlingPrivateResource) Read(ctx context.Context, request res
 	var data *parameterHandlingPrivateResourceModelV0
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
 
-	response.Diagnostics.Append(r.read(ctx, data, request, &response)...)
+	response.Diagnostics.Append(r.read(ctx, data, request, response)...)
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func (r *ParameterHandlingPrivateResource) read(ctx context.Context, data *parameterHandlingPrivateResourceModelV0, request resource.ReadRequest, response **resource.ReadResponse) diag.Diagnostics {
+func (r *ParameterHandlingPrivateResource) read(ctx context.Context, data *parameterHandlingPrivateResourceModelV0, request resource.ReadRequest, response *resource.ReadResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	opts, err := r.HttpServerEmbeddable.Get()
@@ -201,7 +201,7 @@ func (r *ParameterHandlingPrivateResource) read(ctx context.Context, data *param
 				diags.AddError("Could not marshal json", err.Error())
 				return diags
 			}
-			diags.Append((*response).Private.SetKey(ctx, "string_value_parameter", bytes)...)
+			diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
 		}
 	}
 	return diags
@@ -223,7 +223,7 @@ func (r *ParameterHandlingPrivateResource) Update(ctx context.Context, request r
 		return
 	}
 
-	response.Diagnostics.Append(r.readAfterUpdate(ctx, &response)...)
+	response.Diagnostics.Append(r.readAfterUpdate(ctx, response)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -241,7 +241,7 @@ func (r *ParameterHandlingPrivateResource) update(opts *ParameterHandlingPrivate
 	return diags
 }
 
-func (r *ParameterHandlingPrivateResource) readAfterUpdate(ctx context.Context, response **resource.UpdateResponse) diag.Diagnostics {
+func (r *ParameterHandlingPrivateResource) readAfterUpdate(ctx context.Context, response *resource.UpdateResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	opts, err := r.HttpServerEmbeddable.Get()
@@ -254,7 +254,7 @@ func (r *ParameterHandlingPrivateResource) readAfterUpdate(ctx context.Context, 
 				diags.AddError("Could not marshal json", err.Error())
 				return diags
 			}
-			diags.Append((*response).Private.SetKey(ctx, "string_value_parameter", bytes)...)
+			diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
 		}
 	}
 	return diags
