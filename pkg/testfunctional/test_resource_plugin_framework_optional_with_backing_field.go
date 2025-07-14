@@ -88,7 +88,7 @@ func (r *OptionalWithBackingFieldResource) Create(ctx context.Context, request r
 		return
 	}
 
-	response.Diagnostics.Append(r.readAfterCreate(data)...)
+	response.Diagnostics.Append(r.readAfterCreateOrUpdate(data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -106,7 +106,7 @@ func (r *OptionalWithBackingFieldResource) create(opts *OptionalWithBackingField
 	return diags
 }
 
-func (r *OptionalWithBackingFieldResource) readAfterCreate(data *optionalWithBackingFieldResourceModelV0) diag.Diagnostics {
+func (r *OptionalWithBackingFieldResource) readAfterCreateOrUpdate(data *optionalWithBackingFieldResourceModelV0) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	opts, err := r.HttpServerEmbeddable.Get()
@@ -147,7 +147,36 @@ func (r *OptionalWithBackingFieldResource) read(data *optionalWithBackingFieldRe
 	return diags
 }
 
-func (r *OptionalWithBackingFieldResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
+func (r *OptionalWithBackingFieldResource) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
+	var plan, state *optionalWithBackingFieldResourceModelV0
+
+	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
+	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
+
+	opts := &OptionalWithBackingFieldOpts{}
+	stringAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue)
+
+	response.Diagnostics.Append(r.update(opts)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	response.Diagnostics.Append(r.readAfterCreateOrUpdate(plan)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
+}
+
+func (r *OptionalWithBackingFieldResource) update(opts *OptionalWithBackingFieldOpts) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	err := r.HttpServerEmbeddable.Post(*opts)
+	if err != nil {
+		diags.AddError("Could not update resource", err.Error())
+	}
+	return diags
 }
 
 func (r *OptionalWithBackingFieldResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
