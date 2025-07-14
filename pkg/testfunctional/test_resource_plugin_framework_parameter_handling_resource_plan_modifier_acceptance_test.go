@@ -114,6 +114,60 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ResourcePlanMo
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", newValue),
 				),
 			},
+			// change the param value externally
+			{
+				PreConfig: func() {
+					parameterHandlingResourcePlanModifierHandler.SetCurrentValue(testfunctional.ParameterHandlingResourcePlanModifierOpts{
+						StringValue: &externalValue,
+						Level:       "OBJECT",
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), sdk.String(externalValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), sdk.String(newValue)),
+					},
+				},
+				Config: parameterHandlingResourcePlanModifierAllSetConfig(id, resourceType, newValue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "3"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.value", newValue),
+				),
+			},
+			//  change the param value externally to the value from config (but on different level)
+			{
+				PreConfig: func() {
+					parameterHandlingResourcePlanModifierHandler.SetCurrentValue(testfunctional.ParameterHandlingResourcePlanModifierOpts{
+						StringValue: &newValue,
+						Level:       "OTHER",
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(newValue), nil),
+						planchecks.ExpectComputed(resourceReference, "string_value", true),
+					},
+				},
+				Config: parameterHandlingResourcePlanModifierAllSetConfig(id, resourceType, newValue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "4"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", newValue),
+				),
+			},
 		},
 	})
 }

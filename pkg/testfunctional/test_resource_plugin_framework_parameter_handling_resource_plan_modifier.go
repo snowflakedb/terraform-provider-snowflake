@@ -18,12 +18,12 @@ var _ resource.ResourceWithConfigure = &ParameterHandlingResourcePlanModifierRes
 
 func NewParameterHandlingResourcePlanModifierResource() resource.Resource {
 	return &ParameterHandlingResourcePlanModifierResource{
-		HttpServerEmbeddable: *common.NewHttpServerEmbeddable[OptionalWithBackingFieldOpts]("parameter_handling_resource_plan_modifier"),
+		HttpServerEmbeddable: *common.NewHttpServerEmbeddable[ParameterHandlingResourcePlanModifierOpts]("parameter_handling_resource_plan_modifier"),
 	}
 }
 
 type ParameterHandlingResourcePlanModifierResource struct {
-	common.HttpServerEmbeddable[OptionalWithBackingFieldOpts]
+	common.HttpServerEmbeddable[ParameterHandlingResourcePlanModifierOpts]
 }
 
 type parameterHandlingResourcePlanModifierResourceModelV0 struct {
@@ -68,6 +68,60 @@ func (r *ParameterHandlingResourcePlanModifierResource) Schema(_ context.Context
 	}
 }
 
+// ModifyPlan inlines resources.ParameterValueComputedIf which is our previous SDK implementation.
+func (r *ParameterHandlingResourcePlanModifierResource) ModifyPlan(ctx context.Context, request resource.ModifyPlanRequest, response *resource.ModifyPlanResponse) {
+	// Do nothing if there is no state (resource is being created).
+	if request.State.Raw.IsNull() {
+		return
+	}
+
+	// Do nothing if there is no plan
+	if request.Plan.Raw.IsNull() {
+		return
+	}
+
+	// Do nothing if there is no config
+	if request.Config.Raw.IsNull() {
+		return
+	}
+
+	var config, plan, state *parameterHandlingResourcePlanModifierResourceModelV0
+	response.Diagnostics.Append(request.Config.Get(ctx, &config)...)
+	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
+	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	foundParameter, err := r.HttpServerEmbeddable.Get()
+	if err != nil {
+		response.Diagnostics.AddError("Could not read resources state", err.Error())
+		return
+	}
+
+	// For cases where currently set value (in the config) is equal to the parameter, but not set on the right level.
+	// The parameter is set somewhere higher in the hierarchy, and we need to "forcefully" set the value to
+	// perform the actual set (and set the parameter on the correct level).
+	if !config.StringValue.IsNull() && foundParameter.Level != "OBJECT" && foundParameter.StringValue != nil && *foundParameter.StringValue == state.StringValue.ValueString() {
+		plan.StringValue = types.StringUnknown()
+		response.Diagnostics.Append(response.Plan.Set(ctx, &plan)...)
+		return
+	}
+
+	// For all other cases, if a parameter is set in the configuration, we can ignore parts needed for Computed fields.
+	if !config.StringValue.IsNull() {
+		return
+	}
+
+	// If the configuration is not set, perform SetNewComputed for cases like:
+	// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
+	// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
+	//if foundParameter.StringValue !=  || parameter.Level == objectParameterLevel {
+	//	plan.StringValue = types.StringUnknown()
+	//	return
+	//}
+}
+
 func (r *ParameterHandlingResourcePlanModifierResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), request, response)
 
@@ -90,7 +144,7 @@ func (r *ParameterHandlingResourcePlanModifierResource) Create(ctx context.Conte
 	id := sdk.NewAccountObjectIdentifier(name)
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
-	opts := &OptionalWithBackingFieldOpts{}
+	opts := &ParameterHandlingResourcePlanModifierOpts{}
 	stringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	r.setCreateActionsOutput(ctx, response, opts, data)
@@ -108,7 +162,7 @@ func (r *ParameterHandlingResourcePlanModifierResource) Create(ctx context.Conte
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func (r *ParameterHandlingResourcePlanModifierResource) setCreateActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *OptionalWithBackingFieldOpts, data *parameterHandlingResourcePlanModifierResourceModelV0) {
+func (r *ParameterHandlingResourcePlanModifierResource) setCreateActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *ParameterHandlingResourcePlanModifierOpts, data *parameterHandlingResourcePlanModifierResourceModelV0) {
 	response.Diagnostics.Append(common.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []common.ActionLogEntry {
 		actions := make([]common.ActionLogEntry, 0)
 		if opts.StringValue != nil {
@@ -118,7 +172,7 @@ func (r *ParameterHandlingResourcePlanModifierResource) setCreateActionsOutput(c
 	})...)
 }
 
-func (r *ParameterHandlingResourcePlanModifierResource) create(opts *OptionalWithBackingFieldOpts) diag.Diagnostics {
+func (r *ParameterHandlingResourcePlanModifierResource) create(opts *ParameterHandlingResourcePlanModifierOpts) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	err := r.HttpServerEmbeddable.Post(*opts)
@@ -178,7 +232,7 @@ func (r *ParameterHandlingResourcePlanModifierResource) Update(ctx context.Conte
 	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
 	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
 
-	opts := &OptionalWithBackingFieldOpts{}
+	opts := &ParameterHandlingResourcePlanModifierOpts{}
 	stringAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue)
 
 	r.setUpdateActionsOutput(ctx, response, opts, plan, state)
@@ -196,7 +250,7 @@ func (r *ParameterHandlingResourcePlanModifierResource) Update(ctx context.Conte
 	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
 }
 
-func (r *ParameterHandlingResourcePlanModifierResource) update(opts *OptionalWithBackingFieldOpts) diag.Diagnostics {
+func (r *ParameterHandlingResourcePlanModifierResource) update(opts *ParameterHandlingResourcePlanModifierOpts) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	err := r.HttpServerEmbeddable.Post(*opts)
@@ -206,7 +260,7 @@ func (r *ParameterHandlingResourcePlanModifierResource) update(opts *OptionalWit
 	return diags
 }
 
-func (r *ParameterHandlingResourcePlanModifierResource) setUpdateActionsOutput(ctx context.Context, response *resource.UpdateResponse, opts *OptionalWithBackingFieldOpts, plan *parameterHandlingResourcePlanModifierResourceModelV0, state *parameterHandlingResourcePlanModifierResourceModelV0) {
+func (r *ParameterHandlingResourcePlanModifierResource) setUpdateActionsOutput(ctx context.Context, response *resource.UpdateResponse, opts *ParameterHandlingResourcePlanModifierOpts, plan *parameterHandlingResourcePlanModifierResourceModelV0, state *parameterHandlingResourcePlanModifierResourceModelV0) {
 	plan.ActionsLogEmbeddable = state.ActionsLogEmbeddable
 	response.Diagnostics.Append(common.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []common.ActionLogEntry {
 		actions := make([]common.ActionLogEntry, 0)
