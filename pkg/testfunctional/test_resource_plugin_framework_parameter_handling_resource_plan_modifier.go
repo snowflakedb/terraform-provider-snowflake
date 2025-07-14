@@ -109,17 +109,17 @@ func (r *ParameterHandlingResourcePlanModifierResource) ModifyPlan(ctx context.C
 	}
 
 	// For all other cases, if a parameter is set in the configuration, we can ignore parts needed for Computed fields.
-	if !config.StringValue.IsNull() {
+	if !config.StringValue.IsNull() { //nolint:staticcheck
 		return
 	}
 
 	// If the configuration is not set, perform SetNewComputed for cases like:
 	// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
 	// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
-	//if foundParameter.StringValue !=  || parameter.Level == objectParameterLevel {
+	// if foundParameter.StringValue !=  || parameter.Level == objectParameterLevel {
 	//	plan.StringValue = types.StringUnknown()
 	//	return
-	//}
+	// }
 }
 
 func (r *ParameterHandlingResourcePlanModifierResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
@@ -128,10 +128,8 @@ func (r *ParameterHandlingResourcePlanModifierResource) ImportState(ctx context.
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
-		}
+	} else if opts.StringValue != nil {
+		response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
 	}
 }
 
@@ -212,13 +210,11 @@ func (r *ParameterHandlingResourcePlanModifierResource) read(data *parameterHand
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
+	} else if opts.StringValue != nil {
 		if opts.StringValue != nil {
-			if opts.StringValue != nil {
-				data.StringValue = types.StringValue(*opts.StringValue)
-			} else {
-				data.StringValue = types.StringNull()
-			}
+			data.StringValue = types.StringValue(*opts.StringValue)
+		} else {
+			data.StringValue = types.StringNull()
 		}
 	}
 	return diags

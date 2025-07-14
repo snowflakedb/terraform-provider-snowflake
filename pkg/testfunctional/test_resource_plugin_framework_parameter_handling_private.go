@@ -78,11 +78,9 @@ func (r *ParameterHandlingPrivateResource) ImportState(ctx context.Context, requ
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			if opts.Level == "OBJECT" {
-				response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
-			}
+	} else if opts.StringValue != nil {
+		if opts.Level == "OBJECT" {
+			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
 		}
 	}
 }
@@ -139,15 +137,13 @@ func (r *ParameterHandlingPrivateResource) readAfterCreate(ctx context.Context, 
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			bytes, err := json.Marshal(ParameterHandlingPrivateJson{Value: *opts.StringValue})
-			if err != nil {
-				diags.AddError("Could not marshal json", err.Error())
-				return diags
-			}
-			diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
+	} else if opts.StringValue != nil {
+		bytes, err := json.Marshal(ParameterHandlingPrivateJson{Value: *opts.StringValue})
+		if err != nil {
+			diags.AddError("Could not marshal json", err.Error())
+			return diags
 		}
+		diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
 	}
 	return diags
 }
@@ -167,42 +163,41 @@ func (r *ParameterHandlingPrivateResource) read(ctx context.Context, data *param
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			newValue := *opts.StringValue
-			newLevel := opts.Level
+	} else if opts.StringValue != nil {
+		newValue := *opts.StringValue
+		newLevel := opts.Level
 
-			prevValueBytes, d := request.Private.GetKey(ctx, "string_value_parameter")
-			diags.Append(d...)
-			if diags.HasError() {
-				return diags
-			}
-			if prevValueBytes != nil {
-				var prevValue ParameterHandlingPrivateJson
-				err := json.Unmarshal(prevValueBytes, &prevValue)
-				if err != nil {
-					diags.AddError("Could not unmarshal json", err.Error())
-					return diags
-				}
-
-				// if new value differs from the previous one
-				if newValue != prevValue.Value {
-					data.StringValue = types.StringValue(newValue)
-					// if new level is not object we should set null
-				} else if newLevel != "OBJECT" {
-					data.StringValue = types.StringNull()
-				} else {
-					data.StringValue = types.StringValue(newValue)
-				}
-			}
-
-			bytes, err := json.Marshal(ParameterHandlingPrivateJson{Value: newValue})
-			if err != nil {
-				diags.AddError("Could not marshal json", err.Error())
-				return diags
-			}
-			diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
+		prevValueBytes, d := request.Private.GetKey(ctx, "string_value_parameter")
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
 		}
+		if prevValueBytes != nil {
+			var prevValue ParameterHandlingPrivateJson
+			err := json.Unmarshal(prevValueBytes, &prevValue)
+			if err != nil {
+				diags.AddError("Could not unmarshal json", err.Error())
+				return diags
+			}
+
+			switch {
+			// if new value differs from the previous one
+			case newValue != prevValue.Value:
+				data.StringValue = types.StringValue(newValue)
+			// if new level is not object we should set null
+			case newLevel != "OBJECT":
+				data.StringValue = types.StringNull()
+			default:
+				data.StringValue = types.StringValue(newValue)
+			}
+		}
+
+		bytes, err := json.Marshal(ParameterHandlingPrivateJson{Value: newValue})
+		if err != nil {
+			diags.AddError("Could not marshal json", err.Error())
+			return diags
+		}
+		diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
 	}
 	return diags
 }
@@ -247,15 +242,13 @@ func (r *ParameterHandlingPrivateResource) readAfterUpdate(ctx context.Context, 
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			bytes, err := json.Marshal(ParameterHandlingPrivateJson{Value: *opts.StringValue})
-			if err != nil {
-				diags.AddError("Could not marshal json", err.Error())
-				return diags
-			}
-			diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
+	} else if opts.StringValue != nil {
+		bytes, err := json.Marshal(ParameterHandlingPrivateJson{Value: *opts.StringValue})
+		if err != nil {
+			diags.AddError("Could not marshal json", err.Error())
+			return diags
 		}
+		diags.Append(response.Private.SetKey(ctx, "string_value_parameter", bytes)...)
 	}
 	return diags
 }

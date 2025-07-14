@@ -90,11 +90,9 @@ func (r *ParameterHandlingBackingFieldResource) ImportState(ctx context.Context,
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			if opts.Level == "OBJECT" {
-				response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
-			}
+	} else if opts.StringValue != nil {
+		if opts.Level == "OBJECT" {
+			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
 		}
 	}
 }
@@ -151,23 +149,21 @@ func (r *ParameterHandlingBackingFieldResource) readAfterCreateOrUpdate(data *pa
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			elementTypes := map[string]attr.Type{
-				"value": types.StringType,
-				"level": types.StringType,
-			}
-			elements := map[string]attr.Value{
-				"value": types.StringValue(*opts.StringValue),
-				"level": types.StringValue(opts.Level),
-			}
-			objectValue, d := types.ObjectValue(elementTypes, elements)
-			if d.HasError() {
-				diags.Append(d...)
-				return diags
-			}
-			data.StringValueBackingField = objectValue
+	} else if opts.StringValue != nil {
+		elementTypes := map[string]attr.Type{
+			"value": types.StringType,
+			"level": types.StringType,
 		}
+		elements := map[string]attr.Value{
+			"value": types.StringValue(*opts.StringValue),
+			"level": types.StringValue(opts.Level),
+		}
+		objectValue, d := types.ObjectValue(elementTypes, elements)
+		if d.HasError() {
+			diags.Append(d...)
+			return diags
+		}
+		data.StringValueBackingField = objectValue
 	}
 	return diags
 }
@@ -187,43 +183,42 @@ func (r *ParameterHandlingBackingFieldResource) read(ctx context.Context, data *
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			newValue := *opts.StringValue
-			newLevel := opts.Level
+	} else if opts.StringValue != nil {
+		newValue := *opts.StringValue
+		newLevel := opts.Level
 
-			if !data.StringValueBackingField.IsNull() {
-				var param *ParameterBackingField
-				diags.Append(data.StringValueBackingField.As(ctx, &param, basetypes.ObjectAsOptions{})...)
-				if diags.HasError() {
-					return diags
-				}
-				// if new value differs from the previous one
-				if newValue != param.Value.ValueString() {
-					data.StringValue = types.StringValue(newValue)
-					// if new level is not object we should set null
-				} else if newLevel != "OBJECT" {
-					data.StringValue = types.StringNull()
-				} else {
-					data.StringValue = types.StringValue(newValue)
-				}
-			}
-
-			elementTypes := map[string]attr.Type{
-				"value": types.StringType,
-				"level": types.StringType,
-			}
-			elements := map[string]attr.Value{
-				"value": types.StringValue(newValue),
-				"level": types.StringValue(newLevel),
-			}
-			objectValue, d := types.ObjectValue(elementTypes, elements)
-			if d.HasError() {
-				diags.Append(d...)
+		if !data.StringValueBackingField.IsNull() {
+			var param *ParameterBackingField
+			diags.Append(data.StringValueBackingField.As(ctx, &param, basetypes.ObjectAsOptions{})...)
+			if diags.HasError() {
 				return diags
 			}
-			data.StringValueBackingField = objectValue
+			switch {
+			// if new value differs from the previous one
+			case newValue != param.Value.ValueString():
+				data.StringValue = types.StringValue(newValue)
+			// if new level is not object we should set null
+			case newLevel != "OBJECT":
+				data.StringValue = types.StringNull()
+			default:
+				data.StringValue = types.StringValue(newValue)
+			}
 		}
+
+		elementTypes := map[string]attr.Type{
+			"value": types.StringType,
+			"level": types.StringType,
+		}
+		elements := map[string]attr.Value{
+			"value": types.StringValue(newValue),
+			"level": types.StringValue(newLevel),
+		}
+		objectValue, d := types.ObjectValue(elementTypes, elements)
+		if d.HasError() {
+			diags.Append(d...)
+			return diags
+		}
+		data.StringValueBackingField = objectValue
 	}
 	return diags
 }

@@ -121,10 +121,8 @@ func (r *ParameterHandlingReadLogicResource) ImportState(ctx context.Context, re
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
-		}
+	} else if opts.StringValue != nil {
+		response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
 	}
 }
 
@@ -205,17 +203,15 @@ func (r *ParameterHandlingReadLogicResource) read(data *parameterHandlingReadLog
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			// If the level differs we set the state to null, to trigger setting.
-			// It's not ideal as the plan will output null -> value plan.
-			// Can't set to unknown because then "The returned state contains unknown values." error is returned.
-			// It messes with the case when parameter is removed from config.
-			if opts.StringValue != nil && opts.Level == "OBJECT" {
-				data.StringValue = types.StringValue(*opts.StringValue)
-			} else {
-				data.StringValue = types.StringNull()
-			}
+	} else if opts.StringValue != nil {
+		// If the level differs we set the state to null, to trigger setting.
+		// It's not ideal as the plan will output null -> value plan.
+		// Can't set to unknown because then "The returned state contains unknown values." error is returned.
+		// It messes with the case when parameter is removed from config.
+		if opts.StringValue != nil && opts.Level == "OBJECT" {
+			data.StringValue = types.StringValue(*opts.StringValue)
+		} else {
+			data.StringValue = types.StringNull()
 		}
 	}
 	return diags
