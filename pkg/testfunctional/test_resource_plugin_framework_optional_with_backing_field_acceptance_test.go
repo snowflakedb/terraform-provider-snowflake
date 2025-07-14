@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	tfjson "github.com/hashicorp/terraform-json"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
@@ -52,6 +55,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(value)),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, value),
@@ -80,6 +85,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(value), nil),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: optionalWithBackingFieldNotSetConfig(id, resourceType),
@@ -114,6 +121,10 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(resourceReference, "string_value", nil, sdk.String(externalValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", sdk.String(optionalWithBackingFieldDefaultValue), sdk.String(externalValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), nil),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: optionalWithBackingFieldNotSetConfig(id, resourceType),
@@ -143,11 +154,35 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", externalValue),
 				),
 			},
+			// unset
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), nil),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
+					},
+				},
+				Config: optionalWithBackingFieldNotSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", optionalWithBackingFieldDefaultValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "4"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", "nil"),
+				),
+			},
 			// set the value back again
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(value)),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, value),
@@ -157,10 +192,10 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", value),
 
 					// check actions
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "4"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE - SET"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", value),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "5"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.value", value),
 				),
 			},
 			// change the value
@@ -168,31 +203,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, newValue),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
-					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", newValue),
-
-					// check actions
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "5"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.action", "UPDATE - SET"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.field", "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.value", newValue),
-				),
-			},
-			// react to external change
-			{
-				PreConfig: func() {
-					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
-						StringValue: &externalValue,
-					})
-				},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(value), sdk.String(newValue)),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, newValue),
@@ -208,6 +220,35 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.value", newValue),
 				),
 			},
+			// react to external change
+			{
+				PreConfig: func() {
+					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
+						StringValue: &externalValue,
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), sdk.String(externalValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", sdk.String(newValue), sdk.String(externalValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), sdk.String(newValue)),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
+					},
+				},
+				Config: optionalWithBackingFieldAllSetConfig(id, resourceType, newValue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", newValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "7"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.value", newValue),
+				),
+			},
 			// remove type from config but update externally to default (still expecting non-empty plan because we do not know the default)
 			{
 				PreConfig: func() {
@@ -218,6 +259,10 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), sdk.String(optionalWithBackingFieldDefaultValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", sdk.String(newValue), sdk.String(optionalWithBackingFieldDefaultValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(optionalWithBackingFieldDefaultValue), nil),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: optionalWithBackingFieldNotSetConfig(id, resourceType),
@@ -227,10 +272,10 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", optionalWithBackingFieldDefaultValue),
 
 					// check actions
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "7"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.action", "UPDATE - UNSET"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.field", "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.value", "nil"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "8"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.7.value", "nil"),
 				),
 			},
 		},
