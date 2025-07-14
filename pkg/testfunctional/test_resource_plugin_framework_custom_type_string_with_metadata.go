@@ -18,7 +18,7 @@ import (
 
 var _ resource.ResourceWithConfigure = &StringWithMetadataResource{}
 
-func NewStringWithBackingFieldResource() resource.Resource {
+func NewStringWithMetadataResource() resource.Resource {
 	return &StringWithMetadataResource{
 		HttpServerEmbeddable: *common.NewHttpServerEmbeddable[StringWithMetadataOpts]("string_with_metadata"),
 	}
