@@ -208,6 +208,31 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.5.value", newValue),
 				),
 			},
+			// remove type from config but update externally to default (still expecting non-empty plan because we do not know the default)
+			{
+				PreConfig: func() {
+					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
+						StringValue: sdk.Pointer(optionalWithBackingFieldDefaultValue),
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: optionalWithBackingFieldNotSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", optionalWithBackingFieldDefaultValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "7"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.6.value", "nil"),
+				),
+			},
 		},
 	})
 }
