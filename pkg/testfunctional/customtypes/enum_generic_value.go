@@ -3,7 +3,6 @@ package customtypes
 import (
 	"context"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/attr/xattr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -11,21 +10,22 @@ import (
 )
 
 var (
-	_ basetypes.StringValuable                   = (*EnumValue)(nil)
-	_ basetypes.StringValuableWithSemanticEquals = (*EnumValue)(nil)
-	_ xattr.ValidateableAttribute                = (*EnumValue)(nil)
+	_ basetypes.StringValuable                   = (*EnumValue[dummyEnumType])(nil)
+	_ basetypes.StringValuableWithSemanticEquals = (*EnumValue[dummyEnumType])(nil)
+	_ xattr.ValidateableAttribute                = (*EnumValue[dummyEnumType])(nil)
 )
 
-type EnumValue struct {
+type EnumValue[T EnumCreator[T]] struct {
 	basetypes.StringValue
+	et T
 }
 
-func (v EnumValue) Type(_ context.Context) attr.Type {
-	return EnumType{}
+func (v EnumValue[T]) Type(_ context.Context) attr.Type {
+	return EnumType[T]{}
 }
 
-func (v EnumValue) Equal(o attr.Value) bool {
-	other, ok := o.(EnumValue)
+func (v EnumValue[T]) Equal(o attr.Value) bool {
+	other, ok := o.(EnumValue[T])
 
 	if !ok {
 		return false
@@ -34,17 +34,16 @@ func (v EnumValue) Equal(o attr.Value) bool {
 	return v.StringValue.Equal(other.StringValue)
 }
 
-func (v EnumValue) StringSemanticEquals(_ context.Context, newValuable basetypes.StringValuable) (bool, diag.Diagnostics) {
+func (v EnumValue[T]) StringSemanticEquals(_ context.Context, newValuable basetypes.StringValuable) (bool, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	newValue, ok := newValuable.(EnumValue)
+	newValue, ok := newValuable.(EnumValue[T])
 	if !ok {
 		diags.AddError("TODO", "TODO")
 		return false, diags
 	}
 
-	// TODO: parameterize func
-	result, err := sameAfterNormalization(newValue.ValueString(), v.ValueString(), sdk.ToWarehouseType)
+	result, err := v.sameAfterNormalization(newValue.ValueString(), v.ValueString())
 	if err != nil {
 		diags.AddError("TODO", "TODO")
 		return false, diags
@@ -53,12 +52,12 @@ func (v EnumValue) StringSemanticEquals(_ context.Context, newValuable basetypes
 	return result, diags
 }
 
-func sameAfterNormalization[T ~string](oldValue string, newValue string, normalize func(string) (T, error)) (bool, error) {
-	oldNormalized, err := normalize(oldValue)
+func (v EnumValue[T]) sameAfterNormalization(oldValue string, newValue string) (bool, error) {
+	oldNormalized, err := v.et.FromString(oldValue)
 	if err != nil {
 		return false, err
 	}
-	newNormalized, err := normalize(newValue)
+	newNormalized, err := v.et.FromString(newValue)
 	if err != nil {
 		return false, err
 	}
@@ -66,13 +65,12 @@ func sameAfterNormalization[T ~string](oldValue string, newValue string, normali
 	return oldNormalized == newNormalized, nil
 }
 
-func (v EnumValue) ValidateAttribute(_ context.Context, req xattr.ValidateAttributeRequest, resp *xattr.ValidateAttributeResponse) {
+func (v EnumValue[T]) ValidateAttribute(_ context.Context, req xattr.ValidateAttributeRequest, resp *xattr.ValidateAttributeResponse) {
 	if v.IsUnknown() || v.IsNull() {
 		return
 	}
 
-	// TODO: parameterize func
-	_, err := sdk.ToWarehouseType(v.ValueString())
+	_, err := v.et.FromString(v.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(req.Path, "TODO", "TODO")
 		return

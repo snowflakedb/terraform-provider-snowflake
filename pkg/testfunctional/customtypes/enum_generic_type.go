@@ -11,23 +11,24 @@ import (
 )
 
 var (
-	_ basetypes.StringTypable = (*EnumType)(nil)
+	_ basetypes.StringTypable = (*EnumType[dummyEnumType])(nil)
 )
 
-type EnumType struct {
+type EnumType[T EnumCreator[T]] struct {
 	basetypes.StringType
+	et T
 }
 
-func (t EnumType) String() string {
+func (t EnumType[T]) String() string {
 	return "EnumType"
 }
 
-func (t EnumType) ValueType(_ context.Context) attr.Value {
-	return EnumValue{}
+func (t EnumType[T]) ValueType(_ context.Context) attr.Value {
+	return EnumValue[T]{}
 }
 
-func (t EnumType) Equal(o attr.Type) bool {
-	other, ok := o.(EnumType)
+func (t EnumType[T]) Equal(o attr.Type) bool {
+	other, ok := o.(EnumType[T])
 
 	if !ok {
 		return false
@@ -36,13 +37,13 @@ func (t EnumType) Equal(o attr.Type) bool {
 	return t.StringType.Equal(other.StringType)
 }
 
-func (t EnumType) ValueFromString(_ context.Context, in basetypes.StringValue) (basetypes.StringValuable, diag.Diagnostics) {
-	return EnumValue{
+func (t EnumType[T]) ValueFromString(_ context.Context, in basetypes.StringValue) (basetypes.StringValuable, diag.Diagnostics) {
+	return EnumValue[T]{
 		StringValue: in,
 	}, nil
 }
 
-func (t EnumType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t EnumType[T]) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	attrValue, err := t.StringType.ValueFromTerraform(ctx, in)
 	if err != nil {
 		return nil, err
