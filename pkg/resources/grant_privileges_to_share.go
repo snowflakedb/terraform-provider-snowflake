@@ -375,7 +375,7 @@ func ReadGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, met
 			continue
 		}
 		if grant.GranteeName.Name() == id.ShareName.Name() {
-			if grantedOn == grant.GrantedOn {
+			if isGrantedOnEquivalent(grantedOn, grant.GrantedOn) {
 				privileges = append(privileges, grant.Privilege)
 			}
 		}
@@ -575,4 +575,18 @@ func prepareShowGrantsRequestForShare(id GrantPrivilegesToShareId) (*sdk.ShowGra
 	}
 
 	return opts, objectType
+}
+
+// This handles cases where GrantedOn (from `SHOW GRANTS`) might be a different type variant
+// from the same base type, e.g. `EXTERNAL_TABLE` vs `TABLE`, `DYNAMIC_TABLE` vs `TABLE`, etc.
+func isGrantedOnEquivalent(expected, actual sdk.ObjectType) bool {
+	// If they're exactly the same, no need for normalization
+	if expected == actual {
+		return true
+	}
+	if expected == sdk.ObjectTypeTable {
+		// If expected is TABLE, we consider it equivalent to any table-like type
+		return actual == sdk.ObjectTypeExternalTable || actual == sdk.ObjectTypeDynamicTable || actual == sdk.ObjectTypeIcebergTable
+	}
+	return false
 }
