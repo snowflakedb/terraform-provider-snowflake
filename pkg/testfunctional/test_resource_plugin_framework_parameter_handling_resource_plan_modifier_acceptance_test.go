@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-const parameterHandlingResourcePlanModifierDefaultValue = "default value"
+const parameterHandlingResourcePlanModifierDefaultValue = "default value - parameter handling resource plan modifier"
 
 var parameterHandlingResourcePlanModifierHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.ParameterHandlingResourcePlanModifierOpts](
 	testfunctional.ParameterHandlingResourcePlanModifierOpts{

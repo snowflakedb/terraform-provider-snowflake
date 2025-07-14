@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-const parameterHandlingBackingFieldDefaultValue = "default value"
+const parameterHandlingBackingFieldDefaultValue = "default value - parameter handling backing field"
 
 var parameterHandlingBackingFieldHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.ParameterHandlingBackingFieldOpts](
 	testfunctional.ParameterHandlingBackingFieldOpts{

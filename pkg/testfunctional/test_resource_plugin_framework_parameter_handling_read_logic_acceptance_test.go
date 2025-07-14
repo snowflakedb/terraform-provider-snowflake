@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-const parameterHandlingReadLogicDefaultValue = "default value"
+const parameterHandlingReadLogicDefaultValue = "default value - parameter handling read logic"
 
 var parameterHandlingReadLogicHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.ParameterHandlingReadLogicOpts](
 	testfunctional.ParameterHandlingReadLogicOpts{
