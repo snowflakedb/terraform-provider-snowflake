@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-const enumHandlingDefaultValue = sdk.WarehouseType("STANDARD")
+const enumHandlingDefaultValue = testfunctional.SomeEnumTypeVersion1
 
 var enumHandlingHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.EnumHandlingOpts](
 	testfunctional.EnumHandlingOpts{StringValue: sdk.Pointer(enumHandlingDefaultValue)}, enumHandlingOptsUseDefaultsForNil,
@@ -39,9 +39,9 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 	resourceType := fmt.Sprintf("%s_enum_handling", PluginFrameworkFunctionalTestsProviderName)
 	resourceReference := fmt.Sprintf("%s.test", resourceType)
 
-	value := string(sdk.WarehouseTypeStandard)
-	newValue := "new value"
-	externalValue := "value changed externally"
+	value := string(testfunctional.SomeEnumTypeVersion1)
+	newValue := string(testfunctional.SomeEnumTypeVersion2)
+	externalValue := string(testfunctional.SomeEnumTypeVersion3)
 
 	_ = newValue
 	_ = externalValue
@@ -58,10 +58,10 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(string(sdk.WarehouseTypeStandard))),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(string(testfunctional.SomeEnumTypeVersion1))),
 					},
 				},
-				Config: enumHandlingAllSetConfig(id, resourceType, string(sdk.WarehouseTypeStandard)),
+				Config: enumHandlingAllSetConfig(id, resourceType, string(testfunctional.SomeEnumTypeVersion1)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "string_value", value),
