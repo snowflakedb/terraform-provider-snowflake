@@ -48,9 +48,6 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ReadLogic(t *t
 	newValue := "new value"
 	externalValue := "value changed externally"
 
-	_, _ = newValue, externalValue
-	_ = parameterHandlingReadLogicNotSetConfig(id, resourceType)
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerForPluginFrameworkFunctionalTestsFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -167,6 +164,26 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ReadLogic(t *t
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE - SET"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "string_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", newValue),
+				),
+			},
+			// remove the param from config
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(newValue), nil),
+					},
+				},
+				Config: parameterHandlingReadLogicNotSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", parameterHandlingReadLogicDefaultValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "5"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.4.value", "nil"),
 				),
 			},
 		},

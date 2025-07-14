@@ -49,9 +49,6 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ResourcePlanMo
 	newValue := "new value"
 	externalValue := "value changed externally"
 
-	_, _ = newValue, externalValue
-	_ = parameterHandlingResourcePlanModifierNotSetConfig(id, resourceType)
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerForPluginFrameworkFunctionalTestsFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -142,7 +139,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ResourcePlanMo
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.value", newValue),
 				),
 			},
-			//  change the param value externally to the value from config (but on different level)
+			// change the param value externally to the value from config (but on different level)
+			// This step documents that we can't use the similar approach like with resource.ParameterValueComputedIf with SDKv2.
 			{
 				PreConfig: func() {
 					parameterHandlingResourcePlanModifierHandler.SetCurrentValue(testfunctional.ParameterHandlingResourcePlanModifierOpts{
@@ -173,14 +171,4 @@ resource "%[3]s" "test" {
   string_value = "%[2]s"
 }
 `, id.Name(), value, resourceType, PluginFrameworkFunctionalTestsProviderName)
-}
-
-func parameterHandlingResourcePlanModifierNotSetConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
-	return fmt.Sprintf(`
-resource "%[2]s" "test" {
-  provider = "%[3]s"
-
-  name = "%[1]s"
-}
-`, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
 }

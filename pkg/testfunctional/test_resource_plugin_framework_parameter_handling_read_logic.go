@@ -162,7 +162,9 @@ func (r *ParameterHandlingReadLogicResource) read(data *parameterHandlingReadLog
 		diags.AddError("Could not read resources state", err.Error())
 	} else {
 		if opts.StringValue != nil {
-			// if the level differs we set the state to null, to trigger setting
+			// If the level differs we set the state to null, to trigger setting.
+			// It's not ideal as the plan will output null -> value plan.
+			// Can't set to unknown because then "The returned state contains unknown values." error is returned.
 			if opts.StringValue != nil && opts.Level == "OBJECT" {
 				data.StringValue = types.StringValue(*opts.StringValue)
 			} else {
