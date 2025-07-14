@@ -21,12 +21,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.2.0 ➞ v2.3.0
+## v2.3.0 ➞ v2.4.0
 
 ### *(new feature)* snowflake_user_programmatic_access_token resource
 Added a new preview resource for managing users' programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) and a [user guide](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more details.
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token` to `preview_features_enabled` field in the provider configuration.
+
+## v2.2.0 ➞ v2.3.0
 
 ### *(new feature)* New `PROGRAMMATIC_ACCESS_TOKEN` authenticator option
 

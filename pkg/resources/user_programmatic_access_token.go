@@ -117,16 +117,19 @@ func UserProgrammaticAccessToken() *schema.Resource {
 
 func ImportUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
-	id := userProgrammaticAccessTokenIdFromData(d)
+	id, err := userProgrammaticAccessTokenIdFromData(d)
+	if err != nil {
+		return nil, err
+	}
 
-	token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, id.UserName, id.TokenName)
+	token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, id.userName, id.tokenName)
 	if err != nil {
 		return nil, err
 	}
 
 	errs := errors.Join(
 		d.Set("name", token.Name),
-		d.Set("user", id.UserName.Name()),
+		d.Set("user", id.userName.Name()),
 		// not reading mins_to_bypass_network_policy_requirement on purpose (it always changes)
 		d.Set("disabled", booleanStringFromBool(token.Status == sdk.ProgrammaticAccessTokenStatusDisabled)),
 	)
@@ -140,12 +143,12 @@ func CreateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 	client := meta.(*provider.Context).Client
 	user := d.Get("user").(string)
 	name := d.Get("name").(string)
-	resourceId := UserProgrammaticAccessTokenId{
-		UserName:  sdk.NewAccountObjectIdentifier(user),
-		TokenName: sdk.NewAccountObjectIdentifier(name),
+	resourceId := userProgrammaticAccessTokenId{
+		userName:  sdk.NewAccountObjectIdentifier(user),
+		tokenName: sdk.NewAccountObjectIdentifier(name),
 	}
 
-	request := sdk.NewAddUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName)
+	request := sdk.NewAddUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName)
 	errs := errors.Join(
 		accountObjectIdentifierAttributeCreate(d, "role_restriction", &request.RoleRestriction),
 		intAttributeCreateBuilder(d, "days_to_expiry", request.WithDaysToExpiry),
@@ -168,7 +171,7 @@ func CreateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 		request := sdk.NewModifyProgrammaticAccessTokenSetRequest().WithDisabled(parsed)
-		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithSet(*request)); err != nil {
+		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*request)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -186,16 +189,19 @@ func CreateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
-		resourceId := userProgrammaticAccessTokenIdFromData(d)
-		token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, resourceId.UserName, resourceId.TokenName)
+		resourceId, err := userProgrammaticAccessTokenIdFromData(d)
 		if err != nil {
-			if errors.Is(err, sdk.ErrNotFound) {
+			return diag.FromErr(err)
+		}
+		token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, resourceId.userName, resourceId.tokenName)
+		if err != nil {
+			if errors.Is(err, sdk.ErrPatNotFound) {
 				d.SetId("")
 				return diag.Diagnostics{
 					diag.Diagnostic{
 						Severity: diag.Warning,
 						Summary:  "Failed to query user programmatic access token. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("User programmatic access token name: %s for user: %s, Err: %s", resourceId.TokenName.FullyQualifiedName(), resourceId.UserName.FullyQualifiedName(), err),
+						Detail:   fmt.Sprintf("User programmatic access token name: %s for user: %s, Err: %s", resourceId.tokenName.FullyQualifiedName(), resourceId.userName.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -236,17 +242,19 @@ func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.Rea
 
 func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	resourceId := userProgrammaticAccessTokenIdFromData(d)
+	resourceId, err := userProgrammaticAccessTokenIdFromData(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.HasChange("name") {
 		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
-
-		err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithRenameTo(newId))
+		err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming user programmatic access token %v err = %w", d.Id(), err))
 		}
 
-		resourceId.TokenName = newId
+		resourceId.tokenName = newId
 		d.SetId(resourceId.String())
 	}
 
@@ -262,12 +270,12 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if (*set != sdk.ModifyProgrammaticAccessTokenSetRequest{}) {
-		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithSet(*set)); err != nil {
+		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*set)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 	if (*unset != sdk.ModifyProgrammaticAccessTokenUnsetRequest{}) {
-		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName).WithUnset(*unset)); err != nil {
+		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*unset)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -276,9 +284,12 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 
 func DeleteUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	resourceId := userProgrammaticAccessTokenIdFromData(d)
+	resourceId, err := userProgrammaticAccessTokenIdFromData(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	err := client.Users.RemoveProgrammaticAccessTokenSafely(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName))
+	err = client.Users.RemoveProgrammaticAccessTokenSafely(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -287,19 +298,22 @@ func DeleteUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-type UserProgrammaticAccessTokenId struct {
-	UserName  sdk.AccountObjectIdentifier
-	TokenName sdk.AccountObjectIdentifier
+type userProgrammaticAccessTokenId struct {
+	userName  sdk.AccountObjectIdentifier
+	tokenName sdk.AccountObjectIdentifier
 }
 
-func (id *UserProgrammaticAccessTokenId) String() string {
-	return helpers.EncodeResourceIdentifier(id.UserName.FullyQualifiedName(), id.TokenName.FullyQualifiedName())
+func (id *userProgrammaticAccessTokenId) String() string {
+	return helpers.EncodeResourceIdentifier(id.userName.FullyQualifiedName(), id.tokenName.FullyQualifiedName())
 }
 
-func userProgrammaticAccessTokenIdFromData(d *schema.ResourceData) UserProgrammaticAccessTokenId {
+func userProgrammaticAccessTokenIdFromData(d *schema.ResourceData) (userProgrammaticAccessTokenId, error) {
 	idRaw := helpers.ParseResourceIdentifier(d.Id())
-	return UserProgrammaticAccessTokenId{
-		UserName:  sdk.NewAccountObjectIdentifier(idRaw[0]),
-		TokenName: sdk.NewAccountObjectIdentifier(idRaw[1]),
+	if len(idRaw) != 2 {
+		return userProgrammaticAccessTokenId{}, fmt.Errorf("invalid resource id: %s", d.Id())
 	}
+	return userProgrammaticAccessTokenId{
+		userName:  sdk.NewAccountObjectIdentifier(idRaw[0]),
+		tokenName: sdk.NewAccountObjectIdentifier(idRaw[1]),
+	}, nil
 }
