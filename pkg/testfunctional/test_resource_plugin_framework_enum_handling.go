@@ -16,6 +16,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type SomeEnumStruct struct{}
+
+func (e SomeEnumStruct) FromString(s string) (SomeEnumType, error) {
+	return FromString(s)
+}
+
 type SomeEnumType string
 
 const (
