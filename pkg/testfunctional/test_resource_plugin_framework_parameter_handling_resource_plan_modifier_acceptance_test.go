@@ -77,6 +77,43 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ResourcePlanMo
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", value),
 				),
 			},
+			// do not make any change (to check if there is no drift)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: parameterHandlingResourcePlanModifierAllSetConfig(id, resourceType, value),
+			},
+			// import when known value
+			{
+				ResourceName:      resourceReference,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignoring actions_log as they serve testing purpose; ignoring name as we do not fill it in read (import tests will be done separately).
+				ImportStateVerifyIgnore: []string{"actions_log", "name"},
+			},
+			// change the param value in config
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(value), sdk.String(newValue)),
+					},
+				},
+				Config: parameterHandlingResourcePlanModifierAllSetConfig(id, resourceType, newValue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", newValue),
+				),
+			},
 		},
 	})
 }
