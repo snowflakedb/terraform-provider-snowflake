@@ -21,7 +21,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.2.0 ➞ v2.3.0
+## v2.3.0 ➞ v2.4.0
 
 ### *(new feature)* snowflake_user_programmatic_access_tokens data source
 Added a new preview data source for user programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens).
@@ -33,11 +33,25 @@ Added a new preview resource for managing users' programmatic access tokens. See
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token` to `preview_features_enabled` field in the provider configuration.
 
+## v2.2.0 ➞ v2.3.0
+
 ### *(new feature)* New `PROGRAMMATIC_ACCESS_TOKEN` authenticator option
 
 We added a new `PROGRAMMATIC_ACCESS_TOKEN` option to the `authenticator` field in the provider. This feature enables authentication with `PROGRAMMATIC_ACCESS_TOKEN` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more information on PAT authentication.
+
+### *(bugfix)* Fix `snowflake_functions` and `snowflake_procedures` data sources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
+
+### *(bugfix)* Fix all function and procedure resources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
 
 ## v2.1.0 ➞ v2.2.0
 
