@@ -1,8 +1,19 @@
 package sdk
 
 import (
+	"github.com/pelletier/go-toml/v2"
 	"github.com/snowflakedb/gosnowflake"
 )
+
+//go:generate go run ./dto-builder-generator/main.go
+
+type LegacyConfigFile struct {
+	Profiles map[string]LegacyConfigDTO
+}
+
+func (c *LegacyConfigFile) MarshalToml() ([]byte, error) {
+	return toml.Marshal(c.Profiles)
+}
 
 // TODO(SNOW-1787920): improve TOML parsing
 type LegacyConfigDTO struct {

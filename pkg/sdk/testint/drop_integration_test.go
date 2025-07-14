@@ -1,3 +1,5 @@
+//go:build !account_level_tests
+
 package testint
 
 import (
@@ -97,16 +99,13 @@ func TestInt_SafeRemoveProgrammaticAccessToken(t *testing.T) {
 	t.Cleanup(cleanupToken)
 
 	ctx := context.Background()
-	removeProgrammaticAccessToken := func(userId, tokenId sdk.AccountObjectIdentifier) func() error {
-		return func() error {
-			return testClient(t).Users.RemoveProgrammaticAccessToken(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(userId, tokenId))
-		}
-	}
+	err := sdk.SafeRemoveProgrammaticAccessToken(testClient(t), ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(user.ID(), token.ID()))
+	assert.NoError(t, err)
 
-	err := sdk.SafeRemoveProgrammaticAccessToken(testClient(t), removeProgrammaticAccessToken(user.ID(), token.ID()), ctx, user.ID())
+	err = sdk.SafeRemoveProgrammaticAccessToken(testClient(t), ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(user.ID(), token.ID()))
 	assert.NoError(t, err)
 
 	invalidUserId := NonExistingAccountObjectIdentifier
-	err = sdk.SafeRemoveProgrammaticAccessToken(testClient(t), removeProgrammaticAccessToken(invalidUserId, token.ID()), ctx, invalidUserId)
+	err = sdk.SafeRemoveProgrammaticAccessToken(testClient(t), ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(invalidUserId, token.ID()))
 	assert.NoError(t, err)
 }

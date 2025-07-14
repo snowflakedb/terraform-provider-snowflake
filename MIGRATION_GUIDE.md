@@ -34,6 +34,18 @@ We added a new `PROGRAMMATIC_ACCESS_TOKEN` option to the `authenticator` field i
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more information on PAT authentication.
 
+### *(bugfix)* Fix `snowflake_functions` and `snowflake_procedures` data sources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
+
+### *(bugfix)* Fix all function and procedure resources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
+
 ## v2.1.0 ➞ v2.2.0
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource

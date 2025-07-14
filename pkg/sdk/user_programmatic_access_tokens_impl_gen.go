@@ -43,10 +43,7 @@ func (v *userProgrammaticAccessTokens) Remove(ctx context.Context, request *Remo
 
 // Adjusted manually to include the user id in the request.
 func (v *userProgrammaticAccessTokens) RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
-	removeProgrammaticAccessToken := func() error {
-		return v.Remove(ctx, request)
-	}
-	return SafeRemoveProgrammaticAccessToken(v.client, removeProgrammaticAccessToken, ctx, request.UserName)
+	return SafeRemoveProgrammaticAccessToken(v.client, ctx, request)
 }
 
 func (v *userProgrammaticAccessTokens) Show(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error) {
@@ -71,7 +68,7 @@ func (v *userProgrammaticAccessTokens) ShowByID(ctx context.Context, userId, id 
 
 // Adjusted manually to include the user id in the request.
 func (v *userProgrammaticAccessTokens) ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
-	return SafeShowProgrammaticAccessTokenByName(v.client, v.ShowByID, ctx, userId, id)
+	return SafeShowProgrammaticAccessTokenByName(v.client, ctx, userId, id)
 }
 
 func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAccessTokenOptions {

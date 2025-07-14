@@ -16,8 +16,7 @@ type ProgrammaticAccessTokenAssert struct {
 }
 
 // function ProgrammaticAccessToken is not supported because ProgrammaticAccessToken has a pseudo-identifier and requires a user ID for being listed in Snowflake.
-
-// TODO: check if it makes sense.
+// TODO(SNOW-1501905): add a function to get the ProgrammaticAccessToken by user and token name.
 func ProgrammaticAccessTokenFromObject(t *testing.T, programmaticAccessToken *sdk.ProgrammaticAccessToken) *ProgrammaticAccessTokenAssert {
 	t.Helper()
 	return &ProgrammaticAccessTokenAssert{
