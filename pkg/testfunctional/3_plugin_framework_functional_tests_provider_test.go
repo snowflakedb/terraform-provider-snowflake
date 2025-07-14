@@ -72,6 +72,7 @@ func (p *pluginFrameworkFunctionalTestsProvider) Resources(_ context.Context) []
 		httpserver.NewHttpServerResource,
 		testfunctional.NewStringWithMetadataResource,
 		testfunctional.NewOptionalWithBackingFieldResource,
+		testfunctional.NewParameterHandlingResourcePlanModifierResource,
 	}
 }
 
