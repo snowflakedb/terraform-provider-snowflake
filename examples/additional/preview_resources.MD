@@ -30,6 +30,7 @@
 - [snowflake_network_rule](./docs/resources/network_rule)
 - [snowflake_notification_integration](./docs/resources/notification_integration)
 - [snowflake_object_parameter](./docs/resources/object_parameter)
+- [snowflake_organization_account](./docs/resources/organization_account)
 - [snowflake_password_policy](./docs/resources/password_policy)
 - [snowflake_pipe](./docs/resources/pipe)
 - [snowflake_procedure_java](./docs/resources/procedure_java)
