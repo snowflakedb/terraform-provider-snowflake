@@ -14,8 +14,14 @@ import (
 )
 
 var currentOrganizationAccountSchema = map[string]*schema.Schema{
-	// TODO: name will be also in the organization account resource, but it won't support alters and we have to decide if we want to support renames here or there.
-	// "name": { Type: schema.TypeString },
+	"name": {
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "Specifies the identifier (i.e. name) for the account. It must be unique within an organization, regardless of which Snowflake Region the account is in and must start with an alphabetic character and cannot contain spaces or special characters except for underscores (_). Note that if the account name includes underscores, features that do not accept account names with underscores (e.g. Okta SSO or SCIM) can reference a version of the account name that substitutes hyphens (-) for the underscores.",
+	},
+
+	// TODO: What about other fields that cannot be changed like edition, region, comment, etc.?
+
 	"resource_monitor": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -60,6 +66,16 @@ func CurrentOrganizationAccount() *schema.Resource {
 
 func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
+
+	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// TODO: Do we want to allow rename in create or should we only allow it in update? (here the user wouldn't know if name is correct)
+	if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithRenameTo(*sdk.NewOrganizationAccountRenameRequest(&id))); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if v, ok := d.GetOk("resource_monitor"); ok {
 		resourceMonitorId, err := sdk.ParseAccountObjectIdentifier(v.(string))
@@ -113,7 +129,7 @@ func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	d.SetId("current_organization_account")
+	d.SetId(id.Name())
 
 	return ReadCurrentAccount(ctx, d, meta)
 }
@@ -152,6 +168,10 @@ func ReadCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData,
 
 func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
+
+	if d.HasChange("name") {
+
+	}
 
 	if d.HasChange("resource_monitor") {
 		if v, ok := d.GetOk("resource_monitor"); ok {
