@@ -19,9 +19,6 @@ var currentOrganizationAccountSchema = map[string]*schema.Schema{
 		Required:    true,
 		Description: "Specifies the identifier (i.e. name) for the account. It must be unique within an organization, regardless of which Snowflake Region the account is in and must start with an alphabetic character and cannot contain spaces or special characters except for underscores (_). Note that if the account name includes underscores, features that do not accept account names with underscores (e.g. Okta SSO or SCIM) can reference a version of the account name that substitutes hyphens (-) for the underscores.",
 	},
-
-	// TODO: What about other fields that cannot be changed like edition, region, comment, etc.?
-
 	"resource_monitor": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -57,7 +54,7 @@ func CurrentOrganizationAccount() *schema.Resource {
 
 		Schema: collections.MergeMaps(currentOrganizationAccountSchema, accountParametersSchema),
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.CurrentOrganizationAccount, schema.ImportStatePassthroughContext),
+			StateContext: TrackingImportWrapper(resources.CurrentOrganizationAccount, ImportName[sdk.AccountObjectIdentifier]),
 		},
 
 		Timeouts: defaultTimeouts,
@@ -67,14 +64,26 @@ func CurrentOrganizationAccount() *schema.Resource {
 func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
+	organizationAccounts, err := client.OrganizationAccounts.Show(ctx, sdk.NewShowOrganizationAccountRequest())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(organizationAccounts) != 1 {
+		return diag.Errorf("expected 1 organization account, found %d", len(organizationAccounts))
+	}
+	currentOrganizationAccount := organizationAccounts[0]
+
 	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// TODO: Do we want to allow rename in create or should we only allow it in update? (here the user wouldn't know if name is correct)
-	if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithRenameTo(*sdk.NewOrganizationAccountRenameRequest(&id))); err != nil {
-		return diag.FromErr(err)
+	if id.Name() != currentOrganizationAccount.AccountName {
+		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().
+			WithName(sdk.NewAccountObjectIdentifier(currentOrganizationAccount.AccountName)).
+			WithRenameTo(*sdk.NewOrganizationAccountRenameRequest(&id))); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if v, ok := d.GetOk("resource_monitor"); ok {
@@ -131,7 +140,7 @@ func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(id.Name())
 
-	return ReadCurrentAccount(ctx, d, meta)
+	return ReadCurrentOrganizationAccount(ctx, d, meta)
 }
 
 func ReadCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -170,7 +179,17 @@ func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 	client := meta.(*provider.Context).Client
 
 	if d.HasChange("name") {
-
+		oldName, newName := d.GetChange("name")
+		id, err := sdk.ParseAccountObjectIdentifier(newName.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().
+			WithName(sdk.NewAccountObjectIdentifier(oldName.(string))).
+			WithRenameTo(*sdk.NewOrganizationAccountRenameRequest(&id))); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(id.Name())
 	}
 
 	if d.HasChange("resource_monitor") {
@@ -237,7 +256,7 @@ func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	return ReadCurrentAccount(ctx, d, meta)
+	return ReadCurrentOrganizationAccount(ctx, d, meta)
 }
 
 func DeleteCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
