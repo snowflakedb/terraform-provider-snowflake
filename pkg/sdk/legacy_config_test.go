@@ -236,7 +236,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithJwtExpireTimeout(50).
 			WithExternalBrowserTimeout(60).
 			WithMaxRetryCount(1).
-			WithAuthenticator("SNOWFLAKE_JWT").
+			WithAuthenticator(string(AuthenticationTypeJwt)).
 			WithInsecureMode(true).
 			WithOcspFailOpen(true).
 			WithToken("token").
@@ -247,7 +247,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithValidateDefaultParameters(true).
 			WithClientRequestMfaToken(true).
 			WithClientStoreTemporaryCredential(true).
-			WithDriverTracing("tracing").
+			WithDriverTracing(string(DriverLogLevelTrace)).
 			WithTmpDirPath(".").
 			WithDisableQueryContextCache(true).
 			WithIncludeRetryReason(true).

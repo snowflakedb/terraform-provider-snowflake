@@ -25,7 +25,7 @@ func migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName(ctx cont
 	if rawState == nil {
 		return rawState, nil
 	}
-	oldId := helpers.DecodeSnowflakeID(rawState["id"].(string))
+	oldId := helpers.DecodeSnowflakeIDLegacy(rawState["id"].(string))
 	rawState["id"] = oldId.FullyQualifiedName()
 	return rawState, nil
 }

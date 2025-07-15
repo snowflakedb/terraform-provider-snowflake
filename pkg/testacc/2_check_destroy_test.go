@@ -85,7 +85,7 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.ProcedureSql:
 		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
 	default:
-		return helpers.DecodeSnowflakeID(rs.Primary.ID), nil
+		return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
 	}
 }
 
