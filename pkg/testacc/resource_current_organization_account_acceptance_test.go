@@ -3,6 +3,8 @@
 package testacc
 
 import (
+	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -333,6 +335,28 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
 						HasSessionPolicyString(sessionPolicy.ID().FullyQualifiedName()),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_CurrentOrganizationAccount_NameValidationOnCreate(t *testing.T) {
+	testClient().EnsureValidNonProdOrganizationAccountIsUsed(t)
+
+	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
+	organizationAccountName := "INVALID_ORGANIZATION_ACCOUNT_NAME"
+	modelWithInvalidOrganizationAccountName := model.CurrentOrganizationAccount("test", organizationAccountName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, provider, modelWithInvalidOrganizationAccountName),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("passed name: %s, doesn't match current organization account name: %s, renames can be performed only after resource initialization", organizationAccountName, testClient().OrganizationAccount.Show(t).AccountName)),
 			},
 		},
 	})

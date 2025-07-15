@@ -79,11 +79,7 @@ func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if id.Name() != currentOrganizationAccount.AccountName {
-		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().
-			WithName(sdk.NewAccountObjectIdentifier(currentOrganizationAccount.AccountName)).
-			WithRenameTo(*sdk.NewOrganizationAccountRenameRequest(&id))); err != nil {
-			return diag.FromErr(err)
-		}
+		return diag.Errorf("passed name: %s, doesn't match current organization account name: %s, renames can be performed only after resource initialization", id.Name(), currentOrganizationAccount.AccountName)
 	}
 
 	if v, ok := d.GetOk("resource_monitor"); ok {
