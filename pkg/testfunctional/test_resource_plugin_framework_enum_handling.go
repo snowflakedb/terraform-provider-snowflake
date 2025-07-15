@@ -56,9 +56,10 @@ type EnumHandlingResource struct {
 }
 
 type enumHandlingResourceModelV0 struct {
-	Name        types.String                        `tfsdk:"name"`
-	StringValue customtypes.EnumValue[SomeEnumType] `tfsdk:"string_value"`
-	Id          types.String                        `tfsdk:"id"`
+	Name                    types.String                        `tfsdk:"name"`
+	StringValue             customtypes.EnumValue[SomeEnumType] `tfsdk:"string_value"`
+	StringValueBackingField types.String                        `tfsdk:"string_value_backing_field"`
+	Id                      types.String                        `tfsdk:"id"`
 }
 
 type EnumHandlingOpts struct {
@@ -85,6 +86,13 @@ func (r *EnumHandlingResource) Schema(_ context.Context, _ resource.SchemaReques
 					customplanmodifiers.EnumSuppressor[SomeEnumType](),
 				},
 			},
+			"string_value_backing_field": schema.StringAttribute{
+				Description: "String value backing field.",
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "Identifier for this resource.",
@@ -94,6 +102,28 @@ func (r *EnumHandlingResource) Schema(_ context.Context, _ resource.SchemaReques
 			},
 		},
 	}
+}
+
+func (r *EnumHandlingResource) ModifyPlan(ctx context.Context, request resource.ModifyPlanRequest, response *resource.ModifyPlanResponse) {
+	if request.State.Raw.IsNull() || request.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan, state *enumHandlingResourceModelV0
+
+	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
+	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
+
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	// we run normal equal here, as customplanmodifiers.EnumSuppressor handles it
+	if !plan.StringValue.Equal(state.StringValue) {
+		plan.StringValueBackingField = types.StringUnknown()
+	}
+
+	response.Diagnostics.Append(response.Plan.Set(ctx, &plan)...)
 }
 
 func (r *EnumHandlingResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
@@ -151,8 +181,7 @@ func (r *EnumHandlingResource) readAfterCreateOrUpdate(data *enumHandlingResourc
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
 	} else if opts.StringValue != nil {
-		// TODO
-		// data.StringValueBackingField = types.StringValue(*opts.StringValue)
+		data.StringValueBackingField = types.StringValue(string(*opts.StringValue))
 	}
 	return diags
 }
@@ -173,19 +202,13 @@ func (r *EnumHandlingResource) read(data *enumHandlingResourceModelV0) diag.Diag
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
 	} else if opts.StringValue != nil {
-		// TODO:
-		//if data.StringValue.IsNull() {
-		//	data.StringValue = customtypes.NewEnumValue(*opts.StringValue)
-		//} else {
-		//	areTheSame, err := sameAfterNormalization(data.StringValue.ValueString(), string(*opts.StringValue), ToSomeEnumType)
-		//	if err != nil {
-		//		diags.AddError("Could not read resources state", err.Error())
-		//		return diags
-		//	}
-		//	if !areTheSame {
-		//		data.StringValue = customtypes.NewEnumValue(*opts.StringValue)
-		//	}
-		//}
+		newValue := *opts.StringValue
+		// we don't need conversion here as https://developer.hashicorp.com/terraform/plugin/framework/handling-data/types/custom#semantic-equality should handle it for us:
+		// `When refreshing a resource, the response new state value from the Read method logic is compared to the request prior state value.`
+		if string(newValue) != data.StringValueBackingField.ValueString() {
+			data.StringValue = customtypes.NewEnumValue(newValue)
+		}
+		data.StringValueBackingField = types.StringValue(string(newValue))
 	}
 	return diags
 }

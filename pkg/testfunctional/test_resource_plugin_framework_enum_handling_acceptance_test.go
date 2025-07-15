@@ -44,9 +44,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 	value := string(testfunctional.SomeEnumTypeVersion1)
 	valueLowercased := strings.ToLower(value)
 	newValue := string(testfunctional.SomeEnumTypeVersion2)
-	externalValue := string(testfunctional.SomeEnumTypeVersion3)
-
-	_ = externalValue
+	externalValueEnum := testfunctional.SomeEnumTypeVersion3
+	externalValue := string(externalValueEnum)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerForPluginFrameworkFunctionalTestsFactories,
@@ -60,6 +59,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
 						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(value)),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: enumHandlingAllSetConfig(id, resourceType, value),
@@ -82,6 +82,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, &value, &newValue),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: enumHandlingAllSetConfig(id, resourceType, newValue),
@@ -96,6 +97,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, &newValue, nil),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: enumHandlingNotSetConfig(id, resourceType),
@@ -119,6 +121,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, &valueLowercased),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
 				Config: enumHandlingAllSetConfig(id, resourceType, valueLowercased),
@@ -132,12 +135,34 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionNoop),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", false),
 					},
 				},
 				Config: enumHandlingAllSetConfig(id, resourceType, value),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "string_value", valueLowercased),
+				),
+			},
+			// change the type externally
+			{
+				PreConfig: func() {
+					enumHandlingHandler.SetCurrentValue(testfunctional.EnumHandlingOpts{
+						StringValue: &externalValueEnum,
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(resourceReference, "string_value", &valueLowercased, &externalValue),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, &externalValue, &value),
+						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
+					},
+				},
+				Config: enumHandlingAllSetConfig(id, resourceType, value),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", value),
 				),
 			},
 		},
