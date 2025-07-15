@@ -10,9 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-var (
-	_ basetypes.StringTypable = (*EnumType[dummyEnumType])(nil)
-)
+var _ basetypes.StringTypable = (*EnumType[dummyEnumType])(nil)
 
 type EnumType[T EnumCreator[T]] struct {
 	basetypes.StringType
