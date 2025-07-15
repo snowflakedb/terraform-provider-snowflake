@@ -2,6 +2,7 @@ package testfunctional_test
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -191,6 +192,26 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
 					resource.TestCheckResourceAttr(resourceReference, "string_value_backing_field", string(enumHandlingDefaultValue)),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling_Validations(t *testing.T) {
+	id := sdk.NewAccountObjectIdentifier("abc")
+	resourceType := fmt.Sprintf("%s_enum_handling", PluginFrameworkFunctionalTestsProviderName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerForPluginFrameworkFunctionalTestsFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// create with known value
+			{
+				Config:      enumHandlingAllSetConfig(id, resourceType, "unknown"),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("invalid some enum type: unknown"),
 			},
 		},
 	})
