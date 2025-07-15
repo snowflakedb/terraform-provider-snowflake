@@ -9,7 +9,7 @@ import (
 
 func booleanAttributeCreate(boolAttribute types.Bool, createField **bool) {
 	if !boolAttribute.IsNull() {
-		*createField = sdk.Bool(boolAttribute.ValueBool())
+		*createField = boolAttribute.ValueBoolPointer()
 	}
 }
 
@@ -29,6 +29,9 @@ func int64AttributeCreate(int64Attribute types.Int64, createField **int) {
 	}
 }
 
+// For now, we use here two same set/unset pointers as the test server handles a single HTTP call.
+// It should be altered when working on the server improvement.
+// TODO [mux-PRs]: Handle set/unset instead just single opts
 func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **int) {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -41,7 +44,7 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 
 func stringAttributeCreate(stringAttribute types.String, createField **string) {
 	if !stringAttribute.IsNull() {
-		*createField = sdk.String(stringAttribute.ValueString())
+		*createField = stringAttribute.ValueStringPointer()
 	}
 }
 
