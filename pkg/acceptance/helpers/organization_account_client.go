@@ -29,3 +29,11 @@ func (c *OrganizationAccountClient) Alter(t *testing.T, req *sdk.AlterOrganizati
 	err := c.client().Alter(context.Background(), req)
 	require.NoError(t, err)
 }
+
+func (c *OrganizationAccountClient) Show(t *testing.T) sdk.OrganizationAccount {
+	t.Helper()
+	organizationAccount, err := c.client().Show(context.Background(), sdk.NewShowOrganizationAccountRequest())
+	require.NoError(t, err)
+	require.Len(t, organizationAccount, 1)
+	return organizationAccount[0]
+}

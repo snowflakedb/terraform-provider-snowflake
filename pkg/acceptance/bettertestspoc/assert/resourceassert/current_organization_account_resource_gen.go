@@ -32,6 +32,11 @@ func ImportedCurrentOrganizationAccountResource(t *testing.T, id string) *Curren
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNameString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("name", expected))
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasAbortDetachedQueryString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("abort_detached_query", expected))
 	return c
@@ -635,6 +640,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasWeekStartString(expected s
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
+
+func (c *CurrentOrganizationAccountResourceAssert) HasNoName() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("name"))
+	return c
+}
 
 func (c *CurrentOrganizationAccountResourceAssert) HasNoAbortDetachedQuery() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("abort_detached_query"))
@@ -1843,6 +1853,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasWeekStartEmpty() *CurrentO
 ///////////////////////////////
 // Attribute presence checks //
 ///////////////////////////////
+
+func (c *CurrentOrganizationAccountResourceAssert) HasNameNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("name"))
+	return c
+}
 
 func (c *CurrentOrganizationAccountResourceAssert) HasAbortDetachedQueryNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("abort_detached_query"))

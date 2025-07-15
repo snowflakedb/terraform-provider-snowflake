@@ -5,6 +5,8 @@ description: |-
   Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See ALTER ACCOUNT https://docs.snowflake.com/en/sql-reference/sql/alter-account documentation for more information on resource capabilities.
 ---
 
+!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+
 !> **Warning** During create operation every parameter that is not set in the resource will be unset on the account.
 
 !> **Warning** This resource requires warehouse to be in the context. To use this resource, specify a default warehouse in the provider configuration or on the user used in the configuration.

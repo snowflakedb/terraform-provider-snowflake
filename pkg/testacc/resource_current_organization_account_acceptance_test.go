@@ -36,8 +36,9 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 	t.Cleanup(stageCleanup)
 
 	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
-	unsetParametersModel := model.CurrentOrganizationAccount("test")
-	setParametersModel := model.CurrentOrganizationAccount("test").WithAllParametersSetToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID())
+	currentOrganizationAccountName := testClient().OrganizationAccount.Show(t).AccountName
+	unsetParametersModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName)
+	setParametersModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).WithAllParametersSetToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -50,7 +51,9 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 			{
 				Config: config.FromModels(t, provider, unsetParametersModel),
 				Check: assertThat(t,
-					resourceassert.CurrentOrganizationAccountResource(t, unsetParametersModel.ResourceReference()).HasAllDefaultParameters(),
+					resourceassert.CurrentOrganizationAccountResource(t, unsetParametersModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
+						HasAllDefaultParameters(),
 				),
 			},
 			// import with unset parameters
@@ -59,7 +62,9 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 				ResourceName: unsetParametersModel.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedCurrentOrganizationAccountResource(t, "current_organization_account").HasAllDefaultParameters(),
+					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
+						HasNameString(currentOrganizationAccountName).
+						HasAllDefaultParameters(),
 				),
 			},
 			// set all parameters
@@ -67,6 +72,7 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 				Config: config.FromModels(t, provider, setParametersModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, setParametersModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
 						HasAllParametersEqualToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()),
 				),
 			},
@@ -76,7 +82,8 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 				ResourceName: setParametersModel.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedCurrentOrganizationAccountResource(t, "current_organization_account").
+					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
+						HasNameString(currentOrganizationAccountName).
 						HasAllParametersEqualToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()),
 				),
 			},
@@ -84,7 +91,9 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 			{
 				Config: config.FromModels(t, provider, unsetParametersModel),
 				Check: assertThat(t,
-					resourceassert.CurrentOrganizationAccountResource(t, unsetParametersModel.ResourceReference()).HasAllDefaultParameters(),
+					resourceassert.CurrentOrganizationAccountResource(t, unsetParametersModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
+						HasAllDefaultParameters(),
 				),
 			},
 			// Test for external changes
@@ -99,7 +108,9 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 				},
 				Config: config.FromModels(t, provider, unsetParametersModel),
 				Check: assertThat(t,
-					resourceassert.CurrentOrganizationAccountResource(t, setParametersModel.ResourceReference()).HasAllDefaultParameters(),
+					resourceassert.CurrentOrganizationAccountResource(t, setParametersModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
+						HasAllDefaultParameters(),
 				),
 			},
 		},
@@ -129,14 +140,16 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 
 	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
 
-	unsetModel := model.CurrentOrganizationAccount("test")
+	currentOrganizationAccountName := testClient().OrganizationAccount.Show(t).AccountName
 
-	setModel := model.CurrentOrganizationAccount("test").
+	unsetModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName)
+
+	setModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).
 		WithResourceMonitor(resourceMonitor.ID().Name()).
 		WithPasswordPolicy(passwordPolicy.ID().FullyQualifiedName()).
 		WithSessionPolicy(sessionPolicy.ID().FullyQualifiedName())
 
-	setModelWithDifferentValues := model.CurrentOrganizationAccount("test").
+	setModelWithDifferentValues := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).
 		WithResourceMonitor(newResourceMonitor.ID().Name()).
 		WithPasswordPolicy(newPasswordPolicy.ID().FullyQualifiedName()).
 		WithSessionPolicy(newSessionPolicy.ID().FullyQualifiedName())
@@ -153,6 +166,7 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				Config: config.FromModels(t, provider, unsetModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
 						HasNoResourceMonitor().
 						HasNoPasswordPolicy().
 						HasNoSessionPolicy(),
@@ -164,7 +178,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				ResourceName: unsetModel.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedCurrentOrganizationAccountResource(t, "current_organization_account").
+					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
+						HasNameString(currentOrganizationAccountName).
 						HasNoResourceMonitor().
 						HasNoPasswordPolicy().
 						HasNoSessionPolicy(),
@@ -175,6 +190,7 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				Config: config.FromModels(t, provider, setModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, setModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
 						HasResourceMonitorString(resourceMonitor.ID().Name()).
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
 						HasSessionPolicyString(sessionPolicy.ID().FullyQualifiedName()),
@@ -186,7 +202,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				ResourceName: setModel.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedCurrentOrganizationAccountResource(t, "current_organization_account").
+					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
+						HasNameString(currentOrganizationAccountName).
 						HasNoResourceMonitor().
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
 						HasSessionPolicyString(sessionPolicy.ID().FullyQualifiedName()),
@@ -197,6 +214,22 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				Config: config.FromModels(t, provider, setModelWithDifferentValues),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, setModelWithDifferentValues.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
+						HasResourceMonitorString(newResourceMonitor.ID().Name()).
+						HasPasswordPolicyString(newPasswordPolicy.ID().FullyQualifiedName()).
+						HasSessionPolicyString(newSessionPolicy.ID().FullyQualifiedName()),
+				),
+			},
+			// unset policies externally
+			{
+				PreConfig: func() {
+					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithSessionPolicy(true)))
+					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithPasswordPolicy(true)))
+				},
+				Config: config.FromModels(t, provider, setModelWithDifferentValues),
+				Check: assertThat(t,
+					resourceassert.CurrentOrganizationAccountResource(t, setModelWithDifferentValues.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
 						HasResourceMonitorString(newResourceMonitor.ID().Name()).
 						HasPasswordPolicyString(newPasswordPolicy.ID().FullyQualifiedName()).
 						HasSessionPolicyString(newSessionPolicy.ID().FullyQualifiedName()),
@@ -207,6 +240,7 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				Config: config.FromModels(t, provider, unsetModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
 						HasResourceMonitorEmpty().
 						HasPasswordPolicyEmpty().
 						HasSessionPolicyEmpty(),
@@ -222,6 +256,7 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				Config: config.FromModels(t, provider, unsetModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
 						HasResourceMonitorEmpty().
 						HasPasswordPolicyEmpty().
 						HasSessionPolicyEmpty(),
@@ -259,7 +294,9 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 	t.Cleanup(sessionPolicyCleanup)
 
 	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
-	completeConfigModel := model.CurrentOrganizationAccount("test").
+
+	currentOrganizationAccountName := testClient().OrganizationAccount.Show(t).AccountName
+	completeConfigModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).
 		WithAllParametersSetToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()).
 		WithResourceMonitor(resourceMonitor.ID().Name()).
 		WithPasswordPolicy(passwordPolicy.ID().FullyQualifiedName()).
@@ -277,6 +314,7 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 				Config: config.FromModels(t, provider, completeConfigModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, completeConfigModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
 						HasAllParametersEqualToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()).
 						HasResourceMonitorString(resourceMonitor.ID().Name()).
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
@@ -288,7 +326,8 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 				ResourceName: completeConfigModel.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedCurrentOrganizationAccountResource(t, "current_organization_account").
+					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
+						HasNameString(currentOrganizationAccountName).
 						HasAllParametersEqualToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()).
 						HasNoResourceMonitor().
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
