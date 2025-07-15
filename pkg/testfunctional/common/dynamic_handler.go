@@ -13,16 +13,19 @@ type DynamicHandler[T any] struct {
 	replaceWithFunc func(T, T, T) T
 }
 
-// TODO [mux-PRs] Log nicer values (use interface)
+// TODO [mux-PRs]: Log nicer values (use interface)
+// TODO [mux-PRs]: Handle set/unset instead just opts; update the helper functions and tests while doing it.
 func (h *DynamicHandler[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		logger.Printf("[DEBUG] Received get request. Current value %v", h.currentValue)
 		w.WriteHeader(http.StatusOK)
+		// Not handling the error on purpose - it's a test helper, there is no test context here, and we will know on the assertion level.
 		_ = json.NewEncoder(w).Encode(h.currentValue)
 	case http.MethodPost:
 		w.WriteHeader(http.StatusCreated)
 		var newValue T
+		// Not handling the error on purpose - it's a test helper, there is no test context here, and we will know on the assertion level.
 		_ = json.NewDecoder(r.Body).Decode(&newValue)
 		logger.Printf("[DEBUG] Received post request. New value %v", newValue)
 		h.currentValue = h.replaceWithFunc(h.currentValue, h.defaultValue, newValue)
@@ -36,12 +39,6 @@ func (h *DynamicHandler[T]) SetCurrentValue(valueProvider T) {
 func NewDynamicHandler[T any]() *DynamicHandler[T] {
 	return &DynamicHandler[T]{
 		replaceWithFunc: AlwaysReplace[T],
-	}
-}
-
-func NewDynamicHandlerWithInitialValue[T any](initialValue T) *DynamicHandler[T] {
-	return &DynamicHandler[T]{
-		currentValue: initialValue,
 	}
 }
 
