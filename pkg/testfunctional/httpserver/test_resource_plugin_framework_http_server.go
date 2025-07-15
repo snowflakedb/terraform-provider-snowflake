@@ -25,6 +25,10 @@ type httpServerResource struct {
 	common.HttpServerEmbeddable[Read]
 }
 
+type Read struct {
+	Msg string `json:"msg,omitempty"`
+}
+
 type httpServerResourceModelV0 struct {
 	Name    types.String `tfsdk:"name"`
 	Id      types.String `tfsdk:"id"`
