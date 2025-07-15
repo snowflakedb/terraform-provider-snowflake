@@ -92,3 +92,7 @@ func NewEnumValueFromStringValue[T EnumCreator[T]](value types.String) EnumValue
 		StringValue: value,
 	}
 }
+
+func (v EnumValue[T]) Normalize() (T, error) {
+	return v.et.FromString(v.ValueString())
+}

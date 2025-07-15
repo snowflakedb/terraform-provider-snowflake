@@ -7,22 +7,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 )
 
-func sameAfterNormalization[T ~string](oldValue string, newValue string, normalize func(string) (T, error)) (bool, error) {
-	oldNormalized, err := normalize(oldValue)
-	if err != nil {
-		return false, err
-	}
-	newNormalized, err := normalize(newValue)
-	if err != nil {
-		return false, err
-	}
-
-	return oldNormalized == newNormalized, nil
-}
-
-func stringEnumAttributeCreate[T customtypes.EnumCreator[T]](attr customtypes.EnumValue[T], createField **T, mapper func(string) (T, error)) error {
+func stringEnumAttributeCreate[T customtypes.EnumCreator[T]](attr customtypes.EnumValue[T], createField **T) error {
 	if !attr.IsNull() {
-		v, err := mapper(attr.ValueString())
+		v, err := attr.Normalize()
 		if err != nil {
 			return err
 		}
@@ -31,12 +18,13 @@ func stringEnumAttributeCreate[T customtypes.EnumCreator[T]](attr customtypes.En
 	return nil
 }
 
-func stringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planned customtypes.EnumValue[T], inState customtypes.EnumValue[T], setField **T, unsetField **T, mapper func(string) (T, error)) error {
-	if !planned.Equal(inState) {
-		if planned.IsNull() || planned.IsUnknown() {
+func stringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planValue customtypes.EnumValue[T], stateValue customtypes.EnumValue[T], setField **T, unsetField **T) error {
+	// currently Equal is enough as we have customplanmodifiers.EnumSuppressor which checks normalized equality for planValue and stateValue
+	if !planValue.Equal(stateValue) {
+		if planValue.IsNull() || planValue.IsUnknown() {
 			*unsetField = nil
 		} else {
-			v, err := mapper(planned.ValueString())
+			v, err := planValue.Normalize()
 			if err != nil {
 				return err
 			}

@@ -146,7 +146,7 @@ func (r *EnumHandlingResource) Create(ctx context.Context, request resource.Crea
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &EnumHandlingOpts{}
-	err := stringEnumAttributeCreate(data.StringValue, &opts.StringValue, ToSomeEnumType)
+	err := stringEnumAttributeCreate(data.StringValue, &opts.StringValue)
 	if err != nil {
 		response.Diagnostics.AddError("Error creating some enum type", err.Error())
 	}
@@ -203,7 +203,7 @@ func (r *EnumHandlingResource) read(data *enumHandlingResourceModelV0) diag.Diag
 		diags.AddError("Could not read resources state", err.Error())
 	} else if opts.StringValue != nil {
 		newValue := *opts.StringValue
-		// we don't need conversion here as https://developer.hashicorp.com/terraform/plugin/framework/handling-data/types/custom#semantic-equality should handle it for us:
+		// We don't need conversion here as https://developer.hashicorp.com/terraform/plugin/framework/handling-data/types/custom#semantic-equality should handle it for us:
 		// `When refreshing a resource, the response new state value from the Read method logic is compared to the request prior state value.`
 		if string(newValue) != data.StringValueBackingField.ValueString() {
 			data.StringValue = customtypes.NewEnumValue(newValue)
@@ -220,7 +220,7 @@ func (r *EnumHandlingResource) Update(ctx context.Context, request resource.Upda
 	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
 
 	opts := &EnumHandlingOpts{}
-	err := stringEnumAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue, ToSomeEnumType)
+	err := stringEnumAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue)
 	if err != nil {
 		response.Diagnostics.AddError("Error updating some enum type", err.Error())
 	}
