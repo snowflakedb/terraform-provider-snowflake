@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customplanmodifiers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -58,8 +59,6 @@ type enumHandlingResourceModelV0 struct {
 	Name        types.String                        `tfsdk:"name"`
 	StringValue customtypes.EnumValue[SomeEnumType] `tfsdk:"string_value"`
 	Id          types.String                        `tfsdk:"id"`
-
-	common.ActionsLogEmbeddable
 }
 
 type EnumHandlingOpts struct {
@@ -82,9 +81,9 @@ func (r *EnumHandlingResource) Schema(_ context.Context, _ resource.SchemaReques
 				CustomType:  customtypes.EnumType[SomeEnumType]{},
 				Description: "String value - enum.",
 				Optional:    true,
-				// PlanModifiers: []planmodifier.String{
-				//	customplanmodifiers.EnumSuppressor[SomeEnumType](),
-				// },
+				PlanModifiers: []planmodifier.String{
+					customplanmodifiers.EnumSuppressor[SomeEnumType](),
+				},
 			},
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -93,7 +92,6 @@ func (r *EnumHandlingResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			common.ActionsLogPropertyName: common.GetActionsLogSchema(),
 		},
 	}
 }
@@ -123,8 +121,6 @@ func (r *EnumHandlingResource) Create(ctx context.Context, request resource.Crea
 		response.Diagnostics.AddError("Error creating some enum type", err.Error())
 	}
 
-	r.setCreateActionsOutput(ctx, response, opts, data)
-
 	response.Diagnostics.Append(r.create(opts)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -136,16 +132,6 @@ func (r *EnumHandlingResource) Create(ctx context.Context, request resource.Crea
 	}
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
-}
-
-func (r *EnumHandlingResource) setCreateActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *EnumHandlingOpts, data *enumHandlingResourceModelV0) {
-	response.Diagnostics.Append(common.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []common.ActionLogEntry {
-		actions := make([]common.ActionLogEntry, 0)
-		if opts.StringValue != nil {
-			actions = append(actions, common.ActionEntry("CREATE", "string_value", string(*opts.StringValue)))
-		}
-		return actions
-	})...)
 }
 
 func (r *EnumHandlingResource) create(opts *EnumHandlingOpts) diag.Diagnostics {
@@ -216,8 +202,6 @@ func (r *EnumHandlingResource) Update(ctx context.Context, request resource.Upda
 		response.Diagnostics.AddError("Error updating some enum type", err.Error())
 	}
 
-	r.setUpdateActionsOutput(ctx, response, opts, plan, state)
-
 	response.Diagnostics.Append(r.update(opts)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -239,19 +223,6 @@ func (r *EnumHandlingResource) update(opts *EnumHandlingOpts) diag.Diagnostics {
 		diags.AddError("Could not update resource", err.Error())
 	}
 	return diags
-}
-
-func (r *EnumHandlingResource) setUpdateActionsOutput(ctx context.Context, response *resource.UpdateResponse, opts *EnumHandlingOpts, plan *enumHandlingResourceModelV0, state *enumHandlingResourceModelV0) {
-	plan.ActionsLogEmbeddable = state.ActionsLogEmbeddable
-	response.Diagnostics.Append(common.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []common.ActionLogEntry {
-		actions := make([]common.ActionLogEntry, 0)
-		if opts.StringValue != nil {
-			actions = append(actions, common.ActionEntry("UPDATE - SET", "string_value", string(*opts.StringValue)))
-		} else {
-			actions = append(actions, common.ActionEntry("UPDATE - UNSET", "string_value", "nil"))
-		}
-		return actions
-	})...)
 }
 
 func (r *EnumHandlingResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
