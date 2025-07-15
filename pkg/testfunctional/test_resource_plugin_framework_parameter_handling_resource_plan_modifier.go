@@ -69,6 +69,9 @@ func (r *ParameterHandlingResourcePlanModifierResource) Schema(_ context.Context
 }
 
 // ModifyPlan inlines resources.ParameterValueComputedIf which is our previous SDK implementation.
+// The old implementation was added here and commented out, as it's not compatible with plugin framework.
+// Subsequent parts were uncommented and modified while progressing the tests.
+// The whole logic was not uncommented as it failed on sooner tests. It was left for completeness.
 func (r *ParameterHandlingResourcePlanModifierResource) ModifyPlan(ctx context.Context, request resource.ModifyPlanRequest, response *resource.ModifyPlanResponse) {
 	// Do nothing if there is no state (resource is being created).
 	if request.State.Raw.IsNull() {
