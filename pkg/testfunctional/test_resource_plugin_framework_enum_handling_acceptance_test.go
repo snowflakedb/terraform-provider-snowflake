@@ -2,10 +2,12 @@ package testfunctional_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
@@ -40,12 +42,11 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 	resourceReference := fmt.Sprintf("%s.test", resourceType)
 
 	value := string(testfunctional.SomeEnumTypeVersion1)
+	valueLowercased := strings.ToLower(value)
 	newValue := string(testfunctional.SomeEnumTypeVersion2)
 	externalValue := string(testfunctional.SomeEnumTypeVersion3)
 
-	_ = newValue
 	_ = externalValue
-	_ = enumHandlingNotSetConfig
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerForPluginFrameworkFunctionalTestsFactories,
@@ -58,10 +59,10 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(string(testfunctional.SomeEnumTypeVersion1))),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(value)),
 					},
 				},
-				Config: enumHandlingAllSetConfig(id, resourceType, string(testfunctional.SomeEnumTypeVersion1)),
+				Config: enumHandlingAllSetConfig(id, resourceType, value),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "string_value", value),
@@ -71,6 +72,83 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.action", "CREATE"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.field", "string_value"),
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", value),
+				),
+			},
+			// import when type in config
+			{
+				ResourceName: resourceReference,
+				ImportState:  true,
+				ImportStateCheck: importchecks.ComposeImportStateCheck(
+					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", value),
+				),
+			},
+			// change type in config
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, &value, &newValue),
+					},
+				},
+				Config: enumHandlingAllSetConfig(id, resourceType, newValue),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", newValue),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", newValue),
+				),
+			},
+			// remove type from config
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, &newValue, nil),
+					},
+				},
+				Config: enumHandlingNotSetConfig(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckNoResourceAttr(resourceReference, "string_value"),
+					// TODO: backing field
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "3"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.action", "UPDATE - UNSET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.2.value", "nil"),
+				),
+			},
+			// import when no type in config
+			{
+				ResourceName: resourceReference,
+				ImportState:  true,
+				ImportStateCheck: importchecks.ComposeImportStateCheck(
+					importchecks.TestCheckResourceAttrInstanceState(id.FullyQualifiedName(), "string_value", value),
+				),
+			},
+			// add config (lower case)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, &valueLowercased),
+					},
+				},
+				Config: enumHandlingAllSetConfig(id, resourceType, valueLowercased),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", valueLowercased),
+
+					// check actions
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "4"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.action", "UPDATE - SET"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.field", "string_value"),
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", value),
 				),
 			},
 		},

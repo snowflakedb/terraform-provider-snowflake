@@ -33,13 +33,13 @@ func stringEnumAttributeCreate[T customtypes.EnumCreator[T]](attr customtypes.En
 
 func stringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planned customtypes.EnumValue[T], inState customtypes.EnumValue[T], setField **T, unsetField **T, mapper func(string) (T, error)) error {
 	if !planned.Equal(inState) {
-		v, err := mapper(planned.ValueString())
-		if err != nil {
-			return err
-		}
 		if planned.IsNull() || planned.IsUnknown() {
 			*unsetField = nil
 		} else {
+			v, err := mapper(planned.ValueString())
+			if err != nil {
+				return err
+			}
 			*setField = sdk.Pointer(v)
 		}
 	}

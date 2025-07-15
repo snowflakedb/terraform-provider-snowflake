@@ -102,7 +102,6 @@ func (r *EnumHandlingResource) ImportState(ctx context.Context, request resource
 	if err != nil {
 		response.Diagnostics.AddError("Could not read resources state", err.Error())
 	} else if opts.StringValue != nil {
-		// TODO
 		response.Diagnostics.Append(response.State.SetAttribute(ctx, path.Root("string_value"), *opts.StringValue)...)
 	}
 }
@@ -185,18 +184,19 @@ func (r *EnumHandlingResource) read(data *enumHandlingResourceModelV0) diag.Diag
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
 	} else if opts.StringValue != nil {
-		if data.StringValue.IsNull() {
-			data.StringValue = customtypes.NewEnumValue(*opts.StringValue)
-		} else {
-			areTheSame, err := sameAfterNormalization(data.StringValue.ValueString(), string(*opts.StringValue), ToSomeEnumType)
-			if err != nil {
-				diags.AddError("Could not read resources state", err.Error())
-				return diags
-			}
-			if !areTheSame {
-				data.StringValue = customtypes.NewEnumValue(*opts.StringValue)
-			}
-		}
+		// TODO:
+		//if data.StringValue.IsNull() {
+		//	data.StringValue = customtypes.NewEnumValue(*opts.StringValue)
+		//} else {
+		//	areTheSame, err := sameAfterNormalization(data.StringValue.ValueString(), string(*opts.StringValue), ToSomeEnumType)
+		//	if err != nil {
+		//		diags.AddError("Could not read resources state", err.Error())
+		//		return diags
+		//	}
+		//	if !areTheSame {
+		//		data.StringValue = customtypes.NewEnumValue(*opts.StringValue)
+		//	}
+		//}
 	}
 	return diags
 }
