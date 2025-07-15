@@ -43,13 +43,13 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 		WithRoleRestriction(role.ID().Name()).
 		WithDaysToExpiry(10).
 		WithMinsToBypassNetworkPolicyRequirement(10).
-		WithDisabled("true").
+		WithDisabled(r.BooleanTrue).
 		WithComment(comment)
 	modelCompleteWithDifferentValues := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
 		WithRoleRestriction(role.ID().Name()).
 		WithDaysToExpiry(10).
 		WithMinsToBypassNetworkPolicyRequirement(20).
-		WithDisabled("false").
+		WithDisabled(r.BooleanFalse).
 		WithComment(changedComment)
 	modelWithForceNewOptionals := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
 		WithDaysToExpiry(10).
@@ -200,6 +200,11 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						)
 					testClient().User.ModifyProgrammaticAccessToken(t, setRequest)
 				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				Check: assertThat(t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteWithDifferentValues.ResourceReference()).
@@ -241,28 +246,6 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
-					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteWithDifferentValues.ResourceReference()).
-						HasNameString(id.Name()).
-						HasUserString(user.ID().Name()).
-						HasRoleRestrictionString(role.ID().Name()).
-						HasDaysToExpiryString("10").
-						HasMinsToBypassNetworkPolicyRequirementString("20").
-						HasDisabledString(r.BooleanFalse).
-						HasCommentString(changedComment).
-						HasTokenNotEmpty(),
-					resourceshowoutputassert.ProgrammaticAccessTokenShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
-						HasName(id.Name()).
-						HasUserName(user.ID()).
-						HasRoleRestriction(role.ID()).
-						HasExpiresAtNotEmpty().
-						HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-						HasComment(changedComment).
-						HasCreatedOnNotEmpty().
-						HasCreatedBy(currentUser.Name()).
-						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
-						HasRotatedTo(""),
-				),
 			},
 			// unset
 			{
@@ -334,11 +317,16 @@ func TestAcc_UserProgrammaticAccessToken_rename(t *testing.T) {
 	user, userCleanup := testClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
 
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	newId := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
 
-	modelComplete := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name())
-	modelCompleteNewId := model.UserProgrammaticAccessToken("test", newId.Name(), user.ID().Name())
+	id1 := testClient().Ids.RandomAccountObjectIdentifier()
+	id2 := testClient().Ids.RandomAccountObjectIdentifier()
+	id3 := testClient().Ids.RandomAccountObjectIdentifier()
+
+	modelCompleteId1 := model.UserProgrammaticAccessToken("test", id1.Name(), user.ID().Name())
+	modelCompleteId2 := model.UserProgrammaticAccessToken("test", id2.Name(), user.ID().Name())
+	modelCompleteId3WithOptionalField := model.UserProgrammaticAccessToken("test", id3.Name(), user.ID().Name()).
+		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -349,24 +337,40 @@ func TestAcc_UserProgrammaticAccessToken_rename(t *testing.T) {
 		CheckDestroy: CheckUserProgrammaticAccessTokenDestroy(t),
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, modelComplete),
+				Config: accconfig.FromModels(t, modelCompleteId1),
 				Check: assertThat(t,
-					resourceassert.UserProgrammaticAccessTokenResource(t, modelComplete.ResourceReference()).
-						HasNameString(id.Name()).
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteId1.ResourceReference()).
+						HasNameString(id1.Name()).
 						HasUserString(user.ID().Name()),
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, modelCompleteNewId),
+				Config: accconfig.FromModels(t, modelCompleteId2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelCompleteNewId.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelCompleteId2.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteNewId.ResourceReference()).
-						HasNameString(newId.Name()).
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteId2.ResourceReference()).
+						HasNameString(id2.Name()).
 						HasUserString(user.ID().Name()),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelCompleteId3WithOptionalField),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteId3WithOptionalField.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(modelCompleteId3WithOptionalField.ResourceReference(), "name", tfjson.ActionUpdate, sdk.String(id2.Name()), sdk.String(id3.Name())),
+						planchecks.ExpectChange(modelCompleteId3WithOptionalField.ResourceReference(), "comment", tfjson.ActionUpdate, nil, sdk.String(comment)),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteId3WithOptionalField.ResourceReference()).
+						HasNameString(id3.Name()).
+						HasUserString(user.ID().Name()).
+						HasCommentString(comment),
 				),
 			},
 		},

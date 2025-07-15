@@ -17,6 +17,8 @@ description: |-
 
 -> **Note** External changes to `token_value` are not handled by the provider because the data in this field can be updated only when the token is created.
 
+-> **Note** In order to authenticate with PAT with role restriction, you need to grant the role to the user. You can use the [snowflake_grant_account_role](./grant_account_role) resource to do this.
+
 <!-- TODO(next PR): Add a note about rotating tokens and provide a simple example. Adjust the note of `token_value`.-->
 
 # {{.Name}} ({{.Type}})

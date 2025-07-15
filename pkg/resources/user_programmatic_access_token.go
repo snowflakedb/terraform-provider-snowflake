@@ -103,7 +103,7 @@ func UserProgrammaticAccessToken() *schema.Resource {
 		),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.UserProgrammaticAccessToken,
-			ComputedIfAnyAttributeChanged(userProgrammaticAccessTokenSchema, ShowOutputAttributeName, "disabled", "comment"),
+			ComputedIfAnyAttributeChanged(userProgrammaticAccessTokenSchema, ShowOutputAttributeName, "disabled", "mins_to_bypass_network_policy_requirement", "comment"),
 		),
 
 		Schema: userProgrammaticAccessTokenSchema,
@@ -164,6 +164,7 @@ func CreateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	d.SetId(resourceId.String())
 
 	if v := d.Get("disabled").(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
@@ -172,11 +173,11 @@ func CreateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 		}
 		request := sdk.NewModifyProgrammaticAccessTokenSetRequest().WithDisabled(parsed)
 		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*request)); err != nil {
+			d.Partial(true)
 			return diag.FromErr(err)
 		}
 	}
 
-	d.SetId(resourceId.String())
 	err = errors.Join(
 		d.Set("token", token.TokenSecret),
 	)
