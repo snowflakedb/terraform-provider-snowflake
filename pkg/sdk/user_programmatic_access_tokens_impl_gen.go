@@ -3,6 +3,8 @@ package sdk
 import (
 	"context"
 	"log"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ UserProgrammaticAccessTokens = (*userProgrammaticAccessTokens)(nil)
@@ -39,6 +41,11 @@ func (v *userProgrammaticAccessTokens) Remove(ctx context.Context, request *Remo
 	return validateAndExec(v.client, ctx, opts)
 }
 
+// Adjusted manually to include the user id in the request.
+func (v *userProgrammaticAccessTokens) RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
+	return SafeRemoveProgrammaticAccessToken(v.client, ctx, request)
+}
+
 func (v *userProgrammaticAccessTokens) Show(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error) {
 	opts := request.toOpts()
 	dbRows, err := validateAndQuery[programmaticAccessTokenResultDBRow](v.client, ctx, opts)
@@ -47,6 +54,21 @@ func (v *userProgrammaticAccessTokens) Show(ctx context.Context, request *ShowUs
 	}
 	resultList := convertRows[programmaticAccessTokenResultDBRow, ProgrammaticAccessToken](dbRows)
 	return resultList, nil
+}
+
+// Adjusted manually to include the user id in the request.
+func (v *userProgrammaticAccessTokens) ShowByID(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
+	request := NewShowUserProgrammaticAccessTokenRequest().WithUserName(userId)
+	userProgrammaticAccessTokens, err := v.Show(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return collections.FindFirst(userProgrammaticAccessTokens, func(r ProgrammaticAccessToken) bool { return r.Name == id.Name() })
+}
+
+// Adjusted manually to include the user id in the request.
+func (v *userProgrammaticAccessTokens) ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
+	return SafeShowProgrammaticAccessTokenByName(v.client, ctx, userId, id)
 }
 
 func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAccessTokenOptions {

@@ -76,8 +76,8 @@ func (opts *RotateUserProgrammaticAccessTokenOptions) validate() error {
 	}
 	// adjusted manually
 	if valueSet(opts.ExpireRotatedTokenAfterHours) {
-		if !validateIntGreaterThanOrEqual(*opts.ExpireRotatedTokenAfterHours, 1) {
-			errs = append(errs, errIntValue("RotateUserProgrammaticAccessTokenOptions", "ExpireRotatedTokenAfterHours", IntErrGreaterOrEqual, 1))
+		if !validateIntGreaterThanOrEqual(*opts.ExpireRotatedTokenAfterHours, 0) {
+			errs = append(errs, errIntValue("RotateUserProgrammaticAccessTokenOptions", "ExpireRotatedTokenAfterHours", IntErrGreaterOrEqual, 0))
 		}
 	}
 	return JoinErrors(errs...)
