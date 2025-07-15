@@ -23,6 +23,7 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The name of the user that the token is associated with. A user cannot use another user's programmatic access token to authenticate."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 	},
 	"name": {
 		Type:             schema.TypeString,

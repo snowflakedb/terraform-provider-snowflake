@@ -24,17 +24,36 @@ func TestAcc_UserProgrammaticAccessTokens(t *testing.T) {
 	user, userCleanup := testClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
 
-	id := testClient().Ids.RandomAccountObjectIdentifier()
+	user2, user2Cleanup := testClient().User.CreateUser(t)
+	t.Cleanup(user2Cleanup)
+
+	id1 := testClient().Ids.RandomAccountObjectIdentifier()
+	id2 := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
-	modelComplete := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+	modelComplete1 := model.UserProgrammaticAccessToken("test", id1.Name(), user.ID().Name()).
 		WithRoleRestriction(snowflakeroles.Public.Name()).
 		WithDaysToExpiry(10).
 		WithMinsToBypassNetworkPolicyRequirement(10).
 		WithDisabled("true").
 		WithComment(comment)
 
-	datasourceModel := datasourcemodel.UserProgrammaticAccessTokens("test", user.ID().Name()).
-		WithDependsOn(modelComplete.ResourceReference())
+	modelComplete2 := model.UserProgrammaticAccessToken("test2", id2.Name(), user.ID().Name()).
+		WithRoleRestriction(snowflakeroles.Public.Name()).
+		WithDaysToExpiry(10).
+		WithMinsToBypassNetworkPolicyRequirement(10).
+		WithDisabled("true").
+		WithComment(comment)
+
+	modelWithDifferentUser := model.UserProgrammaticAccessToken("test3", id1.Name(), user2.ID().Name())
+
+	datasourceModelWithOneToken := datasourcemodel.UserProgrammaticAccessTokens("test", user.ID().Name()).
+		WithDependsOn(modelComplete1.ResourceReference())
+
+	datasourceModelWithTwoTokens := datasourcemodel.UserProgrammaticAccessTokens("test", user.ID().Name()).
+		WithDependsOn(modelComplete1.ResourceReference(), modelComplete2.ResourceReference())
+
+	datasourceModelWithDifferentUser := datasourcemodel.UserProgrammaticAccessTokens("test", user2.ID().Name()).
+		WithDependsOn(modelWithDifferentUser.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -44,12 +63,12 @@ func TestAcc_UserProgrammaticAccessTokens(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, modelComplete, datasourceModel),
+				Config: accconfig.FromModels(t, modelComplete1, datasourceModelWithOneToken),
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "user_programmatic_access_tokens.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithOneToken.DatasourceReference(), "user_programmatic_access_tokens.#", "1")),
 
-					resourceshowoutputassert.ProgrammaticAccessTokensDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
-						HasName(id.Name()).
+					resourceshowoutputassert.ProgrammaticAccessTokensDatasourceShowOutput(t, datasourceModelWithOneToken.DatasourceReference()).
+						HasName(id1.Name()).
 						HasUserName(user.ID()).
 						HasRoleRestriction(snowflakeroles.Public).
 						HasExpiresAtNotEmpty().
@@ -59,6 +78,18 @@ func TestAcc_UserProgrammaticAccessTokens(t *testing.T) {
 						HasCreatedBy(currentUser.Name()).
 						HasMinsToBypassNetworkPolicyRequirementNotEmpty().
 						HasRotatedTo(""),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelComplete1, modelComplete2, datasourceModelWithTwoTokens),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithTwoTokens.DatasourceReference(), "user_programmatic_access_tokens.#", "2")),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelWithDifferentUser, datasourceModelWithDifferentUser),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDifferentUser.DatasourceReference(), "user_programmatic_access_tokens.#", "1")),
 				),
 			},
 		},
