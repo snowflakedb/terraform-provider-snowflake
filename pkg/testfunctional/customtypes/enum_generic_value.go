@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/attr/xattr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
@@ -74,5 +75,11 @@ func (v EnumValue[T]) ValidateAttribute(_ context.Context, req xattr.ValidateAtt
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(req.Path, "TODO", "TODO")
 		return
+	}
+}
+
+func NewEnumValue[T EnumCreator[T]](value T) EnumValue[T] {
+	return EnumValue[T]{
+		StringValue: types.StringValue(string(value)),
 	}
 }

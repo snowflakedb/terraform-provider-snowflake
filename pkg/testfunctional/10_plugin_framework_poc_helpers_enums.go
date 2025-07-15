@@ -4,7 +4,7 @@ package testfunctional
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 )
 
 func sameAfterNormalization[T ~string](oldValue string, newValue string, normalize func(string) (T, error)) (bool, error) {
@@ -20,9 +20,9 @@ func sameAfterNormalization[T ~string](oldValue string, newValue string, normali
 	return oldNormalized == newNormalized, nil
 }
 
-func stringEnumAttributeCreate[T ~string](stringAttribute types.String, createField **T, mapper func(string) (T, error)) error {
-	if !stringAttribute.IsNull() {
-		v, err := mapper(stringAttribute.ValueString())
+func stringEnumAttributeCreate[T customtypes.EnumCreator[T]](attr customtypes.EnumValue[T], createField **T, mapper func(string) (T, error)) error {
+	if !attr.IsNull() {
+		v, err := mapper(attr.ValueString())
 		if err != nil {
 			return err
 		}
@@ -31,7 +31,7 @@ func stringEnumAttributeCreate[T ~string](stringAttribute types.String, createFi
 	return nil
 }
 
-func stringEnumAttributeUpdate[T ~string](planned types.String, inState types.String, setField **T, unsetField **T, mapper func(string) (T, error)) error {
+func stringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planned customtypes.EnumValue[T], inState customtypes.EnumValue[T], setField **T, unsetField **T, mapper func(string) (T, error)) error {
 	if !planned.Equal(inState) {
 		v, err := mapper(planned.ValueString())
 		if err != nil {

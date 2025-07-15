@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -54,9 +55,9 @@ type EnumHandlingResource struct {
 }
 
 type enumHandlingResourceModelV0 struct {
-	Name        types.String `tfsdk:"name"`
-	StringValue types.String `tfsdk:"string_value"`
-	Id          types.String `tfsdk:"id"`
+	Name        types.String                        `tfsdk:"name"`
+	StringValue customtypes.EnumValue[SomeEnumType] `tfsdk:"string_value"`
+	Id          types.String                        `tfsdk:"id"`
 
 	common.ActionsLogEmbeddable
 }
@@ -78,6 +79,7 @@ func (r *EnumHandlingResource) Schema(_ context.Context, _ resource.SchemaReques
 				Required:    true,
 			},
 			"string_value": schema.StringAttribute{
+				CustomType:  customtypes.EnumType[SomeEnumType]{},
 				Description: "String value - enum.",
 				Optional:    true,
 			},
@@ -184,7 +186,7 @@ func (r *EnumHandlingResource) read(data *enumHandlingResourceModelV0) diag.Diag
 		diags.AddError("Could not read resources state", err.Error())
 	} else if opts.StringValue != nil {
 		if data.StringValue.IsNull() {
-			data.StringValue = types.StringValue(string(*opts.StringValue))
+			data.StringValue = customtypes.NewEnumValue(*opts.StringValue)
 		} else {
 			areTheSame, err := sameAfterNormalization(data.StringValue.ValueString(), string(*opts.StringValue), ToSomeEnumType)
 			if err != nil {
@@ -192,7 +194,7 @@ func (r *EnumHandlingResource) read(data *enumHandlingResourceModelV0) diag.Diag
 				return diags
 			}
 			if !areTheSame {
-				data.StringValue = types.StringValue(string(*opts.StringValue))
+				data.StringValue = customtypes.NewEnumValue(*opts.StringValue)
 			}
 		}
 	}
