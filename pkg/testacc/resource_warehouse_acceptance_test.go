@@ -483,7 +483,7 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeStandard),
 				),
 			},
-			// change the size externally
+			// change the type externally
 			{
 				PreConfig: func() {
 					// we change the type to the type different from default, expecting action
