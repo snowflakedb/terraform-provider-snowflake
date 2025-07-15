@@ -151,6 +151,29 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceReference, "actions_log.3.value", value),
 				),
 			},
+			// change config to upper case - expect no changes
+			// TODO [mux-PRs]: add workaround for action logs
+			//  - currently there will be a change but only for the actions log (which is checked in pre apply)
+			//  - the reason is, that this is the computed list and it's unknown.
+			//  - The existing plan modifier UseStateForUnknown can't be used, as then, we can't add new elements.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.PrintPlanDetails(resourceReference, "string_value", "id", "name", "actions_log"),
+						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, &valueLowercased, &value),
+						planchecks.ExpectComputed(resourceReference, "actions_log", true),
+					},
+				},
+				Config: enumHandlingAllSetConfig(id, resourceType, value),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "string_value", value),
+
+					// check actions - no more actions than in the last step (counting because of the action logs problem described above)
+					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "5"),
+				),
+			},
 		},
 	})
 }

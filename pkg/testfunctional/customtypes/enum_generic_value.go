@@ -40,13 +40,15 @@ func (v EnumValue[T]) StringSemanticEquals(_ context.Context, newValuable basety
 
 	newValue, ok := newValuable.(EnumValue[T])
 	if !ok {
-		diags.AddError("TODO", "TODO")
+		// TODO [mux-PRs]: better diags later
+		diags.AddError("Incomparable types", newValuable.String())
 		return false, diags
 	}
 
 	result, err := v.sameAfterNormalization(newValue.ValueString(), v.ValueString())
 	if err != nil {
-		diags.AddError("TODO", "TODO")
+		// TODO [mux-PRs]: better diags later
+		diags.AddError("Normalization failed", err.Error())
 		return false, diags
 	}
 
@@ -73,7 +75,8 @@ func (v EnumValue[T]) ValidateAttribute(_ context.Context, req xattr.ValidateAtt
 
 	_, err := v.et.FromString(v.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddAttributeError(req.Path, "TODO", "TODO")
+		// TODO [mux-PRs]: better diags later
+		resp.Diagnostics.AddAttributeError(req.Path, "Incorrect value for attribute", err.Error())
 		return
 	}
 }
@@ -81,5 +84,11 @@ func (v EnumValue[T]) ValidateAttribute(_ context.Context, req xattr.ValidateAtt
 func NewEnumValue[T EnumCreator[T]](value T) EnumValue[T] {
 	return EnumValue[T]{
 		StringValue: types.StringValue(string(value)),
+	}
+}
+
+func NewEnumValueFromStringValue[T EnumCreator[T]](value types.String) EnumValue[T] {
+	return EnumValue[T]{
+		StringValue: value,
 	}
 }

@@ -82,6 +82,9 @@ func (r *EnumHandlingResource) Schema(_ context.Context, _ resource.SchemaReques
 				CustomType:  customtypes.EnumType[SomeEnumType]{},
 				Description: "String value - enum.",
 				Optional:    true,
+				// PlanModifiers: []planmodifier.String{
+				//	customplanmodifiers.EnumSuppressor[SomeEnumType](),
+				// },
 			},
 			"id": schema.StringAttribute{
 				Computed:    true,
