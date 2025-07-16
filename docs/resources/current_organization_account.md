@@ -7,17 +7,17 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
-!> **Warning** During create operation every parameter and policy that is not set in the resource will be unset on the organization account. However, if you pass the incorrect `name` field, it will return an error, and no changes will be made to the account until a correct name is passed.
+!> **Warning** Create in this resource works differently from other resources as it doesn't create anything on the Snowflake side. It works mostly as import, any planned changes will be visible after the first apply. It's done this way, because of the Terraform limitation which prevents us from presenting changes during resource creation.
 
 !> **Warning** This resource requires warehouse to be in the context. To use this resource, specify a default warehouse in the provider configuration or on the user used in the configuration.
 
-!> **Warning** This resource shouldn't be used with `snowflake_current_account`, `snowflake_object_parameter` (with `on_account` field set), and `snowflake_account_parameter` resources in the same configuration, as it may lead to unexpected behavior. Unless they're used to manage the following parameters that are not supported by `snowflake_current_organization_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL. They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters). Once they are publicly documented, they will be added to the `snowflake_current_organization_account` resource.
+!> **Warning** This resource shouldn't be used with `snowflake_current_account`, `snowflake_object_parameter` (with `on_account` field set), and `snowflake_account_parameter` resources in the same configuration pointing to the same account, as it may lead to unexpected behavior. Unless they're used to manage the following parameters that are not supported by `snowflake_current_organization_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL. They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters). Once they are publicly documented, they will be added to the `snowflake_current_organization_account` resource.
 
 !> **Warning** This resource shouldn't be also used with `snowflake_account_password_policy_attachment`, `snowflake_network_policy_attachment` resources in the same configuration to manage policies on the current account, as it may lead to unexpected behavior.
 
 -> **Note** On removal, the resource will unset all account properties. To remove the resource without unsetting properties, use [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm) command.
 
--> **Note** You can manage only one such resource **per organization**. More instances on one account could cause unexpected behavior.
+-> **Note** You can manage only one such resource **per organization**. More instances in one organization could cause unexpected behavior.
 
 # snowflake_current_organization_account (Resource)
 
@@ -35,6 +35,12 @@ resource "snowflake_current_organization_account" "minimal" {
 
 ## Complete (with every optional set)
 resource "snowflake_current_organization_account" "complete" {
+  comment = "This is a comment for the current organization account resource"
+
+  resource_monitor = snowflake_resource_monitor.example.fully_qualified_name
+  session_policy   = "\"<database_name>\".\"<schema_name>\".\"<session_policy_name>\""
+  password_policy  = snowflake_password_policy.example.fully_qualified_name
+
   abort_detached_query                                       = true
   allow_client_mfa_caching                                   = true
   allow_id_token                                             = true
@@ -103,7 +109,6 @@ resource "snowflake_current_organization_account" "complete" {
   noorder_sequence_as_default                                = false
   oauth_add_privileged_roles_to_blocked_list                 = false
   odbc_treat_decimal_as_int                                  = true
-  password_policy                                            = snowflake_password_policy.example.fully_qualified_name
   periodic_data_rekeying                                     = false
   pipe_execution_paused                                      = true
   prevent_unload_to_inline_url                               = true
@@ -114,12 +119,10 @@ resource "snowflake_current_organization_account" "complete" {
   replace_invalid_characters                                 = true
   require_storage_integration_for_stage_creation             = true
   require_storage_integration_for_stage_operation            = true
-  resource_monitor                                           = snowflake_resource_monitor.example.fully_qualified_name
   rows_per_resultset                                         = 1000
   search_path                                                = "$current, $public"
   serverless_task_max_statement_size                         = "XLARGE"
   serverless_task_min_statement_size                         = "SMALL"
-  session_policy                                             = "\"<database_name>\".\"<schema_name>\".\"<session_policy_name>\""
   sso_login_page                                             = true
   statement_queued_timeout_in_seconds                        = 1
   statement_timeout_in_seconds                               = 1
@@ -183,6 +186,7 @@ resource "snowflake_current_organization_account" "complete" {
 - `client_session_keep_alive` (Boolean) Parameter that indicates whether to force a user to log in again after a period of inactivity in the session. For more information, check [CLIENT_SESSION_KEEP_ALIVE docs](https://docs.snowflake.com/en/sql-reference/parameters#client-session-keep-alive).
 - `client_session_keep_alive_heartbeat_frequency` (Number) Number of seconds in-between client attempts to update the token for the session. For more information, check [CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY docs](https://docs.snowflake.com/en/sql-reference/parameters#client-session-keep-alive-heartbeat-frequency).
 - `client_timestamp_type_mapping` (String) Specifies the [TIMESTAMP_* variation](https://docs.snowflake.com/en/sql-reference/data-types-datetime.html#label-datatypes-timestamp-variations) to use when binding timestamp variables for JDBC or ODBC applications that use the bind API to load data. Valid values are (case-insensitive): `TIMESTAMP_LTZ` | `TIMESTAMP_NTZ`. For more information, check [CLIENT_TIMESTAMP_TYPE_MAPPING docs](https://docs.snowflake.com/en/sql-reference/parameters#client-timestamp-type-mapping).
+- `comment` (String) Specifies a comment for the organization account. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 - `cortex_enabled_cross_region` (String) Specifies the regions where an inference request may be processed in case the request cannot be processed in the region where request is originally placed. Specifying DISABLED disables cross-region inferencing. For examples and details, see [Cross-region inference](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cross-region-inference). For more information, check [CORTEX_ENABLED_CROSS_REGION docs](https://docs.snowflake.com/en/sql-reference/parameters#cortex-enabled-cross-region).
 - `cortex_models_allowlist` (String) Specifies the models that users in the account can access. Use this parameter to allowlist models for all users in the account. If you need to provide specific users with access beyond what you’ve specified in the allowlist, use role-based access control instead. For more information, see [Model allowlist](https://docs.snowflake.com/en/user-guide/snowflake-cortex/aisql.html#label-cortex-llm-allowlist). For more information, check [CORTEX_MODELS_ALLOWLIST docs](https://docs.snowflake.com/en/sql-reference/parameters#cortex-models-allowlist).
 - `csv_timestamp_format` (String) Specifies the format for TIMESTAMP values in CSV files downloaded from Snowsight. If this parameter is not set, [TIMESTAMP_LTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ltz-output-format) will be used for TIMESTAMP_LTZ values, [TIMESTAMP_TZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-tz-output-format) will be used for TIMESTAMP_TZ and [TIMESTAMP_NTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ntz-output-format) for TIMESTAMP_NTZ values. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output) or [Download your query results](https://docs.snowflake.com/en/user-guide/ui-snowsight-query.html#label-snowsight-download-query-results). For more information, check [CSV_TIMESTAMP_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#csv-timestamp-format).
@@ -287,6 +291,7 @@ resource "snowflake_current_organization_account" "complete" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `show_output` (List of Object) Saved output for the result of `SHOW ORGANIZATION ACCOUNTS` (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -298,11 +303,39 @@ Optional:
 - `read` (String)
 - `update` (String)
 
+
+<a id="nestedatt--show_output"></a>
+### Nested Schema for `show_output`
+
+Read-Only:
+
+- `account_locator` (String)
+- `account_locator_url` (String)
+- `account_name` (String)
+- `account_old_url_last_used` (String)
+- `account_old_url_saved_on` (String)
+- `account_url` (String)
+- `comment` (String)
+- `consumption_billing_entity_name` (String)
+- `created_on` (String)
+- `edition` (String)
+- `is_events_account` (Boolean)
+- `is_org_admin` (Boolean)
+- `is_organization_account` (Boolean)
+- `managed_accounts` (Number)
+- `marketplace_consumer_billing_entity_name` (String)
+- `marketplace_provider_billing_entity_name` (String)
+- `old_account_url` (String)
+- `organization_name` (String)
+- `organization_old_url` (String)
+- `organization_old_url_last_used` (String)
+- `organization_old_url_saved_on` (String)
+- `snowflake_region` (String)
+
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-# This resource may contain a any identifier, but the following format is recommended.
-terraform import snowflake_current_organization_account.example 'current_organization_account'
+terraform import snowflake_current_organization_account.example '"<organization_account_name>"'
 ```

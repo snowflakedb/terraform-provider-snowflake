@@ -142,6 +142,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMapping
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasCommentString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("comment", expected))
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasCortexEnabledCrossRegionString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("cortex_enabled_cross_region", expected))
 	return c
@@ -751,6 +756,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasNoClientTimestampTypeMappi
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNoComment() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("comment"))
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasNoCortexEnabledCrossRegion() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("cortex_enabled_cross_region"))
 	return c
@@ -1352,6 +1362,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientSessionKeepAliveHear
 
 func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMappingEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_timestamp_type_mapping", ""))
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCommentEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("comment", ""))
 	return c
 }
 
@@ -1961,6 +1976,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientSessionKeepAliveHear
 
 func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMappingNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("client_timestamp_type_mapping"))
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCommentNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("comment"))
 	return c
 }
 

@@ -111,13 +111,13 @@ func TestOrganizationAccounts_Alter(t *testing.T) {
 	t.Run("validation: at least one of the fields [opts.Set.Parameters opts.Set.ResourceMonitor opts.Set.PasswordPolicy opts.Set.SessionPolicy] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = new(OrganizationAccountSet)
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterOrganizationAccountOptions.Set", "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOrganizationAccountOptions.Set", "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy", "Comment"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Unset.Parameters opts.Unset.ResourceMonitor opts.Unset.PasswordPolicy opts.Unset.SessionPolicy] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = new(OrganizationAccountUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterOrganizationAccountOptions.Unset", "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOrganizationAccountOptions.Unset", "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy", "Comment"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.RenameTo opts.DropOldUrl] should be present - none set", func(t *testing.T) {

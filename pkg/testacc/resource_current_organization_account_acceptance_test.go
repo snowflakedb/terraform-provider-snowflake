@@ -8,9 +8,11 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -38,7 +40,7 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 	t.Cleanup(stageCleanup)
 
 	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
-	currentOrganizationAccountName := testClient().OrganizationAccount.Show(t).AccountName
+	currentOrganizationAccountName := testClient().OrganizationAccount.ShowCurrent(t).AccountName
 	unsetParametersModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName)
 	setParametersModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).WithAllParametersSetToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID())
 
@@ -140,18 +142,23 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 	newSessionPolicy, newSessionPolicyCleanup := testClient().SessionPolicy.CreateSessionPolicy(t)
 	t.Cleanup(newSessionPolicyCleanup)
 
+	comment := random.Comment()
+	newComment := random.Comment()
+
 	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
 
-	currentOrganizationAccountName := testClient().OrganizationAccount.Show(t).AccountName
+	currentOrganizationAccountName := testClient().OrganizationAccount.ShowCurrent(t).AccountName
 
 	unsetModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName)
 
 	setModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).
+		WithComment(comment).
 		WithResourceMonitor(resourceMonitor.ID().Name()).
 		WithPasswordPolicy(passwordPolicy.ID().FullyQualifiedName()).
 		WithSessionPolicy(sessionPolicy.ID().FullyQualifiedName())
 
 	setModelWithDifferentValues := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).
+		WithComment(newComment).
 		WithResourceMonitor(newResourceMonitor.ID().Name()).
 		WithPasswordPolicy(newPasswordPolicy.ID().FullyQualifiedName()).
 		WithSessionPolicy(newSessionPolicy.ID().FullyQualifiedName())
@@ -169,6 +176,7 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
+						HasCommentEmpty().
 						HasNoResourceMonitor().
 						HasPasswordPolicyEmpty().
 						HasSessionPolicyEmpty(),
@@ -182,32 +190,36 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
 						HasNameString(currentOrganizationAccountName).
+						HasCommentEmpty().
 						HasNoResourceMonitor().
 						HasPasswordPolicyEmpty().
 						HasSessionPolicyEmpty(),
 				),
 			},
-			// set policies externally
+			// set optional values externally
 			{
 				PreConfig: func() {
 					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithSessionPolicy(sessionPolicy.ID())))
 					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithPasswordPolicy(passwordPolicy.ID())))
+					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithComment(comment)))
 				},
 				Config: config.FromModels(t, provider, unsetModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
+						HasCommentEmpty().
 						HasNoResourceMonitor().
 						HasPasswordPolicyEmpty().
 						HasSessionPolicyEmpty(),
 				),
 			},
-			// set policies and resource monitor
+			// set optional values
 			{
 				Config: config.FromModels(t, provider, setModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, setModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
+						HasCommentString(comment).
 						HasResourceMonitorString(resourceMonitor.ID().Name()).
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
 						HasSessionPolicyString(sessionPolicy.ID().FullyQualifiedName()),
@@ -221,59 +233,48 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
 						HasNameString(currentOrganizationAccountName).
+						HasCommentString(comment).
 						HasNoResourceMonitor().
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
 						HasSessionPolicyString(sessionPolicy.ID().FullyQualifiedName()),
 				),
 			},
-			// set new policies
+			// set new optional values
 			{
 				Config: config.FromModels(t, provider, setModelWithDifferentValues),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, setModelWithDifferentValues.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
+						HasCommentString(newComment).
 						HasResourceMonitorString(newResourceMonitor.ID().Name()).
 						HasPasswordPolicyString(newPasswordPolicy.ID().FullyQualifiedName()).
 						HasSessionPolicyString(newSessionPolicy.ID().FullyQualifiedName()),
 				),
 			},
-			// unset policies externally
+			// unset externally
 			{
 				PreConfig: func() {
 					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithSessionPolicy(true)))
 					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithPasswordPolicy(true)))
+					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithComment(true)))
 				},
 				Config: config.FromModels(t, provider, setModelWithDifferentValues),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, setModelWithDifferentValues.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
+						HasCommentString(newComment).
 						HasResourceMonitorString(newResourceMonitor.ID().Name()).
 						HasPasswordPolicyString(newPasswordPolicy.ID().FullyQualifiedName()).
 						HasSessionPolicyString(newSessionPolicy.ID().FullyQualifiedName()),
 				),
 			},
-			// unset policies and resource monitor
+			// unset optional values
 			{
 				Config: config.FromModels(t, provider, unsetModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
-						HasResourceMonitorEmpty().
-						HasPasswordPolicyEmpty().
-						HasSessionPolicyEmpty(),
-				),
-			},
-			// change externally
-			{
-				PreConfig: func() {
-					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithResourceMonitor(resourceMonitor.ID())))
-					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithPasswordPolicy(passwordPolicy.ID())))
-					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithSessionPolicy(sessionPolicy.ID())))
-				},
-				Config: config.FromModels(t, provider, unsetModel),
-				Check: assertThat(t,
-					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
-						HasNameString(currentOrganizationAccountName).
+						HasCommentEmpty().
 						HasResourceMonitorEmpty().
 						HasPasswordPolicyEmpty().
 						HasSessionPolicyEmpty(),
@@ -312,7 +313,7 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 
 	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
 
-	currentOrganizationAccountName := testClient().OrganizationAccount.Show(t).AccountName
+	currentOrganizationAccountName := testClient().OrganizationAccount.ShowCurrent(t).AccountName
 	completeConfigModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).
 		WithAllParametersSetToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()).
 		WithResourceMonitor(resourceMonitor.ID().Name()).
@@ -328,6 +329,25 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
+				Config: config.FromModels(t, provider, completeConfigModel),
+				Check: assertThat(t,
+					resourceassert.CurrentOrganizationAccountResource(t, completeConfigModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
+						HasAllDefaultParameters().
+						HasCommentEmpty().
+						HasResourceMonitorString(resourceMonitor.ID().Name()).
+						HasPasswordPolicyEmpty().
+						HasSessionPolicyEmpty(),
+				),
+				// Create works as an import, so with filled fields we expect the first plan not to be empty
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(completeConfigModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
 				Config: config.FromModels(t, provider, completeConfigModel),
 				Check: assertThat(t,
 					resourceassert.CurrentOrganizationAccountResource(t, completeConfigModel.ResourceReference()).
@@ -371,7 +391,63 @@ func TestAcc_CurrentOrganizationAccount_NameValidationOnCreate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      config.FromModels(t, provider, modelWithInvalidOrganizationAccountName),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("passed name: %s, doesn't match current organization account name: %s, renames can be performed only after resource initialization", organizationAccountName, testClient().OrganizationAccount.Show(t).AccountName)),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("passed name: %s, doesn't match current organization account name: %s, renames can be performed only after resource initialization", organizationAccountName, testClient().OrganizationAccount.ShowCurrent(t).AccountName)),
+			},
+		},
+	})
+}
+
+func TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate(t *testing.T) {
+	testClient().EnsureValidNonProdOrganizationAccountIsUsed(t)
+
+	comment := random.Comment()
+
+	// We start with an organization account that already has a comment set, variation with initial empty comment is tested in TestAcc_CurrentOrganizationAccount_NonParameterValues
+	testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithComment(comment)))
+	t.Cleanup(func() {
+		testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithComment(true)))
+	})
+
+	currentOrganizationAccountName := testClient().OrganizationAccount.ShowCurrent(t).AccountName
+	emptyPropertiesModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName)
+	completePropertiesModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Start with empty comment (it's set in Snowflake)
+			{
+				Config: config.FromModels(t, emptyPropertiesModel),
+				Check: assertThat(t,
+					resourceassert.CurrentOrganizationAccountResource(t, emptyPropertiesModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
+						HasCommentString(comment),
+					resourceshowoutputassert.OrganizationAccountShowOutput(t, emptyPropertiesModel.ResourceReference()).
+						HasComment(comment),
+				),
+				// The plan indicates the comment should change but later steps prove that our show output helps suppress it
+				ExpectNonEmptyPlan: true,
+			},
+			// The plan after the first step shows changes in the comment field,
+			// so we just set it to the value that is already set in Snowflake for in-place update (expecting Noop change)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(completePropertiesModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, completePropertiesModel),
+				Check: assertThat(t,
+					resourceassert.CurrentOrganizationAccountResource(t, completePropertiesModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
+						HasCommentString(comment),
+					resourceshowoutputassert.OrganizationAccountShowOutput(t, completePropertiesModel.ResourceReference()).
+						HasComment(comment),
+				),
 			},
 		},
 	})
