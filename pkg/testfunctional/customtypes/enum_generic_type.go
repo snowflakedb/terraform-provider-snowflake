@@ -14,7 +14,6 @@ var _ basetypes.StringTypable = (*EnumType[dummyEnumType])(nil)
 
 type EnumType[T EnumCreator[T]] struct {
 	basetypes.StringType
-	et T
 }
 
 func (t EnumType[T]) String() string {

@@ -11,9 +11,7 @@ func EnumSuppressor[T customtypes.EnumCreator[T]]() planmodifier.String {
 	return enumSuppressorModifier[T]{}
 }
 
-type enumSuppressorModifier[T customtypes.EnumCreator[T]] struct {
-	et T
-}
+type enumSuppressorModifier[T customtypes.EnumCreator[T]] struct{}
 
 func (m enumSuppressorModifier[T]) Description(_ context.Context) string {
 	return "enum suppressor"
