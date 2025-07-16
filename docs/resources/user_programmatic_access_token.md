@@ -7,6 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+-> **Note** Read more about PAT support in the provider in our [Authentication Methods guide](../guides/authentication_methods#managing-pats).
+
 -> **Note** External changes to `mins_to_bypass_network_policy_requirement` are not handled by the provider because the value changes continuously on Snowflake side after setting it.
 
 -> **Note** External changes to `days_to_expiry` are not handled by the provider because Snowflake returns `expires_at` which is the token expiration date. Also, the provider does not handle expired tokens automatically. Please change the value of `days_to_expiry` to force a new expiration date.
@@ -68,7 +70,17 @@ resource "snowflake_user_programmatic_access_token" "complete_with_external_refe
   mins_to_bypass_network_policy_requirement = 10
   disabled                                  = false
   comment                                   = "COMMENT"
+
+  keepers = {
+    rotation_time = time_rotating.my_token_rotation.rotation_rfc3339
+  }
 }
+
+# note this requires the terraform to be run regularly
+resource "time_rotating" "my_token_rotation" {
+  rotation_days = 30
+}
+
 
 # use the token returned from Snowflake and remember to mark it as sensitive
 output "token" {

@@ -91,8 +91,40 @@ You must fulfill the following prerequisites to generate and use programmatic ac
 - [Network policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-network)
 - [Authentication policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-authentication)
 
-To generate PAT, you use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
-It will generate a new token and return it in the output console. To use it in the provider, you have the following options:
+#### Managing PATs
+
+Managing the whole PAT lifecycle is implemented in the provider with the [snowflake_programmatic_access_token](../resources/user_programmatic_access_token) resource.
+For example, to create a new PAT, you can use the following code:
+```terraform
+resource "snowflake_user_programmatic_access_token" "example" {
+  user = snowflake_user.user.name
+  name = "TOKEN"
+}
+```
+
+You can also rotate the PAT by using the `keepers` attribute and connecting it to a resource providing changing a value, like [time_rotating](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) resource from the `time` provider.
+```terraform
+# note this requires the terraform to be run regularly
+resource "time_rotating" "my_token_rotation" {
+  rotation_days = 30
+}
+
+resource "snowflake_user_programmatic_access_token" "example" {
+  user = snowflake_user.user.name
+  name = "TOKEN"
+
+  keepers = {
+    rotation_time = time_rotating.my_token_rotation.rotation_rfc3339
+  }
+}
+```
+
+If you do not want to manage PATs in Terraform, you can simply use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
+It will generate a new token and return it in the output console.
+
+#### Authenticating with PATs
+
+To use PATs in the provider, you have the following options:
 - Follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
 but instead of password, use the generated token.
 - Use the `PROGRAMMATIC_ACCESS_TOKEN` authenticator and pass the generated token in the `token` field, like:

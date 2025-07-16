@@ -39,7 +39,17 @@ resource "snowflake_user_programmatic_access_token" "complete_with_external_refe
   mins_to_bypass_network_policy_requirement = 10
   disabled                                  = false
   comment                                   = "COMMENT"
+
+  keepers = {
+    rotation_time = time_rotating.my_token_rotation.rotation_rfc3339
+  }
 }
+
+# note this requires the terraform to be run regularly
+resource "time_rotating" "my_token_rotation" {
+  rotation_days = 30
+}
+
 
 # use the token returned from Snowflake and remember to mark it as sensitive
 output "token" {
