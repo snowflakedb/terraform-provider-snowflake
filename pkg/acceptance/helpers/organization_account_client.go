@@ -30,10 +30,15 @@ func (c *OrganizationAccountClient) Alter(t *testing.T, req *sdk.AlterOrganizati
 	require.NoError(t, err)
 }
 
-func (c *OrganizationAccountClient) Show(t *testing.T) sdk.OrganizationAccount {
+func (c *OrganizationAccountClient) ShowCurrent(t *testing.T) sdk.OrganizationAccount {
 	t.Helper()
 	organizationAccount, err := c.client().Show(context.Background(), sdk.NewShowOrganizationAccountRequest())
 	require.NoError(t, err)
 	require.Len(t, organizationAccount, 1)
 	return organizationAccount[0]
+}
+
+func (c *OrganizationAccountClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.OrganizationAccount, error) {
+	t.Helper()
+	return c.client().ShowByID(context.Background(), id)
 }
