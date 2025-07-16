@@ -56,7 +56,7 @@ func fetchAllIssues(token string) []issues.Issue {
 }
 
 func prepareRequest(perPage int, page int, token string) *http.Request {
-	req, err := http.NewRequest("GET", "https://api.github.com/repos/Snowflake-Labs/terraform-provider-snowflake/issues", nil)
+	req, err := http.NewRequest("GET", "https://api.github.com/repos/snowflakedb/terraform-provider-snowflake/issues", nil)
 	if err != nil {
 		panic(err)
 	}
