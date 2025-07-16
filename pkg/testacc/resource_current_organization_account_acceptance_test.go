@@ -170,8 +170,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasNoResourceMonitor().
-						HasNoPasswordPolicy().
-						HasNoSessionPolicy(),
+						HasPasswordPolicyEmpty().
+						HasSessionPolicyEmpty(),
 				),
 			},
 			// import
@@ -183,8 +183,23 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
 						HasNameString(currentOrganizationAccountName).
 						HasNoResourceMonitor().
-						HasNoPasswordPolicy().
-						HasNoSessionPolicy(),
+						HasPasswordPolicyEmpty().
+						HasSessionPolicyEmpty(),
+				),
+			},
+			// set policies externally
+			{
+				PreConfig: func() {
+					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithSessionPolicy(sessionPolicy.ID())))
+					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithPasswordPolicy(passwordPolicy.ID())))
+				},
+				Config: config.FromModels(t, provider, unsetModel),
+				Check: assertThat(t,
+					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
+						HasNameString(currentOrganizationAccountName).
+						HasNoResourceMonitor().
+						HasPasswordPolicyEmpty().
+						HasSessionPolicyEmpty(),
 				),
 			},
 			// set policies and resource monitor

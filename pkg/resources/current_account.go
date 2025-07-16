@@ -161,14 +161,19 @@ func ReadCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	for _, policy := range attachedPolicies {
-		switch policy.PolicyKind {
-		case sdk.PolicyKindAuthenticationPolicy,
-			sdk.PolicyKindFeaturePolicy,
-			sdk.PolicyKindPackagesPolicy,
-			sdk.PolicyKindPasswordPolicy,
-			sdk.PolicyKindSessionPolicy:
-			if err := d.Set(strings.ToLower(string(policy.PolicyKind)), sdk.NewSchemaObjectIdentifier(*policy.PolicyDb, *policy.PolicySchema, policy.PolicyName).FullyQualifiedName()); err != nil {
+	for _, policyKind := range []sdk.PolicyKind{
+		sdk.PolicyKindAuthenticationPolicy,
+		sdk.PolicyKindFeaturePolicy,
+		sdk.PolicyKindPackagesPolicy,
+		sdk.PolicyKindPasswordPolicy,
+		sdk.PolicyKindSessionPolicy,
+	} {
+		if policy, err := collections.FindFirst(attachedPolicies, func(p sdk.PolicyReference) bool { return p.PolicyKind == policyKind }); err == nil {
+			if err := d.Set(strings.ToLower(string(policyKind)), sdk.NewSchemaObjectIdentifier(*policy.PolicyDb, *policy.PolicySchema, policy.PolicyName).FullyQualifiedName()); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := d.Set(strings.ToLower(string(policyKind)), nil); err != nil {
 				return diag.FromErr(err)
 			}
 		}
