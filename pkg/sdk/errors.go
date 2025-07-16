@@ -29,6 +29,8 @@ var (
 	ErrInvalidObjectIdentifier = NewError("invalid object identifier")
 	ErrDifferentDatabase       = NewError("database must be the same")
 	ErrDifferentSchema         = NewError("schema must be the same")
+
+	ErrPolicyNotAttachedToAccount = NewError("policy kind is not attached account")
 )
 
 type IntErrType string
@@ -81,6 +83,11 @@ func errInvalidValue(structName string, fieldName string, invalidValue string) e
 	return newError(fmt.Sprintf("invalid value %s of struct %s field: %s", invalidValue, structName, fieldName), 2)
 }
 
+var errorRegexes = map[*regexp.Regexp]error{
+	regexp.MustCompile(`Programmatic access token .* not found`):                   ErrPatNotFound,
+	regexp.MustCompile(`Any policy of kind [a-zA-z_]+ is not attached to ACCOUNT`): ErrPolicyNotAttachedToAccount,
+}
+
 func decodeDriverError(err error) error {
 	if err == nil {
 		return nil
@@ -98,11 +105,8 @@ func decodeDriverError(err error) error {
 		}
 	}
 
-	regexes := map[string]error{
-		`Programmatic access token .* not found`: ErrPatNotFound,
-	}
-	for k, v := range regexes {
-		if regexp.MustCompile(k).MatchString(err.Error()) {
+	for regex, v := range errorRegexes {
+		if regex.MatchString(err.Error()) {
 			return v
 		}
 	}

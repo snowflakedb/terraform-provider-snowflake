@@ -33,6 +33,7 @@ type CurrentOrganizationAccountModel struct {
 	ClientSessionKeepAlive                           tfconfig.Variable `json:"client_session_keep_alive,omitempty"`
 	ClientSessionKeepAliveHeartbeatFrequency         tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
 	ClientTimestampTypeMapping                       tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
+	Comment                                          tfconfig.Variable `json:"comment,omitempty"`
 	CortexEnabledCrossRegion                         tfconfig.Variable `json:"cortex_enabled_cross_region,omitempty"`
 	CortexModelsAllowlist                            tfconfig.Variable `json:"cortex_models_allowlist,omitempty"`
 	CsvTimestampFormat                               tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
@@ -285,6 +286,11 @@ func (c *CurrentOrganizationAccountModel) WithClientSessionKeepAliveHeartbeatFre
 
 func (c *CurrentOrganizationAccountModel) WithClientTimestampTypeMapping(clientTimestampTypeMapping string) *CurrentOrganizationAccountModel {
 	c.ClientTimestampTypeMapping = tfconfig.StringVariable(clientTimestampTypeMapping)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithComment(comment string) *CurrentOrganizationAccountModel {
+	c.Comment = tfconfig.StringVariable(comment)
 	return c
 }
 
@@ -889,6 +895,11 @@ func (c *CurrentOrganizationAccountModel) WithClientSessionKeepAliveHeartbeatFre
 
 func (c *CurrentOrganizationAccountModel) WithClientTimestampTypeMappingValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.ClientTimestampTypeMapping = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithCommentValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.Comment = value
 	return c
 }
 

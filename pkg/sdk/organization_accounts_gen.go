@@ -9,6 +9,8 @@ type OrganizationAccounts interface {
 	Create(ctx context.Context, request *CreateOrganizationAccountRequest) error
 	Alter(ctx context.Context, request *AlterOrganizationAccountRequest) error
 	Show(ctx context.Context, request *ShowOrganizationAccountRequest) ([]OrganizationAccount, error)
+	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error)
+	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error)
 	// ShowParameters added manually
 	ShowParameters(ctx context.Context) ([]*Parameter, error)
 	// UnsetAllParameters added manually
@@ -51,6 +53,7 @@ type OrganizationAccountSet struct {
 	ResourceMonitor *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	PasswordPolicy  *SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
 	SessionPolicy   *SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
+	Comment         *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type OrganizationAccountUnset struct {
@@ -58,6 +61,7 @@ type OrganizationAccountUnset struct {
 	ResourceMonitor *bool                   `ddl:"keyword" sql:"RESOURCE_MONITOR"`
 	PasswordPolicy  *bool                   `ddl:"keyword" sql:"PASSWORD POLICY"`
 	SessionPolicy   *bool                   `ddl:"keyword" sql:"SESSION POLICY"`
+	Comment         *bool                   `ddl:"keyword" sql:"COMMENT"`
 }
 
 type OrganizationAccountRename struct {
@@ -79,7 +83,7 @@ type organizationAccountDbRow struct {
 	Edition                              string         `db:"edition"`
 	AccountUrl                           string         `db:"account_url"`
 	CreatedOn                            string         `db:"created_on"`
-	Comment                              string         `db:"comment"`
+	Comment                              sql.NullString `db:"comment"`
 	AccountLocator                       string         `db:"account_locator"`
 	AccountLocatorUrl                    string         `db:"account_locator_url"`
 	ManagedAccounts                      int            `db:"managed_accounts"`
@@ -104,7 +108,7 @@ type OrganizationAccount struct {
 	Edition                              OrganizationAccountEdition
 	AccountUrl                           string
 	CreatedOn                            string
-	Comment                              string
+	Comment                              *string
 	AccountLocator                       string
 	AccountLocatorUrl                    string
 	ManagedAccounts                      int
