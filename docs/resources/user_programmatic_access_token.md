@@ -15,6 +15,8 @@ description: |-
 
 -> **Note** Rotating a token can be done by changing the value of `keepers` field. See an example below.
 
+-> **Note** In order to authenticate with PAT with role restriction, you need to grant the role to the user. You can use the [snowflake_grant_account_role](./grant_account_role) resource to do this.
+
 # snowflake_user_programmatic_access_token (Resource)
 
 Resource used to manage user programmatic access tokens. For more information, check [user programmatic access tokens documentation](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token). A programmatic access token is a token that can be used to authenticate to an endpoint. See [Using programmatic access tokens for authentication](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) user guide for more details.
@@ -36,6 +38,32 @@ resource "snowflake_user_programmatic_access_token" "complete" {
   user                                      = "USER"
   name                                      = "TOKEN"
   role_restriction                          = "ROLE"
+  days_to_expiry                            = 30
+  mins_to_bypass_network_policy_requirement = 10
+  disabled                                  = false
+  comment                                   = "COMMENT"
+}
+
+# Set up dependencies and reference them from the token resource.
+resource "snowflake_account_role" "role" {
+  name = "ROLE"
+}
+
+resource "snowflake_user" "user" {
+  name = "USER"
+}
+
+# Grant the role to the user. This is required to authenticate with PAT with role restriction.
+resource "snowflake_grant_account_role" "grant_role_to_user" {
+  role_name = snowflake_account_role.role.name
+  user_name = snowflake_user.user.name
+}
+
+# complete resource with external references
+resource "snowflake_user_programmatic_access_token" "complete_with_external_references" {
+  user                                      = snowflake_user.user.name
+  name                                      = "TOKEN"
+  role_restriction                          = snowflake_account_role.role.name
   days_to_expiry                            = 30
   mins_to_bypass_network_policy_requirement = 10
   disabled                                  = false

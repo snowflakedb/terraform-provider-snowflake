@@ -742,10 +742,7 @@ func (v *users) RemoveProgrammaticAccessToken(ctx context.Context, request *Remo
 }
 
 func (v *users) RemoveProgrammaticAccessTokenSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
-	removeProgrammaticAccessToken := func() error {
-		return v.RemoveProgrammaticAccessToken(ctx, request)
-	}
-	return SafeRemoveProgrammaticAccessToken(v.client, removeProgrammaticAccessToken, ctx, request.UserName)
+	return v.client.UserProgrammaticAccessTokens.RemoveByIDSafely(ctx, request)
 }
 
 func (v *users) ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error) {
@@ -757,7 +754,7 @@ func (v *users) ShowProgrammaticAccessTokenByName(ctx context.Context, userId Ac
 }
 
 func (v *users) ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
-	return SafeShowProgrammaticAccessTokenByName(v.client, v.ShowProgrammaticAccessTokenByName, ctx, userId, tokenName)
+	return v.client.UserProgrammaticAccessTokens.ShowByIDSafely(ctx, userId, tokenName)
 }
 
 type SecondaryRolesOption string

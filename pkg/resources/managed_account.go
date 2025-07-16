@@ -89,7 +89,7 @@ var managedAccountSchema = map[string]*schema.Schema{
 // ManagedAccount returns a pointer to the resource representing a managed account.
 func ManagedAccount() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.ManagedAccounts.DropSafely
 		},
@@ -139,7 +139,7 @@ func CreateManagedAccount(ctx context.Context, d *schema.ResourceData, meta any)
 func ReadManagedAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	// We have to wait during the first read, since the locator takes some time to appear.
 	// This approach has a downside of not handling correctly the situation where managed account was removed externally.

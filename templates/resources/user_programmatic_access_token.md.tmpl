@@ -19,6 +19,8 @@ description: |-
 
 -> **Note** Rotating a token can be done by changing the value of `keepers` field. See an example below.
 
+-> **Note** In order to authenticate with PAT with role restriction, you need to grant the role to the user. You can use the [snowflake_grant_account_role](./grant_account_role) resource to do this.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}

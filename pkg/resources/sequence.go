@@ -70,7 +70,7 @@ var sequenceSchema = map[string]*schema.Schema{
 
 func Sequence() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.Sequences.DropSafely
 		},
@@ -122,7 +122,7 @@ func CreateSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.
 func ReadSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 	seq, err := client.Sequences.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
@@ -180,7 +180,7 @@ func ReadSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 func UpdateSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	if d.HasChange("comment") {
 		req := sdk.NewAlterSequenceRequest(id)
