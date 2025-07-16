@@ -290,10 +290,9 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 	}
-	// TODO: assert rotated_token_name in tests
 
 	if d.HasChange("keepers") {
-		request := sdk.NewRotateUserProgrammaticAccessTokenRequest(resourceId.UserName, resourceId.TokenName)
+		request := sdk.NewRotateUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName)
 		// Handle expire_rotated_token_after_hours. It can't be done with the usual d.Get.
 		// The value is not set in the state, and we allow zero values, so we need to handle it from the raw config.
 		if ctyValue, ok := d.GetRawConfig().AsValueMap()["expire_rotated_token_after_hours"]; ok && !ctyValue.IsNull() {
