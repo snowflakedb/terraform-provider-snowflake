@@ -507,11 +507,11 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.CurrentAccountResource(t, unsetModel.ResourceReference()).
 						HasNoResourceMonitor().
-						HasNoAuthenticationPolicy().
-						HasNoFeaturePolicy().
-						HasNoPackagesPolicy().
-						HasNoPasswordPolicy().
-						HasNoSessionPolicy(),
+						HasAuthenticationPolicyEmpty().
+						HasFeaturePolicyEmpty().
+						HasPackagesPolicyEmpty().
+						HasPasswordPolicyEmpty().
+						HasSessionPolicyEmpty(),
 				),
 			},
 			// import
@@ -522,11 +522,11 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").
 						HasNoResourceMonitor().
-						HasNoAuthenticationPolicy().
-						HasNoFeaturePolicy().
-						HasNoPackagesPolicy().
-						HasNoPasswordPolicy().
-						HasNoSessionPolicy(),
+						HasAuthenticationPolicyEmpty().
+						HasFeaturePolicyEmpty().
+						HasPackagesPolicyEmpty().
+						HasPasswordPolicyEmpty().
+						HasSessionPolicyEmpty(),
 				),
 			},
 			// set policies and resource monitor
