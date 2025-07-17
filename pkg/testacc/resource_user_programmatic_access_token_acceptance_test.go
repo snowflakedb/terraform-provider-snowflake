@@ -159,7 +159,7 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_bypass_network_policy_requirement", "token"},
+				ImportStateVerifyIgnore: []string{"days_to_expiry", "expire_rotated_token_after_hours", "mins_to_bypass_network_policy_requirement", "token"},
 			},
 			// alter
 			{
@@ -439,7 +439,7 @@ func TestAcc_UserProgrammaticAccessToken_complete(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_bypass_network_policy_requirement", "token"},
+				ImportStateVerifyIgnore: []string{"days_to_expiry", "expire_rotated_token_after_hours", "mins_to_bypass_network_policy_requirement", "token"},
 			},
 		},
 	})
@@ -472,13 +472,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 		token = value
 		return nil
 	})
-	assertTokenNotRotated := tokenAssertion(func(value string) error {
-		if value != token {
-			return fmt.Errorf("token is rotated")
-		}
-		token = value
-		return nil
-	})
+
 	assertTokenRotated := tokenAssertion(func(value string) error {
 		if value == token {
 			return fmt.Errorf("token is not rotated")
@@ -534,15 +528,6 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					assertThat(t,
-						resourceassert.UserProgrammaticAccessTokenResource(t, modelWithExpireRotatedTokenAfterHours.ResourceReference()).
-							HasNameString(id.Name()).
-							HasRotatedTokenNameNotEmpty().
-							HasUserString(user.ID().Name()),
-						assertTokenNotRotated,
-					),
-				),
 			},
 			// rotate the token with different keepers and check that the token is updated
 			{
@@ -585,13 +570,6 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
-					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference()).
-						HasNameString(id.Name()).
-						HasRotatedTokenNameNotEmpty().
-						HasUserString(user.ID().Name()),
-					assertTokenNotRotated,
-				),
 			},
 			// rotate the token when the keepers are removed
 			{

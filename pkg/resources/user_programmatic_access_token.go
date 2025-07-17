@@ -326,12 +326,11 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("keepers") {
 		request := sdk.NewRotateUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName)
 		// Handle expire_rotated_token_after_hours. It can't be done with the usual d.Get.
-		// The value is not set in the state, and we allow zero values, so we need to handle it from the raw config.
-		if ctyValue, ok := d.GetRawConfig().AsValueMap()["expire_rotated_token_after_hours"]; ok && !ctyValue.IsNull() {
-			if int64Value, _ := ctyValue.AsBigFloat().Int64(); int64Value != IntDefault {
-				request.WithExpireRotatedTokenAfterHours(int(int64Value))
-			}
+		// The value is not set in the state (because Snowflake doesn't return this value, and it related to the newly created token), and we allow zero values, so we need to handle it from the raw config.
+		if value := GetConfigPropertyAsPointerWithInt64Default(d, "expire_rotated_token_after_hours"); value != nil {
+			request.WithExpireRotatedTokenAfterHours(*value)
 		}
+
 		token, err := client.Users.RotateProgrammaticAccessToken(ctx, request)
 		if err != nil {
 			return diag.FromErr(err)

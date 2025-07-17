@@ -40,7 +40,9 @@ resource "snowflake_user_programmatic_access_token" "complete_with_external_refe
   disabled                                  = false
   comment                                   = "COMMENT"
 
+  # Use the keepers map to force token rotation. If any key or value in the map changes, the token will be rotated.
   keepers = {
+    # here we use the time_rotating's rotation_rfc3339 field which provides a new timestamp every 30 days.
     rotation_time = time_rotating.my_token_rotation.rotation_rfc3339
   }
 }

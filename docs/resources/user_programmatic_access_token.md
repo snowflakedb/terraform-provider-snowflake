@@ -71,7 +71,9 @@ resource "snowflake_user_programmatic_access_token" "complete_with_external_refe
   disabled                                  = false
   comment                                   = "COMMENT"
 
+  # Use the keepers map to force token rotation. If any key or value in the map changes, the token will be rotated.
   keepers = {
+    # here we use the time_rotating's rotation_rfc3339 field which provides a new timestamp every 30 days.
     rotation_time = time_rotating.my_token_rotation.rotation_rfc3339
   }
 }
@@ -102,6 +104,48 @@ resource "snowflake_user_programmatic_access_token" "rotating" {
 resource "time_rotating" "rotation_schedule" {
   rotation_days = 30
 }
+```
+
+## Token rotation clarifications
+The token value returned from Snowflake is stored in the Terraform state and can stays constant until the `keepers` field is changed. Then, the token is rotated and the new `token` value is stored in the state.
+You can use the `keepers` argument in this resource to store arbitrary key/value pairs. Fill it with key/value pairs that should persist unless you want new random values.
+The key gets also rotated when the `keepers` field is added to or removed from the configuration.
+Keep in mind that `keepers` aren't treated as sensitive data, so any values you use for them will appear as plain text in the Terraform outputs.
+
+In the example above, after 30 days pass, you will see terraform plan output similar to:
+```
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # snowflake_user_programmatic_access_token.complete_with_external_references will be updated in-place
+  ~ resource "snowflake_user_programmatic_access_token" "example" {
+        id                                        = "\"PAT\"|\"TOKEN\""
+      ~ keepers                                   = {
+          - "rotation_time" = "2025-07-17T12:20:51Z"
+        } -> (known after apply)
+        name                                      = "TOKEN"
+        # (10 unchanged attributes hidden)
+    }
+
+  # time_rotating.my_token_rotation will be created
+  + resource "time_rotating" "my_token_rotation" {
+      + day              = 30
+      + hour             = (known after apply)
+      + id               = (known after apply)
+      + minute           = (known after apply)
+      + month            = (known after apply)
+      + rfc3339          = (known after apply)
+      + rotation_minutes = (known after apply)
+      + rotation_rfc3339 = (known after apply)
+      + second           = (known after apply)
+      + unix             = (known after apply)
+      + year             = (known after apply)
+    }
+
+Plan: 1 to add, 1 to change, 0 to destroy.
 ```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
