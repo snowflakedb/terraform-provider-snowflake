@@ -32,20 +32,11 @@ func (m optionalComputedStringModifier) PlanModifyString(_ context.Context, requ
 		return
 	}
 
-	if request.ConfigValue.IsNull() && request.StateValue.IsNull() {
+	// When the attribute is removed from config and the read is run, then the plan would be empty. We need to react to such a change because we want to unset the value when it is removed from config.
+	// However, there is no way to distinguish between the first situation like this one and the subsequent ones, therefore resulting in permadiff.
+	// Additional field with previous value is required.
+	if request.ConfigValue.IsNull() && !request.StateValue.IsNull() {
 		response.PlanValue = types.StringUnknown()
 		return
 	}
-	//
-	//// Do nothing if there is a known planned value.
-	//if !request.PlanValue.IsUnknown() {
-	//	return
-	//}
-	//
-	//// Do nothing if there is an unknown configuration value, otherwise interpolation gets messed up.
-	//if request.ConfigValue.IsUnknown() {
-	//	return
-	//}
-	//
-	//response.PlanValue = request.StateValue
 }

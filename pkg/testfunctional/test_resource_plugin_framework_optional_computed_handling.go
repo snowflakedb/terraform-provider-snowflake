@@ -31,8 +31,6 @@ type optionalComputedResourceModelV0 struct {
 	Name        types.String `tfsdk:"name"`
 	StringValue types.String `tfsdk:"string_value"`
 	Id          types.String `tfsdk:"id"`
-
-	common.ActionsLogEmbeddable
 }
 
 type OptionalComputedOpts struct {
@@ -66,7 +64,6 @@ func (r *OptionalComputedResource) Schema(_ context.Context, _ resource.SchemaRe
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			common.ActionsLogPropertyName: common.GetActionsLogSchema(),
 		},
 	}
 }
@@ -86,8 +83,6 @@ func (r *OptionalComputedResource) Create(ctx context.Context, request resource.
 	opts := &OptionalComputedOpts{}
 	stringAttributeCreate(data.StringValue, &opts.StringValue)
 
-	optionalComputedSetCreateActionsOutput(ctx, response, opts, data)
-
 	response.Diagnostics.Append(r.create(opts)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -99,16 +94,6 @@ func (r *OptionalComputedResource) Create(ctx context.Context, request resource.
 	}
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
-}
-
-func optionalComputedSetCreateActionsOutput(ctx context.Context, response *resource.CreateResponse, opts *OptionalComputedOpts, data *optionalComputedResourceModelV0) {
-	response.Diagnostics.Append(common.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []common.ActionLogEntry {
-		actions := make([]common.ActionLogEntry, 0)
-		if opts.StringValue != nil {
-			actions = append(actions, common.ActionEntry("CREATE", "string_value", *opts.StringValue))
-		}
-		return actions
-	})...)
 }
 
 func (r *OptionalComputedResource) create(opts *OptionalComputedOpts) diag.Diagnostics {
@@ -138,9 +123,7 @@ func (r *OptionalComputedResource) read(data *optionalComputedResourceModelV0) d
 		diags.AddError("Could not read resources state", err.Error())
 	} else {
 		if opts.StringValue != nil {
-			if data.StringValue.IsNull() {
-				data.StringValue = types.StringValue(*opts.StringValue)
-			} else if data.StringValue.ValueString() != *opts.StringValue {
+			if data.StringValue.ValueString() != *opts.StringValue {
 				data.StringValue = types.StringNull()
 			}
 		} else {
@@ -173,27 +156,17 @@ func (r *OptionalComputedResource) Update(ctx context.Context, request resource.
 	opts := &OptionalComputedOpts{}
 	stringAttributeUpdate(plan.StringValue, state.StringValue, &opts.StringValue, &opts.StringValue)
 
-	optionalComputedSetUpdateActionsOutput(ctx, response, opts, plan, state)
-
 	response.Diagnostics.Append(r.update(opts)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 
-	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
-}
+	response.Diagnostics.Append(r.readCreateUpdate(plan)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
 
-func optionalComputedSetUpdateActionsOutput(ctx context.Context, response *resource.UpdateResponse, opts *OptionalComputedOpts, plan *optionalComputedResourceModelV0, state *optionalComputedResourceModelV0) {
-	plan.ActionsLogEmbeddable = state.ActionsLogEmbeddable
-	response.Diagnostics.Append(common.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []common.ActionLogEntry {
-		actions := make([]common.ActionLogEntry, 0)
-		if opts.StringValue != nil {
-			actions = append(actions, common.ActionEntry("UPDATE - SET", "string_value", *opts.StringValue))
-		} else {
-			actions = append(actions, common.ActionEntry("UPDATE - UNSET", "string_value", "nil"))
-		}
-		return actions
-	})...)
+	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
 }
 
 func (r *OptionalComputedResource) update(opts *OptionalComputedOpts) diag.Diagnostics {

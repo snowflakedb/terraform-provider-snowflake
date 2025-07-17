@@ -13,22 +13,22 @@ import (
 )
 
 var (
-	optionalComputedHandler = common.NewDynamicHandlerWithInitialValueAndReplaceWithFunc[testfunctional.OptionalComputedOpts](
+	optionalComputedHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.OptionalComputedOpts](
 		testfunctional.OptionalComputedOpts{
 			StringValue: sdk.Pointer("default text"),
 		}, optionalComputedOptsReplaceWithNonNil,
 	)
 )
 
-// TODO [mux-PRs]: handle by reflection or generate
-func optionalComputedOptsReplaceWithNonNil(base testfunctional.OptionalComputedOpts, replaceWith testfunctional.OptionalComputedOpts) testfunctional.OptionalComputedOpts {
+func optionalComputedOptsReplaceWithNonNil(base testfunctional.OptionalComputedOpts, defaultValue testfunctional.OptionalComputedOpts, replaceWith testfunctional.OptionalComputedOpts) testfunctional.OptionalComputedOpts {
 	if replaceWith.StringValue != nil {
 		base.StringValue = replaceWith.StringValue
+	} else {
+		base.StringValue = defaultValue.StringValue
 	}
 	return base
 }
 
-// TODO [mux-PRs]: add method with validation
 func init() {
 	allTestHandlers["optional_computed_handling"] = optionalComputedHandler
 }
@@ -55,12 +55,6 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalComputed(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "string_value", "some value"),
-
-					// check actions
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "1"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.action", "CREATE"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.field", "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.0.value", "some value"),
 				),
 			},
 			// remove all from config (to validate that unset is run correctly and default value is in state)
@@ -74,13 +68,9 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalComputed(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "string_value", "default text"),
-
-					// check actions
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.#", "2"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.action", "UPDATE - UNSET"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.field", "string_value"),
-					resource.TestCheckResourceAttr(resourceReference, "actions_log.1.value", "nil"),
 				),
+				// Because our plan modifier react to the situation config == null and state != null, it will be a perma diff.
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
