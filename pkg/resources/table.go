@@ -211,7 +211,7 @@ var tableSchema = map[string]*schema.Schema{
 
 func Table() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Tables.DropSafely },
 	)
 
@@ -652,7 +652,7 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	table, err := client.Tables.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -724,7 +724,7 @@ func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))

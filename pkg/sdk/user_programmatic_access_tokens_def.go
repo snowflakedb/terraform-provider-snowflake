@@ -128,7 +128,7 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 				OptionalSQL("COMMENT"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
-		OptionalTextAssignment("RENAME TO", g.ParameterOptions().DoubleQuotes().NoEquals()).
+		OptionalIdentifier("RenameTo", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO").NoEquals()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "UserName").
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo"),
@@ -168,4 +168,4 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
 		OptionalIdentifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
-)
+).ShowByIdOperationWithNoFiltering()

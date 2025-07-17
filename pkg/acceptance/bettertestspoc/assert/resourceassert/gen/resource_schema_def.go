@@ -246,6 +246,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.User().Schema,
 	},
 	{
+		name:   "UserProgrammaticAccessToken",
+		schema: resources.UserProgrammaticAccessToken().Schema,
+	},
+	{
 		name:   "View",
 		schema: resources.View().Schema,
 	},

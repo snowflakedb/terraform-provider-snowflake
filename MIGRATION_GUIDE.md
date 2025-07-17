@@ -21,6 +21,13 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.3.0 ➞ v2.4.0
+
+### *(new feature)* snowflake_user_programmatic_access_token resource
+Added a new preview resource for managing users' programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) and a [user guide](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more details.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token` to `preview_features_enabled` field in the provider configuration.
+
 ## v2.2.0 ➞ v2.3.0
 
 ### *(new feature)* New `PROGRAMMATIC_ACCESS_TOKEN` authenticator option
@@ -31,11 +38,19 @@ See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/
 
 ### *(bugfix)* Fix `snowflake_functions` and `snowflake_procedures` data sources with 2025_03 Bundle enabled
 
+> [!IMPORTANT]
+> This behavior change in Snowflake was originally in the [2025_03 Bundle](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle) and intended to become enabled by default in the 2025_04 bundle. However, it has been [postponed](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944) and a new release date has not been determined.
+> After adjusting parsing data types in the provider, it handles arguments with and without attributes.
+
 Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
 
 References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
 
 ### *(bugfix)* Fix all function and procedure resources with 2025_03 Bundle enabled
+
+> [!IMPORTANT]
+> This behavior change in Snowflake was originally in the [2025_03 Bundle](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle) and intended to become enabled by default in the 2025_04 bundle. However, it has been [postponed](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944) and a new release date has not been determined.
+> After adjusting parsing data types in the provider, it handles arguments with and without attributes.
 
 Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
 

@@ -72,7 +72,7 @@ func v092WarehouseSizeStateUpgrader(ctx context.Context, rawState map[string]any
 
 	// get the warehouse from Snowflake
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(rawState["id"].(string)).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(rawState["id"].(string)).(sdk.AccountObjectIdentifier)
 
 	w, err := client.Warehouses.ShowByID(ctx, id)
 	if err != nil {
