@@ -64,7 +64,7 @@ func (s *ModifyUserProgrammaticAccessTokenRequest) WithUnset(Unset ModifyProgram
 	return s
 }
 
-func (s *ModifyUserProgrammaticAccessTokenRequest) WithRenameTo(RenameTo string) *ModifyUserProgrammaticAccessTokenRequest {
+func (s *ModifyUserProgrammaticAccessTokenRequest) WithRenameTo(RenameTo AccountObjectIdentifier) *ModifyUserProgrammaticAccessTokenRequest {
 	s.RenameTo = &RenameTo
 	return s
 }

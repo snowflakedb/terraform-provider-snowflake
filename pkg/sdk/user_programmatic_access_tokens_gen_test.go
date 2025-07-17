@@ -96,9 +96,10 @@ func TestModifyProgrammaticAccessToken(t *testing.T) {
 	})
 
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo] should be present: all set", func(t *testing.T) {
+		newId := randomAccountObjectIdentifier()
 		opts := &ModifyUserProgrammaticAccessTokenOptions{
 			name:     name,
-			RenameTo: String("new_token"),
+			RenameTo: &newId,
 			Set: &ModifyProgrammaticAccessTokenSet{
 				Disabled: Bool(true),
 			},
@@ -120,12 +121,13 @@ func TestModifyProgrammaticAccessToken(t *testing.T) {
 	})
 
 	t.Run("with rename to", func(t *testing.T) {
+		newId := randomAccountObjectIdentifier()
 		opts := &ModifyUserProgrammaticAccessTokenOptions{
 			UserName: userId,
 			name:     name,
-			RenameTo: String("new_token"),
+			RenameTo: &newId,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN %s RENAME TO "new_token"`, userId.FullyQualifiedName(), name.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN %s RENAME TO %s`, userId.FullyQualifiedName(), name.FullyQualifiedName(), newId.FullyQualifiedName())
 	})
 
 	t.Run("with set: all attributes", func(t *testing.T) {
@@ -179,9 +181,9 @@ func TestRotateProgrammaticAccessToken(t *testing.T) {
 	t.Run("validation: invalid expire rotated token after hours", func(t *testing.T) {
 		opts := &RotateUserProgrammaticAccessTokenOptions{
 			name:                         name,
-			ExpireRotatedTokenAfterHours: Int(0),
+			ExpireRotatedTokenAfterHours: Int(-1),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("RotateUserProgrammaticAccessTokenOptions", "ExpireRotatedTokenAfterHours", IntErrGreaterOrEqual, 1))
+		assertOptsInvalidJoinedErrors(t, opts, errIntValue("RotateUserProgrammaticAccessTokenOptions", "ExpireRotatedTokenAfterHours", IntErrGreaterOrEqual, 0))
 	})
 
 	t.Run("with required attributes", func(t *testing.T) {
