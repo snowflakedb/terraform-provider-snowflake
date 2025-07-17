@@ -115,6 +115,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Users().Schema,
 	},
 	{
+		name:   "UserProgrammaticAccessTokens",
+		schema: datasources.UserProgrammaticAccessTokens().Schema,
+	},
+	{
 		name:   "Views",
 		schema: datasources.Views().Schema,
 	},

@@ -23,6 +23,7 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The name of the user that the token is associated with. A user cannot use another user's programmatic access token to authenticate."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 	},
 	"name": {
 		Type:             schema.TypeString,
@@ -259,25 +260,57 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 		d.SetId(resourceId.String())
 	}
 
-	set, unset := sdk.NewModifyProgrammaticAccessTokenSetRequest(), sdk.NewModifyProgrammaticAccessTokenUnsetRequest()
-	errs := errors.Join(
-		// role_restriction and days_to_expiry are handled by forcenew
-		intAttributeUpdate(d, "mins_to_bypass_network_policy_requirement", &set.MinsToBypassNetworkPolicyRequirement, &unset.MinsToBypassNetworkPolicyRequirement),
-		booleanStringAttributeUpdate(d, "disabled", &set.Disabled, &unset.Disabled),
-		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-	)
-	if errs != nil {
-		return diag.FromErr(errs)
-	}
-
-	if (*set != sdk.ModifyProgrammaticAccessTokenSetRequest{}) {
-		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*set)); err != nil {
-			return diag.FromErr(err)
+	// TODO(SNOW-2210280): Call the alters as usual, after the behavior is fixed in Snowflake.
+	if d.HasChange("disabled") {
+		v := d.Get("disabled").(string)
+		if v != BooleanDefault {
+			parsed, err := booleanStringToBool(v)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithDisabled(parsed))); err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithDisabled(true))); err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
 		}
 	}
-	if (*unset != sdk.ModifyProgrammaticAccessTokenUnsetRequest{}) {
-		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*unset)); err != nil {
-			return diag.FromErr(err)
+
+	if d.HasChange("comment") {
+		comment := d.Get("comment").(string)
+		if comment != "" {
+			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithComment(comment)))
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		} else {
+			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithComment(true)))
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChange("mins_to_bypass_network_policy_requirement") {
+		v, ok := d.GetOk("mins_to_bypass_network_policy_requirement")
+		if ok {
+			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithMinsToBypassNetworkPolicyRequirement(v.(int))))
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		} else {
+			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithMinsToBypassNetworkPolicyRequirement(true)))
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
 		}
 	}
 	return ReadUserProgrammaticAccessToken(false)(ctx, d, meta)
