@@ -91,8 +91,77 @@ You must fulfill the following prerequisites to generate and use programmatic ac
 - [Network policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-network)
 - [Authentication policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-authentication)
 
-To generate PAT, you use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
-It will generate a new token and return it in the output console. To use it in the provider, you have the following options:
+#### Managing PATs
+
+Managing the whole PAT lifecycle is implemented in the provider with the [snowflake_programmatic_access_token](../resources/user_programmatic_access_token) resource.
+For example, to create a new PAT, you can use the following code:
+```terraform
+resource "snowflake_user_programmatic_access_token" "example" {
+  user = snowflake_user.user.name
+  name = "TOKEN"
+}
+```
+
+You can also rotate the PAT by using the `keepers` attribute and connecting it to a resource providing changing a value, like [time_rotating](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) resource from the `time` provider.
+```terraform
+# note this requires the terraform to be run regularly
+resource "time_rotating" "my_token_rotation" {
+  rotation_days = 30
+}
+
+resource "snowflake_user_programmatic_access_token" "example" {
+  user = snowflake_user.user.name
+  name = "TOKEN"
+
+  # Use the keepers map to force token rotation. If any key or value in the map changes, the token will be rotated.
+  keepers = {
+    # here we use the time_rotating's rotation_rfc3339 field which provides a new timestamp every 30 days.
+    rotation_time = time_rotating.my_token_rotation.rotation_rfc3339
+  }
+}
+```
+In this example, after 30 days pass, you will see terraform plan output similar to:
+```
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # snowflake_user_programmatic_access_token.complete_with_external_references will be updated in-place
+  ~ resource "snowflake_user_programmatic_access_token" "example" {
+        id                                        = "\"PAT\"|\"TOKEN\""
+      ~ keepers                                   = {
+          - "rotation_time" = "2025-07-17T12:20:51Z"
+        } -> (known after apply)
+        name                                      = "TOKEN"
+        # (10 unchanged attributes hidden)
+    }
+
+  # time_rotating.my_token_rotation will be created
+  + resource "time_rotating" "my_token_rotation" {
+      + day              = 30
+      + hour             = (known after apply)
+      + id               = (known after apply)
+      + minute           = (known after apply)
+      + month            = (known after apply)
+      + rfc3339          = (known after apply)
+      + rotation_minutes = (known after apply)
+      + rotation_rfc3339 = (known after apply)
+      + second           = (known after apply)
+      + unix             = (known after apply)
+      + year             = (known after apply)
+    }
+
+Plan: 1 to add, 1 to change, 0 to destroy.
+```
+
+If you do not want to manage PATs in Terraform, you can simply use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
+It will generate a new token and return it in the output console.
+
+#### Authenticating with PATs
+
+To use PATs in the provider, you have the following options:
 - Follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
 but instead of password, use the generated token.
 - Use the `PROGRAMMATIC_ACCESS_TOKEN` authenticator and pass the generated token in the `token` field, like:
