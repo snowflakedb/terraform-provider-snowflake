@@ -23,6 +23,9 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.3.0 ➞ v2.4.0
 
+### *(new feature)* snowflake_current_organization_account resource
+Added a new preview resource for managing the organization account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ORGANIZATION ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-organization-account). You can read about the resource limitations in the documentation in the registry.
+
 ### *(new feature)* snowflake_user_programmatic_access_token resource
 Added a new preview resource for managing users' programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) and a [user guide](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more details.
 
