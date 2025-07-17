@@ -232,3 +232,13 @@ func (c *UserClient) RemoveProgrammaticAccessTokenFunc(t *testing.T, userId sdk.
 		}
 	}
 }
+
+func (c *UserClient) ShowProgrammaticAccessToken(t *testing.T, userId sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) *sdk.ProgrammaticAccessToken {
+	t.Helper()
+	ctx := context.Background()
+
+	token, err := c.context.client.Users.ShowProgrammaticAccessTokenByName(ctx, userId, tokenName)
+	require.NoError(t, err)
+	require.NotNil(t, token)
+	return token
+}
