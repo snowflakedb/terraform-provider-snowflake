@@ -733,7 +733,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 					g.KindOfT[OauthSecurityIntegrationClientTypeOption](),
 					g.ParameterOptions().Required().SingleQuotes(),
 				).
-				OptionalTextAssignment("OAUTH_REDIRECT_URI", g.ParameterOptions().SingleQuotes()).
+				TextAssignment("OAUTH_REDIRECT_URI", g.ParameterOptions().Required().SingleQuotes()).
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				OptionalBooleanAssignment("OAUTH_ALLOW_NON_TLS_REDIRECT_URI", g.ParameterOptions()).
 				OptionalBooleanAssignment("OAUTH_ENFORCE_PKCE", g.ParameterOptions()).
