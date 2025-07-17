@@ -7,8 +7,6 @@ description: |-
 
 !> **Sensitive values** This resource's `oauth_redirect_uri` and `describe_output.oauth_redirect_uri` fields are not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
 
-!> **Note** Setting a network policy with lowercase letters does not work correctly in Snowflake (see [issue](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3229)). As a workaround, set the network policy with uppercase letters only, or use [execute](./execute) with network policy ID wrapped in `'`.
-
 !> **Note** The provider does not detect external changes on security integration type. In this case, remove the integration of wrong type manually with `terraform destroy` and recreate the resource. It will be addressed in the future.
 
 ~> **Missing fields** The `oauth_client_id` and `oauth_redirect_uri` fields are not present in the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
