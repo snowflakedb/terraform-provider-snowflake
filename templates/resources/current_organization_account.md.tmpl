@@ -23,6 +23,8 @@ description: |-
 
 -> **Note** You can manage only one such resource **per organization**. More instances in one organization could cause unexpected behavior.
 
+-> **Note** Moving organization accounts to different regions is not supported by the provider due to Snowflake and Terraform limitations.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}

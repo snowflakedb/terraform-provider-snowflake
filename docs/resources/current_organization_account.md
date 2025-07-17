@@ -19,6 +19,8 @@ description: |-
 
 -> **Note** You can manage only one such resource **per organization**. More instances in one organization could cause unexpected behavior.
 
+-> **Note** Moving organization accounts to different regions is not supported by the provider due to Snowflake and Terraform limitations.
+
 # snowflake_current_organization_account (Resource)
 
 Resource used to manage an organization account within the organization you are connected to. See [ALTER ORGANIZATION ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-organization-account) documentation for more information on resource capabilities.

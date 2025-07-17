@@ -17,9 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO:(ticket number): Add support for specifying organization account region and possibility to change it.
-// TODO: Document as current limitation
-
 var currentOrganizationAccountSchema = map[string]*schema.Schema{
 	"name": {
 		Type:        schema.TypeString,
