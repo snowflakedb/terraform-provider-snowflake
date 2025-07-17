@@ -42,7 +42,7 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 		Type:             schema.TypeInt,
 		Optional:         true,
 		ForceNew:         true,
-		Description:      externalChangesNotDetectedFieldDescription("The number of days that the programmatic access token can be used for authentication."),
+		Description:      externalChangesNotDetectedFieldDescription("The number of days that the programmatic access token can be used for authentication. This field cannot be altered after the token is created. Instead, you must rotate the token with the `keepers` field."),
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 	},
 	"mins_to_bypass_network_policy_requirement": {

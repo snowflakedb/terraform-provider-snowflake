@@ -565,7 +565,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 							return fmt.Errorf("rotated_token_name is empty")
 						}
 						rotatedTokenId := sdk.NewAccountObjectIdentifier(value)
-						token := testClient().User.ShowProgrammaticAccessTokenByName(t, user.ID(), rotatedTokenId)
+						token := testClient().User.ShowProgrammaticAccessToken(t, user.ID(), rotatedTokenId)
 						if token.RotatedTo == nil {
 							return fmt.Errorf("the rotated token is not found")
 						}

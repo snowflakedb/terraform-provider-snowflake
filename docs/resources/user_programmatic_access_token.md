@@ -117,7 +117,7 @@ resource "time_rotating" "rotation_schedule" {
 ### Optional
 
 - `comment` (String) Descriptive comment about the programmatic access token.
-- `days_to_expiry` (Number) The number of days that the programmatic access token can be used for authentication. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
+- `days_to_expiry` (Number) The number of days that the programmatic access token can be used for authentication. This field cannot be altered after the token is created. Instead, you must rotate the token with the `keepers` field. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 - `disabled` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Disables or enables the programmatic access token. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `expire_rotated_token_after_hours` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Sets the expiration time of the existing token secret to expire after the specified number of hours. You can set this to a value of 0 to expire the current token secret immediately. This field is only used when the token is rotated with `keepers` field.
 - `keepers` (Map of String) Arbitrary map of values that, when changed, will trigger a new key to be generated.

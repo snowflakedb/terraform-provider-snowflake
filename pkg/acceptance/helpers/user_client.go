@@ -233,7 +233,7 @@ func (c *UserClient) RemoveProgrammaticAccessTokenFunc(t *testing.T, userId sdk.
 	}
 }
 
-func (c *UserClient) ShowProgrammaticAccessTokenByName(t *testing.T, userId sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) *sdk.ProgrammaticAccessToken {
+func (c *UserClient) ShowProgrammaticAccessToken(t *testing.T, userId sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) *sdk.ProgrammaticAccessToken {
 	t.Helper()
 	ctx := context.Background()
 
