@@ -23,6 +23,7 @@ const (
 	CortexSearchServicesDatasource                feature = "snowflake_cortex_search_services_datasource"
 	CurrentAccountResource                        feature = "snowflake_current_account_resource"
 	CurrentAccountDatasource                      feature = "snowflake_current_account_datasource"
+	CurrentOrganizationAccountResource            feature = "snowflake_current_organization_account_resource"
 	DatabaseDatasource                            feature = "snowflake_database_datasource"
 	DatabaseRoleDatasource                        feature = "snowflake_database_role_datasource"
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
@@ -87,6 +88,7 @@ const (
 	UserAuthenticationPolicyAttachmentResource    feature = "snowflake_user_authentication_policy_attachment_resource"
 	UserPublicKeysResource                        feature = "snowflake_user_public_keys_resource"
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
+	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
 )
 
 var allPreviewFeatures = []feature{
@@ -102,6 +104,7 @@ var allPreviewFeatures = []feature{
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
 	CurrentAccountDatasource,
+	CurrentOrganizationAccountResource,
 	DatabaseDatasource,
 	DatabaseRoleDatasource,
 	DynamicTableResource,
@@ -166,6 +169,7 @@ var allPreviewFeatures = []feature{
 	UserAuthenticationPolicyAttachmentResource,
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+	UserProgrammaticAccessTokenResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 

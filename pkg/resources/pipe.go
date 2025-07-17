@@ -87,7 +87,7 @@ var pipeSchema = map[string]*schema.Schema{
 
 func Pipe() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Pipes.DropSafely },
 	)
 
@@ -162,7 +162,7 @@ func CreatePipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 // ReadPipe implements schema.ReadFunc.
 func ReadPipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	pipe, err := client.Pipes.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -231,7 +231,7 @@ func ReadPipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagno
 // UpdatePipe implements schema.UpdateFunc.
 func UpdatePipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	objectIdentifier := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	objectIdentifier := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	pipeSet := &sdk.PipeSet{}
 	pipeUnset := &sdk.PipeUnset{}

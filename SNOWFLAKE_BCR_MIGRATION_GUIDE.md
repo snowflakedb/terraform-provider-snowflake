@@ -11,6 +11,27 @@ command to enable the bundle manually, and then the [SYSTEM\$DISABLE_BEHAVIOR_CH
 Remember that only changes that affect the provider are listed here, to get the full list of changes, please refer to the [Snowflake BCR Bundle documentation](https://docs.snowflake.com/en/release-notes/behavior-changes).
 The `snowflake_execute` resource won't be listed here, as it is users' responsibility to check the SQL commands executed and adapt them to the new behavior.
 
+## [Unbundled changes](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/unbundled-behavior-changes)
+
+### Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands
+
+> [!IMPORTANT]
+> This change has been rolled back from the BCR 2025_03.
+
+Changed format in `Arguments` column from `SHOW FUNCTIONS/PROCEDURES` output is not compatible with the provider parsing function. It leads to:
+- [`snowflake_functions`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/functions) and [`snowflake_procedures`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/procedures) being inoperable. Check: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822).
+- All function and all procedure resources failing to read their state from Snowflake, which leads to removing them from terraform state (if `terraform apply` or `terraform plan --refresh-only` is run). Check: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823).
+
+The parsing was improved and is available starting with the [2.3.0](https://registry.terraform.io/providers/snowflakedb/snowflake/2.3.0/docs/) version of the provider.
+
+To use the provider with the bundles containing this change:
+1. Bump the provider to 2.3.0 version.
+2. Affected data sources should work without any further actions after bumping.
+3. If your function/procedure resources were removed from terraform state (you can check it by running `terraform state list`), you need to reimport them (follow our [resource migration guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/resource_migration)).
+4. If your function/procedure resources are still in the terraform state, they should work any further actions after bumping.
+
+Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
+
 ## [Bundle 2025_04](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04_bundle)
 
 ### Primary role requires stage access during `CREATE EXTERNAL TABLE` command
@@ -22,9 +43,14 @@ Reference: [BCR-1993](https://docs.snowflake.com/en/release-notes/bcr-bundles/20
 ### `MFA_AUTHENTICATION_METHODS` property in authentication policies is now deprecated
 <!-- TODO(SNOW-2187814): Update this entry. -->
 
-The `MFA_AUTHENTICATION_METHODS` property is deprecated. A new `MFA_POLICY` property is available with an `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` option, which accepts `ALL` or `NONE` as values.
+> [!IMPORTANT]
+> This change has not been addressed in the provider yet. This will be addressed in the next versions of the provider.
+
+The `MFA_AUTHENTICATION_METHODS` property is deprecated. Setting the `MFA_AUTHENTICATION_METHODS` property returns an error. If you use the [authentication_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) resource with `mfa_authentication_methods` field
+and have this bundle enabled, the provider will return an error.
+
+A new `MFA_POLICY` property is available with an `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` option, which accepts `ALL` or `NONE` as values.
 Authentication policies with the `MFA_AUTHENTICATION_METHODS` specified return a deprecation message under the DESCRIPTION column in the output of a DESCRIBE AUTHENTICATION POLICY command.
-This will be addressed in the next versions of the provider.
 
 Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
 
@@ -41,22 +67,6 @@ Basically the steps are:
 - Re-import the resource into the state (with correct privilege name in the imported identifier)
 
 Reference: [BCR-1926](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03/bcr-1926)
-
-### Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands
-
-Changed format in `Arguments` column from `SHOW FUNCTIONS/PROCEDURES` output is not compatible with the provider parsing function. It leads to:
-- [`snowflake_functions`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/functions) and [`snowflake_procedures`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/procedures) being inoperable. Check: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822).
-- All function and all procedure resources failing to read their state from Snowflake, which leads to removing them from terraform state (if `terraform apply` or `terraform plan --refresh-only` is run). Check: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823).
-
-The parsing was improved and is available starting with the [2.3.0](https://registry.terraform.io/providers/snowflakedb/snowflake/2.3.0/docs/) version of the provider.
-
-To use the provider with the 2025_03 Bundle:
-1. Bump the provider to 2.3.0 version.
-2. Affected data sources should work without any further actions after bumping.
-3. If your function/procedure resources were removed from terraform state (you can check it by running `terraform state list`), you need to reimport them (follow our [resource migration guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/resource_migration)).
-4. If your function/procedure resources are still in the terraform state, they should work any further actions after bumping.
-
-Reference: [BCR-1944](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03/bcr-1944)
 
 ### New maximum size limits for database objects
 

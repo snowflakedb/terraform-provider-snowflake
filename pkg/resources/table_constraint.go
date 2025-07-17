@@ -218,7 +218,7 @@ func getTableIdentifier(s string) (*sdk.SchemaObjectIdentifier, error) {
 	var err error
 	// TODO [SNOW-1348114]: Address during table rework; Fallback for old implementations using table.id instead of table.fully_qualified_name - probably will be removed later.
 	if strings.Contains(s, "|") {
-		objectIdentifier = helpers.DecodeSnowflakeID(s)
+		objectIdentifier = helpers.DecodeSnowflakeIDLegacy(s)
 	} else {
 		objectIdentifier, err = helpers.DecodeSnowflakeParameterID(s)
 	}

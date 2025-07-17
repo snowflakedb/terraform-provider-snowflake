@@ -714,6 +714,6 @@ func handlePasswordUpdate(ctx context.Context, id sdk.AccountObjectIdentifier, u
 }
 
 var DeleteUser = ResourceDeleteContextFunc(
-	helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+	sdk.ParseAccountObjectIdentifier,
 	func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] { return client.Users.DropSafely },
 )

@@ -145,7 +145,7 @@ var passwordPolicySchema = map[string]*schema.Schema{
 func PasswordPolicy() *schema.Resource {
 	// TODO(SNOW-1818849): unassign policies before dropping
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.PasswordPolicies.DropSafely
 		},
@@ -211,7 +211,7 @@ func CreatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any)
 func ReadPasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	passwordPolicy, err := client.PasswordPolicies.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -289,7 +289,7 @@ func ReadPasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any) d
 func UpdatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	objectIdentifier := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	objectIdentifier := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(objectIdentifier.SchemaId(), d.Get("name").(string))

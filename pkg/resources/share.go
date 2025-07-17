@@ -48,7 +48,7 @@ var shareSchema = map[string]*schema.Schema{
 
 func Share() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] { return client.Shares.DropSafely },
 	)
 
@@ -167,7 +167,7 @@ func setShareAccounts(ctx context.Context, client *sdk.Client, shareID sdk.Accou
 // ReadShare implements schema.ReadFunc.
 func ReadShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	share, err := client.Shares.ShowByID(ctx, id)
 	if err != nil {
@@ -211,7 +211,7 @@ func accountIdentifiersFromSlice(accounts []string) []sdk.AccountIdentifier {
 
 // UpdateShare implements schema.UpdateFunc.
 func UpdateShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 	client := meta.(*provider.Context).Client
 
 	if d.HasChange("accounts") {

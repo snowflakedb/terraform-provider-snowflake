@@ -79,7 +79,12 @@ func EncodeSnowflakeID(attributes ...interface{}) string {
 	return strings.Join(parts, "|")
 }
 
-func DecodeSnowflakeID(id string) sdk.ObjectIdentifier {
+// DecodeSnowflakeIDLegacy decodes a Snowflake ID into an ObjectIdentifier.
+//
+// This is a legacy function. Use Parse<level>ObjectIdentifier instead.
+// This function is still used in the preview resources. The end goal is to use new Parse<level>ObjectIdentifier functions instead.
+// Still, this could be later considered as a test helper in a separate package.
+func DecodeSnowflakeIDLegacy(id string) sdk.ObjectIdentifier {
 	parts := strings.Split(id, IDDelimiter)
 	switch len(parts) {
 	case 1:
@@ -95,8 +100,12 @@ func DecodeSnowflakeID(id string) sdk.ObjectIdentifier {
 	}
 }
 
-func DecodeSnowflakeIDErr[ID sdk.ObjectIdentifierConstraint](id string) (ID, error) {
-	return DecodeSnowflakeID(id).(ID), nil
+// DecodeSnowflakeIDErrLegacy returns a decoded ObjectIdentifier and an error.
+//
+// This is a legacy function. Use Parse<level>ObjectIdentifier instead.
+// This function is still used in the preview resources. The end goal is to use new Parse<level>ObjectIdentifier functions instead.
+func DecodeSnowflakeIDErrLegacy[ID sdk.ObjectIdentifierConstraint](id string) (ID, error) {
+	return DecodeSnowflakeIDLegacy(id).(ID), nil
 }
 
 // DecodeSnowflakeParameterID decodes identifier (usually passed as one of the parameter in tf configuration) into sdk.ObjectIdentifier.

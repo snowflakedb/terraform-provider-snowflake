@@ -213,6 +213,14 @@ func (c *UserClient) AddProgrammaticAccessTokenWithRequest(t *testing.T, userId 
 	return *token, c.RemoveProgrammaticAccessTokenFunc(t, userId, sdk.NewAccountObjectIdentifier(token.TokenName))
 }
 
+func (c *UserClient) ModifyProgrammaticAccessToken(t *testing.T, request *sdk.ModifyUserProgrammaticAccessTokenRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().ModifyProgrammaticAccessToken(ctx, request)
+	require.NoError(t, err)
+}
+
 func (c *UserClient) RemoveProgrammaticAccessTokenFunc(t *testing.T, userId sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

@@ -170,7 +170,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		t.Cleanup(cleanupToken)
 
 		renameRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), oldId).
-			WithRenameTo(newId.Name())
+			WithRenameTo(newId)
 
 		err := client.Users.ModifyProgrammaticAccessToken(ctx, renameRequest)
 		require.NoError(t, err)

@@ -85,7 +85,7 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.ProcedureSql:
 		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
 	default:
-		return helpers.DecodeSnowflakeID(rs.Primary.ID), nil
+		return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
 	}
 }
 
@@ -649,6 +649,28 @@ func CheckAccountParameterUnset(t *testing.T, paramName sdk.AccountParameter) fu
 			parameter := testClient().Parameter.ShowAccountParameter(t, paramName)
 			if parameter.Level != sdk.ParameterTypeSnowflakeDefault {
 				return fmt.Errorf("expected parameter level empty, got %v", parameter.Level)
+			}
+		}
+		return nil
+	}
+}
+
+func CheckUserProgrammaticAccessTokenDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return func(s *terraform.State) error {
+		client := TestAccProvider.Meta().(*provider.Context).Client
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "snowflake_user_programmatic_access_token" {
+				continue
+			}
+			idRaw := rs.Primary.ID
+			ids := helpers.ParseResourceIdentifier(idRaw)
+			userId := sdk.NewAccountObjectIdentifier(ids[0])
+			tokenName := sdk.NewAccountObjectIdentifier(ids[1])
+			token, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(context.Background(), userId, tokenName)
+			if token != nil ||
+				(err != nil && !errors.Is(err, sdk.ErrObjectNotFound)) {
+				return fmt.Errorf("programmatic access token %v for user %s still exists", token, userId.Name())
 			}
 		}
 		return nil

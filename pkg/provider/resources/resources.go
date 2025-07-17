@@ -17,6 +17,7 @@ const (
 	ComputePool                                            resource = "snowflake_compute_pool"
 	CortexSearchService                                    resource = "snowflake_cortex_search_service"
 	CurrentAccount                                         resource = "snowflake_current_account"
+	CurrentOrganizationAccount                             resource = "snowflake_current_organization_account"
 	Database                                               resource = "snowflake_database"
 	DatabaseRole                                           resource = "snowflake_database_role"
 	DynamicTable                                           resource = "snowflake_dynamic_table"
@@ -99,6 +100,7 @@ const (
 	UserAuthenticationPolicyAttachment                     resource = "snowflake_user_authentication_policy_attachment"
 	UserPasswordPolicyAttachment                           resource = "snowflake_user_password_policy_attachment"
 	UserPublicKeys                                         resource = "snowflake_user_public_keys"
+	UserProgrammaticAccessToken                            resource = "snowflake_user_programmatic_access_token"
 	View                                                   resource = "snowflake_view"
 	Warehouse                                              resource = "snowflake_warehouse"
 )
