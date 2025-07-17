@@ -30,20 +30,6 @@ func (v *organizationAccounts) Show(ctx context.Context, request *ShowOrganizati
 	return resultList, nil
 }
 
-// ShowParameters added manually
-func (v *organizationAccounts) ShowParameters(ctx context.Context) ([]*Parameter, error) {
-	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
-		In: &ParametersIn{
-			Account: Bool(true),
-		},
-	})
-}
-
-// UnsetAllParameters added manually
-func (v *organizationAccounts) UnsetAllParameters(ctx context.Context) error {
-	return v.client.Accounts.UnsetAllParameters(ctx)
-}
-
 func (r *CreateOrganizationAccountRequest) toOpts() *CreateOrganizationAccountOptions {
 	opts := &CreateOrganizationAccountOptions{
 		name:               r.name,

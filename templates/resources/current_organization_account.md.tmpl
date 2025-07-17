@@ -9,6 +9,10 @@ description: |-
 {{- end }}
 ---
 
+!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+
+!> **Warning** During create operation every parameter and policy that is not set in the resource will be unset on the organization account. However, if you pass the incorrect `name` field, it will return an error, and no changes will be made to the account until a correct name is passed.
+
 !> **Warning** This resource requires warehouse to be in the context. To use this resource, specify a default warehouse in the provider configuration or on the user used in the configuration.
 
 !> **Warning** This resource shouldn't be used with `snowflake_current_account`, `snowflake_object_parameter` (with `on_account` field set), and `snowflake_account_parameter` resources in the same configuration, as it may lead to unexpected behavior. Unless they're used to manage the following parameters that are not supported by `snowflake_current_organization_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL. They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters). Once they are publicly documented, they will be added to the `snowflake_current_organization_account` resource.

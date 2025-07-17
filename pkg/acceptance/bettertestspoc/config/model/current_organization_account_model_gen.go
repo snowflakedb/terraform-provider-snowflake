@@ -12,6 +12,7 @@ import (
 )
 
 type CurrentOrganizationAccountModel struct {
+	Name                                             tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                               tfconfig.Variable `json:"abort_detached_query,omitempty"`
 	ActivePythonProfiler                             tfconfig.Variable `json:"active_python_profiler,omitempty"`
 	AllowClientMfaCaching                            tfconfig.Variable `json:"allow_client_mfa_caching,omitempty"`
@@ -144,13 +145,18 @@ type CurrentOrganizationAccountModel struct {
 
 func CurrentOrganizationAccount(
 	resourceName string,
+	name string,
 ) *CurrentOrganizationAccountModel {
 	c := &CurrentOrganizationAccountModel{ResourceModelMeta: config.Meta(resourceName, resources.CurrentOrganizationAccount)}
+	c.WithName(name)
 	return c
 }
 
-func CurrentOrganizationAccountWithDefaultMeta() *CurrentOrganizationAccountModel {
+func CurrentOrganizationAccountWithDefaultMeta(
+	name string,
+) *CurrentOrganizationAccountModel {
 	c := &CurrentOrganizationAccountModel{ResourceModelMeta: config.DefaultMeta(resources.CurrentOrganizationAccount)}
+	c.WithName(name)
 	return c
 }
 
@@ -182,6 +188,11 @@ func (c *CurrentOrganizationAccountModel) WithDynamicBlock(dynamicBlock *config.
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (c *CurrentOrganizationAccountModel) WithName(name string) *CurrentOrganizationAccountModel {
+	c.Name = tfconfig.StringVariable(name)
+	return c
+}
 
 func (c *CurrentOrganizationAccountModel) WithAbortDetachedQuery(abortDetachedQuery bool) *CurrentOrganizationAccountModel {
 	c.AbortDetachedQuery = tfconfig.BoolVariable(abortDetachedQuery)
@@ -786,6 +797,11 @@ func (c *CurrentOrganizationAccountModel) WithWeekStart(weekStart int) *CurrentO
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (c *CurrentOrganizationAccountModel) WithNameValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.Name = value
+	return c
+}
 
 func (c *CurrentOrganizationAccountModel) WithAbortDetachedQueryValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.AbortDetachedQuery = value

@@ -93,6 +93,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		)
 	})
 
+	// TODO(SNOW-2210280): Adjust `modify` tests after the behavior is fixed in Snowflake.
 	t.Run("modify - set and unset disabled", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewAddUserProgrammaticAccessTokenRequest(user.ID(), id)
@@ -113,15 +114,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled).
-			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedToEmpty(),
+			HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled),
 		)
 
 		unsetRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
@@ -136,15 +129,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedToEmpty(),
+			HasStatus(sdk.ProgrammaticAccessTokenStatusActive),
 		)
 	})
 	t.Run("modify - set and unset comment", func(t *testing.T) {
@@ -168,15 +153,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasComment(comment).
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedToEmpty(),
+			HasComment(comment),
 		)
 
 		unsetRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
@@ -191,15 +168,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedToEmpty(),
+			HasNoComment(),
 		)
 	})
 
@@ -224,15 +193,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasMinsToBypassNetworkPolicyRequirementWithTolerance(15).
-			HasRotatedToEmpty(),
+			HasMinsToBypassNetworkPolicyRequirementWithTolerance(15),
 		)
 
 		unsetRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
@@ -247,15 +208,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedToEmpty(),
+			HasNoMinsToBypassNetworkPolicyRequirement(),
 		)
 	})
 
