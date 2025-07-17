@@ -23,6 +23,7 @@ const (
 	CortexSearchServicesDatasource                feature = "snowflake_cortex_search_services_datasource"
 	CurrentAccountResource                        feature = "snowflake_current_account_resource"
 	CurrentAccountDatasource                      feature = "snowflake_current_account_datasource"
+	CurrentOrganizationAccountResource            feature = "snowflake_current_organization_account_resource"
 	DatabaseDatasource                            feature = "snowflake_database_datasource"
 	DatabaseRoleDatasource                        feature = "snowflake_database_role_datasource"
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
@@ -104,6 +105,7 @@ var allPreviewFeatures = []feature{
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
 	CurrentAccountDatasource,
+	CurrentOrganizationAccountResource,
 	DatabaseDatasource,
 	DatabaseRoleDatasource,
 	DynamicTableResource,
