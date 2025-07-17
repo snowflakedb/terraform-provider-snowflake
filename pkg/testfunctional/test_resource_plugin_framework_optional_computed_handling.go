@@ -139,10 +139,8 @@ func (r *OptionalComputedResource) readCreateUpdate(data *optionalComputedResour
 	opts, err := r.HttpServerEmbeddable.Get()
 	if err != nil {
 		diags.AddError("Could not read resources state", err.Error())
-	} else {
-		if opts.StringValue != nil {
-			data.StringValue = types.StringValue(*opts.StringValue)
-		}
+	} else if opts.StringValue != nil {
+		data.StringValue = types.StringValue(*opts.StringValue)
 	}
 	return diags
 }

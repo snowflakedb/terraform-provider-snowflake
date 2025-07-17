@@ -12,12 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-var (
-	optionalComputedHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.OptionalComputedOpts](
-		testfunctional.OptionalComputedOpts{
-			StringValue: sdk.Pointer("default text"),
-		}, optionalComputedOptsReplaceWithNonNil,
-	)
+var optionalComputedHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.OptionalComputedOpts](
+	testfunctional.OptionalComputedOpts{
+		StringValue: sdk.Pointer("default text"),
+	}, optionalComputedOptsReplaceWithNonNil,
 )
 
 func optionalComputedOptsReplaceWithNonNil(base testfunctional.OptionalComputedOpts, defaultValue testfunctional.OptionalComputedOpts, replaceWith testfunctional.OptionalComputedOpts) testfunctional.OptionalComputedOpts {
