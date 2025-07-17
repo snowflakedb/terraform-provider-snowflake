@@ -397,11 +397,6 @@ func (c *CurrentAccountResourceAssert) HasOdbcTreatDecimalAsIntString(expected s
 	return c
 }
 
-func (c *CurrentAccountResourceAssert) HasOrganizationUserGroupString(expected string) *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("organization_user_group", expected))
-	return c
-}
-
 func (c *CurrentAccountResourceAssert) HasPackagesPolicyString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("packages_policy", expected))
 	return c
@@ -1637,11 +1632,6 @@ func (c *CurrentAccountResourceAssert) HasOauthAddPrivilegedRolesToBlockedListEm
 
 func (c *CurrentAccountResourceAssert) HasOdbcTreatDecimalAsIntEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("odbc_treat_decimal_as_int", ""))
-	return c
-}
-
-func (c *CurrentAccountResourceAssert) HasOrganizationUserGroupEmpty() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("organization_user_group.#", "0"))
 	return c
 }
 

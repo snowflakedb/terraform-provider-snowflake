@@ -1,25 +1,23 @@
 ---
-page_title: "snowflake_current_account Resource - terraform-provider-snowflake"
+page_title: "snowflake_current_organization_account Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See ALTER ACCOUNT https://docs.snowflake.com/en/sql-reference/sql/alter-account documentation for more information on resource capabilities.
+  Resource used to manage an organization account within the organization you are connected to. See ALTER ORGANIZATION ACCOUNT https://docs.snowflake.com/en/sql-reference/sql/alter-organization-account documentation for more information on resource capabilities.
 ---
 
 !> **Warning** This resource requires warehouse to be in the context. To use this resource, specify a default warehouse in the provider configuration or on the user used in the configuration.
 
-!> **Warning** This resource shouldn't be used with `snowflake_current_organization_account`, `snowflake_object_parameter` (with `on_account` field set), and `snowflake_account_parameter` resources in the same configuration, as it may lead to unexpected behavior. Unless they're used to manage the following parameters that are not supported by `snowflake_current_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL. They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters). Once they are publicly documented, they will be added to the `snowflake_current_account` resource.
+!> **Warning** This resource shouldn't be used with `snowflake_current_account`, `snowflake_object_parameter` (with `on_account` field set), and `snowflake_account_parameter` resources in the same configuration, as it may lead to unexpected behavior. Unless they're used to manage the following parameters that are not supported by `snowflake_current_organization_account`: ENABLE_CONSOLE_OUTPUT, ENABLE_PERSONAL_DATABASE, PREVENT_LOAD_FROM_INLINE_URL. They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters). Once they are publicly documented, they will be added to the `snowflake_current_organization_account` resource.
 
-!> **Warning** This resource shouldn't be also used with `snowflake_account_password_policy_attachment`, `snowflake_network_policy_attachment`, `snowflake_account_authentication_policy_attachment` resources in the same configuration to manage policies on the current account, as it may lead to unexpected behavior.
+!> **Warning** This resource shouldn't be also used with `snowflake_account_password_policy_attachment`, `snowflake_network_policy_attachment` resources in the same configuration to manage policies on the current account, as it may lead to unexpected behavior.
 
 -> **Note** On removal, the resource will unset all account properties. To remove the resource without unsetting properties, use [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm) command.
 
--> **Note** You can manage only one such resource **per account**. More instances on one account could cause unexpected behavior.
+-> **Note** You can manage only one such resource **per organization**. More instances on one account could cause unexpected behavior.
 
--> **Note** Currently, this resource does not support organization user group management.
+# snowflake_current_organization_account (Resource)
 
-# snowflake_current_account (Resource)
-
-Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See [ALTER ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account) documentation for more information on resource capabilities.
+Resource used to manage an organization account within the organization you are connected to. See [ALTER ORGANIZATION ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-organization-account) documentation for more information on resource capabilities.
 
 ## Example Usage
 
@@ -28,15 +26,14 @@ Resource used to manage the account you are currently connected to. This resourc
 
 ```terraform
 ## Minimal
-resource "snowflake_current_account" "minimal" {
+resource "snowflake_current_organization_account" "minimal" {
 }
 
 ## Complete (with every optional set)
-resource "snowflake_current_account" "complete" {
+resource "snowflake_current_organization_account" "complete" {
   abort_detached_query                                       = true
   allow_client_mfa_caching                                   = true
   allow_id_token                                             = true
-  authentication_policy                                      = snowflake_authentication_policy.example.fully_qualified_name
   autocommit                                                 = false
   base_location_prefix                                       = "STORAGE_BASE_URL/"
   binary_input_format                                        = "BASE64"
@@ -81,7 +78,6 @@ resource "snowflake_current_account" "complete" {
   event_table                                                = "\"<database_name>\".\"<schema_name>\".\"<event_table_name>\""
   external_oauth_add_privileged_roles_to_blocked_list        = false
   external_volume                                            = "XWDVEAAT_A6FEE9D6_5D41_AB3D_EB0C_51DA5E5F0BE2"
-  feature_policy                                             = "\"<database_name>\".\"<schema_name>\".\"<feature_policy_name>\""
   geography_output_format                                    = "WKT"
   geometry_output_format                                     = "WKT"
   hybrid_table_lock_timeout                                  = 3599
@@ -103,7 +99,6 @@ resource "snowflake_current_account" "complete" {
   noorder_sequence_as_default                                = false
   oauth_add_privileged_roles_to_blocked_list                 = false
   odbc_treat_decimal_as_int                                  = true
-  packages_policy                                            = "\"<database_name>\".\"<schema_name>\".\"<packages_policy_name>\""
   password_policy                                            = snowflake_password_policy.example.fully_qualified_name
   periodic_data_rekeying                                     = false
   pipe_execution_paused                                      = true
@@ -163,7 +158,6 @@ resource "snowflake_current_account" "complete" {
 - `active_python_profiler` (String) Sets the profiler to use for the session when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler). Valid values are (case-insensitive): `LINE` | `MEMORY`. For more information, check [ACTIVE_PYTHON_PROFILER docs](https://docs.snowflake.com/en/sql-reference/parameters#active-python-profiler).
 - `allow_client_mfa_caching` (Boolean) Specifies whether an MFA token can be saved in the client-side operating system keystore to promote continuous, secure connectivity without users needing to respond to an MFA prompt at the start of each connection attempt to Snowflake. For details and the list of supported Snowflake-provided clients, see [Using MFA token caching to minimize the number of prompts during authentication — optional.](https://docs.snowflake.com/en/user-guide/security-mfa.html#label-mfa-token-caching) For more information, check [ALLOW_CLIENT_MFA_CACHING docs](https://docs.snowflake.com/en/sql-reference/parameters#allow-client-mfa-caching).
 - `allow_id_token` (Boolean) Specifies whether a connection token can be saved in the client-side operating system keystore to promote continuous, secure connectivity without users needing to enter login credentials at the start of each connection attempt to Snowflake. For details and the list of supported Snowflake-provided clients, see [Using connection caching to minimize the number of prompts for authentication — optional.](https://docs.snowflake.com/en/user-guide/admin-security-fed-auth-use.html#label-browser-based-sso-connection-caching) For more information, check [ALLOW_ID_TOKEN docs](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token).
-- `authentication_policy` (String) Specifies [authentication policy](https://docs.snowflake.com/en/user-guide/authentication-policies) for the current account. For more information about this resource, see [docs](./authentication_policy).
 - `autocommit` (Boolean) Specifies whether autocommit is enabled for the session. Autocommit determines whether a DML statement, when executed without an active transaction, is automatically committed after the statement successfully completes. For more information, see [Transactions](https://docs.snowflake.com/en/sql-reference/transactions). For more information, check [AUTOCOMMIT docs](https://docs.snowflake.com/en/sql-reference/parameters#autocommit).
 - `base_location_prefix` (String) Specifies a prefix for Snowflake to use in the write path for Snowflake-managed Apache Iceberg™ tables. For more information, see [data and metadata directories for Iceberg tables](https://docs.snowflake.com/en/user-guide/tables-iceberg-storage.html#label-tables-iceberg-configure-external-volume-base-location). For more information, check [BASE_LOCATION_PREFIX docs](https://docs.snowflake.com/en/sql-reference/parameters#base-location-prefix).
 - `binary_input_format` (String) The format of VARCHAR values passed as input to VARCHAR-to-BINARY conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output). Valid values are (case-insensitive): `HEX` | `BASE64` | `UTF8`. For more information, check [BINARY_INPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#binary-input-format).
@@ -210,7 +204,6 @@ resource "snowflake_current_account" "complete" {
 - `event_table` (String) Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions). Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`. For more information, check [EVENT_TABLE docs](https://docs.snowflake.com/en/sql-reference/parameters#event-table).
 - `external_oauth_add_privileged_roles_to_blocked_list` (Boolean) Determines whether the ACCOUNTADMIN, ORGADMIN, GLOBALORGADMIN, and SECURITYADMIN roles can be used as the primary role when creating a Snowflake session based on the access token from the External OAuth authorization server. For more information, check [EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST docs](https://docs.snowflake.com/en/sql-reference/parameters#external-oauth-add-privileged-roles-to-blocked-list).
 - `external_volume` (String) Specifies the external volume for Apache Iceberg™ tables. For more information, see the [Iceberg table documentation](https://docs.snowflake.com/en/user-guide/tables-iceberg.html#label-tables-iceberg-external-volume-def). Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`. For more information, check [EXTERNAL_VOLUME docs](https://docs.snowflake.com/en/sql-reference/parameters#external-volume).
-- `feature_policy` (String) Specifies [feature policy](https://docs.snowflake.com/en/developer-guide/native-apps/ui-consumer-feature-policies) for the current account.
 - `geography_output_format` (String) Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography). Valid values are (case-insensitive): `GeoJSON` | `WKT` | `WKB` | `EWKT` | `EWKB`. For more information, check [GEOGRAPHY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#geography-output-format).
 - `geometry_output_format` (String) Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry). Valid values are (case-insensitive): `GeoJSON` | `WKT` | `WKB` | `EWKT` | `EWKB`. For more information, check [GEOMETRY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#geometry-output-format).
 - `hybrid_table_lock_timeout` (Number) Number of seconds to wait while trying to acquire row-level locks on a hybrid table, before timing out and aborting the statement. For more information, check [HYBRID_TABLE_LOCK_TIMEOUT docs](https://docs.snowflake.com/en/sql-reference/parameters#hybrid-table-lock-timeout).
@@ -232,7 +225,6 @@ resource "snowflake_current_account" "complete" {
 - `noorder_sequence_as_default` (Boolean) Specifies whether the ORDER or NOORDER property is set by default when you create a new sequence or add a new table column. The ORDER and NOORDER properties determine whether or not the values are generated for the sequence or auto-incremented column in [increasing or decreasing order](https://docs.snowflake.com/en/user-guide/querying-sequences.html#label-querying-sequences-increasing-values). For more information, check [NOORDER_SEQUENCE_AS_DEFAULT docs](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default).
 - `oauth_add_privileged_roles_to_blocked_list` (Boolean) Determines whether the ACCOUNTADMIN, ORGADMIN, GLOBALORGADMIN, and SECURITYADMIN roles can be used as the primary role when creating a Snowflake session based on the access token from Snowflake’s authorization server. For more information, check [OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST docs](https://docs.snowflake.com/en/sql-reference/parameters#oauth-add-privileged-roles-to-blocked-list).
 - `odbc_treat_decimal_as_int` (Boolean) Specifies how ODBC processes columns that have a scale of zero (0). For more information, check [ODBC_TREAT_DECIMAL_AS_INT docs](https://docs.snowflake.com/en/sql-reference/parameters#odbc-treat-decimal-as-int).
-- `packages_policy` (String) Specifies [packages policy](https://docs.snowflake.com/en/developer-guide/udf/python/packages-policy) for the current account.
 - `password_policy` (String) Specifies [password policy](https://docs.snowflake.com/en/user-guide/password-authentication#label-using-password-policies) for the current account. For more information about this resource, see [docs](./password_policy).
 - `periodic_data_rekeying` (Boolean) It enables/disables re-encryption of table data with new keys on a yearly basis to provide additional levels of data protection ([more details](https://docs.snowflake.com/en/sql-reference/parameters#periodic-data-rekeying)). For more information, check [PERIODIC_DATA_REKEYING docs](https://docs.snowflake.com/en/sql-reference/parameters#periodic-data-rekeying).
 - `pipe_execution_paused` (Boolean) Specifies whether to pause a running pipe, primarily in preparation for transferring ownership of the pipe to a different role ([more details](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused)). For more information, check [PIPE_EXECUTION_PAUSED docs](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused).
@@ -304,5 +296,5 @@ Import is supported using the following syntax:
 
 ```shell
 # This resource may contain a any identifier, but the following format is recommended.
-terraform import snowflake_current_account.example 'current_account'
+terraform import snowflake_current_organization_account.example 'current_organization_account'
 ```
