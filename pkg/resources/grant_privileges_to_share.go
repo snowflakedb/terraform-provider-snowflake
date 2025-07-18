@@ -580,13 +580,18 @@ func prepareShowGrantsRequestForShare(id GrantPrivilegesToShareId) (*sdk.ShowGra
 // This handles cases where GrantedOn (from `SHOW GRANTS`) might be a different type variant
 // from the same base type, e.g. `EXTERNAL_TABLE` vs `TABLE`, `DYNAMIC_TABLE` vs `TABLE`, etc.
 func isGrantedOnEquivalent(expected, actual sdk.ObjectType) bool {
-	// If they're exactly the same, no need for normalization
 	if expected == actual {
 		return true
 	}
+    // If expected is TABLE, we consider it equivalent to any table-like type
 	if expected == sdk.ObjectTypeTable {
-		// If expected is TABLE, we consider it equivalent to any table-like type
-		return actual == sdk.ObjectTypeExternalTable || actual == sdk.ObjectTypeDynamicTable || actual == sdk.ObjectTypeIcebergTable
+		tableTypes := []sdk.ObjectType{
+			sdk.ObjectTypeExternalTable,
+			sdk.ObjectTypeDynamicTable,
+			sdk.ObjectTypeIcebergTable,
+			sdk.ObjectTypeHybridTable,
+		}
+		return slices.Contains(tableTypes, actual)
 	}
 	return false
 }
