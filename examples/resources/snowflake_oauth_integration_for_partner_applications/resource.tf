@@ -1,7 +1,8 @@
 # basic resource
 resource "snowflake_oauth_integration_for_partner_applications" "test" {
-  name         = "example"
-  oauth_client = "LOOKER"
+  name               = "example"
+  oauth_client       = "LOOKER"
+  oauth_redirect_uri = "http://example.com"
 }
 
 # resource with all fields set

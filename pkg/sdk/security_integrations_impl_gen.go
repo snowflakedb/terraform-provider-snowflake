@@ -601,9 +601,6 @@ func (r *AlterScimSecurityIntegrationRequest) toOpts() *AlterScimSecurityIntegra
 			SyncPassword:  r.Set.SyncPassword,
 			Comment:       r.Set.Comment,
 		}
-		// if r.Set.NetworkPolicy != nil {
-		// 	opts.Set.NetworkPolicy = securityIntegrationNetworkPolicyQuoted(*r.Set.NetworkPolicy)
-		// }
 	}
 	if r.Unset != nil {
 		opts.Unset = &ScimIntegrationUnset{
