@@ -583,7 +583,7 @@ func isGrantedOnEquivalent(expected, actual sdk.ObjectType) bool {
 	if expected == actual {
 		return true
 	}
-    // If expected is TABLE, we consider it equivalent to any table-like type
+	// If expected is TABLE, we consider it equivalent to any table-like type
 	if expected == sdk.ObjectTypeTable {
 		tableTypes := []sdk.ObjectType{
 			sdk.ObjectTypeExternalTable,
