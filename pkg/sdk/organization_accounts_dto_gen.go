@@ -38,6 +38,7 @@ type OrganizationAccountSetRequest struct {
 	ResourceMonitor *AccountObjectIdentifier
 	PasswordPolicy  *SchemaObjectIdentifier
 	SessionPolicy   *SchemaObjectIdentifier
+	Comment         *string
 }
 
 type OrganizationAccountUnsetRequest struct {
@@ -45,6 +46,7 @@ type OrganizationAccountUnsetRequest struct {
 	ResourceMonitor *bool
 	PasswordPolicy  *bool
 	SessionPolicy   *bool
+	Comment         *bool
 }
 
 type OrganizationAccountRenameRequest struct {

@@ -68,6 +68,14 @@ func (m *mockOrganizationAccounts) Show(ctx context.Context, request *sdk.ShowOr
 	return m.ShowResult, m.ShowResultErr
 }
 
+func (m *mockOrganizationAccounts) ShowByID(ctx context.Context, id sdk.AccountObjectIdentifier) (*sdk.OrganizationAccount, error) {
+	return nil, nil
+}
+
+func (m *mockOrganizationAccounts) ShowByIDSafely(ctx context.Context, id sdk.AccountObjectIdentifier) (*sdk.OrganizationAccount, error) {
+	return nil, nil
+}
+
 func (m *mockOrganizationAccounts) Create(ctx context.Context, request *sdk.CreateOrganizationAccountRequest) error {
 	return nil
 }

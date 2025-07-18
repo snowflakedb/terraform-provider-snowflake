@@ -2,6 +2,8 @@ package sdk
 
 import (
 	"context"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ OrganizationAccounts = (*organizationAccounts)(nil)
@@ -28,6 +30,20 @@ func (v *organizationAccounts) Show(ctx context.Context, request *ShowOrganizati
 	}
 	resultList := convertRows[organizationAccountDbRow, OrganizationAccount](dbRows)
 	return resultList, nil
+}
+
+func (v *organizationAccounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error) {
+	request := NewShowOrganizationAccountRequest().
+		WithLike(Like{Pattern: String(id.Name())})
+	organizationAccounts, err := v.Show(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return collections.FindFirst(organizationAccounts, func(r OrganizationAccount) bool { return r.AccountName == id.Name() })
+}
+
+func (v *organizationAccounts) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error) {
+	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
 func (r *CreateOrganizationAccountRequest) toOpts() *CreateOrganizationAccountOptions {
@@ -63,6 +79,7 @@ func (r *AlterOrganizationAccountRequest) toOpts() *AlterOrganizationAccountOpti
 			ResourceMonitor: r.Set.ResourceMonitor,
 			PasswordPolicy:  r.Set.PasswordPolicy,
 			SessionPolicy:   r.Set.SessionPolicy,
+			Comment:         r.Set.Comment,
 		}
 	}
 	if r.Unset != nil {
@@ -71,6 +88,7 @@ func (r *AlterOrganizationAccountRequest) toOpts() *AlterOrganizationAccountOpti
 			ResourceMonitor: r.Unset.ResourceMonitor,
 			PasswordPolicy:  r.Unset.PasswordPolicy,
 			SessionPolicy:   r.Unset.SessionPolicy,
+			Comment:         r.Unset.Comment,
 		}
 	}
 	if r.RenameTo != nil {
@@ -96,7 +114,6 @@ func (r organizationAccountDbRow) convert() *OrganizationAccount {
 		SnowflakeRegion:                      r.SnowflakeRegion,
 		AccountUrl:                           r.AccountUrl,
 		CreatedOn:                            r.CreatedOn,
-		Comment:                              r.Comment,
 		AccountLocator:                       r.AccountLocator,
 		AccountLocatorUrl:                    r.AccountLocatorUrl,
 		ManagedAccounts:                      r.ManagedAccounts,
@@ -107,6 +124,7 @@ func (r organizationAccountDbRow) convert() *OrganizationAccount {
 		IsOrganizationAccount:                r.IsOrganizationAccount,
 	}
 	mapStringWithMapping(&oa.Edition, r.Edition, ToOrganizationAccountEdition)
+	mapNullString(&oa.Comment, r.Comment)
 	mapNullString(&oa.MarketplaceConsumerBillingEntityName, r.MarketplaceConsumerBillingEntityName)
 	mapNullString(&oa.OldAccountUrl, r.OldAccountUrl)
 	mapNullString(&oa.AccountOldUrlSavedOn, r.AccountOldUrlSavedOn)

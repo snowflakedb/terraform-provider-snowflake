@@ -121,6 +121,11 @@ func (s *OrganizationAccountSetRequest) WithSessionPolicy(SessionPolicy SchemaOb
 	return s
 }
 
+func (s *OrganizationAccountSetRequest) WithComment(Comment string) *OrganizationAccountSetRequest {
+	s.Comment = &Comment
+	return s
+}
+
 func NewOrganizationAccountUnsetRequest() *OrganizationAccountUnsetRequest {
 	return &OrganizationAccountUnsetRequest{}
 }
@@ -142,6 +147,11 @@ func (s *OrganizationAccountUnsetRequest) WithPasswordPolicy(PasswordPolicy bool
 
 func (s *OrganizationAccountUnsetRequest) WithSessionPolicy(SessionPolicy bool) *OrganizationAccountUnsetRequest {
 	s.SessionPolicy = &SessionPolicy
+	return s
+}
+
+func (s *OrganizationAccountUnsetRequest) WithComment(Comment bool) *OrganizationAccountUnsetRequest {
+	s.Comment = &Comment
 	return s
 }
 
