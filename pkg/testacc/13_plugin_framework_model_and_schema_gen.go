@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -52,217 +53,219 @@ type pluginFrameworkPocProviderModelV0 struct {
 	Warehouse                          types.String `tfsdk:"warehouse"`
 }
 
+var existingSchema = provider.GetProviderSchema()
+
 var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	"account_name": schema.StringAttribute{
-		Description: "Specifies your Snowflake account name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#account-name). Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_ACCOUNT_NAME` environment variable.",
+		Description: existingSchema["account_name"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"authenticator": schema.StringAttribute{
-		Description: "Specifies the [authentication type](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#AuthType) to use when connecting to Snowflake. Valid options are: `SNOWFLAKE` | `OAUTH` | `EXTERNALBROWSER` | `OKTA` | `SNOWFLAKE_JWT` | `TOKENACCESSOR` | `USERNAMEPASSWORDMFA` | `PROGRAMMATIC_ACCESS_TOKEN`. Can also be sourced from the `SNOWFLAKE_AUTHENTICATOR` environment variable.",
+		Description: existingSchema["authenticator"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"client_ip": schema.StringAttribute{
-		Description: "IP address for network checks. Can also be sourced from the `SNOWFLAKE_CLIENT_IP` environment variable.",
+		Description: existingSchema["client_ip"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"client_request_mfa_token": schema.StringAttribute{
-		Description: "When true the MFA token is cached in the credential manager. True by default in Windows/OSX. False for Linux. Can also be sourced from the `SNOWFLAKE_CLIENT_REQUEST_MFA_TOKEN` environment variable.",
+		Description: existingSchema["client_request_mfa_token"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"client_store_temporary_credential": schema.StringAttribute{
-		Description: "When true the ID token is cached in the credential manager. True by default in Windows/OSX. False for Linux. Can also be sourced from the `SNOWFLAKE_CLIENT_STORE_TEMPORARY_CREDENTIAL` environment variable.",
+		Description: existingSchema["client_store_temporary_credential"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"client_timeout": schema.Int64Attribute{
-		Description: "The timeout in seconds for the client to complete the authentication. Can also be sourced from the `SNOWFLAKE_CLIENT_TIMEOUT` environment variable.",
+		Description: existingSchema["client_timeout"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"disable_console_login": schema.StringAttribute{
-		Description: "Indicates whether console login should be disabled in the driver. Can also be sourced from the `SNOWFLAKE_DISABLE_CONSOLE_LOGIN` environment variable.",
+		Description: existingSchema["disable_console_login"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"disable_query_context_cache": schema.BoolAttribute{
-		Description: "Disables HTAP query context cache in the driver. Can also be sourced from the `SNOWFLAKE_DISABLE_QUERY_CONTEXT_CACHE` environment variable.",
+		Description: existingSchema["disable_query_context_cache"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"disable_telemetry": schema.BoolAttribute{
-		Description: "Disables telemetry in the driver. Can also be sourced from the `DISABLE_TELEMETRY` environment variable.",
+		Description: existingSchema["disable_telemetry"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"driver_tracing": schema.StringAttribute{
-		Description: "Specifies the logging level to be used by the driver. Valid options are: `trace` | `debug` | `info` | `print` | `warning` | `error` | `fatal` | `panic`. Can also be sourced from the `SNOWFLAKE_DRIVER_TRACING` environment variable.",
+		Description: existingSchema["driver_tracing"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"external_browser_timeout": schema.Int64Attribute{
-		Description: "The timeout in seconds for the external browser to complete the authentication. Can also be sourced from the `SNOWFLAKE_EXTERNAL_BROWSER_TIMEOUT` environment variable.",
+		Description: existingSchema["external_browser_timeout"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"host": schema.StringAttribute{
-		Description: "Specifies a custom host value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_HOST` environment variable.",
+		Description: existingSchema["host"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"include_retry_reason": schema.StringAttribute{
-		Description: "Should retried request contain retry reason. Can also be sourced from the `SNOWFLAKE_INCLUDE_RETRY_REASON` environment variable.",
+		Description: existingSchema["include_retry_reason"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"insecure_mode": schema.BoolAttribute{
-		Description: "If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only. Can also be sourced from the `SNOWFLAKE_INSECURE_MODE` environment variable.",
+		Description: existingSchema["insecure_mode"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"jwt_client_timeout": schema.Int64Attribute{
-		Description: "The timeout in seconds for the JWT client to complete the authentication. Can also be sourced from the `SNOWFLAKE_JWT_CLIENT_TIMEOUT` environment variable.",
+		Description: existingSchema["jwt_client_timeout"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"jwt_expire_timeout": schema.Int64Attribute{
-		Description: "JWT expire after timeout in seconds. Can also be sourced from the `SNOWFLAKE_JWT_EXPIRE_TIMEOUT` environment variable.",
+		Description: existingSchema["jwt_expire_timeout"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"keep_session_alive": schema.BoolAttribute{
-		Description: "Enables the session to persist even after the connection is closed. Can also be sourced from the `SNOWFLAKE_KEEP_SESSION_ALIVE` environment variable.",
+		Description: existingSchema["keep_session_alive"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"login_timeout": schema.Int64Attribute{
-		Description: "Login retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_LOGIN_TIMEOUT` environment variable.",
+		Description: existingSchema["login_timeout"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"max_retry_count": schema.Int64Attribute{
-		Description: "Specifies how many times non-periodic HTTP request can be retried by the driver. Can also be sourced from the `SNOWFLAKE_MAX_RETRY_COUNT` environment variable.",
+		Description: existingSchema["max_retry_count"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"ocsp_fail_open": schema.StringAttribute{
-		Description: "True represents OCSP fail open mode. False represents OCSP fail closed mode. Fail open true by default. Can also be sourced from the `SNOWFLAKE_OCSP_FAIL_OPEN` environment variable.",
+		Description: existingSchema["ocsp_fail_open"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"okta_url": schema.StringAttribute{
-		Description: "The URL of the Okta server. e.g. https://example.okta.com. Okta URL host needs to to have a suffix `okta.com`. Read more in Snowflake [docs](https://docs.snowflake.com/en/user-guide/oauth-okta). Can also be sourced from the `SNOWFLAKE_OKTA_URL` environment variable.",
+		Description: existingSchema["okta_url"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"organization_name": schema.StringAttribute{
-		Description: "Specifies your Snowflake organization name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#organization-name). Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_ORGANIZATION_NAME` environment variable.",
+		Description: existingSchema["organization_name"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"params": schema.MapAttribute{
-		Description: "Sets other connection (i.e. session) parameters. [Parameters](https://docs.snowflake.com/en/sql-reference/parameters). This field can not be set with environmental variables.",
+		Description: existingSchema["params"].Description,
 		Optional:    true,
 		Sensitive:   false,
 		ElementType: types.StringType, // edited manually
 	},
 	"passcode": schema.StringAttribute{
-		Description: "Specifies the passcode provided by Duo when using multi-factor authentication (MFA) for login. Can also be sourced from the `SNOWFLAKE_PASSCODE` environment variable.",
+		Description: existingSchema["passcode"].Description,
 		Optional:    true,
 		Sensitive:   true,
 	},
 	"passcode_in_password": schema.BoolAttribute{
-		Description: "False by default. Set to true if the MFA passcode is embedded to the configured password. Can also be sourced from the `SNOWFLAKE_PASSCODE_IN_PASSWORD` environment variable.",
+		Description: existingSchema["passcode_in_password"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"password": schema.StringAttribute{
-		Description: "Password for user + password or [token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#generating-a-programmatic-access-token) for [PAT auth](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens). Cannot be used with `private_key` and `private_key_passphrase`. Can also be sourced from the `SNOWFLAKE_PASSWORD` environment variable.",
+		Description: existingSchema["password"].Description,
 		Optional:    true,
 		Sensitive:   true,
 	},
 	"port": schema.Int64Attribute{
-		Description: "Specifies a custom port value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_PORT` environment variable.",
+		Description: existingSchema["port"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"preview_features_enabled": schema.SetAttribute{
-		Description: "A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Valid options are: `snowflake_account_authentication_policy_attachment_resource` | `snowflake_account_password_policy_attachment_resource` | `snowflake_alert_resource` | `snowflake_alerts_datasource` | `snowflake_api_integration_resource` | `snowflake_authentication_policy_resource` | `snowflake_compute_pool_resource` | `snowflake_compute_pools_datasource` | `snowflake_cortex_search_service_resource` | `snowflake_cortex_search_services_datasource` | `snowflake_current_account_resource` | `snowflake_current_account_datasource` | `snowflake_current_organization_account_resource` | `snowflake_database_datasource` | `snowflake_database_role_datasource` | `snowflake_dynamic_table_resource` | `snowflake_dynamic_tables_datasource` | `snowflake_external_function_resource` | `snowflake_external_functions_datasource` | `snowflake_external_table_resource` | `snowflake_external_tables_datasource` | `snowflake_external_volume_resource` | `snowflake_failover_group_resource` | `snowflake_failover_groups_datasource` | `snowflake_file_format_resource` | `snowflake_file_formats_datasource` | `snowflake_function_java_resource` | `snowflake_function_javascript_resource` | `snowflake_function_python_resource` | `snowflake_function_scala_resource` | `snowflake_function_sql_resource` | `snowflake_functions_datasource` | `snowflake_git_repository_resource` | `snowflake_git_repositories_datasource` | `snowflake_image_repository_resource` | `snowflake_image_repositories_datasource` | `snowflake_job_service_resource` | `snowflake_managed_account_resource` | `snowflake_materialized_view_resource` | `snowflake_materialized_views_datasource` | `snowflake_network_policy_attachment_resource` | `snowflake_network_rule_resource` | `snowflake_email_notification_integration_resource` | `snowflake_notification_integration_resource` | `snowflake_object_parameter_resource` | `snowflake_password_policy_resource` | `snowflake_pipe_resource` | `snowflake_pipes_datasource` | `snowflake_current_role_datasource` | `snowflake_service_resource` | `snowflake_services_datasource` | `snowflake_sequence_resource` | `snowflake_sequences_datasource` | `snowflake_share_resource` | `snowflake_shares_datasource` | `snowflake_parameters_datasource` | `snowflake_procedure_java_resource` | `snowflake_procedure_javascript_resource` | `snowflake_procedure_python_resource` | `snowflake_procedure_scala_resource` | `snowflake_procedure_sql_resource` | `snowflake_procedures_datasource` | `snowflake_stage_resource` | `snowflake_stages_datasource` | `snowflake_storage_integration_resource` | `snowflake_storage_integrations_datasource` | `snowflake_system_generate_scim_access_token_datasource` | `snowflake_system_get_aws_sns_iam_policy_datasource` | `snowflake_system_get_privatelink_config_datasource` | `snowflake_system_get_snowflake_platform_info_datasource` | `snowflake_table_column_masking_policy_application_resource` | `snowflake_table_constraint_resource` | `snowflake_table_resource` | `snowflake_tables_datasource` | `snowflake_user_authentication_policy_attachment_resource` | `snowflake_user_public_keys_resource` | `snowflake_user_password_policy_attachment_resource` | `snowflake_user_programmatic_access_token_resource`.",
+		Description: existingSchema["preview_features_enabled"].Description,
 		Optional:    true,
 		Sensitive:   false,
 		ElementType: types.StringType, // edited manually
 	},
 	"private_key": schema.StringAttribute{
-		Description: "Private Key for username+private-key auth. Cannot be used with `password`. Can also be sourced from the `SNOWFLAKE_PRIVATE_KEY` environment variable.",
+		Description: existingSchema["private_key"].Description,
 		Optional:    true,
 		Sensitive:   true,
 	},
 	"private_key_passphrase": schema.StringAttribute{
-		Description: "Supports the encryption ciphers aes-128-cbc, aes-128-gcm, aes-192-cbc, aes-192-gcm, aes-256-cbc, aes-256-gcm, and des-ede3-cbc. Can also be sourced from the `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE` environment variable.",
+		Description: existingSchema["private_key_passphrase"].Description,
 		Optional:    true,
 		Sensitive:   true,
 	},
 	"profile": schema.StringAttribute{
-		Description: "Sets the profile to read from ~/.snowflake/config file. Can also be sourced from the `SNOWFLAKE_PROFILE` environment variable.",
+		Description: existingSchema["profile"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"protocol": schema.StringAttribute{
-		Description: "A protocol used in the connection. Valid options are: `http` | `https`. Can also be sourced from the `SNOWFLAKE_PROTOCOL` environment variable.",
+		Description: existingSchema["protocol"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"request_timeout": schema.Int64Attribute{
-		Description: "request retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_REQUEST_TIMEOUT` environment variable.",
+		Description: existingSchema["request_timeout"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"role": schema.StringAttribute{
-		Description: "Specifies the role to use by default for accessing Snowflake objects in the client session. Can also be sourced from the `SNOWFLAKE_ROLE` environment variable.",
+		Description: existingSchema["role"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"skip_toml_file_permission_verification": schema.BoolAttribute{
-		Description: "False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations). Can also be sourced from the `SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION` environment variable.",
+		Description: existingSchema["skip_toml_file_permission_verification"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"tmp_directory_path": schema.StringAttribute{
-		Description: "Sets temporary directory used by the driver for operations like encrypting, compressing etc. Can also be sourced from the `SNOWFLAKE_TMP_DIRECTORY_PATH` environment variable.",
+		Description: existingSchema["tmp_directory_path"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"token": schema.StringAttribute{
-		Description: "Token to use for OAuth and other forms of token based auth. Can also be sourced from the `SNOWFLAKE_TOKEN` environment variable.",
+		Description: existingSchema["token"].Description,
 		Optional:    true,
 		Sensitive:   true,
 	},
 	// commented out manually
 	//"token_accessor": schema.ListAttribute{
-	//	Description: "",
+	//	Description: existingSchema["token_accessor"].Description,
 	//	Optional:    true,
 	//	Sensitive:   false,
 	//},
 	"use_legacy_toml_file": schema.BoolAttribute{
-		Description: "False by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#examples) Can also be sourced from the `SNOWFLAKE_USE_LEGACY_TOML_FILE` environment variable.",
+		Description: existingSchema["use_legacy_toml_file"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"user": schema.StringAttribute{
-		Description: "Username. Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_USER` environment variable.",
+		Description: existingSchema["user"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"validate_default_parameters": schema.StringAttribute{
-		Description: "True by default. If false, disables the validation checks for Database, Schema, Warehouse and Role at the time a connection is established. Can also be sourced from the `SNOWFLAKE_VALIDATE_DEFAULT_PARAMETERS` environment variable.",
+		Description: existingSchema["validate_default_parameters"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
 	"warehouse": schema.StringAttribute{
-		Description: "Specifies the virtual warehouse to use by default for queries, loading, etc. in the client session. Can also be sourced from the `SNOWFLAKE_WAREHOUSE` environment variable.",
+		Description: existingSchema["warehouse"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
