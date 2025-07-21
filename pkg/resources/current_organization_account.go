@@ -19,15 +19,16 @@ import (
 
 var currentOrganizationAccountSchema = map[string]*schema.Schema{
 	"name": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "Specifies the identifier (i.e. name) for the account. It must be unique within an organization, regardless of which Snowflake Region the account is in and must start with an alphabetic character and cannot contain spaces or special characters except for underscores (_). Note that if the account name includes underscores, features that do not accept account names with underscores (e.g. Okta SSO or SCIM) can reference a version of the account name that substitutes hyphens (-) for the underscores.",
+		Type:             schema.TypeString,
+		Required:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
+		Description:      "The identifier (i.e. name) for the organization account within currently used organization. The field name is validated during import and create operations to ensure that it matches the current organization account name.",
 	},
 	"comment": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("comment"),
-		Description:      externalChangesNotDetectedFieldDescription("Specifies a comment for the organization account."),
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specifies a comment for the organization account.",
 	},
 	"resource_monitor": {
 		Type:             schema.TypeString,
@@ -75,11 +76,30 @@ func CurrentOrganizationAccount() *schema.Resource {
 
 		Schema: collections.MergeMaps(currentOrganizationAccountSchema, accountParametersSchema),
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.CurrentOrganizationAccount, ImportName[sdk.AccountObjectIdentifier]),
+			StateContext: TrackingImportWrapper(resources.CurrentOrganizationAccount, ImportCurrentOrganizationAccount),
 		},
 
 		Timeouts: defaultTimeouts,
 	}
+}
+
+func ImportCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	client := meta.(*provider.Context).Client
+
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	if err := checkForCurrentOrganizationAccount(client, id, ctx, d, meta); err != nil {
+		return nil, err
+	}
+
+	if err := d.Set("name", id.Name()); err != nil {
+		return nil, err
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -90,18 +110,8 @@ func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	organizationAccounts, err := client.OrganizationAccounts.Show(ctx, sdk.NewShowOrganizationAccountRequest())
-	if err != nil {
+	if err := checkForCurrentOrganizationAccount(client, id, ctx, d, meta); err != nil {
 		return diag.FromErr(err)
-	}
-
-	currentOrganizationAccount, err := collections.FindFirst(organizationAccounts, func(account sdk.OrganizationAccount) bool { return account.IsOrganizationAccount })
-	if err != nil {
-		return diag.Errorf("couldn't find any organization account in the current organization")
-	}
-
-	if id.Name() != currentOrganizationAccount.AccountName {
-		return diag.Errorf("passed name: %s, doesn't match current organization account name: %s, renames can be performed only after resource initialization", id.Name(), currentOrganizationAccount.AccountName)
 	}
 
 	d.SetId(id.Name())
@@ -279,5 +289,23 @@ func DeleteCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId("")
+	return nil
+}
+
+func checkForCurrentOrganizationAccount(client *sdk.Client, id sdk.AccountObjectIdentifier, ctx context.Context, d *schema.ResourceData, meta any) error {
+	organizationAccounts, err := client.OrganizationAccounts.Show(ctx, sdk.NewShowOrganizationAccountRequest())
+	if err != nil {
+		return err
+	}
+
+	currentOrganizationAccount, err := collections.FindFirst(organizationAccounts, func(account sdk.OrganizationAccount) bool { return account.IsOrganizationAccount })
+	if err != nil {
+		return errors.New("couldn't find any organization account in the current organization")
+	}
+
+	if id.Name() != currentOrganizationAccount.AccountName {
+		return fmt.Errorf("passed name: %s, doesn't match current organization account name: %s, renames can be performed only after resource initialization", id.Name(), currentOrganizationAccount.AccountName)
+	}
+
 	return nil
 }

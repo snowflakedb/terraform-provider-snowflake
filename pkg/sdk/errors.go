@@ -30,7 +30,7 @@ var (
 	ErrDifferentDatabase       = NewError("database must be the same")
 	ErrDifferentSchema         = NewError("schema must be the same")
 
-	ErrPolicyNotAttachedToAccount = NewError("policy kind is not attached account")
+	ErrPolicyNotAttachedToAccount = NewError("policy kind is not attached to account")
 )
 
 type IntErrType string
