@@ -39,6 +39,20 @@ func (c *ApplicationPackageClient) CreateApplicationPackage(t *testing.T) (*sdk.
 	return applicationPackage, c.DropApplicationPackageFunc(t, id)
 }
 
+func (c *ApplicationPackageClient) CreateApplicationPackageWithReleaseChannelsDisabled(t *testing.T) (*sdk.ApplicationPackage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomAccountObjectIdentifier()
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("CREATE APPLICATION PACKAGE %s ENABLE_RELEASE_CHANNELS = FALSE", id.FullyQualifiedName()))
+	require.NoError(t, err)
+
+	applicationPackage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return applicationPackage, c.DropApplicationPackageFunc(t, id)
+}
+
 func (c *ApplicationPackageClient) DropApplicationPackageFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
@@ -59,27 +73,13 @@ func (c *ApplicationPackageClient) AddApplicationPackageVersion(t *testing.T, id
 	require.NoError(t, err)
 }
 
-func (c *ApplicationPackageClient) SetDefaultReleaseDirective(t *testing.T, id sdk.AccountObjectIdentifier) {
+func (c *ApplicationPackageClient) SetDefaultReleaseDirective(t *testing.T, id sdk.AccountObjectIdentifier, version string) {
 	t.Helper()
 	ctx := context.Background()
 
 	err := c.client().Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithSetDefaultReleaseDirective(
-		sdk.NewSetDefaultReleaseDirectiveRequest("v1_0", 0),
+		sdk.NewSetDefaultReleaseDirectiveRequest(version, 0),
 	))
-	require.NoError(t, err)
-}
-
-func (c *ApplicationPackageClient) SetQaReleaseChannel(t *testing.T, id sdk.AccountObjectIdentifier, stageId sdk.SchemaObjectIdentifier) {
-	t.Helper()
-	ctx := context.Background()
-
-	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("ALTER APPLICATION PACKAGE %s SET ENABLE_RELEASE_CHANNELS = true", id.FullyQualifiedName()))
-	require.NoError(t, err)
-
-	_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf("ALTER APPLICATION PACKAGE %s MODIFY RELEASE CHANNEL QA SET ACCOUNTS = (TERRAFORMQA.TESTING_ACCOUNT_123);", id.FullyQualifiedName()))
-	require.NoError(t, err)
-
-	_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf("ALTER APPLICATION PACKAGE %s REGISTER VERSION V1 USING '@%s';", id.FullyQualifiedName(), stageId.FullyQualifiedName()))
 	require.NoError(t, err)
 }
 

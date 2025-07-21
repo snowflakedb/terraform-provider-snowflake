@@ -20,10 +20,15 @@ func TestInt_Listings(t *testing.T) {
 	t.Cleanup(shareCleanup)
 	t.Cleanup(testClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, testClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 
-	applicationPackage, applicationPackageCleanup := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
+	applicationPackage, applicationPackageCleanup := testClientHelper().ApplicationPackage.CreateApplicationPackageWithReleaseChannelsDisabled(t)
 	t.Cleanup(applicationPackageCleanup)
-	//testClientHelper().ApplicationPackage.SetQaReleaseChannel(t, applicationPackage.ID(), stage.ID())
-	//testClientHelper().ApplicationPackage.SetDefaultReleaseDirective(t, applicationPackage.ID())
+
+	testClientHelper().Stage.PutOnStageWithContent(t, stage.ID(), "manifest.yml", "")
+	testClientHelper().Stage.PutOnStageWithContent(t, stage.ID(), "setup.sql", "CREATE APPLICATION ROLE IF NOT EXISTS APP_HELLO_SNOWFLAKE;")
+
+	version := "v1"
+	testClientHelper().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), version)
+	testClientHelper().ApplicationPackage.SetDefaultReleaseDirective(t, applicationPackage.ID(), version)
 
 	client := testClient(t)
 	ctx := testContext(t)
@@ -88,8 +93,8 @@ targets:
 			WithAs(basicManifestWithTarget).
 			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
 			WithIfNotExists(true).
-			WithPublish(true).
-			WithReview(true).
+			WithPublish(false).
+			WithReview(false).
 			WithComment(comment))
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
@@ -101,7 +106,7 @@ targets:
 				HasName(id.Name()).
 				HasTitle("title").
 				HasComment(comment).
-				HasState(sdk.ListingStatePublished),
+				HasState(sdk.ListingStateDraft),
 		)
 	})
 
@@ -111,8 +116,8 @@ targets:
 			WithAs(basicManifest).
 			WithWith(*sdk.NewListingWithRequest().WithApplicationPackage(applicationPackage.ID())).
 			WithIfNotExists(true).
-			WithPublish(true).
-			WithReview(true).
+			WithPublish(false).
+			WithReview(false).
 			WithComment(comment))
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
@@ -122,13 +127,14 @@ targets:
 			objectassert.Listing(t, id).
 				HasName(id.Name()).
 				HasTitle("title").
-				HasState(sdk.ListingStatePublished),
+				HasState(sdk.ListingStateDraft),
 		)
 	})
 
 	t.Run("create from stage: no optionals", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).WithFrom(basicManifestStageLocation).
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithFrom(basicManifestStageLocation).
 			WithReview(false).
 			WithPublish(false))
 		assert.NoError(t, err)
@@ -146,11 +152,12 @@ targets:
 
 	t.Run("create from stage: complete with stage", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).WithFrom(basicManifestWithTargetStageLocation).
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithFrom(basicManifestWithTargetStageLocation).
 			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
 			WithIfNotExists(true).
-			WithPublish(true).
-			WithReview(true).
+			WithPublish(false).
+			WithReview(false).
 			WithComment(comment))
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
@@ -162,64 +169,78 @@ targets:
 				HasName(id.Name()).
 				HasTitle("title").
 				HasComment(comment).
-				HasState(sdk.ListingStatePublished),
+				HasState(sdk.ListingStateDraft),
 		)
 	})
 
-	//t.Run("create from stage: complete with application packages", func(t *testing.T) {
-	//	id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-	//	err := client.Listings.CreateFromStage(ctx, sdk.NewCreateFromStageListingRequest(id, stageLocation).
-	//		WithWith(*sdk.NewListingWithRequest().WithApplicationPackage(applicationPackage.ID())).
-	//		WithIfNotExists(true).
-	//		WithPublish(true).
-	//		WithReview(true))
-	//	assert.NoError(t, err)
-	//
-	//	// TODO: Assert
-	//
-	//	err = client.Listings.Drop(ctx, sdk.NewDropListingRequest(id).WithIfExists(true))
-	//	assert.NoError(t, err)
-	//})
+	t.Run("create from stage: complete with application packages", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithFrom(basicManifestWithTargetStageLocation).
+			WithWith(*sdk.NewListingWithRequest().WithApplicationPackage(applicationPackage.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false).
+			WithComment(comment))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		// TODO: Assert more
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasGlobalNameNotEmpty().
+				HasName(id.Name()).
+				HasTitle("title").
+				HasComment(comment).
+				HasState(sdk.ListingStateDraft),
+		)
+	})
 
 	t.Run("alter: change state", func(t *testing.T) {
-		listing, listingCleanup := testClientHelper().Listing.Create(t)
-		t.Cleanup(listingCleanup)
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithFrom(basicManifestWithTargetStageLocation).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false).
+			WithComment(comment))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		assertThatObject(t,
-			objectassert.ListingFromObject(t, listing).
+			objectassert.Listing(t, id).
 				HasState(sdk.ListingStateDraft).
 				HasReviewState("UNSENT"),
 		)
 
-		err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithReview(true))
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true))
 		assert.NoError(t, err)
 
 		assertThatObject(t,
-			objectassert.Listing(t, listing.ID()).
+			objectassert.Listing(t, id).
 				HasState(sdk.ListingStateDraft).
 				HasReviewState("UNSENT"),
 		)
 
 		// TODO: Too much to fulfill to check
-		//err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true))
-		//assert.NoError(t, err)
-		//
-		//assertThatObject(t,
-		//	objectassert.Listing(t, id).
-		//		HasName(id.Name()).
-		//		HasState(sdk.ListingStatePublished).
-		//		HasReviewState(""),
-		//)
-		//
-		//err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true))
-		//assert.NoError(t, err)
-		//
-		//assertThatObject(t,
-		//	objectassert.Listing(t, id).
-		//		HasName(id.Name()).
-		//		HasState(sdk.ListingStateUnpublished).
-		//		HasReviewState(""),
-		//)
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true))
+		assert.NoError(t, err)
+
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasState(sdk.ListingStatePublished).
+				HasReviewState(""),
+		)
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true))
+		assert.NoError(t, err)
+
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasState(sdk.ListingStateUnpublished).
+				HasReviewState(""),
+		)
 	})
 
 	t.Run("alter: change manifest with optional values", func(t *testing.T) {
