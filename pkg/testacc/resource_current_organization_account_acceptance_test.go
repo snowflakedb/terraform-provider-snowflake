@@ -13,7 +13,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -339,13 +341,27 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 						HasPasswordPolicyEmpty().
 						HasSessionPolicyEmpty(),
 				),
-				// Create works as an import, so with filled fields we expect the first plan not to be empty
+				// If the config is set for all fields, we expect to see them as changes in the plan (because they're different from the default values).
+				// They will be applied in the next step.
 				ExpectNonEmptyPlan: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(completeConfigModel.ResourceReference(), plancheck.ResourceActionUpdate),
+						// Expect changes for all fields that are set in the config: parameters (chose to show only 3 parameters of a different type as an example), resource monitor, password policy, session policy, comment
+						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "abort_detached_query", tfjson.ActionUpdate, sdk.String("false"), sdk.String("true")),
+						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "binary_input_format", tfjson.ActionUpdate, sdk.String("HEX"), sdk.String("BASE64")),
+						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "client_encryption_key_size", tfjson.ActionUpdate, sdk.String("128"), sdk.String("256")),
+						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.String(""), sdk.String("")),
+						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "resource_monitor", tfjson.ActionUpdate, sdk.String(resourceMonitor.ID().Name()), sdk.String(resourceMonitor.ID().Name())),
+						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "session_policy", tfjson.ActionUpdate, sdk.String(""), sdk.String(passwordPolicy.ID().FullyQualifiedName())),
+						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "session_policy", tfjson.ActionUpdate, sdk.String(""), sdk.String(sessionPolicy.ID().FullyQualifiedName())),
+					},
+				},
 			},
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(completeConfigModel.ResourceReference(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(completeConfigModel.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Config: config.FromModels(t, provider, completeConfigModel),
@@ -409,7 +425,6 @@ func TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate(t *testing.T) {
 	})
 
 	currentOrganizationAccountName := testClient().OrganizationAccount.ShowCurrent(t).AccountName
-	emptyPropertiesModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName)
 	completePropertiesModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -419,21 +434,18 @@ func TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
-			// Start with empty comment (it's set in Snowflake)
+			// Create with import-like behavior
 			{
-				Config: config.FromModels(t, emptyPropertiesModel),
+				Config: config.FromModels(t, completePropertiesModel),
 				Check: assertThat(t,
-					resourceassert.CurrentOrganizationAccountResource(t, emptyPropertiesModel.ResourceReference()).
+					resourceassert.CurrentOrganizationAccountResource(t, completePropertiesModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentString(comment),
-					resourceshowoutputassert.OrganizationAccountShowOutput(t, emptyPropertiesModel.ResourceReference()).
+					resourceshowoutputassert.OrganizationAccountShowOutput(t, completePropertiesModel.ResourceReference()).
 						HasComment(comment),
 				),
-				// The plan indicates the comment should change but later steps prove that our show output helps suppress it
-				ExpectNonEmptyPlan: true,
 			},
-			// The plan after the first step shows changes in the comment field,
-			// so we just set it to the value that is already set in Snowflake for in-place update (expecting Noop change)
+			// Expect no changes as the resource configuration matches infrastructure state (comment was already set)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
