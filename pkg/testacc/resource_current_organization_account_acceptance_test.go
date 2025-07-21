@@ -413,6 +413,7 @@ func TestAcc_CurrentOrganizationAccount_NameValidationOnCreate(t *testing.T) {
 	})
 }
 
+// TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate shows that as long as resource configuration matches the infrastructure state, no changes are expected in the plan after create.
 func TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate(t *testing.T) {
 	testClient().EnsureValidNonProdOrganizationAccountIsUsed(t)
 
