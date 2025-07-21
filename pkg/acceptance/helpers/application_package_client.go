@@ -69,6 +69,20 @@ func (c *ApplicationPackageClient) SetDefaultReleaseDirective(t *testing.T, id s
 	require.NoError(t, err)
 }
 
+func (c *ApplicationPackageClient) SetQaReleaseChannel(t *testing.T, id sdk.AccountObjectIdentifier, stageId sdk.SchemaObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("ALTER APPLICATION PACKAGE %s SET ENABLE_RELEASE_CHANNELS = true", id.FullyQualifiedName()))
+	require.NoError(t, err)
+
+	_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf("ALTER APPLICATION PACKAGE %s MODIFY RELEASE CHANNEL QA SET ACCOUNTS = (TERRAFORMQA.TESTING_ACCOUNT_123);", id.FullyQualifiedName()))
+	require.NoError(t, err)
+
+	_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf("ALTER APPLICATION PACKAGE %s REGISTER VERSION V1 USING '@%s';", id.FullyQualifiedName(), stageId.FullyQualifiedName()))
+	require.NoError(t, err)
+}
+
 func (c *ApplicationPackageClient) ShowVersions(t *testing.T, id sdk.AccountObjectIdentifier) []ApplicationPackageVersion {
 	t.Helper()
 

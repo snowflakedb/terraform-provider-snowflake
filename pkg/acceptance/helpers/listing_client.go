@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -32,7 +33,11 @@ func (c *ListingClient) Create(t *testing.T) (*sdk.Listing, func()) {
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	err := c.client().Create(ctx, sdk.NewCreateListingRequest(id).WithAs(c.BasicManifest(t)))
+	err := c.client().Create(ctx, sdk.NewCreateListingRequest(id).
+		WithAs(c.BasicManifest(t)).
+		WithReview(false).
+		WithPublish(false),
+	)
 	assert.NoError(t, err)
 
 	listing, err := c.client().ShowByID(ctx, id)
@@ -54,8 +59,9 @@ func (c *ListingClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) f
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().DropSafely(ctx, id)
-		assert.NoError(t, err)
+		if err := c.client().DropSafely(ctx, id); !errors.Is(err, sdk.ErrObjectNotFound) {
+			assert.NoError(t, err)
+		}
 	}
 }
 

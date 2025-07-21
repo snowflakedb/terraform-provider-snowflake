@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"context"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 

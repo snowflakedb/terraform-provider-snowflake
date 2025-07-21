@@ -9,6 +9,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+func (l *ListingAssert) HasNoComment() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil, but got %q", *o.Comment)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingAssert) HasGlobalNameNotEmpty() *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()
