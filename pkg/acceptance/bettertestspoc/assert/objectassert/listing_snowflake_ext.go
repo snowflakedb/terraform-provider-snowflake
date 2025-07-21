@@ -9,6 +9,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+func (l *ListingAssert) HasNoReviewState() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.ReviewState != nil {
+			return fmt.Errorf("expected review state to be nil, but got %q", *o.Comment)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingAssert) HasNoComment() *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()

@@ -44,16 +44,6 @@ listing_terms:
 	testClientHelper().Stage.PutOnStageDirectoryWithContent(t, stage.ID(), "manifest.yml", "basic", basicManifest)
 	basicManifestStageLocation := sdk.NewStageLocation(stage.ID(), "basic/")
 
-	basicWithDifferentSubtitleManifest := `
-title: title
-subtitle: different_subtitle
-description: description
-listing_terms:
-  type: OFFLINE
-`
-	testClientHelper().Stage.PutOnStageDirectoryWithContent(t, stage.ID(), "manifest.yml", "basic_different_subtitle", basicWithDifferentSubtitleManifest)
-	basicManifestWithDifferentSubtitleStageLocation := sdk.NewStageLocation(stage.ID(), "basic_different_subtitle/")
-
 	basicManifestWithTarget := fmt.Sprintf(`
 title: title
 subtitle: subtitle
@@ -208,10 +198,14 @@ targets:
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
+		// TODO: Assert more
 		assertThatObject(t,
 			objectassert.Listing(t, id).
-				HasState(sdk.ListingStateDraft).
-				HasReviewState("UNSENT"),
+				HasGlobalNameNotEmpty().
+				HasName(id.Name()).
+				HasTitle("title").
+				HasComment(comment).
+				HasState(sdk.ListingStateDraft),
 		)
 
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true))
@@ -220,17 +214,16 @@ targets:
 		assertThatObject(t,
 			objectassert.Listing(t, id).
 				HasState(sdk.ListingStateDraft).
-				HasReviewState("UNSENT"),
+				HasNoReviewState(),
 		)
 
-		// TODO: Too much to fulfill to check
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true))
 		assert.NoError(t, err)
 
 		assertThatObject(t,
 			objectassert.Listing(t, id).
 				HasState(sdk.ListingStatePublished).
-				HasReviewState(""),
+				HasNoReviewState(),
 		)
 
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true))
@@ -239,7 +232,7 @@ targets:
 		assertThatObject(t,
 			objectassert.Listing(t, id).
 				HasState(sdk.ListingStateUnpublished).
-				HasReviewState(""),
+				HasNoReviewState(),
 		)
 	})
 
@@ -278,6 +271,16 @@ listing_terms:
 	})
 
 	t.Run("alter: add version", func(t *testing.T) {
+		basicWithDifferentSubtitleManifest := `
+title: title
+subtitle: different_subtitle
+description: description
+listing_terms:
+  type: OFFLINE
+`
+		testClientHelper().Stage.PutOnStageDirectoryWithContent(t, stage.ID(), "manifest.yml", "basic_different_subtitle", basicWithDifferentSubtitleManifest)
+		basicManifestWithDifferentSubtitleStageLocation := sdk.NewStageLocation(stage.ID(), "basic_different_subtitle/")
+
 		listing, listingCleanup := testClientHelper().Listing.Create(t)
 		t.Cleanup(listingCleanup)
 

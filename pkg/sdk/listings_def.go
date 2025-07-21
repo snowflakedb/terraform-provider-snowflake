@@ -226,6 +226,32 @@ var listingDetails = g.PlainStruct("ListingDetails").
 	OptionalText("MonetizationDisplayOrder").    // TODO: Not documented
 	OptionalText("LegacyUniformListingLocators") // TODO: Not documented
 
+var listingVersionDbRow = g.DbStruct("listingVersionDBRow").
+	Text("created_on").
+	Text("name").
+	Text("alias").
+	Text("location_url").
+	Bool("is_default").
+	Bool("is_live").
+	Bool("is_first").
+	Bool("is_last").
+	Text("comment").
+	Text("source_location_url").
+	OptionalText("git_commit_hash")
+
+var listingVersion = g.PlainStruct("ListingVersion").
+	Text("CreatedOn").
+	Text("Name").
+	Text("Alias").
+	Text("LocationUrl").
+	Bool("IsDefault").
+	Bool("IsLive").
+	Bool("IsFirst").
+	Bool("IsLast").
+	Text("Comment").
+	Text("SourceLocationUrl").
+	OptionalText("GitCommitHash")
+
 var ListingsDef = g.NewInterface(
 	"Listings",
 	"Listing",
@@ -324,6 +350,18 @@ var ListingsDef = g.NewInterface(
 			Name().
 			OptionalAssignment("REVISION", g.KindOfT[ListingRevision](), g.ParameterOptions().NoQuotes()).
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	CustomShowOperation(
+		"ShowVersions",
+		g.ShowMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/sql/show-versions-in-listing",
+		listingVersionDbRow,
+		listingVersion,
+		g.NewQueryStruct("ShowListings").
+			Show().
+			SQL("VERSIONS IN LISTING").
+			Name().
+			OptionalLimit(),
 	)
 
 	// TODO(next prs): Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface
