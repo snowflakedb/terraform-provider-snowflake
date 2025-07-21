@@ -14,6 +14,7 @@ type Listings interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*ListingDetails, error)
+	ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error)
 }
 
 // CreateListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-listing.
@@ -151,7 +152,6 @@ type Listing struct {
 func (v *Listing) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
-
 func (v *Listing) ObjectType() ObjectType {
 	return ObjectTypeListing
 }
@@ -286,4 +286,40 @@ type ListingDetails struct {
 	RequestApprovalType          *string
 	MonetizationDisplayOrder     *string
 	LegacyUniformListingLocators *string
+}
+
+// ShowVersionsListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-versions-in-listing.
+type ShowVersionsListingOptions struct {
+	show              bool                    `ddl:"static" sql:"SHOW"`
+	versionsInListing bool                    `ddl:"static" sql:"VERSIONS IN LISTING"`
+	name              AccountObjectIdentifier `ddl:"identifier"`
+	Limit             *LimitFrom              `ddl:"keyword" sql:"LIMIT"`
+}
+
+type listingVersionDBRow struct {
+	CreatedOn         string         `db:"created_on"`
+	Name              string         `db:"name"`
+	Alias             string         `db:"alias"`
+	LocationUrl       string         `db:"location_url"`
+	IsDefault         bool           `db:"is_default"`
+	IsLive            bool           `db:"is_live"`
+	IsFirst           bool           `db:"is_first"`
+	IsLast            bool           `db:"is_last"`
+	Comment           string         `db:"comment"`
+	SourceLocationUrl string         `db:"source_location_url"`
+	GitCommitHash     sql.NullString `db:"git_commit_hash"`
+}
+
+type ListingVersion struct {
+	CreatedOn         string
+	Name              string
+	Alias             string
+	LocationUrl       string
+	IsDefault         bool
+	IsLive            bool
+	IsFirst           bool
+	IsLast            bool
+	Comment           string
+	SourceLocationUrl string
+	GitCommitHash     *string
 }

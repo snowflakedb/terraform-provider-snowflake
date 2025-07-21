@@ -6,6 +6,7 @@ var (
 	_ validatable = new(DropListingOptions)
 	_ validatable = new(ShowListingOptions)
 	_ validatable = new(DescribeListingOptions)
+	_ validatable = new(ShowVersionsListingOptions)
 )
 
 func (opts *CreateListingOptions) validate() error {
@@ -71,5 +72,13 @@ func (opts *DescribeListingOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowVersionsListingOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
 	return JoinErrors(errs...)
 }

@@ -361,7 +361,8 @@ var ListingsDef = g.NewInterface(
 			Show().
 			SQL("VERSIONS IN LISTING").
 			Name().
-			OptionalLimit(),
+			OptionalLimit().
+			WithValidation(g.ValidIdentifier, "name"),
 	)
 
 	// TODO(next prs): Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface

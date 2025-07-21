@@ -318,6 +318,40 @@ func TestListings_Show(t *testing.T) {
 	})
 }
 
+func TestListings_ShowVersions(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+	// Minimal valid ShowVersionsListingOptions
+	defaultOpts := func() *ShowVersionsListingOptions {
+		return &ShowVersionsListingOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *ShowVersionsListingOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("invalid identifier", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = invalidAccountObjectIdentifier
+		assertOptsInvalid(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "SHOW VERSIONS IN LISTING %s", id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Limit = &LimitFrom{
+			Rows: Int(5),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW VERSIONS IN LISTING %s LIMIT 5", id.FullyQualifiedName())
+	})
+}
+
 func TestListings_Describe(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	// Minimal valid DescribeListingOptions

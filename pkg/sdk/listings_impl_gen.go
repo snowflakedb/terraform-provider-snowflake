@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
@@ -73,6 +74,16 @@ func (v *listings) Describe(ctx context.Context, id AccountObjectIdentifier) (*L
 		return nil, err
 	}
 	return result.convert(), nil
+}
+
+func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[listingVersionDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	resultList := convertRows[listingVersionDBRow, ListingVersion](dbRows)
+	return resultList, nil
 }
 
 func (r *CreateListingRequest) toOpts() *CreateListingOptions {
@@ -259,4 +270,31 @@ func (r listingDetailsDBRow) convert() *ListingDetails {
 	mapNullString(&ld.LegacyUniformListingLocators, r.LegacyUniformListingLocators)
 
 	return ld
+}
+
+func (r *ShowVersionsListingRequest) toOpts() *ShowVersionsListingOptions {
+	opts := &ShowVersionsListingOptions{
+		name:  r.name,
+		Limit: r.Limit,
+	}
+	return opts
+}
+
+func (r listingVersionDBRow) convert() *ListingVersion {
+	lv := &ListingVersion{
+		CreatedOn:         r.CreatedOn,
+		Name:              r.Name,
+		Alias:             r.Alias,
+		LocationUrl:       r.LocationUrl,
+		IsDefault:         r.IsDefault,
+		IsLive:            r.IsLive,
+		IsFirst:           r.IsFirst,
+		IsLast:            r.IsLast,
+		Comment:           r.Comment,
+		SourceLocationUrl: r.SourceLocationUrl,
+	}
+
+	mapNullString(&lv.GitCommitHash, r.GitCommitHash)
+
+	return lv
 }
