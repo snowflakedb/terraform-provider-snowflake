@@ -142,6 +142,7 @@ find a better solution to solve the issue (add more logic to the templates ?)
   - Add a possibility to generate a non-sql method with a custom implementation. Currently, it is done only in `ShowById...` functions with `newNoSqlOperation`.
 - improve handling operations that return one row
 - add more context to validated identifiers, so that error contains the affected field
+- add custom identifier wrapping, like it's used in security integrations' network policies
 
 ##### Known issues
 - generating two converts when Show and Desc use the same data structure
