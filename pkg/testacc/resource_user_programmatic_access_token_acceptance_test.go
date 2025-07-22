@@ -649,6 +649,111 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 	})
 }
 
+func TestAcc_UserProgrammaticAccessToken_RotatingWithExternalProvider(t *testing.T) {
+	user, userCleanup := testClient().User.CreateUser(t)
+	t.Cleanup(userCleanup)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	timeRotating := `
+	resource "time_rotating" "rotation_schedule" {
+		rotation_minutes = 30
+	}
+	`
+	timeRotatingWithTriggers := `
+	resource "time_rotating" "rotation_schedule" {
+		rotation_minutes = 30
+		triggers = {
+			foo = "bar"
+		}
+	}
+	`
+
+	modelBasic := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name())
+	modelWithKeeper := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithKeeper("id ${time_rotating.rotation_schedule.rotation_rfc3339}")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"time": {
+				VersionConstraint: "0.13.1",
+				Source:            "hashicorp/time",
+			},
+		},
+		Steps: []resource.TestStep{
+			// create the token
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasNoRotatedTokenName().
+						HasUserString(user.ID().Name()),
+				),
+			},
+			// do not rotate the token with added a computed keeper
+			{
+				Config: timeRotating + accconfig.FromModels(t, modelWithKeeper),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithKeeper.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "token", false),
+						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "keeper", true),
+						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "rotated_token_name", false),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasNoRotatedTokenName().
+						HasUserString(user.ID().Name()),
+				),
+			},
+			// rotate on a changed computed field
+			{
+				Config: timeRotatingWithTriggers + accconfig.FromModels(t, modelWithKeeper),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithKeeper.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "token", true),
+						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "keeper", true),
+						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "rotated_token_name", true),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeeper.ResourceReference()).
+						HasNameString(id.Name()).
+						HasRotatedTokenNameNotEmpty().
+						HasUserString(user.ID().Name()),
+				),
+			},
+			// do not rotate on a removed computed field
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.PrintPlanDetails(modelBasic.ResourceReference(), "keeper"),
+						planchecks.ExpectComputed(modelBasic.ResourceReference(), "token", false),
+						planchecks.ExpectComputed(modelBasic.ResourceReference(), "rotated_token_name", false),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasRotatedTokenNameNotEmpty().
+						HasUserString(user.ID().Name()),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_UserProgrammaticAccessToken_Validations(t *testing.T) {
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
 	id := testClient().Ids.RandomAccountObjectIdentifier()
