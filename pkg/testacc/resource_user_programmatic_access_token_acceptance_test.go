@@ -548,7 +548,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 					assertTokenNotRotated,
 				),
 			},
-			// rotate the token with different keeper and check that the token is updated
+			// rotate the token with a different keeper and check that the token is updated
 			{
 				Config: accconfig.FromModels(t, modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -581,7 +581,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 					})),
 				),
 			},
-			// rotate the token with different keeper and check that the token is updated
+			// rotate the token with a different keeper and different expire_rotated_token_after_hours and check that the token is updated
 			{
 				Config: accconfig.FromModels(t, modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -614,7 +614,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 					})),
 				),
 			},
-			// do not rotate the token if the keeper are the same
+			// do not rotate the token if the keeper is the same
 			{
 				Config: accconfig.FromModels(t, modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -625,7 +625,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 					},
 				},
 			},
-			// do not rotate the token when the keeper are removed
+			// do not rotate the token when the keeper is removed
 			{
 				Config: accconfig.FromModels(t, modelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{

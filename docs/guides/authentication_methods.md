@@ -107,7 +107,7 @@ See the example setup below.
 
 ```terraform
 # note this requires the terraform to be run regularly
-resource "time_rotating" "my_token_rotation" {
+resource "time_rotating" "rotation_schedule" {
   rotation_days = 30
 }
 
@@ -125,6 +125,26 @@ resource "snowflake_user_programmatic_access_token" "example" {
 Note that in this example, the rotation occurs only when you execute a `terraform apply` command.
 After 30 days pass, you will see a plan output similar to:
 ```
+time_rotating.rotation_schedule: Refreshing state... [id=2025-07-22T08:06:51Z]
+snowflake_user_programmatic_access_token.complete_with_external_references: Refreshing state... [id="PAT"|"TOKEN"]
+
+Note: Objects have changed outside of Terraform
+
+Terraform detected the following changes made outside of Terraform since the last "terraform apply" which may have affected this plan:
+
+  # time_rotating.rotation_schedule has been deleted
+  - resource "time_rotating" "rotation_schedule" {
+        id               = "2025-07-22T08:06:51Z"
+      - rfc3339          = "2025-07-22T08:06:51Z" -> null
+        # (9 unchanged attributes hidden)
+    }
+
+
+Unless you have made equivalent changes to your configuration, or ignored the relevant attributes using ignore_changes, the following plan may include actions to undo or respond to
+these changes.
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
 Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
   ~ update in-place
@@ -132,17 +152,17 @@ Terraform used the selected providers to generate the following execution plan. 
 Terraform will perform the following actions:
 
   # snowflake_user_programmatic_access_token.complete_with_external_references will be updated in-place
-  ~ resource "snowflake_user_programmatic_access_token" "example" {
+  ~ resource "snowflake_user_programmatic_access_token" "complete_with_external_references" {
         id                                        = "\"PAT\"|\"TOKEN\""
-      ~ keeper                                   = {
-          - "rotation_time" = "2025-07-17T12:20:51Z"
-        } -> (known after apply)
+      ~ keeper                                    = "2025-07-22T08:06:51Z" -> (known after apply)
         name                                      = "TOKEN"
-        # (10 unchanged attributes hidden)
+      + rotated_token_name                        = (known after apply)
+      ~ token                                     = (sensitive value)
+        # (8 unchanged attributes hidden)
     }
 
-  # time_rotating.my_token_rotation will be created
-  + resource "time_rotating" "my_token_rotation" {
+  # time_rotating.rotation_schedule will be created
+  + resource "time_rotating" "rotation_schedule" {
       + day              = 30
       + hour             = (known after apply)
       + id               = (known after apply)
