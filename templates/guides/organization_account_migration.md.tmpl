@@ -83,7 +83,7 @@ resource "snowflake_account" "test" {
   name                 = "account_name"
   admin_name           = "admin_name"
   admin_password = "pass"
-  # or`
+  # or
   admin_rsa_public_key = "rsa_public_key"
   email                = "exampl@email.com"
   edition              = "ENTERPRISE"
