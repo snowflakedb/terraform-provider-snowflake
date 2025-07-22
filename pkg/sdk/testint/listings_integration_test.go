@@ -4,12 +4,13 @@ package testint
 
 import (
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInt_Listings(t *testing.T) {
@@ -34,16 +35,11 @@ func TestInt_Listings(t *testing.T) {
 	ctx := testContext(t)
 
 	accountId := testClientHelper().Context.CurrentAccountId(t)
-	basicManifest := `
-title: title
-subtitle: subtitle
-description: description
-listing_terms:
-  type: OFFLINE
-`
+	basicManifest := testClientHelper().Listing.BasicManifest(t)
 	testClientHelper().Stage.PutOnStageDirectoryWithContent(t, stage.ID(), "manifest.yml", "basic", basicManifest)
 	basicManifestStageLocation := sdk.NewStageLocation(stage.ID(), "basic/")
 
+	targetAccount := fmt.Sprintf("%s.%s", accountId.OrganizationName(), accountId.AccountName())
 	basicManifestWithTarget := fmt.Sprintf(`
 title: title
 subtitle: subtitle
@@ -51,12 +47,43 @@ description: description
 listing_terms:
   type: OFFLINE
 targets:
-  accounts: [%s.%s]
-`, accountId.OrganizationName(), accountId.AccountName())
+  accounts: [%s]
+`, targetAccount)
 	testClientHelper().Stage.PutOnStageDirectoryWithContent(t, stage.ID(), "manifest.yml", "with_target", basicManifestWithTarget)
 	basicManifestWithTargetStageLocation := sdk.NewStageLocation(stage.ID(), "with_target/")
 
 	comment := random.Comment()
+
+	assertNoOptionals := func(t *testing.T, id sdk.AccountObjectIdentifier) {
+		t.Helper()
+
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasGlobalNameNotEmpty().
+				HasName(id.Name()).
+				HasTitle("title").
+				HasSubtitle("subtitle").
+				HasProfile("").
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoPublishedOn().
+				HasState(sdk.ListingStateDraft).
+				HasReviewState("UNSENT").
+				HasNoComment().
+				HasNoRegions().
+				HasTargetAccounts("").
+				HasIsMonetized(false).
+				HasIsApplication(false).
+				HasIsTargeted(false).
+				HasIsLimitedTrial(false).
+				HasIsByRequest(false).
+				HasDistribution("EXTERNAL").
+				HasIsMountlessQueryable(false).
+				HasOrganizationProfileName("").
+				HasNoUniformListingLocator().
+				HasNoDetailedTargetAccounts(),
+		)
+	}
 
 	t.Run("create from manifest: no optionals", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -67,15 +94,55 @@ targets:
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
-		// TODO: Add more assertions
+		assertNoOptionals(t, id)
+	})
+
+	t.Run("create from stage: no optionals", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithFrom(basicManifestStageLocation).
+			WithReview(false).
+			WithPublish(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertNoOptionals(t, id)
+	})
+
+	assertCompleteWithShare := func(t *testing.T, id sdk.AccountObjectIdentifier) {
+		t.Helper()
+
+		listingDetails, err := client.Listings.Describe(ctx, id)
+		assert.NoError(t, err)
+		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
+
 		assertThatObject(t,
 			objectassert.Listing(t, id).
+				HasGlobalNameNotEmpty().
 				HasName(id.Name()).
 				HasTitle("title").
 				HasSubtitle("subtitle").
-				HasState(sdk.ListingStateDraft),
+				HasProfile("").
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoPublishedOn().
+				HasState(sdk.ListingStateDraft).
+				HasNoReviewState().
+				HasComment(comment).
+				HasNoRegions().
+				HasTargetAccounts(targetAccount).
+				HasIsMonetized(false).
+				HasIsApplication(false).
+				HasIsTargeted(true).
+				HasIsLimitedTrial(false).
+				HasIsByRequest(false).
+				HasDistribution("EXTERNAL").
+				HasIsMountlessQueryable(false).
+				HasOrganizationProfileName("").
+				HasNoUniformListingLocator().
+				HasDetailedTargetAccountsNotEmpty(),
 		)
-	})
+	}
 
 	t.Run("create from manifest: complete with share", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -89,58 +156,10 @@ targets:
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
-		// TODO: Assert more
-		assertThatObject(t,
-			objectassert.Listing(t, id).
-				HasGlobalNameNotEmpty().
-				HasName(id.Name()).
-				HasTitle("title").
-				HasComment(comment).
-				HasState(sdk.ListingStateDraft),
-		)
+		assertCompleteWithShare(t, id)
 	})
 
-	t.Run("create from manifest: complete with application packages", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
-			WithAs(basicManifest).
-			WithWith(*sdk.NewListingWithRequest().WithApplicationPackage(applicationPackage.ID())).
-			WithIfNotExists(true).
-			WithPublish(false).
-			WithReview(false).
-			WithComment(comment))
-		assert.NoError(t, err)
-		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
-
-		// TODO: Assert more
-		assertThatObject(t,
-			objectassert.Listing(t, id).
-				HasName(id.Name()).
-				HasTitle("title").
-				HasState(sdk.ListingStateDraft),
-		)
-	})
-
-	t.Run("create from stage: no optionals", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
-			WithFrom(basicManifestStageLocation).
-			WithReview(false).
-			WithPublish(false))
-		assert.NoError(t, err)
-		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
-
-		// TODO: Add more assertions
-		assertThatObject(t,
-			objectassert.Listing(t, id).
-				HasName(id.Name()).
-				HasTitle("title").
-				HasSubtitle("subtitle").
-				HasState(sdk.ListingStateDraft),
-		)
-	})
-
-	t.Run("create from stage: complete with stage", func(t *testing.T) {
+	t.Run("create from stage: complete with share", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
 			WithFrom(basicManifestWithTargetStageLocation).
@@ -152,15 +171,57 @@ targets:
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
-		// TODO: Assert more
+		assertCompleteWithShare(t, id)
+	})
+
+	assertCompleteWithApplicationPackage := func(t *testing.T, id sdk.AccountObjectIdentifier) {
+		t.Helper()
+
+		listingDetails, err := client.Listings.Describe(ctx, id)
+		assert.NoError(t, err)
+		assert.Equal(t, applicationPackage.ID().Name(), listingDetails.ApplicationPackage.Name())
+
 		assertThatObject(t,
 			objectassert.Listing(t, id).
 				HasGlobalNameNotEmpty().
 				HasName(id.Name()).
 				HasTitle("title").
+				HasSubtitle("subtitle").
+				HasProfile("").
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoPublishedOn().
+				HasState(sdk.ListingStateDraft).
+				HasNoReviewState().
 				HasComment(comment).
-				HasState(sdk.ListingStateDraft),
+				HasNoRegions().
+				HasTargetAccounts(targetAccount).
+				HasIsMonetized(false).
+				HasIsApplication(true).
+				HasIsTargeted(true).
+				HasIsLimitedTrial(false).
+				HasIsByRequest(false).
+				HasDistribution("EXTERNAL").
+				HasIsMountlessQueryable(false).
+				HasOrganizationProfileName("").
+				HasNoUniformListingLocator().
+				HasDetailedTargetAccountsNotEmpty(),
 		)
+	}
+
+	t.Run("create from manifest: complete with application packages", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithAs(basicManifestWithTarget).
+			WithWith(*sdk.NewListingWithRequest().WithApplicationPackage(applicationPackage.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false).
+			WithComment(comment))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertCompleteWithApplicationPackage(t, id)
 	})
 
 	t.Run("create from stage: complete with application packages", func(t *testing.T) {
@@ -175,15 +236,7 @@ targets:
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
-		// TODO: Assert more
-		assertThatObject(t,
-			objectassert.Listing(t, id).
-				HasGlobalNameNotEmpty().
-				HasName(id.Name()).
-				HasTitle("title").
-				HasComment(comment).
-				HasState(sdk.ListingStateDraft),
-		)
+		assertCompleteWithApplicationPackage(t, id)
 	})
 
 	t.Run("alter: change state", func(t *testing.T) {
@@ -198,14 +251,10 @@ targets:
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
-		// TODO: Assert more
 		assertThatObject(t,
 			objectassert.Listing(t, id).
-				HasGlobalNameNotEmpty().
-				HasName(id.Name()).
-				HasTitle("title").
-				HasComment(comment).
-				HasState(sdk.ListingStateDraft),
+				HasState(sdk.ListingStateDraft).
+				HasNoReviewState(),
 		)
 
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true))
@@ -266,7 +315,7 @@ listing_terms:
 			objectassert.Listing(t, listing.ID()).
 				HasSubtitle("different_subtitle").
 				HasNoComment(),
-			// TODO: Should be HasComment(comment), but it seems the comment is not set on alter or this comment is set somewhere else
+			// Should be HasComment(comment), but it seems the comment is not set on alter or this comment is set somewhere else
 		)
 	})
 
@@ -368,29 +417,98 @@ listing_terms:
 		assert.NoError(t, err)
 	})
 
-	t.Run("drop safely", func(t *testing.T) {
-		// TODO: Show how it behaves for listings with draft/published statuses
-	})
-
 	t.Run("show: with options", func(t *testing.T) {
-		listing, listingCleanup := testClientHelper().Listing.Create(t)
+		prefix := random.AlphanumericN(10)
+		id := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+		id2 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+
+		_, listingCleanup := testClientHelper().Listing.CreateWithId(t, id)
 		t.Cleanup(listingCleanup)
 
+		_, listing2Cleanup := testClientHelper().Listing.CreateWithId(t, id2)
+		t.Cleanup(listing2Cleanup)
+
 		listings, err := client.Listings.Show(ctx, sdk.NewShowListingRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(listing.ID().Name())}).
-			WithStartsWith(listing.ID().Name()),
+			WithLike(sdk.Like{Pattern: sdk.String(prefix + "%")}).
+			WithStartsWith(prefix).
+			WithLimit(sdk.LimitFrom{
+				Rows: sdk.Int(1),
+				From: sdk.String(prefix),
+			}),
 		)
-		//WithLimit(sdk.LimitFrom{
-		//	Rows: sdk.Int(1),
-		//	From: sdk.String(listing.ID().Name()),
-		//}))
 
 		assert.NoError(t, err)
 		assert.Len(t, listings, 1)
-		assert.Equal(t, listing.ID().Name(), listings[0].Name)
 	})
 
 	t.Run("describe: default", func(t *testing.T) {
-		// TODO: Revision draft and published
+		listing, listingCleanup := testClientHelper().Listing.Create(t)
+		t.Cleanup(listingCleanup)
+
+		listingDetails, err := client.Listings.Describe(ctx, listing.ID())
+		require.NoError(t, err)
+		require.NotNil(t, listingDetails)
+
+		assert.NotEmpty(t, listingDetails.GlobalName)
+		assert.Equal(t, listing.ID().Name(), listingDetails.Name)
+		assert.NotEmpty(t, listingDetails.Owner)
+		assert.NotEmpty(t, listingDetails.OwnerRoleType)
+		assert.NotEmpty(t, listingDetails.CreatedOn)
+		assert.NotEmpty(t, listingDetails.UpdatedOn)
+		assert.Nil(t, listingDetails.PublishedOn)
+		assert.Equal(t, "title", listingDetails.Title)
+		assert.Equal(t, "subtitle", *listingDetails.Subtitle)
+		assert.Equal(t, "description", *listingDetails.Description)
+		assert.JSONEq(t, `{
+"type" : "OFFLINE"
+}`, *listingDetails.ListingTerms)
+		assert.Equal(t, sdk.ListingStateDraft, listingDetails.State)
+		assert.Nil(t, listingDetails.Share)
+		assert.Empty(t, listingDetails.ApplicationPackage.Name()) // Application package is returned even if listing is not associated with one, but it is empty in that case
+		assert.Nil(t, listingDetails.BusinessNeeds)
+		assert.Nil(t, listingDetails.UsageExamples)
+		assert.Nil(t, listingDetails.DataAttributes)
+		assert.Nil(t, listingDetails.Categories)
+		assert.Nil(t, listingDetails.Resources)
+		assert.Nil(t, listingDetails.Profile)
+		assert.Nil(t, listingDetails.CustomizedContactInfo)
+		assert.Nil(t, listingDetails.DataDictionary)
+		assert.Nil(t, listingDetails.DataPreview)
+		assert.Nil(t, listingDetails.Comment)
+		assert.Equal(t, "DRAFT", listingDetails.Revisions)
+		assert.Nil(t, listingDetails.TargetAccounts)
+		assert.Nil(t, listingDetails.Regions)
+		assert.Nil(t, listingDetails.RefreshSchedule)
+		assert.Nil(t, listingDetails.RefreshType)
+		assert.Equal(t, "UNSENT", *listingDetails.ReviewState)
+		assert.Nil(t, listingDetails.RejectionReason)
+		assert.Nil(t, listingDetails.UnpublishedByAdminReasons)
+		assert.False(t, listingDetails.IsMonetized)
+		assert.False(t, listingDetails.IsApplication)
+		assert.False(t, listingDetails.IsTargeted)
+		assert.False(t, *listingDetails.IsLimitedTrial)
+		assert.False(t, *listingDetails.IsByRequest)
+		assert.Nil(t, listingDetails.LimitedTrialPlan)
+		assert.Nil(t, listingDetails.RetriedOn)
+		assert.Nil(t, listingDetails.ScheduledDropTime)
+		assert.Equal(t, testClientHelper().Listing.BasicManifest(t), listingDetails.ManifestYaml)
+		assert.Equal(t, "EXTERNAL", *listingDetails.Distribution)
+		assert.False(t, *listingDetails.IsMountlessQueryable)
+		assert.Nil(t, listingDetails.OrganizationProfileName)
+		assert.Nil(t, listingDetails.UniformListingLocator)
+		assert.Nil(t, listingDetails.TrialDetails)
+		assert.Nil(t, listingDetails.ApproverContact)
+		assert.Nil(t, listingDetails.SupportContact)
+		assert.Nil(t, listingDetails.LiveVersionUri)
+		assert.Nil(t, listingDetails.LastCommittedVersionUri)
+		assert.Nil(t, listingDetails.LastCommittedVersionName)
+		assert.Nil(t, listingDetails.LastCommittedVersionAlias)
+		assert.Nil(t, listingDetails.PublishedVersionUri)
+		assert.Nil(t, listingDetails.PublishedVersionName)
+		assert.Nil(t, listingDetails.PublishedVersionAlias)
+		assert.False(t, *listingDetails.IsShare)
+		assert.Nil(t, listingDetails.RequestApprovalType)
+		assert.Empty(t, *listingDetails.MonetizationDisplayOrder)
+		assert.Empty(t, *listingDetails.LegacyUniformListingLocators)
 	})
 }
