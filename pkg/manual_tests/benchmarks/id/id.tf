@@ -10,7 +10,7 @@ terraform {
 }
 
 resource "random_uuid" "test_id" {
-  keepers = {
+  keeper = {
     first = "${timestamp()}"
   }
 }

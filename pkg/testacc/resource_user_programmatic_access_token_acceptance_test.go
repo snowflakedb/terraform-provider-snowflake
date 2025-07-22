@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -452,14 +451,17 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	modelBasic := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name())
-	modelWithKeepers := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
-		WithKeepers(map[string]string{"key1": "value1"})
+	modelWithKeeper := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithKeeper("key1=value1")
 	modelWithExpireRotatedTokenAfterHours := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
-		WithKeepers(map[string]string{"key1": "value1"}).
+		WithKeeper("key1=value1").
 		WithExpireRotatedTokenAfterHours(0)
-	modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
-		WithKeepers(map[string]string{"key3": "value3"}).
+	modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithKeeper("key3=value3").
 		WithExpireRotatedTokenAfterHours(0)
+	modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithKeeper("key4=value4").
+		WithExpireRotatedTokenAfterHours(3)
 
 	var token string
 	tokenAssertion := func(f resource.CheckResourceAttrWithFunc) assert.TestCheckFuncProvider {
@@ -473,9 +475,17 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 		return nil
 	})
 
+	assertTokenNotRotated := tokenAssertion(func(value string) error {
+		if value != token {
+			return fmt.Errorf("token was rotated, but should not be")
+		}
+		token = value
+		return nil
+	})
+
 	assertTokenRotated := tokenAssertion(func(value string) error {
 		if value == token {
-			return fmt.Errorf("token is not rotated")
+			return fmt.Errorf("token was not rotated, but should be")
 		}
 		token = value
 		return nil
@@ -491,9 +501,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create the token
 			{
-				// This test uses ConfigDirectory and ConfigVariables to avoid using FromModels, which does not support TypeMap.
-				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelBasic),
+				Config: accconfig.FromModels(t, modelBasic),
 				Check: assertThat(t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
@@ -502,44 +510,56 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 					assertTokenNotEmpty,
 				),
 			},
-			// rotate the token with added keepers and check that the token is updated
+			// do not rotate the token with added keeper
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithKeepers),
+				Config: accconfig.FromModels(t, modelWithKeeper),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithKeepers.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelWithKeeper.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.PrintPlanDetails(modelWithKeeper.ResourceReference(), "keeper"),
+						planchecks.ExpectChange(modelWithKeeper.ResourceReference(), "keeper", tfjson.ActionUpdate, nil, sdk.String("key1=value1")),
+						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "token", false),
+						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "rotated_token_name", false),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeepers.ResourceReference()).
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeeper.ResourceReference()).
 						HasNameString(id.Name()).
-						HasRotatedTokenNameNotEmpty().
+						HasNoRotatedTokenName().
 						HasUserString(user.ID().Name()),
-					assertTokenRotated,
+					assertTokenNotRotated,
 				),
 			},
 			// do not rotate when only expire_rotated_token_after_hours is changed
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithExpireRotatedTokenAfterHours),
+				Config: accconfig.FromModels(t, modelWithExpireRotatedTokenAfterHours),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionNoop),
-					},
-				},
-			},
-			// rotate the token with different keepers and check that the token is updated
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelWithExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectComputed(modelWithExpireRotatedTokenAfterHours.ResourceReference(), "token", false),
+						planchecks.ExpectComputed(modelWithExpireRotatedTokenAfterHours.ResourceReference(), "rotated_token_name", false),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference()).
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithExpireRotatedTokenAfterHours.ResourceReference()).
+						HasNameString(id.Name()).
+						HasNoRotatedTokenName().
+						HasUserString(user.ID().Name()),
+					assertTokenNotRotated,
+				),
+			},
+			// rotate the token with different keeper and check that the token is updated
+			{
+				Config: accconfig.FromModels(t, modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectComputed(modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), "token", true),
+						planchecks.ExpectComputed(modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), "rotated_token_name", true),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference()).
 						HasNameString(id.Name()).
 						HasRotatedTokenNameNotEmpty().
 						HasUserString(user.ID().Name()),
@@ -561,23 +581,60 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 					})),
 				),
 			},
-			// do not rotate the token if the keepers are the same
+			// rotate the token with different keeper and check that the token is updated
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours),
+				Config: accconfig.FromModels(t, modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithKeepersDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectComputed(modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference(), "token", true),
+						planchecks.ExpectComputed(modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference(), "rotated_token_name", true),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference()).
+						HasNameString(id.Name()).
+						HasRotatedTokenNameNotEmpty().
+						HasUserString(user.ID().Name()),
+					assertTokenRotated,
+					// assert that the rotated token is expired
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "rotated_token_name", func(value string) error {
+						if value == "" {
+							return fmt.Errorf("rotated_token_name is empty")
+						}
+						rotatedTokenId := sdk.NewAccountObjectIdentifier(value)
+						token := testClient().User.ShowProgrammaticAccessToken(t, user.ID(), rotatedTokenId)
+						if token.RotatedTo == nil {
+							return fmt.Errorf("the rotated token is not found")
+						}
+						if token.Status != sdk.ProgrammaticAccessTokenStatusActive {
+							return fmt.Errorf("the rotated token is expired")
+						}
+						return nil
+					})),
+				),
+			},
+			// do not rotate the token if the keeper are the same
+			{
+				Config: accconfig.FromModels(t, modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionNoop),
+						planchecks.ExpectComputed(modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference(), "token", false),
+						planchecks.ExpectComputed(modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference(), "rotated_token_name", false),
 					},
 				},
 			},
-			// rotate the token when the keepers are removed
+			// do not rotate the token when the keeper are removed
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_UserProgrammaticAccessTokenRotation"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelBasic),
+				Config: accconfig.FromModels(t, modelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.PrintPlanDetails(modelBasic.ResourceReference(), "keeper"),
+						planchecks.ExpectChange(modelBasic.ResourceReference(), "keeper", tfjson.ActionUpdate, sdk.String("key4=value4"), nil),
+						planchecks.ExpectComputed(modelBasic.ResourceReference(), "token", false),
+						planchecks.ExpectComputed(modelBasic.ResourceReference(), "rotated_token_name", false),
 					},
 				},
 				Check: assertThat(t,
@@ -585,7 +642,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 						HasNameString(id.Name()).
 						HasRotatedTokenNameNotEmpty().
 						HasUserString(user.ID().Name()),
-					assertTokenRotated,
+					assertTokenNotRotated,
 				),
 			},
 		},

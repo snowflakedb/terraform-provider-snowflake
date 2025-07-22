@@ -102,7 +102,9 @@ resource "snowflake_user_programmatic_access_token" "example" {
 }
 ```
 
-You can also rotate the PAT by using the `keepers` attribute and connecting it to a resource providing changing a value, like [time_rotating](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) resource from the `time` provider.
+You can also rotate the PAT by using the `keeper` attribute and connecting it to a resource providing changing a value, like [time_rotating](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) resource from the `time` provider.
+See the example setup below.
+
 ```terraform
 # note this requires the terraform to be run regularly
 resource "time_rotating" "my_token_rotation" {
@@ -113,14 +115,15 @@ resource "snowflake_user_programmatic_access_token" "example" {
   user = snowflake_user.user.name
   name = "TOKEN"
 
-  # Use the keepers map to force token rotation. If any key or value in the map changes, the token will be rotated.
-  keepers = {
-    # here we use the time_rotating's rotation_rfc3339 field which provides a new timestamp every 30 days.
-    rotation_time = time_rotating.my_token_rotation.rotation_rfc3339
-  }
+  # Use the keeper field to force token rotation. If, and only if, the value changes
+  # from a non-empty to a different non-empty value, the token will be rotated.
+  # When you add this key or remove this key from the config, the token will not be rotated.
+  # When the token is rotated, the `token` and `rotated_token_name` fields are marked as computed.
+  keeper = time_rotating.rotation_schedule.rotation_rfc3339
 }
 ```
-In this example, after 30 days pass, you will see terraform plan output similar to:
+Note that in this example, the rotation occurs only when you execute a `terraform apply` command.
+After 30 days pass, you will see a plan output similar to:
 ```
 Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
@@ -131,7 +134,7 @@ Terraform will perform the following actions:
   # snowflake_user_programmatic_access_token.complete_with_external_references will be updated in-place
   ~ resource "snowflake_user_programmatic_access_token" "example" {
         id                                        = "\"PAT\"|\"TOKEN\""
-      ~ keepers                                   = {
+      ~ keeper                                   = {
           - "rotation_time" = "2025-07-17T12:20:51Z"
         } -> (known after apply)
         name                                      = "TOKEN"

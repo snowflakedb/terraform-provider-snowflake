@@ -17,7 +17,7 @@ type UserProgrammaticAccessTokenModel struct {
 	DaysToExpiry                         tfconfig.Variable `json:"days_to_expiry,omitempty"`
 	Disabled                             tfconfig.Variable `json:"disabled,omitempty"`
 	ExpireRotatedTokenAfterHours         tfconfig.Variable `json:"expire_rotated_token_after_hours,omitempty"`
-	Keepers                              tfconfig.Variable `json:"keepers,omitempty"`
+	Keeper                               tfconfig.Variable `json:"keeper,omitempty"`
 	MinsToBypassNetworkPolicyRequirement tfconfig.Variable `json:"mins_to_bypass_network_policy_requirement,omitempty"`
 	RoleRestriction                      tfconfig.Variable `json:"role_restriction,omitempty"`
 	RotatedTokenName                     tfconfig.Variable `json:"rotated_token_name,omitempty"`
@@ -108,7 +108,10 @@ func (u *UserProgrammaticAccessTokenModel) WithExpireRotatedTokenAfterHours(expi
 	return u
 }
 
-// keepers attribute type is not yet supported, so WithKeepers can't be generated
+func (u *UserProgrammaticAccessTokenModel) WithKeeper(keeper string) *UserProgrammaticAccessTokenModel {
+	u.Keeper = tfconfig.StringVariable(keeper)
+	return u
+}
 
 func (u *UserProgrammaticAccessTokenModel) WithMinsToBypassNetworkPolicyRequirement(minsToBypassNetworkPolicyRequirement int) *UserProgrammaticAccessTokenModel {
 	u.MinsToBypassNetworkPolicyRequirement = tfconfig.IntegerVariable(minsToBypassNetworkPolicyRequirement)
@@ -164,8 +167,8 @@ func (u *UserProgrammaticAccessTokenModel) WithExpireRotatedTokenAfterHoursValue
 	return u
 }
 
-func (u *UserProgrammaticAccessTokenModel) WithKeepersValue(value tfconfig.Variable) *UserProgrammaticAccessTokenModel {
-	u.Keepers = value
+func (u *UserProgrammaticAccessTokenModel) WithKeeperValue(value tfconfig.Variable) *UserProgrammaticAccessTokenModel {
+	u.Keeper = value
 	return u
 }
 

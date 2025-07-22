@@ -96,18 +96,6 @@ func GetConfigPropertyAsPointerAllowingZeroValue[T any](d *schema.ResourceData, 
 	return &typedValue
 }
 
-func GetConfigPropertyAsPointerWithInt64Default(d *schema.ResourceData, property string) *int {
-	cfgValue := d.GetRawConfig().AsValueMap()[property]
-	if cfgValue.IsNull() {
-		return nil
-	}
-	typedValue, _ := cfgValue.AsBigFloat().Int64()
-	if typedValue == IntDefault {
-		return nil
-	}
-	return sdk.Pointer(int(typedValue))
-}
-
 func GetPropertyOfFirstNestedObjectByValueKey[T any](d *schema.ResourceData, propertyKey string) (*T, error) {
 	return GetPropertyOfFirstNestedObjectByKey[T](d, propertyKey, "value")
 }

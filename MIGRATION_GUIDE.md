@@ -35,7 +35,7 @@ This feature will be marked as a stable feature in future releases. Breaking cha
 #### New `snowflake_user_programmatic_access_token` resource
 Added a new preview resource for managing users' programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) and a [user guide](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more details.
 
-This resource also supports token rotation. See our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#managing-pats) and the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/resources/user_programmatic_access_token).
+This resource also supports token rotation. See our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#managing-pats) and the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/resources/user_programmatic_access_token).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token` to `preview_features_enabled` field in the provider configuration.
 

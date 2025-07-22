@@ -57,8 +57,8 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHo
 	return u
 }
 
-func (u *UserProgrammaticAccessTokenResourceAssert) HasKeepersString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("keepers", expected))
+func (u *UserProgrammaticAccessTokenResourceAssert) Haskeepertring(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueSet("keeper", expected))
 	return u
 }
 
@@ -116,8 +116,8 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasNoExpireRotatedTokenAfter
 	return u
 }
 
-func (u *UserProgrammaticAccessTokenResourceAssert) HasNoKeepers() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("keepers"))
+func (u *UserProgrammaticAccessTokenResourceAssert) HasNoKeeper() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueNotSet("keeper"))
 	return u
 }
 
@@ -170,8 +170,8 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHo
 	return u
 }
 
-func (u *UserProgrammaticAccessTokenResourceAssert) HasKeepersEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("keepers", ""))
+func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperEmpty() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueSet("keeper", ""))
 	return u
 }
 
@@ -224,8 +224,8 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHo
 	return u
 }
 
-func (u *UserProgrammaticAccessTokenResourceAssert) HasKeepersNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("keepers"))
+func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValuePresent("keeper"))
 	return u
 }
 
