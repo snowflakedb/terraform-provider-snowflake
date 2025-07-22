@@ -242,7 +242,7 @@ func TestListings_Alter(t *testing.T) {
 			},
 			Comment: String("comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s ADD VERSION IF NOT EXISTS version-name FROM @%s/dir/subdir COMMENT = 'comment'", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s ADD VERSION IF NOT EXISTS \"version-name\" FROM @%s/dir/subdir COMMENT = 'comment'", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
 	})
 
 	t.Run("rename to", func(t *testing.T) {
@@ -335,7 +335,7 @@ func TestListings_ShowVersions(t *testing.T) {
 	t.Run("invalid identifier", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = invalidAccountObjectIdentifier
-		assertOptsInvalid(t, opts, ErrInvalidObjectIdentifier)
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {

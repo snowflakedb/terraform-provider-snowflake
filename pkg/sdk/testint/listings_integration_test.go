@@ -298,10 +298,15 @@ listing_terms:
 
 		assertThatObject(t,
 			objectassert.ListingFromObject(t, listing).
-				HasSubtitle("different_subtitle").
+				HasSubtitle("subtitle").
 				HasNoComment(),
-			// TODO: Should be HasComment(comment), but it seems the comment is not set on alter or this comment is set somewhere else
 		)
+
+		versions, err := client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.NoError(t, err)
+		assert.Len(t, versions, 1)
+		assert.Equal(t, "v2", versions[0].Alias)
+		assert.Equal(t, comment, versions[0].Comment)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {

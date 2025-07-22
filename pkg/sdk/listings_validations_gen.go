@@ -80,5 +80,8 @@ func (opts *ShowVersionsListingOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	return JoinErrors(errs...)
 }
