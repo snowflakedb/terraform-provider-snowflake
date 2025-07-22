@@ -354,8 +354,17 @@ listing_terms:
 		versions, err := client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
 		assert.NoError(t, err)
 		assert.Len(t, versions, 1)
+		assert.NotEmpty(t, versions[0].CreatedOn)
+		assert.NotEmpty(t, versions[0].Name)
 		assert.Equal(t, "v2", versions[0].Alias)
+		assert.NotEmpty(t, versions[0].LocationUrl)
+		assert.True(t, versions[0].IsDefault)
+		assert.False(t, versions[0].IsLive)
+		assert.True(t, versions[0].IsFirst)
+		assert.True(t, versions[0].IsLast)
 		assert.Equal(t, comment, versions[0].Comment)
+		assert.Empty(t, versions[0].Comment)
+		assert.Nil(t, versions[0].GitCommitHash)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
@@ -511,4 +520,17 @@ listing_terms:
 		assert.Empty(t, *listingDetails.MonetizationDisplayOrder)
 		assert.Empty(t, *listingDetails.LegacyUniformListingLocators)
 	})
+
+	t.Run("describe: revisions", func(t *testing.T) {
+		//id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		//err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+		//	WithFrom(basicManifestWithTargetStageLocation).
+		//	WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())))
+		//assert.NoError(t, err)
+		//t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+		//
+		// TODO
+	})
+
+	// TODO: Test Drop safely to ensure the logic is right
 }

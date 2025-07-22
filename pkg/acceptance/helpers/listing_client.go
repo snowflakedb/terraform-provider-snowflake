@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -61,15 +60,18 @@ func (c *ListingClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) f
 	ctx := context.Background()
 
 	return func() {
-		if err := c.client().DropSafely(ctx, id); !errors.Is(err, sdk.ErrObjectNotFound) {
-			assert.NoError(t, err)
-		}
+		assert.NoError(t, c.client().DropSafely(ctx, id))
 	}
 }
 
 func (c *ListingClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Listing, error) {
 	t.Helper()
 	return c.client().ShowByID(context.Background(), id)
+}
+
+func (c *ListingClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ListingDetails, error) {
+	t.Helper()
+	return c.client().Describe(context.Background(), id)
 }
 
 func (c *ListingClient) BasicManifest(t *testing.T) string {
