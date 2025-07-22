@@ -237,7 +237,8 @@ func (c *UserClient) ShowProgrammaticAccessToken(t *testing.T, userId sdk.Accoun
 	t.Helper()
 	ctx := context.Background()
 
-	token, err := c.client().ShowProgrammaticAccessTokenByName(ctx, userId, tokenName)
+	token, err := c.context.client.Users.ShowProgrammaticAccessTokenByName(ctx, userId, tokenName)
 	require.NoError(t, err)
+	require.NotNil(t, token)
 	return token
 }
