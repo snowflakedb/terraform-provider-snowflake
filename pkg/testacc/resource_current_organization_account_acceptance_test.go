@@ -353,7 +353,7 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "client_encryption_key_size", tfjson.ActionUpdate, sdk.String("128"), sdk.String("256")),
 						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.String(""), sdk.String("")),
 						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "resource_monitor", tfjson.ActionUpdate, sdk.String(resourceMonitor.ID().Name()), sdk.String(resourceMonitor.ID().Name())),
-						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "session_policy", tfjson.ActionUpdate, sdk.String(""), sdk.String(passwordPolicy.ID().FullyQualifiedName())),
+						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "password_policy", tfjson.ActionUpdate, sdk.String(""), sdk.String(passwordPolicy.ID().FullyQualifiedName())),
 						planchecks.ExpectChange(completeConfigModel.ResourceReference(), "session_policy", tfjson.ActionUpdate, sdk.String(""), sdk.String(sessionPolicy.ID().FullyQualifiedName())),
 					},
 				},
