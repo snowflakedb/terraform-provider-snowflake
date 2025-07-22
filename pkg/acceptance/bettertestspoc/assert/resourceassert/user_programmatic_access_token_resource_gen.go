@@ -57,7 +57,7 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHo
 	return u
 }
 
-func (u *UserProgrammaticAccessTokenResourceAssert) Haskeepertring(expected string) *UserProgrammaticAccessTokenResourceAssert {
+func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperString(expected string) *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValueSet("keeper", expected))
 	return u
 }
