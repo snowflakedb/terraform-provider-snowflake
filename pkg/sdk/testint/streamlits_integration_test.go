@@ -128,7 +128,7 @@ func TestInt_Streamlits(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(grants))
+		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeUsage.String(), grants[0].Privilege)
 		assert.Equal(t, id.FullyQualifiedName(), grants[0].Name.FullyQualifiedName())
 
@@ -195,7 +195,7 @@ func TestInt_Streamlits(t *testing.T) {
 		})
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
-		require.Equal(t, 2, len(grants))
+		require.Len(t, grants, 2)
 
 		on = &sdk.DatabaseRoleGrantOn{
 			SchemaObject: &sdk.GrantOnSchemaObject{
@@ -289,7 +289,7 @@ func TestInt_Streamlits(t *testing.T) {
 
 		streamlits, err := client.Streamlits.Show(ctx, sdk.NewShowStreamlitRequest().WithLike(sdk.Like{Pattern: &e.Name}))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(streamlits))
+		require.Len(t, streamlits, 1)
 		require.Equal(t, *e, streamlits[0])
 	})
 
@@ -300,7 +300,7 @@ func TestInt_Streamlits(t *testing.T) {
 
 		streamlits, err := client.Streamlits.Show(ctx, sdk.NewShowStreamlitRequest().WithTerse(true).WithLike(sdk.Like{Pattern: &e.Name}))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(streamlits))
+		require.Len(t, streamlits, 1)
 		sl := streamlits[0]
 		require.Equal(t, e.Name, sl.Name)
 		require.Equal(t, e.DatabaseName, sl.DatabaseName)

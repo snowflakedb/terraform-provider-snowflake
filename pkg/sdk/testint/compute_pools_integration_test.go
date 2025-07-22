@@ -281,7 +281,7 @@ func TestInt_ComputePools(t *testing.T) {
 
 		computePools, err := client.ComputePools.Show(ctx, sdk.NewShowComputePoolRequest().WithLike(sdk.Like{Pattern: &computePool.Name}))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(computePools))
+		require.Len(t, computePools, 1)
 		require.NotNil(t, computePool)
 		assertThatObject(t, objectassert.ComputePoolDetails(t, computePool.ID()).
 			HasName(computePool.ID().Name()).

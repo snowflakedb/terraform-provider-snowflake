@@ -50,6 +50,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CurrentAccount().Schema,
 	},
 	{
+		name:   "CurrentOrganizationAccount",
+		schema: resources.CurrentOrganizationAccount().Schema,
+	},
+	{
 		name:   "Database",
 		schema: resources.Database().Schema,
 	},
@@ -240,6 +244,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "User",
 		schema: resources.User().Schema,
+	},
+	{
+		name:   "UserProgrammaticAccessToken",
+		schema: resources.UserProgrammaticAccessToken().Schema,
 	},
 	{
 		name:   "View",

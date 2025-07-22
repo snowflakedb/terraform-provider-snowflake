@@ -311,7 +311,7 @@ func TestInt_ExternalTables(t *testing.T) {
 				WithLimitFrom(*sdk.NewLimitFromRequest().WithRows(sdk.Int(1))),
 		)
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(et))
+		assert.Len(t, et, 1)
 		assert.Equal(t, externalTableID, et[0].ID())
 	})
 
@@ -324,7 +324,7 @@ func TestInt_ExternalTables(t *testing.T) {
 		d, err := client.ExternalTables.DescribeColumns(ctx, sdk.NewDescribeExternalTableColumnsRequest(externalTableID))
 		require.NoError(t, err)
 
-		assert.Equal(t, len(req.GetColumns())+1, len(d)) // +1 because there's underlying Value column
+		assert.Len(t, d, len(req.GetColumns())+1) // +1 because there's underlying Value column
 		assert.Contains(t, d, sdk.ExternalTableColumnDetails{
 			Name:       "VALUE",
 			Type:       "VARIANT",

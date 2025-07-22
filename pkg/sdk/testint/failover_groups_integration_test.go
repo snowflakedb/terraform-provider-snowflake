@@ -58,9 +58,9 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 		slices.Sort(objectTypes)
 		slices.Sort(failoverGroup.ObjectTypes)
 		assert.Equal(t, objectTypes, failoverGroup.ObjectTypes)
-		assert.Equal(t, 0, len(failoverGroup.AllowedIntegrationTypes))
+		assert.Empty(t, failoverGroup.AllowedIntegrationTypes)
 		// this is length 2 because it automatically adds the current account to allowed accounts list
-		assert.Equal(t, 2, len(failoverGroup.AllowedAccounts))
+		assert.Len(t, failoverGroup.AllowedAccounts, 2)
 		for _, allowedAccount := range allowedAccounts {
 			assert.Contains(t, failoverGroup.AllowedAccounts, allowedAccount)
 		}
@@ -68,12 +68,12 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 
 		fgDBS, err := client.FailoverGroups.ShowDatabases(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(fgDBS))
+		assert.Len(t, fgDBS, 1)
 		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), fgDBS[0].Name())
 
 		fgShares, err := client.FailoverGroups.ShowShares(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(fgShares))
+		assert.Len(t, fgShares, 1)
 		assert.Equal(t, shareTest.ID().Name(), fgShares[0].Name())
 	})
 
@@ -105,7 +105,7 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 
 		fgShares, err := client.FailoverGroups.ShowShares(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(fgShares))
+		assert.Len(t, fgShares, 1)
 		assert.Equal(t, shareWithDot.ID().Name(), fgShares[0].Name())
 	})
 
@@ -280,7 +280,7 @@ func TestInt_CreateSecondaryReplicationGroup(t *testing.T) {
 
 	failoverGroups, err := secondaryClient.FailoverGroups.Show(ctx, nil)
 	require.NoError(t, err)
-	assert.Equal(t, 2, len(failoverGroups))
+	assert.Len(t, failoverGroups, 2)
 }
 
 func TestInt_FailoverGroupsAlterSource(t *testing.T) {
@@ -369,7 +369,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(failoverGroup.ObjectTypes))
+		assert.Len(t, failoverGroup.ObjectTypes, 1)
 		assert.Equal(t, sdk.PluralObjectTypeDatabases, failoverGroup.ObjectTypes[0])
 
 		// now add database to allowed databases
@@ -384,7 +384,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		allowedDBs, err := client.FailoverGroups.ShowDatabases(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(allowedDBs))
+		assert.Len(t, allowedDBs, 1)
 		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), allowedDBs[0].Name())
 
 		// now remove database from allowed databases
@@ -399,7 +399,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		allowedDBs, err = client.FailoverGroups.ShowDatabases(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(allowedDBs))
+		assert.Empty(t, allowedDBs)
 	})
 
 	t.Run("add and remove share account object", func(t *testing.T) {
@@ -420,7 +420,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(failoverGroup.ObjectTypes))
+		assert.Len(t, failoverGroup.ObjectTypes, 1)
 		assert.Equal(t, shareTest.ObjectType().Plural(), failoverGroup.ObjectTypes[0])
 		// now add share to allowed shares
 		opts = &sdk.AlterSourceFailoverGroupOptions{
@@ -434,7 +434,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		allowedShares, err := client.FailoverGroups.ShowShares(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(allowedShares))
+		assert.Len(t, allowedShares, 1)
 		assert.Equal(t, shareTest.ID().Name(), allowedShares[0].Name())
 
 		// now remove share from allowed shares
@@ -449,7 +449,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		allowedShares, err = client.FailoverGroups.ShowShares(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(allowedShares))
+		assert.Empty(t, allowedShares)
 	})
 
 	t.Run("add and remove security integration account object", func(t *testing.T) {
@@ -471,10 +471,10 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(failoverGroup.AllowedIntegrationTypes))
+		assert.Len(t, failoverGroup.AllowedIntegrationTypes, 2)
 		assert.Equal(t, sdk.IntegrationTypeAPIIntegrations, failoverGroup.AllowedIntegrationTypes[0])
 		assert.Equal(t, sdk.IntegrationTypeNotificationIntegrations, failoverGroup.AllowedIntegrationTypes[1])
-		assert.Equal(t, 1, len(failoverGroup.ObjectTypes))
+		assert.Len(t, failoverGroup.ObjectTypes, 1)
 		assert.Equal(t, sdk.PluralObjectTypeIntegrations, failoverGroup.ObjectTypes[0])
 
 		// now remove security integration from allowed security integrations
@@ -492,7 +492,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(failoverGroup.AllowedIntegrationTypes))
+		assert.Len(t, failoverGroup.AllowedIntegrationTypes, 1)
 		assert.Equal(t, sdk.IntegrationTypeAPIIntegrations, failoverGroup.AllowedIntegrationTypes[0])
 	})
 
@@ -513,7 +513,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(failoverGroup.AllowedAccounts))
+		assert.Len(t, failoverGroup.AllowedAccounts, 2)
 		assert.Contains(t, failoverGroup.AllowedAccounts, secondaryAccountID)
 
 		// now remove target accounts
@@ -528,7 +528,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		require.NoError(t, err)
 		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(failoverGroup.AllowedAccounts))
+		assert.Len(t, failoverGroup.AllowedAccounts, 1)
 		assert.Contains(t, failoverGroup.AllowedAccounts, testClientHelper().Account.GetAccountIdentifier(t))
 	})
 
@@ -583,12 +583,12 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		// verify that share is now in failover group 2
 		shares, err := client.FailoverGroups.ShowShares(ctx, failoverGroup2.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(shares))
+		assert.Len(t, shares, 1)
 
 		// verify that share is not in failover group 1
 		shares, err = client.FailoverGroups.ShowShares(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(shares))
+		assert.Empty(t, shares)
 	})
 
 	t.Run("move database to another failover group", func(t *testing.T) {
@@ -642,12 +642,12 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		// verify that database is now in failover group 2
 		databases, err := client.FailoverGroups.ShowDatabases(ctx, failoverGroup2.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(databases))
+		assert.Len(t, databases, 1)
 
 		// verify that database is not in failover group 1
 		databases, err = client.FailoverGroups.ShowDatabases(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(databases))
+		assert.Empty(t, databases)
 	})
 }
 
@@ -710,7 +710,7 @@ func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
 
 	failoverGroups, err := secondaryClient.FailoverGroups.Show(ctx, nil)
 	require.NoError(t, err)
-	assert.Equal(t, 2, len(failoverGroups))
+	assert.Len(t, failoverGroups, 2)
 
 	t.Run("perform suspend and resume", func(t *testing.T) {
 		// suspend target failover group
@@ -758,7 +758,7 @@ func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
 		// verify that target failover group is promoted
 		failoverGroup, err = secondaryClient.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
 		require.NoError(t, err)
-		assert.Equal(t, true, failoverGroup.IsPrimary)
+		assert.True(t, failoverGroup.IsPrimary)
 	})
 }
 
@@ -847,7 +847,7 @@ func TestInt_FailoverGroupsShowDatabases(t *testing.T) {
 	require.NoError(t, err)
 	databases, err := client.FailoverGroups.ShowDatabases(ctx, failoverGroupTest.ID())
 	require.NoError(t, err)
-	assert.Equal(t, 1, len(databases))
+	assert.Len(t, databases, 1)
 	assert.Equal(t, testClientHelper().Ids.DatabaseId(), databases[0])
 }
 
@@ -882,6 +882,6 @@ func TestInt_FailoverGroupsShowShares(t *testing.T) {
 	require.NoError(t, err)
 	shares, err := client.FailoverGroups.ShowShares(ctx, failoverGroupTest.ID())
 	require.NoError(t, err)
-	assert.Equal(t, 1, len(shares))
+	assert.Len(t, shares, 1)
 	assert.Equal(t, shareTest.ID(), shares[0])
 }

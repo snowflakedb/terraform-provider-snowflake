@@ -61,7 +61,7 @@ func TestInt_CortexSearchServices(t *testing.T) {
 		})
 		showResults, err := client.CortexSearchServices.Show(ctx, sdk.NewShowCortexSearchServiceRequest().WithLike(sdk.Like{Pattern: sdk.String(name.Name())}))
 		require.NoError(t, err)
-		require.Equal(t, 1, len(showResults))
+		require.Len(t, showResults, 1)
 
 		showResult := showResults[0]
 		require.NotNil(t, showResult)

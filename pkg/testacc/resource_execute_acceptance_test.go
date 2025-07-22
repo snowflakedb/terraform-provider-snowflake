@@ -771,13 +771,13 @@ func verifyGrantExists(t *testing.T, roleId sdk.AccountObjectIdentifier, privile
 		}
 
 		if shouldExist {
-			require.Equal(t, 1, len(grants))
+			require.Len(t, grants, 1)
 			assert.Equal(t, privilege.String(), grants[0].Privilege)
 			assert.Equal(t, sdk.ObjectTypeDatabase, grants[0].GrantedOn)
 			assert.Equal(t, sdk.ObjectTypeRole, grants[0].GrantedTo)
 			assert.Equal(t, roleId.FullyQualifiedName(), grants[0].GranteeName.FullyQualifiedName())
 		} else {
-			require.Equal(t, 0, len(grants))
+			require.Empty(t, grants)
 		}
 
 		// it does not matter what we return, because we have assertions above

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +30,7 @@ func TestInt_ResourceMonitorsShow(t *testing.T) {
 		resourceMonitors, err := client.ResourceMonitors.Show(ctx, showOptions)
 		require.NoError(t, err)
 		assert.Contains(t, resourceMonitors, *resourceMonitorTest)
-		assert.Equal(t, 1, len(resourceMonitors))
+		assert.Len(t, resourceMonitors, 1)
 	})
 
 	t.Run("when searching a non-existent resource monitor", func(t *testing.T) {
@@ -40,7 +41,7 @@ func TestInt_ResourceMonitorsShow(t *testing.T) {
 		}
 		resourceMonitors, err := client.ResourceMonitors.Show(ctx, showOptions)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(resourceMonitors))
+		assert.Empty(t, resourceMonitors)
 	})
 
 	t.Run("show by id", func(t *testing.T) {
@@ -51,7 +52,7 @@ func TestInt_ResourceMonitorsShow(t *testing.T) {
 
 	t.Run("show by id when searching a non-existent resource monitor", func(t *testing.T) {
 		resourceMonitor, err := client.ResourceMonitors.ShowByID(ctx, NonExistingAccountObjectIdentifier)
-		require.Error(t, err, collections.ErrObjectNotFound)
+		require.ErrorIs(t, err, collections.ErrObjectNotFound)
 		assert.Nil(t, resourceMonitor)
 	})
 }
@@ -239,7 +240,7 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 
 		resourceMonitor, err = client.ResourceMonitors.ShowByID(ctx, resourceMonitor.ID())
 		require.NoError(t, err)
-		assert.Equal(t, float64(0), resourceMonitor.CreditQuota)
+		assert.InDelta(t, float64(0), resourceMonitor.CreditQuota, testvars.FloatEpsilon)
 	})
 
 	t.Run("when changing notify users", func(t *testing.T) {
@@ -269,7 +270,7 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 
 		resourceMonitor, err = client.ResourceMonitors.ShowByID(ctx, resourceMonitor.ID())
 		require.NoError(t, err)
-		assert.Len(t, resourceMonitor.NotifyUsers, 0)
+		assert.Empty(t, resourceMonitor.NotifyUsers)
 	})
 
 	t.Run("when changing scheduling info", func(t *testing.T) {

@@ -37,7 +37,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	assertApiIntegration := func(t *testing.T, s *sdk.ApiIntegration, name sdk.AccountObjectIdentifier, comment string) {
 		t.Helper()
 		assert.Equal(t, name.Name(), s.Name)
-		assert.Equal(t, true, s.Enabled)
+		assert.True(t, s.Enabled)
 		assert.Equal(t, "EXTERNAL_API", s.ApiType)
 		assert.Equal(t, "API", s.Category)
 		assert.Equal(t, comment, s.Comment)

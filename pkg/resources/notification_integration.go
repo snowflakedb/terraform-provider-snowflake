@@ -156,7 +156,7 @@ var notificationIntegrationSchema = map[string]*schema.Schema{
 // NotificationIntegration returns a pointer to the resource representing a notification integration.
 func NotificationIntegration() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.NotificationIntegrations.DropSafely
 		},
@@ -245,7 +245,7 @@ func CreateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 func ReadNotificationIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	integration, err := client.NotificationIntegrations.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -372,7 +372,7 @@ func ReadNotificationIntegration(ctx context.Context, d *schema.ResourceData, me
 func UpdateNotificationIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	var runSetStatement bool
 	setRequest := sdk.NewNotificationIntegrationSetRequest()

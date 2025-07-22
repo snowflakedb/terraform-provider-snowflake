@@ -1,3 +1,5 @@
+//go:build !account_level_tests
+
 package testint
 
 import (
@@ -86,5 +88,24 @@ func TestInt_SafeDropOnSchemaObjectIdentifierWithArguments(t *testing.T) {
 
 	invalidProcedureId := NonExistingSchemaObjectIdentifierWithArgumentsWithNonExistingDatabaseAndSchema
 	err = sdk.SafeDrop(testClient(t), procedureDrop(invalidProcedureId), ctx, invalidProcedureId)
+	assert.NoError(t, err)
+}
+
+func TestInt_SafeRemoveProgrammaticAccessToken(t *testing.T) {
+	user, cleanupUser := testClientHelper().User.CreateUser(t)
+	t.Cleanup(cleanupUser)
+
+	token, cleanupToken := testClientHelper().User.AddProgrammaticAccessToken(t, user.ID())
+	t.Cleanup(cleanupToken)
+
+	ctx := context.Background()
+	err := sdk.SafeRemoveProgrammaticAccessToken(testClient(t), ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(user.ID(), token.ID()))
+	assert.NoError(t, err)
+
+	err = sdk.SafeRemoveProgrammaticAccessToken(testClient(t), ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(user.ID(), token.ID()))
+	assert.NoError(t, err)
+
+	invalidUserId := NonExistingAccountObjectIdentifier
+	err = sdk.SafeRemoveProgrammaticAccessToken(testClient(t), ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(invalidUserId, token.ID()))
 	assert.NoError(t, err)
 }

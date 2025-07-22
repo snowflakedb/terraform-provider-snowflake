@@ -91,14 +91,119 @@ You must fulfill the following prerequisites to generate and use programmatic ac
 - [Network policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-network)
 - [Authentication policy requirements](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-authentication)
 
-To generate PAT, you use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
-It will generate a new token and return it in the output console. To use it in the provider,
-follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
+#### Managing PATs
+
+Managing the whole PAT lifecycle is implemented in the provider with the [snowflake_programmatic_access_token](../resources/user_programmatic_access_token) resource.
+For example, to create a new PAT, you can use the following code:
+```terraform
+resource "snowflake_user_programmatic_access_token" "example" {
+  user = snowflake_user.user.name
+  name = "TOKEN"
+}
+```
+
+You can also rotate the PAT by using the `keeper` attribute and connecting it to a resource providing changing a value, like [time_rotating](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) resource from the `time` provider.
+See the example setup below.
+
+```terraform
+# note this requires the terraform to be run regularly
+resource "time_rotating" "rotation_schedule" {
+  rotation_days = 30
+}
+
+resource "snowflake_user_programmatic_access_token" "example" {
+  user = snowflake_user.user.name
+  name = "TOKEN"
+
+  # Use the keeper field to force token rotation. If, and only if, the value changes
+  # from a non-empty to a different non-empty value, the token will be rotated.
+  # When you add this key or remove this key from the config, the token will not be rotated.
+  # When the token is rotated, the `token` and `rotated_token_name` fields are marked as computed.
+  keeper = time_rotating.rotation_schedule.rotation_rfc3339
+}
+```
+Note that in this example, the rotation occurs only when you execute a `terraform apply` command.
+After 30 days pass, you will see a plan output similar to:
+```
+time_rotating.rotation_schedule: Refreshing state... [id=2025-07-22T08:06:51Z]
+snowflake_user_programmatic_access_token.complete_with_external_references: Refreshing state... [id="PAT"|"TOKEN"]
+
+Note: Objects have changed outside of Terraform
+
+Terraform detected the following changes made outside of Terraform since the last "terraform apply" which may have affected this plan:
+
+  # time_rotating.rotation_schedule has been deleted
+  - resource "time_rotating" "rotation_schedule" {
+        id               = "2025-07-22T08:06:51Z"
+      - rfc3339          = "2025-07-22T08:06:51Z" -> null
+        # (9 unchanged attributes hidden)
+    }
+
+
+Unless you have made equivalent changes to your configuration, or ignored the relevant attributes using ignore_changes, the following plan may include actions to undo or respond to
+these changes.
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # snowflake_user_programmatic_access_token.complete_with_external_references will be updated in-place
+  ~ resource "snowflake_user_programmatic_access_token" "complete_with_external_references" {
+        id                                        = "\"PAT\"|\"TOKEN\""
+      ~ keeper                                    = "2025-07-22T08:06:51Z" -> (known after apply)
+        name                                      = "TOKEN"
+      + rotated_token_name                        = (known after apply)
+      ~ token                                     = (sensitive value)
+        # (8 unchanged attributes hidden)
+    }
+
+  # time_rotating.rotation_schedule will be created
+  + resource "time_rotating" "rotation_schedule" {
+      + day              = 30
+      + hour             = (known after apply)
+      + id               = (known after apply)
+      + minute           = (known after apply)
+      + month            = (known after apply)
+      + rfc3339          = (known after apply)
+      + rotation_minutes = (known after apply)
+      + rotation_rfc3339 = (known after apply)
+      + second           = (known after apply)
+      + unix             = (known after apply)
+      + year             = (known after apply)
+    }
+
+Plan: 1 to add, 1 to change, 0 to destroy.
+```
+
+If you do not want to manage PATs in Terraform, you can simply use a special [ALTER USER](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) command.
+It will generate a new token and return it in the output console.
+
+#### Authenticating with PATs
+
+To use PATs in the provider, you have the following options:
+- Follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
 but instead of password, use the generated token.
+- Use the `PROGRAMMATIC_ACCESS_TOKEN` authenticator and pass the generated token in the `token` field, like:
+```terraform
+provider "snowflake" {
+  organization_name = "<organization_name>"
+  account_name      = "<account_name>"
+  user              = "<user_name>"
+  authenticator     = "PROGRAMMATIC_ACCESS_TOKEN"
+  token             = var.token
+}
+
+variable "token" {
+  type      = string
+  sensitive = true
+}
+```
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more information on PAT authentication.
-
-> Note: Currently, PAT authentication is not natively supported by the provider (only through default Snowflake authenticator), but it's planned to be fully supported in the future (see [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#pat-support)).
 
 ### JWT authenticator flow
 

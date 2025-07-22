@@ -22,6 +22,7 @@ import (
 
 // proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629 is fixed
 func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
+	t.Skip("TODO(SNOW-2081651): re-enable this if the test is still relevant without the BCR bundle update as now it's enabled by default in Snowflake")
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	databaseRole, databaseRoleCleanup := secondaryTestClient().DatabaseRole.CreateDatabaseRole(t)

@@ -47,6 +47,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Databases().Schema,
 	},
 	{
+		name:   "Functions",
+		schema: datasources.Functions().Schema,
+	},
+	{
 		name:   "GitRepositories",
 		schema: datasources.GitRepositories().Schema,
 	},
@@ -65,6 +69,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "NetworkPolicies",
 		schema: datasources.NetworkPolicies().Schema,
+	},
+	{
+		name:   "Procedures",
+		schema: datasources.Procedures().Schema,
 	},
 	{
 		name:   "ResourceMonitors",
@@ -105,6 +113,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Users",
 		schema: datasources.Users().Schema,
+	},
+	{
+		name:   "UserProgrammaticAccessTokens",
+		schema: datasources.UserProgrammaticAccessTokens().Schema,
 	},
 	{
 		name:   "Views",

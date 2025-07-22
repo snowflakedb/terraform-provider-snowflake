@@ -20,21 +20,21 @@ type GitRepositoryShowOutputAssert struct {
 func GitRepositoryShowOutput(t *testing.T, name string) *GitRepositoryShowOutputAssert {
 	t.Helper()
 
-	g := GitRepositoryShowOutputAssert{
+	gitRepositoryAssert := GitRepositoryShowOutputAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
 	}
-	g.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &g
+	gitRepositoryAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &gitRepositoryAssert
 }
 
 func ImportedGitRepositoryShowOutput(t *testing.T, id string) *GitRepositoryShowOutputAssert {
 	t.Helper()
 
-	g := GitRepositoryShowOutputAssert{
+	gitRepositoryAssert := GitRepositoryShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
 	}
-	g.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &g
+	gitRepositoryAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &gitRepositoryAssert
 }
 
 ////////////////////////////
@@ -93,5 +93,64 @@ func (g *GitRepositoryShowOutputAssert) HasComment(expected string) *GitReposito
 
 func (g *GitRepositoryShowOutputAssert) HasLastFetchedAt(expected time.Time) *GitRepositoryShowOutputAssert {
 	g.AddAssertion(assert.ResourceShowOutputValueSet("last_fetched_at", expected.String()))
+	return g
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (g *GitRepositoryShowOutputAssert) HasNoCreatedOn() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoName() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoDatabaseName() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoSchemaName() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoOrigin() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("origin"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoApiIntegration() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("api_integration"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoGitCredentials() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("git_credentials"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoOwner() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoOwnerRoleType() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoComment() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return g
+}
+
+func (g *GitRepositoryShowOutputAssert) HasNoLastFetchedAt() *GitRepositoryShowOutputAssert {
+	g.AddAssertion(assert.ResourceShowOutputValueNotSet("last_fetched_at"))
 	return g
 }

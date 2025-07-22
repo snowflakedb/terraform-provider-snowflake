@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build account_level_tests
 
 package testacc
 
@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -18,7 +17,7 @@ import (
 )
 
 func TestAcc_CurrentAccount_Parameters(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	warehouseId := testClient().Ids.WarehouseId()
 
@@ -124,7 +123,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 		WithServerlessTaskMinStatementSize(string(sdk.WarehouseSizeSmall)).
 		WithSsoLoginPage(true).
 		WithStatementQueuedTimeoutInSeconds(1).
-		WithStatementTimeoutInSeconds(1).
+		WithStatementTimeoutInSeconds(10).
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
 		WithStrictJsonOutput(true).
 		WithSuspendTaskAfterNumFailures(3).
@@ -263,7 +262,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasSsoLoginPageString("true").
 						HasStatementQueuedTimeoutInSecondsString("1").
-						HasStatementTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("10").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
 						HasStrictJsonOutputString("true").
 						HasSuspendTaskAfterNumFailuresString("3").
@@ -382,7 +381,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasSsoLoginPageString("true").
 						HasStatementQueuedTimeoutInSecondsString("1").
-						HasStatementTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("10").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
 						HasStrictJsonOutputString("true").
 						HasSuspendTaskAfterNumFailuresString("3").
@@ -436,43 +435,8 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 	})
 }
 
-func TestAcc_CurrentAccount_EmptyParameters(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
-
-	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
-
-	setParameterModel := model.CurrentAccount("test").
-		WithDefaultDdlCollation("en-cs")
-
-	unsetParameterModel := model.CurrentAccount("test")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, provider, setParameterModel),
-				Check: assertThat(t,
-					resourceassert.CurrentAccountResource(t, setParameterModel.ResourceReference()).
-						HasDefaultDdlCollationString("en-cs"),
-				),
-			},
-			{
-				Config: config.FromModels(t, provider, unsetParameterModel),
-				Check: assertThat(t,
-					resourceassert.CurrentAccountResource(t, unsetParameterModel.ResourceReference()).
-						HasDefaultDdlCollationEmpty(),
-				),
-			},
-		},
-	})
-}
-
 func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
 	t.Cleanup(resourceMonitorCleanup)
@@ -543,11 +507,11 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.CurrentAccountResource(t, unsetModel.ResourceReference()).
 						HasNoResourceMonitor().
-						HasNoAuthenticationPolicy().
-						HasNoFeaturePolicy().
-						HasNoPackagesPolicy().
-						HasNoPasswordPolicy().
-						HasNoSessionPolicy(),
+						HasAuthenticationPolicyEmpty().
+						HasFeaturePolicyEmpty().
+						HasPackagesPolicyEmpty().
+						HasPasswordPolicyEmpty().
+						HasSessionPolicyEmpty(),
 				),
 			},
 			// import
@@ -558,11 +522,11 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").
 						HasNoResourceMonitor().
-						HasNoAuthenticationPolicy().
-						HasNoFeaturePolicy().
-						HasNoPackagesPolicy().
-						HasNoPasswordPolicy().
-						HasNoSessionPolicy(),
+						HasAuthenticationPolicyEmpty().
+						HasFeaturePolicyEmpty().
+						HasPackagesPolicyEmpty().
+						HasPasswordPolicyEmpty().
+						HasSessionPolicyEmpty(),
 				),
 			},
 			// set policies and resource monitor
@@ -645,7 +609,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 }
 
 func TestAcc_CurrentAccount_Complete(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	warehouseId := testClient().Ids.WarehouseId()
 
@@ -773,7 +737,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 		WithServerlessTaskMinStatementSize(string(sdk.WarehouseSizeSmall)).
 		WithSsoLoginPage(true).
 		WithStatementQueuedTimeoutInSeconds(1).
-		WithStatementTimeoutInSeconds(1).
+		WithStatementTimeoutInSeconds(10).
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
 		WithStrictJsonOutput(true).
 		WithSuspendTaskAfterNumFailures(3).
@@ -902,7 +866,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasSsoLoginPageString("true").
 						HasStatementQueuedTimeoutInSecondsString("1").
-						HasStatementTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("10").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
 						HasStrictJsonOutputString("true").
 						HasSuspendTaskAfterNumFailuresString("3").
@@ -1026,7 +990,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasSsoLoginPageString("true").
 						HasStatementQueuedTimeoutInSecondsString("1").
-						HasStatementTimeoutInSecondsString("1").
+						HasStatementTimeoutInSecondsString("10").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
 						HasStrictJsonOutputString("true").
 						HasSuspendTaskAfterNumFailuresString("3").

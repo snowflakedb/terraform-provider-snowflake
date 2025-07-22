@@ -54,8 +54,21 @@ func setUpProvider() error {
 			return v6Server, nil
 		},
 	}
+	_ = testAccProtoV6ProviderFactoriesNew
 
 	return nil
+}
+
+// TODO [next PRs]: investigate this (it was moved from the old testing.go file)
+// if we do not reuse the created objects there is no `Previously configured provider being re-configured.` warning
+// currently left for possible usage after other improvements
+var testAccProtoV6ProviderFactoriesNew = map[string]func() (tfprotov6.ProviderServer, error){
+	"snowflake": func() (tfprotov6.ProviderServer, error) {
+		return tf5to6server.UpgradeServer(
+			context.Background(),
+			provider.Provider().GRPCProvider,
+		)
+	},
 }
 
 // TODO [next PRs]: it's currently an exact copy of acceptance.ConfigureProviderWithConfigCache; adjust after moving the tests

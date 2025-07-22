@@ -18,8 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [SNOW-1827309]: test DriverConfig() func
-
 func TestLoadConfigFile(t *testing.T) {
 	cfg := NewConfigFile().WithProfiles(map[string]ConfigDTO{
 		"default": *NewConfigDTO().
@@ -345,7 +343,7 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, 1, config.Port)
 		assert.Equal(t, gosnowflake.AuthTypeJwt, config.Authenticator)
 		assert.Equal(t, "passcode", config.Passcode)
-		assert.Equal(t, true, config.PasscodeInPassword)
+		assert.True(t, config.PasscodeInPassword)
 		assert.Equal(t, testvars.ExampleOktaUrlString, config.OktaURL.String())
 		assert.Equal(t, 10*time.Second, config.ClientTimeout)
 		assert.Equal(t, 20*time.Second, config.JWTClientTimeout)
@@ -354,17 +352,17 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, 50*time.Second, config.JWTExpireTimeout)
 		assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 		assert.Equal(t, 1, config.MaxRetryCount)
-		assert.Equal(t, true, config.InsecureMode) //nolint:staticcheck
+		assert.True(t, config.InsecureMode) //nolint:staticcheck
 		assert.Equal(t, "token", config.Token)
 		assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
-		assert.Equal(t, true, config.KeepSessionAlive)
+		assert.True(t, config.KeepSessionAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
-		assert.Equal(t, true, config.DisableTelemetry)
+		assert.True(t, config.DisableTelemetry)
 		assert.Equal(t, "trace", config.Tracing)
 		assert.Equal(t, ".", config.TmpDirPath)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
-		assert.Equal(t, true, config.DisableQueryContextCache)
+		assert.True(t, config.DisableQueryContextCache)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 	})
@@ -614,6 +612,7 @@ func Test_ToExtendedAuthenticatorType(t *testing.T) {
 		{input: "SNOWFLAKE_JWT", want: gosnowflake.AuthTypeJwt},
 		{input: "TOKENACCESSOR", want: gosnowflake.AuthTypeTokenAccessor},
 		{input: "USERNAMEPASSWORDMFA", want: gosnowflake.AuthTypeUsernamePasswordMFA},
+		{input: "PROGRAMMATIC_ACCESS_TOKEN", want: gosnowflake.AuthTypePat},
 		{input: "", want: gosnowflakeAuthTypeEmpty},
 	}
 
@@ -621,6 +620,7 @@ func Test_ToExtendedAuthenticatorType(t *testing.T) {
 		{input: "   "},
 		{input: "foo"},
 		{input: "JWT"},
+		{input: "PAT"},
 	}
 
 	for _, tc := range valid {
@@ -751,4 +751,158 @@ line2
 line3"""
 `, string(bytes))
 	})
+}
+
+func TestConfigDTODriverConfig(t *testing.T) {
+	privateKey, _ := random.GenerateRSAPrivateKeyEncrypted(t, "pass")
+	tests := []struct {
+		name     string
+		input    *ConfigDTO
+		expected func(t *testing.T, got gosnowflake.Config, err error)
+	}{
+		{
+			name: "minimal config with account and org",
+			input: NewConfigDTO().
+				WithAccountName("acc").
+				WithOrganizationName("org").
+				WithUser("user").
+				WithPassword("pass"),
+			expected: func(t *testing.T, got gosnowflake.Config, err error) {
+				t.Helper()
+				require.NoError(t, err)
+				assert.Equal(t, "org-acc", got.Account)
+				assert.Equal(t, "user", got.User)
+				assert.Equal(t, "pass", got.Password)
+			},
+		},
+		{
+			name: "all fields set",
+			input: NewConfigDTO().
+				WithAccountName("acc").
+				WithOrganizationName("org").
+				WithUser("user").
+				WithUsername("username").
+				WithPassword("pass").
+				WithHost("host").
+				WithWarehouse("wh").
+				WithRole("role").
+				WithParams(map[string]*string{"foo": Pointer("bar")}).
+				WithClientIp("1.2.3.4").
+				WithProtocol("https").
+				WithPasscode("code").
+				WithPort(1234).
+				WithPasscodeInPassword(true).
+				WithOktaUrl("https://okta.example.com").
+				WithClientTimeout(10).
+				WithJwtClientTimeout(20).
+				WithLoginTimeout(30).
+				WithRequestTimeout(40).
+				WithJwtExpireTimeout(50).
+				WithExternalBrowserTimeout(60).
+				WithMaxRetryCount(2).
+				WithAuthenticator("SNOWFLAKE_JWT").
+				WithInsecureMode(true).
+				WithOcspFailOpen(true).
+				WithToken("token").
+				WithKeepSessionAlive(true).
+				WithPrivateKey(privateKey).
+				WithPrivateKeyPassphrase("passphrase").
+				WithDisableTelemetry(true).
+				WithValidateDefaultParameters(true).
+				WithClientRequestMfaToken(true).
+				WithClientStoreTemporaryCredential(true).
+				WithDriverTracing("debug").
+				WithTmpDirPath("/tmp").
+				WithDisableQueryContextCache(true).
+				WithIncludeRetryReason(true).
+				WithDisableConsoleLogin(true),
+			expected: func(t *testing.T, got gosnowflake.Config, err error) {
+				t.Helper()
+				require.NoError(t, err)
+				assert.Equal(t, "org-acc", got.Account)
+				assert.Equal(t, "username", got.User) // Username overrides User
+				assert.Equal(t, "pass", got.Password)
+				assert.Equal(t, "host", got.Host)
+				assert.Equal(t, "wh", got.Warehouse)
+				assert.Equal(t, "role", got.Role)
+				assert.Equal(t, map[string]*string{"foo": Pointer("bar")}, got.Params)
+				assert.Equal(t, "1.2.3.4", got.ClientIP.String())
+				assert.Equal(t, "https", got.Protocol)
+				assert.Equal(t, "code", got.Passcode)
+				assert.Equal(t, 1234, got.Port)
+				assert.True(t, got.PasscodeInPassword)
+				assert.Equal(t, "https://okta.example.com", got.OktaURL.String())
+				assert.Equal(t, 10*time.Second, got.ClientTimeout)
+				assert.Equal(t, 20*time.Second, got.JWTClientTimeout)
+				assert.Equal(t, 30*time.Second, got.LoginTimeout)
+				assert.Equal(t, 40*time.Second, got.RequestTimeout)
+				assert.Equal(t, 50*time.Second, got.JWTExpireTimeout)
+				assert.Equal(t, 60*time.Second, got.ExternalBrowserTimeout)
+				assert.Equal(t, 2, got.MaxRetryCount)
+				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
+				assert.True(t, got.InsecureMode) // nolint:staticcheck
+				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
+				assert.Equal(t, "token", got.Token)
+				assert.True(t, got.KeepSessionAlive)
+				assert.True(t, got.DisableTelemetry)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ValidateDefaultParameters)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientRequestMfaToken)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientStoreTemporaryCredential)
+				assert.Equal(t, string(DriverLogLevelDebug), got.Tracing)
+				assert.Equal(t, "/tmp", got.TmpDirPath)
+				assert.True(t, got.DisableQueryContextCache)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.IncludeRetryReason)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.DisableConsoleLogin)
+
+				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
+				require.NoError(t, err)
+				gotUnencryptedKey := pem.EncodeToMemory(
+					&pem.Block{
+						Type:  "PRIVATE KEY",
+						Bytes: gotKey,
+					},
+				)
+				assert.Equal(t, privateKey, string(gotUnencryptedKey))
+			},
+		},
+	}
+
+	invalid := []struct {
+		name  string
+		input *ConfigDTO
+		err   error
+	}{
+		{
+			name: "invalid okta url",
+			input: NewConfigDTO().
+				WithOktaUrl(":invalid:"),
+			err: fmt.Errorf("parse \":invalid:\": missing protocol scheme"),
+		},
+		{
+			name: "invalid authenticator",
+			input: NewConfigDTO().
+				WithAuthenticator("invalid"),
+			err: fmt.Errorf("invalid authenticator type: invalid"),
+		},
+		{
+			name: "invalid privatekey",
+			input: NewConfigDTO().
+				WithPrivateKey("not_a_valid_pem"),
+			err: fmt.Errorf("could not parse private key, key is not in PEM format"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.input.DriverConfig()
+			tt.expected(t, got, err)
+		})
+	}
+
+	for _, tt := range invalid {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.input.DriverConfig()
+			require.ErrorContains(t, err, tt.err.Error())
+		})
+	}
 }

@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -95,18 +94,15 @@ func ReadContextFunctions(ctx context.Context, d *schema.ResourceData, meta inte
 
 	entities := []map[string]interface{}{}
 	for _, item := range functions {
-		// TODO(SNOW-1596962): Create argument parsing function that takes argument names into consideration.
-		signature, err := parseArguments(item.ArgumentsRaw)
-		if err != nil {
-			return diag.FromErr(err)
-		}
 		m := map[string]interface{}{}
 		m["name"] = item.Name
 		m["database"] = databaseName
 		m["schema"] = schemaName
 		m["comment"] = item.Description
-		m["argument_types"] = signature["argumentTypes"].([]string)
-		m["return_type"] = signature["returnType"].(string)
+		m["argument_types"] = collections.Map(item.ArgumentsOld, func(a sdk.DataType) string {
+			return string(a)
+		})
+		m["return_type"] = string(item.ReturnTypeOld)
 
 		entities = append(entities, m)
 	}

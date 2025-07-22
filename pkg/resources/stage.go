@@ -103,7 +103,7 @@ var stageSchema = map[string]*schema.Schema{
 // TODO (SNOW-1019005): Remove snowflake package that is used in Create and Update operations
 func Stage() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Stages.DropSafely },
 	)
 
@@ -180,7 +180,7 @@ func CreateStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 func ReadStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	stage, err := client.Stages.ShowByID(ctx, id)
 	if err != nil {
@@ -272,7 +272,7 @@ func ReadStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 }
 
 func UpdateStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	builder := snowflake.NewStageBuilder(id.Name(), id.DatabaseName(), id.SchemaName())
 

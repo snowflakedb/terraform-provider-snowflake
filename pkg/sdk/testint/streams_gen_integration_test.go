@@ -311,7 +311,7 @@ func TestInt_Streams(t *testing.T) {
 				Rows: sdk.Int(1),
 			}))
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(s))
+		assert.Len(t, s, 1)
 
 		_, err = collections.FindFirst[sdk.Stream](s, func(stream sdk.Stream) bool { return id.Name() == stream.Name })
 		require.NoError(t, err)
@@ -345,7 +345,7 @@ func TestInt_Streams(t *testing.T) {
 
 		s, err := client.Streams.Show(ctx, sdk.NewShowStreamRequest())
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(s))
+		assert.Len(t, s, 2)
 
 		_, err = collections.FindFirst[sdk.Stream](s, func(stream sdk.Stream) bool { return id.Name() == stream.Name })
 		require.NoError(t, err)
@@ -384,7 +384,7 @@ func TestInt_Streams(t *testing.T) {
 				Rows: sdk.Int(2),
 			}))
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(s))
+		assert.Len(t, s, 2)
 
 		_, err = collections.FindFirst[sdk.Stream](s, func(stream sdk.Stream) bool { return id.Name() == stream.Name })
 		require.NoError(t, err)

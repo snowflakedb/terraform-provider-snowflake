@@ -29,8 +29,9 @@ import (
 )
 
 func TestAcc_Account_Minimal(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
+	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := sdk.NewAccountObjectIdentifier(random.AccountName())
 	accountId := sdk.NewAccountIdentifier(organizationName, id.Name())
@@ -38,9 +39,6 @@ func TestAcc_Account_Minimal(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 	region := testClient().Context.CurrentRegion(t)
-
-	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
-	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", organizationName)
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
@@ -134,8 +132,9 @@ func TestAcc_Account_Minimal(t *testing.T) {
 }
 
 func TestAcc_Account_Complete(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
+	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
 	accountId := sdk.NewAccountIdentifier(organizationName, id)
@@ -146,8 +145,6 @@ func TestAcc_Account_Complete(t *testing.T) {
 	key, _ := random.GenerateRSAPublicKey(t)
 	region := testClient().Context.CurrentRegion(t)
 	comment := random.Comment()
-	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
-	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", organizationName)
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
@@ -250,7 +247,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 }
 
 func TestAcc_Account_Rename(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
@@ -314,7 +311,7 @@ func TestAcc_Account_Rename(t *testing.T) {
 }
 
 func TestAcc_Account_IsOrgAdmin(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
@@ -435,15 +432,13 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 func TestAcc_Account_UpdatingConsumptionBillingEntity(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
+	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
 	accountId := sdk.NewAccountIdentifier(organizationName, id)
 	email := random.Email()
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
-
-	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
-	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", organizationName)
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
@@ -518,7 +513,7 @@ func TestAcc_Account_UpdatingConsumptionBillingEntity(t *testing.T) {
 }
 
 func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
@@ -598,7 +593,7 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 }
 
 func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	id := random.AccountName()
 	email := random.Email()
@@ -630,7 +625,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 }
 
 func TestAcc_Account_InvalidValues(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	id := random.AccountName()
 	email := random.Email()
@@ -675,7 +670,7 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 }
 
 func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	id := random.AccountName()
 	email := random.Email()
@@ -780,15 +775,13 @@ resource "snowflake_account" "test" {
 func TestAcc_Account_UpgradeFrom_v210(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 
+	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
 	accountId := sdk.NewAccountIdentifier(organizationName, id)
 	email := random.Email()
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
-
-	// TODO(SNOW-2131939): The default consumption billing entity consists of organization name followed by _DefaultBE
-	defaultConsumptionBillingEntity := fmt.Sprintf("%s_DefaultBE", organizationName)
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 

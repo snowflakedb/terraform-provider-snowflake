@@ -43,7 +43,9 @@ body:
         - resource:api_authn_integration_jwt_bearer
         - resource:api_integration
         - resource:authentication_policy
+        - resource:compute_pool
         - resource:cortex_search_service
+        - resource:current_account
         - resource:database
         - resource:database_role
         - resource:dynamic_table
@@ -61,6 +63,7 @@ body:
         - resource:function_python
         - resource:function_scala
         - resource:function_sql
+        - resource:git_repository
         - resource:grant_account_role
         - resource:grant_application_role
         - resource:grant_database_role
@@ -68,6 +71,8 @@ body:
         - resource:grant_privileges_to_account_role
         - resource:grant_privileges_to_database_role
         - resource:grant_privileges_to_share
+        - resource:image_repository
+        - resource:job_service
         - resource:legacy_service_user
         - resource:managed_account
         - resource:masking_policy
@@ -104,6 +109,7 @@ body:
         - resource:secret_with_generic_string
         - resource:sequence
         - resource:session_parameter
+        - resource:service
         - resource:service_user
         - resource:share
         - resource:shared_database
@@ -126,6 +132,7 @@ body:
         - resource:user
         - resource:user_authentication_policy_attachment
         - resource:user_password_policy_attachment
+        - resource:user_programmatic_access_token
         - resource:user_public_keys
         - resource:view
         - resource:warehouse
@@ -133,6 +140,7 @@ body:
         - data_source:accounts
         - data_source:account_roles
         - data_source:alerts
+        - data_source:compute_pools
         - data_source:connections
         - data_source:cortex_search_services
         - data_source:current_account
@@ -147,7 +155,9 @@ body:
         - data_source:failover_groups
         - data_source:file_formats
         - data_source:functions
+        - data_source:git_repositories
         - data_source:grants
+        - data_source:image_repositories
         - data_source:masking_policies
         - data_source:materialized_views
         - data_source:network_policies
@@ -161,6 +171,7 @@ body:
         - data_source:secrets
         - data_source:security_integrations
         - data_source:sequences
+        - data_source:services
         - data_source:shares
         - data_source:stages
         - data_source:storage_integrations
@@ -173,6 +184,7 @@ body:
         - data_source:tables
         - data_source:tags
         - data_source:tasks
+        - data_source:user_programmatic_access_tokens
         - data_source:users
         - data_source:views
         - data_source:warehouses

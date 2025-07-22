@@ -189,7 +189,7 @@ func TestInt_Tags(t *testing.T) {
 
 		tag, err = client.Tags.ShowByID(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(tag.AllowedValues))
+		assert.Empty(t, tag.AllowedValues)
 	})
 
 	t.Run("alter tag: rename", func(t *testing.T) {
@@ -232,7 +232,7 @@ func TestInt_Tags(t *testing.T) {
 
 		tag, err = client.Tags.ShowByID(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(tag.AllowedValues))
+		assert.Empty(t, tag.AllowedValues)
 	})
 
 	t.Run("show tag: without like", func(t *testing.T) {
@@ -244,7 +244,7 @@ func TestInt_Tags(t *testing.T) {
 		tags, err := client.Tags.Show(ctx, sdk.NewShowTagRequest())
 		require.NoError(t, err)
 
-		assert.Equal(t, 2, len(tags))
+		assert.Len(t, tags, 2)
 		assert.Contains(t, tags, *tag1)
 		assert.Contains(t, tags, *tag2)
 	})
@@ -257,7 +257,7 @@ func TestInt_Tags(t *testing.T) {
 
 		tags, err := client.Tags.Show(ctx, sdk.NewShowTagRequest().WithLike(tag1.Name))
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(tags))
+		assert.Len(t, tags, 1)
 		assert.Contains(t, tags, *tag1)
 		assert.NotContains(t, tags, *tag2)
 	})
@@ -265,7 +265,7 @@ func TestInt_Tags(t *testing.T) {
 	t.Run("show tag: no matches", func(t *testing.T) {
 		tags, err := client.Tags.Show(ctx, sdk.NewShowTagRequest().WithLike("non-existent"))
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(tags))
+		assert.Empty(t, tags)
 	})
 }
 
@@ -296,7 +296,7 @@ func TestInt_TagsShowByID(t *testing.T) {
 	})
 }
 
-type IDProvider[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier] interface {
+type IDProvider[T sdk.AccountIdentifier | sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier] interface {
 	ID() T
 }
 
@@ -374,6 +374,38 @@ func TestInt_TagsAssociations(t *testing.T) {
 	})
 
 	t.Run("TestInt_TagAssociationForAccount", func(t *testing.T) {
+		id := testClientHelper().Context.CurrentAccountIdentifier(t)
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeAccount, id).WithSetTags(tags))
+		require.NoError(t, err)
+
+		assertTagSet(id, sdk.ObjectTypeAccount)
+
+		err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeAccount, id).WithUnsetTags(unsetTags))
+		require.NoError(t, err)
+
+		assertTagUnset(id, sdk.ObjectTypeAccount)
+	})
+
+	t.Run("for Organization Account with locator", func(t *testing.T) {
+		testClientHelper().EnsureValidNonProdOrganizationAccountIsUsed(t)
+
+		id := testClientHelper().Ids.AccountIdentifierWithLocator()
+		err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSetTags(tags))
+		require.NoError(t, err)
+
+		assertTagSet(id, sdk.ObjectTypeAccount)
+
+		err = client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithUnsetTags(unsetTags))
+		require.NoError(t, err)
+
+		assertTagUnset(id, sdk.ObjectTypeAccount)
+	})
+
+	// The test is the same as TestInt_TagAssociationForAccount.
+	// They are separated as they intend to test different objects and could be later split to different files if needed.
+	t.Run("for Organization Account with account identifier", func(t *testing.T) {
+		testClientHelper().EnsureValidNonProdOrganizationAccountIsUsed(t)
+
 		id := testClientHelper().Context.CurrentAccountIdentifier(t)
 		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeAccount, id).WithSetTags(tags))
 		require.NoError(t, err)
@@ -1024,7 +1056,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 		// assert that setting masking policy does not apply the tag on the masking policy
 		refs, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tag.ID(), sdk.PolicyEntityDomainTag)
 		require.NoError(t, err)
-		assert.Len(t, refs, 0)
+		assert.Empty(t, refs)
 
 		err = client.MaskingPolicies.Alter(ctx, id, &sdk.AlterMaskingPolicyOptions{
 			UnsetTag: unsetTags,

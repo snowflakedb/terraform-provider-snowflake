@@ -253,7 +253,7 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 					assert.Equal(t, fmt.Sprintf("%s.snowflakecomputing.com", tmpServiceUser.OrgAndAccount()), config.Host)
 					assert.Equal(t, 443, config.Port)
 					assert.Equal(t, gosnowflake.AuthTypeJwt, config.Authenticator)
-					assert.Equal(t, false, config.PasscodeInPassword)
+					assert.False(t, config.PasscodeInPassword)
 					assert.Equal(t, testvars.ExampleOktaUrl, config.OktaURL)
 					assert.Equal(t, 30*time.Second, config.LoginTimeout)
 					assert.Equal(t, 40*time.Second, config.RequestTimeout)
@@ -263,16 +263,16 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 					assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 					assert.Equal(t, 1, config.MaxRetryCount)
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
-					assert.Equal(t, true, config.InsecureMode) //nolint:staticcheck
+					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					assert.Equal(t, true, config.KeepSessionAlive)
-					assert.Equal(t, true, config.DisableTelemetry)
+					assert.True(t, config.KeepSessionAlive)
+					assert.True(t, config.DisableTelemetry)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
-					assert.Equal(t, true, config.DisableQueryContextCache)
+					assert.True(t, config.DisableQueryContextCache)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
@@ -323,7 +323,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, fmt.Sprintf("%s.snowflakecomputing.com", tmpServiceUser.OrgAndAccount()), config.Host)
 					assert.Equal(t, 443, config.Port)
 					assert.Equal(t, gosnowflake.AuthTypeJwt, config.Authenticator)
-					assert.Equal(t, false, config.PasscodeInPassword)
+					assert.False(t, config.PasscodeInPassword)
 					assert.Equal(t, testvars.ExampleOktaUrl, config.OktaURL)
 					assert.Equal(t, 30*time.Second, config.LoginTimeout)
 					assert.Equal(t, 40*time.Second, config.RequestTimeout)
@@ -333,16 +333,16 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 					assert.Equal(t, 1, config.MaxRetryCount)
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
-					assert.Equal(t, true, config.InsecureMode) //nolint:staticcheck
+					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					assert.Equal(t, true, config.KeepSessionAlive)
-					assert.Equal(t, true, config.DisableTelemetry)
+					assert.True(t, config.KeepSessionAlive)
+					assert.True(t, config.DisableTelemetry)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
-					assert.Equal(t, true, config.DisableQueryContextCache)
+					assert.True(t, config.DisableQueryContextCache)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
@@ -558,7 +558,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, fmt.Sprintf("%s.snowflakecomputing.com", tmpServiceUser.OrgAndAccount()), config.Host)
 					assert.Equal(t, 443, config.Port)
 					assert.Equal(t, gosnowflake.AuthTypeJwt, config.Authenticator)
-					assert.Equal(t, false, config.PasscodeInPassword)
+					assert.False(t, config.PasscodeInPassword)
 					assert.Equal(t, testvars.ExampleOktaUrlFromEnv, config.OktaURL)
 					assert.Equal(t, 100*time.Second, config.LoginTimeout)
 					assert.Equal(t, 200*time.Second, config.RequestTimeout)
@@ -568,16 +568,16 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, 600*time.Second, config.ExternalBrowserTimeout)
 					assert.Equal(t, 2, config.MaxRetryCount)
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
-					assert.Equal(t, true, config.InsecureMode) //nolint:staticcheck
+					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenFalse, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					assert.Equal(t, true, config.KeepSessionAlive)
-					assert.Equal(t, true, config.DisableTelemetry)
+					assert.True(t, config.KeepSessionAlive)
+					assert.True(t, config.DisableTelemetry)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, "../", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.ClientStoreTemporaryCredential)
-					assert.Equal(t, true, config.DisableQueryContextCache)
+					assert.True(t, config.DisableQueryContextCache)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.IncludeRetryReason)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
@@ -665,7 +665,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, fmt.Sprintf("%s.snowflakecomputing.com", tmpServiceUser.OrgAndAccount()), config.Host)
 					assert.Equal(t, 443, config.Port)
 					assert.Equal(t, gosnowflake.AuthTypeJwt, config.Authenticator)
-					assert.Equal(t, false, config.PasscodeInPassword)
+					assert.False(t, config.PasscodeInPassword)
 					assert.Equal(t, testvars.ExampleOktaUrl, config.OktaURL)
 					assert.Equal(t, 101*time.Second, config.LoginTimeout)
 					assert.Equal(t, 201*time.Second, config.RequestTimeout)
@@ -675,16 +675,16 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, 601*time.Second, config.ExternalBrowserTimeout)
 					assert.Equal(t, 3, config.MaxRetryCount)
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
-					assert.Equal(t, true, config.InsecureMode) //nolint:staticcheck
+					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					assert.Equal(t, true, config.KeepSessionAlive)
-					assert.Equal(t, true, config.DisableTelemetry)
+					assert.True(t, config.KeepSessionAlive)
+					assert.True(t, config.DisableTelemetry)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, "../../", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
-					assert.Equal(t, true, config.DisableQueryContextCache)
+					assert.True(t, config.DisableQueryContextCache)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
@@ -962,6 +962,38 @@ func TestAcc_Provider_SnowflakeAuth(t *testing.T) {
 					t.Setenv(snowflakeenvs.ConfigPath, tmpLegacyServiceUserConfig.Path)
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpLegacyServiceUserConfig.Profile), datasourceModel()),
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_ProgrammaticAccessTokenAuth(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
+	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
+
+	userWithPatAsPasswordConfig := testClient().TempTomlConfigForServiceUserWithPatAsPassword(t, userWithPat)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Authenticate with PROGRAMMATIC_ACCESS_TOKEN authenticator and PAT passed in token field
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile), datasourceModel()),
+			},
+			// Authenticate with the default authenticator and PAT passed in password field
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, userWithPatAsPasswordConfig.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatAsPasswordConfig.Profile), datasourceModel()),
 			},
 		},
 	})
