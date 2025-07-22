@@ -69,11 +69,6 @@ func (c *ListingClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk
 	return c.client().ShowByID(context.Background(), id)
 }
 
-func (c *ListingClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ListingDetails, error) {
-	t.Helper()
-	return c.client().Describe(context.Background(), id)
-}
-
 func (c *ListingClient) BasicManifest(t *testing.T) string {
 	t.Helper()
 	return `title: "title"

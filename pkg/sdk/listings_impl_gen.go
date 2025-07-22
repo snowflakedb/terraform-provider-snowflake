@@ -63,10 +63,8 @@ func (v *listings) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifie
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *listings) Describe(ctx context.Context, id AccountObjectIdentifier) (*ListingDetails, error) {
-	opts := &DescribeListingOptions{
-		name: id,
-	}
+func (v *listings) Describe(ctx context.Context, request *DescribeListingRequest) (*ListingDetails, error) {
+	opts := request.toOpts()
 	result, err := validateAndQueryOne[listingDetailsDBRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err

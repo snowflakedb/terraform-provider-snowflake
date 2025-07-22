@@ -112,7 +112,7 @@ targets:
 	assertCompleteWithShare := func(t *testing.T, id sdk.AccountObjectIdentifier) {
 		t.Helper()
 
-		listingDetails, err := client.Listings.Describe(ctx, id)
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
 		assert.NoError(t, err)
 		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
 
@@ -177,7 +177,7 @@ targets:
 	assertCompleteWithApplicationPackage := func(t *testing.T, id sdk.AccountObjectIdentifier) {
 		t.Helper()
 
-		listingDetails, err := client.Listings.Describe(ctx, id)
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
 		assert.NoError(t, err)
 		assert.Equal(t, applicationPackage.ID().Name(), listingDetails.ApplicationPackage.Name())
 
@@ -454,7 +454,7 @@ listing_terms:
 		listing, listingCleanup := testClientHelper().Listing.Create(t)
 		t.Cleanup(listingCleanup)
 
-		listingDetails, err := client.Listings.Describe(ctx, listing.ID())
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(listing.ID()))
 		require.NoError(t, err)
 		require.NotNil(t, listingDetails)
 
@@ -521,16 +521,30 @@ listing_terms:
 		assert.Empty(t, *listingDetails.LegacyUniformListingLocators)
 	})
 
-	t.Run("describe: revisions", func(t *testing.T) {
-		//id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		//err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
-		//	WithFrom(basicManifestWithTargetStageLocation).
-		//	WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())))
-		//assert.NoError(t, err)
-		//t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
-		//
-		// TODO
-	})
+	// TODO(SNOW-2220593): Test describe with revisions
+	// t.Run("describe: revisions", func(t *testing.T) {
+	// })
 
-	// TODO: Test Drop safely to ensure the logic is right
+	t.Run("drop safely", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithFrom(basicManifestWithTargetStageLocation).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithIfNotExists(true).
+			WithPublish(true).
+			WithReview(true).
+			WithComment(comment))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		err = client.Listings.Drop(ctx, sdk.NewDropListingRequest(id))
+		assert.Error(t, err)
+
+		err = client.Listings.DropSafely(ctx, id)
+		assert.NoError(t, err)
+
+		// Show that it can be called for already dropped listings
+		err = client.Listings.DropSafely(ctx, id)
+		assert.NoError(t, err)
+	})
 }

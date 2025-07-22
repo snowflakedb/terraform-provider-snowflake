@@ -13,7 +13,7 @@ type Listings interface {
 	Show(ctx context.Context, request *ShowListingRequest) ([]Listing, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
-	Describe(ctx context.Context, id AccountObjectIdentifier) (*ListingDetails, error)
+	Describe(ctx context.Context, request *DescribeListingRequest) (*ListingDetails, error)
 	ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error)
 }
 
@@ -152,7 +152,6 @@ type Listing struct {
 func (v *Listing) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
-
 func (v *Listing) ObjectType() ObjectType {
 	return ObjectTypeListing
 }
