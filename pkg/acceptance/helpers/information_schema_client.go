@@ -56,13 +56,13 @@ func (c *InformationSchemaClient) GetQueryHistoryByQueryId(t *testing.T, limit i
 func (c *InformationSchemaClient) mapQueryHistory(t *testing.T, queryResult map[string]*any) QueryHistory {
 	t.Helper()
 	var queryHistory QueryHistory
-	if v, ok := queryResult["QUERY_ID"]; ok && v != nil {
+	if v, ok := queryResult["QUERY_ID"]; ok && v != nil && *v != nil {
 		queryHistory.QueryId = (*v).(string)
 	}
-	if v, ok := queryResult["QUERY_TEXT"]; ok && v != nil {
+	if v, ok := queryResult["QUERY_TEXT"]; ok && v != nil && *v != nil {
 		queryHistory.QueryText = (*v).(string)
 	}
-	if v, ok := queryResult["QUERY_TAG"]; ok && v != nil {
+	if v, ok := queryResult["QUERY_TAG"]; ok && v != nil && *v != nil {
 		queryHistory.QueryTag = (*v).(string)
 	}
 	return queryHistory

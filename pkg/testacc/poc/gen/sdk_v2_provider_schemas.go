@@ -13,5 +13,5 @@ func (s SdkV2ProviderSchema) ObjectName() string {
 
 // SdkV2ProviderSchemas contains all provider schemas
 var SdkV2ProviderSchemas = []SdkV2ProviderSchema{
-	provider.Provider().Schema,
+	provider.GetProviderSchema(),
 }
