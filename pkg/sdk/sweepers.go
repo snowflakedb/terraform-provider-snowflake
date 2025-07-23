@@ -84,7 +84,7 @@ func getNetworkPolicySweeper(client *Client, suffix string) func() error {
 		log.Printf("[DEBUG] Sweeping network policies with suffix %s", suffix)
 		ctx := context.Background()
 
-		nps, err := client.NetworkPolicies.Show(ctx, nil)
+		nps, err := client.NetworkPolicies.Show(ctx, NewShowNetworkPolicyRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW NETWORK POLICIES ended with error, err = %w", err)
 		}
