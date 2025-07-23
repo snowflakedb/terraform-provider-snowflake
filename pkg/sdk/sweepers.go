@@ -79,6 +79,9 @@ func getResourceMonitorSweeper(client *Client, suffix string) func() error {
 	}
 }
 
+// getNetworkPolicySweeper was introduced to make sure that network policies created during tests are cleaned up.
+// It's required as network policies that have connections to the network rules within databases, block their deletion.
+// In Snowflake, the network policies can be removed without unsetting network rules, but the network rules cannot be removed without unsetting network policies.
 func getNetworkPolicySweeper(client *Client, suffix string) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Sweeping network policies with suffix %s", suffix)
