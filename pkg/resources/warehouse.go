@@ -111,6 +111,13 @@ var warehouseSchema = map[string]*schema.Schema{
 		Description:      "Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size.",
 		Default:          IntDefault,
 	},
+	"resource_constraint": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: sdkValidation(sdk.ToResourceConstraint),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToResourceConstraint), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
+		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.ValidResourceConstraintsString)),
+	},
 	strings.ToLower(string(sdk.ObjectParameterMaxConcurrencyLevel)): {
 		Type:             schema.TypeInt,
 		Optional:         true,
@@ -210,7 +217,7 @@ func Warehouse() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Warehouse, customdiff.All(
-			ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor"),
+			ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor", "resource_constraint"),
 			ComputedIfAnyAttributeChanged(warehouseSchema, ParametersAttributeName, strings.ToLower(string(sdk.ObjectParameterMaxConcurrencyLevel)), strings.ToLower(string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds)), strings.ToLower(string(sdk.ObjectParameterStatementTimeoutInSeconds))),
 			ComputedIfAnyAttributeChanged(warehouseSchema, FullyQualifiedNameAttributeName, "name"),
 
@@ -286,6 +293,9 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	if err = d.Set("query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor); err != nil {
 		return nil, err
 	}
+	if err = d.Set("resource_constraint", w.ResourceConstraint); err != nil {
+		return nil, err
+	}
 
 	return []*schema.ResourceData{d}, nil
 }
@@ -354,6 +364,13 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 	if v := d.Get("query_acceleration_max_scale_factor").(int); v != IntDefault {
 		createOptions.QueryAccelerationMaxScaleFactor = sdk.Int(v)
 	}
+	if v := d.Get("resource_constraint").(string); v != "" {
+		resourceConstraint, err := sdk.ToResourceConstraint(v)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createOptions.ResourceConstraint = &resourceConstraint
+	}
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
 		createOptions.MaxConcurrencyLevel = v
 	}
@@ -413,6 +430,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 				outputMapping{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
 				outputMapping{"enable_query_acceleration", "enable_query_acceleration", w.EnableQueryAcceleration, fmt.Sprintf("%t", w.EnableQueryAcceleration), nil},
 				outputMapping{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor, w.QueryAccelerationMaxScaleFactor, nil},
+				outputMapping{"resource_constraint", "resource_constraint", w.ResourceConstraint, w.ResourceConstraint, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -435,6 +453,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			"resource_monitor",
 			"enable_query_acceleration",
 			"query_acceleration_max_scale_factor",
+			"resource_constraint",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -583,6 +602,17 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			set.QueryAccelerationMaxScaleFactor = sdk.Int(v)
 		} else {
 			unset.QueryAccelerationMaxScaleFactor = sdk.Bool(true)
+		}
+	}
+	if d.HasChange("resource_constraint") {
+		if v := d.Get("resource_constraint").(string); v != "" {
+			resourceConstraint, err := sdk.ToResourceConstraint(v)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			set.ResourceConstraint = &resourceConstraint
+		} else {
+			unset.ResourceConstraint = sdk.Bool(true)
 		}
 	}
 	if d.HasChange("max_concurrency_level") {
