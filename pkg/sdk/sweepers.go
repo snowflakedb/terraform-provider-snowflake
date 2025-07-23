@@ -31,6 +31,7 @@ func sweep(client *Client, suffix string) error {
 	sweepers := []func() error{
 		getAccountPolicyAttachmentsSweeper(client),
 		getResourceMonitorSweeper(client, suffix),
+		getNetworkPolicySweeper(client, suffix),
 		getFailoverGroupSweeper(client, suffix),
 		getShareSweeper(client, suffix),
 		getDatabaseSweeper(client, suffix),
@@ -49,18 +50,8 @@ func getAccountPolicyAttachmentsSweeper(client *Client) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Unsetting password and session policies set on the account level")
 		ctx := context.Background()
-		opts := &AlterAccountOptions{
-			Unset: &AccountUnset{
-				PasswordPolicy: Bool(true),
-			},
-		}
-		_ = client.Accounts.Alter(ctx, opts)
-		opts = &AlterAccountOptions{
-			Unset: &AccountUnset{
-				SessionPolicy: Bool(true),
-			},
-		}
-		_ = client.Accounts.Alter(ctx, opts)
+		_ = client.Accounts.UnsetPolicySafely(ctx, PolicyKindPasswordPolicy)
+		_ = client.Accounts.UnsetPolicySafely(ctx, PolicyKindSessionPolicy)
 		return nil
 	}
 }
@@ -84,6 +75,31 @@ func getResourceMonitorSweeper(client *Client, suffix string) func() error {
 				log.Printf("[DEBUG] Skipping resource monitor %s", rm.ID().FullyQualifiedName())
 			}
 		}
+		return nil
+	}
+}
+
+func getNetworkPolicySweeper(client *Client, suffix string) func() error {
+	return func() error {
+		log.Printf("[DEBUG] Sweeping network policies with suffix %s", suffix)
+		ctx := context.Background()
+
+		nps, err := client.NetworkPolicies.Show(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("SHOW NETWORK POLICIES ended with error, err = %w", err)
+		}
+
+		for _, np := range nps {
+			if strings.HasSuffix(np.Name, suffix) && strings.ToUpper(np.Name) != "RESTRICTED_ACCESS" {
+				log.Printf("[DEBUG] Dropping network policy %s", np.ID().FullyQualifiedName())
+				if err := client.NetworkPolicies.Drop(ctx, NewDropNetworkPolicyRequest(np.ID()).WithIfExists(true)); err != nil {
+					return fmt.Errorf("DROP NETWORK POLICY for %s, ended with error, err = %w", np.ID().FullyQualifiedName(), err)
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping network policy %s", np.ID().FullyQualifiedName())
+			}
+		}
+
 		return nil
 	}
 }
