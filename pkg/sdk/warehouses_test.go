@@ -272,6 +272,131 @@ func TestWarehouseDescribe(t *testing.T) {
 	})
 }
 
+func TestToResourceConstraint(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    ResourceConstraint
+		wantErr bool
+	}{
+		{
+			name:    "valid STANDARD_GEN_1",
+			input:   "STANDARD_GEN_1",
+			want:    ResourceConstraintStandard,
+			wantErr: false,
+		},
+		{
+			name:    "valid STANDARD_GEN_1 lowercase",
+			input:   "standard_gen_1",
+			want:    ResourceConstraintStandard,
+			wantErr: false,
+		},
+		{
+			name:    "valid STANDARD_GEN_2",
+			input:   "STANDARD_GEN_2",
+			want:    ResourceConstraintStandardGen2,
+			wantErr: false,
+		},
+		{
+			name:    "valid STANDARD_GEN_2 lowercase",
+			input:   "standard_gen_2",
+			want:    ResourceConstraintStandardGen2,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_1X",
+			input:   "MEMORY_1X",
+			want:    ResourceConstraintMemory1X,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_1X lowercase",
+			input:   "memory_1x",
+			want:    ResourceConstraintMemory1X,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_1X_x86",
+			input:   "MEMORY_1X_x86",
+			want:    ResourceConstraintMemory1Xx86,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_1X_x86 lowercase",
+			input:   "memory_1x_x86",
+			want:    ResourceConstraintMemory1Xx86,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_16X",
+			input:   "MEMORY_16X",
+			want:    ResourceConstraintMemory16X,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_16X lowercase",
+			input:   "memory_16x",
+			want:    ResourceConstraintMemory16X,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_16X_x86",
+			input:   "MEMORY_16X_x86",
+			want:    ResourceConstraintMemory16Xx86,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_16X_x86 lowercase",
+			input:   "memory_16x_x86",
+			want:    ResourceConstraintMemory16Xx86,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_64X",
+			input:   "MEMORY_64X",
+			want:    ResourceConstraintMemory64X,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_64X lowercase",
+			input:   "memory_64x",
+			want:    ResourceConstraintMemory64X,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_64X_x86",
+			input:   "MEMORY_64X_x86",
+			want:    ResourceConstraintMemory64Xx86,
+			wantErr: false,
+		},
+		{
+			name:    "valid MEMORY_64X_x86 lowercase",
+			input:   "memory_64x_x86",
+			want:    ResourceConstraintMemory64Xx86,
+			wantErr: false,
+		},
+		{
+			name:    "invalid resource constraint",
+			input:   "INVALID_CONSTRAINT",
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ToResourceConstraint(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToResourceConstraint() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ToResourceConstraint() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_Warehouse_ToWarehouseSize(t *testing.T) {
 	type test struct {
 		input string
