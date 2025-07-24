@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,6 +22,63 @@ var listingSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 		Description:      "Specifies the listing identifier (name). It must be unique within the organization, regardless of which Snowflake region the account is located in. Must start with an alphabetic character and cannot contain spaces or special characters except for underscores.",
 	},
+	"manifest": {
+		Type:     schema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"from_string": {
+					Type:          schema.TypeString,
+					Optional:      true,
+					ConflictsWith: []string{"manifest.0.from_stage"},
+				},
+				"from_stage": {
+					Type:          schema.TypeList,
+					Optional:      true,
+					MaxItems:      1,
+					ConflictsWith: []string{"manifest.0.from_string"},
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"stage": {
+								Type:     schema.TypeList,
+								Required: true,
+							},
+							"location": {
+								Type:     schema.TypeList,
+								Optional: true,
+								// If not passed, the manifest should be in the top-level
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	"share": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		ConflictsWith: []string{"application_package"},
+	},
+	"application_package": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		ConflictsWith: []string{"share"},
+	},
+	"review": {
+		Type:     schema.TypeString,
+		Optional: true,
+		Default:  BooleanDefault,
+	},
+	"publish": {
+		Type:     schema.TypeString,
+		Optional: true,
+		Default:  BooleanDefault,
+	},
+	"comment": {
+		Type:     schema.TypeString,
+		Optional: true,
+	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	//ShowOutputAttributeName: {
 	//	Type:        schema.TypeList,
@@ -33,6 +90,7 @@ var listingSchema = map[string]*schema.Schema{
 	//},
 }
 
+// TODO: Should we call it free_listing or public_listing?
 func Listing() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
 		sdk.ParseAccountObjectIdentifier,
@@ -84,6 +142,9 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
+	_ = client
+	_ = id
+
 	return ReadListing(ctx, d, meta)
 }
 
@@ -109,6 +170,8 @@ func ReadListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		}
 		return diag.FromErr(err)
 	}
+
+	_ = listing
 
 	return nil
 }
