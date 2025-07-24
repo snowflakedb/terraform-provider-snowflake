@@ -32,6 +32,7 @@ func sweep(client *Client, suffix string) error {
 		getAccountPolicyAttachmentsSweeper(client),
 		getResourceMonitorSweeper(client, suffix),
 		getNetworkPolicySweeper(client, suffix),
+		getUserSweeper(client, suffix),
 		getFailoverGroupSweeper(client, suffix),
 		getShareSweeper(client, suffix),
 		getDatabaseSweeper(client, suffix),
@@ -100,6 +101,48 @@ func getNetworkPolicySweeper(client *Client, suffix string) func() error {
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping network policy %s", np.ID().FullyQualifiedName())
+			}
+		}
+
+		return nil
+	}
+}
+
+// getUserSweeper was introduced to make sure that users created during tests are cleaned up.
+// It's required as users that have connections to policies within databases, block deletion of the whole database.
+// In Snowflake, the users can be removed without prior unsetting policies, but policies cannot be removed without firstly unlinking them from other objects.
+func getUserSweeper(client *Client, suffix string) func() error {
+	protectedUsers := []string{
+		"SNOWFLAKE",
+		"ARTUR_SAWICKI",
+		"ARTUR_SAWICKI_LEGACY",
+		"JAKUB_MICHALAK",
+		"JAKUB_MICHALAK_LEGACY",
+		"JAN_CIESLAK",
+		"JAN_CIESLAK_LEGACY",
+		"TERRAFORM_SVC_ACCOUNT",
+		"TEST_CI_SERVICE_USER",
+		"PENTESTING_USER_1",
+		"PENTESTING_USER_2",
+	}
+
+	return func() error {
+		log.Printf("[DEBUG] Sweeping users with suffix %s", suffix)
+		ctx := context.Background()
+
+		urs, err := client.Users.Show(ctx, new(ShowUserOptions))
+		if err != nil {
+			return fmt.Errorf("SHOW USERS ended with error, err = %w", err)
+		}
+
+		for _, u := range urs {
+			if strings.HasSuffix(u.Name, suffix) && !slices.Contains(protectedUsers, u.ID().Name()) {
+				log.Printf("[DEBUG] Dropping user %s", u.ID().FullyQualifiedName())
+				if err := client.Users.Drop(ctx, u.ID(), &DropUserOptions{IfExists: Bool(true)}); err != nil {
+					return fmt.Errorf("DROP USER for %s, ended with error, err = %w", u.ID().FullyQualifiedName(), err)
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping user %s", u.ID().FullyQualifiedName())
 			}
 		}
 
