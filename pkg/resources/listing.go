@@ -24,7 +24,7 @@ var listingSchema = map[string]*schema.Schema{
 	},
 	"manifest": {
 		Type:     schema.TypeList,
-		Optional: true,
+		Required: true,
 		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -43,6 +43,10 @@ var listingSchema = map[string]*schema.Schema{
 							"stage": {
 								Type:     schema.TypeList,
 								Required: true,
+							},
+							"version_name": {
+								Type:     schema.TypeList,
+								Optional: true,
 							},
 							"location": {
 								Type:     schema.TypeList,
