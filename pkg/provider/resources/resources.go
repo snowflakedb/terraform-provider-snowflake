@@ -45,6 +45,7 @@ const (
 	ImageRepository                                        resource = "snowflake_image_repository"
 	JobService                                             resource = "snowflake_job_service"
 	LegacyServiceUser                                      resource = "snowflake_legacy_service_user"
+	Listing                                                resource = "snowflake_listing"
 	ManagedAccount                                         resource = "snowflake_managed_account"
 	MaskingPolicy                                          resource = "snowflake_masking_policy"
 	MaterializedView                                       resource = "snowflake_materialized_view"
