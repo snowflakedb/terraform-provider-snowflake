@@ -136,6 +136,7 @@ body:
         - resource:compute_pool
         - resource:cortex_search_service
         - resource:current_account
+        - resource:current_organization_account
         - resource:database
         - resource:database_role
         - resource:dynamic_table
@@ -222,6 +223,7 @@ body:
         - resource:user
         - resource:user_authentication_policy_attachment
         - resource:user_password_policy_attachment
+        - resource:user_programmatic_access_token
         - resource:user_public_keys
         - resource:view
         - resource:warehouse
@@ -273,6 +275,7 @@ body:
         - data_source:tables
         - data_source:tags
         - data_source:tasks
+        - data_source:user_programmatic_access_tokens
         - data_source:users
         - data_source:views
         - data_source:warehouses

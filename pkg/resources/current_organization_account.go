@@ -2,22 +2,33 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var currentOrganizationAccountSchema = map[string]*schema.Schema{
 	"name": {
+		Type:             schema.TypeString,
+		Required:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
+		Description:      "The identifier (i.e. name) for the organization account within currently used organization. The field name is validated during import and create operations to ensure that it matches the current organization account name.",
+	},
+	"comment": {
 		Type:        schema.TypeString,
-		Required:    true,
-		Description: "Specifies the identifier (i.e. name) for the account. It must be unique within an organization, regardless of which Snowflake Region the account is in and must start with an alphabetic character and cannot contain spaces or special characters except for underscores (_). Note that if the account name includes underscores, features that do not accept account names with underscores (e.g. Okta SSO or SCIM) can reference a version of the account name that substitutes hyphens (-) for the underscores.",
+		Optional:    true,
+		Description: "Specifies a comment for the organization account.",
 	},
 	"resource_monitor": {
 		Type:             schema.TypeString,
@@ -40,6 +51,14 @@ var currentOrganizationAccountSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
+	ShowOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Saved output for the result of `SHOW ORGANIZATION ACCOUNTS`",
+		Elem: &schema.Resource{
+			Schema: schemas.ShowOrganizationAccountSchema,
+		},
+	},
 }
 
 func CurrentOrganizationAccount() *schema.Resource {
@@ -50,88 +69,49 @@ func CurrentOrganizationAccount() *schema.Resource {
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CurrentOrganizationAccountResource), TrackingUpdateWrapper(resources.CurrentOrganizationAccount, UpdateCurrentOrganizationAccount)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CurrentOrganizationAccountResource), TrackingDeleteWrapper(resources.CurrentOrganizationAccount, DeleteCurrentOrganizationAccount)),
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.CurrentOrganizationAccount, accountParametersCustomDiff),
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.CurrentOrganizationAccount, customdiff.All(
+			ComputedIfAnyAttributeChanged(currentOrganizationAccountSchema, ShowOutputAttributeName, "account_name", "snowflake_region", "edition", "comment"),
+			accountParametersCustomDiff,
+		)),
 
 		Schema: collections.MergeMaps(currentOrganizationAccountSchema, accountParametersSchema),
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.CurrentOrganizationAccount, ImportName[sdk.AccountObjectIdentifier]),
+			StateContext: TrackingImportWrapper(resources.CurrentOrganizationAccount, ImportCurrentOrganizationAccount),
 		},
 
 		Timeouts: defaultTimeouts,
 	}
 }
 
-func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func ImportCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 
-	organizationAccounts, err := client.OrganizationAccounts.Show(ctx, sdk.NewShowOrganizationAccountRequest())
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return nil, err
 	}
-	if len(organizationAccounts) != 1 {
-		return diag.Errorf("expected 1 organization account, found %d", len(organizationAccounts))
+
+	if err := checkForCurrentOrganizationAccount(client, id, ctx, d, meta); err != nil {
+		return nil, err
 	}
-	currentOrganizationAccount := organizationAccounts[0]
+
+	if err := d.Set("name", id.Name()); err != nil {
+		return nil, err
+	}
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
 
 	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if id.Name() != currentOrganizationAccount.AccountName {
-		return diag.Errorf("passed name: %s, doesn't match current organization account name: %s, renames can be performed only after resource initialization", id.Name(), currentOrganizationAccount.AccountName)
-	}
-
-	if v, ok := d.GetOk("resource_monitor"); ok {
-		resourceMonitorId, err := sdk.ParseAccountObjectIdentifier(v.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithResourceMonitor(resourceMonitorId))); err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithResourceMonitor(true))); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if v, ok := d.GetOk("password_policy"); ok {
-		passwordPolicyId, err := sdk.ParseSchemaObjectIdentifier(v.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err := client.OrganizationAccounts.SetPolicySafely(ctx, sdk.PolicyKindPasswordPolicy, passwordPolicyId); err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		if err := client.OrganizationAccounts.UnsetPolicySafely(ctx, sdk.PolicyKindPasswordPolicy); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if v, ok := d.GetOk("session_policy"); ok {
-		sessionPolicyId, err := sdk.ParseSchemaObjectIdentifier(v.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err := client.OrganizationAccounts.SetPolicySafely(ctx, sdk.PolicyKindSessionPolicy, sessionPolicyId); err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		if err := client.OrganizationAccounts.UnsetPolicySafely(ctx, sdk.PolicyKindSessionPolicy); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	setParameters := new(sdk.AccountParameters)
-	if diags := handleAccountParametersCreate(d, setParameters); diags != nil {
-		return diags
-	}
-	if *setParameters != (sdk.AccountParameters{}) {
-		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithParameters(*setParameters))); err != nil {
-			return diag.FromErr(err)
-		}
+	if err := checkForCurrentOrganizationAccount(client, id, ctx, d, meta); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.Name())
@@ -142,7 +122,27 @@ func CreateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 func ReadCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	attachedPolicies, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount))
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	organizationAccount, err := client.OrganizationAccounts.ShowByIDSafely(ctx, id)
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query organization account. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Organization Account: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
+	}
+
+	attachedPolicies, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(sdk.NewAccountObjectIdentifier(organizationAccount.AccountLocator), sdk.PolicyEntityDomainAccount))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,6 +168,20 @@ func ReadCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	if organizationAccount.Comment != nil {
+		if err := d.Set("comment", *organizationAccount.Comment); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		if err := d.Set("comment", nil); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.OrganizationAccountToSchema(organizationAccount)}); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
@@ -186,6 +200,19 @@ func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 		d.SetId(id.Name())
+	}
+
+	if d.HasChange("comment") {
+		newComment := d.Get("comment").(string)
+		if newComment != "" {
+			if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithComment(newComment))); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithComment(true))); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if d.HasChange("resource_monitor") {
@@ -262,5 +289,23 @@ func DeleteCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId("")
+	return nil
+}
+
+func checkForCurrentOrganizationAccount(client *sdk.Client, id sdk.AccountObjectIdentifier, ctx context.Context, d *schema.ResourceData, meta any) error {
+	organizationAccounts, err := client.OrganizationAccounts.Show(ctx, sdk.NewShowOrganizationAccountRequest())
+	if err != nil {
+		return err
+	}
+
+	currentOrganizationAccount, err := collections.FindFirst(organizationAccounts, func(account sdk.OrganizationAccount) bool { return account.IsOrganizationAccount })
+	if err != nil {
+		return errors.New("couldn't find any organization account in the current organization")
+	}
+
+	if id.Name() != currentOrganizationAccount.AccountName {
+		return fmt.Errorf("passed name: %s, doesn't match current organization account name: %s, renames can be performed only after resource initialization", id.Name(), currentOrganizationAccount.AccountName)
+	}
+
 	return nil
 }
