@@ -89,7 +89,7 @@ var listingSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `SHOW LISTINGS` for the given listing.",
 		Elem: &schema.Resource{
-			Schema: schemas.ShowSchemaSchema,
+			Schema: schemas.ShowListingSchema,
 		},
 	},
 }
