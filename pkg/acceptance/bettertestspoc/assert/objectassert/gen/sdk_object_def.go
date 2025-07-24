@@ -132,6 +132,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeAccount,
 		ObjectStruct: sdk.OrganizationAccount{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeListing,
+		ObjectStruct: sdk.Listing{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

@@ -39,6 +39,20 @@ func (c *ApplicationPackageClient) CreateApplicationPackage(t *testing.T) (*sdk.
 	return applicationPackage, c.DropApplicationPackageFunc(t, id)
 }
 
+func (c *ApplicationPackageClient) CreateApplicationPackageWithReleaseChannelsDisabled(t *testing.T) (*sdk.ApplicationPackage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomAccountObjectIdentifier()
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("CREATE APPLICATION PACKAGE %s ENABLE_RELEASE_CHANNELS = FALSE", id.FullyQualifiedName()))
+	require.NoError(t, err)
+
+	applicationPackage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return applicationPackage, c.DropApplicationPackageFunc(t, id)
+}
+
 func (c *ApplicationPackageClient) DropApplicationPackageFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
@@ -56,6 +70,16 @@ func (c *ApplicationPackageClient) AddApplicationPackageVersion(t *testing.T, id
 	using := "@" + stageId.FullyQualifiedName()
 
 	err := c.client().Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithAddVersion(sdk.NewAddVersionRequest(using).WithVersionIdentifier(sdk.String(versionName))))
+	require.NoError(t, err)
+}
+
+func (c *ApplicationPackageClient) SetDefaultReleaseDirective(t *testing.T, id sdk.AccountObjectIdentifier, version string) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithSetDefaultReleaseDirective(
+		sdk.NewSetDefaultReleaseDirectiveRequest(version, 0),
+	))
 	require.NoError(t, err)
 }
 
