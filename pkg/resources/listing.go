@@ -84,14 +84,14 @@ var listingSchema = map[string]*schema.Schema{
 		Optional: true,
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	//ShowOutputAttributeName: {
-	//	Type:        schema.TypeList,
-	//	Computed:    true,
-	//	Description: "Outputs the result of `SHOW LISTINGS` for the given listing.",
-	//	Elem: &schema.Resource{
-	//		Schema: schemas.ShowListingSchema,
-	//	},
-	//},
+	ShowOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `SHOW LISTINGS` for the given listing.",
+		Elem: &schema.Resource{
+			Schema: schemas.ShowSchemaSchema,
+		},
+	},
 }
 
 // TODO: Should we call it free_listing or public_listing?
