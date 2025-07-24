@@ -35,22 +35,15 @@ func TestInt_Listings(t *testing.T) {
 	ctx := testContext(t)
 
 	accountId := testClientHelper().Context.CurrentAccountId(t)
-	basicManifest := testClientHelper().Listing.BasicManifest(t)
-	testClientHelper().Stage.PutOnStageDirectoryWithContent(t, stage.ID(), "manifest.yml", "basic", basicManifest)
-	basicManifestStageLocation := sdk.NewStageLocation(stage.ID(), "basic/")
-
 	targetAccount := fmt.Sprintf("%s.%s", accountId.OrganizationName(), accountId.AccountName())
-	basicManifestWithTarget := fmt.Sprintf(`
-title: title
-subtitle: subtitle
-description: description
-listing_terms:
-  type: OFFLINE
-targets:
-  accounts: [%s]
-`, targetAccount)
-	testClientHelper().Stage.PutOnStageDirectoryWithContent(t, stage.ID(), "manifest.yml", "with_target", basicManifestWithTarget)
-	basicManifestWithTargetStageLocation := sdk.NewStageLocation(stage.ID(), "with_target/")
+
+	basicManifest, basicManifestTitle := testClientHelper().Listing.BasicManifest(t)
+	_ = testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/basic", "manifest.yml", basicManifest)
+	basicManifestStageLocation := sdk.NewStageLocation(stage.ID(), "basic")
+
+	basicManifestWithTarget, basicManifestWithTargetTitle := testClientHelper().Listing.BasicManifestWithTargetAccount(t, accountId)
+	testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/with_target", "manifest.yml", basicManifestWithTarget)
+	basicManifestWithTargetStageLocation := sdk.NewStageLocation(stage.ID(), "with_target")
 
 	comment := random.Comment()
 
@@ -61,7 +54,7 @@ targets:
 			objectassert.Listing(t, id).
 				HasGlobalNameNotEmpty().
 				HasName(id.Name()).
-				HasTitle("title").
+				HasTitle(basicManifestTitle).
 				HasSubtitle("subtitle").
 				HasProfile("").
 				HasCreatedOnNotEmpty().
@@ -120,7 +113,7 @@ targets:
 			objectassert.Listing(t, id).
 				HasGlobalNameNotEmpty().
 				HasName(id.Name()).
-				HasTitle("title").
+				HasTitle(basicManifestWithTargetTitle).
 				HasSubtitle("subtitle").
 				HasProfile("").
 				HasCreatedOnNotEmpty().
@@ -185,7 +178,7 @@ targets:
 			objectassert.Listing(t, id).
 				HasGlobalNameNotEmpty().
 				HasName(id.Name()).
-				HasTitle("title").
+				HasTitle(basicManifestWithTargetTitle).
 				HasSubtitle("subtitle").
 				HasProfile("").
 				HasCreatedOnNotEmpty().
@@ -253,6 +246,7 @@ targets:
 
 		assertThatObject(t,
 			objectassert.Listing(t, id).
+				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStateDraft).
 				HasNoReviewState(),
 		)
@@ -262,6 +256,7 @@ targets:
 
 		assertThatObject(t,
 			objectassert.Listing(t, id).
+				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStateDraft).
 				HasNoReviewState(),
 		)
@@ -271,6 +266,7 @@ targets:
 
 		assertThatObject(t,
 			objectassert.Listing(t, id).
+				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStatePublished).
 				HasNoReviewState(),
 		)
@@ -280,6 +276,7 @@ targets:
 
 		assertThatObject(t,
 			objectassert.Listing(t, id).
+				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStateUnpublished).
 				HasNoReviewState(),
 		)
@@ -291,18 +288,12 @@ targets:
 
 		assertThatObject(t,
 			objectassert.ListingFromObject(t, listing).
+				HasTitle(basicManifestTitle).
 				HasSubtitle("subtitle").
 				HasNoComment(),
 		)
 
-		basicManifestWithDifferentSubtitle := `
-title: title
-subtitle: different_subtitle
-description: description
-listing_terms:
-  type: OFFLINE
-`
-
+		basicManifestWithDifferentSubtitle, title := testClientHelper().Listing.BasicManifestWithDifferentSubtitle(t)
 		err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).
 			WithAlterListingAs(*sdk.NewAlterListingAsRequest(basicManifestWithDifferentSubtitle).
 				WithPublish(false).
@@ -313,6 +304,7 @@ listing_terms:
 
 		assertThatObject(t,
 			objectassert.Listing(t, listing.ID()).
+				HasTitle(title).
 				HasSubtitle("different_subtitle").
 				HasNoComment(),
 			// Should be HasComment(comment), but it seems the comment is not set on alter or this comment is set somewhere else
@@ -320,21 +312,16 @@ listing_terms:
 	})
 
 	t.Run("alter: add version", func(t *testing.T) {
-		basicWithDifferentSubtitleManifest := `
-title: title
-subtitle: different_subtitle
-description: description
-listing_terms:
-  type: OFFLINE
-`
-		testClientHelper().Stage.PutOnStageDirectoryWithContent(t, stage.ID(), "manifest.yml", "basic_different_subtitle", basicWithDifferentSubtitleManifest)
-		basicManifestWithDifferentSubtitleStageLocation := sdk.NewStageLocation(stage.ID(), "basic_different_subtitle/")
+		basicWithDifferentSubtitleManifest, title := testClientHelper().Listing.BasicManifest(t)
+		testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/basic_different_subtitle", "manifest.yml", basicWithDifferentSubtitleManifest)
+		basicManifestWithDifferentSubtitleStageLocation := sdk.NewStageLocation(stage.ID(), "basic_different_subtitle")
 
 		listing, listingCleanup := testClientHelper().Listing.Create(t)
 		t.Cleanup(listingCleanup)
 
 		assertThatObject(t,
 			objectassert.ListingFromObject(t, listing).
+				HasTitle(title).
 				HasSubtitle("subtitle").
 				HasNoComment(),
 		)
@@ -347,6 +334,7 @@ listing_terms:
 
 		assertThatObject(t,
 			objectassert.ListingFromObject(t, listing).
+				HasTitle(title).
 				HasSubtitle("subtitle").
 				HasNoComment(),
 		)
@@ -357,13 +345,12 @@ listing_terms:
 		assert.NotEmpty(t, versions[0].CreatedOn)
 		assert.NotEmpty(t, versions[0].Name)
 		assert.Equal(t, "v2", versions[0].Alias)
-		assert.NotEmpty(t, versions[0].LocationUrl)
+		assert.Empty(t, versions[0].LocationUrl)
 		assert.True(t, versions[0].IsDefault)
 		assert.False(t, versions[0].IsLive)
 		assert.True(t, versions[0].IsFirst)
 		assert.True(t, versions[0].IsLast)
 		assert.Equal(t, comment, versions[0].Comment)
-		assert.Empty(t, versions[0].Comment)
 		assert.Nil(t, versions[0].GitCommitHash)
 	})
 
@@ -397,6 +384,7 @@ listing_terms:
 
 		assertThatObject(t, objectassert.Listing(t, id).
 			HasName(id.Name()).
+			HasTitle(basicManifestTitle).
 			HasComment(comment),
 		)
 
@@ -405,6 +393,7 @@ listing_terms:
 
 		assertThatObject(t, objectassert.Listing(t, id).
 			HasName(id.Name()).
+			HasTitle(basicManifestTitle).
 			HasComment(newComment),
 		)
 	})
@@ -458,6 +447,8 @@ listing_terms:
 		require.NoError(t, err)
 		require.NotNil(t, listingDetails)
 
+		manifest, title := testClientHelper().Listing.BasicManifest(t)
+
 		assert.NotEmpty(t, listingDetails.GlobalName)
 		assert.Equal(t, listing.ID().Name(), listingDetails.Name)
 		assert.NotEmpty(t, listingDetails.Owner)
@@ -465,7 +456,7 @@ listing_terms:
 		assert.NotEmpty(t, listingDetails.CreatedOn)
 		assert.NotEmpty(t, listingDetails.UpdatedOn)
 		assert.Nil(t, listingDetails.PublishedOn)
-		assert.Equal(t, "title", listingDetails.Title)
+		assert.Equal(t, title, listingDetails.Title)
 		assert.Equal(t, "subtitle", *listingDetails.Subtitle)
 		assert.Equal(t, "description", *listingDetails.Description)
 		assert.JSONEq(t, `{
@@ -500,7 +491,7 @@ listing_terms:
 		assert.Nil(t, listingDetails.LimitedTrialPlan)
 		assert.Nil(t, listingDetails.RetriedOn)
 		assert.Nil(t, listingDetails.ScheduledDropTime)
-		assert.Equal(t, testClientHelper().Listing.BasicManifest(t), listingDetails.ManifestYaml)
+		assert.Equal(t, manifest, listingDetails.ManifestYaml)
 		assert.Equal(t, "EXTERNAL", *listingDetails.Distribution)
 		assert.False(t, *listingDetails.IsMountlessQueryable)
 		assert.Nil(t, listingDetails.OrganizationProfileName)
