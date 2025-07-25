@@ -154,21 +154,21 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 		},
 		// parameters are not computed because we can't handle them the same way as in SDKv2 implementation
 		strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): schema.Int64Attribute{
-			Description: existingWarehouseSchema[string(sdk.WarehouseParameterMaxConcurrencyLevel)].Description,
+			Description: existingWarehouseSchema[strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel))].Description,
 			Optional:    true,
 			Validators: []validator.Int64{
 				int64validator.AtLeast(1),
 			},
 		},
 		strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): schema.Int64Attribute{
-			Description: existingWarehouseSchema[string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)].Description,
+			Description: existingWarehouseSchema[strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds))].Description,
 			Optional:    true,
 			Validators: []validator.Int64{
 				int64validator.AtLeast(0),
 			},
 		},
 		strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)): schema.Int64Attribute{
-			Description: existingWarehouseSchema[string(sdk.WarehouseParameterStatementTimeoutInSeconds)].Description,
+			Description: existingWarehouseSchema[strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds))].Description,
 			Optional:    true,
 			Validators: []validator.Int64{
 				int64validator.Between(0, 604800),
