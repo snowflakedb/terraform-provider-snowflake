@@ -3,6 +3,8 @@ package testacc
 import (
 	"crypto/rsa"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/snowflakedb/gosnowflake"
 )
@@ -35,13 +37,33 @@ import (
 //   - tmp_directory_path
 //   - disable_console_login
 //   - DisableSamlURLCheck
-func (p *pluginFrameworkPocProvider) getDriverConfigFromTerraform(m pluginFrameworkPocProviderModelV0) (*gosnowflake.Config, error) {
+func (p *pluginFrameworkPocProvider) getDriverConfigFromTerraform(configModel pluginFrameworkPocProviderModelV0) (*gosnowflake.Config, error) {
 	config := &gosnowflake.Config{
 		Application: "terraform-provider-snowflake",
 	}
 
-	// TODO [mux-PR]: use os wrapper
-	// todoFromEnv := os.Getenv("SNOWFLAKE_TODO")
+	//accountNameEnv := oswrapper.Getenv(snowflakeenvs.AccountName)
+	//organizationNameEnv := oswrapper.Getenv(snowflakeenvs.OrganizationName)
+	//passwordEnv := oswrapper.Getenv(snowflakeenvs.Password)
+	//warehouseEnv := oswrapper.Getenv(snowflakeenvs.Warehouse)
+	//roleEnv := oswrapper.Getenv(snowflakeenvs.Role)
+	//authenticatorEnv := oswrapper.Getenv(snowflakeenvs.Authenticator)
+	//passcodeEnv := oswrapper.Getenv(snowflakeenvs.Passcode)
+	//passcodeInPasswordEnv := oswrapper.Getenv(snowflakeenvs.PasscodeInPassword)
+	//privateKeyEnv := oswrapper.Getenv(snowflakeenvs.PrivateKey)
+	//privateKeyPassphraseEnv := oswrapper.Getenv(snowflakeenvs.PrivateKeyPassphrase)
+	//driverTracingEnv := oswrapper.Getenv(snowflakeenvs.DriverTracing)
+	//profileEnv := oswrapper.Getenv(snowflakeenvs.Profile)
+
+	var user string
+	if !configModel.User.IsNull() {
+		user = configModel.User.ValueString()
+	} else {
+		user = oswrapper.Getenv(snowflakeenvs.User)
+	}
+	if user != "" {
+		config.User = user
+	}
 
 	// account_name and organization_name
 	// user
