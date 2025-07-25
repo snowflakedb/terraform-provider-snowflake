@@ -11,6 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	// for PoC using the imports from testfunctional package
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customplanmodifiers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 )
 
 func NewWarehousePocResource() resource.Resource {
@@ -20,19 +24,19 @@ func NewWarehousePocResource() resource.Resource {
 type WarehouseResource struct{}
 
 type warehousePocModelV0 struct {
-	Name                            types.String `tfsdk:"name"`
-	WarehouseType                   types.String `tfsdk:"warehouse_type"` // TODO [mux-PR]: enum
-	WarehouseSize                   types.String `tfsdk:"warehouse_size"` // TODO [mux-PR]: enum
-	MaxClusterCount                 types.Int64  `tfsdk:"max_cluster_count"`
-	MinClusterCount                 types.Int64  `tfsdk:"min_cluster_count"`
-	ScalingPolicy                   types.String `tfsdk:"scaling_policy"` // TODO [mux-PR]: enum
-	AutoSuspend                     types.Int64  `tfsdk:"auto_suspend"`
-	AutoResume                      types.Bool   `tfsdk:"auto_resume"`
-	InitiallySuspended              types.Bool   `tfsdk:"initially_suspended"`
-	ResourceMonitor                 types.String `tfsdk:"resource_monitor"` // TODO [mux-PR]: identifier type?
-	Comment                         types.String `tfsdk:"comment"`
-	EnableQueryAcceleration         types.Bool   `tfsdk:"enable_query_acceleration"`
-	QueryAccelerationMaxScaleFactor types.Int64  `tfsdk:"query_acceleration_max_scale_factor"`
+	Name                            types.String                             `tfsdk:"name"`
+	WarehouseType                   customtypes.EnumValue[sdk.WarehouseType] `tfsdk:"warehouse_type"`
+	WarehouseSize                   customtypes.EnumValue[sdk.WarehouseSize] `tfsdk:"warehouse_size"`
+	MaxClusterCount                 types.Int64                              `tfsdk:"max_cluster_count"`
+	MinClusterCount                 types.Int64                              `tfsdk:"min_cluster_count"`
+	ScalingPolicy                   customtypes.EnumValue[sdk.ScalingPolicy] `tfsdk:"scaling_policy"`
+	AutoSuspend                     types.Int64                              `tfsdk:"auto_suspend"`
+	AutoResume                      types.Bool                               `tfsdk:"auto_resume"`
+	InitiallySuspended              types.Bool                               `tfsdk:"initially_suspended"`
+	ResourceMonitor                 types.String                             `tfsdk:"resource_monitor"` // TODO [mux-PR]: identifier type?
+	Comment                         types.String                             `tfsdk:"comment"`
+	EnableQueryAcceleration         types.Bool                               `tfsdk:"enable_query_acceleration"`
+	QueryAccelerationMaxScaleFactor types.Int64                              `tfsdk:"query_acceleration_max_scale_factor"`
 
 	// embedding to clearly distinct parameters from other attributes
 	warehouseParametersModelV0
@@ -66,12 +70,18 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 		"warehouse_type": schema.StringAttribute{
 			Description: existingWarehouseSchema["warehouse_type"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: generic enum
+			CustomType:  customtypes.EnumType[sdk.WarehouseType]{},
+			PlanModifiers: []planmodifier.String{
+				customplanmodifiers.EnumSuppressor[sdk.WarehouseType](),
+			},
 		},
 		"warehouse_size": schema.StringAttribute{
 			Description: existingWarehouseSchema["warehouse_size"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: generic enum
+			CustomType:  customtypes.EnumType[sdk.WarehouseSize]{},
+			PlanModifiers: []planmodifier.String{
+				customplanmodifiers.EnumSuppressor[sdk.WarehouseSize](),
+			},
 		},
 		"max_cluster_count": schema.Int64Attribute{
 			Description: existingWarehouseSchema["max_cluster_count"].Description,
@@ -86,7 +96,10 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 		"scaling_policy": schema.StringAttribute{
 			Description: existingWarehouseSchema["scaling_policy"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: generic enum
+			CustomType:  customtypes.EnumType[sdk.ScalingPolicy]{},
+			PlanModifiers: []planmodifier.String{
+				customplanmodifiers.EnumSuppressor[sdk.ScalingPolicy](),
+			},
 		},
 		"auto_suspend": schema.Int64Attribute{
 			Description: existingWarehouseSchema["auto_suspend"].Description,
@@ -157,6 +170,7 @@ func (r *WarehouseResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 }
 
 func (r *WarehouseResource) Create(_ context.Context, _ resource.CreateRequest, _ *resource.CreateResponse) {
+
 }
 
 func (r *WarehouseResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {

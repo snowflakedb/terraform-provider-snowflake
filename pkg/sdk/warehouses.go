@@ -59,6 +59,10 @@ func ToWarehouseType(s string) (WarehouseType, error) {
 	}
 }
 
+func (e WarehouseType) FromString(s string) (WarehouseType, error) {
+	return ToWarehouseType(s)
+}
+
 type WarehouseSize string
 
 const (
@@ -101,6 +105,10 @@ func ToWarehouseSize(s string) (WarehouseSize, error) {
 	}
 }
 
+func (e WarehouseSize) FromString(s string) (WarehouseSize, error) {
+	return ToWarehouseSize(s)
+}
+
 type ScalingPolicy string
 
 const (
@@ -117,6 +125,10 @@ func ToScalingPolicy(s string) (ScalingPolicy, error) {
 	default:
 		return "", fmt.Errorf("invalid scaling policy: %s", s)
 	}
+}
+
+func (e ScalingPolicy) FromString(s string) (ScalingPolicy, error) {
+	return ToScalingPolicy(s)
 }
 
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
