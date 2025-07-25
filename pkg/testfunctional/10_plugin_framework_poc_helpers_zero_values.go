@@ -24,6 +24,18 @@ func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 	}
 }
 
+// TODO [this PR]: add functional test for this variant (with unset) to be closer to our implementation
+func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **bool, unsetField **bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = planned.ValueBoolPointer()
+		}
+	}
+	return nil
+}
+
 func Int64AttributeCreate(int64Attribute types.Int64, createField **int) error {
 	if !int64Attribute.IsNull() {
 		*createField = sdk.Int(int(int64Attribute.ValueInt64()))
@@ -44,6 +56,18 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 	}
 }
 
+// TODO [this PR]: add functional test for this variant (with unset) to be closer to our implementation
+func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = sdk.Int(int(planned.ValueInt64()))
+		}
+	}
+	return nil
+}
+
 func StringAttributeCreate(stringAttribute types.String, createField **string) error {
 	if !stringAttribute.IsNull() {
 		*createField = stringAttribute.ValueStringPointer()
@@ -59,4 +83,16 @@ func stringAttributeUpdate(planned types.String, inState types.String, setField 
 			*setField = planned.ValueStringPointer()
 		}
 	}
+}
+
+// TODO [this PR]: add functional test for this variant (with unset) to be closer to our implementation
+func StringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() || planned.IsUnknown() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = planned.ValueStringPointer()
+		}
+	}
+	return nil
 }
