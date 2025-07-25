@@ -220,7 +220,7 @@ func (r *EnumHandlingResource) Update(ctx context.Context, request resource.Upda
 	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
 
 	opts := &EnumHandlingOpts{}
-	err := StringEnumAttributeUpdate(plan.EnumValue, state.EnumValue, &opts.EnumValue, &opts.EnumValue)
+	err := stringEnumAttributeUpdate(plan.EnumValue, state.EnumValue, &opts.EnumValue, &opts.EnumValue)
 	if err != nil {
 		response.Diagnostics.AddError("Error updating some enum type", err.Error())
 	}

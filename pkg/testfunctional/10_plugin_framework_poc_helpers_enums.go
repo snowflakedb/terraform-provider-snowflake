@@ -18,7 +18,7 @@ func StringEnumAttributeCreate[T customtypes.EnumCreator[T]](attr customtypes.En
 	return nil
 }
 
-func StringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planValue customtypes.EnumValue[T], stateValue customtypes.EnumValue[T], setField **T, unsetField **T) error {
+func stringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planValue customtypes.EnumValue[T], stateValue customtypes.EnumValue[T], setField **T, unsetField **T) error {
 	// currently Equal is enough as we have customplanmodifiers.EnumSuppressor which checks normalized equality for planValue and stateValue
 	if !planValue.Equal(stateValue) {
 		if planValue.IsNull() || planValue.IsUnknown() {
