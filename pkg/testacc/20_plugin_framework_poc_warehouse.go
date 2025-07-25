@@ -387,6 +387,20 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
 }
 
-func (r *WarehouseResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
-	// TODO [this PR]: implement
+// For SDKv2 resources we have a method handling deletion common cases; we can add somethign similar later
+func (r *WarehouseResource) Delete(ctx context.Context, request resource.DeleteRequest, response *resource.DeleteResponse) {
+	var data *warehousePocModelV0
+	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
+
+	id, err := sdk.ParseAccountObjectIdentifier(data.Id.String())
+	if err != nil {
+		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
+		return
+	}
+
+	err = r.client.Warehouses.DropSafely(ctx, id)
+	if err != nil {
+		response.Diagnostics.AddError("Could not delete warehouse PoC", err.Error())
+		return
+	}
 }
