@@ -216,9 +216,9 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		testfunctional.BooleanAttributeCreate(data.EnableQueryAcceleration, &opts.EnableQueryAcceleration),
 		testfunctional.Int64AttributeCreate(data.QueryAccelerationMaxScaleFactor, &opts.QueryAccelerationMaxScaleFactor),
 
-		// max_concurrency_level
-		// statement_queued_timeout_in_seconds
-		// statement_timeout_in_seconds
+		testfunctional.Int64AttributeCreate(data.MaxConcurrencyLevel, &opts.MaxConcurrencyLevel),
+		testfunctional.Int64AttributeCreate(data.StatementQueuedTimeoutInSeconds, &opts.StatementQueuedTimeoutInSeconds),
+		testfunctional.Int64AttributeCreate(data.StatementTimeoutInSeconds, &opts.StatementTimeoutInSeconds),
 	)
 	if errs != nil {
 		response.Diagnostics.AddError("Error creating warehouse PoC", errs.Error())
