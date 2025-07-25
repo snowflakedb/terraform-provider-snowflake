@@ -6,10 +6,12 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	// for PoC using the imports from testfunctional package
@@ -86,12 +88,16 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 		"max_cluster_count": schema.Int64Attribute{
 			Description: existingWarehouseSchema["max_cluster_count"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: validation
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
 		},
 		"min_cluster_count": schema.Int64Attribute{
 			Description: existingWarehouseSchema["min_cluster_count"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: validation
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
 		},
 		"scaling_policy": schema.StringAttribute{
 			Description: existingWarehouseSchema["scaling_policy"].Description,
@@ -118,7 +124,7 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 		"resource_monitor": schema.StringAttribute{
 			Description: existingWarehouseSchema["resource_monitor"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: validation
+			// TODO [mux-PR]: identifier validation
 		},
 		"comment": schema.StringAttribute{
 			Description: existingWarehouseSchema["comment"].Description,
@@ -132,23 +138,31 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 		"query_acceleration_max_scale_factor": schema.Int64Attribute{
 			Description: existingWarehouseSchema["query_acceleration_max_scale_factor"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: validation
+			Validators: []validator.Int64{
+				int64validator.Between(0, 100),
+			},
 		},
 		// parameters are not computed because we can't handle them the same way as in SDKv2 implementation
 		strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): schema.Int64Attribute{
 			Description: existingWarehouseSchema[string(sdk.WarehouseParameterMaxConcurrencyLevel)].Description,
 			Optional:    true,
-			// TODO [mux-PR]: validation
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
 		},
 		strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): schema.Int64Attribute{
 			Description: existingWarehouseSchema[string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)].Description,
 			Optional:    true,
-			// TODO [mux-PR]: validation
+			Validators: []validator.Int64{
+				int64validator.AtLeast(0),
+			},
 		},
 		strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)): schema.Int64Attribute{
 			Description: existingWarehouseSchema[string(sdk.WarehouseParameterStatementTimeoutInSeconds)].Description,
 			Optional:    true,
-			// TODO [mux-PR]: validation
+			Validators: []validator.Int64{
+				int64validator.Between(0, 604800),
+			},
 		},
 		"id": schema.StringAttribute{
 			Computed:    true,
