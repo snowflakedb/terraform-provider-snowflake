@@ -78,15 +78,20 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 }
 
 func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) {
-	// TODO [mux-PR]: implement (populate in *gosnowflake.Config)
-	// TODO [mux-PR]: use os wrapper
-	// TODO [mux-PR]: handle envs
-	// todoFromEnv := os.Getenv("SNOWFLAKE_TODO")
-
 	var configModel pluginFrameworkPocProviderModelV0
 
 	// Read configuration data into model
 	response.Diagnostics.Append(request.Config.Get(ctx, &configModel)...)
+
+	config, err := p.getDriverConfigFromTerraform(configModel)
+	if err != nil {
+		response.Diagnostics.AddError("Could not read the Terraform config", err.Error())
+		return
+	}
+
+	_ = config
+
+	// TODO [this PR]: get also from toml
 
 	// TODO [mux-PR]: configure attributes
 	// var authenticator string
@@ -108,8 +113,8 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 	}
 
 	// TODO [mux-PR]: try to initialize the client and set it
-	providerCtx := &internalprovider.Context{Client: nil}
 	// TODO [mux-PR]: set preview_features_enabled
+	providerCtx := &internalprovider.Context{Client: nil}
 	response.DataSourceData = providerCtx
 	response.ResourceData = providerCtx
 }
