@@ -2,6 +2,7 @@ package testacc
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	// for PoC using the imports from testfunctional package
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customplanmodifiers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 )
@@ -196,8 +198,28 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 	id := sdk.NewAccountObjectIdentifier(name)
 
 	opts := &sdk.CreateWarehouseOptions{}
+	errs := errors.Join(
+		testfunctional.StringEnumAttributeCreate(data.WarehouseType, &opts.WarehouseType),
+		testfunctional.StringEnumAttributeCreate(data.WarehouseSize, &opts.WarehouseSize),
+		// max_cluster_count
+		// min_cluster_count
+		testfunctional.StringEnumAttributeCreate(data.ScalingPolicy, &opts.ScalingPolicy),
+		// auto_suspend
+		// auto_resume
+		// initially_suspended
+		// resource_monitor
+		// comment
+		// enable_query_acceleration
+		// query_acceleration_max_scale_factor
 
-	// TODO [this PR]: fill out all fields
+		// max_concurrency_level
+		// statement_queued_timeout_in_seconds
+		// statement_timeout_in_seconds
+	)
+	if errs != nil {
+		response.Diagnostics.AddError("Error creating warehouse PoC", errs.Error())
+		return
+	}
 
 	response.Diagnostics.Append(r.create(opts)...)
 	if response.Diagnostics.HasError() {
