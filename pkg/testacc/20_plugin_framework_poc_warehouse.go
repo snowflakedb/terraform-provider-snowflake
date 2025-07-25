@@ -53,6 +53,7 @@ type warehousePocModelV0 struct {
 	warehouseParametersModelV0
 
 	Id types.String `tfsdk:"id"`
+	fullyQualifiedNameModelEmbeddable
 }
 
 // we can't use here the WarehouseParameter type values as struct tags are pure literals
@@ -181,6 +182,7 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
+		resources.FullyQualifiedNameAttributeName: GetFullyQualifiedNameResourceSchema(),
 	}
 	return attrs
 }
@@ -300,8 +302,9 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0)
 	_ = w
 	_ = warehouseParameters
 
+	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
+
 	// TODO [this PR]: handle external changes
-	// TODO [this PR]: handle fully qualified name
 	// TODO [this PR]: setStateToValuesFromConfig ?
 	// TODO [this PR]: handle warehouse parameters read
 	// TODO [mux-PR]: show_output and parameters
