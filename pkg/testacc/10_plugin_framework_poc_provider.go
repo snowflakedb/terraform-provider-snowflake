@@ -123,6 +123,7 @@ func (p *pluginFrameworkPocProvider) DataSources(_ context.Context) []func() dat
 func (p *pluginFrameworkPocProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewSomeResource,
+		NewWarehousePocResource,
 	}
 }
 
