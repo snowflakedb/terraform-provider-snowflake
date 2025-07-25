@@ -4,9 +4,11 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -183,18 +185,59 @@ func (r *WarehouseResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 	}
 }
 
-func (r *WarehouseResource) Create(_ context.Context, _ resource.CreateRequest, _ *resource.CreateResponse) {
+func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
+	var data *warehousePocModelV0
+	response.Diagnostics.Append(request.Plan.Get(ctx, &data)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
 
+	name := data.Name.ValueString()
+	id := sdk.NewAccountObjectIdentifier(name)
+
+	opts := &sdk.CreateWarehouseOptions{}
+
+	// TODO [this PR]: fill out all fields
+
+	response.Diagnostics.Append(r.create(opts)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	response.Diagnostics.Append(r.readAfterCreateOrUpdate(data)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	// we can use the existing encoder
+	data.Id = types.StringValue(helpers.EncodeResourceIdentifier(id))
+	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+}
+
+func (r *WarehouseResource) create(opts *sdk.CreateWarehouseOptions) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	// TODO [this PR]: create
+
+	return diags
+}
+
+func (r *WarehouseResource) readAfterCreateOrUpdate(data *warehousePocModelV0) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	// TODO [this PR]: read
+
+	return diags
 }
 
 func (r *WarehouseResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
-	// TODO [mux-PR]: implement
+	// TODO [this PR]: implement
 }
 
 func (r *WarehouseResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
-	// TODO [mux-PR]: implement
+	// TODO [this PR]: implement
 }
 
 func (r *WarehouseResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
-	// TODO [mux-PR]: implement
+	// TODO [this PR]: implement
 }
