@@ -2,7 +2,10 @@ package testacc
 
 import (
 	"context"
+	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -17,31 +20,139 @@ func NewWarehousePocResource() resource.Resource {
 type WarehouseResource struct{}
 
 type warehousePocModelV0 struct {
-	Name types.String `tfsdk:"name"`
-	Id   types.String `tfsdk:"id"`
+	Name                            types.String `tfsdk:"name"`
+	WarehouseType                   types.String `tfsdk:"warehouse_type"` // TODO [mux-PR]: enum
+	WarehouseSize                   types.String `tfsdk:"warehouse_size"` // TODO [mux-PR]: enum
+	MaxClusterCount                 types.Int64  `tfsdk:"max_cluster_count"`
+	MinClusterCount                 types.Int64  `tfsdk:"min_cluster_count"`
+	ScalingPolicy                   types.String `tfsdk:"scaling_policy"` // TODO [mux-PR]: enum
+	AutoSuspend                     types.Int64  `tfsdk:"auto_suspend"`
+	AutoResume                      types.Bool   `tfsdk:"auto_resume"`
+	InitiallySuspended              types.Bool   `tfsdk:"initially_suspended"`
+	ResourceMonitor                 types.String `tfsdk:"resource_monitor"` // TODO [mux-PR]: identifier type?
+	Comment                         types.String `tfsdk:"comment"`
+	EnableQueryAcceleration         types.Bool   `tfsdk:"enable_query_acceleration"`
+	QueryAccelerationMaxScaleFactor types.Int64  `tfsdk:"query_acceleration_max_scale_factor"`
+
+	// embedding to clearly distinct parameters from other attributes
+	warehouseParametersModelV0
+
+	Id types.String `tfsdk:"id"`
+}
+
+// we can't use here the WarehouseParameter type values as struct tags are pure literals
+// this is really easy to generate though
+type warehouseParametersModelV0 struct {
+	MaxConcurrencyLevel             types.Int64 `tfsdk:"max_concurrency_level"`
+	StatementQueuedTimeoutInSeconds types.Int64 `tfsdk:"statement_queued_timeout_in_seconds"`
+	StatementTimeoutInSeconds       types.Int64 `tfsdk:"statement_timeout_in_seconds"`
 }
 
 func (r *WarehouseResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
 	response.TypeName = request.ProviderTypeName + "_warehouse_poc"
 }
 
-func (r *WarehouseResource) Schema(_ context.Context, _ resource.SchemaRequest, response *resource.SchemaResponse) {
-	response.Schema = schema.Schema{
-		Version: 0,
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "",
-				Required:    true,
-			},
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: "",
-				PlanModifiers: []planmodifier.String{
-					// TODO [mux-PR]: how it behaves with renames?
-					stringplanmodifier.UseStateForUnknown(),
-				},
+// TODO [mux-PR]: suppress identifier quoting
+// TODO [mux-PR]: IgnoreChangeToCurrentSnowflakeValueInShow?
+// TODO [mux-PR]: show_output and parameters
+// TODO [mux-PR]: fully_qualified_name
+func (r *WarehouseResource) attributes() map[string]schema.Attribute {
+	existingWarehouseSchema := resources.Warehouse().Schema
+	attrs := map[string]schema.Attribute{
+		"name": schema.StringAttribute{
+			Description: existingWarehouseSchema["name"].Description,
+			Required:    true,
+		},
+		"warehouse_type": schema.StringAttribute{
+			Description: existingWarehouseSchema["warehouse_type"].Description,
+			Optional:    true,
+			// TODO [mux-PR]: generic enum
+		},
+		"warehouse_size": schema.StringAttribute{
+			Description: existingWarehouseSchema["warehouse_size"].Description,
+			Optional:    true,
+			// TODO [mux-PR]: generic enum
+		},
+		"max_cluster_count": schema.Int64Attribute{
+			Description: existingWarehouseSchema["max_cluster_count"].Description,
+			Optional:    true,
+			// TODO [mux-PR]: validation
+		},
+		"min_cluster_count": schema.Int64Attribute{
+			Description: existingWarehouseSchema["min_cluster_count"].Description,
+			Optional:    true,
+			// TODO [mux-PR]: validation
+		},
+		"scaling_policy": schema.StringAttribute{
+			Description: existingWarehouseSchema["scaling_policy"].Description,
+			Optional:    true,
+			// TODO [mux-PR]: generic enum
+		},
+		"auto_suspend": schema.Int64Attribute{
+			Description: existingWarehouseSchema["auto_suspend"].Description,
+			Optional:    true,
+		},
+		// boolean vs tri-value string in the SDKv2 implementation
+		"auto_resume": schema.BoolAttribute{
+			Description: existingWarehouseSchema["auto_resume"].Description,
+			Optional:    true,
+		},
+		"initially_suspended": schema.BoolAttribute{
+			Description: existingWarehouseSchema["initially_suspended"].Description,
+			Optional:    true,
+			// TODO [mux-PR]: IgnoreAfterCreation
+		},
+		"resource_monitor": schema.StringAttribute{
+			Description: existingWarehouseSchema["resource_monitor"].Description,
+			Optional:    true,
+			// TODO [mux-PR]: validation
+		},
+		"comment": schema.StringAttribute{
+			Description: existingWarehouseSchema["comment"].Description,
+			Optional:    true,
+		},
+		"enable_query_acceleration": schema.BoolAttribute{
+			Description: existingWarehouseSchema["enable_query_acceleration"].Description,
+			Optional:    true,
+		},
+		// no SDKv2 IntDefault(-1) workaround needed
+		"query_acceleration_max_scale_factor": schema.Int64Attribute{
+			Description: existingWarehouseSchema["query_acceleration_max_scale_factor"].Description,
+			Optional:    true,
+			// TODO [mux-PR]: validation
+		},
+		// parameters are not computed because we can't handle them the same way as in SDKv2 implementation
+		strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): schema.Int64Attribute{
+			Description: existingWarehouseSchema[string(sdk.WarehouseParameterMaxConcurrencyLevel)].Description,
+			Optional:    true,
+			// TODO [mux-PR]: validation
+		},
+		strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): schema.Int64Attribute{
+			Description: existingWarehouseSchema[string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)].Description,
+			Optional:    true,
+			// TODO [mux-PR]: validation
+		},
+		strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)): schema.Int64Attribute{
+			Description: existingWarehouseSchema[string(sdk.WarehouseParameterStatementTimeoutInSeconds)].Description,
+			Optional:    true,
+			// TODO [mux-PR]: validation
+		},
+		"id": schema.StringAttribute{
+			Computed:    true,
+			Description: "Warehouse identifier.",
+			PlanModifiers: []planmodifier.String{
+				// TODO [mux-PR]: how it behaves with renames?
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
+	}
+	return attrs
+}
+
+func (r *WarehouseResource) Schema(_ context.Context, _ resource.SchemaRequest, response *resource.SchemaResponse) {
+	response.Schema = schema.Schema{
+		Version:    0,
+		Attributes: r.attributes(),
 	}
 }
 
