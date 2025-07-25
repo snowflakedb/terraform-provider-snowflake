@@ -23,11 +23,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 )
 
+var _ resource.ResourceWithConfigure = &WarehouseResource{}
+
 func NewWarehousePocResource() resource.Resource {
 	return &WarehouseResource{}
 }
 
-type WarehouseResource struct{}
+type WarehouseResource struct {
+	SnowflakeClientEmbeddable
+}
 
 type warehousePocModelV0 struct {
 	Name                            types.String                             `tfsdk:"name"`
@@ -221,7 +225,7 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		return
 	}
 
-	response.Diagnostics.Append(r.create(opts)...)
+	response.Diagnostics.Append(r.create(ctx, id, opts)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -236,10 +240,13 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func (r *WarehouseResource) create(opts *sdk.CreateWarehouseOptions) diag.Diagnostics {
+func (r *WarehouseResource) create(ctx context.Context, id sdk.AccountObjectIdentifier, opts *sdk.CreateWarehouseOptions) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// TODO [this PR]: create
+	err := r.client.Warehouses.Create(ctx, id, opts)
+	if err != nil {
+		diags.AddError("Could not create warehouse PoC", err.Error())
+	}
 
 	return diags
 }
