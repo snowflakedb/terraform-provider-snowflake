@@ -585,6 +585,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			unset.QueryAccelerationMaxScaleFactor = sdk.Bool(true)
 		}
 	}
+	// TODO [this PR]: these are duplicated?
 	if d.HasChange("max_concurrency_level") {
 		if v := d.Get("max_concurrency_level").(int); v != IntDefault {
 			set.MaxConcurrencyLevel = sdk.Int(v)

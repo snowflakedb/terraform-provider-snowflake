@@ -329,7 +329,32 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	set := sdk.WarehouseSet{}
 	unset := sdk.WarehouseUnset{}
 
-	// TODO [this PR]: handle attributes update
+	errs := errors.Join(
+		// name handled in rename
+		// TODO [this PR]: unset for warehouse type does not work
+		testfunctional.StringEnumAttributeUpdateWithUnset(plan.WarehouseType, state.WarehouseType, &set.WarehouseType, &unset.WarehouseType),
+		// TODO [this PR]: warehouse size unset?
+		// TODO [this PR]: WaitForCompletion
+		//testfunctional.StringEnumAttributeUpdateWithUnset(plan.WarehouseSize, state.WarehouseSize, &set.WarehouseSize, &unset.WarehouseSize),
+		// max_cluster_count
+		// min_cluster_count
+		// TODO [this PR]: unset for scaling policy does not work
+		testfunctional.StringEnumAttributeUpdateWithUnset(plan.ScalingPolicy, state.ScalingPolicy, &set.ScalingPolicy, &unset.ScalingPolicy),
+		// auto_suspend
+		// auto_resume
+		// resource_monitor
+		// comment
+		// enable_query_acceleration
+		// query_acceleration_max_scale_factor
+
+		// max_concurrency_level
+		// statement_queued_timeout_in_seconds
+		// statement_timeout_in_seconds
+	)
+	if errs != nil {
+		response.Diagnostics.AddError("Error updating warehouse PoC", errs.Error())
+		return
+	}
 
 	// Apply SET and UNSET changes
 	if (set != sdk.WarehouseSet{}) {

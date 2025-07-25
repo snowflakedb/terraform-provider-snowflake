@@ -33,3 +33,20 @@ func StringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planValue customtyp
 	}
 	return nil
 }
+
+// TODO [this PR]: add functional test for this variant (with unset) to be closer to our implementation
+func StringEnumAttributeUpdateWithUnset[T customtypes.EnumCreator[T]](planValue customtypes.EnumValue[T], stateValue customtypes.EnumValue[T], setField **T, unsetField **bool) error {
+	// currently Equal is enough as we have customplanmodifiers.EnumSuppressor which checks normalized equality for planValue and stateValue
+	if !planValue.Equal(stateValue) {
+		if planValue.IsNull() || planValue.IsUnknown() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			v, err := planValue.Normalize()
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(v)
+		}
+	}
+	return nil
+}
