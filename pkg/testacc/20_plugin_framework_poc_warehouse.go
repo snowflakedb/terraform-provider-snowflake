@@ -271,20 +271,20 @@ func (r *WarehouseResource) Read(ctx context.Context, request resource.ReadReque
 		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
 		return
 	}
-	response.Diagnostics.Append(r.read(ctx, data, id)...)
+	response.Diagnostics.Append(r.read(ctx, data, id, response)...)
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
 // TODO [this PR]: add functional test for saving the field always when it is not null in config
-func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier) diag.Diagnostics {
+func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier, response *resource.ReadResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	client := r.client
 	w, err := client.Warehouses.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
-			// TODO [this PR]: mark as removed (old d.SetId(""))
+			response.State.RemoveResource(ctx)
 			diags.AddWarning("Failed to query warehouse. Marking the resource as removed.", fmt.Sprintf("Warehouse id: %s, Err: %s", id.FullyQualifiedName(), err))
 		} else {
 			diags.AddError("Could not read Warehouse PoC", err.Error())
