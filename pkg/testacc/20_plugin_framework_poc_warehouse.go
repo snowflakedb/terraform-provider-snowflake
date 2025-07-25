@@ -3,6 +3,7 @@ package testacc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -69,7 +70,7 @@ func (r *WarehouseResource) Metadata(_ context.Context, request resource.Metadat
 // TODO [mux-PR]: suppress identifier quoting
 // TODO [mux-PR]: IgnoreChangeToCurrentSnowflakeValueInShow?
 // TODO [mux-PR]: show_output and parameters
-// TODO [mux-PR]: fully_qualified_name
+// TODO [this PR]: fully_qualified_name
 func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 	existingWarehouseSchema := resources.Warehouse().Schema
 	attrs := map[string]schema.Attribute{
@@ -259,8 +260,53 @@ func (r *WarehouseResource) readAfterCreateOrUpdate(data *warehousePocModelV0) d
 	return diags
 }
 
-func (r *WarehouseResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
-	// TODO [this PR]: implement
+func (r *WarehouseResource) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
+	var data *warehousePocModelV0
+	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
+
+	response.Diagnostics.Append(r.read(ctx, data)...)
+
+	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+}
+
+// TODO [this PR]: add functional test for saving the field always when it is not null in config
+func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	id, err := sdk.ParseAccountObjectIdentifier(data.Id.String())
+	if err != nil {
+		diags.AddError("Could not read ID in warehouse PoC", err.Error())
+		return diags
+	}
+
+	client := r.client
+	w, err := client.Warehouses.ShowByIDSafely(ctx, id)
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			// TODO [this PR]: mark as removed (old d.SetId(""))
+			diags.AddWarning("Failed to query warehouse. Marking the resource as removed.", fmt.Sprintf("Warehouse id: %s, Err: %s", id.FullyQualifiedName(), err))
+		} else {
+			diags.AddError("Could not read Warehouse PoC", err.Error())
+		}
+		return diags
+	}
+
+	warehouseParameters, err := client.Warehouses.ShowParameters(ctx, id)
+	if err != nil {
+		diags.AddError("Could not read Warehouse PoC parameters", err.Error())
+		return diags
+	}
+
+	_ = w
+	_ = warehouseParameters
+
+	// TODO [this PR]: handle external changes
+	// TODO [this PR]: handle fully qualified name
+	// TODO [this PR]: setStateToValuesFromConfig ?
+	// TODO [this PR]: handle warehouse parameters read
+	// TODO [mux-PR]: show_output and parameters
+
+	return diags
 }
 
 func (r *WarehouseResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
