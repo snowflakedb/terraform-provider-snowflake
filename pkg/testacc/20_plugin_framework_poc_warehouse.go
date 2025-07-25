@@ -266,20 +266,19 @@ func (r *WarehouseResource) Read(ctx context.Context, request resource.ReadReque
 	var data *warehousePocModelV0
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
 
-	response.Diagnostics.Append(r.read(ctx, data)...)
+	id, err := sdk.ParseAccountObjectIdentifier(data.Id.String())
+	if err != nil {
+		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
+		return
+	}
+	response.Diagnostics.Append(r.read(ctx, data, id)...)
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
 // TODO [this PR]: add functional test for saving the field always when it is not null in config
-func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0) diag.Diagnostics {
+func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-
-	id, err := sdk.ParseAccountObjectIdentifier(data.Id.String())
-	if err != nil {
-		diags.AddError("Could not read ID in warehouse PoC", err.Error())
-		return diags
-	}
 
 	client := r.client
 	w, err := client.Warehouses.ShowByIDSafely(ctx, id)
@@ -312,8 +311,52 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0)
 	return diags
 }
 
-func (r *WarehouseResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
-	// TODO [this PR]: implement
+func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
+	var plan, state *warehousePocModelV0
+
+	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
+	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
+
+	id, err := sdk.ParseAccountObjectIdentifier(state.Id.String())
+	if err != nil {
+		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
+		return
+	}
+
+	// TODO [this PR]: handle rename
+
+	// Batch SET operations and UNSET operations
+	set := sdk.WarehouseSet{}
+	unset := sdk.WarehouseUnset{}
+
+	// TODO [this PR]: handle attributes update
+
+	// Apply SET and UNSET changes
+	if (set != sdk.WarehouseSet{}) {
+		err := r.client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
+			Set: &set,
+		})
+		if err != nil {
+			response.Diagnostics.AddError("Could not update (alter set) warehouse PoC", err.Error())
+			return
+		}
+	}
+	if (unset != sdk.WarehouseUnset{}) {
+		err := r.client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
+			Unset: &unset,
+		})
+		if err != nil {
+			response.Diagnostics.AddError("Could not update (alter unset) warehouse PoC", err.Error())
+			return
+		}
+	}
+
+	response.Diagnostics.Append(r.readAfterCreateOrUpdate(plan)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
 }
 
 func (r *WarehouseResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
