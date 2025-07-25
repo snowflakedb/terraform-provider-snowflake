@@ -7,10 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func booleanAttributeCreate(boolAttribute types.Bool, createField **bool) {
+func BooleanAttributeCreate(boolAttribute types.Bool, createField **bool) error {
 	if !boolAttribute.IsNull() {
 		*createField = boolAttribute.ValueBoolPointer()
 	}
+	return nil
 }
 
 func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **bool, unsetField **bool) {
@@ -23,10 +24,11 @@ func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 	}
 }
 
-func int64AttributeCreate(int64Attribute types.Int64, createField **int) {
+func Int64AttributeCreate(int64Attribute types.Int64, createField **int) error {
 	if !int64Attribute.IsNull() {
 		*createField = sdk.Int(int(int64Attribute.ValueInt64()))
 	}
+	return nil
 }
 
 // For now, we use here two same set/unset pointers as the test server handles a single HTTP call.
@@ -42,10 +44,11 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 	}
 }
 
-func stringAttributeCreate(stringAttribute types.String, createField **string) {
+func StringAttributeCreate(stringAttribute types.String, createField **string) error {
 	if !stringAttribute.IsNull() {
 		*createField = stringAttribute.ValueStringPointer()
 	}
+	return nil
 }
 
 func stringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **string) {

@@ -205,16 +205,16 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 	errs := errors.Join(
 		testfunctional.StringEnumAttributeCreate(data.WarehouseType, &opts.WarehouseType),
 		testfunctional.StringEnumAttributeCreate(data.WarehouseSize, &opts.WarehouseSize),
-		// max_cluster_count
-		// min_cluster_count
+		testfunctional.Int64AttributeCreate(data.MaxClusterCount, &opts.MaxClusterCount),
+		testfunctional.Int64AttributeCreate(data.MinClusterCount, &opts.MinClusterCount),
 		testfunctional.StringEnumAttributeCreate(data.ScalingPolicy, &opts.ScalingPolicy),
-		// auto_suspend
-		// auto_resume
-		// initially_suspended
+		testfunctional.Int64AttributeCreate(data.AutoSuspend, &opts.AutoSuspend),
+		testfunctional.BooleanAttributeCreate(data.AutoResume, &opts.AutoResume),
+		testfunctional.BooleanAttributeCreate(data.InitiallySuspended, &opts.InitiallySuspended),
 		// resource_monitor
-		// comment
-		// enable_query_acceleration
-		// query_acceleration_max_scale_factor
+		testfunctional.StringAttributeCreate(data.Comment, &opts.Comment),
+		testfunctional.BooleanAttributeCreate(data.EnableQueryAcceleration, &opts.EnableQueryAcceleration),
+		testfunctional.Int64AttributeCreate(data.QueryAccelerationMaxScaleFactor, &opts.QueryAccelerationMaxScaleFactor),
 
 		// max_concurrency_level
 		// statement_queued_timeout_in_seconds
