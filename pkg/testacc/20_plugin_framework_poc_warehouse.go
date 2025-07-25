@@ -266,7 +266,7 @@ func (r *WarehouseResource) Read(ctx context.Context, request resource.ReadReque
 	var data *warehousePocModelV0
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
 
-	id, err := sdk.ParseAccountObjectIdentifier(data.Id.String())
+	id, err := sdk.ParseAccountObjectIdentifier(data.Id.ValueString())
 	if err != nil {
 		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
 		return
@@ -317,7 +317,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
 	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
 
-	id, err := sdk.ParseAccountObjectIdentifier(state.Id.String())
+	id, err := sdk.ParseAccountObjectIdentifier(state.Id.ValueString())
 	if err != nil {
 		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
 		return
@@ -392,7 +392,7 @@ func (r *WarehouseResource) Delete(ctx context.Context, request resource.DeleteR
 	var data *warehousePocModelV0
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
 
-	id, err := sdk.ParseAccountObjectIdentifier(data.Id.String())
+	id, err := sdk.ParseAccountObjectIdentifier(data.Id.ValueString())
 	if err != nil {
 		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
 		return
