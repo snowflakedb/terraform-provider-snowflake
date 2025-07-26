@@ -2,10 +2,14 @@ package testacc
 
 import (
 	"crypto/rsa"
+	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/snowflakedb/gosnowflake"
 )
 
@@ -41,61 +45,45 @@ func (p *pluginFrameworkPocProvider) getDriverConfigFromTerraform(configModel pl
 	config := &gosnowflake.Config{
 		Application: "terraform-provider-snowflake",
 	}
-
-	//accountNameEnv := oswrapper.Getenv(snowflakeenvs.AccountName)
-	//organizationNameEnv := oswrapper.Getenv(snowflakeenvs.OrganizationName)
-	//passwordEnv := oswrapper.Getenv(snowflakeenvs.Password)
-	//warehouseEnv := oswrapper.Getenv(snowflakeenvs.Warehouse)
-	//roleEnv := oswrapper.Getenv(snowflakeenvs.Role)
-	//authenticatorEnv := oswrapper.Getenv(snowflakeenvs.Authenticator)
-	//passcodeEnv := oswrapper.Getenv(snowflakeenvs.Passcode)
-	//passcodeInPasswordEnv := oswrapper.Getenv(snowflakeenvs.PasscodeInPassword)
-	//privateKeyEnv := oswrapper.Getenv(snowflakeenvs.PrivateKey)
-	//privateKeyPassphraseEnv := oswrapper.Getenv(snowflakeenvs.PrivateKeyPassphrase)
-	//driverTracingEnv := oswrapper.Getenv(snowflakeenvs.DriverTracing)
-	//profileEnv := oswrapper.Getenv(snowflakeenvs.Profile)
-
-	var user string
-	if !configModel.User.IsNull() {
-		user = configModel.User.ValueString()
-	} else {
-		user = oswrapper.Getenv(snowflakeenvs.User)
+	if errs := errors.Join(
+		setAccount(configModel, config),
+		setStringAttribute(configModel.User, snowflakeenvs.User, &config.User),
+		setStringAttribute(configModel.Password, snowflakeenvs.Password, &config.Password),
+		setStringAttribute(configModel.Warehouse, snowflakeenvs.Warehouse, &config.Warehouse),
+		setStringAttribute(configModel.Role, snowflakeenvs.Role, &config.Role),
+		setEnumAttribute(configModel.Authenticator, snowflakeenvs.Authenticator, sdk.ToExtendedAuthenticatorType, &config.Authenticator),
+		setStringAttribute(configModel.Passcode, snowflakeenvs.Passcode, &config.Passcode),
+		setBoolAttribute(configModel.PasscodeInPassword, snowflakeenvs.PasscodeInPassword, &config.PasscodeInPassword),
+		setEnumAttributeString(configModel.DriverTracing, snowflakeenvs.DriverTracing, sdk.ToDriverLogLevel, &config.Tracing),
+		setPrivateKey(configModel, config),
+		// profile is handled in the calling function
+	); errs != nil {
+		return nil, errs
 	}
-	if user != "" {
-		config.User = user
-	}
-
-	// account_name and organization_name
-	// user
-	// password
-	// warehouse
-	// role
-	// authenticator
-	// passcode
-	// passcode_in_password
-	// private_key and private_key_passphrase
-	// driver_tracing
-	// profile (is handled in the calling function)
-
-	// account_name and organization_name override legacy account field
-	//accountName := s.Get("account_name").(string)
-	//organizationName := s.Get("organization_name").(string)
-	//if accountName != "" && organizationName != "" {
-	//	config.Account = strings.Join([]string{organizationName, accountName}, "-")
-	//}
-
-	// private_key and private_key_passphrase have additional logic
-	//privateKey := s.Get("private_key").(string)
-	//privateKeyPassphrase := s.Get("private_key_passphrase").(string)
-	//v, err := getPrivateKey(privateKey, privateKeyPassphrase)
-	//if err != nil {
-	//	return nil, fmt.Errorf("could not retrieve private key: %w", err)
-	//}
-	//if v != nil {
-	//	config.PrivateKey = v
-	//}
 
 	return config, nil
+}
+
+func setAccount(configModel pluginFrameworkPocProviderModelV0, config *gosnowflake.Config) error {
+	accountName := getStringAttribute(configModel.AccountName, snowflakeenvs.AccountName)
+	organizationName := getStringAttribute(configModel.OrganizationName, snowflakeenvs.OrganizationName)
+	if accountName != "" && organizationName != "" {
+		config.Account = strings.Join([]string{organizationName, accountName}, "-")
+	}
+	return nil
+}
+
+func setPrivateKey(configModel pluginFrameworkPocProviderModelV0, config *gosnowflake.Config) error {
+	privateKey := getStringAttribute(configModel.PrivateKey, snowflakeenvs.PrivateKey)
+	privateKeyPassphrase := getStringAttribute(configModel.PrivateKeyPassphrase, snowflakeenvs.PrivateKeyPassphrase)
+	v, err := getPrivateKey(privateKey, privateKeyPassphrase)
+	if err != nil {
+		return fmt.Errorf("could not retrieve private key: %w", err)
+	}
+	if v != nil {
+		config.PrivateKey = v
+	}
+	return nil
 }
 
 // this method was copied from SDKv2 provider_helpers.go
@@ -105,4 +93,69 @@ func getPrivateKey(privateKeyString, privateKeyPassphrase string) (*rsa.PrivateK
 	}
 	privateKeyBytes := []byte(privateKeyString)
 	return sdk.ParsePrivateKey(privateKeyBytes, []byte(privateKeyPassphrase))
+}
+
+func getStringAttribute(stringField types.String, envName string) string {
+	var value string
+	if !stringField.IsNull() {
+		value = stringField.ValueString()
+	} else {
+		value = oswrapper.Getenv(envName)
+	}
+	return value
+}
+
+func setStringAttribute(stringField types.String, envName string, setInConfig *string) error {
+	value := getStringAttribute(stringField, envName)
+	if value != "" {
+		*setInConfig = value
+	}
+	return nil
+}
+
+func setEnumAttribute[T any](stringField types.String, envName string, toEnumFunc func(string) (T, error), setInConfig *T) error {
+	var value string
+	if !stringField.IsNull() {
+		value = stringField.ValueString()
+	} else {
+		value = oswrapper.Getenv(envName)
+	}
+	enumValue, err := toEnumFunc(value)
+	if err != nil {
+		return err
+	}
+	*setInConfig = enumValue
+	return nil
+}
+
+func setEnumAttributeString[T ~string](stringField types.String, envName string, toEnumFunc func(string) (T, error), setInConfig *string) error {
+	var value string
+	if !stringField.IsNull() {
+		value = stringField.ValueString()
+	} else {
+		value = oswrapper.Getenv(envName)
+	}
+	enumValue, err := toEnumFunc(value)
+	if err != nil {
+		return err
+	}
+	*setInConfig = string(enumValue)
+	return nil
+}
+
+func setBoolAttribute(boolField types.Bool, envName string, setInConfig *bool) error {
+	var value bool
+	if !boolField.IsNull() {
+		value = boolField.ValueBool()
+	} else {
+		if v, err := oswrapper.GetenvBool(envName); err != nil {
+			return err
+		} else {
+			value = v
+		}
+	}
+	if !value {
+		*setInConfig = value
+	}
+	return nil
 }
