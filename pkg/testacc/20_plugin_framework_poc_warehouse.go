@@ -233,7 +233,7 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		return
 	}
 
-	response.Diagnostics.Append(r.readAfterCreateOrUpdate(data)...)
+	response.Diagnostics.Append(r.readAfterCreateOrUpdate(data, id)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -254,8 +254,11 @@ func (r *WarehouseResource) create(ctx context.Context, id sdk.AccountObjectIden
 	return diags
 }
 
-func (r *WarehouseResource) readAfterCreateOrUpdate(data *warehousePocModelV0) diag.Diagnostics {
+func (r *WarehouseResource) readAfterCreateOrUpdate(data *warehousePocModelV0, id sdk.AccountObjectIdentifier) diag.Diagnostics {
 	diags := diag.Diagnostics{}
+
+	// TODO [this PR]: added to pass the initial test
+	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	// TODO [this PR]: read
 
@@ -379,7 +382,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		}
 	}
 
-	response.Diagnostics.Append(r.readAfterCreateOrUpdate(plan)...)
+	response.Diagnostics.Append(r.readAfterCreateOrUpdate(plan, id)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
