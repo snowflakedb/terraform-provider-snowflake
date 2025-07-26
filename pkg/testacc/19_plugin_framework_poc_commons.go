@@ -26,7 +26,7 @@ func (r *SnowflakeClientEmbeddable) Configure(_ context.Context, request resourc
 		return
 	}
 
-	if r.client == nil {
+	if providerContext.Client == nil {
 		response.Diagnostics.AddError("Snowflake client cannot be null", "Set up the context correctly in the provider's Configure func.")
 		return
 	}

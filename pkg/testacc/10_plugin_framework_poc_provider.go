@@ -95,7 +95,7 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 	}
 
 	// TODO [mux-PR]: handle skip_toml_file_permission_verification and use_legacy_toml_file
-	if profile := getStringAttribute(configModel.Profile, snowflakeenvs.Profile); profile != "" {
+	if profile := getProfile(configModel); profile != "" {
 		tomlConfig, err := sdkV2Provider.GetDriverConfigFromTOML(profile, false, false)
 		if err != nil {
 			response.Diagnostics.AddError("Could not read the Toml config", err.Error())

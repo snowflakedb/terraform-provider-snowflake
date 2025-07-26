@@ -95,6 +95,16 @@ func getPrivateKey(privateKeyString, privateKeyPassphrase string) (*rsa.PrivateK
 	return sdk.ParsePrivateKey(privateKeyBytes, []byte(privateKeyPassphrase))
 }
 
+func getProfile(configModel pluginFrameworkPocProviderModelV0) string {
+	profile := getStringAttribute(configModel.Profile, snowflakeenvs.Profile)
+	if profile == "" {
+		// There are no default in plugin framework, so it needs to be assigned manually.
+		// This is to achieve the same behavior as in the existing SDKv2 implementation.
+		profile = "default"
+	}
+	return profile
+}
+
 func getStringAttribute(stringField types.String, envName string) string {
 	var value string
 	if !stringField.IsNull() {
@@ -135,11 +145,13 @@ func setEnumAttributeString[T ~string](stringField types.String, envName string,
 	} else {
 		value = oswrapper.Getenv(envName)
 	}
-	enumValue, err := toEnumFunc(value)
-	if err != nil {
-		return err
+	if value != "" {
+		enumValue, err := toEnumFunc(value)
+		if err != nil {
+			return err
+		}
+		*setInConfig = string(enumValue)
 	}
-	*setInConfig = string(enumValue)
 	return nil
 }
 
