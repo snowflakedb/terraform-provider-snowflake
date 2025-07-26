@@ -582,23 +582,22 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 	}
 
 	if v, ok := s.GetOk("profile"); ok && v.(string) != "" {
-		tomlConfig, err := getDriverConfigFromTOML(v.(string), verifyPermissions, useLegacyTomlFile)
+		tomlConfig, err := GetDriverConfigFromTOML(v.(string), verifyPermissions, useLegacyTomlFile)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
 	}
 
-	client, clientErr := sdk.NewClient(config)
-
-	providerCtx := &provider.Context{Client: client}
+	providerCtx := &provider.Context{}
+	if client, err := sdk.NewClient(config); err != nil {
+		return nil, diag.FromErr(err)
+	} else {
+		providerCtx.Client = client
+	}
 
 	if v, ok := s.GetOk("preview_features_enabled"); ok {
 		providerCtx.EnabledFeatures = expandStringList(v.(*schema.Set).List())
-	}
-
-	if clientErr != nil {
-		return nil, diag.FromErr(clientErr)
 	}
 
 	return providerCtx, nil
@@ -616,7 +615,7 @@ func expandStringList(configured []interface{}) []string {
 	return vs
 }
 
-func getDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile bool) (*gosnowflake.Config, error) {
+func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile bool) (*gosnowflake.Config, error) {
 	if profile == "default" {
 		return sdk.DefaultConfig(
 			sdk.WithVerifyPermissions(verifyPermissions),

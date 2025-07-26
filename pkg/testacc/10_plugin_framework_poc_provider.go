@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	sdkV2Provider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -82,6 +84,9 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 
 	// Read configuration data into model
 	response.Diagnostics.Append(request.Config.Get(ctx, &configModel)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
 
 	config, err := p.getDriverConfigFromTerraform(configModel)
 	if err != nil {
@@ -89,32 +94,25 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 		return
 	}
 
-	_ = config
-
-	// TODO [this PR]: get also from toml
-
-	// TODO [mux-PR]: configure attributes
-	// var authenticator string
-	// if !configModel.Authenticator.IsNull() {
-	// 	authenticator = configModel.Authenticator.ValueString()
-	// } else {
-	// 	authenticator = todoFromEnv
-	// }
-	//
-	// if authenticator == "" {
-	// 	 response.Diagnostics.AddError(
-	//	 	"TODO summary",
-	//		"TODO details",
-	//	 )
-	// }
-
-	if response.Diagnostics.HasError() {
-		return
+	// TODO [mux-PR]: handle skip_toml_file_permission_verification and use_legacy_toml_file
+	if profile := getStringAttribute(configModel.Profile, snowflakeenvs.Profile); profile != "" {
+		tomlConfig, err := sdkV2Provider.GetDriverConfigFromTOML(profile, false, false)
+		if err != nil {
+			response.Diagnostics.AddError("Could not read the Toml config", err.Error())
+			return
+		}
+		config = sdk.MergeConfig(config, tomlConfig)
 	}
 
-	// TODO [mux-PR]: try to initialize the client and set it
+	providerCtx := &internalprovider.Context{}
+	if client, err := sdk.NewClient(config); err != nil {
+		response.Diagnostics.AddError("Could not initialize client", err.Error())
+		return
+	} else {
+		providerCtx.Client = client
+	}
+
 	// TODO [mux-PR]: set preview_features_enabled
-	providerCtx := &internalprovider.Context{Client: nil}
 	response.DataSourceData = providerCtx
 	response.ResourceData = providerCtx
 }
