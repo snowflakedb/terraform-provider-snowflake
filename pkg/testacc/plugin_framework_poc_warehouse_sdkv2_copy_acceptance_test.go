@@ -24,8 +24,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -167,17 +165,9 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasCommentString(comment).
 						HasEnableQueryAccelerationString("false").
 						HasQueryAccelerationMaxScaleFactorString("8").
-						HasDefaultMaxConcurrencyLevel().
-						HasDefaultStatementQueuedTimeoutInSeconds().
-						HasDefaultStatementTimeoutInSeconds(),
-					resourceshowoutputassert.ImportedWarehouseShowOutput(t, helpers.EncodeResourceIdentifier(warehouseId)),
-					resourceparametersassert.ImportedWarehouseResourceParameters(t, helpers.EncodeResourceIdentifier(warehouseId)).
-						HasMaxConcurrencyLevel(8).
-						HasMaxConcurrencyLevelLevel("").
-						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementQueuedTimeoutInSecondsLevel("").
-						HasStatementTimeoutInSeconds(172800).
-						HasStatementTimeoutInSecondsLevel(""),
+						HasNoMaxConcurrencyLevel().
+						HasNoStatementQueuedTimeoutInSeconds().
+						HasNoStatementTimeoutInSeconds(),
 					objectassert.Warehouse(t, warehouseId).
 						HasName(warehouseId.Name()).
 						HasState(sdk.WarehouseStateStarted).

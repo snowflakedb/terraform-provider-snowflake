@@ -233,6 +233,47 @@ func (r *WarehouseResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 	}
 }
 
+// TODO [mux-PR]: from the docs https://developer.hashicorp.com/terraform/plugin/framework/resources/import
+// (...) which must either specify enough Terraform state for the Read method to refresh [resource] or return an error.
+func (r *WarehouseResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
+	id, err := sdk.ParseAccountObjectIdentifier(request.ID)
+	if err != nil {
+		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
+		return
+	}
+
+	client := r.client
+	warehouse, err := client.Warehouses.ShowByID(ctx, id)
+	if err != nil {
+		response.Diagnostics.AddError("Could not read Warehouse PoC", err.Error())
+		return
+	}
+	data := &warehousePocModelV0{
+		Id:                              types.StringValue(helpers.EncodeResourceIdentifier(id)),
+		Name:                            types.StringValue(id.Name()),
+		WarehouseType:                   customtypes.NewEnumValue(warehouse.Type),
+		WarehouseSize:                   customtypes.NewEnumValue(warehouse.Size),
+		MaxClusterCount:                 types.Int64Value(int64(warehouse.MaxClusterCount)),
+		MinClusterCount:                 types.Int64Value(int64(warehouse.MinClusterCount)),
+		ScalingPolicy:                   customtypes.NewEnumValue(warehouse.ScalingPolicy),
+		AutoSuspend:                     types.Int64Value(int64(warehouse.AutoSuspend)),
+		AutoResume:                      types.BoolValue(warehouse.AutoResume),
+		ResourceMonitor:                 types.StringValue(warehouse.ResourceMonitor.Name()),
+		Comment:                         types.StringValue(warehouse.Comment),
+		EnableQueryAcceleration:         types.BoolValue(warehouse.EnableQueryAcceleration),
+		QueryAccelerationMaxScaleFactor: types.Int64Value(int64(warehouse.QueryAccelerationMaxScaleFactor)),
+	}
+
+	// TODO [this PR]: handle parameters
+	//warehouseParameters, err := client.Warehouses.ShowParameters(ctx, id)
+	// if err != nil {
+	//	response.Diagnostics.AddError("Could not read Warehouse PoC parameters", err.Error())
+	//	return
+	// }
+
+	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+}
+
 func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
 	var data *warehousePocModelV0
 	response.Diagnostics.Append(request.Plan.Get(ctx, &data)...)
