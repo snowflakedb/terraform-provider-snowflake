@@ -4,6 +4,12 @@
 // They were adjusted to verify Terraform Plugin Framework warehouse PoC resource implementation.
 // Models used are the same but with the resource type replaced.
 // Assertions used are the same but with the resource type replaced.
+// Assertion using r.IntDefaultString or r.BooleanDefault were replaced (as such defaults are not used).
+// Parameter values are not in state when they config does not contain them.
+// Default parameter assertions can't be used because of above.
+// WarehouseShowOutput assertions were removed or replaced with Snowflake object assertions.
+// WarehouseResourceParameters assertions were removed or replaced with Snowflake parameters assertions.
+// Default extensions were removed as they don't match.
 package testacc
 
 import (
@@ -110,42 +116,16 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasNoMaxClusterCount().
 						HasNoMinClusterCount().
 						HasNoScalingPolicy().
-						HasAutoSuspendString(r.IntDefaultString).
-						HasAutoResumeString(r.BooleanDefault).
+						HasNoAutoSuspend().
+						HasNoAutoResume().
 						HasNoInitiallySuspended().
 						HasNoResourceMonitor().
 						HasCommentString(comment).
-						HasEnableQueryAccelerationString(r.BooleanDefault).
-						HasQueryAccelerationMaxScaleFactorString(r.IntDefaultString).
-						HasMaxConcurrencyLevelString("8").
-						HasStatementQueuedTimeoutInSecondsString("0").
-						HasStatementTimeoutInSecondsString("172800").
-						// alternatively extensions possible:
-						HasDefaultMaxConcurrencyLevel().
-						HasDefaultStatementQueuedTimeoutInSeconds().
-						HasDefaultStatementTimeoutInSeconds().
-						// alternatively extension possible
-						HasAllDefault(),
-					resourceshowoutputassert.WarehouseShowOutput(t, replaceResourceReference(warehouseModel.ResourceReference())).
-						HasType(sdk.WarehouseTypeStandard).
-						HasSize(sdk.WarehouseSizeXSmall).
-						HasMaxClusterCount(1).
-						HasMinClusterCount(1).
-						HasScalingPolicy(sdk.ScalingPolicyStandard).
-						HasAutoSuspend(600).
-						HasAutoResume(true).
-						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
-						HasComment(comment).
-						HasEnableQueryAcceleration(false).
-						HasQueryAccelerationMaxScaleFactor(8),
-					resourceparametersassert.WarehouseResourceParameters(t, replaceResourceReference(warehouseModel.ResourceReference())).
-						HasMaxConcurrencyLevel(8).
-						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementTimeoutInSeconds(172800).
-						// alternatively extensions possible:
-						HasDefaultMaxConcurrencyLevel().
-						HasDefaultStatementQueuedTimeoutInSeconds().
-						HasDefaultStatementTimeoutInSeconds(),
+						HasNoEnableQueryAcceleration().
+						HasNoQueryAccelerationMaxScaleFactor().
+						HasNoMaxConcurrencyLevel().
+						HasNoStatementQueuedTimeoutInSeconds().
+						HasNoStatementTimeoutInSeconds(),
 					objectassert.Warehouse(t, warehouseId).
 						HasName(warehouseId.Name()).
 						HasState(sdk.WarehouseStateStarted).
@@ -163,7 +143,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 					objectparametersassert.WarehouseParameters(t, warehouseId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
-					// we can still use normal checks
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "name", warehouseId.Name())),
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "fully_qualified_name", warehouseId.FullyQualifiedName())),
 				),
