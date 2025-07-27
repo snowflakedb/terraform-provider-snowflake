@@ -1,5 +1,6 @@
 // Tests in this file are all the current acceptance tests for the SDKv2 warehouse resource excluding migration tests.
 // They were adjusted to verify Terraform Plugin Framework warehouse PoC resource implementation.
+// Models used are the same but with the resource type replaced.
 package testacc
 
 import (
@@ -29,6 +30,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 	"github.com/stretchr/testify/require"
 )
+
+func replaceWithWarehousePoCResourceType(t *testing.T, originalConfig string) string {
+	replaced := strings.ReplaceAll(originalConfig, `resource "snowflake_warehouse"`, `resource "snowflake_warehouse_poc"`)
+	t.Logf("Replaced config:\n%s", replaced)
+	return replaced
+}
 
 func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
@@ -86,7 +93,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel))),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModel.ResourceReference()).
 						HasNameString(warehouseId.Name()).
@@ -205,7 +212,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 			},
 			// RENAME
 			{
-				Config: config.FromModels(t, warehouseModelRenamed),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamed)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelRenamed.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -218,7 +225,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 			},
 			// Change config but use defaults for every attribute (but not the parameters) - expect no changes (because these are already SF values)
 			{
-				Config: config.FromModels(t, warehouseModelRenamedFullWithoutParameters),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFullWithoutParameters)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelRenamedFullWithoutParameters.ResourceReference(), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -228,7 +235,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 			},
 			// add parameters - update expected (different level even with same values)
 			{
-				Config: config.FromModels(t, warehouseModelRenamedFullWithParameters),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFullWithParameters)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelRenamedFullWithParameters.ResourceReference(), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -271,7 +278,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 			},
 			// CHANGE PROPERTIES (normal and parameters)
 			{
-				Config: config.FromModels(t, warehouseModelRenamedFull),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFull)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelRenamedFull.ResourceReference(), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -320,7 +327,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 			},
 			// change resource monitor - wrap in quotes (no change expected)
 			{
-				Config: config.FromModels(t, warehouseModelRenamedFullResourceMonitorInQuotes),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFullResourceMonitorInQuotes)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -329,7 +336,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 			},
 			// CHANGE max_concurrency_level EXTERNALLY (proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2318)
 			{
-				Config:    config.FromModels(t, warehouseModelRenamedFull),
+				Config:    replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFull)),
 				PreConfig: func() { testClient().Warehouse.UpdateMaxConcurrencyLevel(t, warehouseId2, 10) },
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -379,7 +386,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 		Steps: []resource.TestStep{
 			// set up with concrete type
 			{
-				Config: config.FromModels(t, warehouseModelStandard),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelStandard)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelStandard.ResourceReference(), "warehouse_type", r.ShowOutputAttributeName),
@@ -407,7 +414,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 			},
 			// change type in config
 			{
-				Config: config.FromModels(t, warehouseModelSnowparkOptimized),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelSnowparkOptimized)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelSnowparkOptimized.ResourceReference(), "warehouse_type", r.ShowOutputAttributeName),
@@ -424,7 +431,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 			},
 			// remove type from config
 			{
-				Config: config.FromModels(t, warehouseModelNoType),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelNoType)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelNoType.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -442,7 +449,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 			},
 			// add config (lower case)
 			{
-				Config: config.FromModels(t, warehouseModelSnowparkOptimizedLowercase),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelSnowparkOptimizedLowercase)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelSnowparkOptimizedLowercase.ResourceReference(), "warehouse_type", r.ShowOutputAttributeName),
@@ -462,7 +469,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 				PreConfig: func() {
 					testClient().Warehouse.UpdateWarehouseType(t, id, sdk.WarehouseTypeStandard)
 				},
-				Config: config.FromModels(t, warehouseModelNoType),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelNoType)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -486,7 +493,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 					// we change the type to the type different from default, expecting action
 					testClient().Warehouse.UpdateWarehouseType(t, id, sdk.WarehouseTypeSnowparkOptimized)
 				},
-				Config: config.FromModels(t, warehouseModelNoType),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelNoType)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -540,7 +547,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 		Steps: []resource.TestStep{
 			// set up with concrete size
 			{
-				Config: config.FromModels(t, warehouseModelSmall),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelSmall)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelSmall.ResourceReference(), "warehouse_size", r.ShowOutputAttributeName),
@@ -568,7 +575,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 			},
 			// change size in config
 			{
-				Config: config.FromModels(t, warehouseModelMedium),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelMedium)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelMedium.ResourceReference(), "warehouse_size", r.ShowOutputAttributeName),
@@ -585,7 +592,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 			},
 			// remove size from config
 			{
-				Config: config.FromModels(t, warehouseModelNoSize),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelNoSize)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelNoSize.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
@@ -603,7 +610,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 			},
 			// add config (lower case)
 			{
-				Config: config.FromModels(t, warehouseModelSmallLowercase),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelSmallLowercase)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelSmallLowercase.ResourceReference(), "warehouse_size", r.ShowOutputAttributeName),
@@ -623,7 +630,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 				PreConfig: func() {
 					testClient().Warehouse.UpdateWarehouseSize(t, id, sdk.WarehouseSizeXSmall)
 				},
-				Config: config.FromModels(t, warehouseModelNoSize),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelNoSize)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -647,7 +654,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 					// we change the size to the size different from default, expecting action
 					testClient().Warehouse.UpdateWarehouseSize(t, id, sdk.WarehouseSizeSmall)
 				},
-				Config: config.FromModels(t, warehouseModelNoSize),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelNoSize)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -707,37 +714,37 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Validations(t *testing.T) 
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, warehouseModelInvalidType),
+				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidType)),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("invalid warehouse type: unknown"),
 			},
 			{
-				Config:      config.FromModels(t, warehouseModelInvalidSize),
+				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidSize)),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("invalid warehouse size: SMALLa"),
 			},
 			{
-				Config:      config.FromModels(t, warehouseModelInvalidMaxClusterCount),
+				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidMaxClusterCount)),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected max_cluster_count to be at least \(1\), got 0`),
 			},
 			{
-				Config:      config.FromModels(t, warehouseModelInvalidMinClusterCount),
+				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidMinClusterCount)),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected min_cluster_count to be at least \(1\), got 0`),
 			},
 			{
-				Config:      config.FromModels(t, warehouseModelInvalidScalingPolicy),
+				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidScalingPolicy)),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("invalid scaling policy: unknown"),
 			},
 			{
-				Config:      config.FromModels(t, warehouseModelInvalidAutoResume),
+				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidAutoResume)),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected \[\{\{} auto_resume}] to be one of \["true" "false"], got other`),
 			},
 			{
-				Config:      config.FromModels(t, warehouseModelInvalidMaxConcurrencyLevel),
+				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidMaxConcurrencyLevel)),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected max_concurrency_level to be at least \(1\), got -2`),
 			},
@@ -764,14 +771,14 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ValidateDriftForCurrentWar
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "show_output.#", "1"),
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "show_output.0.is_current", "true"),
 				),
 			},
 			{
-				Config: config.FromModels(t, warehouseModel, secondWarehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel, secondWarehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModel.ResourceReference(), plancheck.ResourceActionNoop),
@@ -787,7 +794,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ValidateDriftForCurrentWar
 				),
 			},
 			{
-				Config: config.FromModels(t, warehouseModel, secondWarehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel, secondWarehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.ExpectDrift(warehouseModel.ResourceReference(), "show_output.0.is_current", sdk.String("true"), sdk.String("false")),
@@ -822,7 +829,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 		Steps: []resource.TestStep{
 			// set up with auto resume set in config
 			{
-				Config: config.FromModels(t, warehouseModelAutoResumeTrue),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelAutoResumeTrue)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelAutoResumeTrue.ResourceReference(), "auto_resume", r.ShowOutputAttributeName),
@@ -850,7 +857,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 			},
 			// change value in config
 			{
-				Config: config.FromModels(t, warehouseModelAutoResumeFalse),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelAutoResumeFalse)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelAutoResumeFalse.ResourceReference(), "auto_resume", r.ShowOutputAttributeName),
@@ -867,7 +874,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 			},
 			// remove type from config (expecting non-empty plan because we do not know the default)
 			{
-				Config: config.FromModels(t, warehouseModelWithoutAutoResume),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithoutAutoResume)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelWithoutAutoResume.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -889,7 +896,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 					// we change the auto resume to the type different from default, expecting action
 					testClient().Warehouse.UpdateAutoResume(t, id, false)
 				},
-				Config: config.FromModels(t, warehouseModelWithoutAutoResume),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithoutAutoResume)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -940,7 +947,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 		Steps: []resource.TestStep{
 			// set up with auto suspend set in config
 			{
-				Config: config.FromModels(t, warehouseModelAutoSuspend1200),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelAutoSuspend1200)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelAutoSuspend1200.ResourceReference(), "auto_suspend", r.ShowOutputAttributeName),
@@ -968,7 +975,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 			},
 			// change value in config to Snowflake default
 			{
-				Config: config.FromModels(t, warehouseModelAutoSuspend600),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelAutoSuspend600)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelAutoSuspend600.ResourceReference(), "auto_suspend", r.ShowOutputAttributeName),
@@ -985,7 +992,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 			},
 			// remove auto suspend from config (expecting non-empty plan because we do not know the default)
 			{
-				Config: config.FromModels(t, warehouseModelWithoutAutoSuspend),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithoutAutoSuspend)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelWithoutAutoSuspend.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -1007,7 +1014,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 					// we change the max cluster count to the type different from default, expecting action
 					testClient().Warehouse.UpdateAutoSuspend(t, id, 2400)
 				},
-				Config: config.FromModels(t, warehouseModelWithoutAutoSuspend),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithoutAutoSuspend)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -1060,7 +1067,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with valid "zero" values
 			{
-				Config: config.FromModels(t, warehouseModelWithAllValidZeroValues),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithAllValidZeroValues)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelWithAllValidZeroValues.ResourceReference(), "auto_suspend", "query_acceleration_max_scale_factor", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -1090,7 +1097,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 			},
 			// remove all from config (to validate that unset is run correctly)
 			{
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModel.ResourceReference(), "auto_suspend", "query_acceleration_max_scale_factor", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -1120,7 +1127,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 			},
 			// add valid "zero" values again (to validate if set is run correctly)
 			{
-				Config: config.FromModels(t, warehouseModelWithAllValidZeroValues),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithAllValidZeroValues)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelWithAllValidZeroValues.ResourceReference(), "auto_suspend", "query_acceleration_max_scale_factor", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -1193,7 +1200,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with setting one param
 			{
-				Config: config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds86400),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds86400)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1211,7 +1218,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 			},
 			// do not make any change (to check if there is no drift)
 			{
-				Config: config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds86400),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds86400)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -1232,7 +1239,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 			},
 			// change the param value in config
 			{
-				Config: config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds43200),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds43200)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1256,7 +1263,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					revert := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "86400")
 					t.Cleanup(revert)
 				},
-				Config: config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds43200),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds43200)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1280,7 +1287,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					// update externally
 					testClient().Warehouse.UpdateStatementTimeoutInSeconds(t, id, 86400)
 				},
-				Config: config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds43200),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds43200)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1303,7 +1310,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					testClient().Warehouse.UnsetStatementTimeoutInSeconds(t, id)
 					testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "43200")
 				},
-				Config: config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds43200),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds43200)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1328,7 +1335,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					param := testClient().Parameter.ShowAccountParameter(t, sdk.AccountParameterStatementTimeoutInSeconds)
 					require.Equal(t, "", string(param.Level))
 				},
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModel.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1358,7 +1365,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 			},
 			// change the param value in config to snowflake default (expecting action because of the different level)
 			{
-				Config: config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds172800),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds172800)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1381,7 +1388,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					param := testClient().Parameter.ShowAccountParameter(t, sdk.AccountParameterStatementTimeoutInSeconds)
 					require.Equal(t, "", string(param.Level))
 				},
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModel.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1406,7 +1413,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					revert := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "86400")
 					t.Cleanup(revert)
 				},
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModel.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1439,7 +1446,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				PreConfig: func() {
 					testClient().Warehouse.UpdateStatementTimeoutInSeconds(t, id, 86400)
 				},
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModel.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1461,7 +1468,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				PreConfig: func() {
 					testClient().Parameter.UnsetAccountParameter(t, sdk.AccountParameterStatementTimeoutInSeconds)
 				},
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModel.ResourceReference(), "statement_timeout_in_seconds", r.ParametersAttributeName),
@@ -1497,7 +1504,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_InitiallySuspendedChangesP
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, warehouseModelWithInitiallySuspendedTrue),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithInitiallySuspendedTrue)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelWithInitiallySuspendedTrue.ResourceReference(), "initially_suspended", "true"),
 
@@ -1506,7 +1513,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_InitiallySuspendedChangesP
 				),
 			},
 			{
-				Config: config.FromModels(t, warehouseModelWithInitiallySuspendedFalse),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithInitiallySuspendedFalse)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -1520,7 +1527,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_InitiallySuspendedChangesP
 				),
 			},
 			{
-				Config: config.FromModels(t, warehouseModel),
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
