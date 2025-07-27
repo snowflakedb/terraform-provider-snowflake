@@ -1,3 +1,5 @@
+//go:build account_level_tests
+
 // Tests in this file are all the current acceptance tests for the SDKv2 warehouse resource excluding migration tests.
 // They were adjusted to verify Terraform Plugin Framework warehouse PoC resource implementation.
 // Models used are the same but with the resource type replaced.

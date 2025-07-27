@@ -272,8 +272,12 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		return
 	}
 
+	// TODO [this PR]: added to pass the initial test
+	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
+
 	// we can use the existing encoder
 	data.Id = types.StringValue(helpers.EncodeResourceIdentifier(id))
+
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -300,9 +304,6 @@ func (r *WarehouseResource) create(ctx context.Context, id sdk.AccountObjectIden
 
 func (r *WarehouseResource) readAfterCreateOrUpdate(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier, state *tfsdk.State) ([]byte, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-
-	// TODO [this PR]: added to pass the initial test
-	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	// TODO [this PR]: merge with read
 	client := r.client
@@ -493,6 +494,10 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 			return
 		}
 	}
+
+	// TODO [this PR]: added to pass the initial test
+	plan.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
+
 	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
 	if response.Diagnostics.HasError() {
 		return
