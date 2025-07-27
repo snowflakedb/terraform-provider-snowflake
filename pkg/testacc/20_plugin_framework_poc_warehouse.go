@@ -2,6 +2,7 @@ package testacc
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	// for PoC using the imports from testfunctional package
@@ -62,6 +64,43 @@ type warehouseParametersModelV0 struct {
 	MaxConcurrencyLevel             types.Int64 `tfsdk:"max_concurrency_level"`
 	StatementQueuedTimeoutInSeconds types.Int64 `tfsdk:"statement_queued_timeout_in_seconds"`
 	StatementTimeoutInSeconds       types.Int64 `tfsdk:"statement_timeout_in_seconds"`
+}
+
+type WarehousePocPrivateJson struct {
+	WarehouseType                   sdk.WarehouseType `json:"warehouse_type,omitempty"`
+	WarehouseSize                   sdk.WarehouseSize `json:"warehouse_size,omitempty"`
+	MaxClusterCount                 int               `json:"max_cluster_count,omitempty"`
+	MinClusterCount                 int               `json:"min_cluster_count,omitempty"`
+	ScalingPolicy                   sdk.ScalingPolicy `json:"scaling_policy,omitempty"`
+	AutoSuspend                     int               `json:"auto_suspend,omitempty"`
+	AutoResume                      bool              `json:"auto_resume,omitempty"`
+	ResourceMonitor                 string            `json:"resource_monitor,omitempty"`
+	EnableQueryAcceleration         bool              `json:"enable_query_acceleration,omitempty"`
+	QueryAccelerationMaxScaleFactor int               `json:"query_acceleration_max_scale_factor,omitempty"`
+}
+
+func warehousePocPrivateJsonFromWarehouse(warehouse *sdk.Warehouse) *WarehousePocPrivateJson {
+	return &WarehousePocPrivateJson{
+		WarehouseType:                   warehouse.Type,
+		WarehouseSize:                   warehouse.Size,
+		MaxClusterCount:                 warehouse.MaxClusterCount,
+		MinClusterCount:                 warehouse.MinClusterCount,
+		ScalingPolicy:                   warehouse.ScalingPolicy,
+		AutoSuspend:                     warehouse.AutoSuspend,
+		AutoResume:                      warehouse.AutoResume,
+		ResourceMonitor:                 warehouse.ResourceMonitor.Name(),
+		EnableQueryAcceleration:         warehouse.EnableQueryAcceleration,
+		QueryAccelerationMaxScaleFactor: warehouse.QueryAccelerationMaxScaleFactor,
+	}
+}
+
+func marshallWarehousePocPrivateJson(warehouse *sdk.Warehouse) ([]byte, error) {
+	warehouseJson := warehousePocPrivateJsonFromWarehouse(warehouse)
+	bytes, err := json.Marshal(warehouseJson)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal json: %w", err)
+	}
+	return bytes, nil
 }
 
 func (r *WarehouseResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
@@ -233,14 +272,19 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		return
 	}
 
-	response.Diagnostics.Append(r.readAfterCreateOrUpdate(data, id)...)
+	// we can use the existing encoder
+	data.Id = types.StringValue(helpers.EncodeResourceIdentifier(id))
+	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 
-	// we can use the existing encoder
-	data.Id = types.StringValue(helpers.EncodeResourceIdentifier(id))
-	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+	b, d := r.readAfterCreateOrUpdate(ctx, data, id, &response.State)
+	if d.HasError() {
+		response.Diagnostics.Append(d...)
+		return
+	}
+	response.Diagnostics.Append(response.Private.SetKey(ctx, "state_in_snowflake", b)...)
 }
 
 func (r *WarehouseResource) create(ctx context.Context, id sdk.AccountObjectIdentifier, opts *sdk.CreateWarehouseOptions) diag.Diagnostics {
@@ -254,15 +298,32 @@ func (r *WarehouseResource) create(ctx context.Context, id sdk.AccountObjectIden
 	return diags
 }
 
-func (r *WarehouseResource) readAfterCreateOrUpdate(data *warehousePocModelV0, id sdk.AccountObjectIdentifier) diag.Diagnostics {
+func (r *WarehouseResource) readAfterCreateOrUpdate(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier, state *tfsdk.State) ([]byte, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	// TODO [this PR]: added to pass the initial test
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
-	// TODO [this PR]: read
+	// TODO [this PR]: merge with read
+	client := r.client
+	warehouse, err := client.Warehouses.ShowByIDSafely(ctx, id)
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			state.RemoveResource(ctx)
+			diags.AddWarning("Failed to query warehouse. Marking the resource as removed.", fmt.Sprintf("Warehouse id: %s, Err: %s", id.FullyQualifiedName(), err))
+		} else {
+			diags.AddError("Could not read Warehouse PoC", err.Error())
+		}
+		return nil, diags
+	}
 
-	return diags
+	bytes, err := marshallWarehousePocPrivateJson(warehouse)
+	if err != nil {
+		diags.AddError("Could not marshal json", err.Error())
+		return nil, diags
+	}
+
+	return bytes, diags
 }
 
 func (r *WarehouseResource) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
@@ -274,17 +335,17 @@ func (r *WarehouseResource) Read(ctx context.Context, request resource.ReadReque
 		response.Diagnostics.AddError("Could not read ID in warehouse PoC", err.Error())
 		return
 	}
-	response.Diagnostics.Append(r.read(ctx, data, id, response)...)
+	response.Diagnostics.Append(r.read(ctx, data, id, request, response)...)
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
 // TODO [this PR]: add functional test for saving the field always when it is not null in config
-func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier, response *resource.ReadResponse) diag.Diagnostics {
+func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier, request resource.ReadRequest, response *resource.ReadResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	client := r.client
-	w, err := client.Warehouses.ShowByIDSafely(ctx, id)
+	warehouse, err := client.Warehouses.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			response.State.RemoveResource(ctx)
@@ -301,14 +362,65 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		return diags
 	}
 
-	_ = w
 	_ = warehouseParameters
 
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
-	// TODO [this PR]: handle external changes
-	// TODO [this PR]: setStateToValuesFromConfig ?
+	prevValueBytes, d := request.Private.GetKey(ctx, "state_in_snowflake")
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+	if prevValueBytes != nil {
+		var prevValue WarehousePocPrivateJson
+		err := json.Unmarshal(prevValueBytes, &prevValue)
+		if err != nil {
+			diags.AddError("Could not unmarshal json", err.Error())
+			return diags
+		}
+
+		// TODO [mux-PR]: introduce function like handleExternalChangesToObjectInShow or something similar
+		if warehouse.Type != prevValue.WarehouseType {
+			data.WarehouseType = customtypes.NewEnumValue(warehouse.Type)
+		}
+		if warehouse.Size != prevValue.WarehouseSize {
+			data.WarehouseSize = customtypes.NewEnumValue(warehouse.Size)
+		}
+		if warehouse.MaxClusterCount != prevValue.MaxClusterCount {
+			data.MaxClusterCount = types.Int64Value(int64(warehouse.MaxClusterCount))
+		}
+		if warehouse.MinClusterCount != prevValue.MinClusterCount {
+			data.MinClusterCount = types.Int64Value(int64(warehouse.MinClusterCount))
+		}
+		if warehouse.ScalingPolicy != prevValue.ScalingPolicy {
+			data.ScalingPolicy = customtypes.NewEnumValue(warehouse.ScalingPolicy)
+		}
+		if warehouse.AutoSuspend != prevValue.AutoSuspend {
+			data.AutoSuspend = types.Int64Value(int64(warehouse.AutoSuspend))
+		}
+		if warehouse.AutoResume != prevValue.AutoResume {
+			data.AutoResume = types.BoolValue(warehouse.AutoResume)
+		}
+		// if warehouse.ResourceMonitor != prevValue.ResourceMonitor {
+		//	data.ResourceMonitor = types.StringValue(warehouse.ResourceMonitor.Name())
+		// }
+		if warehouse.EnableQueryAcceleration != prevValue.EnableQueryAcceleration {
+			data.EnableQueryAcceleration = types.BoolValue(warehouse.EnableQueryAcceleration)
+		}
+		if warehouse.QueryAccelerationMaxScaleFactor != prevValue.QueryAccelerationMaxScaleFactor {
+			data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(warehouse.QueryAccelerationMaxScaleFactor))
+		}
+	}
+
+	bytes, err := marshallWarehousePocPrivateJson(warehouse)
+	if err != nil {
+		diags.AddError("Could not marshal json", err.Error())
+		return diags
+	}
+	response.Diagnostics.Append(response.Private.SetKey(ctx, "state_in_snowflake", bytes)...)
+
 	// TODO [this PR]: handle warehouse parameters read
+	// TODO [this PR]: setStateToValuesFromConfig ?
 	// TODO [mux-PR]: show_output and parameters
 
 	return diags
@@ -381,13 +493,17 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 			return
 		}
 	}
-
-	response.Diagnostics.Append(r.readAfterCreateOrUpdate(plan, id)...)
+	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 
-	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
+	b, d := r.readAfterCreateOrUpdate(ctx, plan, id, &response.State)
+	if d.HasError() {
+		response.Diagnostics.Append(d...)
+		return
+	}
+	response.Diagnostics.Append(response.Private.SetKey(ctx, "state_in_snowflake", b)...)
 }
 
 // For SDKv2 resources we have a method handling deletion common cases; we can add somethign similar later
