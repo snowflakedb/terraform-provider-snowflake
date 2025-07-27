@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+const privateStateSnowflakeObjectsStateKey = "state_in_snowflake"
+
 type SnowflakeClientEmbeddable struct {
 	client *sdk.Client
 }

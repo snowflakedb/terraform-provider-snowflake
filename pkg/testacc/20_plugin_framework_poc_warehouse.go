@@ -284,7 +284,7 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		response.Diagnostics.Append(d...)
 		return
 	}
-	response.Diagnostics.Append(response.Private.SetKey(ctx, "state_in_snowflake", b)...)
+	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, b)...)
 }
 
 func (r *WarehouseResource) create(ctx context.Context, id sdk.AccountObjectIdentifier, opts *sdk.CreateWarehouseOptions) diag.Diagnostics {
@@ -366,7 +366,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
-	prevValueBytes, d := request.Private.GetKey(ctx, "state_in_snowflake")
+	prevValueBytes, d := request.Private.GetKey(ctx, privateStateSnowflakeObjectsStateKey)
 	diags.Append(d...)
 	if diags.HasError() {
 		return diags
@@ -417,7 +417,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		diags.AddError("Could not marshal json", err.Error())
 		return diags
 	}
-	response.Diagnostics.Append(response.Private.SetKey(ctx, "state_in_snowflake", bytes)...)
+	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, bytes)...)
 
 	// TODO [this PR]: handle warehouse parameters read
 	// TODO [this PR]: setStateToValuesFromConfig ?
@@ -503,7 +503,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		response.Diagnostics.Append(d...)
 		return
 	}
-	response.Diagnostics.Append(response.Private.SetKey(ctx, "state_in_snowflake", b)...)
+	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, b)...)
 }
 
 // For SDKv2 resources we have a method handling deletion common cases; we can add somethign similar later
