@@ -105,7 +105,11 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "LegacyServiceUser",
 		schema: resources.LegacyServiceUser().Schema,
 	},
-	// TODO(SNOW-1501905): Support the rest of attribute types (Commented because it's blocking model generator)
+	// TODO(SNOW-1501905): Support required object types (commented because it's blocking model generator)
+	// Manifest field (required object type) is not supported by the model generator.
+	// Current overrides are not sufficient to generate the model with the required attribute that would use tfconfig.Variable type.
+	// The WithManifestValue method should be used in the constructors as WithManifest is not generated at all (another generator limitation, but not that important in this case).
+	// Once it's supported, uncomment this and remove the manually written model.
 	// {
 	//	name:   "Listing",
 	//	schema: resources.Listing().Schema,

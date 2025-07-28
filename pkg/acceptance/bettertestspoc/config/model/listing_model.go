@@ -24,9 +24,11 @@ type ListingModel struct {
 	*config.ResourceModelMeta
 }
 
-// TODO(SNOW-1501905): Adjusted manually (because the model generator does not support required list attributes yet).
-// Current overrides are not sufficient to generate the model with the required list attribute that would use tfconfig.Variable type.
-// The WithManifestValue method should be used in this case as WithManifest is not generated at all.
+// TODO(SNOW-1501905): Support required object types (written manually, because it's blocking model generator)
+// Manifest field (required object type) is not supported by the model generator.
+// Current overrides are not sufficient to generate the model with the required attribute that would use tfconfig.Variable type.
+// The WithManifestValue method should be used in the constructors as WithManifest is not generated at all (another generator limitation, but not that important in this case).
+// Once it's supported, remove this file and generate the model with generator (adjust resource_schema_def.go).
 
 func ListingWithInlineManifest(
 	resourceName string,
