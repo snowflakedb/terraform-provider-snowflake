@@ -6,10 +6,18 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/snowflakedb/gosnowflake"
 )
 
 type RestApiPocConfig struct {
-	// TODO [this PR]: fill config out (maybe from golang config?)
+	// TODO [this PR]: fill config out
+}
+
+func RestApiPocConfigFromDriverConfig(driverConfig *gosnowflake.Config) (*RestApiPocConfig, error) {
+	res := &RestApiPocConfig{}
+
+	return res, nil
 }
 
 // TODO [this PR]: build url (account + /api/v2/)

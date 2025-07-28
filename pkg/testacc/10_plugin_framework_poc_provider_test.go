@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	sdkV2Provider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -23,7 +22,7 @@ import (
 
 // our test acc needed variables
 var (
-	configurePluginFrameworkProviderCtx     *internalprovider.Context
+	configurePluginFrameworkProviderCtx     *Context
 	configureClientErrorPluginFrameworkDiag diag.Diagnostics
 )
 
@@ -138,7 +137,7 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 	// no last configured provider
 }
 
-func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) (*internalprovider.Context, diag.Diagnostics) {
+func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) (*Context, diag.Diagnostics) {
 	var configModel pluginFrameworkPocProviderModelV0
 	diags := diag.Diagnostics{}
 
@@ -164,12 +163,22 @@ func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, 
 		config = sdk.MergeConfig(config, tomlConfig)
 	}
 
-	providerCtx := &internalprovider.Context{}
+	providerCtx := &Context{}
 	if client, err := sdk.NewClient(config); err != nil {
 		diags.AddError("Could not initialize client", err.Error())
 		return nil, diags
 	} else {
 		providerCtx.Client = client
+	}
+
+	if restApiPocConfig, err := RestApiPocConfigFromDriverConfig(config); err != nil {
+		response.Diagnostics.AddError("Could not initialize client", err.Error())
+		return nil, response.Diagnostics
+	} else if restApiPocClient, err := NewRestApiPocClient(restApiPocConfig); err != nil {
+		response.Diagnostics.AddError("Could not initialize client", err.Error())
+		return nil, response.Diagnostics
+	} else {
+		providerCtx.RestApiPocClient = restApiPocClient
 	}
 
 	// TODO [mux-PR]: set preview_features_enabled
