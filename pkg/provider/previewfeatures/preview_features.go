@@ -131,6 +131,7 @@ var allPreviewFeatures = []feature{
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
 	JobServiceResource,
+	ListingResource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
