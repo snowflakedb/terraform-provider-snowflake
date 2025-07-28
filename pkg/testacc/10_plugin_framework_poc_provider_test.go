@@ -7,14 +7,23 @@ import (
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	sdkV2Provider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+// our test acc needed variables
+var (
+	configurePluginFrameworkProviderCtx     *internalprovider.Context
+	configureClientErrorPluginFrameworkDiag diag.Diagnostics
 )
 
 // ------ provider interface implementation ------
@@ -79,19 +88,69 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 	}
 }
 
+// The logic for caching is based on the caching we have for the current acceptance tests set.
 func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) {
+	accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
+	if err != nil {
+		accTestEnabled = false
+		accTestLog.Printf("[ERROR] TF_ACC environmental variable has incorrect format: %v, using %v as a default value", err, accTestEnabled)
+	}
+	configureClientOnceEnabled, err := oswrapper.GetenvBool("SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE")
+	if err != nil {
+		configureClientOnceEnabled = false
+		accTestLog.Printf("[ERROR] SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE environmental variable has incorrect format: %v, using %v as a default value", err, configureClientOnceEnabled)
+	}
+	// hacky way to speed up our acceptance tests
+	if accTestEnabled && configureClientOnceEnabled {
+		accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration result")
+		if configurePluginFrameworkProviderCtx != nil {
+			accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration context")
+			response.DataSourceData = configurePluginFrameworkProviderCtx
+			response.ResourceData = configurePluginFrameworkProviderCtx
+			return
+		}
+		if configureClientErrorPluginFrameworkDiag.HasError() {
+			accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration error")
+			response.Diagnostics.Append(configureClientErrorPluginFrameworkDiag...)
+			return
+		}
+	}
+	accTestLog.Printf("[DEBUG] No cached terraform plugin framework PoC provider configuration found or caching is not enabled; configuring a new provider")
+
+	providerCtx, clientErrorDiag := p.configureWithoutCache(ctx, request, response)
+
+	if providerCtx != nil && accTestEnabled && oswrapper.Getenv("SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES") == "true" {
+		providerCtx.EnabledFeatures = previewfeatures.AllPreviewFeatures
+	}
+
+	// needed for tests verifying different provider setups
+	if accTestEnabled && configureClientOnceEnabled {
+		configurePluginFrameworkProviderCtx = providerCtx
+		configureClientErrorPluginFrameworkDiag = clientErrorDiag
+	} else {
+		configurePluginFrameworkProviderCtx = nil
+		configureClientErrorPluginFrameworkDiag = make(diag.Diagnostics, 0)
+	}
+	// no last configured provider
+
+	if clientErrorDiag.HasError() {
+		response.Diagnostics.Append(clientErrorDiag...)
+	}
+}
+
+func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) (*internalprovider.Context, diag.Diagnostics) {
 	var configModel pluginFrameworkPocProviderModelV0
 
 	// Read configuration data into model
 	response.Diagnostics.Append(request.Config.Get(ctx, &configModel)...)
 	if response.Diagnostics.HasError() {
-		return
+		return nil, response.Diagnostics
 	}
 
 	config, err := p.getDriverConfigFromTerraform(configModel)
 	if err != nil {
 		response.Diagnostics.AddError("Could not read the Terraform config", err.Error())
-		return
+		return nil, response.Diagnostics
 	}
 
 	// TODO [mux-PR]: handle skip_toml_file_permission_verification and use_legacy_toml_file
@@ -99,7 +158,7 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 		tomlConfig, err := sdkV2Provider.GetDriverConfigFromTOML(profile, false, false)
 		if err != nil {
 			response.Diagnostics.AddError("Could not read the Toml config", err.Error())
-			return
+			return nil, response.Diagnostics
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
 	}
@@ -107,7 +166,7 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 	providerCtx := &internalprovider.Context{}
 	if client, err := sdk.NewClient(config); err != nil {
 		response.Diagnostics.AddError("Could not initialize client", err.Error())
-		return
+		return nil, response.Diagnostics
 	} else {
 		providerCtx.Client = client
 	}
@@ -115,6 +174,8 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 	// TODO [mux-PR]: set preview_features_enabled
 	response.DataSourceData = providerCtx
 	response.ResourceData = providerCtx
+
+	return providerCtx, nil
 }
 
 func (p *pluginFrameworkPocProvider) DataSources(_ context.Context) []func() datasource.DataSource {
