@@ -10,6 +10,7 @@ import (
 type WarehousesPoc interface {
 	Create(ctx context.Context, req WarehouseApiModel) error
 	CreateOrAlter(ctx context.Context, req WarehouseApiModel) error
+	Rename(ctx context.Context, id sdk.AccountObjectIdentifier, newId sdk.AccountObjectIdentifier) error
 	GetByID(ctx context.Context, id sdk.AccountObjectIdentifier) (*WarehouseApiModel, error)
 	Drop(ctx context.Context, id sdk.AccountObjectIdentifier, ifExists *bool) error
 }
@@ -65,6 +66,17 @@ func (w warehousesPoc) CreateOrAlter(ctx context.Context, req WarehouseApiModel)
 	_, err := put(ctx, w.client, fmt.Sprintf("warehouses/%s", req.Name.Name()), req)
 	if err != nil {
 		return fmt.Errorf("warehousesPoc.CreateOrAlter(%s): %w", req.Name.Name(), err)
+	}
+	return nil
+}
+
+// Based on https://docs.snowflake.com/developer-guide/snowflake-rest-api/reference/warehouse#post--api-v2-warehouses-name-rename
+func (w warehousesPoc) Rename(ctx context.Context, id sdk.AccountObjectIdentifier, newId sdk.AccountObjectIdentifier) error {
+	_, err := post(ctx, w.client, fmt.Sprintf("warehouses/%s:rename", id.Name()), struct {
+		Name string `json:"name"`
+	}{Name: newId.Name()})
+	if err != nil {
+		return fmt.Errorf("warehousesPoc.Rename(%s -> %s): %w", id.Name(), newId.Name(), err)
 	}
 	return nil
 }
