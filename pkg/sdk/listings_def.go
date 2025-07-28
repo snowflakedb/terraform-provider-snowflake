@@ -296,7 +296,7 @@ var ListingsDef = g.NewInterface(
 				"AddVersion",
 				g.NewQueryStruct("AddListingVersion").
 					IfNotExists().
-					Text("VersionName", g.KeywordOptions().DoubleQuotes().Required()).
+					Text("VersionName", g.KeywordOptions().DoubleQuotes()).
 					PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().NoQuotes().NoEquals().SQL("FROM")).
 					OptionalComment(),
 				g.KeywordOptions().SQL("ADD VERSION"),
