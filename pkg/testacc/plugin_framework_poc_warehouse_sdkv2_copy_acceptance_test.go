@@ -16,6 +16,7 @@
 // IgnoreAfterCreation is not implemented so assertions for initially_suspended were adjusted.
 // Identifier suppression is not implemented, so adjusted steps with resource monitor.
 // Some TestCheckResourceAttr were replaced with TestCheckNoResourceAttr as plugin framework handles null differently.
+// Validation tests regex assertions were adjusted.
 package testacc
 
 import (
@@ -699,12 +700,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Validations(t *testing.T) 
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidMaxClusterCount)),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected max_cluster_count to be at least \(1\), got 0`),
+				ExpectError: regexp.MustCompile(`Attribute max_cluster_count value must be at least 1, got: 0`),
 			},
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidMinClusterCount)),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected min_cluster_count to be at least \(1\), got 0`),
+				ExpectError: regexp.MustCompile(`Attribute min_cluster_count value must be at least 1, got: 0`),
 			},
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidScalingPolicy)),
@@ -714,12 +715,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Validations(t *testing.T) 
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidAutoResume)),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected \[\{\{} auto_resume}] to be one of \["true" "false"], got other`),
+				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "auto_resume": a bool is required.`),
 			},
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidMaxConcurrencyLevel)),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected max_concurrency_level to be at least \(1\), got -2`),
+				ExpectError: regexp.MustCompile(`Attribute max_concurrency_level value must be at least 1, got: -2`),
 			},
 		},
 	})
