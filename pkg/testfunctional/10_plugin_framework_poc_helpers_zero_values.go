@@ -99,6 +99,14 @@ func StringAttributeCreate(stringAttribute types.String, createField **string) e
 	return nil
 }
 
+// TODO [mux-PR]: test and adjust when adding identifier suppression
+func IdAttributeCreate(stringAttribute types.String, createField **sdk.AccountObjectIdentifier) error {
+	if !stringAttribute.IsNull() {
+		*createField = sdk.Pointer(sdk.NewAccountObjectIdentifier(stringAttribute.ValueString()))
+	}
+	return nil
+}
+
 func stringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **string) {
 	if !planned.Equal(inState) {
 		if planned.IsNull() || planned.IsUnknown() {
@@ -116,6 +124,18 @@ func StringAttributeUpdate(planned types.String, inState types.String, setField 
 			*unsetField = sdk.Bool(true)
 		} else {
 			*setField = planned.ValueStringPointer()
+		}
+	}
+	return nil
+}
+
+// TODO [mux-PR]: test and adjust when adding identifier suppression
+func IdAttributeUpdate(planned types.String, inState types.String, setField *sdk.AccountObjectIdentifier, unsetField **bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() || planned.IsUnknown() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = sdk.NewAccountObjectIdentifier(planned.ValueString())
 		}
 	}
 	return nil

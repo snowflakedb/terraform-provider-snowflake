@@ -88,6 +88,7 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
+			// create with only required fields present in config
 			{
 				Config: config.FromModels(t, warehouseModel),
 				Check: assertThat(t,

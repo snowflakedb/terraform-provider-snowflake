@@ -462,7 +462,7 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		testfunctional.Int64AttributeCreate(data.AutoSuspend, &opts.AutoSuspend),
 		testfunctional.BooleanAttributeCreate(data.AutoResume, &opts.AutoResume),
 		testfunctional.BooleanAttributeCreate(data.InitiallySuspended, &opts.InitiallySuspended),
-		// resource_monitor
+		testfunctional.IdAttributeCreate(data.ResourceMonitor, &opts.ResourceMonitor),
 		testfunctional.StringAttributeCreate(data.Comment, &opts.Comment),
 		testfunctional.BooleanAttributeCreate(data.EnableQueryAcceleration, &opts.EnableQueryAcceleration),
 		testfunctional.Int64AttributeCreate(data.QueryAccelerationMaxScaleFactor, &opts.QueryAccelerationMaxScaleFactor),
@@ -615,9 +615,9 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		if warehouse.AutoResume != prevValue.AutoResume {
 			data.AutoResume = types.BoolValue(warehouse.AutoResume)
 		}
-		// if warehouse.ResourceMonitor != prevValue.ResourceMonitor {
-		//	data.ResourceMonitor = types.StringValue(warehouse.ResourceMonitor.Name())
-		// }
+		if warehouse.ResourceMonitor.Name() != prevValue.ResourceMonitor {
+			data.ResourceMonitor = types.StringValue(warehouse.ResourceMonitor.Name())
+		}
 		if warehouse.EnableQueryAcceleration != prevValue.EnableQueryAcceleration {
 			data.EnableQueryAcceleration = types.BoolValue(warehouse.EnableQueryAcceleration)
 		}
@@ -702,7 +702,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		testfunctional.Int64AttributeUpdateSetDefaultInsteadOfUnset(plan.AutoSuspend, state.AutoSuspend, &set.AutoSuspend, 600),
 		// unset for auto_resume works incorrectly, setting the default instead
 		testfunctional.BooleanAttributeUpdateSetDefaultInsteadOfUnset(plan.AutoResume, state.AutoResume, &set.AutoResume, true),
-		// resource_monitor
+		testfunctional.IdAttributeUpdate(plan.ResourceMonitor, state.ResourceMonitor, &set.ResourceMonitor, &unset.ResourceMonitor),
 		testfunctional.StringAttributeUpdate(plan.Comment, state.Comment, &set.Comment, &unset.Comment),
 		testfunctional.BooleanAttributeUpdate(plan.EnableQueryAcceleration, state.EnableQueryAcceleration, &set.EnableQueryAcceleration, &unset.EnableQueryAcceleration),
 		testfunctional.Int64AttributeUpdate(plan.QueryAccelerationMaxScaleFactor, state.QueryAccelerationMaxScaleFactor, &set.QueryAccelerationMaxScaleFactor, &unset.QueryAccelerationMaxScaleFactor),

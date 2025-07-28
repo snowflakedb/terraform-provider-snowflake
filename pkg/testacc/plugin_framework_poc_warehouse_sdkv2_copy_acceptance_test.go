@@ -114,6 +114,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 		},
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
+			// create with only required fields present in config
 			{
 				Config: replaceWithWarehousePoCResourceType(t, replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel))),
 				Check: assertThat(t,
@@ -220,7 +221,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModel.ResourceReference())).
+					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModelRenamedFullWithoutParameters.ResourceReference())).
 						HasNameString(warehouseId2.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasWarehouseSizeString(string(sdk.WarehouseSizeXSmall)).
@@ -312,24 +313,36 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("172800"), sdk.String("86400")),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "warehouse_type", string(sdk.WarehouseTypeSnowparkOptimized)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "warehouse_size", string(sdk.WarehouseSizeMedium)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "max_cluster_count", "4"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "min_cluster_count", "2"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "scaling_policy", string(sdk.ScalingPolicyEconomy)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "auto_suspend", "1200"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "auto_resume", "false"),
-					// TODO [mux-PR]: change after IgnoreAfterCreation is added
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "initially_suspended", "false"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "resource_monitor", resourceMonitor.ID().Name()),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "comment", newComment),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "enable_query_acceleration", "true"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "query_acceleration_max_scale_factor", "4"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "max_concurrency_level", "4"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "statement_queued_timeout_in_seconds", "5"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "statement_timeout_in_seconds", "86400"),
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModelRenamedFullWithParametersMediumSize.ResourceReference())).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
+						HasWarehouseSizeString(string(sdk.WarehouseSizeMedium)).
+						HasMaxClusterCountString("4").
+						HasMinClusterCountString("2").
+						HasScalingPolicyString(string(sdk.ScalingPolicyEconomy)).
+						HasAutoSuspendString("1200").
+						HasAutoResumeString("false").
+						// TODO [mux-PR]: change after IgnoreAfterCreation is added
+						HasInitiallySuspendedString("false").
+						HasResourceMonitorString(resourceMonitor.ID().Name()).
+						HasCommentString(newComment).
+						HasEnableQueryAccelerationString("true").
+						HasQueryAccelerationMaxScaleFactorString("4").
+						HasMaxConcurrencyLevelString("4").
+						HasStatementQueuedTimeoutInSecondsString("5").
+						HasStatementTimeoutInSecondsString("86400"),
+					objectassert.Warehouse(t, warehouseId2).
+						HasType(sdk.WarehouseTypeSnowparkOptimized).
+						HasSize(sdk.WarehouseSizeMedium).
+						HasMaxClusterCount(4).
+						HasMinClusterCount(2).
+						HasScalingPolicy(sdk.ScalingPolicyEconomy).
+						HasAutoSuspend(1200).
+						HasAutoResume(false).
+						HasResourceMonitor(resourceMonitor.ID()).
+						HasComment(newComment).
+						HasEnableQueryAcceleration(true).
+						HasQueryAccelerationMaxScaleFactor(4),
 				),
 			},
 			// change resource monitor - wrap in quotes (no change expected)
@@ -363,8 +376,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// TODO[mux-PR]: adjust when handling IgnoreAfterCreate
-				// TODO[mux-PR]: adjust when handling resource_monitor
-				ImportStateVerifyIgnore: []string{"initially_suspended", "resource_monitor"},
+				ImportStateVerifyIgnore: []string{"initially_suspended"},
 			},
 		},
 	})
