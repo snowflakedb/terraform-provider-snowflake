@@ -1,16 +1,38 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert/gen.ResourceParametersAssertionsModel*/ -}}
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/gen.ResourceShowOutputAssertionsModel*/ -}}
 
 {{- $assertName := .Name | printf "%sShowOutputAssert" -}}
 {{- $nameLowerCase := FirstLetterLowercase .Name -}}
 {{- $assertVar := FirstLetter $nameLowerCase }}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
 
 {{ range .Attributes -}}
-    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ .ConcreteType }}) *{{ $assertName }} {
-        {{ $assertVar }}.AddAssertion(assert.{{ .AssertionCreator }}("{{ SnakeCase .Name }}", {{ RunMapper .Mapper "expected" }}))
+    {{ if not (IsTypeSlice .ConcreteType) -}}
+        func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ .ConcreteType }}) *{{ $assertName }} {
+            {{ $assertVar }}.AddAssertion(assert.{{ .AssertionCreator }}Set("{{ SnakeCase .Name }}", {{ RunMapper .Mapper "expected" }}))
+            return {{ $assertVar }}
+        }
+    {{ end }}
+{{ end -}}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+{{ range .Attributes -}}
+
+    {{ if (IsTypeSlice .ConcreteType) -}}
+        func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(assert.{{ .AssertionCreator }}Set("{{ SnakeCase .Name }}.#", "0"))
         return {{ $assertVar }}
-    }
+        }
+    {{ else -}}
+        func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(assert.{{ .AssertionCreator }}NotSet("{{ SnakeCase .Name }}"))
+        return {{ $assertVar }}
+        }
+    {{ end }}
 
 {{ end -}}

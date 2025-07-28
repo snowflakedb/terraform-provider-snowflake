@@ -8,6 +8,7 @@
 * [How can I debug the issue myself?](#how-can-i-debug-the-issue-myself)
 * [How can I import already existing Snowflake infrastructure into Terraform?](#how-can-i-import-already-existing-snowflake-infrastructure-into-terraform)
 * [What identifiers are valid inside the provider and how to reference one resource inside the other one?](#what-identifiers-are-valid-inside-the-provider-and-how-to-reference-one-resource-inside-the-other-one)
+* [Is this provider compatible with OpenTofu?](#is-this-provider-compatible-with-opentofu)
 
 ### What are the current/future plans for the provider?
 Our current plans are documented in the publicly available [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md) that you can find in our repository.
@@ -70,3 +71,9 @@ which is highly recommended for large-scale migrations.
 Please refer to [this document](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/docs/guides/identifiers_rework_design_decisions.md)
 - For the recommended identifier format, take a look at the ["Known limitations and identifier recommendations"](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/docs/guides/identifiers_rework_design_decisions.md#known-limitations-and-identifier-recommendations) section.
 - For a new way of referencing object identifiers in resources, take a look at the ["New computed fully qualified name field in resources" ](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/docs/guides/identifiers_rework_design_decisions.md#new-computed-fully-qualified-name-field-in-resources) section.
+
+### Is this provider compatible with OpenTofu?
+OpenTofu is not currently supported. While it's mostly compatible with Terraform,
+OpenTofu's [reactive implementation of new Terraform features based on community demand](https://opentofu.org/faq/#opentofu-compatibility) may decrease compatibility over time. 
+We plan to research OpenTofu support in the future, but there's no timeline yet (once planned, it will appear in the [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md)).
+For now, you must research and assess the risk of provider incompatibility.

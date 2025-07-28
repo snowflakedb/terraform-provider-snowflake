@@ -31,6 +31,14 @@ type Accounts interface {
 	DropSafely(ctx context.Context, id AccountObjectIdentifier, gracePeriodInDays int) error
 	Undrop(ctx context.Context, id AccountObjectIdentifier) error
 	ShowParameters(ctx context.Context) ([]*Parameter, error)
+	UnsetAllParameters(ctx context.Context) error
+	// UnsetAllPoliciesSafely calls UnsetPolicySafely for every policy that can be unset from the current account.
+	UnsetAllPoliciesSafely(ctx context.Context) error
+	// UnsetPolicySafely unsets a policy on the current account by a given supported kind.
+	// It ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.
+	UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
+	// UnsetAll unsets all policies and parameters that can be attached to the current account.
+	UnsetAll(ctx context.Context) error
 }
 
 var _ Accounts = (*accounts)(nil)
@@ -69,19 +77,20 @@ type CreateAccountOptions struct {
 	name    AccountObjectIdentifier `ddl:"identifier"`
 
 	// Object properties
-	AdminName          string         `ddl:"parameter,single_quotes" sql:"ADMIN_NAME"`
-	AdminPassword      *string        `ddl:"parameter,single_quotes" sql:"ADMIN_PASSWORD"`
-	AdminRSAPublicKey  *string        `ddl:"parameter,single_quotes" sql:"ADMIN_RSA_PUBLIC_KEY"`
-	AdminUserType      *UserType      `ddl:"parameter" sql:"ADMIN_USER_TYPE"`
-	FirstName          *string        `ddl:"parameter,single_quotes" sql:"FIRST_NAME"`
-	LastName           *string        `ddl:"parameter,single_quotes" sql:"LAST_NAME"`
-	Email              string         `ddl:"parameter,single_quotes" sql:"EMAIL"`
-	MustChangePassword *bool          `ddl:"parameter" sql:"MUST_CHANGE_PASSWORD"`
-	Edition            AccountEdition `ddl:"parameter" sql:"EDITION"`
-	RegionGroup        *string        `ddl:"parameter" sql:"REGION_GROUP"`
-	Region             *string        `ddl:"parameter" sql:"REGION"`
-	Comment            *string        `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Polaris            *bool          `ddl:"parameter" sql:"POLARIS"`
+	AdminName                string         `ddl:"parameter,single_quotes" sql:"ADMIN_NAME"`
+	AdminPassword            *string        `ddl:"parameter,single_quotes" sql:"ADMIN_PASSWORD"`
+	AdminRSAPublicKey        *string        `ddl:"parameter,single_quotes" sql:"ADMIN_RSA_PUBLIC_KEY"`
+	AdminUserType            *UserType      `ddl:"parameter" sql:"ADMIN_USER_TYPE"`
+	FirstName                *string        `ddl:"parameter,single_quotes" sql:"FIRST_NAME"`
+	LastName                 *string        `ddl:"parameter,single_quotes" sql:"LAST_NAME"`
+	Email                    string         `ddl:"parameter,single_quotes" sql:"EMAIL"`
+	MustChangePassword       *bool          `ddl:"parameter" sql:"MUST_CHANGE_PASSWORD"`
+	Edition                  AccountEdition `ddl:"parameter" sql:"EDITION"`
+	RegionGroup              *string        `ddl:"parameter" sql:"REGION_GROUP"`
+	Region                   *string        `ddl:"parameter" sql:"REGION"`
+	Comment                  *string        `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	ConsumptionBillingEntity *string        `ddl:"parameter,double_quotes" sql:"CONSUMPTION_BILLING_ENTITY"`
+	Polaris                  *bool          `ddl:"parameter" sql:"POLARIS"`
 }
 
 func (opts *CreateAccountOptions) validate() error {
@@ -161,16 +170,16 @@ func (c *accounts) Create(ctx context.Context, id AccountObjectIdentifier, opts 
 
 // AlterAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-account.
 type AlterAccountOptions struct {
-	alter   bool `ddl:"static" sql:"ALTER"`
-	account bool `ddl:"static" sql:"ACCOUNT"`
+	alter   bool                     `ddl:"static" sql:"ALTER"`
+	account bool                     `ddl:"static" sql:"ACCOUNT"`
+	Name    *AccountObjectIdentifier `ddl:"identifier"`
 
-	Set           *AccountSet           `ddl:"keyword" sql:"SET"`
-	Unset         *AccountUnset         `ddl:"list,no_parentheses" sql:"UNSET"`
-	SetTag        []TagAssociation      `ddl:"keyword" sql:"SET TAG"`
-	UnsetTag      []ObjectIdentifier    `ddl:"keyword" sql:"UNSET TAG"`
-	SetIsOrgAdmin *AccountSetIsOrgAdmin `ddl:"-"`
-	Rename        *AccountRename        `ddl:"-"`
-	Drop          *AccountDrop          `ddl:"-"`
+	Set      *AccountSet        `ddl:"keyword" sql:"SET"`
+	Unset    *AccountUnset      `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTag   []TagAssociation   `ddl:"keyword" sql:"SET TAG"`
+	UnsetTag []ObjectIdentifier `ddl:"keyword" sql:"UNSET TAG"`
+	Rename   *AccountRename     `ddl:"-"`
+	Drop     *AccountDrop       `ddl:"-"`
 }
 
 func (opts *AlterAccountOptions) validate() error {
@@ -178,15 +187,25 @@ func (opts *AlterAccountOptions) validate() error {
 		return errors.Join(ErrNilOptions)
 	}
 	var errs []error
-	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTag, opts.UnsetTag, opts.Drop, opts.Rename, opts.SetIsOrgAdmin) {
-		errs = append(errs, errExactlyOneOf("CreateAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename", "SetIsOrgAdmin"))
+	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTag, opts.UnsetTag, opts.Drop, opts.Rename) {
+		errs = append(errs, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename"))
 	}
 	if valueSet(opts.Set) {
+		if valueSet(opts.Set.ConsumptionBillingEntity) {
+			if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
+				errs = append(errs, ErrInvalidObjectIdentifier)
+			}
+		}
 		if err := opts.Set.validate(); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if valueSet(opts.Unset) {
+		if valueSet(opts.Unset.ConsumptionBillingEntity) {
+			if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
+				errs = append(errs, ErrInvalidObjectIdentifier)
+			}
+		}
 		if err := opts.Unset.validate(); err != nil {
 			errs = append(errs, err)
 		}
@@ -201,14 +220,19 @@ func (opts *AlterAccountOptions) validate() error {
 			errs = append(errs, err)
 		}
 	}
+	if valueSet(opts.Drop) || valueSet(opts.Rename) {
+		if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+	}
 	return errors.Join(errs...)
 }
 
 type AccountLevelParameters struct {
-	AccountParameters *AccountParameters `ddl:"list,no_parentheses"`
-	SessionParameters *SessionParameters `ddl:"list,no_parentheses"`
-	ObjectParameters  *ObjectParameters  `ddl:"list,no_parentheses"`
-	UserParameters    *UserParameters    `ddl:"list,no_parentheses"`
+	AccountParameters *LegacyAccountParameters `ddl:"list,no_parentheses"`
+	SessionParameters *SessionParameters       `ddl:"list,no_parentheses"`
+	ObjectParameters  *ObjectParameters        `ddl:"list,no_parentheses"`
+	UserParameters    *UserParameters          `ddl:"list,no_parentheses"`
 }
 
 func (opts *AccountLevelParameters) validate() error {
@@ -237,25 +261,34 @@ func (opts *AccountLevelParameters) validate() error {
 }
 
 type AccountSet struct {
-	Parameters           *AccountLevelParameters `ddl:"list,no_parentheses"`
-	ResourceMonitor      AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
-	PackagesPolicy       SchemaObjectIdentifier  `ddl:"identifier" sql:"PACKAGES POLICY"`
-	PasswordPolicy       SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
-	SessionPolicy        SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
-	AuthenticationPolicy SchemaObjectIdentifier  `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
-	Force                *bool                   `ddl:"keyword" sql:"FORCE"`
+	Parameters               *AccountParameters       `ddl:"list,no_parentheses"`
+	LegacyParameters         *AccountLevelParameters  `ddl:"list,no_parentheses"`
+	ResourceMonitor          *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
+	PackagesPolicy           *SchemaObjectIdentifier  `ddl:"identifier" sql:"PACKAGES POLICY"`
+	PasswordPolicy           *SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
+	SessionPolicy            *SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
+	AuthenticationPolicy     *SchemaObjectIdentifier  `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
+	FeaturePolicySet         *AccountFeaturePolicySet `ddl:"keyword"`
+	ConsumptionBillingEntity *string                  `ddl:"parameter,double_quotes" sql:"CONSUMPTION_BILLING_ENTITY"`
+	OrgAdmin                 *bool                    `ddl:"parameter" sql:"IS_ORG_ADMIN"`
+	Force                    *bool                    `ddl:"keyword" sql:"FORCE"`
+}
+
+type AccountFeaturePolicySet struct {
+	FeaturePolicy      *SchemaObjectIdentifier `ddl:"identifier" sql:"FEATURE POLICY"`
+	forAllApplications bool                    `ddl:"static" sql:"FOR ALL APPLICATIONS"`
 }
 
 func (opts *AccountSet) validate() error {
 	var errs []error
-	if !exactlyOneValueSet(opts.Parameters, opts.ResourceMonitor, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) {
-		errs = append(errs, errExactlyOneOf("AccountSet", "Parameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+	if !exactlyOneValueSet(opts.Parameters, opts.LegacyParameters, opts.ResourceMonitor, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy, opts.FeaturePolicySet, opts.OrgAdmin, opts.ConsumptionBillingEntity) {
+		errs = append(errs, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
 	}
-	if valueSet(opts.Force) && !valueSet(opts.PackagesPolicy) {
-		errs = append(errs, NewError("force can only be set with PackagesPolicy field"))
+	if valueSet(opts.Force) && !valueSet(opts.PackagesPolicy) && !valueSet(opts.FeaturePolicySet) {
+		errs = append(errs, NewError("force can only be set with PackagesPolicy and FeaturePolicy"))
 	}
-	if valueSet(opts.Parameters) {
-		if err := opts.Parameters.validate(); err != nil {
+	if valueSet(opts.LegacyParameters) {
+		if err := opts.LegacyParameters.validate(); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -263,57 +296,56 @@ func (opts *AccountSet) validate() error {
 }
 
 type AccountLevelParametersUnset struct {
-	AccountParameters *AccountParametersUnset `ddl:"list,no_parentheses"`
-	SessionParameters *SessionParametersUnset `ddl:"list,no_parentheses"`
-	ObjectParameters  *ObjectParametersUnset  `ddl:"list,no_parentheses"`
-	UserParameters    *UserParametersUnset    `ddl:"list,no_parentheses"`
+	AccountParameters *LegacyAccountParametersUnset `ddl:"list,no_parentheses"`
+	SessionParameters *SessionParametersUnset       `ddl:"list,no_parentheses"`
+	ObjectParameters  *ObjectParametersUnset        `ddl:"list,no_parentheses"`
+	UserParameters    *UserParametersUnset          `ddl:"list,no_parentheses"`
 }
 
 func (opts *AccountLevelParametersUnset) validate() error {
 	if !anyValueSet(opts.AccountParameters, opts.SessionParameters, opts.ObjectParameters, opts.UserParameters) {
-		return errAtLeastOneOf("AccountLevelParametersUnset", "AccountParameters", "SessionParameters", "ObjectParameters", "UserParameters")
+		return errAtLeastOneOf("AccountLevelParametersUnset", "LegacyAccountParameters", "SessionParameters", "ObjectParameters", "UserParameters")
 	}
 	return nil
 }
 
 type AccountUnset struct {
-	Parameters           *AccountLevelParametersUnset `ddl:"list,no_parentheses"`
-	PackagesPolicy       *bool                        `ddl:"keyword" sql:"PACKAGES POLICY"`
-	PasswordPolicy       *bool                        `ddl:"keyword" sql:"PASSWORD POLICY"`
-	SessionPolicy        *bool                        `ddl:"keyword" sql:"SESSION POLICY"`
-	AuthenticationPolicy *bool                        `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
-	ResourceMonitor      *bool                        `ddl:"keyword" sql:"RESOURCE_MONITOR"`
+	Parameters               *AccountParametersUnset      `ddl:"list,no_parentheses"`
+	LegacyParameters         *AccountLevelParametersUnset `ddl:"list,no_parentheses"`
+	AuthenticationPolicy     *bool                        `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
+	FeaturePolicyUnset       *AccountFeaturePolicyUnset   `ddl:"keyword"`
+	PackagesPolicy           *bool                        `ddl:"keyword" sql:"PACKAGES POLICY"`
+	PasswordPolicy           *bool                        `ddl:"keyword" sql:"PASSWORD POLICY"`
+	SessionPolicy            *bool                        `ddl:"keyword" sql:"SESSION POLICY"`
+	ResourceMonitor          *bool                        `ddl:"keyword" sql:"RESOURCE_MONITOR"`
+	ConsumptionBillingEntity *bool                        `ddl:"keyword" sql:"CONSUMPTION_BILLING_ENTITY"`
+}
+
+type AccountFeaturePolicyUnset struct {
+	FeaturePolicy      *bool `ddl:"keyword" sql:"FEATURE POLICY"`
+	forAllApplications bool  `ddl:"static" sql:"FOR ALL APPLICATIONS"`
 }
 
 func (opts *AccountUnset) validate() error {
 	var errs []error
-	if !exactlyOneValueSet(opts.Parameters, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy, opts.ResourceMonitor) {
-		errs = append(errs, errExactlyOneOf("AccountUnset", "Parameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor"))
+	if !exactlyOneValueSet(opts.LegacyParameters, opts.Parameters, opts.PackagesPolicy, opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy, opts.ResourceMonitor, opts.FeaturePolicyUnset, opts.ConsumptionBillingEntity) {
+		errs = append(errs, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
 	}
-	if valueSet(opts.Parameters) {
-		if err := opts.Parameters.validate(); err != nil {
+	if valueSet(opts.LegacyParameters) {
+		if err := opts.LegacyParameters.validate(); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	return errors.Join(errs...)
 }
 
-type AccountSetIsOrgAdmin struct {
-	Name     AccountObjectIdentifier `ddl:"identifier"`
-	OrgAdmin bool                    `ddl:"parameter" sql:"SET IS_ORG_ADMIN"`
-}
-
 type AccountRename struct {
-	Name       AccountObjectIdentifier `ddl:"identifier"`
 	NewName    AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	SaveOldURL *bool                   `ddl:"parameter" sql:"SAVE_OLD_URL"`
 }
 
 func (opts *AccountRename) validate() error {
 	var errs []error
-	if !ValidObjectIdentifier(opts.Name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
 	if !ValidObjectIdentifier(opts.NewName) {
 		errs = append(errs, errInvalidIdentifier("AccountRename", "NewName"))
 	}
@@ -321,16 +353,12 @@ func (opts *AccountRename) validate() error {
 }
 
 type AccountDrop struct {
-	Name               AccountObjectIdentifier `ddl:"identifier"`
-	OldUrl             *bool                   `ddl:"keyword" sql:"DROP OLD URL"`
-	OldOrganizationUrl *bool                   `ddl:"keyword" sql:"DROP OLD ORGANIZATION URL"`
+	OldUrl             *bool `ddl:"keyword" sql:"DROP OLD URL"`
+	OldOrganizationUrl *bool `ddl:"keyword" sql:"DROP OLD ORGANIZATION URL"`
 }
 
 func (opts *AccountDrop) validate() error {
 	var errs []error
-	if !ValidObjectIdentifier(opts.Name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
 	if !exactlyOneValueSet(opts.OldUrl, opts.OldOrganizationUrl) {
 		errs = append(errs, errExactlyOneOf("AccountDrop", "OldUrl", "OldOrganizationUrl"))
 	}
@@ -602,4 +630,170 @@ func (c *accounts) ShowParameters(ctx context.Context) ([]*Parameter, error) {
 			Account: Bool(true),
 		},
 	})
+}
+
+func (c *accounts) UnsetAllParameters(ctx context.Context) error {
+	return c.client.Accounts.Alter(ctx, &AlterAccountOptions{Unset: &AccountUnset{
+		Parameters: &AccountParametersUnset{
+			AbortDetachedQuery:                               Bool(true),
+			ActivePythonProfiler:                             Bool(true),
+			AllowClientMFACaching:                            Bool(true),
+			AllowIDToken:                                     Bool(true),
+			Autocommit:                                       Bool(true),
+			BaseLocationPrefix:                               Bool(true),
+			BinaryInputFormat:                                Bool(true),
+			BinaryOutputFormat:                               Bool(true),
+			Catalog:                                          Bool(true),
+			CatalogSync:                                      Bool(true),
+			ClientEnableLogInfoStatementParameters:           Bool(true),
+			ClientEncryptionKeySize:                          Bool(true),
+			ClientMemoryLimit:                                Bool(true),
+			ClientMetadataRequestUseConnectionCtx:            Bool(true),
+			ClientMetadataUseSessionDatabase:                 Bool(true),
+			ClientPrefetchThreads:                            Bool(true),
+			ClientResultChunkSize:                            Bool(true),
+			ClientResultColumnCaseInsensitive:                Bool(true),
+			ClientSessionKeepAlive:                           Bool(true),
+			ClientSessionKeepAliveHeartbeatFrequency:         Bool(true),
+			ClientTimestampTypeMapping:                       Bool(true),
+			CortexEnabledCrossRegion:                         Bool(true),
+			CortexModelsAllowlist:                            Bool(true),
+			CsvTimestampFormat:                               Bool(true),
+			DataRetentionTimeInDays:                          Bool(true),
+			DateInputFormat:                                  Bool(true),
+			DateOutputFormat:                                 Bool(true),
+			DefaultDDLCollation:                              Bool(true),
+			DefaultNotebookComputePoolCpu:                    Bool(true),
+			DefaultNotebookComputePoolGpu:                    Bool(true),
+			DefaultNullOrdering:                              Bool(true),
+			DefaultStreamlitNotebookWarehouse:                Bool(true),
+			DisableUiDownloadButton:                          Bool(true),
+			DisableUserPrivilegeGrants:                       Bool(true),
+			EnableAutomaticSensitiveDataClassificationLog:    Bool(true),
+			EnableEgressCostOptimizer:                        Bool(true),
+			EnableIdentifierFirstLogin:                       Bool(true),
+			EnableInternalStagesPrivatelink:                  Bool(true),
+			EnableTriSecretAndRekeyOptOutForImageRepository:  Bool(true),
+			EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: Bool(true),
+			EnableUnhandledExceptionsReporting:               Bool(true),
+			EnableUnloadPhysicalTypeOptimization:             Bool(true),
+			EnableUnredactedQuerySyntaxError:                 Bool(true),
+			EnableUnredactedSecureObjectError:                Bool(true),
+			EnforceNetworkRulesForInternalStages:             Bool(true),
+			ErrorOnNondeterministicMerge:                     Bool(true),
+			ErrorOnNondeterministicUpdate:                    Bool(true),
+			EventTable:                                       Bool(true),
+			ExternalOAuthAddPrivilegedRolesToBlockedList:     Bool(true),
+			ExternalVolume:                                   Bool(true),
+			GeographyOutputFormat:                            Bool(true),
+			GeometryOutputFormat:                             Bool(true),
+			HybridTableLockTimeout:                           Bool(true),
+			InitialReplicationSizeLimitInTB:                  Bool(true),
+			JdbcTreatDecimalAsInt:                            Bool(true),
+			JdbcTreatTimestampNtzAsUtc:                       Bool(true),
+			JdbcUseSessionTimezone:                           Bool(true),
+			JsonIndent:                                       Bool(true),
+			JsTreatIntegerAsBigInt:                           Bool(true),
+			ListingAutoFulfillmentReplicationRefreshSchedule: Bool(true),
+			LockTimeout:                                      Bool(true),
+			LogLevel:                                         Bool(true),
+			MaxConcurrencyLevel:                              Bool(true),
+			MaxDataExtensionTimeInDays:                       Bool(true),
+			MetricLevel:                                      Bool(true),
+			MinDataRetentionTimeInDays:                       Bool(true),
+			MultiStatementCount:                              Bool(true),
+			NetworkPolicy:                                    Bool(true),
+			NoorderSequenceAsDefault:                         Bool(true),
+			OAuthAddPrivilegedRolesToBlockedList:             Bool(true),
+			OdbcTreatDecimalAsInt:                            Bool(true),
+			PeriodicDataRekeying:                             Bool(true),
+			PipeExecutionPaused:                              Bool(true),
+			PreventUnloadToInlineURL:                         Bool(true),
+			PreventUnloadToInternalStages:                    Bool(true),
+			PythonProfilerModules:                            Bool(true),
+			PythonProfilerTargetStage:                        Bool(true),
+			QueryTag:                                         Bool(true),
+			QuotedIdentifiersIgnoreCase:                      Bool(true),
+			ReplaceInvalidCharacters:                         Bool(true),
+			RequireStorageIntegrationForStageCreation:        Bool(true),
+			RequireStorageIntegrationForStageOperation:       Bool(true),
+			RowsPerResultset:                                 Bool(true),
+			S3StageVpceDnsName:                               Bool(true),
+			SamlIdentityProvider:                             Bool(true),
+			SearchPath:                                       Bool(true),
+			ServerlessTaskMaxStatementSize:                   Bool(true),
+			ServerlessTaskMinStatementSize:                   Bool(true),
+			SimulatedDataSharingConsumer:                     Bool(true),
+			SsoLoginPage:                                     Bool(true),
+			StatementQueuedTimeoutInSeconds:                  Bool(true),
+			StatementTimeoutInSeconds:                        Bool(true),
+			StorageSerializationPolicy:                       Bool(true),
+			StrictJsonOutput:                                 Bool(true),
+			SuspendTaskAfterNumFailures:                      Bool(true),
+			TaskAutoRetryAttempts:                            Bool(true),
+			TimestampDayIsAlways24h:                          Bool(true),
+			TimestampInputFormat:                             Bool(true),
+			TimestampLtzOutputFormat:                         Bool(true),
+			TimestampNtzOutputFormat:                         Bool(true),
+			TimestampOutputFormat:                            Bool(true),
+			TimestampTypeMapping:                             Bool(true),
+			TimestampTzOutputFormat:                          Bool(true),
+			Timezone:                                         Bool(true),
+			TimeInputFormat:                                  Bool(true),
+			TimeOutputFormat:                                 Bool(true),
+			TraceLevel:                                       Bool(true),
+			TransactionAbortOnError:                          Bool(true),
+			TransactionDefaultIsolationLevel:                 Bool(true),
+			TwoDigitCenturyStart:                             Bool(true),
+			UnsupportedDdlAction:                             Bool(true),
+			UserTaskManagedInitialWarehouseSize:              Bool(true),
+			UserTaskMinimumTriggerIntervalInSeconds:          Bool(true),
+			UserTaskTimeoutMs:                                Bool(true),
+			UseCachedResult:                                  Bool(true),
+			WeekOfYearPolicy:                                 Bool(true),
+			WeekStart:                                        Bool(true),
+		},
+	}})
+}
+
+func (c *accounts) UnsetAllPoliciesSafely(ctx context.Context) error {
+	return errors.Join(
+		c.UnsetPolicySafely(ctx, PolicyKindAuthenticationPolicy),
+		c.UnsetPolicySafely(ctx, PolicyKindFeaturePolicy),
+		c.UnsetPolicySafely(ctx, PolicyKindPackagesPolicy),
+		c.UnsetPolicySafely(ctx, PolicyKindPasswordPolicy),
+		c.UnsetPolicySafely(ctx, PolicyKindSessionPolicy),
+	)
+}
+
+func (c *accounts) UnsetPolicySafely(ctx context.Context, kind PolicyKind) error {
+	var unset *AccountUnset
+	switch kind {
+	case PolicyKindAuthenticationPolicy:
+		unset = &AccountUnset{AuthenticationPolicy: Bool(true)}
+	case PolicyKindFeaturePolicy:
+		unset = &AccountUnset{FeaturePolicyUnset: &AccountFeaturePolicyUnset{FeaturePolicy: Bool(true)}}
+	case PolicyKindPackagesPolicy:
+		unset = &AccountUnset{PackagesPolicy: Bool(true)}
+	case PolicyKindPasswordPolicy:
+		unset = &AccountUnset{PasswordPolicy: Bool(true)}
+	case PolicyKindSessionPolicy:
+		unset = &AccountUnset{SessionPolicy: Bool(true)}
+	default:
+		return fmt.Errorf("policy kind %s is not supported for account policies", kind)
+	}
+	err := c.client.Accounts.Alter(ctx, &AlterAccountOptions{Unset: unset})
+	// If the policy is not attached to the account, Snowflake returns an error.
+	if errors.Is(err, ErrPolicyNotAttachedToAccount) {
+		return nil
+	}
+	return err
+}
+
+func (c *accounts) UnsetAll(ctx context.Context) error {
+	return errors.Join(
+		c.UnsetAllParameters(ctx),
+		c.UnsetAllPoliciesSafely(ctx),
+		c.Alter(ctx, &AlterAccountOptions{Unset: &AccountUnset{ResourceMonitor: Bool(true)}}),
+	)
 }

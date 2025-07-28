@@ -28,7 +28,7 @@ func TestSetObjectParameterOnObject(t *testing.T) {
 func TestUnsetObjectParameterNetworkPolicyOnAccount(t *testing.T) {
 	opts := &AlterAccountOptions{
 		Unset: &AccountUnset{
-			Parameters: &AccountLevelParametersUnset{
+			LegacyParameters: &AccountLevelParametersUnset{
 				ObjectParameters: &ObjectParametersUnset{
 					NetworkPolicy: Bool(true),
 				},
@@ -58,8 +58,8 @@ func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
 	opts := &AlterAccountOptions{
 		Set: &AccountSet{
-			Parameters: &AccountLevelParameters{
-				AccountParameters: &AccountParameters{
+			LegacyParameters: &AccountLevelParameters{
+				AccountParameters: &LegacyAccountParameters{
 					EnforceNetworkRulesForInternalStages: Bool(true),
 				},
 			},
@@ -100,11 +100,10 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "NETWORK_POLICY", want: AccountParameterNetworkPolicy},
 		{input: "OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST", want: AccountParameterOAuthAddPrivilegedRolesToBlockedList},
 		{input: "PERIODIC_DATA_REKEYING", want: AccountParameterPeriodicDataRekeying},
-		{input: "PREVENT_LOAD_FROM_INLINE_URL", want: AccountParameterPreventLoadFromInlineURL},
 		{input: "PREVENT_UNLOAD_TO_INLINE_URL", want: AccountParameterPreventUnloadToInlineURL},
 		{input: "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION", want: AccountParameterRequireStorageIntegrationForStageCreation},
 		{input: "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION", want: AccountParameterRequireStorageIntegrationForStageOperation},
-		{input: "SSO_LOGIN_PAGE", want: AccountParameterSSOLoginPage},
+		{input: "SSO_LOGIN_PAGE", want: AccountParameterSsoLoginPage},
 
 		// Session Parameters (inherited)
 		{input: "ABORT_DETACHED_QUERY", want: AccountParameterAbortDetachedQuery},
@@ -180,7 +179,6 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", want: AccountParameterStatementQueuedTimeoutInSeconds},
 		{input: "STATEMENT_TIMEOUT_IN_SECONDS", want: AccountParameterStatementTimeoutInSeconds},
 		{input: "STORAGE_SERIALIZATION_POLICY", want: AccountParameterStorageSerializationPolicy},
-		{input: "SHARE_RESTRICTIONS", want: AccountParameterShareRestrictions},
 		{input: "SUSPEND_TASK_AFTER_NUM_FAILURES", want: AccountParameterSuspendTaskAfterNumFailures},
 		{input: "TRACE_LEVEL", want: AccountParameterTraceLevel},
 		{input: "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", want: AccountParameterUserTaskManagedInitialWarehouseSize},
@@ -188,10 +186,8 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "TASK_AUTO_RETRY_ATTEMPTS", want: AccountParameterTaskAutoRetryAttempts},
 		{input: "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", want: AccountParameterUserTaskMinimumTriggerIntervalInSeconds},
 		{input: "METRIC_LEVEL", want: AccountParameterMetricLevel},
-		{input: "ENABLE_CONSOLE_OUTPUT", want: AccountParameterEnableConsoleOutput},
 
 		// User Parameters (inherited)
-		{input: "ENABLE_PERSONAL_DATABASE", want: AccountParameterEnablePersonalDatabase},
 		{input: "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR", want: AccountParameterEnableUnredactedQuerySyntaxError},
 		{input: "PREVENT_UNLOAD_TO_INTERNAL_STAGES", want: AccountParameterPreventUnloadToInternalStages},
 	}

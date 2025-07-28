@@ -52,7 +52,7 @@ func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 		Set: &sdk.AccountSet{
-			AuthenticationPolicy: authenticationPolicy,
+			AuthenticationPolicy: &authenticationPolicy,
 		},
 	})
 	if err != nil {
@@ -65,7 +65,7 @@ func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 }
 
 func ReadAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	authenticationPolicy := helpers.DecodeSnowflakeID(d.Id())
+	authenticationPolicy := helpers.DecodeSnowflakeIDLegacy(d.Id())
 	if err := d.Set("authentication_policy", authenticationPolicy.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
 	}

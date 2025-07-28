@@ -27,6 +27,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Accounts().Schema,
 	},
 	{
+		name:   "ComputePools",
+		schema: datasources.ComputePools().Schema,
+	},
+	{
 		name:   "Database",
 		schema: datasources.Database().Schema,
 	},
@@ -43,8 +47,20 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Databases().Schema,
 	},
 	{
+		name:   "Functions",
+		schema: datasources.Functions().Schema,
+	},
+	{
+		name:   "GitRepositories",
+		schema: datasources.GitRepositories().Schema,
+	},
+	{
 		name:   "Grants",
 		schema: datasources.Grants().Schema,
+	},
+	{
+		name:   "ImageRepositories",
+		schema: datasources.ImageRepositories().Schema,
 	},
 	{
 		name:   "MaskingPolicies",
@@ -53,6 +69,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "NetworkPolicies",
 		schema: datasources.NetworkPolicies().Schema,
+	},
+	{
+		name:   "Procedures",
+		schema: datasources.Procedures().Schema,
 	},
 	{
 		name:   "ResourceMonitors",
@@ -69,6 +89,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "SecurityIntegrations",
 		schema: datasources.SecurityIntegrations().Schema,
+	},
+	{
+		name:   "Services",
+		schema: datasources.Services().Schema,
 	},
 	{
 		name:   "Streamlits",
@@ -89,6 +113,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Users",
 		schema: datasources.Users().Schema,
+	},
+	{
+		name:   "UserProgrammaticAccessTokens",
+		schema: datasources.UserProgrammaticAccessTokens().Schema,
 	},
 	{
 		name:   "Views",

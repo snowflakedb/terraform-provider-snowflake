@@ -12,6 +12,7 @@ type JsonConfigProvider interface {
 	ResourceJsonFromModel(model ResourceModel) ([]byte, error)
 	DatasourceJsonFromModel(model DatasourceModel) ([]byte, error)
 	ProviderJsonFromModel(model ProviderModel) ([]byte, error)
+	TerraformBlockJsonFromModel(model TerraformBlockModel) ([]byte, error)
 }
 
 type basicJsonConfigProvider struct{}
@@ -64,4 +65,14 @@ func (p *basicJsonConfigProvider) ProviderJsonFromModel(model ProviderModel) ([]
 
 type providerJson struct {
 	Provider map[string]ProviderModel `json:"provider"`
+}
+
+func (p *basicJsonConfigProvider) TerraformBlockJsonFromModel(model TerraformBlockModel) ([]byte, error) {
+	modelJson := map[string]map[string]TerraformBlockModel{
+		model.BlockType(): {
+			model.BlockName(): model,
+		},
+	}
+
+	return json.MarshalIndent(modelJson, "", "    ")
 }

@@ -4,6 +4,9 @@ This document is meant to help you migrate your Terraform config to the new newe
 describe deprecations or breaking changes and help you to change your configuration to keep the same (or similar) behavior
 across different versions.
 
+To keep your configuration up to date, we also recommend reading the [Snowflake BCR migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md)
+for changes required after enabling given [Snowflake BCR Bundle](https://docs.snowflake.com/en/release-notes/behavior-changes).
+
 > [!TIP]
 > We highly recommend upgrading the versions one by one instead of bulk upgrades.
 >
@@ -18,7 +21,264 @@ across different versions.
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.0.0 ➞ v2.0.1
+## v2.3.0 ➞ v2.4.0
+
+### *(new feature)* snowflake_current_organization_account resource
+Added a new preview resource for managing the organization account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ORGANIZATION ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-organization-account). You can read about the resource limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_organization_account_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Handling Programmatic Access Tokens
+As we announced in our [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#pat-support), we implemented handling Programmatic Access Tokens (PATs) in the provider. In [v2.3.0](#v220--v230), we already added `PROGRAMMATIC_ACCESS_TOKEN` authenticator option.
+In this version, we enhanced the provider capabilities with handling PATs in a new resource and data source. See more in our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#pat-personal-access-token).
+
+#### New `snowflake_user_programmatic_access_tokens` data source
+Added a new preview data source for user programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_tokens_datasource` to `preview_features_enabled` field in the provider configuration.
+
+#### New `snowflake_user_programmatic_access_token` resource
+Added a new preview resource for managing users' programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) and a [user guide](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more details.
+
+This resource also supports token rotation. See our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#managing-pats) and the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/resources/user_programmatic_access_token).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token_resource` to `preview_features_enabled` field in the provider configuration.
+
+## v2.2.0 ➞ v2.3.0
+
+### *(new feature)* New `PROGRAMMATIC_ACCESS_TOKEN` authenticator option
+
+We added a new `PROGRAMMATIC_ACCESS_TOKEN` option to the `authenticator` field in the provider. This feature enables authentication with `PROGRAMMATIC_ACCESS_TOKEN` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more information on PAT authentication.
+
+### *(bugfix)* Fix `snowflake_functions` and `snowflake_procedures` data sources with 2025_03 Bundle enabled
+
+> [!IMPORTANT]
+> This behavior change in Snowflake was originally in the [2025_03 Bundle](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle) and intended to become enabled by default in the 2025_04 bundle. However, it has been [postponed](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944) and a new release date has not been determined.
+> After adjusting parsing data types in the provider, it handles arguments with and without attributes.
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
+
+### *(bugfix)* Fix all function and procedure resources with 2025_03 Bundle enabled
+
+> [!IMPORTANT]
+> This behavior change in Snowflake was originally in the [2025_03 Bundle](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle) and intended to become enabled by default in the 2025_04 bundle. However, it has been [postponed](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944) and a new release date has not been determined.
+> After adjusting parsing data types in the provider, it handles arguments with and without attributes.
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
+
+## v2.1.0 ➞ v2.2.0
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, v2.0.1, and v2.1.1.
+
+### *(bugfix)* Fix grant_ownership resource for serverless tasks
+
+Previously, it wasn't possible to use the `snowflake_grant_ownership` resource to grant ownership of serverless tasks.
+In this version, we fixed the issue, and now you can use the resource to grant ownership of serverless tasks.
+
+No configuration changes are needed.
+
+References: [#3750](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3750)
+
+### *(bugfix)* Fix external volume creation error handling
+
+Errors in [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/external_volume) resource creation were not handled and propagated properly, resulting in provider errors similar to:
+```
+Warning: Failed to query external volume. Marking the resource as removed.
+│
+│   with snowflake_external_volume.s3_volume,
+│   on main.tf line 62, in resource "snowflake_external_volume" "s3_volume":
+│   62: resource "snowflake_external_volume" "s3_volume" {
+│
+│ External Volume: "MY_S3_EXTERNAL_VOLUME", Err: object does not exist
+╵
+╷
+│ Error: Provider produced inconsistent result after apply
+│
+│ When applying changes to snowflake_external_volume.s3_volume, provider
+│ "provider[\"registry.terraform.io/snowflakedb/snowflake\"]" produced an unexpected new value: Root object
+│ was present, but now absent.
+│
+│ This is a bug in the provider, which should be reported in the provider's own issue tracker.
+```
+
+Starting with this version, creation errors in `snowflake_external_volume` will be handled and propagated properly to the user.
+
+No configuration changes are needed.
+
+### *(new feature)* New fields in snowflake_cortex_search_service resource
+
+We added a new `embedding_model` field to the `snowflake_cortex_search_service`. This field specifies the embedding model to use in the Cortex Search Service.
+We updated the examples of using the resource with this field.
+Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)).
+
+### *(new feature)* New consumption_billing_entity field in snowflake_account resource
+
+The `snowflake_account` resource now has a new `consumption_billing_entity` field, which allows you to set the consumption billing entity for the account.
+It is useful in case you have multiple billing entities in your account and want to set a specific one for the account.
+You can find more details in [this](https://community.snowflake.com/s/article/ERROR-Multiple-suitable-billing-entities-exist-for-the-target-cloud) KB article.
+
+No configuration changes are needed.
+
+### The ORGADMIN checks removed from snowflake_account resource
+
+Previously, the `snowflake_account` resource required the ORGADMIN role for operations to be executed.
+In recent Snowflake changes that introduced organization accounts, more roles can now manage the account.
+Because of that, to enable the resource to be used in more scenarios, we removed the ORGADMIN checks from the resource.
+
+### *(new feature)* New tracking level
+
+Every resource that is capable of setting tracing level (`database`, `shared_database`, `secondary_database`, `schema`) now supports the new `PROPAGATE` value.
+
+### *(bugfix)* Fix how snowflake_user_authentication_policy_attachment resource handles missing objects it depends on
+
+Previously, the `snowflake_user_authentication_policy_attachment` resource was not able to handle missing objects it depends on.
+This means, if a user or authentication policy was removed manually outside Terraform, the provider would produce plans with errors like:
+```
+User 'XYZ' does not exist or not authorized
+```
+and only manual state management would help you to remove the resource from the state.
+
+Now, the removal of the resource is handled properly and the resource is removed from the state automatically with the following warning:
+```
+Failed to find user authentication policy. Marking the resource as removed.
+### or ###
+Failed to get user policies. Marking the resource as removed.
+```
+
+If you are encountering this issue,
+either bump the provider version to at least `v2.2.0` or [remove the resource from the state manually](https://developer.hashicorp.com/terraform/cli/commands/state/rm).
+
+No configuration changes are needed.
+
+References: [#3672](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672)
+
+### *(new feature)* snowflake_current_account resource
+Added a new preview resource for managing an account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account). You can read about the resources' limitations in the documentation in the registry.
+This resource is intended to replace the `snowflake_account_parameter` resource, which will be deprecated in the future,
+but some of the supported parameters in `snowflake_account_parameter` aren't supported in `snowflake_current_account`. Those parameters are:
+- ENABLE_CONSOLE_OUTPUT
+- ENABLE_PERSONAL_DATABASE
+- PREVENT_LOAD_FROM_INLINE_URL
+
+They are not supported, because they are not in the [official parameters documentation](https://docs.snowflake.com/en/sql-reference/parameters).
+Once they are publicly documented, they will be added to the `snowflake_current_account_resource` resource.
+
+The `snowflake_current_account_resource` resource shouldn't be used with `snowflake_object_parameter` (with `on_account` field set) and `snowflake_account_parameter` resources in the same configuration, as it may lead to unexpected behavior. Unless they're used to manage the above parameters that are not supported.
+The resource shouldn't be also used with `snowflake_account_password_policy_attachment`, `snowflake_network_policy_attachment`, `snowflake_account_authentication_policy_attachment` resources in the same configuration to manage policies on the current account, as it may lead to unexpected behavior.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_account_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_service and snowflake_job_service resources
+Added new preview resources for managing services and job services. See reference docs for [services](https://docs.snowflake.com/en/sql-reference/sql/create-service) and [job services](https://docs.snowflake.com/en/sql-reference/sql/execute-job-service). You can read about the resources' limitations in the documentation in the registry.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use these features, add `snowflake_service_resource` or `snowflake_job_service_resource` to `preview_features_enabled` field in the provider configuration, respectively.
+
+### *(new feature)* snowflake_git_repository resource
+Added a new preview resource for managing git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository). Note that `snowflake_api_integration` currently does not support `git_https_api` type. It will be added during the resource rework. Instead, you can use [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_git_repository_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_compute_pool resource
+Added a new preview resource for managing compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool). The limitation of this resource is that identifiers with special or lower-case characters are not supported. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
+
+Managing compute pool state is limited. It is handled only by `initially_suspended`, `auto_suspend_secs`, and `auto_resume` fields. See the resource documentation for more details.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_compute_pool_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(bugfix)* Fix the behavior for empty privileges list in snowflake_grant_privileges_to_account_role, snowflake_grant_privileges_to_database_role, and snowflake_grant_privileges_to_share resources
+
+Previously, it was possible to create `snowflake_grant_privileges_to_X` resources with an empty privilege list, which led to the following error:
+```
+│ Error: Failed to parse internal identifier
+│ Error: [grant_privileges_to_database_role_identifier.go:79] invalid Privileges value: , should be either a comma separated list of privileges or "ALL" / "ALL PRIVILEGES" for all privileges
+```
+After that, an identifier stored in state would be corrupted and only manual state manipulation would fix it.
+We added validation to prevent this from happening. Now, if you try to create or update a resource with an empty privilege list, you will get the following error:
+
+```
+| Error: Not enough list items
+|
+|   with snowflake_grant_privileges_to_database_role.test,
+|   on test.tf line 3, in resource "snowflake_grant_privileges_to_database_role" "test":
+|    3:   privileges         = []
+|
+| Attribute privileges requires 1 item minimum, but config has only 0 declared.
+```
+
+and the validation error will prevent the state file from changing, which means you will be able to normally adjust the resource and reapply the configuration.
+
+If you are experiencing this at the moment, you can fix it by running removing `snowflake_grant_privileges_to_database_role` from the state by running:
+```shell
+terraform state rm snowflake_grant_privileges_to_database_role.test # Replace `test` with the actual resource name
+```
+and apply it with the correct `privileges` list. If you don't want to apply the privileges again, make sure they are
+revoked in Snowflake by running the corresponding [SHOW GRANTS](https://docs.snowflake.com/en/sql-reference/sql/show-grants) command
+and then corresponding [REVOKE <privileges>](https://docs.snowflake.com/en/sql-reference/sql/revoke-privilege) to remove unwanted privileges.
+
+Other than that, no changes to the configurations are necessary.
+
+Reference: [#3690](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3690).
+
+### *(new feature)* snowflake_image_repository resource
+Added a new preview resource for managing image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository). The limitation of this resource is that quoted names for special characters or case-sensitive names are not supported. Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier). The same constraint also applies to database and schema names where you create an image repository. This limitation in the provider follows the limitation in Snowflake (see the linked docs).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repository_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_git_repositories data source
+Added a new preview data source for git repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-git-repositories).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_git_repositories_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_compute_pools data source
+Added a new preview data source for compute pools. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_compute_pools_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_image_repositories data source
+Added a new preview data source for image repositories. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-image-repositories).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_image_repositories_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* snowflake_services data source
+Added a new preview data source for services. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-services).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_services_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Managing tags for image repositories, compute pools, services, and git repositories
+The [snowflake_tag_association](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) can now be used for managing tags in [image repositories](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository), [compute pools](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool), [services](https://docs.snowflake.com/en/sql-reference/sql/create-service) and [git repositories](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository).
+
+### *(bugfix)* Fixed handling users' grants
+
+In v2.1.0, we introduced a fix in handling users' grants ([migration guide](#bugfix-fixed-snowflake_grant_database_role-resource)), which addressed changes in the `2025_02` bundle. The username was parsed incorrectly if it had a prefix formed of `U`, `S`, `E`, and `R` characters. The username returned from `SHOW GRANTS` was incorrect in this case. Now, such names should be handled correctly.
+No configuration changes are necessary.
+
+### *(new feature)* Granting privileges on future cortex search services
+
+As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
+
+## v2.1.0 -> v2.1.1
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, and v2.0.1.
+
+## v2.0.0 ➞ v2.1.0
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
 
@@ -53,6 +313,25 @@ No action is needed.
 
 Reference: [#3655](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3655).
 
+### *(bugfix)* Fixed snowflake_grant_database_role resource
+
+The `2025_02` Snowflake BCR enables granting database roles directly to users.
+This caused issues in the provider, leading to `Provider produced inconsistent result after apply` errors
+when a database role was granted to a user. This version resolves the issue.
+No configuration changes are necessary.
+
+References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
+
+## v2.0.0 -> v2.0.1
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6, v1.1.1, and v1.2.2.
+
 ## v1.2.1 ➞ v2.0.0
 
 ### Supported architectures
@@ -74,7 +353,7 @@ Currently, we also provide the binaries for the following OSes and architectures
 ### *(breaking change)* Changes in sensitive values
 To ensure better security of users' data, we adjusted the fields containing sensitive information to be sensitive in the provider.
 Some fields had to be removed due to Terraform SDK limitations (more on that in the [removal of sensitive fields](#removal-of-sensitive-fields) section).
-This means these values will not be printed by Terraform during planning, etc. Note that the users are still responsible for storing the state securely. 
+This means these values will not be printed by Terraform during planning, etc. Note that the users are still responsible for storing the state securely.
 Read more about sensitive values in the [Terraform documentation](https://developer.hashicorp.com/terraform/tutorials/configuration-language/sensitive-variables).
 
 Fields changed to sensitive:
@@ -204,17 +483,27 @@ References: [#3580](https://github.com/snowflakedb/terraform-provider-snowflake/
 ## v1.2.0 ➞ v1.2.1
 No migration needed.
 
+## v1.2.1 -> v1.2.2
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to versions v1.0.6 and v1.1.1.
+
 ## v1.1.0 ➞ v1.2.0
 
 ### New behavior for Read and Delete operations when removing high-hierarchy objects
 Some objects in Snowflake are created in hierarchy, for example, tables (database → schema → table).
-When the user wants to remove the higher-hierarchy object (like a database), the lower-hierarchy objects should be removed beforehand. 
-Otherwise, Terraform would fail to remove the lower-hierarchy objects from the state, 
+When the user wants to remove the higher-hierarchy object (like a database), the lower-hierarchy objects should be removed beforehand.
+Otherwise, Terraform would fail to remove the lower-hierarchy objects from the state,
 and without manual state management it wouldn't be possible to remove this object, ending up in broken state (reference issue: [#1243](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1243)).
 This may only happen in particular cases, for example, if part of the hierarchy is managed outside Terraform or the configuration is missing dependencies between resources.
 This behavior was described more in detail in [our documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_research_summary#renaming-higher-hierarchy-objects).
 
-For improved usability, we adjusted the Read and Delete operation implementations for all resources, 
+For improved usability, we adjusted the Read and Delete operation implementations for all resources,
 so that now, they're able to know the higher-hierarchy object is missing, and they can safely remove themselves from the state.
 
 To demonstrate this behavior, let's take the following configuration:
@@ -230,10 +519,10 @@ resource "snowflake_table" "test" {
 }
 ```
 > Note: The `TEST_DATABASE` is created manually through Snowflake and the table configuration is already applied through Terraform.
- 
+
 When you remove the database by running `DROP DATABASE TEST_DATABASE` in Snowflake, and then run `terraform apply`,
 previously, you would end up in the infinite loop of errors and only manual removal from state (`terraform state rm snowflake_table.test`)
-would help you to remove the table from the state (and then from the configuration). 
+would help you to remove the table from the state (and then from the configuration).
 
 In the future, we are planning to do the same with object attachments, like grants, policies, etc. (To address cases like: [#3412](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3412))
 
@@ -275,6 +564,16 @@ This version fixes this behavior. No action should be required on user side.
 
 References: [#3522](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3522)
 
+## v1.1.0 -> v1.1.1
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
+
+This fix was also backported to version v1.0.6.
+
 ## v1.0.5 ➞ v1.1.0
 
 ### Timeouts in resources
@@ -297,6 +596,14 @@ Using `grant_privileges_to_account_role` with `all_privileges=true` and `on_acco
 Instead of failing the whole action, we return a warning instead and the operation execution continues, which aligns with the behavior in Snowsight. Note that for `all_privileges=true` the privileges list in the state is not populated, like before. If you want to detect differences in the privileges, use `privileges` list instead. If you want to make sure that the maximum privileges are granted, enable `always_apply`.
 
 References: [#3507](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3507)
+
+## v1.0.5 -> v1.0.6
+
+### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
+
+Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
+
+No configuration changes are needed. However, the provider won't set back the `ALLOW_ID_TOKEN` parameter value as we can't detect if setting its value was intentional (manually or through `snowflake_account_parameter`). Because of that, please verify your `ALLOW_ID_TOKEN` parameter and set it to the desired value.
 
 ## v1.0.4 ➞ v1.0.5
 
@@ -1071,7 +1378,7 @@ For the fields that are not deprecated, we focused on improving validations and 
 - `port` - added a validation for a port number
 - `okta_url`, `token_accessor.token_endpoint`, `client_store_temporary_credential` - added a validation for a URL address
 - `login_timeout`, `request_timeout`, `jwt_expire_timeout`, `client_timeout`, `jwt_client_timeout`, `external_browser_timeout` - added a validation for setting this value to at least `0`
-- `authenticator` - added a possibility to configure JWT flow with `SNOWFLAKE_JWT` (formerly, this was upported with `JWT`); the previous value `JWT` was left for compatibility, but will be removed before v1
+- `authenticator` - added a possibility to configure JWT flow with `SNOWFLAKE_JWT` (formerly, this was supported with `JWT`); the previous value `JWT` was left for compatibility, but will be removed before v1
 
 ### *(behavior change)* handling copy_grants
 Currently, resources like `snowflake_view`, `snowflake_stream_on_table`, `snowflake_stream_on_external_table` and `snowflake_stream_on_directory_table`  support `copy_grants` field corresponding with `COPY GRANTS` during `CREATE`. The current behavior is that, when a change leading for recreation is detected (meaning a change that can not be handled by ALTER, but only by `CREATE OR REPLACE`), `COPY GRANTS` are used during recreation when `copy_grants` is set to `true`. Changing this field without changes in other field results in a noop because in this case there is no need to recreate a resource.
@@ -1770,6 +2077,19 @@ Both topics will be addressed in the following versions.
 
 `service` and `legacy_service` user types are currently not supported. They will be supported in the following versions as separate resources (namely `snowflake_service_user` and `snowflake_legacy_service_user`).
 
+If you used the existing `snowflake_user` and altered its type externally (manually or through `snowflake_unsafe_execute`), then after migrating to v0.95.0 the provider will try to recreate it as a `person` type.
+
+Because `snowflake_service_user` and `snowflake_legacy_service_user` resources are available in v0.97.0 version, you can temporarily suppress these changes to allow version-by-version migration. To do that, use [`ignore_changes`](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) meta-attribute:
+
+```hcl
+resource "snowflake_user" "example_user" {
+  # ...
+  lifecycle {
+    ignore_changes = [ user_type ]
+  }
+}
+```
+
 ## v0.94.0 ➞ v0.94.1
 ### changes in snowflake_schema
 
@@ -1819,7 +2139,7 @@ We allow creating and managing `PUBLIC` schemas now. When the name of the schema
 #### *(behavior change)* Boolean type changes
 To easily handle three-value logic (true, false, unknown) in provider's configs, type of `is_transient` and `with_managed_access` was changed from boolean to string.
 
-Terraform should recreate resources for configs lacking `is_transient` (`DROP` and then `CREATE` will be run underneath). To prevent this behavior, please set `is_transient` field.
+Terraform should recreate resources for configs lacking `is_transient` (`DROP` and then `CREATE` will be run underneath). To prevent this behavior, please set the `is_transient` field to the desired value (`"true"` for transient schemas, `"false"` for non-transient ones).
 For more details about default values, please refer to the [changes before v1](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#default-values) document.
 
 Terraform should perform an action for configs lacking `with_managed_access` (`ALTER SCHEMA DISABLE MANAGED ACCESS` will be run underneath which should not affect the Snowflake object, because `MANAGED ACCESS` is not set by default)
@@ -1899,7 +2219,24 @@ With this change we introduce the first resources redesigned for the V1. We have
 They are all described in short in the [changes before v1 doc](./v1-preparations/CHANGES_BEFORE_V1.md). Please familiarize yourself with these changes before the upgrade.
 
 ### old grant resources removal
-Following the [announcement](https://github.com/snowflakedb/terraform-provider-snowflake/discussions/2736) we have removed the old grant resources. The two resources [snowflake_role_ownership_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/role_ownership_grant) and [snowflake_user_ownership_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user_ownership_grant) were not listed in the announcement, but they were also marked as deprecated ones. We are removing them too to conclude the grants redesign saga.
+Following the [announcement](https://github.com/snowflakedb/terraform-provider-snowflake/discussions/2736) we have removed the old grant resources.
+The two resources [snowflake_role_ownership_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/role_ownership_grant) and
+[snowflake_user_ownership_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user_ownership_grant) were not listed in the announcement,
+but they were also marked as deprecated ones. We are removing them too to conclude the grants redesign saga.
+
+#### Grant resource mappings
+As previous resources had multiple responsibilities within a single entity, we opted to divide them into more specialized resources.
+Because of that, they (mostly) cannot be mapped one to one. To migrate the old grant resources to the new ones, use the following mapping rules:
+- If you are using `shares` field, use the [snowflake_grant_privileges_to_share](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_share) resource.
+- If you are using `roles` field, use the [snowflake_grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource.
+- For OWNERSHIP privilege manipulation, use the dedicated [snowflake_grant_ownership](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) resource.
+- New grant resources expect fully qualified identifiers (e.g., [grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role#object_name-2) with `object_name`), instead of parts of identifier split between few fields (e.g., [function_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/0.90.0/docs/resources/function_grant#database_name-8) with `database_name`, `schema_name`, `function_name`, and `argument_data_types`). Use `fully_qualified_name` field whenever possible to avoid identifier issues (look [here](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources)).
+- The `enable_masking_grants` field that could be found, for example, in [masking_policy_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/0.90.0/docs/resources/masking_policy_grant) resource is now "enabled by default" for all new grant resources. In the new resources, there's no way to disable this setting. We left it as a [future topic](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#future-topics) if such need arises.
+- The `on_all` and `on_future` fields were transformed from [boolean type](https://registry.terraform.io/providers/snowflakedb/snowflake/0.90.0/docs/resources/schema_grant#on_all-9) to [nested object](https://registry.terraform.io/providers/snowflakedb/snowflake/0.90.0/docs/resources/schema_grant#on_all-9). Now, it reflects more the [GRANT PRIVILEGE](https://docs.snowflake.com/en/sql-reference/sql/grant-privilege) documentation.
+- The `revert_ownership_to_role_name` option that was available in the [user_ownership_grant](https://registry.terraform.io/providers/snowflakedb/snowflake/0.90.0/docs/resources/user_ownership_grant#revert_ownership_to_role_name-24) is not supported in the new [grant_ownership](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) resource, but [we have it in our plans](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grant_ownership_resource_overview#future-plans) as an improvement.
+
+> Because new resources are more general and promote single responsibility, you may end up with higher resource count than before (at least "under the hood," because new resources are easier to work with `for_each` can be easily generated for different configurations).
+> We plan to improve this topic in the future, as it is a highly requested feature (mostly because resource count is usually a measure used for billing).
 
 ### *(new feature)* Api authentication resources
 Added new api authentication resources, i.e.:

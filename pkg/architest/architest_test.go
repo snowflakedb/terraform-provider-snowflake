@@ -211,8 +211,8 @@ func Test_Assertions(t *testing.T) {
 			file.AssertHasPackage(tut1, tt.expectedPackage)
 			file.AssertHasPackage(tut2, "some_other_package")
 
-			assert.Equal(t, false, tut1.Failed())
-			assert.Equal(t, true, tut2.Failed())
+			assert.False(t, tut1.Failed())
+			assert.True(t, tut2.Failed())
 		})
 	}
 

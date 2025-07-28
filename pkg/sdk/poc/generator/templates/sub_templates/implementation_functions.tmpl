@@ -3,16 +3,29 @@
 {{ $impl := .NameLowerCased }}
 
 {{ range .Operations }}
-    {{ if and (eq .Name "Show") .ShowMapping }}
-        func (v *{{ $impl }}) Show(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error) {
-            opts := request.toOpts()
-            dbRows, err := validateAndQuery[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
-            if err != nil {
-                return nil, err
-            }
-            resultList := convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
-            return resultList, nil
-        }
+    {{ if .ShowMapping }}
+        {{ if .ShowKind }}
+            {{ if eq (show_mapping_deref .ShowKind) "single_value" }}
+                func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .ShowMapping.To.Name }}, error) {
+                    opts := request.toOpts()
+                    result, err := validateAndQueryOne[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
+                    if err != nil {
+                        return nil, err
+                    }
+                    return result.convert(), nil
+                }
+            {{ else if eq (show_mapping_deref .ShowKind) "slice" }}
+                func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error) {
+                    opts := request.toOpts()
+                    dbRows, err := validateAndQuery[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
+                    if err != nil {
+                        return nil, err
+                    }
+                    resultList := convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
+                    return resultList, nil
+                }
+            {{ end }}
+        {{ end }}
     {{ else if eq .Name "ShowByID" }}
         func (v *{{ $impl }}) ShowByID(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error) {
             request := NewShow{{ .ObjectInterface.NameSingular }}Request()
@@ -31,7 +44,7 @@
         }
     {{ else if and (eq .Name "Describe") .DescribeMapping }}
         {{ if .DescribeKind }}
-            {{ if eq (deref .DescribeKind) "single_value" }}
+            {{ if eq (describe_mapping_deref .DescribeKind) "single_value" }}
                 func (v *{{ $impl }}) Describe(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .DescribeMapping.To.Name }}, error) {
                     opts := &{{ .OptsField.Name }}{
                         name: id,
@@ -42,7 +55,7 @@
                     }
                     return result.convert(), nil
                 }
-            {{ else if eq (deref .DescribeKind) "slice" }}
+            {{ else if eq (describe_mapping_deref .DescribeKind) "slice" }}
                 func (v *{{ $impl }}) Describe(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) ([]{{ .DescribeMapping.To.Name }}, error) {
                     opts := &{{ .OptsField.Name }}{
                         name: id,

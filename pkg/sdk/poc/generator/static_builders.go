@@ -1,7 +1,11 @@
 package generator
 
 func (v *QueryStruct) SQL(sql string) *QueryStruct {
-	v.fields = append(v.fields, NewField(sqlToFieldName(sql, false), "bool", Tags().Static().SQL(sql), nil))
+	return v.SQLWithCustomFieldName(sqlToFieldName(sql, false), sql)
+}
+
+func (v *QueryStruct) SQLWithCustomFieldName(name, sql string) *QueryStruct {
+	v.fields = append(v.fields, NewField(name, "bool", Tags().Static().SQL(sql), nil))
 	return v
 }
 

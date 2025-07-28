@@ -87,7 +87,7 @@ data "snowflake_schemas" "assert_with_postcondition" {
   }
 }
 
-# Ensure the number of schemas is equal to at exactly one element (with the use of check block)
+# Ensure the number of schemas is equal to exactly one element (with the use of check block)
 check "schema_check" {
   data "snowflake_schemas" "assert_with_check_block" {
     like = "schema-name"
@@ -109,7 +109,7 @@ check "schema_check" {
 
 - `in` (Block List, Max: 1) IN clause to filter the list of streamlits (see [below for nested schema](#nestedblock--in))
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
-- `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit wll start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
+- `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
 - `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
 - `with_describe` (Boolean) (Default: `true`) Runs DESC SCHEMA for each schema returned by SHOW SCHEMAS. The output of describe is saved to the description field. By default this value is set to true.
 - `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR SCHEMA for each schema returned by SHOW SCHEMAS. The output of describe is saved to the parameters field as a map. By default this value is set to true.

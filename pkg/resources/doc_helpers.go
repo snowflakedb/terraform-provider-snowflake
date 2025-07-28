@@ -56,3 +56,11 @@ func copyGrantsDescription(description string) string {
 func relatedResourceDescription(description string, resource providerresources.Resource) string {
 	return fmt.Sprintf(`%s For more information about this resource, see [docs](./%s).`, description, strings.TrimPrefix(resource.String(), "snowflake_"))
 }
+
+func joinWithSpace(parts ...string) string {
+	return strings.Join(parts, " ")
+}
+
+func exampleSchemaObjectIdentifier(schemaObjectName string) string {
+	return fmt.Sprintf("Example: `\"\\\"<db_name>\\\".\\\"<schema_name>\\\".\\\"<%s_name>\\\"\"`.", schemaObjectName)
+}

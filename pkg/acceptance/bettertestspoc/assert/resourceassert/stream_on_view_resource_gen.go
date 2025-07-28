@@ -32,6 +32,21 @@ func ImportedStreamOnViewResource(t *testing.T, id string) *StreamOnViewResource
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (s *StreamOnViewResourceAssert) HasDatabaseString(expected string) *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("database", expected))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasSchemaString(expected string) *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("schema", expected))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasNameString(expected string) *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("name", expected))
+	return s
+}
+
 func (s *StreamOnViewResourceAssert) HasAppendOnlyString(expected string) *StreamOnViewResourceAssert {
 	s.AddAssertion(assert.ValueSet("append_only", expected))
 	return s
@@ -57,23 +72,8 @@ func (s *StreamOnViewResourceAssert) HasCopyGrantsString(expected string) *Strea
 	return s
 }
 
-func (s *StreamOnViewResourceAssert) HasDatabaseString(expected string) *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
-	return s
-}
-
 func (s *StreamOnViewResourceAssert) HasFullyQualifiedNameString(expected string) *StreamOnViewResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return s
-}
-
-func (s *StreamOnViewResourceAssert) HasNameString(expected string) *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
-	return s
-}
-
-func (s *StreamOnViewResourceAssert) HasSchemaString(expected string) *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
 	return s
 }
 
@@ -87,27 +87,37 @@ func (s *StreamOnViewResourceAssert) HasStaleString(expected string) *StreamOnVi
 	return s
 }
 
+func (s *StreamOnViewResourceAssert) HasStreamTypeString(expected string) *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("stream_type", expected))
+	return s
+}
+
 func (s *StreamOnViewResourceAssert) HasViewString(expected string) *StreamOnViewResourceAssert {
 	s.AddAssertion(assert.ValueSet("view", expected))
 	return s
 }
 
-////////////////////////////
-// Attribute empty checks //
-////////////////////////////
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (s *StreamOnViewResourceAssert) HasNoDatabase() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("database"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasNoSchema() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("schema"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasNoName() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("name"))
+	return s
+}
 
 func (s *StreamOnViewResourceAssert) HasNoAppendOnly() *StreamOnViewResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("append_only"))
-	return s
-}
-
-func (s *StreamOnViewResourceAssert) HasNoAt() *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("at"))
-	return s
-}
-
-func (s *StreamOnViewResourceAssert) HasNoBefore() *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("before"))
 	return s
 }
 
@@ -121,23 +131,8 @@ func (s *StreamOnViewResourceAssert) HasNoCopyGrants() *StreamOnViewResourceAsse
 	return s
 }
 
-func (s *StreamOnViewResourceAssert) HasNoDatabase() *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
-	return s
-}
-
 func (s *StreamOnViewResourceAssert) HasNoFullyQualifiedName() *StreamOnViewResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
-	return s
-}
-
-func (s *StreamOnViewResourceAssert) HasNoName() *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
-	return s
-}
-
-func (s *StreamOnViewResourceAssert) HasNoSchema() *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
 	return s
 }
 
@@ -151,12 +146,120 @@ func (s *StreamOnViewResourceAssert) HasNoStale() *StreamOnViewResourceAssert {
 	return s
 }
 
+func (s *StreamOnViewResourceAssert) HasNoStreamType() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("stream_type"))
+	return s
+}
+
 func (s *StreamOnViewResourceAssert) HasNoView() *StreamOnViewResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("view"))
 	return s
 }
 
-func (s *StreamOnViewResourceAssert) HasStreamTypeString(expected string) *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("stream_type", expected))
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (s *StreamOnViewResourceAssert) HasAppendOnlyEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("append_only", ""))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasAtEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("at.#", "0"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasBeforeEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("before.#", "0"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasCommentEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("comment", ""))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasCopyGrantsEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("copy_grants", ""))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasFullyQualifiedNameEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasShowInitialRowsEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("show_initial_rows", ""))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasStaleEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("stale", ""))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasStreamTypeEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("stream_type", ""))
+	return s
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (s *StreamOnViewResourceAssert) HasDatabaseNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("database"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasSchemaNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("schema"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasNameNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("name"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasAppendOnlyNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("append_only"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasCommentNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("comment"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasCopyGrantsNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("copy_grants"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasFullyQualifiedNameNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasShowInitialRowsNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("show_initial_rows"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasStaleNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("stale"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasStreamTypeNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("stream_type"))
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasViewNotEmpty() *StreamOnViewResourceAssert {
+	s.AddAssertion(assert.ValuePresent("view"))
 	return s
 }

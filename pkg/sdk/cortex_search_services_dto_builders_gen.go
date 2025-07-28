@@ -35,6 +35,11 @@ func (s *CreateCortexSearchServiceRequest) WithAttributes(Attributes AttributesR
 	return s
 }
 
+func (s *CreateCortexSearchServiceRequest) WithEmbeddingModel(EmbeddingModel string) *CreateCortexSearchServiceRequest {
+	s.EmbeddingModel = &EmbeddingModel
+	return s
+}
+
 func (s *CreateCortexSearchServiceRequest) WithComment(Comment string) *CreateCortexSearchServiceRequest {
 	s.Comment = &Comment
 	return s

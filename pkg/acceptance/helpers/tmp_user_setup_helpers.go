@@ -49,6 +49,24 @@ func (c *TestClient) SetUpTemporaryServiceUser(t *testing.T) *TmpServiceUser {
 	}
 }
 
+func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpServiceUserWithPat {
+	t.Helper()
+
+	tmpUser := c.setUpTmpUserWithBasicAccess(t, func(userId sdk.AccountObjectIdentifier) (*sdk.User, func()) {
+		return c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+			Type: sdk.Pointer(sdk.UserTypeLegacyService),
+		}})
+	})
+	req := sdk.NewAddUserProgrammaticAccessTokenRequest(tmpUser.UserId, c.Ids.RandomAccountObjectIdentifier()).WithRoleRestriction(tmpUser.RoleId)
+	pat, cleanupPat := c.User.AddProgrammaticAccessTokenWithRequest(t, tmpUser.UserId, req)
+	t.Cleanup(cleanupPat)
+
+	return &TmpServiceUserWithPat{
+		Pat:     pat.TokenSecret,
+		TmpUser: tmpUser,
+	}
+}
+
 func (c *TestClient) setUpTmpUserWithBasicAccess(t *testing.T, userCreator func(userId sdk.AccountObjectIdentifier) (*sdk.User, func())) TmpUser {
 	t.Helper()
 
@@ -97,5 +115,10 @@ type TmpServiceUser struct {
 
 type TmpLegacyServiceUser struct {
 	Pass string
+	TmpUser
+}
+
+type TmpServiceUserWithPat struct {
+	Pat string
 	TmpUser
 }

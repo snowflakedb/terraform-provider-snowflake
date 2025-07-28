@@ -9,6 +9,8 @@ description: |-
 
 !> **Important** Starting from v0.95.0, it is advised to use this resource **only** if users are not managed through terraform. Check more in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#breaking-change-snowflake_network_policy_attachment-usage-with-snowflake_user).
 
+!> **Warning** This resource shouldn't be used with `snowflake_current_account` resource in the same configuration, as it may lead to unexpected behavior.
+
 # snowflake_network_policy_attachment (Resource)
 
 

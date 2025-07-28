@@ -192,7 +192,7 @@ func TestInt_Schemas(t *testing.T) {
 			DefaultDDLCollation:                     sdk.String("en_US"),
 			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
 			LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-			TraceLevel:                              sdk.Pointer(sdk.TraceLevelOnEvent),
+			TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
 			SuspendTaskAfterNumFailures:             sdk.Int(10),
 			TaskAutoRetryAttempts:                   sdk.Int(10),
 			UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
@@ -234,7 +234,7 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
-		assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelOnEvent))
+		assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelPropagate))
 		assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
 		assertParameterEquals(t, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 		assertParameterEquals(t, sdk.AccountParameterSuspendTaskAfterNumFailures, "10")
@@ -297,7 +297,7 @@ func TestInt_Schemas(t *testing.T) {
 
 		schemaDetails, err := client.Schemas.Describe(ctx, swapSchema.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(schemaDetails))
+		assert.Len(t, schemaDetails, 1)
 		assert.Equal(t, "TABLE", schemaDetails[0].Kind)
 		assert.Equal(t, table.Name, schemaDetails[0].Name)
 	})
@@ -323,7 +323,7 @@ func TestInt_Schemas(t *testing.T) {
 				DefaultDDLCollation:                     sdk.String("en_US"),
 				StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
 				LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-				TraceLevel:                              sdk.Pointer(sdk.TraceLevelOnEvent),
+				TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
 				SuspendTaskAfterNumFailures:             sdk.Int(10),
 				TaskAutoRetryAttempts:                   sdk.Int(10),
 				UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
@@ -346,7 +346,7 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, params, sdk.AccountParameterDefaultDDLCollation, "en_US")
 		assertParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 		assertParameterEquals(t, params, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
-		assertParameterEquals(t, params, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelOnEvent))
+		assertParameterEquals(t, params, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelPropagate))
 		assertParameterEquals(t, params, sdk.AccountParameterSuspendTaskAfterNumFailures, "10")
 		assertParameterEquals(t, params, sdk.AccountParameterTaskAutoRetryAttempts, "10")
 		assertParameterEquals(t, params, sdk.AccountParameterUserTaskManagedInitialWarehouseSize, string(sdk.WarehouseSizeMedium))
@@ -460,7 +460,7 @@ func TestInt_Schemas(t *testing.T) {
 		s, err := client.Schemas.ShowByID(ctx, schema.ID())
 		require.NoError(t, err)
 		assert.Equal(t, schema.Name, s.Name)
-		assert.True(t, true, s.IsManagedAccess())
+		assert.True(t, s.IsManagedAccess())
 	})
 
 	t.Run("alter: disable managed access", func(t *testing.T) {

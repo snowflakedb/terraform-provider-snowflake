@@ -55,7 +55,7 @@ resource "snowflake_procedure_python" "w" {
     result += x
   return result
 EOT
-  runtime_version      = "3.8"
+  runtime_version      = "3.9"
   snowpark_package     = "1.14.0"
 }
 ```

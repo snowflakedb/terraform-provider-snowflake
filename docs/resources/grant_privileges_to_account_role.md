@@ -12,6 +12,8 @@ description: |-
 
 ~> **Note** When granting privileges on applications (for example, the default "SNOWFLAKE" application) use `on_account_object.object_type = "DATABASE"` instead.
 
+~> **Note** Please, follow the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-considerations) for best practices on access control. The provider does not enforce any specific methodology, so it is essential for users to choose the appropriate strategy for seamless privilege management. Additionally, refer to [this link](https://docs.snowflake.com/en/user-guide/security-access-control-privileges) for a list of all available privileges in Snowflake.
+
 # snowflake_grant_privileges_to_account_role (Resource)
 
 
@@ -331,7 +333,7 @@ Optional:
 
 Required:
 
-- `object_type_plural` (String) The plural object type of the schema object on which privileges will be granted. Valid values are: ALERTS | AUTHENTICATION POLICIES | DATA METRIC FUNCTIONS | DYNAMIC TABLES | EVENT TABLES | EXTERNAL TABLES | FILE FORMATS | FUNCTIONS | GIT REPOSITORIES | HYBRID TABLES | ICEBERG TABLES | MATERIALIZED VIEWS | MODELS | NETWORK RULES | NOTEBOOKS | PASSWORD POLICIES | PIPES | PROCEDURES | SECRETS | SERVICES | SEQUENCES | SNAPSHOTS | STAGES | STREAMS | TABLES | TASKS | VIEWS | STREAMLITS | DATASETS.
+- `object_type_plural` (String) The plural object type of the schema object on which privileges will be granted. Valid values are: ALERTS | AUTHENTICATION POLICIES | CORTEX SEARCH SERVICES | DATA METRIC FUNCTIONS | DYNAMIC TABLES | EVENT TABLES | EXTERNAL TABLES | FILE FORMATS | FUNCTIONS | GIT REPOSITORIES | HYBRID TABLES | ICEBERG TABLES | MATERIALIZED VIEWS | MODELS | NETWORK RULES | NOTEBOOKS | PASSWORD POLICIES | PIPES | PROCEDURES | SECRETS | SERVICES | SEQUENCES | SNAPSHOTS | STAGES | STREAMS | TABLES | TASKS | VIEWS | STREAMLITS | DATASETS.
 
 Optional:
 

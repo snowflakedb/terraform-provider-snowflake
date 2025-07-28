@@ -1,13 +1,15 @@
-//go:build !account_level_tests
+//go:build account_level_tests
 
 package testint
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -22,11 +24,13 @@ import (
 // - Shouldn't be any of the "main" accounts/admin users, because those tests alter the current account.
 
 func TestInt_Account(t *testing.T) {
-	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	testClientHelper().EnsureValidNonProdAccountIsUsed(t)
 
 	client := testClient(t)
 	ctx := testContext(t)
-	currentAccountName := testClientHelper().Context.CurrentAccountName(t)
+	currentAccountId := testClientHelper().Context.CurrentAccountId(t)
+	currentAccountName := currentAccountId.AccountName()
+	defaultConsumptionBillingEntity := testClientHelper().Context.DefaultConsumptionBillingEntity(t).Name()
 
 	assertAccountQueriedByOrgAdmin := func(t *testing.T, account sdk.Account, accountName string) {
 		t.Helper()
@@ -109,7 +113,7 @@ func TestInt_Account(t *testing.T) {
 	}
 
 	t.Run("create: minimal", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AccountName())
 		name := random.AdminName()
 		password := random.Password()
 		email := random.Email()
@@ -130,7 +134,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("create: user type service", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AccountName())
 		name := random.AdminName()
 		key, _ := random.GenerateRSAPublicKey(t)
 		email := random.Email()
@@ -152,7 +156,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("create: user type legacy service", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AccountName())
 		name := random.AdminName()
 		password := random.Password()
 		email := random.Email()
@@ -174,7 +178,7 @@ func TestInt_Account(t *testing.T) {
 	})
 
 	t.Run("create: complete", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		id := sdk.NewAccountObjectIdentifier(random.AccountName())
 		name := random.AdminName()
 		password := random.Password()
 		email := random.Email()
@@ -187,16 +191,17 @@ func TestInt_Account(t *testing.T) {
 		comment := random.Comment()
 
 		createResponse, err := client.Accounts.Create(ctx, id, &sdk.CreateAccountOptions{
-			AdminName:          name,
-			AdminPassword:      sdk.String(password),
-			FirstName:          sdk.String("firstName"),
-			LastName:           sdk.String("lastName"),
-			Email:              email,
-			MustChangePassword: sdk.Bool(true),
-			Edition:            sdk.EditionStandard,
-			RegionGroup:        sdk.String("PUBLIC"),
-			Region:             sdk.String(currentRegion.SnowflakeRegion),
-			Comment:            sdk.String(comment),
+			AdminName:                name,
+			AdminPassword:            sdk.String(password),
+			FirstName:                sdk.String("firstName"),
+			LastName:                 sdk.String("lastName"),
+			Email:                    email,
+			MustChangePassword:       sdk.Bool(true),
+			Edition:                  sdk.EditionStandard,
+			RegionGroup:              sdk.String("PUBLIC"),
+			Region:                   sdk.String(currentRegion.SnowflakeRegion),
+			Comment:                  sdk.String(comment),
+			ConsumptionBillingEntity: sdk.String(defaultConsumptionBillingEntity),
 			// TODO(SNOW-1895880): with polaris Snowflake returns an error saying: "invalid property polaris for account"
 			// Polaris: sdk.Bool(true),
 		})
@@ -213,43 +218,39 @@ func TestInt_Account(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
 
-		require.Equal(t, false, *account.IsOrgAdmin)
+		require.False(t, *account.IsOrgAdmin)
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-				Name:     account.ID(),
-				OrgAdmin: true,
-			},
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{OrgAdmin: sdk.Bool(true)},
 		})
 		require.NoError(t, err)
 
 		acc, err := client.Accounts.ShowByID(ctx, account.ID())
 		require.NoError(t, err)
-		require.Equal(t, true, *acc.IsOrgAdmin)
+		require.True(t, *acc.IsOrgAdmin)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-				Name:     account.ID(),
-				OrgAdmin: false,
-			},
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{OrgAdmin: sdk.Bool(false)},
 		})
 		require.NoError(t, err)
 
 		acc, err = client.Accounts.ShowByID(ctx, account.ID())
 		require.NoError(t, err)
-		require.Equal(t, false, *acc.IsOrgAdmin)
+		require.False(t, *acc.IsOrgAdmin)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
 		oldAccount, oldAccountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(oldAccountCleanup)
 
-		newName := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		newName := sdk.NewAccountObjectIdentifier(random.AccountName())
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(oldAccount.ID()),
 			Rename: &sdk.AccountRename{
-				Name:    oldAccount.ID(),
 				NewName: newName,
 			},
 		})
@@ -269,12 +270,12 @@ func TestInt_Account(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
 
-		newName := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		newName := sdk.NewAccountObjectIdentifier(random.AccountName())
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Rename: &sdk.AccountRename{
-				Name:       account.ID(),
 				NewName:    newName,
 				SaveOldURL: sdk.Bool(false),
 			},
@@ -290,13 +291,41 @@ func TestInt_Account(t *testing.T) {
 		require.Empty(t, acc.OldAccountURL)
 	})
 
+	t.Run("alter: set / unset consumption billing entity", func(t *testing.T) {
+		account, accountCleanup := testClientHelper().Account.Create(t)
+		t.Cleanup(accountCleanup)
+
+		require.Equal(t, defaultConsumptionBillingEntity, *account.ConsumptionBillingEntityName)
+
+		// We are not able to create consumption billing entities, because of that, we use the default one.
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
+			Set:  &sdk.AccountSet{ConsumptionBillingEntity: sdk.String(defaultConsumptionBillingEntity)},
+		})
+		require.NoError(t, err)
+
+		acc, err := client.Accounts.ShowByID(ctx, account.ID())
+		require.NoError(t, err)
+		require.Equal(t, defaultConsumptionBillingEntity, *acc.ConsumptionBillingEntityName)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name:  sdk.Pointer(account.ID()),
+			Unset: &sdk.AccountUnset{ConsumptionBillingEntity: sdk.Bool(true)},
+		})
+		require.NoError(t, err)
+
+		acc, err = client.Accounts.ShowByID(ctx, account.ID())
+		require.NoError(t, err)
+		require.Equal(t, defaultConsumptionBillingEntity, *acc.ConsumptionBillingEntityName)
+	})
+
 	t.Run("alter: drop url when there's no old url", func(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Drop: &sdk.AccountDrop{
-				Name:   account.ID(),
 				OldUrl: sdk.Bool(true),
 			},
 		})
@@ -307,12 +336,12 @@ func TestInt_Account(t *testing.T) {
 		account, accountCleanup := testClientHelper().Account.Create(t)
 		t.Cleanup(accountCleanup)
 
-		newName := testClientHelper().Ids.RandomSensitiveAccountObjectIdentifier()
+		newName := sdk.NewAccountObjectIdentifier(random.AccountName())
 		t.Cleanup(testClientHelper().Account.DropFunc(t, newName))
 
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(account.ID()),
 			Rename: &sdk.AccountRename{
-				Name:    account.ID(),
 				NewName: newName,
 			},
 		})
@@ -323,8 +352,8 @@ func TestInt_Account(t *testing.T) {
 		require.NotEmpty(t, acc.OldAccountURL)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(newName),
 			Drop: &sdk.AccountDrop{
-				Name:   newName,
 				OldUrl: sdk.Bool(true),
 			},
 		})
@@ -385,7 +414,7 @@ func TestInt_Account(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(accounts))
+		assert.Len(t, accounts, 1)
 		assertAccountQueriedByOrgAdmin(t, accounts[0], currentAccountName)
 	})
 
@@ -398,7 +427,7 @@ func TestInt_Account(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(accounts))
+		assert.Len(t, accounts, 1)
 		assertHistoryAccount(t, accounts[0], currentAccountName)
 	})
 
@@ -417,14 +446,14 @@ func TestInt_Account(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(accounts))
+		assert.Len(t, accounts, 1)
 		assertAccountQueriedByAccountAdmin(t, accounts[0], currentAccountName)
 	})
 }
 
 func TestInt_Account_SelfAlter(t *testing.T) {
-	t.Skip("TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one")
-	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
+	// TODO(SNOW-1920881): Adjust the test so that self alters will be done on newly created account - not the main test one
+	testClientHelper().EnsureValidNonProdAccountIsUsed(t)
 
 	// This client should be operating on a different account than the "main" one (because it will be altered here).
 	// Cannot use a newly created account because ORGADMIN role is necessary,
@@ -433,38 +462,19 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	ctx := testContext(t)
 	t.Cleanup(testClientHelper().Role.UseRole(t, snowflakeroles.Accountadmin))
 
-	assertParameterIsDefault := func(t *testing.T, parameters []*sdk.Parameter, parameterKey string) {
-		t.Helper()
-		param, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == parameterKey })
-		require.NoError(t, err)
-		require.NotNil(t, param)
-		require.Equal(t, (*param).Default, (*param).Value)
-		require.Equal(t, sdk.ParameterType(""), (*param).Level)
-	}
+	id := testClientHelper().Context.CurrentAccountId(t)
 
-	assertParameterValueSetOnAccount := func(t *testing.T, parameters []*sdk.Parameter, parameterKey string, parameterValue string) {
-		t.Helper()
-		param, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == parameterKey })
-		require.NoError(t, err)
-		require.NotNil(t, param)
-		require.Equal(t, parameterValue, (*param).Value)
-		require.Equal(t, sdk.ParameterTypeAccount, (*param).Level)
-	}
+	t.Run("set / unset legacy parameters", func(t *testing.T) {
+		objectparametersassert.AccountParameters(t, id).
+			HasDefaultMinDataRetentionTimeInDaysValue().
+			HasDefaultJsonIndentValue().
+			HasDefaultUserTaskTimeoutMsValue().
+			HasDefaultEnableUnredactedQuerySyntaxErrorValue()
 
-	t.Run("set / unset parameters", func(t *testing.T) {
-		parameters, err := client.Accounts.ShowParameters(ctx)
-		require.NoError(t, err)
-		require.NotEmpty(t, parameters)
-
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterMinDataRetentionTimeInDays))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterJsonIndent))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError))
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
-				Parameters: &sdk.AccountLevelParameters{
-					AccountParameters: &sdk.AccountParameters{
+				LegacyParameters: &sdk.AccountLevelParameters{
+					AccountParameters: &sdk.LegacyAccountParameters{
 						MinDataRetentionTimeInDays: sdk.Int(15), // default is 0
 					},
 					SessionParameters: &sdk.SessionParameters{
@@ -481,19 +491,16 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		parameters, err = client.Accounts.ShowParameters(ctx)
-		require.NoError(t, err)
-		require.NotEmpty(t, parameters)
-
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterMinDataRetentionTimeInDays), "15")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterJsonIndent), "8")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs), "100")
-		assertParameterValueSetOnAccount(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError), "true")
+		objectparametersassert.AccountParameters(t, id).
+			HasMinDataRetentionTimeInDays(15).
+			HasJsonIndent(8).
+			HasUserTaskTimeoutMs(100).
+			HasEnableUnredactedQuerySyntaxError(true)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{
-				Parameters: &sdk.AccountLevelParametersUnset{
-					AccountParameters: &sdk.AccountParametersUnset{
+				LegacyParameters: &sdk.AccountLevelParametersUnset{
+					AccountParameters: &sdk.LegacyAccountParametersUnset{
 						MinDataRetentionTimeInDays: sdk.Bool(true),
 					},
 					SessionParameters: &sdk.SessionParametersUnset{
@@ -510,34 +517,26 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		parameters, err = client.Accounts.ShowParameters(ctx)
-		require.NoError(t, err)
-		require.NotEmpty(t, parameters)
-
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterMinDataRetentionTimeInDays))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterJsonIndent))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterUserTaskTimeoutMs))
-		assertParameterIsDefault(t, parameters, string(sdk.AccountParameterEnableUnredactedQuerySyntaxError))
+		objectparametersassert.AccountParameters(t, id).
+			HasDefaultMinDataRetentionTimeInDaysValue().
+			HasDefaultJsonIndentValue().
+			HasDefaultUserTaskTimeoutMsValue().
+			HasDefaultEnableUnredactedQuerySyntaxErrorValue()
 	})
 
-	assertPolicySet := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
-		t.Helper()
-
-		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount)
-		require.NoError(t, err)
-		_, err = collections.FindFirst(policies, func(reference sdk.PolicyReference) bool {
-			return reference.PolicyName == id.Name()
-		})
-		require.NoError(t, err)
-	}
-
-	assertPolicyNotSet := func(t *testing.T) {
-		t.Helper()
-
-		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(client.GetAccountLocator()), sdk.PolicyEntityDomainAccount)
-		require.Len(t, policies, 0)
-		require.NoError(t, err)
-	}
+	t.Run("set / unset parameters",
+		setAndUnsetAccountParametersTest(
+			func(ctx context.Context, parameters sdk.AccountParameters) error {
+				return client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+					Set: &sdk.AccountSet{
+						Parameters: &parameters,
+					},
+				})
+			},
+			client.Accounts.UnsetAllParameters,
+			client.Accounts.ShowParameters,
+		),
+	)
 
 	t.Run("set / unset resource monitor", func(t *testing.T) {
 		resourceMonitor, resourceMonitorCleanup := testClientHelper().ResourceMonitor.CreateResourceMonitor(t)
@@ -546,7 +545,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		require.Nil(t, resourceMonitor.Level)
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
-				ResourceMonitor: resourceMonitor.ID(),
+				ResourceMonitor: sdk.Pointer(resourceMonitor.ID()),
 			},
 		})
 		require.NoError(t, err)
@@ -572,6 +571,9 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(authPolicyCleanup)
 
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
 		passwordPolicy, passwordPolicyCleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
 		t.Cleanup(passwordPolicyCleanup)
 
@@ -581,96 +583,32 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
 		t.Cleanup(packagesPolicyCleanup)
 
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PackagesPolicy: packagesPolicyId,
-			},
-		})
-		require.NoError(t, err)
 		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					PackagesPolicy: sdk.Bool(true),
-				},
-			}))
+			err := client.Accounts.UnsetAllPoliciesSafely(ctx)
+			assert.NoError(t, err)
+			assertThatNoPolicyIsSetOnAccount(t)
 		})
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PasswordPolicy: passwordPolicy.ID(),
-			},
-		})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					PasswordPolicy: sdk.Bool(true),
-				},
-			}))
-		})
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				SessionPolicy: sessionPolicy.ID(),
-			},
-		})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					SessionPolicy: sdk.Bool(true),
-				},
-			}))
-		})
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				AuthenticationPolicy: authPolicy.ID(),
-			},
-		})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			assert.NoError(t, client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					AuthenticationPolicy: sdk.Bool(true),
-				},
-			}))
-		})
-
-		assertPolicySet(t, authPolicy.ID())
-		assertPolicySet(t, passwordPolicy.ID())
-		assertPolicySet(t, sessionPolicy.ID())
-		assertPolicySet(t, packagesPolicyId)
-
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				PackagesPolicy: sdk.Bool(true),
-			},
-		})
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
 		require.NoError(t, err)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				PasswordPolicy: sdk.Bool(true),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
 		require.NoError(t, err)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				SessionPolicy: sdk.Bool(true),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
 		require.NoError(t, err)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{
-				AuthenticationPolicy: sdk.Bool(true),
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
 		require.NoError(t, err)
 
-		assertPolicyNotSet(t)
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
+		require.NoError(t, err)
+
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, featurePolicyId)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPasswordPolicy, passwordPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindSessionPolicy, sessionPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, packagesPolicyId)
 	})
 
 	t.Run("force new packages policy", func(t *testing.T) {
@@ -680,37 +618,252 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		newPackagesPolicyId, newPackagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
 		t.Cleanup(newPackagesPolicyCleanup)
 
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PackagesPolicy: packagesPolicyId,
-			},
-		})
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
 		require.NoError(t, err)
-		assertPolicySet(t, packagesPolicyId)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, packagesPolicyId)
 		t.Cleanup(func() {
-			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Unset: &sdk.AccountUnset{
-					PackagesPolicy: sdk.Bool(true),
-				},
-			})
+			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{PackagesPolicy: sdk.Bool(true)}})
 			require.NoError(t, err)
-			assertPolicyNotSet(t)
+			assertThatNoPolicyIsSetOnAccount(t)
 		})
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Set: &sdk.AccountSet{
-				PackagesPolicy: newPackagesPolicyId,
-			},
-		})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &newPackagesPolicyId}})
 		require.Error(t, err)
 
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &newPackagesPolicyId, Force: sdk.Bool(true)}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, newPackagesPolicyId)
+	})
+
+	t.Run("force new feature policy", func(t *testing.T) {
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
+		newFeaturePolicyId, newFeaturePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(newFeaturePolicyCleanup)
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, featurePolicyId)
+		t.Cleanup(func() {
+			err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{FeaturePolicyUnset: &sdk.AccountFeaturePolicyUnset{FeaturePolicy: sdk.Bool(true)}}})
+			require.NoError(t, err)
+			assertThatNoPolicyIsSetOnAccount(t)
+		})
+
+		// Here we expect to get an error as there is another feature policy set on the account.
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}}})
+		require.Error(t, err)
+
+		// To set a new feature policy on the account without firstly unsetting it, we can use FORCE parameter.
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &newFeaturePolicyId}, Force: sdk.Bool(true)}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, newFeaturePolicyId)
+	})
+
+	t.Run("unset policy safely", func(t *testing.T) {
+		authenticationPolicy, authenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authenticationPolicyCleanup)
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}})
+		assert.ErrorContains(t, err, fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", sdk.PolicyKindAuthenticationPolicy))
+
+		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
+		assert.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authenticationPolicy.ID())}})
+		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authenticationPolicy.ID())
+
+		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
+		assert.NoError(t, err)
+		assertThatNoPolicyIsSetOnAccount(t)
+	})
+
+	t.Run("unset all", func(t *testing.T) {
+		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authPolicyCleanup)
+
+		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
+		t.Cleanup(featurePolicyCleanup)
+
+		passwordPolicy, passwordPolicyCleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
+		t.Cleanup(passwordPolicyCleanup)
+
+		sessionPolicy, sessionPolicyCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
+		t.Cleanup(sessionPolicyCleanup)
+
+		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
+		t.Cleanup(packagesPolicyCleanup)
+
+		warehouseId := testClientHelper().Ids.WarehouseId()
+
+		eventTable, eventTableCleanup := testClientHelper().EventTable.Create(t)
+		t.Cleanup(eventTableCleanup)
+
+		externalVolumeId, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
+		t.Cleanup(externalVolumeCleanup)
+
+		createNetworkPolicyRequest := sdk.NewCreateNetworkPolicyRequest(testClientHelper().Ids.RandomAccountObjectIdentifier()).WithAllowedIpList([]sdk.IPRequest{*sdk.NewIPRequest("0.0.0.0/0")})
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, createNetworkPolicyRequest)
+		t.Cleanup(networkPolicyCleanup)
+
+		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
+		t.Cleanup(stageCleanup)
+
+		t.Cleanup(func() {
+			err := client.Accounts.UnsetAllPoliciesSafely(ctx)
+			assert.NoError(t, err)
+			err = client.Accounts.UnsetAllParameters(ctx)
+			require.NoError(t, err)
+		})
+
+		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: &packagesPolicyId}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
+		require.NoError(t, err)
+
+		// TODO(SNOW-2138715): Test all parameters, the following parameters were not tested due to more complex setup:
+		// - ActivePythonProfiler
+		// - CatalogSync
+		// - EnableInternalStagesPrivatelink
+		// - PythonProfilerModules
+		// - S3StageVpceDnsName
+		// - SamlIdentityProvider
+		// - SimulatedDataSharingConsumer
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{
-				PackagesPolicy: newPackagesPolicyId,
-				Force:          sdk.Bool(true),
+				Parameters: &sdk.AccountParameters{
+					AbortDetachedQuery:                               sdk.Bool(true),
+					AllowClientMFACaching:                            sdk.Bool(true),
+					AllowIDToken:                                     sdk.Bool(true),
+					Autocommit:                                       sdk.Bool(false),
+					BaseLocationPrefix:                               sdk.String("STORAGE_BASE_URL/"),
+					BinaryInputFormat:                                sdk.Pointer(sdk.BinaryInputFormatBase64),
+					BinaryOutputFormat:                               sdk.Pointer(sdk.BinaryOutputFormatBase64),
+					Catalog:                                          sdk.String(helpers.TestDatabaseCatalog.Name()),
+					ClientEnableLogInfoStatementParameters:           sdk.Bool(true),
+					ClientEncryptionKeySize:                          sdk.Int(256),
+					ClientMemoryLimit:                                sdk.Int(1540),
+					ClientMetadataRequestUseConnectionCtx:            sdk.Bool(true),
+					ClientMetadataUseSessionDatabase:                 sdk.Bool(true),
+					ClientPrefetchThreads:                            sdk.Int(5),
+					ClientResultChunkSize:                            sdk.Int(159),
+					ClientResultColumnCaseInsensitive:                sdk.Bool(true),
+					ClientSessionKeepAlive:                           sdk.Bool(true),
+					ClientSessionKeepAliveHeartbeatFrequency:         sdk.Int(3599),
+					ClientTimestampTypeMapping:                       sdk.Pointer(sdk.ClientTimestampTypeMappingNtz),
+					CortexEnabledCrossRegion:                         sdk.String("ANY_REGION"),
+					CortexModelsAllowlist:                            sdk.String("All"),
+					CsvTimestampFormat:                               sdk.String("YYYY-MM-DD"),
+					DataRetentionTimeInDays:                          sdk.Int(2),
+					DateInputFormat:                                  sdk.String("YYYY-MM-DD"),
+					DateOutputFormat:                                 sdk.String("YYYY-MM-DD"),
+					DefaultDDLCollation:                              sdk.String("en-cs"),
+					DefaultNotebookComputePoolCpu:                    sdk.String("CPU_X64_S"),
+					DefaultNotebookComputePoolGpu:                    sdk.String("GPU_NV_S"),
+					DefaultNullOrdering:                              sdk.Pointer(sdk.DefaultNullOrderingFirst),
+					DefaultStreamlitNotebookWarehouse:                sdk.Pointer(warehouseId),
+					DisableUiDownloadButton:                          sdk.Bool(true),
+					DisableUserPrivilegeGrants:                       sdk.Bool(true),
+					EnableAutomaticSensitiveDataClassificationLog:    sdk.Bool(false),
+					EnableEgressCostOptimizer:                        sdk.Bool(false),
+					EnableIdentifierFirstLogin:                       sdk.Bool(false),
+					EnableTriSecretAndRekeyOptOutForImageRepository:  sdk.Bool(true),
+					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: sdk.Bool(true),
+					EnableUnhandledExceptionsReporting:               sdk.Bool(false),
+					EnableUnloadPhysicalTypeOptimization:             sdk.Bool(false),
+					EnableUnredactedQuerySyntaxError:                 sdk.Bool(true),
+					EnableUnredactedSecureObjectError:                sdk.Bool(true),
+					EnforceNetworkRulesForInternalStages:             sdk.Bool(true),
+					ErrorOnNondeterministicMerge:                     sdk.Bool(false),
+					ErrorOnNondeterministicUpdate:                    sdk.Bool(true),
+					EventTable:                                       sdk.Pointer(eventTable.ID()),
+					ExternalOAuthAddPrivilegedRolesToBlockedList:     sdk.Bool(false),
+					ExternalVolume:                                   sdk.Pointer(externalVolumeId),
+					GeographyOutputFormat:                            sdk.Pointer(sdk.GeographyOutputFormatWKT),
+					GeometryOutputFormat:                             sdk.Pointer(sdk.GeometryOutputFormatWKT),
+					HybridTableLockTimeout:                           sdk.Int(3599),
+					InitialReplicationSizeLimitInTB:                  sdk.String("9.9"),
+					JdbcTreatDecimalAsInt:                            sdk.Bool(false),
+					JdbcTreatTimestampNtzAsUtc:                       sdk.Bool(true),
+					JdbcUseSessionTimezone:                           sdk.Bool(false),
+					JsonIndent:                                       sdk.Int(4),
+					JsTreatIntegerAsBigInt:                           sdk.Bool(true),
+					ListingAutoFulfillmentReplicationRefreshSchedule: sdk.String("2 minutes"),
+					LockTimeout:                                      sdk.Int(43201),
+					LogLevel:                                         sdk.Pointer(sdk.LogLevelInfo),
+					MaxConcurrencyLevel:                              sdk.Int(7),
+					MaxDataExtensionTimeInDays:                       sdk.Int(13),
+					MetricLevel:                                      sdk.Pointer(sdk.MetricLevelAll),
+					MinDataRetentionTimeInDays:                       sdk.Int(1),
+					MultiStatementCount:                              sdk.Int(0),
+					NetworkPolicy:                                    sdk.Pointer(networkPolicy.ID()),
+					NoorderSequenceAsDefault:                         sdk.Bool(false),
+					OAuthAddPrivilegedRolesToBlockedList:             sdk.Bool(false),
+					OdbcTreatDecimalAsInt:                            sdk.Bool(true),
+					PeriodicDataRekeying:                             sdk.Bool(false),
+					PipeExecutionPaused:                              sdk.Bool(true),
+					PreventUnloadToInlineURL:                         sdk.Bool(true),
+					PreventUnloadToInternalStages:                    sdk.Bool(true),
+					PythonProfilerTargetStage:                        sdk.Pointer(stage.ID()),
+					QueryTag:                                         sdk.String("test-query-tag"),
+					QuotedIdentifiersIgnoreCase:                      sdk.Bool(true),
+					ReplaceInvalidCharacters:                         sdk.Bool(true),
+					RequireStorageIntegrationForStageCreation:        sdk.Bool(true),
+					RequireStorageIntegrationForStageOperation:       sdk.Bool(true),
+					RowsPerResultset:                                 sdk.Int(1000),
+					SearchPath:                                       sdk.String("$current, $public"),
+					ServerlessTaskMaxStatementSize:                   sdk.Pointer(sdk.WarehouseSize("6X-LARGE")),
+					ServerlessTaskMinStatementSize:                   sdk.Pointer(sdk.WarehouseSizeSmall),
+					SsoLoginPage:                                     sdk.Bool(true),
+					StatementQueuedTimeoutInSeconds:                  sdk.Int(1),
+					StatementTimeoutInSeconds:                        sdk.Int(1),
+					StorageSerializationPolicy:                       sdk.Pointer(sdk.StorageSerializationPolicyOptimized),
+					StrictJsonOutput:                                 sdk.Bool(true),
+					SuspendTaskAfterNumFailures:                      sdk.Int(3),
+					TaskAutoRetryAttempts:                            sdk.Int(3),
+					TimestampDayIsAlways24h:                          sdk.Bool(true),
+					TimestampInputFormat:                             sdk.String("YYYY-MM-DD"),
+					TimestampLtzOutputFormat:                         sdk.String("YYYY-MM-DD"),
+					TimestampNtzOutputFormat:                         sdk.String("YYYY-MM-DD"),
+					TimestampOutputFormat:                            sdk.String("YYYY-MM-DD"),
+					TimestampTypeMapping:                             sdk.Pointer(sdk.TimestampTypeMappingLtz),
+					TimestampTzOutputFormat:                          sdk.String("YYYY-MM-DD"),
+					Timezone:                                         sdk.String("Europe/London"),
+					TimeInputFormat:                                  sdk.String("YYYY-MM-DD"),
+					TimeOutputFormat:                                 sdk.String("YYYY-MM-DD"),
+					TraceLevel:                                       sdk.Pointer(sdk.TraceLevelPropagate),
+					TransactionAbortOnError:                          sdk.Bool(true),
+					TransactionDefaultIsolationLevel:                 sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
+					TwoDigitCenturyStart:                             sdk.Int(1971),
+					UnsupportedDdlAction:                             sdk.Pointer(sdk.UnsupportedDDLActionFail),
+					UserTaskManagedInitialWarehouseSize:              sdk.Pointer(sdk.WarehouseSizeX6Large),
+					UserTaskMinimumTriggerIntervalInSeconds:          sdk.Int(10),
+					UserTaskTimeoutMs:                                sdk.Int(10),
+					UseCachedResult:                                  sdk.Bool(false),
+					WeekOfYearPolicy:                                 sdk.Int(1),
+					WeekStart:                                        sdk.Int(1),
+				},
 			},
 		})
 		require.NoError(t, err)
-		assertPolicySet(t, newPackagesPolicyId)
+
+		err = client.Accounts.UnsetAll(ctx)
+		require.NoError(t, err)
+
+		objectparametersassert.AccountParameters(t, id).HasAllDefaults()
+
+		assertThatNoPolicyIsSetOnAccount(t)
 	})
 }

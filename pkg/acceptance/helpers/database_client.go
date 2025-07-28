@@ -14,7 +14,7 @@ const (
 	testDatabaseMaxDataExtensionTimeInDays = 1
 )
 
-var testDatabaseCatalog = sdk.NewAccountObjectIdentifier("SNOWFLAKE")
+var TestDatabaseCatalog = sdk.NewAccountObjectIdentifier("SNOWFLAKE")
 
 type DatabaseClient struct {
 	context *TestClientContext
@@ -65,7 +65,7 @@ func (c *DatabaseClient) TestParametersSet() *sdk.CreateDatabaseOptions {
 		DataRetentionTimeInDays:    sdk.Int(testDatabaseDataRetentionTimeInDays),
 		MaxDataExtensionTimeInDays: sdk.Int(testDatabaseMaxDataExtensionTimeInDays),
 		// according to the docs SNOWFLAKE is a valid value (https://docs.snowflake.com/en/sql-reference/parameters#catalog)
-		Catalog: sdk.Pointer(testDatabaseCatalog),
+		Catalog: sdk.Pointer(TestDatabaseCatalog),
 	}
 }
 
@@ -229,7 +229,7 @@ func (c *DatabaseClient) CreateDatabaseFromShare(t *testing.T, externalShareId s
 func (c *DatabaseClient) testParametersSetSharedDatabase() *sdk.CreateSharedDatabaseOptions {
 	return &sdk.CreateSharedDatabaseOptions{
 		// according to the docs SNOWFLAKE is a valid value (https://docs.snowflake.com/en/sql-reference/parameters#catalog)
-		Catalog: sdk.Pointer(testDatabaseCatalog),
+		Catalog: sdk.Pointer(TestDatabaseCatalog),
 	}
 }
 
@@ -257,5 +257,5 @@ func (c *DatabaseClient) TestDatabaseMaxDataExtensionTimeInDays() int {
 }
 
 func (c *DatabaseClient) TestDatabaseCatalog() sdk.AccountObjectIdentifier {
-	return testDatabaseCatalog
+	return TestDatabaseCatalog
 }

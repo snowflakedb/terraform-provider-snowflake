@@ -242,6 +242,7 @@ func (v *grants) GrantOwnership(ctx context.Context, on OwnershipGrantOn, to Own
 	return validateAndExec(v.client, ctx, opts)
 }
 
+// TODO(SNOW-2097063): Improve SHOW GRANTS implementation
 func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, error) {
 	if opts == nil {
 		opts = &ShowGrantOptions{}
@@ -263,12 +264,14 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 				granteeName = granteeName[strings.IndexRune(granteeName, '.')+1:]
 			}
 			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeName)
-		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare}, grant.GrantedTo) {
+		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser}, grant.GrantedTo) {
 			id, err := ParseDatabaseObjectIdentifier(granteeNameRaw)
 			if err != nil {
 				return nil, err
 			}
 			resultList[i].GranteeName = id
+		} else if grant.GrantedTo == ObjectTypeUser {
+			resultList[i].GranteeName = NewAccountObjectIdentifier(strings.TrimPrefix(granteeNameRaw, "USER$"))
 		} else {
 			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeNameRaw)
 		}
@@ -393,22 +396,6 @@ func (v *grants) grantOwnershipOnTask(ctx context.Context, taskId SchemaObjectId
 		return err
 	}
 
-	if currentTask.Warehouse == nil {
-		return fmt.Errorf("no warehouse found to be attached to the task: %s", taskId.FullyQualifiedName())
-	}
-
-	currentGrantsOnTaskWarehouse, err := v.client.Grants.Show(ctx, &ShowGrantOptions{
-		On: &ShowGrantsOn{
-			Object: &Object{
-				ObjectType: ObjectTypeWarehouse,
-				Name:       *currentTask.Warehouse,
-			},
-		},
-	})
-	if err != nil {
-		return err
-	}
-
 	isGrantedWithPrivilege := func(collection []Grant, grantedOn ObjectType, privilege string) bool {
 		return slices.ContainsFunc(collection, func(grant Grant) bool {
 			return grant.GranteeName == currentRole &&
@@ -416,8 +403,29 @@ func (v *grants) grantOwnershipOnTask(ctx context.Context, taskId SchemaObjectId
 				grant.Privilege == privilege
 		})
 	}
+
+	var isGrantedWithWarehouseUsage bool
+
+	if currentTask.Warehouse == nil {
+		// For serverless tasks (tasks that are not associated with any warehouse), we don't need to check for warehouse usage privileges.
+		isGrantedWithWarehouseUsage = true
+	} else {
+		currentGrantsOnTaskWarehouse, err := v.client.Grants.Show(ctx, &ShowGrantOptions{
+			On: &ShowGrantsOn{
+				Object: &Object{
+					ObjectType: ObjectTypeWarehouse,
+					Name:       *currentTask.Warehouse,
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		isGrantedWithWarehouseUsage = isGrantedWithPrivilege(currentGrantsOnTaskWarehouse, ObjectTypeWarehouse, AccountObjectPrivilegeUsage.String())
+	}
+
 	canOperateOnTask := isGrantedWithPrivilege(currentGrantsOnObject, ObjectTypeTask, SchemaObjectPrivilegeOperate.String())
-	isGrantedWithWarehouseUsage := isGrantedWithPrivilege(currentGrantsOnTaskWarehouse, ObjectTypeWarehouse, AccountObjectPrivilegeUsage.String())
 	canSuspendTask := canOperateOnTask || isGrantedWithPrivilege(currentGrantsOnObject, ObjectTypeTask, "OWNERSHIP")
 	canResumeTask := isGrantedWithWarehouseUsage && canOperateOnTask && isGrantedWithPrivilege(currentGrantsOnAccount, ObjectTypeAccount, GlobalPrivilegeExecuteTask.String())
 	canResumeTaskAfterOwnershipTransfer := canResumeTask && ((opts.CurrentGrants != nil && opts.CurrentGrants.OutboundPrivileges == Copy) || (opts.To.AccountRoleName != nil && opts.To.AccountRoleName.Name() == currentRole.Name()))

@@ -173,7 +173,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 		require.NoError(t, err)
 
-		assert.Equal(t, 2, len(returnedDatabaseRoles))
+		assert.Len(t, returnedDatabaseRoles, 2)
 		assert.Contains(t, returnedDatabaseRoles, *role1)
 		assert.Contains(t, returnedDatabaseRoles, *role2)
 	})
@@ -186,7 +186,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedDatabaseRoles))
+		assert.Len(t, returnedDatabaseRoles, 1)
 		assert.Contains(t, returnedDatabaseRoles, *role1)
 		assert.NotContains(t, returnedDatabaseRoles, *role2)
 	})
@@ -213,7 +213,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedDatabaseRoles))
+		assert.Len(t, returnedDatabaseRoles, 1)
 		assert.NotContains(t, returnedDatabaseRoles, *role1)
 		assert.Contains(t, returnedDatabaseRoles, *role2)
 	})
@@ -223,7 +223,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(returnedDatabaseRoles))
+		assert.Empty(t, returnedDatabaseRoles)
 	})
 
 	t.Run("grant and revoke database_role: to database role", func(t *testing.T) {

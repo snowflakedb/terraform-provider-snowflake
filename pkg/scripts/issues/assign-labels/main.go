@@ -116,7 +116,7 @@ func assignLabelsToIssues(accessToken string, issues []Issue) (successful []Assi
 			continue
 		}
 
-		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.github.com/repos/Snowflake-Labs/terraform-provider-snowflake/issues/%d/labels", issue.ID), bytes.NewReader(addLabelsRequestBodyBytes))
+		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.github.com/repos/snowflakedb/terraform-provider-snowflake/issues/%d/labels", issue.ID), bytes.NewReader(addLabelsRequestBodyBytes))
 		if err != nil {
 			log.Println("failed to create add label request:", err)
 			failed = append(failed, AssignResult{

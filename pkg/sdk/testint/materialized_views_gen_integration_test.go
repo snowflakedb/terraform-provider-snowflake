@@ -42,7 +42,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		assert.NotEmpty(t, view.RefreshedOn)
 		assert.NotEmpty(t, view.CompactedOn)
 		assert.Equal(t, "ACCOUNTADMIN", view.Owner)
-		assert.Equal(t, false, view.Invalid)
+		assert.False(t, view.Invalid)
 		assert.Equal(t, "", view.InvalidReason)
 		assert.NotEmpty(t, view.BehindBy)
 		assert.Equal(t, comment, view.Comment)
@@ -227,7 +227,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		view := createMaterializedViewWithRequest(t, request)
 		id := view.ID()
 
-		assert.Equal(t, true, view.AutomaticClustering)
+		assert.True(t, view.AutomaticClustering)
 
 		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithSuspendRecluster(sdk.Bool(true))
 		err := client.MaterializedViews.Alter(ctx, alterRequest)
@@ -236,7 +236,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		alteredView, err := client.MaterializedViews.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, false, alteredView.AutomaticClustering)
+		assert.False(t, alteredView.AutomaticClustering)
 
 		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithResumeRecluster(sdk.Bool(true))
 		err = client.MaterializedViews.Alter(ctx, alterRequest)
@@ -245,14 +245,14 @@ func TestInt_MaterializedViews(t *testing.T) {
 		alteredView, err = client.MaterializedViews.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, true, alteredView.AutomaticClustering)
+		assert.True(t, alteredView.AutomaticClustering)
 	})
 
 	t.Run("alter materialized view: suspend and resume", func(t *testing.T) {
 		view := createMaterializedView(t)
 		id := view.ID()
 
-		assert.Equal(t, false, view.Invalid)
+		assert.False(t, view.Invalid)
 
 		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithSuspend(sdk.Bool(true))
 		err := client.MaterializedViews.Alter(ctx, alterRequest)
@@ -261,7 +261,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		alteredView, err := client.MaterializedViews.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, true, alteredView.Invalid)
+		assert.True(t, alteredView.Invalid)
 
 		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithResume(sdk.Bool(true))
 		err = client.MaterializedViews.Alter(ctx, alterRequest)
@@ -270,7 +270,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		alteredView, err = client.MaterializedViews.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, false, alteredView.Invalid)
+		assert.False(t, alteredView.Invalid)
 	})
 
 	t.Run("alter materialized view: set and unset values", func(t *testing.T) {
@@ -286,7 +286,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		alteredView, err := client.MaterializedViews.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, true, alteredView.IsSecure)
+		assert.True(t, alteredView.IsSecure)
 
 		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithSet(
 			sdk.NewMaterializedViewSetRequest().WithComment(sdk.String("comment")),
@@ -319,7 +319,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		alteredView, err = client.MaterializedViews.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, false, alteredView.IsSecure)
+		assert.False(t, alteredView.IsSecure)
 	})
 
 	t.Run("show materialized view: default", func(t *testing.T) {
@@ -330,7 +330,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		returnedViews, err := client.MaterializedViews.Show(ctx, showRequest)
 		require.NoError(t, err)
 
-		assert.Equal(t, 2, len(returnedViews))
+		assert.Len(t, returnedViews, 2)
 		assert.Contains(t, returnedViews, *view1)
 		assert.Contains(t, returnedViews, *view2)
 	})
@@ -341,7 +341,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		returnedViews, err := client.MaterializedViews.Show(ctx, showRequest)
 		require.NoError(t, err)
 
-		assert.Equal(t, 0, len(returnedViews))
+		assert.Empty(t, returnedViews)
 	})
 
 	t.Run("show materialized view: schema not existing", func(t *testing.T) {
@@ -361,7 +361,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		returnedViews, err := client.MaterializedViews.Show(ctx, showRequest)
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedViews))
+		assert.Len(t, returnedViews, 1)
 		assert.Contains(t, returnedViews, *view1)
 		assert.NotContains(t, returnedViews, *view2)
 	})
@@ -372,7 +372,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		returnedViewDetails, err := client.MaterializedViews.Describe(ctx, view.ID())
 		require.NoError(t, err)
 
-		assert.Equal(t, 1, len(returnedViewDetails))
+		assert.Len(t, returnedViewDetails, 1)
 		assertViewDetailsRow(t, &returnedViewDetails[0])
 	})
 

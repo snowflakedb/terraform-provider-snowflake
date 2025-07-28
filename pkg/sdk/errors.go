@@ -23,11 +23,14 @@ var (
 	ErrObjectNotExistOrAuthorized               = NewError("object does not exist or not authorized")
 	ErrAccountIsEmpty                           = NewError("account is empty")
 	ErrGrantPartiallyExecuted                   = NewError("grant partially executed")
+	ErrPatNotFound                              = NewError("programmatic access token not found")
 
 	// snowflake-sdk errors.
 	ErrInvalidObjectIdentifier = NewError("invalid object identifier")
 	ErrDifferentDatabase       = NewError("database must be the same")
 	ErrDifferentSchema         = NewError("schema must be the same")
+
+	ErrPolicyNotAttachedToAccount = NewError("policy kind is not attached to account")
 )
 
 type IntErrType string
@@ -80,6 +83,11 @@ func errInvalidValue(structName string, fieldName string, invalidValue string) e
 	return newError(fmt.Sprintf("invalid value %s of struct %s field: %s", invalidValue, structName, fieldName), 2)
 }
 
+var errorRegexes = map[*regexp.Regexp]error{
+	regexp.MustCompile(`Programmatic access token .* not found`):                   ErrPatNotFound,
+	regexp.MustCompile(`Any policy of kind [a-zA-z_]+ is not attached to ACCOUNT`): ErrPolicyNotAttachedToAccount,
+}
+
 func decodeDriverError(err error) error {
 	if err == nil {
 		return nil
@@ -93,6 +101,12 @@ func decodeDriverError(err error) error {
 	}
 	for k, v := range m {
 		if strings.Contains(err.Error(), k) {
+			return v
+		}
+	}
+
+	for regex, v := range errorRegexes {
+		if regex.MatchString(err.Error()) {
 			return v
 		}
 	}

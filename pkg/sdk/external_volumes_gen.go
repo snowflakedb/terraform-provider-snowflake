@@ -230,3 +230,7 @@ func CommonPrefixLastIndex(a []ExternalVolumeStorageLocation, b []ExternalVolume
 
 	return commonPrefixLastIndex, nil
 }
+
+func (v *ExternalVolume) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}

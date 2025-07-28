@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -15,14 +17,134 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// TODO(next prs): Deprecate account_parameter in favor of current_account (the list should stay as client.Parameters.SetAccountParameter was not updated to handle newly defined parameters).
+var accountParameterSupportedParameters = []sdk.AccountParameter{
+	sdk.AccountParameterAllowClientMFACaching,
+	sdk.AccountParameterAllowIDToken,
+	sdk.AccountParameterClientEncryptionKeySize,
+	sdk.AccountParameterCortexEnabledCrossRegion,
+	sdk.AccountParameterDisableUserPrivilegeGrants,
+	sdk.AccountParameterEnableIdentifierFirstLogin,
+	sdk.AccountParameterEnableInternalStagesPrivatelink,
+	sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository,
+	sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage,
+	sdk.AccountParameterEnableUnhandledExceptionsReporting,
+	sdk.AccountParameterEnforceNetworkRulesForInternalStages,
+	sdk.AccountParameterEventTable,
+	sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList,
+	sdk.AccountParameterInitialReplicationSizeLimitInTB,
+	sdk.AccountParameterMinDataRetentionTimeInDays,
+	sdk.AccountParameterNetworkPolicy,
+	sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList,
+	sdk.AccountParameterPeriodicDataRekeying,
+	sdk.AccountParameterPreventLoadFromInlineURL,
+	sdk.AccountParameterPreventUnloadToInlineURL,
+	sdk.AccountParameterRequireStorageIntegrationForStageCreation,
+	sdk.AccountParameterRequireStorageIntegrationForStageOperation,
+	sdk.AccountParameterSsoLoginPage,
+
+	sdk.AccountParameterAbortDetachedQuery,
+	sdk.AccountParameterActivePythonProfiler,
+	sdk.AccountParameterAutocommit,
+	sdk.AccountParameterBinaryInputFormat,
+	sdk.AccountParameterBinaryOutputFormat,
+	sdk.AccountParameterClientEnableLogInfoStatementParameters,
+	sdk.AccountParameterClientMemoryLimit,
+	sdk.AccountParameterClientMetadataRequestUseConnectionCtx,
+	sdk.AccountParameterClientMetadataUseSessionDatabase,
+	sdk.AccountParameterClientPrefetchThreads,
+	sdk.AccountParameterClientResultChunkSize,
+	sdk.AccountParameterClientSessionKeepAlive,
+	sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency,
+	sdk.AccountParameterClientTimestampTypeMapping,
+	sdk.AccountParameterEnableUnloadPhysicalTypeOptimization,
+	sdk.AccountParameterClientResultColumnCaseInsensitive,
+	sdk.AccountParameterCsvTimestampFormat,
+	sdk.AccountParameterDateInputFormat,
+	sdk.AccountParameterDateOutputFormat,
+	sdk.AccountParameterErrorOnNondeterministicMerge,
+	sdk.AccountParameterErrorOnNondeterministicUpdate,
+	sdk.AccountParameterGeographyOutputFormat,
+	sdk.AccountParameterGeometryOutputFormat,
+	sdk.AccountParameterHybridTableLockTimeout,
+	sdk.AccountParameterJdbcTreatDecimalAsInt,
+	sdk.AccountParameterJdbcTreatTimestampNtzAsUtc,
+	sdk.AccountParameterJdbcUseSessionTimezone,
+	sdk.AccountParameterJsonIndent,
+	sdk.AccountParameterJsTreatIntegerAsBigInt,
+	sdk.AccountParameterLockTimeout,
+	sdk.AccountParameterMultiStatementCount,
+	sdk.AccountParameterNoorderSequenceAsDefault,
+	sdk.AccountParameterOdbcTreatDecimalAsInt,
+	sdk.AccountParameterPythonProfilerModules,
+	sdk.AccountParameterPythonProfilerTargetStage,
+	sdk.AccountParameterQueryTag,
+	sdk.AccountParameterQuotedIdentifiersIgnoreCase,
+	sdk.AccountParameterRowsPerResultset,
+	sdk.AccountParameterS3StageVpceDnsName,
+	sdk.AccountParameterSearchPath,
+	sdk.AccountParameterSimulatedDataSharingConsumer,
+	sdk.AccountParameterStatementTimeoutInSeconds,
+	sdk.AccountParameterStrictJsonOutput,
+	sdk.AccountParameterTimeInputFormat,
+	sdk.AccountParameterTimeOutputFormat,
+	sdk.AccountParameterTimestampDayIsAlways24h,
+	sdk.AccountParameterTimestampInputFormat,
+	sdk.AccountParameterTimestampLtzOutputFormat,
+	sdk.AccountParameterTimestampNtzOutputFormat,
+	sdk.AccountParameterTimestampOutputFormat,
+	sdk.AccountParameterTimestampTypeMapping,
+	sdk.AccountParameterTimestampTzOutputFormat,
+	sdk.AccountParameterTimezone,
+	sdk.AccountParameterTransactionAbortOnError,
+	sdk.AccountParameterTransactionDefaultIsolationLevel,
+	sdk.AccountParameterTwoDigitCenturyStart,
+	sdk.AccountParameterUnsupportedDdlAction,
+	sdk.AccountParameterUseCachedResult,
+	sdk.AccountParameterWeekOfYearPolicy,
+	sdk.AccountParameterWeekStart,
+
+	sdk.AccountParameterCatalog,
+	sdk.AccountParameterDataRetentionTimeInDays,
+	sdk.AccountParameterDefaultDDLCollation,
+	sdk.AccountParameterExternalVolume,
+	sdk.AccountParameterLogLevel,
+	sdk.AccountParameterMaxConcurrencyLevel,
+	sdk.AccountParameterMaxDataExtensionTimeInDays,
+	sdk.AccountParameterPipeExecutionPaused,
+	sdk.AccountParameterPreventUnloadToInternalStages,
+	sdk.AccountParameterReplaceInvalidCharacters,
+	sdk.AccountParameterStatementQueuedTimeoutInSeconds,
+	sdk.AccountParameterStorageSerializationPolicy,
+	sdk.AccountParameterShareRestrictions,
+	sdk.AccountParameterSuspendTaskAfterNumFailures,
+	sdk.AccountParameterTraceLevel,
+	sdk.AccountParameterUserTaskManagedInitialWarehouseSize,
+	sdk.AccountParameterUserTaskTimeoutMs,
+	sdk.AccountParameterTaskAutoRetryAttempts,
+	sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds,
+	sdk.AccountParameterMetricLevel,
+	sdk.AccountParameterEnableConsoleOutput,
+	sdk.AccountParameterEnableUnredactedQuerySyntaxError,
+	sdk.AccountParameterEnablePersonalDatabase,
+}
+
+func ToAccountParameter(s string) (sdk.AccountParameter, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(accountParameterSupportedParameters, sdk.AccountParameter(s)) {
+		return "", fmt.Errorf("invalid account parameter: %s", s)
+	}
+	return sdk.AccountParameter(s), nil
+}
+
 var accountParameterSchema = map[string]*schema.Schema{
 	"key": {
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: sdkValidation(sdk.ToAccountParameter),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToAccountParameter),
-		Description:      fmt.Sprintf("Name of account parameter. Valid values are (case-insensitive): %s. Deprecated parameters are not supported in the provider.", possibleValuesListed(sdk.AsStringList(sdk.AllAccountParameters))),
+		ValidateDiagFunc: sdkValidation(ToAccountParameter),
+		DiffSuppressFunc: NormalizeAndCompare(ToAccountParameter),
+		Description:      fmt.Sprintf("Name of account parameter. Valid values are (case-insensitive): %s. Deprecated parameters are not supported in the provider.", possibleValuesListed(sdk.AsStringList(accountParameterSupportedParameters))),
 	},
 	"value": {
 		Type:        schema.TypeString,
@@ -53,7 +175,7 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	client := meta.(*provider.Context).Client
 	key := d.Get("key").(string)
 	value := d.Get("value").(string)
-	parameter, err := sdk.ToAccountParameter(key)
+	parameter, err := ToAccountParameter(key)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -69,7 +191,7 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 func ReadAccountParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	parameterNameRaw := d.Id()
-	parameterName, err := sdk.ToAccountParameter(parameterNameRaw)
+	parameterName, err := ToAccountParameter(parameterNameRaw)
 	if err != nil {
 		return diag.FromErr(err)
 	}

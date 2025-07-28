@@ -3,6 +3,7 @@ package random
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 
@@ -39,8 +40,15 @@ func AdminName() string {
 	return SensitiveAlpha()
 }
 
+// AccountName returns account name acceptable by Snowflake:
+// It can only contain capital letters, numbers and underscores.
+// TODO(SNOW-2155171): Adjust to be consistent with other id generators
+func AccountName() string {
+	return strings.ToUpper(SensitiveAlpha())
+}
+
 func Email() string {
-	return generatedRandomValue + gofakeit.Email()
+	return SensitiveAlphanumeric() + "@example.com"
 }
 
 func Password() string {
@@ -87,6 +95,10 @@ func AlphaN(num int) string {
 
 func AlphaLowerN(num int) string {
 	return gofakeit.Password(true, false, false, false, false, num)
+}
+
+func AlphaUpperN(num int) string {
+	return gofakeit.Password(false, true, false, false, false, num)
 }
 
 func Bytes() []byte {

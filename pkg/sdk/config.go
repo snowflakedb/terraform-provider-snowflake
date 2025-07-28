@@ -95,49 +95,6 @@ func ProfileConfig(profile string, opts ...func(*FileReaderConfig)) (*gosnowflak
 	return config, nil
 }
 
-// TODO(SNOW-1787920): improve TOML parsing
-type ConfigDTO struct {
-	AccountName            *string             `toml:"account_name"`
-	OrganizationName       *string             `toml:"organization_name"`
-	User                   *string             `toml:"user"`
-	Username               *string             `toml:"username"`
-	Password               *string             `toml:"password"`
-	Host                   *string             `toml:"host"`
-	Warehouse              *string             `toml:"warehouse"`
-	Role                   *string             `toml:"role"`
-	Params                 *map[string]*string `toml:"params"`
-	ClientIp               *string             `toml:"client_ip"`
-	Protocol               *string             `toml:"protocol"`
-	Passcode               *string             `toml:"passcode"`
-	Port                   *int                `toml:"port"`
-	PasscodeInPassword     *bool               `toml:"passcode_in_password"`
-	OktaUrl                *string             `toml:"okta_url"`
-	ClientTimeout          *int                `toml:"client_timeout"`
-	JwtClientTimeout       *int                `toml:"jwt_client_timeout"`
-	LoginTimeout           *int                `toml:"login_timeout"`
-	RequestTimeout         *int                `toml:"request_timeout"`
-	JwtExpireTimeout       *int                `toml:"jwt_expire_timeout"`
-	ExternalBrowserTimeout *int                `toml:"external_browser_timeout"`
-	MaxRetryCount          *int                `toml:"max_retry_count"`
-	Authenticator          *string             `toml:"authenticator"`
-	InsecureMode           *bool               `toml:"insecure_mode"`
-	OcspFailOpen           *bool               `toml:"ocsp_fail_open"`
-	Token                  *string             `toml:"token"`
-	KeepSessionAlive       *bool               `toml:"keep_session_alive"`
-	PrivateKey             *string             `toml:"private_key,multiline"`
-	PrivateKeyPassphrase   *string             `toml:"private_key_passphrase"`
-	DisableTelemetry       *bool               `toml:"disable_telemetry"`
-	// TODO [SNOW-1827312]: handle and test 3-value booleans properly from TOML
-	ValidateDefaultParameters      *bool   `toml:"validate_default_parameters"`
-	ClientRequestMfaToken          *bool   `toml:"client_request_mfa_token"`
-	ClientStoreTemporaryCredential *bool   `toml:"client_store_temporary_credential"`
-	DriverTracing                  *string `toml:"driver_tracing"`
-	TmpDirPath                     *string `toml:"tmp_dir_path"`
-	DisableQueryContextCache       *bool   `toml:"disable_query_context_cache"`
-	IncludeRetryReason             *bool   `toml:"include_retry_reason"`
-	DisableConsoleLogin            *bool   `toml:"disable_console_login"`
-}
-
 func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	driverCfg := gosnowflake.Config{}
 	if c.AccountName != nil && c.OrganizationName != nil {
@@ -364,7 +321,6 @@ func pointerTimeInSecondsAttributeSet(src *int, dst *time.Duration) {
 	}
 }
 
-// TODO [SNOW-1827312]: fix this method
 func pointerConfigBoolAttributeSet(src *bool, dst *gosnowflake.ConfigBool) {
 	if src != nil {
 		*dst = boolToConfigBool(*src)
@@ -453,13 +409,14 @@ func ParsePrivateKey(privateKeyBytes []byte, passphrase []byte) (*rsa.PrivateKey
 type AuthenticationType string
 
 const (
-	AuthenticationTypeSnowflake           AuthenticationType = "SNOWFLAKE"
-	AuthenticationTypeOauth               AuthenticationType = "OAUTH"
-	AuthenticationTypeExternalBrowser     AuthenticationType = "EXTERNALBROWSER"
-	AuthenticationTypeOkta                AuthenticationType = "OKTA"
-	AuthenticationTypeJwt                 AuthenticationType = "SNOWFLAKE_JWT"
-	AuthenticationTypeTokenAccessor       AuthenticationType = "TOKENACCESSOR"
-	AuthenticationTypeUsernamePasswordMfa AuthenticationType = "USERNAMEPASSWORDMFA"
+	AuthenticationTypeSnowflake               AuthenticationType = "SNOWFLAKE"
+	AuthenticationTypeOauth                   AuthenticationType = "OAUTH"
+	AuthenticationTypeExternalBrowser         AuthenticationType = "EXTERNALBROWSER"
+	AuthenticationTypeOkta                    AuthenticationType = "OKTA"
+	AuthenticationTypeJwt                     AuthenticationType = "SNOWFLAKE_JWT"
+	AuthenticationTypeTokenAccessor           AuthenticationType = "TOKENACCESSOR"
+	AuthenticationTypeUsernamePasswordMfa     AuthenticationType = "USERNAMEPASSWORDMFA"
+	AuthenticationTypeProgrammaticAccessToken AuthenticationType = "PROGRAMMATIC_ACCESS_TOKEN" //nolint:gosec
 
 	AuthenticationTypeEmpty AuthenticationType = ""
 )
@@ -472,6 +429,7 @@ var AllAuthenticationTypes = []AuthenticationType{
 	AuthenticationTypeJwt,
 	AuthenticationTypeTokenAccessor,
 	AuthenticationTypeUsernamePasswordMfa,
+	AuthenticationTypeProgrammaticAccessToken,
 }
 
 func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
@@ -490,6 +448,8 @@ func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 		return gosnowflake.AuthTypeTokenAccessor, nil
 	case string(AuthenticationTypeUsernamePasswordMfa):
 		return gosnowflake.AuthTypeUsernamePasswordMFA, nil
+	case string(AuthenticationTypeProgrammaticAccessToken):
+		return gosnowflake.AuthTypePat, nil
 	default:
 		return gosnowflake.AuthType(0), fmt.Errorf("invalid authenticator type: %s", s)
 	}
@@ -505,6 +465,8 @@ func ToExtendedAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 		return ToAuthenticatorType(s)
 	}
 }
+
+const GosnowflakeBoolConfigDefault = gosnowflake.ConfigBool(0)
 
 type DriverLogLevel string
 

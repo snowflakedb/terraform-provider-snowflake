@@ -22,7 +22,6 @@ type Client struct {
 
 	// System-Defined Functions
 	ContextFunctions     ContextFunctions
-	ConversionFunctions  ConversionFunctions
 	SystemFunctions      SystemFunctions
 	ReplicationFunctions ReplicationFunctions
 
@@ -35,6 +34,7 @@ type Client struct {
 	Applications                 Applications
 	AuthenticationPolicies       AuthenticationPolicies
 	Comments                     Comments
+	ComputePools                 ComputePools
 	Connections                  Connections
 	CortexSearchServices         CortexSearchServices
 	DatabaseRoles                DatabaseRoles
@@ -48,13 +48,17 @@ type Client struct {
 	FailoverGroups               FailoverGroups
 	FileFormats                  FileFormats
 	Functions                    Functions
+	GitRepositories              GitRepositories
 	Grants                       Grants
+	ImageRepositories            ImageRepositories
+	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
 	NotificationIntegrations     NotificationIntegrations
+	OrganizationAccounts         OrganizationAccounts
 	Parameters                   Parameters
 	PasswordPolicies             PasswordPolicies
 	Pipes                        Pipes
@@ -66,6 +70,7 @@ type Client struct {
 	Schemas                      Schemas
 	Secrets                      Secrets
 	SecurityIntegrations         SecurityIntegrations
+	Services                     Services
 	Sequences                    Sequences
 	SessionPolicies              SessionPolicies
 	Sessions                     Sessions
@@ -78,8 +83,13 @@ type Client struct {
 	Tags                         Tags
 	Tasks                        Tasks
 	Users                        Users
+	UserProgrammaticAccessTokens UserProgrammaticAccessTokens
 	Views                        Views
 	Warehouses                   Warehouses
+}
+
+func (c *Client) SetAccountLocatorForTests(accountLocator string) {
+	c.accountLocator = accountLocator
 }
 
 func (c *Client) GetAccountLocator() string {
@@ -161,9 +171,9 @@ func (c *Client) initialize() {
 	c.Applications = &applications{client: c}
 	c.AuthenticationPolicies = &authenticationPolicies{client: c}
 	c.Comments = &comments{client: c}
+	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
-	c.ConversionFunctions = &conversionFunctions{client: c}
 	c.CortexSearchServices = &cortexSearchServices{client: c}
 	c.DatabaseRoles = &databaseRoles{client: c}
 	c.Databases = &databases{client: c}
@@ -176,13 +186,17 @@ func (c *Client) initialize() {
 	c.FailoverGroups = &failoverGroups{client: c}
 	c.FileFormats = &fileFormats{client: c}
 	c.Functions = &functions{client: c}
+	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
+	c.ImageRepositories = &imageRepositories{client: c}
+	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
 	c.NotificationIntegrations = &notificationIntegrations{client: c}
+	c.OrganizationAccounts = &organizationAccounts{client: c}
 	c.Parameters = &parameters{client: c}
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
@@ -196,6 +210,7 @@ func (c *Client) initialize() {
 	c.Secrets = &secrets{client: c}
 	c.SecurityIntegrations = &securityIntegrations{client: c}
 	c.Sequences = &sequences{client: c}
+	c.Services = &services{client: c}
 	c.SessionPolicies = &sessionPolicies{client: c}
 	c.Sessions = &sessions{client: c}
 	c.Shares = &shares{client: c}
@@ -208,6 +223,7 @@ func (c *Client) initialize() {
 	c.Tags = &tags{client: c}
 	c.Tasks = &tasks{client: c}
 	c.Users = &users{client: c}
+	c.UserProgrammaticAccessTokens = &userProgrammaticAccessTokens{client: c}
 	c.Views = &views{client: c}
 	c.Warehouses = &warehouses{client: c}
 }

@@ -35,10 +35,16 @@ jobs:
 
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@d6f3f49f3345e29369fe57596a3ca8f94c4d2ca7 # v5
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --no-tty --yes
+          fingerprint=$(gpg --list-secret-keys --with-colons | awk -F: '$1 == "fpr" {print $10}' | head -n 1)
+
+          if [[ -z "$fingerprint" ]]; then
+            echo "Error: Failed to extract GPG fingerprint."
+            exit 1
+          fi
+
+          echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
 
       - name: Release please
         uses: googleapis/release-please-action@db8f2c60ee802b3748b512940dde88eabd7b7e01 # v3
@@ -71,3 +77,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.create-token.outputs.token }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

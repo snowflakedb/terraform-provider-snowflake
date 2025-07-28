@@ -4,14 +4,12 @@ package resources_test
 
 import (
 	"fmt"
-	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -66,7 +64,7 @@ func Test_GetPropertyAsPointer(t *testing.T) {
 
 	assert.Equal(t, 123, *resources.GetPropertyAsPointer[int](d, "integer"))
 	assert.Equal(t, "some string", *resources.GetPropertyAsPointer[string](d, "string"))
-	assert.Equal(t, true, *resources.GetPropertyAsPointer[bool](d, "boolean"))
+	assert.True(t, *resources.GetPropertyAsPointer[bool](d, "boolean"))
 	assert.Nil(t, resources.GetPropertyAsPointer[bool](d, "invalid"))
 
 	assert.Equal(t, 123, *resources.GetPropertyAsPointer[int](d, "integer"))
@@ -75,7 +73,7 @@ func Test_GetPropertyAsPointer(t *testing.T) {
 	assert.Equal(t, "some string", *resources.GetPropertyAsPointer[string](d, "string"))
 	assert.Nil(t, resources.GetPropertyAsPointer[string](d, "second_integer"))
 	assert.Nil(t, resources.GetPropertyAsPointer[string](d, "third_string"))
-	assert.Equal(t, true, *resources.GetPropertyAsPointer[bool](d, "boolean"))
+	assert.True(t, *resources.GetPropertyAsPointer[bool](d, "boolean"))
 	assert.Nil(t, resources.GetPropertyAsPointer[bool](d, "second_boolean"))
 	assert.Nil(t, resources.GetPropertyAsPointer[bool](d, "third_boolean"))
 	assert.Nil(t, resources.GetPropertyAsPointer[bool](d, "invalid"))
@@ -137,73 +135,10 @@ func Test_GetConfigPropertyAsPointerAllowingZeroValue(t *testing.T) {
 	assert.Equal(t, "some string", *resources.GetConfigPropertyAsPointerAllowingZeroValue[string](d, "string"))
 	assert.Equal(t, "", *resources.GetConfigPropertyAsPointerAllowingZeroValue[string](d, "second_integer"))
 	assert.Nil(t, resources.GetConfigPropertyAsPointerAllowingZeroValue[string](d, "third_string"))
-	assert.Equal(t, true, *resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "boolean"))
-	assert.Equal(t, false, *resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "second_boolean"))
+	assert.True(t, *resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "boolean"))
+	assert.False(t, *resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "second_boolean"))
 	assert.Nil(t, resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "third_boolean"))
 	assert.Nil(t, resources.GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "invalid"))
-}
-
-// queriedAccountRolePrivilegesEqualTo will check if all the privileges specified in the argument are granted in Snowflake.
-func queriedPrivilegesEqualTo(query func() ([]sdk.Grant, error), privileges ...string) func(s *terraform.State) error {
-	return func(s *terraform.State) error {
-		grants, err := query()
-		if err != nil {
-			return err
-		}
-		for _, grant := range grants {
-			if (grant.GrantTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole) && grant.Privilege == "USAGE" {
-				continue
-			}
-			if !slices.Contains(privileges, grant.Privilege) {
-				return fmt.Errorf("grant not expected, grant: %v, not in %v", grants, privileges)
-			}
-		}
-
-		return nil
-	}
-}
-
-// queriedAccountRolePrivilegesContainAtLeast will check if all the privileges specified in the argument are granted in Snowflake.
-// Any additional grants will be ignored.
-func queriedPrivilegesContainAtLeast(query func() ([]sdk.Grant, error), roleName sdk.ObjectIdentifier, privileges ...string) func(s *terraform.State) error {
-	return func(s *terraform.State) error {
-		grants, err := query()
-		if err != nil {
-			return err
-		}
-		var grantedPrivileges []string
-		for _, grant := range grants {
-			grantedPrivileges = append(grantedPrivileges, grant.Privilege)
-		}
-		notAllPrivilegesInGrantedPrivileges := slices.ContainsFunc(privileges, func(privilege string) bool {
-			return !slices.Contains(grantedPrivileges, privilege)
-		})
-		if notAllPrivilegesInGrantedPrivileges {
-			return fmt.Errorf("not every privilege from the list: %v was found in grant privileges: %v, for role name: %s", privileges, grantedPrivileges, roleName.FullyQualifiedName())
-		}
-
-		return nil
-	}
-}
-
-// queriedPrivilegesDoNotContain will check if all of the privileges specified in the argument are not granted in Snowflake.
-func queriedPrivilegesDoNotContain(query func() ([]sdk.Grant, error), privileges ...string) func(s *terraform.State) error {
-	return func(s *terraform.State) error {
-		grants, err := query()
-		if err != nil {
-			return err
-		}
-		for _, grant := range grants {
-			if (grant.GrantTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole) && grant.Privilege == "USAGE" {
-				continue
-			}
-			if slices.Contains(privileges, grant.Privilege) {
-				return fmt.Errorf("grant not expected, grants: %v should not contain any privilege from %v", grants, privileges)
-			}
-		}
-
-		return nil
-	}
 }
 
 func TestListDiff(t *testing.T) {

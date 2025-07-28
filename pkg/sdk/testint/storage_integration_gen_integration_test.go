@@ -27,7 +27,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 	assertStorageIntegrationShowResult := func(t *testing.T, s *sdk.StorageIntegration, name sdk.AccountObjectIdentifier, comment string) {
 		t.Helper()
 		assert.Equal(t, name.Name(), s.Name)
-		assert.Equal(t, true, s.Enabled)
+		assert.True(t, s.Enabled)
 		assert.Equal(t, "EXTERNAL_STAGE", s.StorageType)
 		assert.Equal(t, "STORAGE", s.Category)
 		assert.Equal(t, comment, s.Comment)

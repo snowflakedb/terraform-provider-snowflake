@@ -65,6 +65,11 @@ type ExtendedIn struct {
 	ApplicationPackage AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
 }
 
+type ServiceIn struct {
+	In
+	ComputePool AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
+}
+
 type Like struct {
 	Pattern *string `ddl:"keyword,single_quotes"`
 }
@@ -383,9 +388,10 @@ var AllLogLevels = []LogLevel{
 type TraceLevel string
 
 const (
-	TraceLevelAlways  TraceLevel = "ALWAYS"
-	TraceLevelOnEvent TraceLevel = "ON_EVENT"
-	TraceLevelOff     TraceLevel = "OFF"
+	TraceLevelAlways    TraceLevel = "ALWAYS"
+	TraceLevelOnEvent   TraceLevel = "ON_EVENT"
+	TraceLevelPropagate TraceLevel = "PROPAGATE"
+	TraceLevelOff       TraceLevel = "OFF"
 )
 
 func ToTraceLevel(value string) (TraceLevel, error) {
@@ -394,6 +400,8 @@ func ToTraceLevel(value string) (TraceLevel, error) {
 		return TraceLevelAlways, nil
 	case string(TraceLevelOnEvent):
 		return TraceLevelOnEvent, nil
+	case string(TraceLevelPropagate):
+		return TraceLevelPropagate, nil
 	case string(TraceLevelOff):
 		return TraceLevelOff, nil
 	default:
@@ -404,6 +412,7 @@ func ToTraceLevel(value string) (TraceLevel, error) {
 var AllTraceLevels = []TraceLevel{
 	TraceLevelAlways,
 	TraceLevelOnEvent,
+	TraceLevelPropagate,
 	TraceLevelOff,
 }
 
@@ -464,4 +473,32 @@ var AllAutoEventLoggings = []AutoEventLogging{
 // StringAllowEmpty is a wrapper on string to allow using empty strings in SQL.
 type StringAllowEmpty struct {
 	Value string `ddl:"keyword,single_quotes"`
+}
+
+// Location allows implementation of custom SQL structs.
+type Location interface {
+	ToSql() string
+}
+
+type StageLocation struct {
+	stage SchemaObjectIdentifier
+	path  string
+}
+
+func NewStageLocation(stage SchemaObjectIdentifier, path string) StageLocation {
+	return StageLocation{
+		stage: stage,
+		path:  path,
+	}
+}
+
+func (s StageLocation) ToSql() string {
+	if s.stage.FullyQualifiedName() == "" && s.path == "" {
+		return ""
+	}
+	stageFqn := fmt.Sprintf(`@%v`, s.stage.FullyQualifiedName())
+	if s.path != "" {
+		return fmt.Sprintf(`%v/%v`, stageFqn, s.path)
+	}
+	return stageFqn
 }

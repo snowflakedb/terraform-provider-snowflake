@@ -9,20 +9,6 @@ type Identifier interface {
 	QualifiedName() string
 }
 
-type TopLevelIdentifier struct {
-	Name string
-}
-
-func (i *TopLevelIdentifier) QualifiedName() string {
-	return i.Name
-}
-
-func TopLevelIdentifierFromQualifiedName(name string) *TopLevelIdentifier {
-	return &TopLevelIdentifier{
-		Name: name,
-	}
-}
-
 type SchemaIdentifier struct {
 	Database string
 	Schema   string

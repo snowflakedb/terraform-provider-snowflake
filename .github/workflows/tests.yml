@@ -23,6 +23,7 @@ jobs:
       - name: Filter changed files
         uses: dorny/paths-filter@v3
         id: changes
+        if: github.event_name != 'repository_dispatch'
         with:
           filters: |
             run_tests:
@@ -31,7 +32,6 @@ jobs:
               - 'framework/**'
               - 'tools/**'
               - 'Makefile'
-              - 'CHANGELOG.md'
               - 'main.go'
               - 'go.mod'
 
@@ -109,8 +109,16 @@ jobs:
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
           chmod 0600 ./config ./config_legacy ./config_v097_compatible
 
-      - name: Run unit and integration tests
-        run: make test
+      - name: Run unit tests
+        run: make test-unit
+        if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
+
+      - name: Run functional tests of the underlying terraform libraries
+        run: make test-functional
+        if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
+
+      - name: Run integration tests
+        run: make test-integration
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
         env:
           SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT: ${{ secrets.SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT }}

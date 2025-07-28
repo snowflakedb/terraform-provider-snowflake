@@ -26,9 +26,23 @@ func intAttributeCreate(d *schema.ResourceData, key string, createField **int) e
 	return nil
 }
 
+func intAttributeCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(int) T) error {
+	if v, ok := d.GetOk(key); ok {
+		setValue(v.(int))
+	}
+	return nil
+}
+
 func intAttributeWithSpecialDefaultCreate(d *schema.ResourceData, key string, createField **int) error {
 	if v := d.Get(key).(int); v != IntDefault {
 		*createField = sdk.Int(v)
+	}
+	return nil
+}
+
+func intAttributeWithSpecialDefaultCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(int) T) error {
+	if v := d.Get(key).(int); v != IntDefault {
+		setValue(v)
 	}
 	return nil
 }
@@ -51,6 +65,17 @@ func booleanStringAttributeCreateBuilder[T any](d *schema.ResourceData, key stri
 			return err
 		}
 		setValue(parsed)
+	}
+	return nil
+}
+
+func schemaObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, createField **sdk.SchemaObjectIdentifier) error {
+	if v, ok := d.GetOk(key); ok {
+		objectIdentifier, err := sdk.ParseSchemaObjectIdentifier(v.(string))
+		if err != nil {
+			return err
+		}
+		*createField = sdk.Pointer(objectIdentifier)
 	}
 	return nil
 }

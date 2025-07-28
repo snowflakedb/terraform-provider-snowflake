@@ -52,9 +52,9 @@ func TestInt_ExternalFunctions(t *testing.T) {
 
 		require.NotEmpty(t, e.CreatedOn)
 		require.Equal(t, id, e.ID())
-		require.Equal(t, false, e.IsBuiltin)
-		require.Equal(t, false, e.IsAggregate)
-		require.Equal(t, false, e.IsAnsi)
+		require.False(t, e.IsBuiltin)
+		require.False(t, e.IsAggregate)
+		require.False(t, e.IsAnsi)
 		if len(id.ArgumentDataTypes()) > 0 {
 			require.Equal(t, 1, e.MinNumArguments)
 			require.Equal(t, 1, e.MaxNumArguments)
@@ -64,13 +64,13 @@ func TestInt_ExternalFunctions(t *testing.T) {
 		}
 		require.NotEmpty(t, e.Description)
 		require.NotEmpty(t, e.CatalogName)
-		require.Equal(t, false, e.IsTableFunction)
-		require.Equal(t, false, e.ValidForClustering)
+		require.False(t, e.IsTableFunction)
+		require.False(t, e.ValidForClustering)
 		require.Equal(t, secure, e.IsSecure)
-		require.Equal(t, true, e.IsExternalFunction)
+		require.True(t, e.IsExternalFunction)
 		require.Equal(t, "EXTERNAL", e.Language)
-		require.Equal(t, false, e.IsMemoizable)
-		require.Equal(t, false, e.IsDataMetric)
+		require.False(t, e.IsMemoizable)
+		require.False(t, e.IsDataMetric)
 	}
 
 	t.Run("create external function", func(t *testing.T) {
@@ -203,7 +203,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 		es, err := client.ExternalFunctions.Show(ctx, sdk.NewShowExternalFunctionRequest().WithLike(sdk.Like{Pattern: sdk.String(e1.Name)}))
 		require.NoError(t, err)
 
-		require.Equal(t, 1, len(es))
+		require.Len(t, es, 1)
 		require.Contains(t, es, *e1)
 		require.NotContains(t, es, *e2)
 	})
@@ -233,7 +233,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 	t.Run("show external function: no matches", func(t *testing.T) {
 		es, err := client.ExternalFunctions.Show(ctx, sdk.NewShowExternalFunctionRequest().WithLike(sdk.Like{Pattern: sdk.String("non-existing-id-pattern")}))
 		require.NoError(t, err)
-		require.Equal(t, 0, len(es))
+		require.Empty(t, es)
 	})
 
 	t.Run("show external function by id", func(t *testing.T) {

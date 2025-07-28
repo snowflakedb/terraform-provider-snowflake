@@ -16,12 +16,28 @@ func stringAttributeUpdate(d *schema.ResourceData, key string, setField **string
 	return nil
 }
 
+func stringAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **sdk.StringAllowEmpty) error {
+	if d.HasChange(key) {
+		*setField = &sdk.StringAllowEmpty{Value: d.Get(key).(string)}
+	}
+	return nil
+}
+
 func intAttributeUpdate(d *schema.ResourceData, key string, setField **int, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
 			*setField = sdk.Int(v.(int))
 		} else {
 			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+func intAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **int) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			*setField = sdk.Int(v.(int))
 		}
 	}
 	return nil
@@ -68,10 +84,34 @@ func booleanStringAttributeUnsetFallbackUpdate(d *schema.ResourceData, key strin
 	return nil
 }
 
+func accountObjectIdentifierAttributeSetOnly(d *schema.ResourceData, key string, setField **sdk.AccountObjectIdentifier) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			*setField = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+		}
+	}
+	return nil
+}
+
 func accountObjectIdentifierAttributeUpdate(d *schema.ResourceData, key string, setField **sdk.AccountObjectIdentifier, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
 			*setField = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+		} else {
+			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+func schemaObjectIdentifierAttributeUpdate(d *schema.ResourceData, key string, setField **sdk.SchemaObjectIdentifier, unsetField **bool) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			id, err := sdk.ParseSchemaObjectIdentifier(v.(string))
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(id)
 		} else {
 			*unsetField = sdk.Bool(true)
 		}

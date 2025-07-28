@@ -26,7 +26,7 @@ func TestInt_Tasks(t *testing.T) {
 
 	assertTask := func(t *testing.T, task *sdk.Task, id sdk.SchemaObjectIdentifier, warehouseId *sdk.AccountObjectIdentifier) {
 		t.Helper()
-		assertThatObject(t, objectassert.TaskFromObject(t, task).
+		asserts := objectassert.TaskFromObject(t, task).
 			HasNotEmptyCreatedOn().
 			HasName(id.Name()).
 			HasNotEmptyId().
@@ -34,22 +34,28 @@ func TestInt_Tasks(t *testing.T) {
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasOwner("ACCOUNTADMIN").
 			HasComment("").
-			HasWarehouse(warehouseId).
 			HasSchedule("").
 			HasPredecessorsInAnyOrder().
 			HasState(sdk.TaskStateSuspended).
 			HasDefinition(sql).
 			HasCondition("").
 			HasAllowOverlappingExecution(false).
-			HasErrorIntegration(nil).
+			HasNoErrorIntegration().
 			HasLastCommittedOn("").
 			HasLastSuspendedOn("").
 			HasOwnerRoleType("ROLE").
 			HasConfig("").
 			HasBudget("").
 			HasLastSuspendedOn("").
-			HasTaskRelations(sdk.TaskRelations{}),
-		)
+			HasTaskRelations(sdk.TaskRelations{})
+
+		if warehouseId != nil {
+			asserts.HasWarehouse(*warehouseId)
+		} else {
+			asserts.HasNoWarehouse()
+		}
+
+		assertThatObject(t, asserts)
 	}
 
 	assertTaskWithOptions := func(t *testing.T, task *sdk.Task, id sdk.SchemaObjectIdentifier, comment string, warehouse *sdk.AccountObjectIdentifier, schedule string, condition string, allowOverlappingExecution bool, config string, predecessor *sdk.SchemaObjectIdentifier, errorIntegrationName *sdk.AccountObjectIdentifier) {
@@ -63,13 +69,11 @@ func TestInt_Tasks(t *testing.T) {
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasOwner("ACCOUNTADMIN").
 			HasComment(comment).
-			HasWarehouse(warehouse).
 			HasSchedule(schedule).
 			HasState(sdk.TaskStateSuspended).
 			HasDefinition(sql).
 			HasCondition(condition).
 			HasAllowOverlappingExecution(allowOverlappingExecution).
-			HasErrorIntegration(errorIntegrationName).
 			HasLastCommittedOn("").
 			HasLastSuspendedOn("").
 			HasOwnerRoleType("ROLE").
@@ -87,6 +91,18 @@ func TestInt_Tasks(t *testing.T) {
 			asserts.HasTaskRelations(sdk.TaskRelations{})
 		}
 
+		if errorIntegrationName != nil {
+			asserts.HasErrorIntegration(*errorIntegrationName)
+		} else {
+			asserts.HasNoErrorIntegration()
+		}
+
+		if warehouse != nil {
+			asserts.HasWarehouse(*warehouse)
+		} else {
+			asserts.HasNoWarehouse()
+		}
+
 		assertThatObject(t, asserts)
 	}
 
@@ -102,13 +118,13 @@ func TestInt_Tasks(t *testing.T) {
 			HasId("").
 			HasOwner("").
 			HasComment("").
-			HasWarehouse(nil).
+			HasNoWarehouse().
 			HasPredecessorsInAnyOrder().
 			HasState("").
 			HasDefinition("").
 			HasCondition("").
 			HasAllowOverlappingExecution(false).
-			HasErrorIntegration(nil).
+			HasNoErrorIntegration().
 			HasLastCommittedOn("").
 			HasLastSuspendedOn("").
 			HasOwnerRoleType("").
@@ -165,7 +181,7 @@ func TestInt_Tasks(t *testing.T) {
 		Timezone:                                 sdk.String("Europe/Warsaw"),
 		TimeInputFormat:                          sdk.String("HH24:MI"),
 		TimeOutputFormat:                         sdk.String("HH24:MI"),
-		TraceLevel:                               sdk.Pointer(sdk.TraceLevelOnEvent),
+		TraceLevel:                               sdk.Pointer(sdk.TraceLevelPropagate),
 		TransactionAbortOnError:                  sdk.Bool(true),
 		TransactionDefaultIsolationLevel:         sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
 		TwoDigitCenturyStart:                     sdk.Int(1980),
@@ -222,7 +238,7 @@ func TestInt_Tasks(t *testing.T) {
 			HasTimezone("Europe/Warsaw").
 			HasTimeInputFormat("HH24:MI").
 			HasTimeOutputFormat("HH24:MI").
-			HasTraceLevel(sdk.TraceLevelOnEvent).
+			HasTraceLevel(sdk.TraceLevelPropagate).
 			HasTransactionAbortOnError(true).
 			HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
 			HasTwoDigitCenturyStart(1980).
@@ -551,7 +567,7 @@ func TestInt_Tasks(t *testing.T) {
 		createdOn := task.CreatedOn
 
 		assertThatObject(t, objectassert.TaskFromObject(t, task).
-			HasWarehouse(sdk.Pointer(testClientHelper().Ids.WarehouseId())).
+			HasWarehouse(testClientHelper().Ids.WarehouseId()).
 			HasSchedule("10 MINUTES").
 			HasConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
 			HasAllowOverlappingExecution(true).
@@ -572,7 +588,7 @@ func TestInt_Tasks(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.TaskFromObject(t, alteredTask).
-			HasWarehouse(nil).
+			HasNoWarehouse().
 			HasSchedule("").
 			HasConfig("").
 			HasAllowOverlappingExecution(false).
@@ -629,7 +645,7 @@ func TestInt_Tasks(t *testing.T) {
 
 		assertThatObject(t, objectassert.Task(t, task.ID()).
 			// HasWarehouse(testClientHelper().Ids.WarehouseId().Name()).
-			HasErrorIntegration(sdk.Pointer(errorIntegration.ID())).
+			HasErrorIntegration(errorIntegration.ID()).
 			HasSchedule("10 MINUTE").
 			HasConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
 			HasAllowOverlappingExecution(true).
@@ -712,7 +728,7 @@ func TestInt_Tasks(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasErrorIntegration(nil).
+			HasNoErrorIntegration().
 			HasSchedule("").
 			HasConfig("").
 			HasAllowOverlappingExecution(false).
@@ -877,7 +893,7 @@ func TestInt_Tasks(t *testing.T) {
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(5)}))
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedTasks))
+		assert.Len(t, returnedTasks, 1)
 		assert.Contains(t, returnedTasks, *task1)
 		assert.NotContains(t, returnedTasks, *task2)
 	})

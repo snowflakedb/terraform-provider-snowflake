@@ -33,7 +33,7 @@ var tagAssociationSchema = map[string]*schema.Schema{
 	"object_type": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      fmt.Sprintf("Specifies the type of object to add a tag. Allowed object types: %v.", sdk.TagAssociationAllowedObjectTypesString),
+		Description:      fmt.Sprintf("Specifies the type of object to add a tag. Allowed object types: %v.", possibleValuesListed(sdk.TagAssociationAllowedObjectTypesString)),
 		ValidateFunc:     validation.StringInSlice(sdk.TagAssociationAllowedObjectTypesString, true),
 		DiffSuppressFunc: ignoreCaseSuppressFunc,
 		ForceNew:         true,

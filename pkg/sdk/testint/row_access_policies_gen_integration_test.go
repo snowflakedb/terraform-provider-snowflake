@@ -199,7 +199,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 		returnedRowAccessPolicies, err := client.RowAccessPolicies.Show(ctx, showRequest)
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(returnedRowAccessPolicies))
+		assert.Len(t, returnedRowAccessPolicies, 1)
 		assert.Contains(t, returnedRowAccessPolicies, *rowAccessPolicy1)
 		assert.NotContains(t, returnedRowAccessPolicies, *rowAccessPolicy2)
 	})

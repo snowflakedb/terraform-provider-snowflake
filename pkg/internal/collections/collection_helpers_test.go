@@ -18,14 +18,14 @@ func Test_FindFirst(t *testing.T) {
 		result, resultErr := FindFirst(stringSlice, func(s string) bool { return s == "22" })
 
 		require.Equal(t, "22", *result)
-		require.Nil(t, resultErr)
+		require.NoError(t, resultErr)
 	})
 
 	t.Run("two matching, first returned", func(t *testing.T) {
 		result, resultErr := FindFirst(stringSlice, func(s string) bool { return strings.HasPrefix(s, "33") })
 
 		require.Equal(t, "333", *result)
-		require.Nil(t, resultErr)
+		require.NoError(t, resultErr)
 	})
 
 	t.Run("no item", func(t *testing.T) {
@@ -40,19 +40,19 @@ func Test_Map(t *testing.T) {
 	t.Run("basic mapping", func(t *testing.T) {
 		stringSlice := []string{"1", "22", "333"}
 		stringLenSlice := Map(stringSlice, func(s string) int { return len(s) })
-		require.Equal(t, stringLenSlice, []int{1, 2, 3})
+		require.Equal(t, []int{1, 2, 3}, stringLenSlice)
 	})
 
 	t.Run("validation: empty slice", func(t *testing.T) {
 		stringSlice := make([]string, 0)
 		stringLenSlice := Map(stringSlice, func(s string) int { return len(s) })
-		require.Equal(t, stringLenSlice, []int{})
+		require.Equal(t, []int{}, stringLenSlice)
 	})
 
 	t.Run("validation: nil slice", func(t *testing.T) {
 		var stringSlice []string = nil
 		stringLenSlice := Map(stringSlice, func(s string) int { return len(s) })
-		require.Equal(t, stringLenSlice, []int{})
+		require.Equal(t, []int{}, stringLenSlice)
 	})
 
 	t.Run("validation: nil mapping function", func(t *testing.T) {
@@ -68,7 +68,7 @@ func Test_MapErr(t *testing.T) {
 		stringSlice := []string{"1", "22", "333"}
 		stringLenSlice, err := MapErr(stringSlice, func(s string) (int, error) { return len(s), nil })
 		assert.NoError(t, err)
-		assert.Equal(t, stringLenSlice, []int{1, 2, 3})
+		assert.Equal(t, []int{1, 2, 3}, stringLenSlice)
 	})
 
 	t.Run("basic mapping - multiple errors", func(t *testing.T) {
@@ -82,7 +82,7 @@ func Test_MapErr(t *testing.T) {
 			}
 			return len(s), nil
 		})
-		assert.Equal(t, stringLenSlice, []int{-1, -1, 3})
+		assert.Equal(t, []int{-1, -1, 3}, stringLenSlice)
 		assert.ErrorContains(t, err, errors.Join(fmt.Errorf("error: 1"), fmt.Errorf("error: 22")).Error())
 	})
 
@@ -90,14 +90,14 @@ func Test_MapErr(t *testing.T) {
 		stringSlice := make([]string, 0)
 		stringLenSlice, err := MapErr(stringSlice, func(s string) (int, error) { return len(s), nil })
 		assert.NoError(t, err)
-		assert.Equal(t, stringLenSlice, []int{})
+		assert.Equal(t, []int{}, stringLenSlice)
 	})
 
 	t.Run("validation: nil slice", func(t *testing.T) {
 		var stringSlice []string = nil
 		stringLenSlice, err := MapErr(stringSlice, func(s string) (int, error) { return len(s), nil })
 		assert.NoError(t, err)
-		assert.Equal(t, stringLenSlice, []int{})
+		assert.Equal(t, []int{}, stringLenSlice)
 	})
 
 	t.Run("validation: nil mapping function", func(t *testing.T) {

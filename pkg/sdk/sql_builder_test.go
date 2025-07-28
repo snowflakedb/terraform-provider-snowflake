@@ -123,6 +123,22 @@ func TestBuilder_parseField(t *testing.T) {
 		assert.Equal(t, `'example'`, clause.String())
 	})
 
+	t.Run("test string keyword with double dollar quotes", func(t *testing.T) {
+		s := struct {
+			StringKeyword *string `ddl:"keyword,double_dollar_quotes"`
+		}{
+			StringKeyword: String("example"),
+		}
+		val := reflect.ValueOf(s)
+		typ := val.Type()
+		value := val.FieldByName("StringKeyword")
+		field, ok := typ.FieldByName("StringKeyword")
+		require.True(t, ok)
+		clause, err := builder.parseField(field, value)
+		require.NoError(t, err)
+		assert.Equal(t, `$$example$$`, clause.String())
+	})
+
 	t.Run("test static with value", func(t *testing.T) {
 		s := struct {
 			Static *bool `ddl:"static" sql:"EXAMPLE_STATIC"`
@@ -197,6 +213,22 @@ func TestBuilder_parseField(t *testing.T) {
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
 		assert.Equal(t, `EXAMPLE_PARAMETER = "example"`, clause.String())
+	})
+
+	t.Run("test parameter with double dollar quotes", func(t *testing.T) {
+		s := struct {
+			Parameter *string `ddl:"parameter,double_dollar_quotes" sql:"EXAMPLE_PARAMETER"`
+		}{
+			Parameter: String("example"),
+		}
+		val := reflect.ValueOf(s)
+		typ := val.Type()
+		value := val.FieldByName("Parameter")
+		field, ok := typ.FieldByName("Parameter")
+		require.True(t, ok)
+		clause, err := builder.parseField(field, value)
+		require.NoError(t, err)
+		assert.Equal(t, `EXAMPLE_PARAMETER = $$example$$`, clause.String())
 	})
 
 	t.Run("test parameter with single quotes", func(t *testing.T) {
@@ -328,9 +360,24 @@ func TestParenModifier(t *testing.T) {
 }
 
 func TestQuoteModifier(t *testing.T) {
-	t.Run("test quotes modifier", func(t *testing.T) {
+	t.Run("test double quotes modifier", func(t *testing.T) {
 		result := DoubleQuotes.Modify("example")
 		assert.Equal(t, `"example"`, result)
+	})
+
+	t.Run("test double quotes modifier with escaped characters", func(t *testing.T) {
+		result := DoubleQuotes.Modify(`a"b`)
+		assert.Equal(t, `"a""b"`, result)
+	})
+
+	t.Run("test double dollar quotes modifier", func(t *testing.T) {
+		result := DoubleDollarQuotes.Modify("example")
+		assert.Equal(t, `$$example$$`, result)
+	})
+
+	t.Run("test double dollar quotes modifier with escaped characters", func(t *testing.T) {
+		result := DoubleDollarQuotes.Modify(`a$$b`)
+		assert.Equal(t, `$$a\$\$b$$`, result)
 	})
 
 	t.Run("test no quotes modifier", func(t *testing.T) {
@@ -341,6 +388,11 @@ func TestQuoteModifier(t *testing.T) {
 	t.Run("test single quotes modifier", func(t *testing.T) {
 		result := SingleQuotes.Modify("example")
 		assert.Equal(t, `'example'`, result)
+	})
+
+	t.Run("test single quotes modifier with escaped characters", func(t *testing.T) {
+		result := SingleQuotes.Modify(`a'b"c\d`)
+		assert.Equal(t, `'a\'b\"c\\d'`, result)
 	})
 
 	t.Run("test unknown modifier", func(t *testing.T) {
@@ -360,7 +412,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		s := struct{}{}
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
-		assert.Len(t, clauses, 0)
+		assert.Empty(t, clauses)
 	})
 
 	t.Run("test struct with all fields", func(t *testing.T) {
@@ -402,7 +454,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		}{}
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
-		assert.Len(t, clauses, 0)
+		assert.Empty(t, clauses)
 	})
 
 	t.Run("struct with a slice field using ddl: - (no_parentheses)", func(t *testing.T) {

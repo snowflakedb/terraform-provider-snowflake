@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
+	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -132,6 +135,12 @@ var accountSchema = map[string]*schema.Schema{
 		Description:      "Specifies the number of days during which the account can be restored (“undropped”). The minimum is 3 days and the maximum is 90 days.",
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(3)),
 	},
+	"consumption_billing_entity": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("consumption_billing_entity_name"),
+		Description:      "Determines which billing entity is responsible for the account's consumption-based billing.",
+	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -153,7 +162,7 @@ func Account() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Account, customdiff.All(
 			ComputedIfAnyAttributeChanged(accountSchema, FullyQualifiedNameAttributeName, "name"),
-			ComputedIfAnyAttributeChanged(accountSchema, ShowOutputAttributeName, "name", "is_org_admin"),
+			ComputedIfAnyAttributeChanged(accountSchema, ShowOutputAttributeName, "name", "is_org_admin", "consumption_billing_entity"),
 		)),
 
 		Schema: accountSchema,
@@ -176,14 +185,6 @@ func Account() *schema.Resource {
 
 func ImportAccount(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
-
-	isOrgAdmin, err := client.ContextFunctions.IsRoleInSession(ctx, snowflakeroles.Orgadmin)
-	if err != nil {
-		return nil, err
-	}
-	if !isOrgAdmin {
-		return nil, errors.New("current user does not have the ORGADMIN role in session")
-	}
 
 	id, err := sdk.ParseAccountIdentifier(d.Id())
 	if err != nil {
@@ -215,6 +216,7 @@ func ImportAccount(ctx context.Context, d *schema.ResourceData, meta any) ([]*sc
 		d.Set("region", account.SnowflakeRegion),
 		d.Set("comment", comment),
 		d.Set("is_org_admin", booleanStringFromBool(*account.IsOrgAdmin)),
+		d.Set("consumption_billing_entity", *account.ConsumptionBillingEntityName),
 	); err != nil {
 		return nil, err
 	}
@@ -224,14 +226,6 @@ func ImportAccount(ctx context.Context, d *schema.ResourceData, meta any) ([]*sc
 
 func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-
-	isOrgAdmin, err := client.ContextFunctions.IsRoleInSession(ctx, snowflakeroles.Orgadmin)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if !isOrgAdmin {
-		return diag.FromErr(errors.New("current user does not have the ORGADMIN role in session"))
-	}
 
 	id := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
@@ -276,19 +270,37 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	if v, ok := d.GetOk("comment"); ok {
 		opts.Comment = sdk.String(v.(string))
 	}
+	if v, ok := d.GetOk("consumption_billing_entity"); ok {
+		opts.ConsumptionBillingEntity = sdk.String(v.(string))
+	}
 
 	createResponse, err := client.Accounts.Create(ctx, id, opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	if err := util.Retry(5, 3*time.Second, func() (error, bool) {
+		_, err = client.Accounts.ShowByID(ctx, id)
+		if err != nil {
+			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				return nil, false
+			} else {
+				return err, true
+			}
+		}
+		return nil, true
+	}); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to query account (%s) after creation, err: %w", id.FullyQualifiedName(), err))
+	}
+
 	d.SetId(helpers.EncodeResourceIdentifier(sdk.NewAccountIdentifier(createResponse.OrganizationName, createResponse.AccountName)))
 
 	if v, ok := d.GetOk("is_org_admin"); ok && v == BooleanTrue {
 		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-				Name:     id,
-				OrgAdmin: true,
+			Name: &id,
+			Set: &sdk.AccountSet{
+				OrgAdmin: sdk.Bool(true),
 			},
 		})
 		if err != nil {
@@ -302,14 +314,6 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 func ReadAccount(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
-
-		isOrgAdmin, err := client.ContextFunctions.IsRoleInSession(ctx, snowflakeroles.Orgadmin)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if !isOrgAdmin {
-			return diag.FromErr(errors.New("current user does not have the ORGADMIN role in session"))
-		}
 
 		id, err := sdk.ParseAccountIdentifier(d.Id())
 		if err != nil {
@@ -347,12 +351,18 @@ func ReadAccount(withExternalChangesMarking bool) schema.ReadContextFunc {
 				comment = *account.Comment
 			}
 
+			var consumptionBillingEntityName string
+			if account.ConsumptionBillingEntityName != nil {
+				consumptionBillingEntityName = *account.ConsumptionBillingEntityName
+			}
+
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"edition", "edition", *account.Edition, *account.Edition, nil},
 				outputMapping{"is_org_admin", "is_org_admin", *account.IsOrgAdmin, booleanStringFromBool(*account.IsOrgAdmin), nil},
 				outputMapping{"region_group", "region_group", regionGroup, regionGroup, nil},
 				outputMapping{"snowflake_region", "region", account.SnowflakeRegion, account.SnowflakeRegion, nil},
 				outputMapping{"comment", "comment", comment, comment, nil},
+				outputMapping{"consumption_billing_entity_name", "consumption_billing_entity", consumptionBillingEntityName, consumptionBillingEntityName, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -373,6 +383,7 @@ func ReadAccount(withExternalChangesMarking bool) schema.ReadContextFunc {
 				"comment",
 				"is_org_admin",
 				"grace_period_in_days",
+				"consumption_billing_entity",
 			}); err != nil {
 				return diag.FromErr(err)
 			}
@@ -392,14 +403,6 @@ func ReadAccount(withExternalChangesMarking bool) schema.ReadContextFunc {
 func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	isOrgAdmin, err := client.ContextFunctions.IsRoleInSession(ctx, snowflakeroles.Orgadmin)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if !isOrgAdmin {
-		return diag.FromErr(errors.New("current user does not have the ORGADMIN role in session"))
-	}
-
 	id, err := sdk.ParseAccountIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -409,8 +412,8 @@ func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		newId := sdk.NewAccountIdentifier(id.OrganizationName(), d.Get("name").(string))
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
 			Rename: &sdk.AccountRename{
-				Name:    id.AsAccountObjectIdentifier(),
 				NewName: newId.AsAccountObjectIdentifier(),
 			},
 		})
@@ -439,23 +442,46 @@ func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 					return diag.FromErr(err)
 				}
 				if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-					SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-						Name:     id.AsAccountObjectIdentifier(),
-						OrgAdmin: parsed,
+					Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
+					Set: &sdk.AccountSet{
+						OrgAdmin: &parsed,
 					},
 				}); err != nil {
 					return diag.FromErr(err)
 				}
 			} else {
-				// No unset available for this field (setting Snowflake default)
 				if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-					SetIsOrgAdmin: &sdk.AccountSetIsOrgAdmin{
-						Name:     id.AsAccountObjectIdentifier(),
-						OrgAdmin: false,
+					Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
+					Set: &sdk.AccountSet{
+						// No unset available for this field (setting Snowflake default)
+						OrgAdmin: sdk.Bool(false),
 					},
 				}); err != nil {
 					return diag.FromErr(err)
 				}
+			}
+		}
+	}
+
+	if d.HasChange("consumption_billing_entity") {
+		newConsumptionBillingEntity := d.Get("consumption_billing_entity").(string)
+		if newConsumptionBillingEntity != "" {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+				Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
+				Set: &sdk.AccountSet{
+					ConsumptionBillingEntity: sdk.String(newConsumptionBillingEntity),
+				},
+			}); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+				Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
+				Unset: &sdk.AccountUnset{
+					ConsumptionBillingEntity: sdk.Bool(true),
+				},
+			}); err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -465,14 +491,6 @@ func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 func DeleteAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-
-	isOrgAdmin, err := client.ContextFunctions.IsRoleInSession(ctx, snowflakeroles.Orgadmin)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if !isOrgAdmin {
-		return diag.FromErr(errors.New("current user does not have the ORGADMIN role in session"))
-	}
 
 	id, err := sdk.ParseAccountIdentifier(d.Id())
 	if err != nil {

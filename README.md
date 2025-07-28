@@ -12,6 +12,8 @@ Please follow [creating issues guidelines](CREATING_ISSUES.md), [FAQ](FAQ.md), a
 
 > ⚠️ **Disclaimer**: The project is in GA version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+> **Contributing**: We welcome any contributions to the project! Before submitting a PR, please make sure to familiarize with [our contribution guidelines](CONTRIBUTING.md)!
+
 ----
 
 ![.github/workflows/ci.yml](https://github.com/snowflakedb/terraform-provider-snowflake/workflows/.github/workflows/ci.yml/badge.svg)

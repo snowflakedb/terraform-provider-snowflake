@@ -40,7 +40,7 @@ func TestClient_query(t *testing.T) {
 	err := client.query(ctx, &rows, "SELECT 1 AS ONE")
 	require.NoError(t, err)
 	require.NotNil(t, rows)
-	require.Equal(t, 1, len(rows))
+	require.Len(t, rows, 1)
 	require.Equal(t, 1, rows[0].One)
 }
 

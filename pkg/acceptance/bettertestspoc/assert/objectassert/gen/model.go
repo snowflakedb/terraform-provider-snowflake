@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"log"
 	"os"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 type PreambleModel struct {
 	PackageName               string
 	AdditionalStandardImports []string
+	AdditionalImports         []string
 }
 
 type SnowflakeObjectAssertionsModel struct {
@@ -28,7 +30,9 @@ type SnowflakeObjectFieldAssertion struct {
 	Name                  string
 	ConcreteType          string
 	IsOriginalTypePointer bool
+	IsOriginalTypeSlice   bool
 	Mapper                genhelpers.Mapper
+	ExpectedValueMapper   genhelpers.Mapper
 }
 
 func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) SnowflakeObjectAssertionsModel {
@@ -47,23 +51,64 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) SnowflakeO
 		PreambleModel: PreambleModel{
 			PackageName:               packageWithGenerateDirective,
 			AdditionalStandardImports: genhelpers.AdditionalStandardImports(sdkObject.Fields),
+			AdditionalImports:         getAdditionalImports(sdkObject.Fields),
 		},
 	}
 }
 
 func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectFieldAssertion {
-	concreteTypeWithoutPtr, _ := strings.CutPrefix(field.ConcreteType, "*")
+	concreteTypeWithoutPtrAndBrackets := field.ConcreteTypeNoPointerNoArray()
+
+	mapper := genhelpers.Identity
+	if field.IsPointer() {
+		mapper = genhelpers.Dereference
+	}
+	expectedValueMapper := genhelpers.Identity
 
 	// TODO [SNOW-1501905]: handle other mappings if needed
-	mapper := genhelpers.Identity
-	if concreteTypeWithoutPtr == "sdk.AccountObjectIdentifier" {
+	if concreteTypeWithoutPtrAndBrackets == "sdk.AccountObjectIdentifier" {
 		mapper = genhelpers.Name
+		if field.IsPointer() {
+			mapper = func(s string) string {
+				return genhelpers.Name(genhelpers.Parentheses(genhelpers.Dereference(s)))
+			}
+		}
+		expectedValueMapper = genhelpers.Name
+	}
+	if concreteTypeWithoutPtrAndBrackets == "sdk.SchemaObjectIdentifier" {
+		mapper = genhelpers.FullyQualifiedName
+		if field.IsPointer() {
+			mapper = func(s string) string {
+				return genhelpers.FullyQualifiedName(genhelpers.Parentheses(genhelpers.Dereference(s)))
+			}
+		}
+		expectedValueMapper = genhelpers.FullyQualifiedName
 	}
 
 	return SnowflakeObjectFieldAssertion{
 		Name:                  field.Name,
 		ConcreteType:          field.ConcreteType,
 		IsOriginalTypePointer: field.IsPointer(),
+		IsOriginalTypeSlice:   field.IsSlice(),
 		Mapper:                mapper,
+		ExpectedValueMapper:   expectedValueMapper,
 	}
+}
+
+func getAdditionalImports(fields []genhelpers.Field) []string {
+	imports := make(map[string]struct{})
+	for _, field := range fields {
+		if field.IsSlice() {
+			imports["collections"] = struct{}{}
+		}
+	}
+	additionalImports := make([]string, 0)
+	for k := range imports {
+		if v, ok := genhelpers.PredefinedImports[k]; ok {
+			additionalImports = append(additionalImports, v)
+		} else {
+			log.Printf("[WARN] No predefined import found for %s", k)
+		}
+	}
+	return additionalImports
 }

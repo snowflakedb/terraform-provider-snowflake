@@ -20,13 +20,11 @@ var currentAccountSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "The Snowflake Account ID; as returned by CURRENT_ACCOUNT().",
 	},
-
 	"region": {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The Snowflake Region; as returned by CURRENT_REGION()",
 	},
-
 	"url": {
 		Type:        schema.TypeString,
 		Computed:    true,
@@ -34,7 +32,6 @@ var currentAccountSchema = map[string]*schema.Schema{
 	},
 }
 
-// CurrentAccount the Snowflake current account resource.
 func CurrentAccount() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.CurrentAccountDatasource), TrackingReadWrapper(datasources.CurrentAccount, ReadCurrentAccount)),
@@ -42,7 +39,6 @@ func CurrentAccount() *schema.Resource {
 	}
 }
 
-// ReadCurrentAccount read the current snowflake account information.
 func ReadCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 

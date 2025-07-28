@@ -68,7 +68,7 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Task{},
 	},
 	{
-		IdType:       "sdk.ExternalVolumeObjectIdentifier",
+		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeExternalVolume,
 		ObjectStruct: sdk.ExternalVolume{},
 	},
@@ -101,6 +101,36 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifierWithArguments",
 		ObjectType:   sdk.ObjectTypeProcedure,
 		ObjectStruct: sdk.Procedure{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeImageRepository,
+		ObjectStruct: sdk.ImageRepository{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeComputePool,
+		ObjectStruct: sdk.ComputePool{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeGitRepository,
+		ObjectStruct: sdk.GitRepository{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeService,
+		ObjectStruct: sdk.Service{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeProgrammaticAccessToken,
+		ObjectStruct: sdk.ProgrammaticAccessToken{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeAccount,
+		ObjectStruct: sdk.OrganizationAccount{},
 	},
 }
 

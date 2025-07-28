@@ -53,7 +53,7 @@ resource "snowflake_database" "primary" {
   }
 }
 
-## Replication with for_each
+## Replication with dynamic block
 locals {
   replication_configs = [
     {
@@ -68,13 +68,15 @@ locals {
 }
 
 resource "snowflake_database" "primary" {
-  name     = "database_name"
-  for_each = { for rc in local.replication_configs : rc.account_identifier => rc }
+  name = "database_name"
 
   replication {
-    enable_to_account {
-      account_identifier = each.value.account_identifier
-      with_failover      = each.value.with_failover
+    dynamic "enable_to_account" {
+      for_each = { for rc in local.replication_configs : rc.account_identifier => rc }
+      content {
+        account_identifier = enable_to_account.value.account_identifier
+        with_failover      = enable_to_account.value.with_failover
+      }
     }
     ignore_edition_check = true
   }
@@ -111,7 +113,7 @@ resource "snowflake_database" "primary" {
 - `suspend_task_after_num_failures` (Number) How many times a task must fail in a row before it is automatically suspended. 0 disables auto-suspending. For more information, see [SUSPEND_TASK_AFTER_NUM_FAILURES](https://docs.snowflake.com/en/sql-reference/parameters#suspend-task-after-num-failures).
 - `task_auto_retry_attempts` (Number) Maximum automatic retries allowed for a user task. For more information, see [TASK_AUTO_RETRY_ATTEMPTS](https://docs.snowflake.com/en/sql-reference/parameters#task-auto-retry-attempts).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `trace_level` (String) Controls how trace events are ingested into the event table. Valid options are: [ALWAYS ON_EVENT OFF]. For information about levels, see [TRACE_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters.html#label-trace-level).
+- `trace_level` (String) Controls how trace events are ingested into the event table. Valid options are: `ALWAYS` | `ON_EVENT` | `PROPAGATE` | `OFF`. For information about levels, see [TRACE_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters.html#label-trace-level).
 - `user_task_managed_initial_warehouse_size` (String) The initial size of warehouse to use for managed warehouses in the absence of history. For more information, see [USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE](https://docs.snowflake.com/en/sql-reference/parameters#user-task-managed-initial-warehouse-size).
 - `user_task_minimum_trigger_interval_in_seconds` (Number) Minimum amount of time between Triggered Task executions in seconds.
 - `user_task_timeout_ms` (Number) User task execution timeout in milliseconds. For more information, see [USER_TASK_TIMEOUT_MS](https://docs.snowflake.com/en/sql-reference/parameters#user-task-timeout-ms).
