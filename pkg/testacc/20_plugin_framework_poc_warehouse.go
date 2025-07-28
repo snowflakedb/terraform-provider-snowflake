@@ -772,7 +772,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, b)...)
 }
 
-// For SDKv2 resources we have a method handling deletion common cases; we can add somethign similar later
+// For SDKv2 resources we have a method handling deletion common cases; we can add something similar later
 func (r *WarehouseResource) Delete(ctx context.Context, request resource.DeleteRequest, response *resource.DeleteResponse) {
 	var data *warehousePocModelV0
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
