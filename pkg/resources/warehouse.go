@@ -585,21 +585,6 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			unset.QueryAccelerationMaxScaleFactor = sdk.Bool(true)
 		}
 	}
-	// TODO [this PR]: these are duplicated?
-	if d.HasChange("max_concurrency_level") {
-		if v := d.Get("max_concurrency_level").(int); v != IntDefault {
-			set.MaxConcurrencyLevel = sdk.Int(v)
-		} else {
-			unset.MaxConcurrencyLevel = sdk.Bool(true)
-		}
-	}
-	if d.HasChange("statement_queued_timeout_in_seconds") {
-		if v := d.Get("statement_queued_timeout_in_seconds").(int); v != IntDefault {
-			set.StatementQueuedTimeoutInSeconds = sdk.Int(v)
-		} else {
-			unset.StatementQueuedTimeoutInSeconds = sdk.Bool(true)
-		}
-	}
 
 	if updateParamDiags := handleWarehouseParametersChanges(d, &set, &unset); len(updateParamDiags) > 0 {
 		return updateParamDiags

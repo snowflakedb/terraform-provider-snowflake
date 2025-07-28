@@ -19,13 +19,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehouseInitialCheck(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		PreCheck: func() { TestAccPreCheck(t) },
-		// TODO [this PR]: fill check destroy; the protected enum is used now and this test is for a PoC resource
+		// TODO [mux-PR]: fill check destroy; the protected enum is used now and this test is for a PoC resource
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
 				Config: warehousePocResourceConfig(id),
 				Check: assertThat(t,
-					// TODO [this PR]: add id check for all the resource assertions
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_poc.test", "id", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_poc.test", "fully_qualified_name", id.FullyQualifiedName())),
 				),

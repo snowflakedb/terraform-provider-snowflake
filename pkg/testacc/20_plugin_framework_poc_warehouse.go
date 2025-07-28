@@ -271,7 +271,6 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 			Computed:    true,
 			Description: "Warehouse identifier.",
 			PlanModifiers: []planmodifier.String{
-				// TODO [mux-PR]: how it behaves with renames?
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
@@ -486,7 +485,7 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		return
 	}
 
-	// TODO [this PR]: added to pass the initial test
+	// TODO [mux-PR]: Adjust fully_qualified_name logic
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	// we can use the existing encoder
@@ -497,7 +496,7 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		return
 	}
 
-	b, d := r.readAfterCreateOrUpdate(ctx, data, id, &response.State)
+	b, d := r.readAfterCreateOrUpdate(ctx, id, &response.State)
 	if d.HasError() {
 		response.Diagnostics.Append(d...)
 		return
@@ -516,10 +515,9 @@ func (r *WarehouseResource) create(ctx context.Context, id sdk.AccountObjectIden
 	return diags
 }
 
-func (r *WarehouseResource) readAfterCreateOrUpdate(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier, state *tfsdk.State) ([]byte, diag.Diagnostics) {
+func (r *WarehouseResource) readAfterCreateOrUpdate(ctx context.Context, id sdk.AccountObjectIdentifier, state *tfsdk.State) ([]byte, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	// TODO [this PR]: merge with read
 	client := r.client
 	warehouse, err := client.Warehouses.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -561,7 +559,6 @@ func (r *WarehouseResource) Read(ctx context.Context, request resource.ReadReque
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-// TODO [this PR]: add functional test for saving the field always when it is not null in config
 func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0, id sdk.AccountObjectIdentifier, request resource.ReadRequest, response *resource.ReadResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
@@ -583,6 +580,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		return diags
 	}
 
+	// TODO [mux-PR]: Adjust fully_qualified_name logic
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	prevValueBytes, d := request.Private.GetKey(ctx, privateStateSnowflakeObjectsStateKey)
@@ -668,7 +666,6 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 	}
 	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, bytes)...)
 
-	// TODO [this PR]: setStateToValuesFromConfig ?
 	// TODO [mux-PR]: show_output and parameters
 
 	return diags
@@ -710,7 +707,6 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		// name handled in rename
 		// unset for warehouse type does not work, setting the default instead
 		testfunctional.StringEnumAttributeUpdateSetDefaultInsteadOfUnset(plan.WarehouseType, state.WarehouseType, &set.WarehouseType, sdk.WarehouseTypeStandard),
-		// TODO [this PR]: WaitForCompletion
 		// removing from config is handled with resource recreation
 		testfunctional.StringEnumAttributeUpdateSetOnly(plan.WarehouseSize, state.WarehouseSize, &set.WarehouseSize),
 		testfunctional.Int64AttributeUpdate(plan.MaxClusterCount, state.MaxClusterCount, &set.MaxClusterCount, &unset.MaxClusterCount),
@@ -735,6 +731,10 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		response.Diagnostics.AddError("Error updating warehouse PoC", errs.Error())
 		return
 	}
+	// workaround for WaitForCompletion
+	if set.WarehouseSize != nil {
+		set.WaitForCompletion = sdk.Bool(true)
+	}
 
 	// Apply SET and UNSET changes
 	if (set != sdk.WarehouseSet{}) {
@@ -756,7 +756,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		}
 	}
 
-	// TODO [this PR]: added to pass the initial test
+	// TODO [mux-PR]: Adjust fully_qualified_name logic
 	plan.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
@@ -764,7 +764,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		return
 	}
 
-	b, d := r.readAfterCreateOrUpdate(ctx, plan, id, &response.State)
+	b, d := r.readAfterCreateOrUpdate(ctx, id, &response.State)
 	if d.HasError() {
 		response.Diagnostics.Append(d...)
 		return

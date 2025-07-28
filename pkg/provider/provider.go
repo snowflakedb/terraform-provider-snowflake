@@ -793,7 +793,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 
 	privateKey := s.Get("private_key").(string)
 	privateKeyPassphrase := s.Get("private_key_passphrase").(string)
-	v, err := getPrivateKey(privateKey, privateKeyPassphrase)
+	v, err := GetPrivateKey(privateKey, privateKeyPassphrase)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve private key: %w", err)
 	}

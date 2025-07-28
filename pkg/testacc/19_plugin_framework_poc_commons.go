@@ -44,7 +44,7 @@ func GetFullyQualifiedNameResourceSchema() schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
 		Description: schemas.FullyQualifiedNameSchema.Description,
-		// TODO [this PR]: do we need it?
+		// TODO [mux-PR]: decide what should be the logic behind fully_qualified_name
 		// PlanModifiers: []planmodifier.String{
 		//	stringplanmodifier.UseStateForUnknown(),
 		// },

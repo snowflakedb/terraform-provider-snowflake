@@ -2,9 +2,9 @@
 
 // Tests in this file are all the current acceptance tests for the SDKv2 warehouse resource excluding migration and experimental tests.
 // They were adjusted to verify Terraform Plugin Framework warehouse PoC resource implementation.
-// Models used are the same but with the resource type replaced.
-// Assertions used are the same but with the resource type replaced.
-// Assertions using r.IntDefaultString or r.BooleanDefault were replaced (as such defaults are not needed in plugin framework).
+// Models used are the same, but with the resource type replaced.
+// Assertions used are the same, but with the resource type replaced.
+// Assertions using r.IntDefaultString or r.BooleanDefault were replaced (as such defaults are not needed in the Terraform Plugin Framework).
 // Parameter values are not in state when the config does not contain them.
 // Default parameter assertions can't be used because of above.
 // WarehouseShowOutput assertions were removed or replaced with Snowflake object assertions.

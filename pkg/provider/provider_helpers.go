@@ -41,7 +41,7 @@ func toProtocol(s string) (protocol, error) {
 	}
 }
 
-func getPrivateKey(privateKeyString, privateKeyPassphrase string) (*rsa.PrivateKey, error) {
+func GetPrivateKey(privateKeyString, privateKeyPassphrase string) (*rsa.PrivateKey, error) {
 	if privateKeyString == "" {
 		return nil, nil
 	}

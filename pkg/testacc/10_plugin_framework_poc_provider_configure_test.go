@@ -1,13 +1,13 @@
 package testacc
 
 import (
-	"crypto/rsa"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/snowflakedb/gosnowflake"
@@ -76,7 +76,7 @@ func setAccount(configModel pluginFrameworkPocProviderModelV0, config *gosnowfla
 func setPrivateKey(configModel pluginFrameworkPocProviderModelV0, config *gosnowflake.Config) error {
 	privateKey := getStringAttribute(configModel.PrivateKey, snowflakeenvs.PrivateKey)
 	privateKeyPassphrase := getStringAttribute(configModel.PrivateKeyPassphrase, snowflakeenvs.PrivateKeyPassphrase)
-	v, err := getPrivateKey(privateKey, privateKeyPassphrase)
+	v, err := provider.GetPrivateKey(privateKey, privateKeyPassphrase)
 	if err != nil {
 		return fmt.Errorf("could not retrieve private key: %w", err)
 	}
@@ -84,15 +84,6 @@ func setPrivateKey(configModel pluginFrameworkPocProviderModelV0, config *gosnow
 		config.PrivateKey = v
 	}
 	return nil
-}
-
-// this method was copied from SDKv2 provider_helpers.go
-func getPrivateKey(privateKeyString, privateKeyPassphrase string) (*rsa.PrivateKey, error) {
-	if privateKeyString == "" {
-		return nil, nil
-	}
-	privateKeyBytes := []byte(privateKeyString)
-	return sdk.ParsePrivateKey(privateKeyBytes, []byte(privateKeyPassphrase))
 }
 
 func getProfile(configModel pluginFrameworkPocProviderModelV0) string {
