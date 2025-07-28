@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -9,6 +10,7 @@ import (
 
 // DescribeStorageIntegrationSchema represents output of DESCRIBE query for the single StorageIntegration.
 var DescribeStorageIntegrationSchema = map[string]*schema.Schema{
+	"enabled":                     DescribePropertyListSchema,
 	"storage_provider":            DescribePropertyListSchema,
 	"storage_allowed_locations":   DescribePropertyListSchema,
 	"storage_blocked_locations":   DescribePropertyListSchema,
@@ -19,6 +21,8 @@ var DescribeStorageIntegrationSchema = map[string]*schema.Schema{
 	"storage_gcp_service_account": DescribePropertyListSchema,
 	"azure_consent_url":           DescribePropertyListSchema,
 	"azure_multi_tenant_app_name": DescribePropertyListSchema,
+	"use_privatelink_endpoint":    DescribePropertyListSchema,
+	"comment":                     DescribePropertyListSchema,
 }
 
 var _ = DescribeStorageIntegrationSchema
@@ -26,10 +30,13 @@ var _ = DescribeStorageIntegrationSchema
 func DescribeStorageIntegrationToSchema(integrationProperties []sdk.StorageIntegrationProperty) map[string]any {
 	propsSchema := make(map[string]any)
 	for _, property := range integrationProperties {
-		property := property
 		// Convert property name to lowercase and add to schema
 		propertyName := strings.ToLower(property.Name)
-		propsSchema[propertyName] = []map[string]any{StorageIntegrationPropertyToSchema(&property)}
+		if _, ok := DescribeStorageIntegrationSchema[propertyName]; ok {
+			propsSchema[propertyName] = []map[string]any{StorageIntegrationPropertyToSchema(&property)}
+		} else {
+			log.Printf("[DEBUG] Unknown storage integration property %s", propertyName)
+		}
 	}
 	return propsSchema
 }

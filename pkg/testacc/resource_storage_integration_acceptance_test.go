@@ -36,9 +36,9 @@ func TestAcc_StorageIntegration_Empty_StorageAllowedLocations(t *testing.T) {
 
 func TestAcc_StorageIntegration_AWS_Create_WithExternalId(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
-	acc.TestAccPreCheck(t)
+	TestAccPreCheck(t)
 
-	id := acc.TestClient().Ids.RandomAccountObjectIdentifier()
+	id := testClient().Ids.RandomAccountObjectIdentifier()
 	awsRoleArn := "arn:aws:iam::000000000001:/role/test"
 	awsExternalId := "test-create-external-id-12345"
 
@@ -52,16 +52,16 @@ func TestAcc_StorageIntegration_AWS_Create_WithExternalId(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: acc.CheckDestroy(t, resources.StorageIntegration),
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegration),
 		Steps: []resource.TestStep{
 			{
 				ConfigVariables: configVariables,
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Create_WithExternalId"),
+				ConfigDirectory: ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Create_WithExternalId"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", "true"),
@@ -69,6 +69,32 @@ func TestAcc_StorageIntegration_AWS_Create_WithExternalId(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", awsExternalId),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", "s3://foo/"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "describe_output.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "describe_output.0.storage_aws_external_id.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "describe_output.0.storage_aws_external_id.0.value", awsExternalId),
+				),
+			},
+			// external change
+			{
+				ConfigVariables: configVariables,
+				ConfigDirectory: ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Create_WithExternalId"),
+				PreConfig: func() {
+					alterRequest := sdk.NewAlterStorageIntegrationRequest(id).
+						WithSet(*sdk.NewStorageIntegrationSetRequest().
+							WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).
+								WithStorageAwsExternalId("new-external-id")))
+					testClient().StorageIntegration.Alter(t, alterRequest)
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_role_arn", awsRoleArn),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", awsExternalId),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", "s3://foo/"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "describe_output.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "describe_output.0.storage_aws_external_id.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "describe_output.0.storage_aws_external_id.0.value", awsExternalId),
 				),
 			},
 		},
@@ -209,10 +235,10 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 							WithStorageAwsExternalId(true).
 							WithStorageAwsObjectAcl(true).
 							WithStorageBlockedLocations(true))
-					acc.TestClient().StorageIntegration.Alter(t, unsetRequest)
+					testClient().StorageIntegration.Alter(t, unsetRequest)
 				},
 				ConfigVariables: configVariables(true),
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/set"),
+				ConfigDirectory: ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/set"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", awsExternalId),
@@ -246,10 +272,10 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 							WithStorageBlockedLocations([]sdk.StorageLocation{
 								{Path: "s3://external-blocked/"},
 							}))
-					acc.TestClient().StorageIntegration.Alter(t, setRequest)
+					testClient().StorageIntegration.Alter(t, setRequest)
 				},
 				ConfigVariables: configVariables(false),
-				ConfigDirectory: acc.ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/unset"),
+				ConfigDirectory: ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/unset"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", ""),

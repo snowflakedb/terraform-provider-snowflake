@@ -7,6 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+-> **Note** Currently, `describe_output` field is not used in all the relevant fields (only `storage_aws_external_id` is supported). This will be addressed during the resource rework.
+
 # snowflake_storage_integration (Resource)
 
 
@@ -29,7 +31,7 @@ resource "snowflake_storage_integration" "integration" {
   #   storage_aws_object_acl    = "bucket-owner-full-control"
 
   storage_provider         = "S3"
-  storage_aws_external_id  = "..."
+  storage_aws_external_id  = "ABC12345_DEFRole=2_123ABC459AWQmtAdRqwe/A=="
   storage_aws_iam_user_arn = "..."
   storage_aws_role_arn     = "..."
 
@@ -65,6 +67,7 @@ resource "snowflake_storage_integration" "integration" {
 - `azure_consent_url` (String, Sensitive) The consent URL that is used to create an Azure Snowflake service principle inside your tenant.
 - `azure_multi_tenant_app_name` (String) This is the name of the Snowflake client application created for your account.
 - `created_on` (String) Date and time when the storage integration was created.
+- `describe_output` (List of Object) Outputs the result of `DESCRIBE STORAGE INTEGRATION` for the given storage integration. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `storage_aws_iam_user_arn` (String) The Snowflake user that will attempt to assume the AWS role.
@@ -79,6 +82,168 @@ Optional:
 - `delete` (String)
 - `read` (String)
 - `update` (String)
+
+
+<a id="nestedatt--describe_output"></a>
+### Nested Schema for `describe_output`
+
+Read-Only:
+
+- `azure_consent_url` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--azure_consent_url))
+- `azure_multi_tenant_app_name` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--azure_multi_tenant_app_name))
+- `comment` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--comment))
+- `enabled` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--enabled))
+- `storage_allowed_locations` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_allowed_locations))
+- `storage_aws_external_id` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_aws_external_id))
+- `storage_aws_iam_user_arn` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_aws_iam_user_arn))
+- `storage_aws_object_acl` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_aws_object_acl))
+- `storage_aws_role_arn` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_aws_role_arn))
+- `storage_blocked_locations` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_blocked_locations))
+- `storage_gcp_service_account` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_gcp_service_account))
+- `storage_provider` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_provider))
+- `use_privatelink_endpoint` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--use_privatelink_endpoint))
+
+<a id="nestedobjatt--describe_output--azure_consent_url"></a>
+### Nested Schema for `describe_output.azure_consent_url`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--azure_multi_tenant_app_name"></a>
+### Nested Schema for `describe_output.azure_multi_tenant_app_name`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--comment"></a>
+### Nested Schema for `describe_output.comment`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--enabled"></a>
+### Nested Schema for `describe_output.enabled`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_allowed_locations"></a>
+### Nested Schema for `describe_output.storage_allowed_locations`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_aws_external_id"></a>
+### Nested Schema for `describe_output.storage_aws_external_id`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_aws_iam_user_arn"></a>
+### Nested Schema for `describe_output.storage_aws_iam_user_arn`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_aws_object_acl"></a>
+### Nested Schema for `describe_output.storage_aws_object_acl`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_aws_role_arn"></a>
+### Nested Schema for `describe_output.storage_aws_role_arn`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_blocked_locations"></a>
+### Nested Schema for `describe_output.storage_blocked_locations`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_gcp_service_account"></a>
+### Nested Schema for `describe_output.storage_gcp_service_account`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_provider"></a>
+### Nested Schema for `describe_output.storage_provider`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--use_privatelink_endpoint"></a>
+### Nested Schema for `describe_output.use_privatelink_endpoint`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
 
 ## Import
 

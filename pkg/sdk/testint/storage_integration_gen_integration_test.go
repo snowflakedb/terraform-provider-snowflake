@@ -159,7 +159,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		req := sdk.NewCreateStorageIntegrationRequest(id, true, s3AllowedLocations).
 			WithIfNotExists(true).
-			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(protocol, awsRoleARN)).
+			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(protocol, awsRoleARN).WithStorageAwsExternalId("some-external-id")).
 			WithStorageBlockedLocations(s3BlockedLocations).
 			WithComment("some comment")
 
@@ -223,6 +223,10 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertStorageIntegrationShowResult(t, storageIntegration, id, "some comment")
+
+		props, err := client.StorageIntegrations.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, "some-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
 	t.Run("Create - S3GOV", func(t *testing.T) {
@@ -261,7 +265,10 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		req := sdk.NewAlterStorageIntegrationRequest(id).
 			WithSet(
 				*sdk.NewStorageIntegrationSetRequest().
-					WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleARN)).
+					WithS3Params(
+						*sdk.NewSetS3StorageParamsRequest(awsRoleARN).
+							WithStorageAwsExternalId("new-external-id"),
+					).
 					WithEnabled(true).
 					WithStorageAllowedLocations(changedS3AllowedLocations).
 					WithStorageBlockedLocations(changedS3BlockedLocations).
@@ -274,6 +281,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertS3StorageIntegrationDescResult(t, props, true, changedS3AllowedLocations, changedS3BlockedLocations, "changed comment")
+		assert.Equal(t, "new-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
 	t.Run("Alter - set - Azure", func(t *testing.T) {
@@ -308,6 +316,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 					WithStorageAwsObjectAcl(true).
 					WithEnabled(true).
 					WithStorageBlockedLocations(true).
+					WithStorageAwsExternalId(true).
 					WithComment(true),
 			)
 		err := client.StorageIntegrations.Alter(ctx, req)

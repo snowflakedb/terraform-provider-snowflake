@@ -21,6 +21,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.4.x ➞ v2.5.0
+
+### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource
+
+Previously, this field was read-only. In this version, this field is an optional configurable attribute. Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)). Note that fields other than `storage_aws_external_id` do not leverage this field. This will be addressed during the resource rework.
+
+Note that this resource is still in preview, and not officially supported. This change was requested and done by the community: [#3659](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3659).
+
 ## v2.3.0 ➞ v2.4.0
 
 ### *(new feature)* snowflake_current_organization_account resource
