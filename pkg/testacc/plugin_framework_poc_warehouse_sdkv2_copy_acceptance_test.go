@@ -5,13 +5,15 @@
 // Models used are the same but with the resource type replaced.
 // Assertions used are the same but with the resource type replaced.
 // Assertion using r.IntDefaultString or r.BooleanDefault were replaced (as such defaults are not used).
-// Parameter values are not in state when they config does not contain them.
+// Parameter values are not in state when the config does not contain them.
 // Default parameter assertions can't be used because of above.
 // WarehouseShowOutput assertions were removed or replaced with Snowflake object assertions.
 // WarehouseResourceParameters assertions were removed or replaced with Snowflake parameters assertions.
 // Default extensions were removed as they don't match.
 // Expectations for tests utilizing IgnoreChangeToCurrentSnowflakeValueInShow were adjusted.
-// Computed expectations for parameters were removed.
+// Computed expectations for parameters were adjusted (ExpectComputed -> ExpectChange).
+// Exchanged some old assertions with new ones.
+// IgnoreAfterCreation is not implemented so assertions for initially_suspended were adjusted.
 package testacc
 
 import (
@@ -67,6 +69,11 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 		WithMaxConcurrencyLevel(8).
 		WithStatementQueuedTimeoutInSeconds(0).
 		WithStatementTimeoutInSeconds(172800)
+	warehouseModelRenamedFullWithParametersMediumSize := model.WarehouseSnowflakeDefaultWithoutParameters(warehouseId2, comment).
+		WithMaxConcurrencyLevel(8).
+		WithStatementQueuedTimeoutInSeconds(0).
+		WithStatementTimeoutInSeconds(172800).
+		WithWarehouseSizeEnum(sdk.WarehouseSizeMedium)
 	warehouseModelRenamedFull := model.BasicWarehouseModel(warehouseId2, newComment).
 		WithWarehouseTypeEnum(sdk.WarehouseTypeSnowparkOptimized).
 		WithWarehouseSizeEnum(sdk.WarehouseSizeMedium).
@@ -239,39 +246,48 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
 
 						// this is this only situation in which there will be a strange output in the plan
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "max_concurrency_level", true),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "statement_queued_timeout_in_seconds", true),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "statement_timeout_in_seconds", true),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "max_concurrency_level", tfjson.ActionUpdate, nil, sdk.String("8")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("0")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("172800")),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					// no changes in the attributes
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "warehouse_type", string(sdk.WarehouseTypeStandard)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "warehouse_size", string(sdk.WarehouseSizeXSmall)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "max_cluster_count", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "min_cluster_count", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "scaling_policy", string(sdk.ScalingPolicyStandard)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "auto_suspend", "600"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "auto_resume", "true"),
-					resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "initially_suspended"),
-					resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "resource_monitor"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "comment", comment),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "enable_query_acceleration", "false"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "query_acceleration_max_scale_factor", "8"),
-
-					// parameters have the same values...
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "max_concurrency_level", "8"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "statement_queued_timeout_in_seconds", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "statement_timeout_in_seconds", "172800"),
-
-					// ... but are set on different level
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "parameters.0.max_concurrency_level.0.value", "8"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "parameters.0.max_concurrency_level.0.level", string(sdk.ParameterTypeWarehouse)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.value", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					// no changes in the attributes, only for parameters
+					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModel.ResourceReference())).
+						HasNameString(warehouseId2.Name()).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
+						HasWarehouseSizeString(string(sdk.WarehouseSizeXSmall)).
+						HasMaxClusterCountString("1").
+						HasMinClusterCountString("1").
+						HasScalingPolicyString(string(sdk.ScalingPolicyStandard)).
+						HasAutoSuspendString("600").
+						HasAutoResumeString(r.BooleanTrue).
+						HasInitiallySuspendedString(r.BooleanFalse).
+						HasNoResourceMonitor().
+						HasCommentString(comment).
+						HasEnableQueryAccelerationString(r.BooleanFalse).
+						HasQueryAccelerationMaxScaleFactorString("8").
+						HasMaxConcurrencyLevelString("8").
+						HasStatementQueuedTimeoutInSecondsString("0").
+						HasStatementTimeoutInSecondsString("172800"),
+				),
+			},
+			// additional step to tackle
+			//  001425 (22023): SQL compilation error:
+			//  invalid property combination 'RESOURCE_CONSTRAINT'='MEMORY_16X' and
+			//  'WAREHOUSE_SIZE'='X-Small'
+			{
+				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFullWithParametersMediumSize)),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFullWithParametersMediumSize.ResourceReference()), "warehouse_size", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseSizeXSmall)), sdk.String(string(sdk.WarehouseSizeMedium))),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModelRenamedFullWithParametersMediumSize.ResourceReference())).
+						HasWarehouseSizeString(string(sdk.WarehouseSizeMedium)),
+					objectassert.Warehouse(t, warehouseId2).
+						HasSize(sdk.WarehouseSizeMedium),
 				),
 			},
 			// CHANGE PROPERTIES (normal and parameters)
@@ -282,7 +298,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
 
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeStandard)), sdk.String(string(sdk.WarehouseTypeSnowparkOptimized))),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "warehouse_size", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseSizeXSmall)), sdk.String(string(sdk.WarehouseSizeMedium))),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "max_cluster_count", tfjson.ActionUpdate, sdk.String("1"), sdk.String("4")),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "min_cluster_count", tfjson.ActionUpdate, sdk.String("1"), sdk.String("2")),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "scaling_policy", tfjson.ActionUpdate, sdk.String(string(sdk.ScalingPolicyStandard)), sdk.String(string(sdk.ScalingPolicyEconomy))),
@@ -304,7 +319,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "scaling_policy", string(sdk.ScalingPolicyEconomy)),
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "auto_suspend", "1200"),
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "auto_resume", "false"),
-					resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "initially_suspended"),
+					// TODO [mux-PR]: change after IgnoreAfterCreation is added
+					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "initially_suspended", "false"),
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "resource_monitor", resourceMonitor.ID().Name()),
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "comment", newComment),
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "enable_query_acceleration", "true"),
@@ -313,14 +329,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "max_concurrency_level", "4"),
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "statement_queued_timeout_in_seconds", "5"),
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "statement_timeout_in_seconds", "86400"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "parameters.0.max_concurrency_level.0.value", "4"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "parameters.0.max_concurrency_level.0.level", string(sdk.ParameterTypeWarehouse)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.value", "5"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "86400"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
 				),
 			},
 			// change resource monitor - wrap in quotes (no change expected)

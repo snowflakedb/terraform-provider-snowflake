@@ -590,19 +590,20 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 
 	errs := errors.Join(
 		// name handled in rename
-		// TODO [this PR]: unset for warehouse type does not work
-		testfunctional.StringEnumAttributeUpdate(plan.WarehouseType, state.WarehouseType, &set.WarehouseType, &unset.WarehouseType),
-		// TODO [this PR]: warehouse size unset?
+		// unset for warehouse type does not work, setting the default instead
+		testfunctional.StringEnumAttributeUpdateSetDefaultInsteadOfUnset(plan.WarehouseType, state.WarehouseType, &set.WarehouseType, sdk.WarehouseTypeStandard),
 		// TODO [this PR]: WaitForCompletion
-		//testfunctional.StringEnumAttributeUpdate(plan.WarehouseSize, state.WarehouseSize, &set.WarehouseSize, &unset.WarehouseSize),
+		// TODO [this PR]: ForceNewIfChange (removing from config)
+		// removing from config should be handled with resource recreation
+		testfunctional.StringEnumAttributeUpdateSetOnly(plan.WarehouseSize, state.WarehouseSize, &set.WarehouseSize),
 		testfunctional.Int64AttributeUpdate(plan.MaxClusterCount, state.MaxClusterCount, &set.MaxClusterCount, &unset.MaxClusterCount),
 		testfunctional.Int64AttributeUpdate(plan.MinClusterCount, state.MinClusterCount, &set.MinClusterCount, &unset.MinClusterCount),
-		// TODO [this PR]: unset for scaling policy does not work
-		testfunctional.StringEnumAttributeUpdate(plan.ScalingPolicy, state.ScalingPolicy, &set.ScalingPolicy, &unset.ScalingPolicy),
-		// TODO [this PR]: unset for auto_suspend does not work
-		testfunctional.Int64AttributeUpdate(plan.AutoSuspend, state.AutoSuspend, &set.AutoSuspend, &unset.AutoSuspend),
-		// TODO [this PR]: unset for auto_resume does not work
-		testfunctional.BooleanAttributeUpdate(plan.AutoResume, state.AutoResume, &set.AutoResume, &unset.AutoResume),
+		// unset for scaling policy does not work, setting the default instead
+		testfunctional.StringEnumAttributeUpdateSetDefaultInsteadOfUnset(plan.ScalingPolicy, state.ScalingPolicy, &set.ScalingPolicy, sdk.ScalingPolicyStandard),
+		// unset for auto_suspend does not work, setting the default instead
+		testfunctional.Int64AttributeUpdateSetDefaultInsteadOfUnset(plan.AutoSuspend, state.AutoSuspend, &set.AutoSuspend, 600),
+		// unset for auto_resume works incorrectly, setting the default instead
+		testfunctional.BooleanAttributeUpdateSetDefaultInsteadOfUnset(plan.AutoResume, state.AutoResume, &set.AutoResume, true),
 		// resource_monitor
 		testfunctional.StringAttributeUpdate(plan.Comment, state.Comment, &set.Comment, &unset.Comment),
 		testfunctional.BooleanAttributeUpdate(plan.EnableQueryAcceleration, state.EnableQueryAcceleration, &set.EnableQueryAcceleration, &unset.EnableQueryAcceleration),

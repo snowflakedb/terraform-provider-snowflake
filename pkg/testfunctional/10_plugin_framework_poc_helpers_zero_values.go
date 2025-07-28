@@ -24,11 +24,23 @@ func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 	}
 }
 
-// TODO [this PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
 func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **bool, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
 			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = planned.ValueBoolPointer()
+		}
+	}
+	return nil
+}
+
+// TODO [mux-PR]: add functional test for this variant
+func BooleanAttributeUpdateSetDefaultInsteadOfUnset(planned types.Bool, inState types.Bool, setField **bool, defaultValue bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() {
+			*setField = sdk.Bool(defaultValue)
 		} else {
 			*setField = planned.ValueBoolPointer()
 		}
@@ -56,11 +68,23 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 	}
 }
 
-// TODO [this PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
 func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
 			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = sdk.Int(int(planned.ValueInt64()))
+		}
+	}
+	return nil
+}
+
+// TODO [mux-PR]: add functional test for this variant
+func Int64AttributeUpdateSetDefaultInsteadOfUnset(planned types.Int64, inState types.Int64, setField **int, defaultValue int) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() {
+			*setField = sdk.Int(defaultValue)
 		} else {
 			*setField = sdk.Int(int(planned.ValueInt64()))
 		}
@@ -85,7 +109,7 @@ func stringAttributeUpdate(planned types.String, inState types.String, setField 
 	}
 }
 
-// TODO [this PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
 func StringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() || planned.IsUnknown() {
