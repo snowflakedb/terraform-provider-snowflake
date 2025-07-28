@@ -50,7 +50,7 @@ type RestApiPocClient struct {
 	Warehouses WarehousesPoc
 }
 
-func (c *RestApiPocClient) doRequest(ctx context.Context, method string, path string, body io.Reader) (*http.Response, error) {
+func (c *RestApiPocClient) doRequest(ctx context.Context, method string, path string, body io.Reader, queryParams map[string]string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, c.url+"/"+path, body)
 	if err != nil {
 		return nil, err
@@ -58,6 +58,12 @@ func (c *RestApiPocClient) doRequest(ctx context.Context, method string, path st
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	req.Header.Add("X-Snowflake-Authorization-Token-Type", "PROGRAMMATIC_ACCESS_TOKEN")
+
+	values := req.URL.Query()
+	for k, v := range queryParams {
+		values.Add(k, v)
+	}
+	req.URL.RawQuery = values.Encode()
 
 	return c.httpClient.Do(req)
 }
@@ -78,7 +84,7 @@ func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method stri
 		return nil, err
 	}
 
-	resp, err := client.doRequest(ctx, method, path, body)
+	resp, err := client.doRequest(ctx, method, path, body, map[string]string{})
 	if err != nil {
 		return nil, err
 	}
@@ -97,13 +103,27 @@ type Response struct {
 
 // TODO [this PR]: add status codes handling
 func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T, error) {
-	resp, err := client.doRequest(ctx, http.MethodGet, path, nil)
+	resp, err := client.doRequest(ctx, http.MethodGet, path, nil, map[string]string{})
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	var response T
+	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+func runDelete(ctx context.Context, client *RestApiPocClient, path string, queryParams map[string]string) (*Response, error) {
+	resp, err := client.doRequest(ctx, http.MethodDelete, path, nil, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var response Response
 	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}

@@ -11,6 +11,7 @@ type WarehousesPoc interface {
 	Create(ctx context.Context, req WarehouseApiModel) error
 	CreateOrAlter(ctx context.Context, req WarehouseApiModel) error
 	GetByID(ctx context.Context, id sdk.AccountObjectIdentifier) (*WarehouseApiModel, error)
+	Drop(ctx context.Context, id sdk.AccountObjectIdentifier, ifExists *bool) error
 }
 
 // WarehouseApiModel has almost the same fields as sdk.CreateWarehouseOptions and sdk.WarehouseSet.
@@ -50,6 +51,7 @@ type warehousesPoc struct {
 	client *RestApiPocClient
 }
 
+// Based on https://docs.snowflake.com/developer-guide/snowflake-rest-api/reference/warehouse#post--api-v2-warehouses
 func (w warehousesPoc) Create(ctx context.Context, req WarehouseApiModel) error {
 	_, err := post(ctx, w.client, "warehouses", req)
 	if err != nil {
@@ -58,6 +60,7 @@ func (w warehousesPoc) Create(ctx context.Context, req WarehouseApiModel) error 
 	return nil
 }
 
+// Based on https://docs.snowflake.com/developer-guide/snowflake-rest-api/reference/warehouse#put--api-v2-warehouses-name
 func (w warehousesPoc) CreateOrAlter(ctx context.Context, req WarehouseApiModel) error {
 	_, err := put(ctx, w.client, fmt.Sprintf("warehouses/%s", req.Name.Name()), req)
 	if err != nil {
@@ -66,10 +69,24 @@ func (w warehousesPoc) CreateOrAlter(ctx context.Context, req WarehouseApiModel)
 	return nil
 }
 
+// Based on https://docs.snowflake.com/developer-guide/snowflake-rest-api/reference/warehouse#get--api-v2-warehouses-name
 func (w warehousesPoc) GetByID(ctx context.Context, id sdk.AccountObjectIdentifier) (*WarehouseApiModel, error) {
 	warehouse, err := get[WarehouseApiModel](ctx, w.client, fmt.Sprintf("warehouses/%s", id.Name()))
 	if err != nil {
 		return nil, fmt.Errorf("warehousesPoc.GetByID(%s): %w", id.Name(), err)
 	}
 	return warehouse, nil
+}
+
+// Based on https://docs.snowflake.com/developer-guide/snowflake-rest-api/reference/warehouse#delete--api-v2-warehouses-name
+func (w warehousesPoc) Drop(ctx context.Context, id sdk.AccountObjectIdentifier, ifExists *bool) error {
+	queryParams := map[string]string{}
+	if ifExists != nil {
+		queryParams["ifExists"] = fmt.Sprintf("%t", *ifExists)
+	}
+	_, err := runDelete(ctx, w.client, fmt.Sprintf("warehouses/%s", id.Name()), queryParams)
+	if err != nil {
+		return fmt.Errorf("warehousesPoc.Drop(%s): %w", id.Name(), err)
+	}
+	return nil
 }
