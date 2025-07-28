@@ -181,6 +181,7 @@ func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 			CustomType:  customtypes.EnumType[sdk.WarehouseSize]{},
 			PlanModifiers: []planmodifier.String{
 				customplanmodifiers.EnumSuppressor[sdk.WarehouseSize](),
+				customplanmodifiers.RequiresReplaceIfRemovedFromConfig(),
 			},
 		},
 		"max_cluster_count": schema.Int64Attribute{
@@ -691,8 +692,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		// unset for warehouse type does not work, setting the default instead
 		testfunctional.StringEnumAttributeUpdateSetDefaultInsteadOfUnset(plan.WarehouseType, state.WarehouseType, &set.WarehouseType, sdk.WarehouseTypeStandard),
 		// TODO [this PR]: WaitForCompletion
-		// TODO [this PR]: ForceNewIfChange (removing from config)
-		// removing from config should be handled with resource recreation
+		// removing from config is handled with resource recreation
 		testfunctional.StringEnumAttributeUpdateSetOnly(plan.WarehouseSize, state.WarehouseSize, &set.WarehouseSize),
 		testfunctional.Int64AttributeUpdate(plan.MaxClusterCount, state.MaxClusterCount, &set.MaxClusterCount, &unset.MaxClusterCount),
 		testfunctional.Int64AttributeUpdate(plan.MinClusterCount, state.MinClusterCount, &set.MinClusterCount, &unset.MinClusterCount),
