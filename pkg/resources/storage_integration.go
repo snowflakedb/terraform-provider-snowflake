@@ -127,7 +127,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 
 func StorageIntegration() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
+		sdk.ParseAccountObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.StorageIntegrations.DropSafely
 		},
@@ -320,9 +320,9 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 
 func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id, ok := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("storage integration update, error decoding id: %s as sdk.AccountObjectIdentifier, got: %T", d.Id(), id))
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	set, unset := sdk.NewStorageIntegrationSetRequest(), sdk.NewStorageIntegrationUnsetRequest()
