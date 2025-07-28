@@ -67,5 +67,9 @@ func (w warehousesPoc) CreateOrAlter(ctx context.Context, req WarehouseApiModel)
 }
 
 func (w warehousesPoc) GetByID(ctx context.Context, id sdk.AccountObjectIdentifier) (*WarehouseApiModel, error) {
-	panic("implement me")
+	warehouse, err := get[WarehouseApiModel](ctx, w.client, fmt.Sprintf("warehouses/%s", id.Name()))
+	if err != nil {
+		return nil, fmt.Errorf("warehousesPoc.GetByID(%s): %w", id.Name(), err)
+	}
+	return warehouse, nil
 }

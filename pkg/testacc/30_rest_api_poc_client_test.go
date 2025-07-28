@@ -94,3 +94,18 @@ func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method stri
 type Response struct {
 	State string `json:"state"`
 }
+
+// TODO [this PR]: add status codes handling
+func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T, error) {
+	resp, err := client.doRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var response T
+	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
