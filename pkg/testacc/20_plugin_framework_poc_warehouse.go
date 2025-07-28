@@ -233,6 +233,29 @@ func (r *WarehouseResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 	}
 }
 
+func (r *WarehouseResource) ModifyPlan(ctx context.Context, request resource.ModifyPlanRequest, response *resource.ModifyPlanResponse) {
+	if request.State.Raw.IsNull() || request.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan, state *warehousePocModelV0
+
+	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
+	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
+
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	// TODO [mux-PR]: we can extract modifiers like earlier we had ComputedIfAnyAttributeChanged)
+	if !plan.Name.Equal(state.Name) {
+		plan.FullyQualifiedName = types.StringUnknown()
+		plan.Id = types.StringUnknown()
+	}
+
+	response.Diagnostics.Append(response.Plan.Set(ctx, &plan)...)
+}
+
 // TODO [mux-PR]: from the docs https://developer.hashicorp.com/terraform/plugin/framework/resources/import
 // (...) which must either specify enough Terraform state for the Read method to refresh [resource] or return an error.
 func (r *WarehouseResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
@@ -480,7 +503,23 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		return
 	}
 
-	// TODO [this PR]: handle rename
+	// Change name separately
+	if !plan.Name.Equal(state.Name) {
+		{
+			newId := sdk.NewAccountObjectIdentifier(plan.Name.ValueString())
+
+			err := r.client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
+				NewName: &newId,
+			})
+			if err != nil {
+				response.Diagnostics.AddError("Could not rename warehouse PoC", err.Error())
+				return
+			}
+
+			plan.Id = types.StringValue(helpers.EncodeResourceIdentifier(id))
+			id = newId
+		}
+	}
 
 	// Batch SET operations and UNSET operations
 	set := sdk.WarehouseSet{}
