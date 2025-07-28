@@ -83,9 +83,12 @@ type WarehousePocPrivateJson struct {
 }
 
 type WarehousePocParametersPrivateJson struct {
-	MaxConcurrencyLevel             int `json:"max_concurrency_level"`
-	StatementQueuedTimeoutInSeconds int `json:"statement_queued_timeout_in_seconds"`
-	StatementTimeoutInSeconds       int `json:"statement_timeout_in_seconds"`
+	MaxConcurrencyLevel                  int               `json:"max_concurrency_level,omitempty"`
+	MaxConcurrencyLevelLevel             sdk.ParameterType `json:"max_concurrency_level_level,omitempty"`
+	StatementQueuedTimeoutInSeconds      int               `json:"statement_queued_timeout_in_seconds,omitempty"`
+	StatementQueuedTimeoutInSecondsLevel sdk.ParameterType `json:"statement_queued_timeout_in_seconds_level,omitempty"`
+	StatementTimeoutInSeconds            int               `json:"statement_timeout_in_seconds,omitempty"`
+	StatementTimeoutInSecondsLevel       sdk.ParameterType `json:"statement_timeout_in_seconds_level,omitempty"`
 }
 
 func warehousePocPrivateJsonFromWarehouse(warehouse *sdk.Warehouse) *WarehousePocPrivateJson {
@@ -129,15 +132,15 @@ func marshallWarehousePocParameters(warehouseParameters []*sdk.Parameter, privat
 	for _, parameter := range warehouseParameters {
 		switch parameter.Key {
 		case string(sdk.WarehouseParameterMaxConcurrencyLevel):
-			if err := marshallWarehousePocParameterInt(parameter, &privateJson.MaxConcurrencyLevel); err != nil {
+			if err := marshallWarehousePocParameterInt(parameter, &privateJson.MaxConcurrencyLevel, &privateJson.MaxConcurrencyLevelLevel); err != nil {
 				return err
 			}
 		case string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds):
-			if err := marshallWarehousePocParameterInt(parameter, &privateJson.StatementQueuedTimeoutInSeconds); err != nil {
+			if err := marshallWarehousePocParameterInt(parameter, &privateJson.StatementQueuedTimeoutInSeconds, &privateJson.StatementQueuedTimeoutInSecondsLevel); err != nil {
 				return err
 			}
 		case string(sdk.WarehouseParameterStatementTimeoutInSeconds):
-			if err := marshallWarehousePocParameterInt(parameter, &privateJson.StatementTimeoutInSeconds); err != nil {
+			if err := marshallWarehousePocParameterInt(parameter, &privateJson.StatementTimeoutInSeconds, &privateJson.StatementTimeoutInSecondsLevel); err != nil {
 				return err
 			}
 		}
@@ -145,12 +148,13 @@ func marshallWarehousePocParameters(warehouseParameters []*sdk.Parameter, privat
 	return nil
 }
 
-func marshallWarehousePocParameterInt(parameter *sdk.Parameter, field *int) error {
+func marshallWarehousePocParameterInt(parameter *sdk.Parameter, field *int, levelField *sdk.ParameterType) error {
 	value, err := strconv.Atoi(parameter.Value)
 	if err != nil {
 		return err
 	}
 	*field = value
+	*levelField = parameter.Level
 	return nil
 }
 
@@ -633,10 +637,25 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 			if parametersJson.MaxConcurrencyLevel != prevValue.MaxConcurrencyLevel {
 				data.MaxConcurrencyLevel = types.Int64Value(int64(parametersJson.MaxConcurrencyLevel))
 			}
+			if parametersJson.MaxConcurrencyLevelLevel != sdk.ParameterTypeWarehouse {
+				data.MaxConcurrencyLevel = types.Int64Null()
+			} else {
+				data.MaxConcurrencyLevel = types.Int64Value(int64(parametersJson.MaxConcurrencyLevel))
+			}
 			if parametersJson.StatementQueuedTimeoutInSeconds != prevValue.StatementQueuedTimeoutInSeconds {
 				data.StatementQueuedTimeoutInSeconds = types.Int64Value(int64(parametersJson.StatementQueuedTimeoutInSeconds))
 			}
+			if parametersJson.StatementQueuedTimeoutInSecondsLevel != sdk.ParameterTypeWarehouse {
+				data.StatementQueuedTimeoutInSeconds = types.Int64Null()
+			} else {
+				data.StatementQueuedTimeoutInSeconds = types.Int64Value(int64(parametersJson.StatementQueuedTimeoutInSeconds))
+			}
 			if parametersJson.StatementTimeoutInSeconds != prevValue.StatementTimeoutInSeconds {
+				data.StatementTimeoutInSeconds = types.Int64Value(int64(parametersJson.StatementTimeoutInSeconds))
+			}
+			if parametersJson.StatementTimeoutInSecondsLevel != sdk.ParameterTypeWarehouse {
+				data.StatementTimeoutInSeconds = types.Int64Null()
+			} else {
 				data.StatementTimeoutInSeconds = types.Int64Value(int64(parametersJson.StatementTimeoutInSeconds))
 			}
 		}

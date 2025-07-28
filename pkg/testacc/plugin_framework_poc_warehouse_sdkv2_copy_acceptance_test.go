@@ -17,6 +17,7 @@
 // Identifier suppression is not implemented, so adjusted steps with resource monitor.
 // Some TestCheckResourceAttr were replaced with TestCheckNoResourceAttr as plugin framework handles null differently.
 // Validation tests regex assertions were adjusted.
+// Test verifying initially_suspended is skipped till the IgnoreAfterCreate is implemented.
 package testacc
 
 import (
@@ -1065,15 +1066,13 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionCreate, nil, sdk.String("86400")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), r.ParametersAttributeName, true),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "statement_timeout_in_seconds", "86400"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "86400"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "statement_timeout_in_seconds", "86400")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementTimeoutInSeconds(86400).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 			// do not make any change (to check if there is no drift)
@@ -1092,9 +1091,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "statement_timeout_in_seconds", "86400"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_timeout_in_seconds.0.value", "86400"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
 				),
 			},
 			// change the param value in config
@@ -1104,15 +1100,13 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("86400"), sdk.String("43200")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), r.ParametersAttributeName, true),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "43200"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementTimeoutInSeconds(43200).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 			// change param value on account - expect no changes
@@ -1127,16 +1121,14 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", tfjson.ActionNoop, sdk.String("43200"), sdk.String("43200")),
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "43200"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementTimeoutInSeconds(43200).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 			// change the param value externally
@@ -1153,15 +1145,13 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
 						planchecks.ExpectDrift(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", sdk.String("43200"), sdk.String("86400")),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("86400"), sdk.String("43200")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), r.ParametersAttributeName, true),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "43200"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementTimeoutInSeconds(43200).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 			// change the param value on account to the value from config (but on different level)
@@ -1174,17 +1164,15 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("43200"), nil),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", true),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), r.ParametersAttributeName, true),
+						planchecks.ExpectDrift(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", sdk.String("43200"), nil),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("43200")),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "43200"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementTimeoutInSeconds(43200).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 			// remove the param from config
@@ -1200,15 +1188,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("43200"), nil),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModel.ResourceReference()), r.ParametersAttributeName, true),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", "172800"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", ""),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault),
 				),
 			},
 			// import when param not in config (snowflake default)
@@ -1217,10 +1202,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "statement_timeout_in_seconds", "172800"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_timeout_in_seconds.0.level", ""),
+					importchecks.TestCheckResourceAttrNotInInstanceState(helpers.EncodeResourceIdentifier(id), "statement_timeout_in_seconds"),
 				),
 			},
 			// change the param value in config to snowflake default (expecting action because of the different level)
@@ -1229,17 +1211,14 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("172800"), nil),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "statement_timeout_in_seconds", true),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), r.ParametersAttributeName, true),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("172800")),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "statement_timeout_in_seconds", "172800"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "statement_timeout_in_seconds", "172800")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementTimeoutInSeconds(172800).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 			// remove the param from config
@@ -1253,16 +1232,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("172800"), nil),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", true),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModel.ResourceReference()), r.ParametersAttributeName, true),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", "172800"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", ""),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault),
 				),
 			},
 			// change param value on account - change expected to be noop
@@ -1277,16 +1252,14 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", sdk.String("172800"), sdk.String("86400")),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", tfjson.ActionNoop, sdk.String("86400"), sdk.String("86400")),
+						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", "86400"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "86400"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeAccount)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementTimeoutInSeconds(86400).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeAccount),
 				),
 			},
 			// import when param not in config (set on account)
@@ -1295,10 +1268,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "statement_timeout_in_seconds", "86400"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_timeout_in_seconds.0.value", "86400"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeAccount)),
+					importchecks.TestCheckResourceAttrNotInInstanceState(helpers.EncodeResourceIdentifier(id), "statement_timeout_in_seconds"),
 				),
 			},
 			// change param value on warehouse
@@ -1311,16 +1281,13 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("86400"), nil),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", true),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModel.ResourceReference()), r.ParametersAttributeName, true),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", "86400"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "86400"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeAccount)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementTimeoutInSeconds(86400).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeAccount),
 				),
 			},
 			// unset param on account
@@ -1332,23 +1299,22 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", r.ParametersAttributeName),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", sdk.String("86400"), sdk.String("172800")),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", sdk.String(string(sdk.ParameterTypeAccount)), sdk.String("")),
+						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", "172800"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", ""),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault),
 				),
 			},
 		},
 	})
 }
 
+// TODO [mux-PR]: address with IgnoreAfterCreate
 func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_InitiallySuspendedChangesPostCreation(t *testing.T) {
+	t.Skip("IgnoreAfterCreate not supported yet")
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	warehouseModel := model.Warehouse("test", id.Name())
