@@ -105,12 +105,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "LegacyServiceUser",
 		schema: resources.LegacyServiceUser().Schema,
 	},
-
-	// TODO(SNOW-1501905): Support the rest of attribute types (Commented because it's blocking model generator)
-	// {
-	//	name:   "Listing",
-	//	schema: resources.Listing().Schema,
-	// },
+	{
+		name:   "Listing",
+		schema: resources.Listing().Schema,
+	},
 	{
 		name:   "ManagedAccount",
 		schema: resources.ManagedAccount().Schema,
