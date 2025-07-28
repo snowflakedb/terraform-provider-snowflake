@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -77,6 +78,14 @@ type WarehousePocPrivateJson struct {
 	ResourceMonitor                 string            `json:"resource_monitor,omitempty"`
 	EnableQueryAcceleration         bool              `json:"enable_query_acceleration,omitempty"`
 	QueryAccelerationMaxScaleFactor int               `json:"query_acceleration_max_scale_factor,omitempty"`
+
+	WarehousePocParametersPrivateJson
+}
+
+type WarehousePocParametersPrivateJson struct {
+	MaxConcurrencyLevel             int `json:"max_concurrency_level"`
+	StatementQueuedTimeoutInSeconds int `json:"statement_queued_timeout_in_seconds"`
+	StatementTimeoutInSeconds       int `json:"statement_timeout_in_seconds"`
 }
 
 func warehousePocPrivateJsonFromWarehouse(warehouse *sdk.Warehouse) *WarehousePocPrivateJson {
@@ -94,13 +103,55 @@ func warehousePocPrivateJsonFromWarehouse(warehouse *sdk.Warehouse) *WarehousePo
 	}
 }
 
-func marshallWarehousePocPrivateJson(warehouse *sdk.Warehouse) ([]byte, error) {
+func warehousePocParametersPrivateJsonFromParameters(warehouseParameters []*sdk.Parameter) (*WarehousePocParametersPrivateJson, error) {
+	privateJson := &WarehousePocParametersPrivateJson{}
+	if err := marshallWarehousePocParameters(warehouseParameters, privateJson); err != nil {
+		return nil, err
+	}
+	return privateJson, nil
+}
+
+func marshallWarehousePocPrivateJson(warehouse *sdk.Warehouse, warehouseParameters []*sdk.Parameter) ([]byte, error) {
 	warehouseJson := warehousePocPrivateJsonFromWarehouse(warehouse)
+	if warehouseParametersJson, err := warehousePocParametersPrivateJsonFromParameters(warehouseParameters); err != nil {
+		return nil, err
+	} else {
+		warehouseJson.WarehousePocParametersPrivateJson = *warehouseParametersJson
+	}
 	bytes, err := json.Marshal(warehouseJson)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal json: %w", err)
 	}
 	return bytes, nil
+}
+
+func marshallWarehousePocParameters(warehouseParameters []*sdk.Parameter, privateJson *WarehousePocParametersPrivateJson) error {
+	for _, parameter := range warehouseParameters {
+		switch parameter.Key {
+		case string(sdk.WarehouseParameterMaxConcurrencyLevel):
+			if err := marshallWarehousePocParameterInt(parameter, &privateJson.MaxConcurrencyLevel); err != nil {
+				return err
+			}
+		case string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds):
+			if err := marshallWarehousePocParameterInt(parameter, &privateJson.StatementQueuedTimeoutInSeconds); err != nil {
+				return err
+			}
+		case string(sdk.WarehouseParameterStatementTimeoutInSeconds):
+			if err := marshallWarehousePocParameterInt(parameter, &privateJson.StatementTimeoutInSeconds); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func marshallWarehousePocParameterInt(parameter *sdk.Parameter, field *int) error {
+	value, err := strconv.Atoi(parameter.Value)
+	if err != nil {
+		return err
+	}
+	*field = value
+	return nil
 }
 
 func (r *WarehouseResource) Metadata(_ context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
@@ -352,14 +403,43 @@ func (r *WarehouseResource) ImportState(ctx context.Context, request resource.Im
 		QueryAccelerationMaxScaleFactor: types.Int64Value(int64(warehouse.QueryAccelerationMaxScaleFactor)),
 	}
 
-	// TODO [this PR]: handle parameters
-	//warehouseParameters, err := client.Warehouses.ShowParameters(ctx, id)
-	// if err != nil {
-	//	response.Diagnostics.AddError("Could not read Warehouse PoC parameters", err.Error())
-	//	return
-	// }
+	warehouseParameters, err := client.Warehouses.ShowParameters(ctx, id)
+	if err != nil {
+		response.Diagnostics.AddError("Could not read Warehouse PoC parameters", err.Error())
+		return
+	}
+	response.Diagnostics.Append(handleWarehousePocParameterImport(warehouseParameters, data)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+}
+
+func handleWarehousePocParameterImport(warehouseParameters []*sdk.Parameter, data *warehousePocModelV0) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+	for _, parameter := range warehouseParameters {
+		switch parameter.Key {
+		case string(sdk.WarehouseParameterMaxConcurrencyLevel):
+			handleWarehousePocParameterImportInt(parameter, &data.MaxConcurrencyLevel, sdk.ParameterTypeWarehouse, &diags)
+		case string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds):
+			handleWarehousePocParameterImportInt(parameter, &data.StatementQueuedTimeoutInSeconds, sdk.ParameterTypeWarehouse, &diags)
+		case string(sdk.WarehouseParameterStatementTimeoutInSeconds):
+			handleWarehousePocParameterImportInt(parameter, &data.StatementTimeoutInSeconds, sdk.ParameterTypeWarehouse, &diags)
+		}
+	}
+	return diags
+}
+
+func handleWarehousePocParameterImportInt(parameter *sdk.Parameter, field *types.Int64, objectLevel sdk.ParameterType, diags *diag.Diagnostics) {
+	value, err := strconv.Atoi(parameter.Value)
+	if err != nil {
+		diags.AddError(fmt.Sprintf("Handling parameter %s failed", parameter.Key), err.Error())
+		return
+	}
+	if parameter.Level == objectLevel {
+		*field = types.Int64Value(int64(value))
+	}
 }
 
 func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
@@ -447,7 +527,13 @@ func (r *WarehouseResource) readAfterCreateOrUpdate(ctx context.Context, data *w
 		return nil, diags
 	}
 
-	bytes, err := marshallWarehousePocPrivateJson(warehouse)
+	warehouseParameters, err := client.Warehouses.ShowParameters(ctx, id)
+	if err != nil {
+		diags.AddError("Could not read Warehouse PoC parameters", err.Error())
+		return nil, diags
+	}
+
+	bytes, err := marshallWarehousePocPrivateJson(warehouse, warehouseParameters)
 	if err != nil {
 		diags.AddError("Could not marshal json", err.Error())
 		return nil, diags
@@ -491,8 +577,6 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		diags.AddError("Could not read Warehouse PoC parameters", err.Error())
 		return diags
 	}
-
-	_ = warehouseParameters
 
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
@@ -540,16 +624,30 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		if warehouse.QueryAccelerationMaxScaleFactor != prevValue.QueryAccelerationMaxScaleFactor {
 			data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(warehouse.QueryAccelerationMaxScaleFactor))
 		}
+
+		if parametersJson, err := warehousePocParametersPrivateJsonFromParameters(warehouseParameters); err != nil {
+			diags.AddError("Could not read Warehouse PoC parameters", err.Error())
+			return diags
+		} else {
+			if parametersJson.MaxConcurrencyLevel != prevValue.MaxConcurrencyLevel {
+				data.MaxConcurrencyLevel = types.Int64Value(int64(parametersJson.MaxConcurrencyLevel))
+			}
+			if parametersJson.StatementQueuedTimeoutInSeconds != prevValue.StatementQueuedTimeoutInSeconds {
+				data.StatementQueuedTimeoutInSeconds = types.Int64Value(int64(parametersJson.StatementQueuedTimeoutInSeconds))
+			}
+			if parametersJson.StatementTimeoutInSeconds != prevValue.StatementTimeoutInSeconds {
+				data.StatementTimeoutInSeconds = types.Int64Value(int64(parametersJson.StatementTimeoutInSeconds))
+			}
+		}
 	}
 
-	bytes, err := marshallWarehousePocPrivateJson(warehouse)
+	bytes, err := marshallWarehousePocPrivateJson(warehouse, warehouseParameters)
 	if err != nil {
 		diags.AddError("Could not marshal json", err.Error())
 		return diags
 	}
 	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, bytes)...)
 
-	// TODO [this PR]: handle warehouse parameters read
 	// TODO [this PR]: setStateToValuesFromConfig ?
 	// TODO [mux-PR]: show_output and parameters
 

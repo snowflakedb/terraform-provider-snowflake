@@ -14,6 +14,7 @@
 // Computed expectations for parameters were adjusted (ExpectComputed -> ExpectChange).
 // Exchanged some old assertions with new ones.
 // IgnoreAfterCreation is not implemented so assertions for initially_suspended were adjusted.
+// Identifier suppression is not implemented, so adjusted steps with resource monitor.
 package testacc
 
 import (
@@ -336,7 +337,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFullResourceMonitorInQuotes)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
+						// TODO [mux-PR]: changes with identifier suppression
+						plancheck.ExpectNonEmptyPlan(),
 					},
 				},
 			},
@@ -353,8 +355,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "name", warehouseId2.Name()),
 					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "max_concurrency_level", "4"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "parameters.0.max_concurrency_level.0.value", "4"),
 				),
 			},
 			// IMPORT
@@ -362,6 +362,9 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 				ResourceName:      replaceResourceReference(warehouseModelRenamedFull.ResourceReference()),
 				ImportState:       true,
 				ImportStateVerify: true,
+				// TODO[mux-PR]: adjust when handling IgnoreAfterCreate
+				// TODO[mux-PR]: adjust when handling resource_monitor
+				ImportStateVerifyIgnore: []string{"initially_suspended", "resource_monitor"},
 			},
 		},
 	})
