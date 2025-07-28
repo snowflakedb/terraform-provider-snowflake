@@ -119,6 +119,57 @@ func ToScalingPolicy(s string) (ScalingPolicy, error) {
 	}
 }
 
+type ResourceConstraint string
+
+const (
+	ResourceConstraintStandard     ResourceConstraint = "STANDARD_GEN_1"
+	ResourceConstraintStandardGen2 ResourceConstraint = "STANDARD_GEN_2"
+	ResourceConstraintMemory1X     ResourceConstraint = "MEMORY_1X"
+	ResourceConstraintMemory1Xx86  ResourceConstraint = "MEMORY_1X_x86"
+	ResourceConstraintMemory16X    ResourceConstraint = "MEMORY_16X"
+	ResourceConstraintMemory16Xx86 ResourceConstraint = "MEMORY_16X_x86"
+	ResourceConstraintMemory64X    ResourceConstraint = "MEMORY_64X"
+	ResourceConstraintMemory64Xx86 ResourceConstraint = "MEMORY_64X_x86"
+)
+
+func ToResourceConstraint(s string) (ResourceConstraint, error) {
+	// Handle case-insensitive comparison for resource constraints
+	// The x86 variants should keep x86 lowercase
+	upperS := strings.ToUpper(s)
+
+	switch upperS {
+	case "STANDARD_GEN_1":
+		return ResourceConstraintStandard, nil
+	case "STANDARD_GEN_2":
+		return ResourceConstraintStandardGen2, nil
+	case "MEMORY_1X":
+		return ResourceConstraintMemory1X, nil
+	case "MEMORY_1X_X86":
+		return ResourceConstraintMemory1Xx86, nil
+	case "MEMORY_16X":
+		return ResourceConstraintMemory16X, nil
+	case "MEMORY_16X_X86":
+		return ResourceConstraintMemory16Xx86, nil
+	case "MEMORY_64X":
+		return ResourceConstraintMemory64X, nil
+	case "MEMORY_64X_X86":
+		return ResourceConstraintMemory64Xx86, nil
+	default:
+		return "", fmt.Errorf("invalid resource constraint: %s", s)
+	}
+}
+
+var ValidResourceConstraintsString = []string{
+	string(ResourceConstraintStandard),
+	string(ResourceConstraintStandardGen2),
+	string(ResourceConstraintMemory1X),
+	string(ResourceConstraintMemory1Xx86),
+	string(ResourceConstraintMemory16X),
+	string(ResourceConstraintMemory16Xx86),
+	string(ResourceConstraintMemory64X),
+	string(ResourceConstraintMemory64Xx86),
+}
+
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
 type CreateWarehouseOptions struct {
 	create      bool                    `ddl:"static" sql:"CREATE"`
@@ -140,6 +191,7 @@ type CreateWarehouseOptions struct {
 	Comment                         *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	EnableQueryAcceleration         *bool                    `ddl:"parameter" sql:"ENABLE_QUERY_ACCELERATION"`
 	QueryAccelerationMaxScaleFactor *int                     `ddl:"parameter" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
+	ResourceConstraint              *ResourceConstraint      `ddl:"parameter,single_quotes" sql:"RESOURCE_CONSTRAINT"`
 
 	// Object params
 	MaxConcurrencyLevel             *int             `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
@@ -244,6 +296,7 @@ type WarehouseSet struct {
 	Comment                         *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	EnableQueryAcceleration         *bool                   `ddl:"parameter" sql:"ENABLE_QUERY_ACCELERATION"`
 	QueryAccelerationMaxScaleFactor *int                    `ddl:"parameter" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
+	ResourceConstraint              *ResourceConstraint     `ddl:"parameter,single_quotes" sql:"RESOURCE_CONSTRAINT"`
 
 	// Object params
 	MaxConcurrencyLevel             *int `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
@@ -268,8 +321,8 @@ func (v *WarehouseSet) validate() error {
 			return fmt.Errorf("QueryAccelerationMaxScaleFactor must be between 0 and 100")
 		}
 	}
-	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
-		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
+	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
+		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
 	}
 	return nil
 }
@@ -287,6 +340,7 @@ type WarehouseUnset struct {
 	Comment                         *bool `ddl:"keyword" sql:"COMMENT"`
 	EnableQueryAcceleration         *bool `ddl:"keyword" sql:"ENABLE_QUERY_ACCELERATION"`
 	QueryAccelerationMaxScaleFactor *bool `ddl:"keyword" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
+	ResourceConstraint              *bool `ddl:"keyword" sql:"RESOURCE_CONSTRAINT"`
 
 	// Object params
 	MaxConcurrencyLevel             *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
@@ -295,8 +349,8 @@ type WarehouseUnset struct {
 }
 
 func (v *WarehouseUnset) validate() error {
-	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
-		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
+	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
+		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
 	}
 	return nil
 }
@@ -454,6 +508,7 @@ type Warehouse struct {
 	ResourceMonitor                 AccountObjectIdentifier
 	ScalingPolicy                   ScalingPolicy
 	OwnerRoleType                   string
+	ResourceConstraint              ResourceConstraint
 }
 
 type warehouseDBRow struct {
@@ -489,6 +544,7 @@ type warehouseDBRow struct {
 	UUID                            string         `db:"uuid"`
 	ScalingPolicy                   string         `db:"scaling_policy"`
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
+	ResourceConstraint              string         `db:"resource_constraint"`
 }
 
 func (row warehouseDBRow) convert() *Warehouse {
@@ -517,6 +573,7 @@ func (row warehouseDBRow) convert() *Warehouse {
 		EnableQueryAcceleration:         row.EnableQueryAcceleration,
 		QueryAccelerationMaxScaleFactor: row.QueryAccelerationMaxScaleFactor,
 		ScalingPolicy:                   ScalingPolicy(row.ScalingPolicy),
+		ResourceConstraint:              ResourceConstraint(row.ResourceConstraint),
 	}
 	if val, err := strconv.ParseFloat(row.Available, 64); err != nil {
 		wh.Available = val

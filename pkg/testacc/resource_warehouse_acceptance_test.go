@@ -2139,3 +2139,30 @@ resource "snowflake_warehouse" "test" {
 }
 `, id.Name())
 }
+
+func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "snowflake_warehouse" "test" {
+	name = "%s"
+	resource_constraint = "MEMORY_16X"
+}
+`, id.Name()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_warehouse.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_warehouse.test", "resource_constraint", "MEMORY_16X"),
+				),
+			},
+		},
+	})
+}
