@@ -108,9 +108,7 @@ func (r *WarehouseResource) Metadata(_ context.Context, request resource.Metadat
 }
 
 // TODO [mux-PR]: suppress identifier quoting
-// TODO [mux-PR]: IgnoreChangeToCurrentSnowflakeValueInShow?
 // TODO [mux-PR]: show_output and parameters
-// TODO [this PR]: fully_qualified_name
 func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 	existingWarehouseSchema := resources.Warehouse().Schema
 	attrs := map[string]schema.Attribute{
@@ -253,7 +251,74 @@ func (r *WarehouseResource) ModifyPlan(ctx context.Context, request resource.Mod
 		plan.Id = types.StringUnknown()
 	}
 
+	// TODO [mux-PR]: add a functional test documenting that IgnoreChangeToCurrentSnowflakeValueInShow cannot be achieved that way.
+	// Commented out on purpose for now.
+	// r.simulateOldIgnoreChangeToCurrentSnowflakeValueInShow(ctx, request, response, plan, state)
+	// if response.Diagnostics.HasError() {
+	//	return
+	// }
+
 	response.Diagnostics.Append(response.Plan.Set(ctx, &plan)...)
+}
+
+// It results in error connected with https://github.com/hashicorp/terraform/blob/main/docs/resource-instance-change-lifecycle.md#planresourcechange behavior.
+// For each value we receive error like:
+//
+//	| Error: Provider produced invalid plan
+//	|
+//	| Provider "registry.terraform.io/hashicorp/snowflake" planned an invalid value
+//	| for snowflake_warehouse_poc.test.auto_suspend: planned value
+//	| cty.NullVal(cty.Number) does not match config value cty.NumberIntVal(600).
+//	|
+//	| This is a bug in the provider, which should be reported in the provider's own
+//	| issue tracker.
+func (r *WarehouseResource) simulateOldIgnoreChangeToCurrentSnowflakeValueInShow(ctx context.Context, request resource.ModifyPlanRequest, response *resource.ModifyPlanResponse, plan *warehousePocModelV0, state *warehousePocModelV0) {
+	// this serves the logic behind previous IgnoreChangeToCurrentSnowflakeValueInShow
+	prevValueBytes, d := request.Private.GetKey(ctx, privateStateSnowflakeObjectsStateKey)
+	response.Diagnostics.Append(d...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+	if prevValueBytes != nil {
+		var prevValue WarehousePocPrivateJson
+		err := json.Unmarshal(prevValueBytes, &prevValue)
+		if err != nil {
+			response.Diagnostics.AddError("Could not unmarshal json", err.Error())
+			return
+		}
+
+		// simplified checks for now
+		if plan.WarehouseType.ValueString() == string(prevValue.WarehouseType) {
+			plan.WarehouseType = state.WarehouseType
+		}
+		if plan.WarehouseSize.ValueString() == string(prevValue.WarehouseSize) {
+			plan.WarehouseSize = state.WarehouseSize
+		}
+		if plan.MaxClusterCount.ValueInt64() == int64(prevValue.MaxClusterCount) {
+			plan.MaxClusterCount = state.MaxClusterCount
+		}
+		if plan.MinClusterCount.ValueInt64() == int64(prevValue.MinClusterCount) {
+			plan.MinClusterCount = state.MinClusterCount
+		}
+		if plan.ScalingPolicy.ValueString() == string(prevValue.ScalingPolicy) {
+			plan.ScalingPolicy = state.ScalingPolicy
+		}
+		if plan.AutoSuspend.ValueInt64() == int64(prevValue.AutoSuspend) {
+			plan.AutoSuspend = state.AutoSuspend
+		}
+		if plan.AutoResume.ValueBool() == prevValue.AutoResume {
+			plan.AutoResume = state.AutoResume
+		}
+		if plan.ResourceMonitor.ValueString() == prevValue.ResourceMonitor {
+			plan.ResourceMonitor = state.ResourceMonitor
+		}
+		if plan.EnableQueryAcceleration.ValueBool() != prevValue.EnableQueryAcceleration {
+			plan.EnableQueryAcceleration = state.EnableQueryAcceleration
+		}
+		if plan.QueryAccelerationMaxScaleFactor.ValueInt64() == int64(prevValue.QueryAccelerationMaxScaleFactor) {
+			plan.QueryAccelerationMaxScaleFactor = state.QueryAccelerationMaxScaleFactor
+		}
+	}
 }
 
 // TODO [mux-PR]: from the docs https://developer.hashicorp.com/terraform/plugin/framework/resources/import
