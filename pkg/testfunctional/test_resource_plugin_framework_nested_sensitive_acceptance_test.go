@@ -35,6 +35,14 @@ func TestAcc_TerraformPluginFrameworkFunctional_NestedSensitive(t *testing.T) {
 				ExpectError: regexp.MustCompile("Output refers to sensitive values"),
 			},
 			{
+				Config: nestedSensitiveConfigWholeOutput(id, resourceType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceReference, "output.0.string_sensitive", "SECRET"),
+				),
+				ExpectError: regexp.MustCompile("Output refers to sensitive values"),
+			},
+			{
 				Config: nestedSensitiveConfigMarked(id, resourceType),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
@@ -55,6 +63,14 @@ func nestedSensitiveConfig(id sdk.AccountObjectIdentifier, resourceType string) 
 	return nestedSensitiveResourceConfig(id, resourceType) + fmt.Sprintf(`
 output "nested_sensitive" {
   value = resource.%s.test.output[0].string_sensitive
+}
+`, resourceType)
+}
+
+func nestedSensitiveConfigWholeOutput(id sdk.AccountObjectIdentifier, resourceType string) string {
+	return nestedSensitiveResourceConfig(id, resourceType) + fmt.Sprintf(`
+output "nested_sensitive" {
+  value = resource.%s.test.output[0]
 }
 `, resourceType)
 }
