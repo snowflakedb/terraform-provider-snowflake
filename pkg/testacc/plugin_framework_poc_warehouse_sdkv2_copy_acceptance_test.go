@@ -4,7 +4,7 @@
 // They were adjusted to verify Terraform Plugin Framework warehouse PoC resource implementation.
 // Models used are the same but with the resource type replaced.
 // Assertions used are the same but with the resource type replaced.
-// Assertion using r.IntDefaultString or r.BooleanDefault were replaced (as such defaults are not used).
+// Assertions using r.IntDefaultString or r.BooleanDefault were replaced (as such defaults are not needed in plugin framework).
 // Parameter values are not in state when the config does not contain them.
 // Default parameter assertions can't be used because of above.
 // WarehouseShowOutput assertions were removed or replaced with Snowflake object assertions.
@@ -749,13 +749,10 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelAutoResumeTrue.ResourceReference()), "auto_resume", r.ShowOutputAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelAutoResumeTrue.ResourceReference()), "auto_resume", tfjson.ActionCreate, nil, sdk.String("true")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelAutoResumeTrue.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoResumeTrue.ResourceReference()), "auto_resume", "true")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoResumeTrue.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoResumeTrue.ResourceReference()), "show_output.0.auto_resume", "true")),
 					objectassert.Warehouse(t, id).HasAutoResume(true),
 				),
 			},
@@ -766,8 +763,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "auto_resume", "true"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.auto_resume", "true"),
 				),
 			},
 			// change value in config
@@ -777,13 +772,10 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelAutoResumeFalse.ResourceReference()), "auto_resume", r.ShowOutputAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelAutoResumeFalse.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelAutoResumeFalse.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoResumeFalse.ResourceReference()), "auto_resume", "false")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoResumeFalse.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoResumeFalse.ResourceReference()), "show_output.0.auto_resume", "false")),
 					objectassert.Warehouse(t, id).HasAutoResume(false),
 				),
 			},
@@ -794,14 +786,11 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), plancheck.ResourceActionUpdate),
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", r.ShowOutputAttributeName),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("false"), sdk.String(r.BooleanDefault)),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), r.ShowOutputAttributeName, true),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("false"), nil),
 					},
 				},
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", r.BooleanDefault)),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "show_output.0.auto_resume", "true")),
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume")),
 					objectassert.Warehouse(t, id).HasAutoResume(true),
 				),
 			},
@@ -816,16 +805,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", r.ShowOutputAttributeName),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", sdk.String(r.BooleanDefault), sdk.String("false")),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "show_output.0.auto_resume", sdk.String("true"), sdk.String("false")),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("false"), sdk.String(r.BooleanDefault)),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), r.ShowOutputAttributeName, true),
+						planchecks.ExpectDrift(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", nil, sdk.String("false")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("false"), nil),
 					},
 				},
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", r.BooleanDefault)),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "show_output.0.auto_resume", "true")),
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume")),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeStandard),
 				),
 			},
@@ -836,8 +821,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "auto_resume", "true"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.auto_resume", "true"),
 				),
 			},
 		},
@@ -867,13 +850,10 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelAutoSuspend1200.ResourceReference()), "auto_suspend", r.ShowOutputAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelAutoSuspend1200.ResourceReference()), "auto_suspend", tfjson.ActionCreate, nil, sdk.String("1200")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelAutoSuspend1200.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoSuspend1200.ResourceReference()), "auto_suspend", "1200")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoSuspend1200.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoSuspend1200.ResourceReference()), "show_output.0.auto_suspend", "1200")),
 					objectassert.Warehouse(t, id).HasAutoSuspend(1200),
 				),
 			},
@@ -884,8 +864,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "auto_suspend", "1200"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.auto_suspend", "1200"),
 				),
 			},
 			// change value in config to Snowflake default
@@ -895,13 +873,10 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelAutoSuspend600.ResourceReference()), "auto_suspend", r.ShowOutputAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelAutoSuspend600.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("1200"), sdk.String("600")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelAutoSuspend600.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoSuspend600.ResourceReference()), "auto_suspend", "600")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoSuspend600.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoSuspend600.ResourceReference()), "show_output.0.auto_suspend", "600")),
 					objectassert.Warehouse(t, id).HasAutoSuspend(600),
 				),
 			},
@@ -912,14 +887,11 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), plancheck.ResourceActionUpdate),
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", r.ShowOutputAttributeName),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("600"), sdk.String(r.IntDefaultString)),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), r.ShowOutputAttributeName, true),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("600"), nil),
 					},
 				},
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", r.IntDefaultString)),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "show_output.0.auto_suspend", "600")),
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend")),
 					objectassert.Warehouse(t, id).HasAutoSuspend(600),
 				),
 			},
@@ -934,16 +906,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", r.ShowOutputAttributeName),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", sdk.String(r.IntDefaultString), sdk.String("2400")),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "show_output.0.auto_suspend", sdk.String("600"), sdk.String("2400")),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("2400"), sdk.String(r.IntDefaultString)),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), r.ShowOutputAttributeName, true),
+						planchecks.ExpectDrift(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", nil, sdk.String("2400")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("2400"), nil),
 					},
 				},
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", r.IntDefaultString)),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "show_output.0.auto_suspend", "600")),
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend")),
 					objectassert.Warehouse(t, id).HasAutoSuspend(600),
 				),
 			},
@@ -954,8 +922,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "auto_suspend", "600"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.auto_suspend", "600"),
 				),
 			},
 		},
@@ -990,24 +956,21 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", tfjson.ActionCreate, nil, sdk.String("0")),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", tfjson.ActionCreate, nil, sdk.String("0")),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionCreate, nil, sdk.String("0")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", "0"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "show_output.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "show_output.0.auto_suspend", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "show_output.0.query_acceleration_max_scale_factor", "0"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.value", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", "0")),
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", "0")),
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", "0")),
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", "0")),
+					objectassert.Warehouse(t, id).
+						HasAutoSuspend(0).
+						HasQueryAccelerationMaxScaleFactor(0),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementQueuedTimeoutInSeconds(0).
+						HasStatementQueuedTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
+						HasStatementTimeoutInSeconds(0).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 			// remove all from config (to validate that unset is run correctly)
@@ -1016,28 +979,23 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModel.ResourceReference()), "auto_suspend", "query_acceleration_max_scale_factor", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("0"), sdk.String(r.IntDefaultString)),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "query_acceleration_max_scale_factor", tfjson.ActionUpdate, sdk.String("0"), sdk.String(r.IntDefaultString)),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModel.ResourceReference()), "statement_queued_timeout_in_seconds", true),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", true),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModel.ResourceReference()), r.ShowOutputAttributeName, true),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("0"), nil),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "query_acceleration_max_scale_factor", tfjson.ActionUpdate, sdk.String("0"), nil),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("0"), nil),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("0"), nil),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "auto_suspend", r.IntDefaultString),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "query_acceleration_max_scale_factor", r.IntDefaultString),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_queued_timeout_in_seconds", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", "172800"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.0.auto_suspend", "600"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.0.query_acceleration_max_scale_factor", "8"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.value", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.level", ""),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", ""),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "auto_suspend")),
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "query_acceleration_max_scale_factor")),
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_queued_timeout_in_seconds")),
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
+					objectassert.Warehouse(t, id).
+						HasAutoSuspend(600).
+						HasQueryAccelerationMaxScaleFactor(8),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
+						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault),
 				),
 			},
 			// add valid "zero" values again (to validate if set is run correctly)
@@ -1046,28 +1004,25 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", "query_acceleration_max_scale_factor", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String(r.IntDefaultString), sdk.String("0")),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", tfjson.ActionUpdate, sdk.String(r.IntDefaultString), sdk.String("0")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", true),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("172800"), sdk.String("0")),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), r.ShowOutputAttributeName, true),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, nil, sdk.String("0")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", tfjson.ActionUpdate, nil, sdk.String("0")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("0")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("0")),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", "0"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "show_output.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "show_output.0.auto_suspend", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "show_output.0.query_acceleration_max_scale_factor", "0"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.value", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.0.statement_queued_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.value", "0"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", "0")),
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", "0")),
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", "0")),
+					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", "0")),
+					objectassert.Warehouse(t, id).
+						HasAutoSuspend(0).
+						HasQueryAccelerationMaxScaleFactor(0),
+					objectparametersassert.WarehouseParameters(t, id).
+						HasStatementQueuedTimeoutInSeconds(0).
+						HasStatementQueuedTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
+						HasStatementTimeoutInSeconds(0).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 			// import zero values
@@ -1081,16 +1036,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "query_acceleration_max_scale_factor", "0"),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "statement_queued_timeout_in_seconds", "0"),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "statement_timeout_in_seconds", "0"),
-
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.auto_suspend", "0"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.query_acceleration_max_scale_factor", "0"),
-
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_queued_timeout_in_seconds.0.value", "0"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_queued_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_timeout_in_seconds.0.value", "0"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
 				),
 			},
 		},
