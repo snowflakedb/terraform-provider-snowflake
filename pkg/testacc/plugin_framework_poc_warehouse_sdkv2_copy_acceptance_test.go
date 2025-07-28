@@ -1,6 +1,6 @@
 //go:build account_level_tests
 
-// Tests in this file are all the current acceptance tests for the SDKv2 warehouse resource excluding migration tests.
+// Tests in this file are all the current acceptance tests for the SDKv2 warehouse resource excluding migration and experimental tests.
 // They were adjusted to verify Terraform Plugin Framework warehouse PoC resource implementation.
 // Models used are the same but with the resource type replaced.
 // Assertions used are the same but with the resource type replaced.
@@ -35,7 +35,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -507,7 +506,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 					},
 				},
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelNoType.ResourceReference()), "warehouse_type", "")),
+					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoType.ResourceReference()), "warehouse_type")),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeStandard),
 				),
 			},
@@ -550,13 +549,10 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelSmall.ResourceReference()), "warehouse_size", r.ShowOutputAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelSmall.ResourceReference()), "warehouse_size", tfjson.ActionCreate, nil, sdk.String(string(sdk.WarehouseSizeSmall))),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelSmall.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSmall.ResourceReference()), "warehouse_size", string(sdk.WarehouseSizeSmall))),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSmall.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSmall.ResourceReference()), "show_output.0.size", string(sdk.WarehouseSizeSmall))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeSmall),
 				),
 			},
@@ -567,8 +563,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "warehouse_size", string(sdk.WarehouseSizeSmall)),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.size", string(sdk.WarehouseSizeSmall)),
 				),
 			},
 			// change size in config
@@ -578,13 +572,10 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelMedium.ResourceReference()), "warehouse_size", r.ShowOutputAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelMedium.ResourceReference()), "warehouse_size", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseSizeSmall)), sdk.String(string(sdk.WarehouseSizeMedium))),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelMedium.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelMedium.ResourceReference()), "warehouse_size", string(sdk.WarehouseSizeMedium))),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelMedium.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelMedium.ResourceReference()), "show_output.0.size", string(sdk.WarehouseSizeMedium))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeMedium),
 				),
 			},
@@ -596,13 +587,10 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						plancheck.ExpectResourceAction(replaceResourceReference(warehouseModelNoSize.ResourceReference()), plancheck.ResourceActionDestroyBeforeCreate),
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", r.ShowOutputAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", tfjson.ActionCreate, sdk.String(string(sdk.WarehouseSizeMedium)), nil),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelNoSize.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "show_output.0.size", string(sdk.WarehouseSizeXSmall))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeXSmall),
 				),
 			},
@@ -613,13 +601,10 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelSmallLowercase.ResourceReference()), "warehouse_size", r.ShowOutputAttributeName),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelSmallLowercase.ResourceReference()), "warehouse_size", tfjson.ActionUpdate, nil, sdk.String(strings.ToLower(string(sdk.WarehouseSizeSmall)))),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelSmallLowercase.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSmallLowercase.ResourceReference()), "warehouse_size", strings.ToLower(string(sdk.WarehouseSizeSmall)))),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSmallLowercase.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSmallLowercase.ResourceReference()), "show_output.0.size", string(sdk.WarehouseSizeSmall))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeSmall),
 				),
 			},
@@ -634,15 +619,11 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						plancheck.ExpectNonEmptyPlan(),
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", r.ShowOutputAttributeName),
 						planchecks.ExpectDrift(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", sdk.String(strings.ToLower(string(sdk.WarehouseSizeSmall))), sdk.String(string(sdk.WarehouseSizeXSmall))),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "show_output.0.size", sdk.String(string(sdk.WarehouseSizeSmall)), sdk.String(string(sdk.WarehouseSizeXSmall))),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", tfjson.ActionCreate, sdk.String(string(sdk.WarehouseSizeXSmall)), nil),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelNoSize.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "show_output.0.size", string(sdk.WarehouseSizeXSmall))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeXSmall),
 				),
 			},
@@ -658,15 +639,11 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						plancheck.ExpectNonEmptyPlan(),
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", r.ShowOutputAttributeName),
 						planchecks.ExpectDrift(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", nil, sdk.String(string(sdk.WarehouseSizeSmall))),
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "show_output.0.size", sdk.String(string(sdk.WarehouseSizeXSmall)), sdk.String(string(sdk.WarehouseSizeSmall))),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", tfjson.ActionCreate, sdk.String(string(sdk.WarehouseSizeSmall)), nil),
-						planchecks.ExpectComputed(replaceResourceReference(warehouseModelNoSize.ResourceReference()), r.ShowOutputAttributeName, true),
 					},
 				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "show_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "show_output.0.size", string(sdk.WarehouseSizeXSmall))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeXSmall),
 				),
 			},
@@ -677,8 +654,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "warehouse_size", string(sdk.WarehouseSizeXSmall)),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.size", string(sdk.WarehouseSizeXSmall)),
 				),
 			},
 		},
@@ -745,65 +720,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Validations(t *testing.T) 
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidMaxConcurrencyLevel)),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected max_concurrency_level to be at least \(1\), got -2`),
-			},
-		},
-	})
-}
-
-// Just for the experimental purposes
-func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ValidateDriftForCurrentWarehouse(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.ConfigureClientOnce)
-
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	secondId := testClient().Ids.RandomAccountObjectIdentifier()
-
-	warehouseModel := model.Warehouse("test", id.Name())
-	secondWarehouseModel := model.Warehouse("test2", secondId.Name())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: nil,
-		Steps: []resource.TestStep{
-			{
-				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel)),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.0.is_current", "true"),
-				),
-			},
-			{
-				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel, secondWarehouseModel)),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(replaceResourceReference(warehouseModel.ResourceReference()), plancheck.ResourceActionNoop),
-						plancheck.ExpectResourceAction(replaceResourceReference(secondWarehouseModel.ResourceReference()), plancheck.ResourceActionCreate),
-					},
-				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.0.is_current", "true"),
-
-					resource.TestCheckResourceAttr(replaceResourceReference(secondWarehouseModel.ResourceReference()), "show_output.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(secondWarehouseModel.ResourceReference()), "show_output.0.is_current", "true"),
-				),
-			},
-			{
-				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel, secondWarehouseModel)),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectDrift(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.0.is_current", sdk.String("true"), sdk.String("false")),
-						plancheck.ExpectResourceAction(replaceResourceReference(warehouseModel.ResourceReference()), plancheck.ResourceActionNoop),
-						plancheck.ExpectResourceAction(replaceResourceReference(secondWarehouseModel.ResourceReference()), plancheck.ResourceActionNoop),
-					},
-				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.#", "1"),
-					resource.TestCheckResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "show_output.0.is_current", "false"),
-				),
 			},
 		},
 	})
