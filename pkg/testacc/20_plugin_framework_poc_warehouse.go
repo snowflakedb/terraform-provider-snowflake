@@ -570,20 +570,18 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 
 	// Change name separately
 	if !plan.Name.Equal(state.Name) {
-		{
-			newId := sdk.NewAccountObjectIdentifier(plan.Name.ValueString())
+		newId := sdk.NewAccountObjectIdentifier(plan.Name.ValueString())
 
-			err := r.client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-				NewName: &newId,
-			})
-			if err != nil {
-				response.Diagnostics.AddError("Could not rename warehouse PoC", err.Error())
-				return
-			}
-
-			plan.Id = types.StringValue(helpers.EncodeResourceIdentifier(id))
-			id = newId
+		err := r.client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
+			NewName: &newId,
+		})
+		if err != nil {
+			response.Diagnostics.AddError("Could not rename warehouse PoC", err.Error())
+			return
 		}
+
+		plan.Id = types.StringValue(helpers.EncodeResourceIdentifier(newId))
+		id = newId
 	}
 
 	// Batch SET operations and UNSET operations

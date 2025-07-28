@@ -10,6 +10,8 @@
 // WarehouseShowOutput assertions were removed or replaced with Snowflake object assertions.
 // WarehouseResourceParameters assertions were removed or replaced with Snowflake parameters assertions.
 // Default extensions were removed as they don't match.
+// Expectations for tests utilizing IgnoreChangeToCurrentSnowflakeValueInShow were adjusted.
+// Computed expectations for parameters were removed.
 package testacc
 
 import (
@@ -206,9 +208,28 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(replaceResourceReference(warehouseModelRenamedFullWithoutParameters.ResourceReference()), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
-						plancheck.ExpectEmptyPlan(),
+						plancheck.ExpectNonEmptyPlan(),
 					},
 				},
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModel.ResourceReference())).
+						HasNameString(warehouseId2.Name()).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
+						HasWarehouseSizeString(string(sdk.WarehouseSizeXSmall)).
+						HasMaxClusterCountString("1").
+						HasMinClusterCountString("1").
+						HasScalingPolicyString(string(sdk.ScalingPolicyStandard)).
+						HasAutoSuspendString("600").
+						HasAutoResumeString(r.BooleanTrue).
+						HasInitiallySuspendedString(r.BooleanFalse).
+						HasNoResourceMonitor().
+						HasCommentString(comment).
+						HasEnableQueryAccelerationString(r.BooleanFalse).
+						HasQueryAccelerationMaxScaleFactorString("8").
+						HasNoMaxConcurrencyLevel().
+						HasNoStatementQueuedTimeoutInSeconds().
+						HasNoStatementTimeoutInSeconds(),
+				),
 			},
 			// add parameters - update expected (different level even with same values)
 			{
