@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -11,19 +12,28 @@ import (
 )
 
 type RestApiPocConfig struct {
-	// TODO [this PR]: fill config out
+	Account string
+	Token   string
 }
 
 func RestApiPocConfigFromDriverConfig(driverConfig *gosnowflake.Config) (*RestApiPocConfig, error) {
-	res := &RestApiPocConfig{}
+	res := &RestApiPocConfig{
+		Account: driverConfig.Account,
+	}
+	if driverConfig.Token == "" {
+		return nil, fmt.Errorf("token is currently required for REST API PoC client initialization")
+	} else {
+		res.Token = driverConfig.Token
+	}
 
 	return res, nil
 }
 
-// TODO [this PR]: build url (account + /api/v2/)
 func NewRestApiPocClient(config *RestApiPocConfig) (*RestApiPocClient, error) {
 	c := &RestApiPocClient{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
+		url:        fmt.Sprintf("https://%s.snowflakecomputing.com/api/v2/", config.Account),
+		token:      config.Token,
 	}
 
 	c.Warehouses = warehousesPoc{client: c}
@@ -34,6 +44,7 @@ func NewRestApiPocClient(config *RestApiPocConfig) (*RestApiPocClient, error) {
 type RestApiPocClient struct {
 	httpClient *http.Client
 	url        string
+	token      string
 
 	Warehouses WarehousesPoc
 }
