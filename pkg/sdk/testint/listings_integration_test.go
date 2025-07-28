@@ -306,8 +306,7 @@ func TestInt_Listings(t *testing.T) {
 			objectassert.Listing(t, listing.ID()).
 				HasTitle(title).
 				HasSubtitle("different_subtitle").
-				HasNoComment(),
-			// Should be HasComment(comment), but it seems the comment is not set on alter or this comment is set somewhere else
+				HasComment(comment),
 		)
 	})
 
@@ -509,7 +508,7 @@ func TestInt_Listings(t *testing.T) {
 		assert.False(t, *listingDetails.IsShare)
 		assert.Nil(t, listingDetails.RequestApprovalType)
 		assert.Empty(t, *listingDetails.MonetizationDisplayOrder)
-		assert.Empty(t, *listingDetails.LegacyUniformListingLocators)
+		assert.Nil(t, listingDetails.LegacyUniformListingLocators)
 	})
 
 	// TODO(SNOW-2220593): Test describe with revisions
