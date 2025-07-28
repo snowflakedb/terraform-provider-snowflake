@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -49,23 +50,35 @@ type RestApiPocClient struct {
 	Warehouses WarehousesPoc
 }
 
-// TODO [this PR]: token
-// TODO [this PR]: move parts to client
+func (c *RestApiPocClient) doRequest(ctx context.Context, method string, path string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, method, c.url+"/"+path, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
+	req.Header.Add("X-Snowflake-Authorization-Token-Type", "PROGRAMMATIC_ACCESS_TOKEN")
+
+	return c.httpClient.Do(req)
+}
+
+func post[T any](ctx context.Context, client *RestApiPocClient, path string, object T) (*Response, error) {
+	return postOrPut(ctx, client, http.MethodPost, path, object)
+}
+
+func put[T any](ctx context.Context, client *RestApiPocClient, path string, object T) (*Response, error) {
+	return postOrPut(ctx, client, http.MethodPut, path, object)
+}
+
 // TODO [this PR]: add status codes handling
-func post[T any](ctx context.Context, httpClient *http.Client, url string, path string, object T) (*Response, error) {
+func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method string, path string, object T) (*Response, error) {
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(object)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url+"/"+path, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer token")
 
-	resp, err := httpClient.Do(req)
+	resp, err := client.doRequest(ctx, method, path, body)
 	if err != nil {
 		return nil, err
 	}

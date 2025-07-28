@@ -51,7 +51,7 @@ type warehousesPoc struct {
 }
 
 func (w warehousesPoc) Create(ctx context.Context, req WarehouseApiModel) error {
-	_, err := post(ctx, w.client.httpClient, w.client.url, "warehouses", req)
+	_, err := post(ctx, w.client, "warehouses", req)
 	if err != nil {
 		return fmt.Errorf("warehousesPoc.Create: %w", err)
 	}
@@ -59,7 +59,11 @@ func (w warehousesPoc) Create(ctx context.Context, req WarehouseApiModel) error 
 }
 
 func (w warehousesPoc) CreateOrAlter(ctx context.Context, req WarehouseApiModel) error {
-	panic("implement me")
+	_, err := put(ctx, w.client, fmt.Sprintf("warehouses/%s", req.Name.Name()), req)
+	if err != nil {
+		return fmt.Errorf("warehousesPoc.CreateOrAlter(%s): %w", req.Name.Name(), err)
+	}
+	return nil
 }
 
 func (w warehousesPoc) GetByID(ctx context.Context, id sdk.AccountObjectIdentifier) (*WarehouseApiModel, error) {
