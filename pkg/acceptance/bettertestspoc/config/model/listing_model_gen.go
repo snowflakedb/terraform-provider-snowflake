@@ -30,24 +30,26 @@ type ListingModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
+// Adjusted manually
 func Listing(
 	resourceName string,
 	name string,
-	manifest []tfconfig.Variable,
+	manifest tfconfig.Variable,
 ) *ListingModel {
 	l := &ListingModel{ResourceModelMeta: config.Meta(resourceName, resources.Listing)}
 	l.WithName(name)
-	l.WithManifest(manifest)
+	l.WithManifestValue(manifest)
 	return l
 }
 
+// Adjusted manually
 func ListingWithDefaultMeta(
 	name string,
-	manifest []tfconfig.Variable,
+	manifest tfconfig.Variable,
 ) *ListingModel {
 	l := &ListingModel{ResourceModelMeta: config.DefaultMeta(resources.Listing)}
 	l.WithName(name)
-	l.WithManifest(manifest)
+	l.WithManifestValue(manifest)
 	return l
 }
 
