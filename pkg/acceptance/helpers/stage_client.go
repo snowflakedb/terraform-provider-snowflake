@@ -161,16 +161,11 @@ func (c *StageClient) RemoveFromStageFunc(t *testing.T, stageLocation string, pa
 
 func (c *StageClient) PutOnStageWithContent(t *testing.T, id sdk.SchemaObjectIdentifier, filename string, content string) {
 	t.Helper()
-	c.PutOnStageDirectoryWithContent(t, id, filename, "", content)
-}
-
-func (c *StageClient) PutOnStageDirectoryWithContent(t *testing.T, id sdk.SchemaObjectIdentifier, filename string, targetDirectory string, content string) {
-	t.Helper()
 	ctx := context.Background()
 
 	filePath := testhelpers.TestFile(t, filename, []byte(content))
 
-	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s @%s/%s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, id.FullyQualifiedName(), targetDirectory))
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s @%s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, id.FullyQualifiedName()))
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf(`REMOVE @%s/%s`, id.FullyQualifiedName(), filename))

@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -35,8 +35,9 @@ func (c *ListingClient) CreateWithId(t *testing.T, id sdk.AccountObjectIdentifie
 	t.Helper()
 	ctx := context.Background()
 
+	manifest, _ := c.BasicManifest(t)
 	err := c.client().Create(ctx, sdk.NewCreateListingRequest(id).
-		WithAs(c.BasicManifest(t)).
+		WithAs(manifest).
 		WithReview(false).
 		WithPublish(false),
 	)
@@ -61,9 +62,7 @@ func (c *ListingClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) f
 	ctx := context.Background()
 
 	return func() {
-		if err := c.client().DropSafely(ctx, id); !errors.Is(err, sdk.ErrObjectNotFound) {
-			assert.NoError(t, err)
-		}
+		assert.NoError(t, c.client().DropSafely(ctx, id))
 	}
 }
 
@@ -72,12 +71,38 @@ func (c *ListingClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk
 	return c.client().ShowByID(context.Background(), id)
 }
 
-func (c *ListingClient) BasicManifest(t *testing.T) string {
+func (c *ListingClient) BasicManifest(t *testing.T) (string, string) {
 	t.Helper()
-	return `title: "title"
+	title := c.ids.WithTestObjectSuffix("basic_")
+	return fmt.Sprintf(`title: "%s"
 subtitle: "subtitle"
 description: "description"
 listing_terms:
   type: "OFFLINE"
-`
+`, title), title
+}
+
+func (c *ListingClient) BasicManifestWithDifferentSubtitle(t *testing.T) (string, string) {
+	t.Helper()
+	title := c.ids.WithTestObjectSuffix("with_diff_subtitle_")
+	return fmt.Sprintf(`title: "%s"
+subtitle: "different_subtitle"
+description: "description"
+listing_terms:
+  type: "OFFLINE"
+`, title), title
+}
+
+func (c *ListingClient) BasicManifestWithTargetAccount(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	title := c.ids.WithTestObjectSuffix("with_target_accounts_")
+	return fmt.Sprintf(`
+title: "%s"
+subtitle: "subtitle"
+description: "description"
+listing_terms:
+  type: "OFFLINE"
+targets:
+  accounts: [%s.%s]
+`, title, targetAccount.OrganizationName(), targetAccount.AccountName()), title
 }

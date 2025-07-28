@@ -29,13 +29,11 @@ func (v *listings) Drop(ctx context.Context, request *DropListingRequest) error 
 
 func (v *listings) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
 	// Adjusted manually
-	l, err := v.ShowByIDSafely(ctx, id)
-	if err != nil {
-		return err
-	}
-	if l.State == ListingStatePublished {
-		if err := v.Alter(ctx, NewAlterListingRequest(id).WithUnpublish(true)); err != nil {
-			return err
+	if l, err := v.ShowByIDSafely(ctx, id); err == nil {
+		if l.State == ListingStatePublished {
+			if err := v.Alter(ctx, NewAlterListingRequest(id).WithIfExists(true).WithUnpublish(true)); err != nil {
+				return err
+			}
 		}
 	}
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropListingRequest(id).WithIfExists(true)) }, ctx, id)
@@ -65,10 +63,8 @@ func (v *listings) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifie
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *listings) Describe(ctx context.Context, id AccountObjectIdentifier) (*ListingDetails, error) {
-	opts := &DescribeListingOptions{
-		name: id,
-	}
+func (v *listings) Describe(ctx context.Context, request *DescribeListingRequest) (*ListingDetails, error) {
+	opts := request.toOpts()
 	result, err := validateAndQueryOne[listingDetailsDBRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err

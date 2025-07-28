@@ -339,8 +339,9 @@ var ListingsDef = g.NewInterface(
 			OptionalLimitFrom(),
 	).
 	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering).
-	DescribeOperation(
-		g.DescriptionMappingKindSingleValue,
+	CustomShowOperation(
+		"Describe",
+		g.ShowMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-listing",
 		listingDetailsDbRow,
 		listingDetails,
@@ -367,7 +368,6 @@ var ListingsDef = g.NewInterface(
 
 	// TODO(next prs): Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface
 	// TODO(next prs): Show available listings
-	// TODO(next prs): Show versions in listing
 	// TODO(next prs): Describe available listing
 	// TODO(next prs): Listing manifest builder - https://docs.snowflake.com/en/progaccess/listing-manifest-reference
 	// TODO(next prs): Test mapping functions (ToListingRevision and ToListingState)
