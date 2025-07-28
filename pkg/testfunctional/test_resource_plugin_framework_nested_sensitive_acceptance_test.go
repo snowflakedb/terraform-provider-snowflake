@@ -7,6 +7,9 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -33,6 +36,12 @@ func TestAcc_TerraformPluginFrameworkFunctional_NestedSensitive(t *testing.T) {
 			},
 			{
 				Config: nestedSensitiveConfigMarked(id, resourceType),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectSensitiveValue(resourceReference, tfjsonpath.New("output").AtSliceIndex(0).AtMapKey("string_sensitive")),
+						plancheck.ExpectKnownOutputValue("nested_sensitive", knownvalue.StringExact("SECRET")),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceReference, "id", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceReference, "output.0.string_sensitive", "SECRET"),
@@ -45,18 +54,18 @@ func TestAcc_TerraformPluginFrameworkFunctional_NestedSensitive(t *testing.T) {
 func nestedSensitiveConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
 	return nestedSensitiveResourceConfig(id, resourceType) + fmt.Sprintf(`
 output "nested_sensitive" {
-  value = resource.%[2]s.test.output[0].string_sensitive
+  value = resource.%s.test.output[0].string_sensitive
 }
-`, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
+`, resourceType)
 }
 
 func nestedSensitiveConfigMarked(id sdk.AccountObjectIdentifier, resourceType string) string {
 	return nestedSensitiveResourceConfig(id, resourceType) + fmt.Sprintf(`
 output "nested_sensitive" {
-  value = resource.%[2]s.test.output[0].string_sensitive
+  value = resource.%s.test.output[0].string_sensitive
   sensitive = true
 }
-`, id.Name(), resourceType, PluginFrameworkFunctionalTestsProviderName)
+`, resourceType)
 }
 
 func nestedSensitiveResourceConfig(id sdk.AccountObjectIdentifier, resourceType string) string {
