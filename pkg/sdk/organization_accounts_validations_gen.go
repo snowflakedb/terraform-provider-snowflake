@@ -44,13 +44,13 @@ func (opts *AlterOrganizationAccountOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterOrganizationAccountOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo", "DropOldUrl"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.Parameters, opts.Set.ResourceMonitor, opts.Set.PasswordPolicy, opts.Set.SessionPolicy) {
-			errs = append(errs, errAtLeastOneOf("AlterOrganizationAccountOptions.Set", "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"))
+		if !exactlyOneValueSet(opts.Set.Parameters, opts.Set.ResourceMonitor, opts.Set.PasswordPolicy, opts.Set.SessionPolicy, opts.Set.Comment) {
+			errs = append(errs, errExactlyOneOf("AlterOrganizationAccountOptions.Set", "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.Parameters, opts.Unset.ResourceMonitor, opts.Unset.PasswordPolicy, opts.Unset.SessionPolicy) {
-			errs = append(errs, errAtLeastOneOf("AlterOrganizationAccountOptions.Unset", "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"))
+		if !exactlyOneValueSet(opts.Unset.Parameters, opts.Unset.ResourceMonitor, opts.Unset.PasswordPolicy, opts.Unset.SessionPolicy, opts.Unset.Comment) {
+			errs = append(errs, errExactlyOneOf("AlterOrganizationAccountOptions.Unset", "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

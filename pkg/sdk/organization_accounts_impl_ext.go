@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 )
 
 func (v *organizationAccounts) ShowParameters(ctx context.Context) ([]*Parameter, error) {
@@ -27,11 +26,11 @@ func (v *organizationAccounts) UnsetPolicySafely(ctx context.Context, kind Polic
 	case PolicyKindSessionPolicy:
 		unset.WithSessionPolicy(true)
 	default:
-		return fmt.Errorf("policy kind %s is not supported for account policies", kind)
+		return fmt.Errorf("policy kind %s is not supported for organization account policies", kind)
 	}
 	err := v.client.OrganizationAccounts.Alter(ctx, NewAlterOrganizationAccountRequest().WithUnset(*unset))
 	// If the policy is not attached to the account, Snowflake returns an error.
-	if err != nil && strings.Contains(err.Error(), fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", kind)) {
+	if errors.Is(err, ErrPolicyNotAttachedToAccount) {
 		return nil
 	}
 	return err

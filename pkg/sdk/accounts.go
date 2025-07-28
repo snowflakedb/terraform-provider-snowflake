@@ -784,7 +784,7 @@ func (c *accounts) UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
 	}
 	err := c.client.Accounts.Alter(ctx, &AlterAccountOptions{Unset: unset})
 	// If the policy is not attached to the account, Snowflake returns an error.
-	if err != nil && strings.Contains(err.Error(), fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", kind)) {
+	if errors.Is(err, ErrPolicyNotAttachedToAccount) {
 		return nil
 	}
 	return err

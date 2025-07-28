@@ -23,6 +23,11 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.3.0 ➞ v2.4.0
 
+### *(new feature)* snowflake_current_organization_account resource
+Added a new preview resource for managing the organization account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ORGANIZATION ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-organization-account). You can read about the resource limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_organization_account_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* Handling Programmatic Access Tokens
 As we announced in our [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#pat-support), we implemented handling Programmatic Access Tokens (PATs) in the provider. In [v2.3.0](#v220--v230), we already added `PROGRAMMATIC_ACCESS_TOKEN` authenticator option.
 In this version, we enhanced the provider capabilities with handling PATs in a new resource and data source. See more in our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#pat-personal-access-token).
@@ -37,7 +42,7 @@ Added a new preview resource for managing users' programmatic access tokens. See
 
 This resource also supports token rotation. See our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#managing-pats) and the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/resources/user_programmatic_access_token).
 
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token` to `preview_features_enabled` field in the provider configuration.
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token_resource` to `preview_features_enabled` field in the provider configuration.
 
 ## v2.2.0 ➞ v2.3.0
 

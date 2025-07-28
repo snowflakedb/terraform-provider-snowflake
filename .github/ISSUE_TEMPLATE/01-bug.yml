@@ -138,6 +138,7 @@ body:
         - resource:compute_pool
         - resource:cortex_search_service
         - resource:current_account
+        - resource:current_organization_account
         - resource:database
         - resource:database_role
         - resource:dynamic_table
