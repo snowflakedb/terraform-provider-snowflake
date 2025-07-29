@@ -163,6 +163,7 @@ func (r *WarehouseResource) Metadata(_ context.Context, request resource.Metadat
 }
 
 // TODO [mux-PR]: suppress identifier quoting
+// TODO [mux-PR]: support all identifier types
 // TODO [mux-PR]: show_output and parameters
 func (r *WarehouseResource) attributes() map[string]schema.Attribute {
 	existingWarehouseSchema := resources.Warehouse().Schema

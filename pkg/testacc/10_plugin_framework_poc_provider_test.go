@@ -7,6 +7,7 @@ import (
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	sdkV2Provider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -118,8 +119,11 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 	accTestLog.Printf("[DEBUG] No cached terraform plugin framework PoC provider configuration found or caching is not enabled; configuring a new provider")
 
 	providerCtx, clientErrorDiag := p.configureWithoutCache(ctx, request, response)
+	if clientErrorDiag.HasError() {
+		response.Diagnostics.Append(clientErrorDiag...)
+	}
 
-	if providerCtx != nil && accTestEnabled && oswrapper.Getenv("SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES") == "true" {
+	if providerCtx != nil && accTestEnabled && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
 		providerCtx.EnabledFeatures = previewfeatures.AllPreviewFeatures
 	}
 
@@ -132,41 +136,38 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 		configureClientErrorPluginFrameworkDiag = make(diag.Diagnostics, 0)
 	}
 	// no last configured provider
-
-	if clientErrorDiag.HasError() {
-		response.Diagnostics.Append(clientErrorDiag...)
-	}
 }
 
 func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) (*internalprovider.Context, diag.Diagnostics) {
 	var configModel pluginFrameworkPocProviderModelV0
+	diags := diag.Diagnostics{}
 
 	// Read configuration data into model
-	response.Diagnostics.Append(request.Config.Get(ctx, &configModel)...)
-	if response.Diagnostics.HasError() {
-		return nil, response.Diagnostics
+	diags.Append(request.Config.Get(ctx, &configModel)...)
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	config, err := p.getDriverConfigFromTerraform(configModel)
 	if err != nil {
-		response.Diagnostics.AddError("Could not read the Terraform config", err.Error())
-		return nil, response.Diagnostics
+		diags.AddError("Could not read the Terraform config", err.Error())
+		return nil, diags
 	}
 
 	// TODO [mux-PR]: handle skip_toml_file_permission_verification and use_legacy_toml_file
 	if profile := getProfile(configModel); profile != "" {
 		tomlConfig, err := sdkV2Provider.GetDriverConfigFromTOML(profile, false, false)
 		if err != nil {
-			response.Diagnostics.AddError("Could not read the Toml config", err.Error())
-			return nil, response.Diagnostics
+			diags.AddError("Could not read the Toml config", err.Error())
+			return nil, diags
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
 	}
 
 	providerCtx := &internalprovider.Context{}
 	if client, err := sdk.NewClient(config); err != nil {
-		response.Diagnostics.AddError("Could not initialize client", err.Error())
-		return nil, response.Diagnostics
+		diags.AddError("Could not initialize client", err.Error())
+		return nil, diags
 	} else {
 		providerCtx.Client = client
 	}
