@@ -280,6 +280,26 @@ func TestInt_Listings(t *testing.T) {
 				HasState(sdk.ListingStateUnpublished).
 				HasNoReviewState(),
 		)
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true))
+		assert.NoError(t, err)
+
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasTitle(basicManifestWithTargetTitle).
+				HasState(sdk.ListingStateUnpublished).
+				HasNoReviewState(),
+		)
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true))
+		assert.NoError(t, err)
+
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasTitle(basicManifestWithTargetTitle).
+				HasState(sdk.ListingStatePublished).
+				HasNoReviewState(),
+		)
 	})
 
 	t.Run("alter: change manifest with optional values", func(t *testing.T) {
@@ -326,7 +346,8 @@ func TestInt_Listings(t *testing.T) {
 		)
 
 		err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).
-			WithAddVersion(*sdk.NewAddListingVersionRequest("v2", basicManifestWithDifferentSubtitleStageLocation).
+			WithAddVersion(*sdk.NewAddListingVersionRequest(basicManifestWithDifferentSubtitleStageLocation).
+				WithVersionName("v2").
 				WithIfNotExists(true).
 				WithComment(comment)))
 		assert.NoError(t, err)

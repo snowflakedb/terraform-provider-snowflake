@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -197,20 +196,16 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		req.WithFrom(sdk.NewStageLocation(stage, location))
 	}
 
-	if v, ok := d.GetOk("share"); ok {
-		share, err := sdk.ParseAccountObjectIdentifier(v.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithWith(*sdk.NewListingWithRequest().WithShare(share))
+	withReq := sdk.NewListingWithRequest()
+	if errs := errors.Join(
+		attributeMappedValueCreateBuilder(d, "share", withReq.WithShare, sdk.ParseAccountObjectIdentifier),
+		attributeMappedValueCreateBuilder(d, "application_package", withReq.WithApplicationPackage, sdk.ParseAccountObjectIdentifier),
+	); errs != nil {
+		return diag.FromErr(errs)
 	}
 
-	if v, ok := d.GetOk("application_package"); ok {
-		share, err := sdk.ParseAccountObjectIdentifier(v.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithWith(*sdk.NewListingWithRequest().WithShare(share))
+	if withReq != sdk.NewListingWithRequest() {
+		req.WithWith(*withReq)
 	}
 
 	if err := client.Listings.Create(ctx, req); err != nil {
@@ -247,7 +242,16 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	if d.HasChange("manifest") {
 		if d.HasChange("manifest.0.from_string") {
 			if manifest := d.Get("manifest.0.from_string").(string); manifest != "" {
-				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAlterListingAs(*sdk.NewAlterListingAsRequest(manifest))); err != nil {
+				req := sdk.NewAlterListingAsRequest(manifest)
+
+				if errs := errors.Join(
+					booleanStringAttributeCreate(d, "review", &req.Review),
+					booleanStringAttributeCreate(d, "publish", &req.Publish),
+				); errs != nil {
+					return diag.FromErr(errs)
+				}
+
+				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAlterListingAs(*req)); err != nil {
 					return diag.FromErr(err)
 				}
 			}
@@ -272,11 +276,11 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 					location = l.(string)
 				}
 
-				req := sdk.NewAddListingVersionRequest("", sdk.NewStageLocation(stage, location))
+				req := sdk.NewAddListingVersionRequest(sdk.NewStageLocation(stage, location))
 
-				//if v, ok := fromStageMap["version_name"]; ok && v.(string) != "" {
-				//	req.WithVersionName(v.(string))
-				//}
+				if v, ok := fromStageMap["version_name"]; ok && v.(string) != "" {
+					req.WithVersionName(v.(string))
+				}
 
 				if v, ok := fromStageMap["version_comment"]; ok && v.(string) != "" {
 					req.WithComment(v.(string))
@@ -285,12 +289,30 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAddVersion(*req)); err != nil {
 					return diag.FromErr(err)
 				}
+
+				// TODO: Should call review and publish here (basically call the same review and publish commands as below)?
 			}
 		}
 	}
 
-	if d.HasChanges("review", "publish") {
-		// TODO: What do we do here?
+	if d.HasChanges("review") {
+		if d.Get("review").(bool) {
+			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChanges("publish") {
+		if d.Get("publish").(bool) {
+			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true)); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if d.HasChange("comment") {
@@ -331,7 +353,31 @@ func ReadListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		return diag.FromErr(err)
 	}
 
-	_ = listing
+	listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// TODO: It can be done as YAML is returned from the describe.
+	// TODO: Do we want to detect changes in manifest?
+	// TODO: Manifest (but only if inlined?)
+	if _, ok := d.GetOk("manifest.0.from_string"); ok {
+		if err := d.Set("manifest.0.from_string", listingDetails.ManifestYaml); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if errs := errors.Join(
+		setOptionalValueWithMapping(d, "share", listingDetails.Share, (*sdk.AccountObjectIdentifier).FullyQualifiedName),
+		setOptionalValueWithMapping(d, "application_package", listingDetails.ApplicationPackage, (*sdk.AccountObjectIdentifier).FullyQualifiedName),
+		d.Set("publish", listing.State == sdk.ListingStatePublished),
+		// TODO: d.Set("review", listingDetails.ReviewState == ?),
+		d.Set("comment", listing.Comment),
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ListingToSchema(listing)}),
+		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+	); errs != nil {
+		return diag.FromErr(errs)
+	}
 
 	return nil
 }
