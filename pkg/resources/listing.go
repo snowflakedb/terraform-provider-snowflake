@@ -97,16 +97,10 @@ var listingSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
-	"review": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Determines if the listing should be submitted for Marketplace Ops review when a new manifest version is specified.",
-		Default:     BooleanDefault,
-	},
 	"publish": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Determines if the listing should be published immediately after it receives approval from Marketplace Ops review and a new manifest version is specified.",
+		Description: "Determines if the listing should be published.",
 		Default:     BooleanDefault,
 	},
 	"comment": {
