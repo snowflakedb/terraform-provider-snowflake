@@ -27,19 +27,19 @@ type WarehouseApiModel struct {
 	Name string `json:"name"`
 
 	// optional attributes
-	WarehouseType                   *sdk.WarehouseType           `json:"warehouse_type,omitempty"`
-	WarehouseSize                   *sdk.WarehouseSize           `json:"warehouse_size,omitempty"`
-	WaitForCompletion               *bool                        `json:"wait_for_completion,omitempty"`
-	MaxClusterCount                 *int                         `json:"max_cluster_count,omitempty"`
-	MinClusterCount                 *int                         `json:"min_cluster_count,omitempty"`
-	ScalingPolicy                   *sdk.ScalingPolicy           `json:"scaling_policy,omitempty"`
-	AutoSuspend                     *int                         `json:"auto_suspend,omitempty"`
-	AutoResume                      *bool                        `json:"auto_resume,omitempty"`
-	InitiallySuspended              *bool                        `json:"initially_suspended,omitempty"`
-	ResourceMonitor                 *sdk.AccountObjectIdentifier `json:"resource_monitor,omitempty"`
-	Comment                         *string                      `json:"comment,omitempty"`
-	EnableQueryAcceleration         *bool                        `json:"enable_query_acceleration,omitempty"`
-	QueryAccelerationMaxScaleFactor *int                         `json:"query_acceleration_max_scale_factor,omitempty"`
+	WarehouseType                   *sdk.WarehouseType `json:"warehouse_type,omitempty"`
+	WarehouseSize                   *sdk.WarehouseSize `json:"warehouse_size,omitempty"`
+	WaitForCompletion               *string            `json:"wait_for_completion,omitempty"`
+	MaxClusterCount                 *int               `json:"max_cluster_count,omitempty"`
+	MinClusterCount                 *int               `json:"min_cluster_count,omitempty"`
+	ScalingPolicy                   *sdk.ScalingPolicy `json:"scaling_policy,omitempty"`
+	AutoSuspend                     *int               `json:"auto_suspend,omitempty"`
+	AutoResume                      *string            `json:"auto_resume,omitempty"`
+	InitiallySuspended              *string            `json:"initially_suspended,omitempty"`
+	ResourceMonitor                 *string            `json:"resource_monitor,omitempty"`
+	Comment                         *string            `json:"comment,omitempty"`
+	EnableQueryAcceleration         *string            `json:"enable_query_acceleration,omitempty"`
+	QueryAccelerationMaxScaleFactor *int               `json:"query_acceleration_max_scale_factor,omitempty"`
 
 	// optional parameters
 	MaxConcurrencyLevel             *int `json:"max_concurrency_level,omitempty"`

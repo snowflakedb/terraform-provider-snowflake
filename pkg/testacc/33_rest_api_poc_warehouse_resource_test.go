@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -49,7 +50,7 @@ type WarehouseRestApiPocParametersPrivateJson struct {
 	StatementTimeoutInSeconds       int `json:"statement_timeout_in_seconds,omitempty"`
 }
 
-func warehouseRestApiPocPrivateJsonFromWarehouseApiModel(warehouse *WarehouseApiModel) *WarehouseRestApiPocPrivateJson {
+func warehouseRestApiPocPrivateJsonFromWarehouseApiModel(warehouse *WarehouseApiModel) (*WarehouseRestApiPocPrivateJson, error) {
 	privateJson := &WarehouseRestApiPocPrivateJson{}
 	if warehouse.WarehouseType != nil {
 		privateJson.WarehouseType = *warehouse.WarehouseType
@@ -70,13 +71,21 @@ func warehouseRestApiPocPrivateJsonFromWarehouseApiModel(warehouse *WarehouseApi
 		privateJson.AutoSuspend = *warehouse.AutoSuspend
 	}
 	if warehouse.AutoResume != nil {
-		privateJson.AutoResume = *warehouse.AutoResume
+		v, err := strconv.ParseBool(*warehouse.AutoResume)
+		if err != nil {
+			return nil, err
+		}
+		privateJson.AutoResume = v
 	}
 	if warehouse.ResourceMonitor != nil {
-		privateJson.ResourceMonitor = warehouse.ResourceMonitor.Name()
+		privateJson.ResourceMonitor = *warehouse.ResourceMonitor
 	}
 	if warehouse.EnableQueryAcceleration != nil {
-		privateJson.EnableQueryAcceleration = *warehouse.EnableQueryAcceleration
+		v, err := strconv.ParseBool(*warehouse.EnableQueryAcceleration)
+		if err != nil {
+			return nil, err
+		}
+		privateJson.EnableQueryAcceleration = v
 	}
 	if warehouse.QueryAccelerationMaxScaleFactor != nil {
 		privateJson.QueryAccelerationMaxScaleFactor = *warehouse.QueryAccelerationMaxScaleFactor
@@ -90,11 +99,14 @@ func warehouseRestApiPocPrivateJsonFromWarehouseApiModel(warehouse *WarehouseApi
 	if warehouse.StatementTimeoutInSeconds != nil {
 		privateJson.StatementTimeoutInSeconds = *warehouse.StatementTimeoutInSeconds
 	}
-	return privateJson
+	return privateJson, nil
 }
 
 func marshallWarehouseRestApiPocPrivateJson(warehouseApiModel *WarehouseApiModel) ([]byte, error) {
-	warehouseJson := warehouseRestApiPocPrivateJsonFromWarehouseApiModel(warehouseApiModel)
+	warehouseJson, err := warehouseRestApiPocPrivateJsonFromWarehouseApiModel(warehouseApiModel)
+	if err != nil {
+		return nil, fmt.Errorf("could not create private json: %w", err)
+	}
 	bytes, err := json.Marshal(warehouseJson)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal json: %w", err)
@@ -171,16 +183,26 @@ func (r *WarehouseRestApiPocResource) ImportState(ctx context.Context, request r
 		data.AutoSuspend = types.Int64Value(int64(*warehouse.AutoSuspend))
 	}
 	if warehouse.AutoResume != nil {
-		data.AutoResume = types.BoolValue(*warehouse.AutoResume)
+		v, err := strconv.ParseBool(*warehouse.AutoResume)
+		if err != nil {
+			response.Diagnostics.AddError("Could not read AutoResume for Warehouse PoC", err.Error())
+		} else {
+			data.AutoResume = types.BoolValue(v)
+		}
 	}
 	if warehouse.ResourceMonitor != nil {
-		data.ResourceMonitor = types.StringValue(warehouse.ResourceMonitor.Name())
+		data.ResourceMonitor = types.StringValue(*warehouse.ResourceMonitor)
 	}
 	if warehouse.Comment != nil {
 		data.Comment = types.StringValue(*warehouse.Comment)
 	}
 	if warehouse.EnableQueryAcceleration != nil {
-		data.EnableQueryAcceleration = types.BoolValue(*warehouse.EnableQueryAcceleration)
+		v, err := strconv.ParseBool(*warehouse.EnableQueryAcceleration)
+		if err != nil {
+			response.Diagnostics.AddError("Could not read EnableQueryAcceleration for Warehouse PoC", err.Error())
+		} else {
+			data.EnableQueryAcceleration = types.BoolValue(v)
+		}
 	}
 	if warehouse.QueryAccelerationMaxScaleFactor != nil {
 		data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(*warehouse.QueryAccelerationMaxScaleFactor))
@@ -193,6 +215,9 @@ func (r *WarehouseRestApiPocResource) ImportState(ctx context.Context, request r
 	}
 	if warehouse.StatementTimeoutInSeconds != nil {
 		data.StatementTimeoutInSeconds = types.Int64Value(int64(*warehouse.QueryAccelerationMaxScaleFactor))
+	}
+	if response.Diagnostics.HasError() {
+		return
 	}
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
@@ -331,14 +356,24 @@ func (r *WarehouseRestApiPocResource) read(ctx context.Context, data *warehouseP
 		if warehouse.AutoSuspend != nil && *warehouse.AutoSuspend != prevValue.AutoSuspend {
 			data.AutoSuspend = types.Int64Value(int64(*warehouse.AutoSuspend))
 		}
-		if warehouse.AutoResume != nil && *warehouse.AutoResume != prevValue.AutoResume {
-			data.AutoResume = types.BoolValue(*warehouse.AutoResume)
+		if warehouse.AutoResume != nil && *warehouse.AutoResume != fmt.Sprintf("%t", prevValue.AutoResume) {
+			v, err := strconv.ParseBool(*warehouse.AutoResume)
+			if err != nil {
+				response.Diagnostics.AddError("Could not read AutoResume for Warehouse PoC", err.Error())
+			} else {
+				data.AutoResume = types.BoolValue(v)
+			}
 		}
-		if warehouse.ResourceMonitor.Name() != prevValue.ResourceMonitor {
-			data.ResourceMonitor = types.StringValue(warehouse.ResourceMonitor.Name())
+		if warehouse.ResourceMonitor != nil && *warehouse.ResourceMonitor != prevValue.ResourceMonitor {
+			data.ResourceMonitor = types.StringValue(*warehouse.ResourceMonitor)
 		}
-		if warehouse.EnableQueryAcceleration != nil && *warehouse.EnableQueryAcceleration != prevValue.EnableQueryAcceleration {
-			data.EnableQueryAcceleration = types.BoolValue(*warehouse.EnableQueryAcceleration)
+		if warehouse.EnableQueryAcceleration != nil && *warehouse.EnableQueryAcceleration != fmt.Sprintf("%t", prevValue.EnableQueryAcceleration) {
+			v, err := strconv.ParseBool(*warehouse.EnableQueryAcceleration)
+			if err != nil {
+				response.Diagnostics.AddError("Could not read EnableQueryAcceleration for Warehouse PoC", err.Error())
+			} else {
+				data.EnableQueryAcceleration = types.BoolValue(v)
+			}
 		}
 		if warehouse.QueryAccelerationMaxScaleFactor != nil && *warehouse.QueryAccelerationMaxScaleFactor != prevValue.QueryAccelerationMaxScaleFactor {
 			data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(*warehouse.QueryAccelerationMaxScaleFactor))
@@ -354,6 +389,10 @@ func (r *WarehouseRestApiPocResource) read(ctx context.Context, data *warehouseP
 		if warehouse.StatementTimeoutInSeconds != nil && *warehouse.StatementTimeoutInSeconds != prevValue.StatementTimeoutInSeconds {
 			data.StatementTimeoutInSeconds = types.Int64Value(int64(*warehouse.StatementTimeoutInSeconds))
 		}
+	}
+
+	if diags.HasError() {
+		return diags
 	}
 
 	bytes, err := marshallWarehouseRestApiPocPrivateJson(warehouse)
@@ -396,7 +435,7 @@ func (r *WarehouseRestApiPocResource) Update(ctx context.Context, request resour
 
 	// workaround for WaitForCompletion
 	if warehouseModel.WarehouseSize != nil {
-		warehouseModel.WaitForCompletion = sdk.Bool(true)
+		warehouseModel.WaitForCompletion = sdk.String("true")
 	}
 
 	// Put (CoA)
@@ -443,19 +482,19 @@ func (r *WarehouseRestApiPocResource) planToApiModel(plan *warehousePocModelV0) 
 		warehouseModel.AutoSuspend = sdk.Pointer(int(plan.AutoSuspend.ValueInt64()))
 	}
 	if !plan.AutoResume.IsNull() {
-		warehouseModel.AutoResume = plan.AutoResume.ValueBoolPointer()
+		warehouseModel.AutoResume = sdk.Pointer(fmt.Sprintf("%t", plan.AutoResume.ValueBool()))
 	}
 	if !plan.InitiallySuspended.IsNull() {
-		warehouseModel.InitiallySuspended = plan.InitiallySuspended.ValueBoolPointer()
+		warehouseModel.InitiallySuspended = sdk.Pointer(fmt.Sprintf("%t", plan.InitiallySuspended.ValueBool()))
 	}
 	if !plan.ResourceMonitor.IsNull() {
-		warehouseModel.ResourceMonitor = sdk.Pointer(sdk.NewAccountObjectIdentifier(plan.ResourceMonitor.ValueString()))
+		warehouseModel.ResourceMonitor = plan.ResourceMonitor.ValueStringPointer()
 	}
 	if !plan.Comment.IsNull() {
 		warehouseModel.Comment = plan.Comment.ValueStringPointer()
 	}
 	if !plan.EnableQueryAcceleration.IsNull() {
-		warehouseModel.EnableQueryAcceleration = plan.EnableQueryAcceleration.ValueBoolPointer()
+		warehouseModel.EnableQueryAcceleration = sdk.Pointer(fmt.Sprintf("%t", plan.EnableQueryAcceleration.ValueBool()))
 	}
 	if !plan.QueryAccelerationMaxScaleFactor.IsNull() {
 		warehouseModel.QueryAccelerationMaxScaleFactor = sdk.Pointer(int(plan.QueryAccelerationMaxScaleFactor.ValueInt64()))

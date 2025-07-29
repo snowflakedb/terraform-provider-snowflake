@@ -68,7 +68,7 @@ func (c *RestApiPocClient) doRequest(ctx context.Context, method string, path st
 		values.Add(k, v)
 	}
 	req.URL.RawQuery = values.Encode()
-	accTestLog.Printf("[DEBUG] Sending request %s", req.URL)
+	accTestLog.Printf("[DEBUG] Sending request [%s] %s", method, req.URL)
 
 	return c.httpClient.Do(req)
 }
@@ -81,7 +81,7 @@ func put[T any](ctx context.Context, client *RestApiPocClient, path string, obje
 	return postOrPut(ctx, client, http.MethodPut, path, object)
 }
 
-// TODO [this PR]: add status codes handling
+// TODO [mux-PR]: improve status codes handling
 func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method string, path string, object T) (*Response, error) {
 	body, err := json.Marshal(object)
 	if err != nil {
@@ -118,7 +118,7 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-// TODO [this PR]: add status codes handling
+// TODO [mux-PR]: improve status codes handling
 func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T, error) {
 	resp, err := client.doRequest(ctx, http.MethodGet, path, nil, map[string]string{})
 	if err != nil {
@@ -134,7 +134,7 @@ func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T,
 	return &response, nil
 }
 
-// TODO [this PR]: add status codes handling
+// TODO [mux-PR]: improve status codes handling
 func runDelete(ctx context.Context, client *RestApiPocClient, path string, queryParams map[string]string) (*Response, error) {
 	resp, err := client.doRequest(ctx, http.MethodDelete, path, nil, queryParams)
 	if err != nil {
@@ -142,9 +142,9 @@ func runDelete(ctx context.Context, client *RestApiPocClient, path string, query
 	}
 	defer resp.Body.Close()
 
-	var response Response
-	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	response := &Response{}
+	if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
 		return nil, err
 	}
-	return &response, nil
+	return response, nil
 }
