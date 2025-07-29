@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -21,9 +22,10 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
-	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
-
 	testClient().Grant.GrantGlobalPrivilegesOnAccount(t, userWithPat.RoleId, []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateWarehouse})
+
+	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
+	providerModel := providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
@@ -36,7 +38,7 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
 				},
-				Config: config.FromModels(t, userWithPatConfig) + warehouseRestApiPocResourceConfig(id),
+				Config: config.FromModels(t, providerModel) + warehouseRestApiPocResourceConfig(id),
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_rest_api_poc.test", "id", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_rest_api_poc.test", "fully_qualified_name", id.FullyQualifiedName())),

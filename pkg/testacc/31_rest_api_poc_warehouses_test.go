@@ -23,7 +23,8 @@ type WarehousesPoc interface {
 //   - https://docs.snowflake.com/developer-guide/snowflake-rest-api/reference/warehouse#get--api-v2-warehouses-name
 type WarehouseApiModel struct {
 	// required
-	Name sdk.AccountObjectIdentifier `json:"name"`
+	// It should be identifier but this is a simplified implementation reusing same struct for each method, can be also solved by custom marshaller.
+	Name string `json:"name"`
 
 	// optional attributes
 	WarehouseType                   *sdk.WarehouseType           `json:"warehouse_type,omitempty"`
@@ -63,9 +64,9 @@ func (w warehousesPoc) Create(ctx context.Context, req WarehouseApiModel) error 
 
 // Based on https://docs.snowflake.com/developer-guide/snowflake-rest-api/reference/warehouse#put--api-v2-warehouses-name
 func (w warehousesPoc) CreateOrAlter(ctx context.Context, req WarehouseApiModel) error {
-	_, err := put(ctx, w.client, fmt.Sprintf("warehouses/%s", req.Name.Name()), req)
+	_, err := put(ctx, w.client, fmt.Sprintf("warehouses/%s", req.Name), req)
 	if err != nil {
-		return fmt.Errorf("warehousesPoc.CreateOrAlter(%s): %w", req.Name.Name(), err)
+		return fmt.Errorf("warehousesPoc.CreateOrAlter(%s): %w", req.Name, err)
 	}
 	return nil
 }

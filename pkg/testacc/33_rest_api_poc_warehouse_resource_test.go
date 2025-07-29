@@ -422,7 +422,7 @@ func (r *WarehouseRestApiPocResource) Update(ctx context.Context, request resour
 
 func (r *WarehouseRestApiPocResource) planToApiModel(plan *warehousePocModelV0) WarehouseApiModel {
 	warehouseModel := WarehouseApiModel{
-		Name: sdk.NewAccountObjectIdentifier(plan.Name.ValueString()),
+		Name: plan.Name.ValueString(),
 	}
 	if !plan.WarehouseType.IsNull() {
 		warehouseModel.WarehouseType = sdk.Pointer(sdk.WarehouseType(plan.WarehouseType.ValueString()))

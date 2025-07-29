@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/snowflakedb/gosnowflake"
@@ -19,7 +20,7 @@ type RestApiPocConfig struct {
 
 func RestApiPocConfigFromDriverConfig(driverConfig *gosnowflake.Config) (*RestApiPocConfig, error) {
 	res := &RestApiPocConfig{
-		Account: driverConfig.Account,
+		Account: strings.ToLower(driverConfig.Account),
 	}
 	if driverConfig.Token == "" {
 		return nil, fmt.Errorf("token is currently required for REST API PoC client initialization")
@@ -52,19 +53,20 @@ type RestApiPocClient struct {
 }
 
 func (c *RestApiPocClient) doRequest(ctx context.Context, method string, path string, body io.Reader, queryParams map[string]string) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, method, c.url+"/"+path, body)
+	req, err := http.NewRequestWithContext(ctx, method, c.url+path, body)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
-	req.Header.Add("X-Snowflake-Authorization-Token-Type", "PROGRAMMATIC_ACCESS_TOKEN")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
+	req.Header.Set("X-Snowflake-Authorization-Token-Type", "PROGRAMMATIC_ACCESS_TOKEN")
 
 	values := req.URL.Query()
 	for k, v := range queryParams {
 		values.Add(k, v)
 	}
 	req.URL.RawQuery = values.Encode()
+	accTestLog.Printf("[DEBUG] Sending request %s", req.URL)
 
 	return c.httpClient.Do(req)
 }
@@ -79,22 +81,27 @@ func put[T any](ctx context.Context, client *RestApiPocClient, path string, obje
 
 // TODO [this PR]: add status codes handling
 func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method string, path string, object T) (*Response, error) {
-	body := new(bytes.Buffer)
-	err := json.NewEncoder(body).Encode(object)
+	body, err := json.Marshal(object)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := client.doRequest(ctx, method, path, body, map[string]string{})
+	resp, err := client.doRequest(ctx, method, path, bytes.NewBuffer(body), map[string]string{})
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d, %v", resp.StatusCode, resp.Header)
+	}
+
 	response := &Response{}
 	if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
 		return nil, err
 	}
+	accTestLog.Printf("[DEBUG] Response status for request %s: %s (%s)", resp.Request.URL, resp.Status, resp.Header.Get("X-Snowflake-Request-Id"))
+	accTestLog.Printf("[DEBUG] Response details %v", response)
 	return response, nil
 }
 
@@ -109,6 +116,7 @@ func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T,
 		return nil, err
 	}
 	defer resp.Body.Close()
+	accTestLog.Printf("[DEBUG] Response status for request %s: %s", resp.Request.URL, resp.Status)
 
 	var response T
 	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
@@ -117,6 +125,7 @@ func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T,
 	return &response, nil
 }
 
+// TODO [this PR]: add status codes handling
 func runDelete(ctx context.Context, client *RestApiPocClient, path string, queryParams map[string]string) (*Response, error) {
 	resp, err := client.doRequest(ctx, http.MethodDelete, path, nil, queryParams)
 	if err != nil {
