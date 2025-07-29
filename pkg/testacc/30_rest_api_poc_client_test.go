@@ -82,6 +82,7 @@ func put[T any](ctx context.Context, client *RestApiPocClient, path string, obje
 	return postOrPut(ctx, client, http.MethodPut, path, object)
 }
 
+// TODO [mux-PR]: potentially merge postOrPut, get, and handleDelete
 // TODO [mux-PR]: improve status codes handling
 func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method string, path string, object T) (*Response, error) {
 	body, err := json.Marshal(object)
@@ -149,7 +150,7 @@ func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T,
 }
 
 // TODO [mux-PR]: improve status codes handling
-func runDelete(ctx context.Context, client *RestApiPocClient, path string, queryParams map[string]string) (*Response, error) {
+func handleDelete(ctx context.Context, client *RestApiPocClient, path string, queryParams map[string]string) (*Response, error) {
 	method := http.MethodDelete
 	resp, err := client.doRequest(ctx, method, path, nil, queryParams)
 	if err != nil {

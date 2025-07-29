@@ -97,7 +97,7 @@ func (w warehousesPoc) Drop(ctx context.Context, id sdk.AccountObjectIdentifier,
 	if ifExists != nil {
 		queryParams["ifExists"] = fmt.Sprintf("%t", *ifExists)
 	}
-	_, err := runDelete(ctx, w.client, fmt.Sprintf("warehouses/%s", id.Name()), queryParams)
+	_, err := handleDelete(ctx, w.client, fmt.Sprintf("warehouses/%s", id.Name()), queryParams)
 	if err != nil {
 		return fmt.Errorf("warehousesPoc.Drop(%s): %w", id.Name(), err)
 	}
