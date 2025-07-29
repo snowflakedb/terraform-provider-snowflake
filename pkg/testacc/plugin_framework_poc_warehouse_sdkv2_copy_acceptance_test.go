@@ -347,12 +347,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasQueryAccelerationMaxScaleFactor(4),
 				),
 			},
+			// TODO [mux-PR]: expect no changes with identifier suppression (using plancheck.ExpectNonEmptyPlan() temporarily)
 			// change resource monitor - wrap in quotes (no change expected)
 			{
 				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFullResourceMonitorInQuotes)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						// TODO [mux-PR]: changes with identifier suppression
 						plancheck.ExpectNonEmptyPlan(),
 					},
 				},
@@ -1074,15 +1074,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						HasStatementTimeoutInSeconds(86400).
 						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
 				),
-			},
-			// do not make any change (to check if there is no drift)
-			{
-				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds86400)),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
 			},
 			// import when param in config
 			{

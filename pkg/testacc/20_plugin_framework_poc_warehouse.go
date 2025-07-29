@@ -108,13 +108,13 @@ func warehousePocPrivateJsonFromWarehouse(warehouse *sdk.Warehouse) *WarehousePo
 
 func warehousePocParametersPrivateJsonFromParameters(warehouseParameters []*sdk.Parameter) (*WarehousePocParametersPrivateJson, error) {
 	privateJson := &WarehousePocParametersPrivateJson{}
-	if err := marshallWarehousePocParameters(warehouseParameters, privateJson); err != nil {
+	if err := marshalWarehousePocParameters(warehouseParameters, privateJson); err != nil {
 		return nil, err
 	}
 	return privateJson, nil
 }
 
-func marshallWarehousePocPrivateJson(warehouse *sdk.Warehouse, warehouseParameters []*sdk.Parameter) ([]byte, error) {
+func marshalWarehousePocPrivateJson(warehouse *sdk.Warehouse, warehouseParameters []*sdk.Parameter) ([]byte, error) {
 	warehouseJson := warehousePocPrivateJsonFromWarehouse(warehouse)
 	if warehouseParametersJson, err := warehousePocParametersPrivateJsonFromParameters(warehouseParameters); err != nil {
 		return nil, err
@@ -128,19 +128,19 @@ func marshallWarehousePocPrivateJson(warehouse *sdk.Warehouse, warehouseParamete
 	return bytes, nil
 }
 
-func marshallWarehousePocParameters(warehouseParameters []*sdk.Parameter, privateJson *WarehousePocParametersPrivateJson) error {
+func marshalWarehousePocParameters(warehouseParameters []*sdk.Parameter, privateJson *WarehousePocParametersPrivateJson) error {
 	for _, parameter := range warehouseParameters {
 		switch parameter.Key {
 		case string(sdk.WarehouseParameterMaxConcurrencyLevel):
-			if err := marshallWarehousePocParameterInt(parameter, &privateJson.MaxConcurrencyLevel, &privateJson.MaxConcurrencyLevelLevel); err != nil {
+			if err := marshalWarehousePocParameterInt(parameter, &privateJson.MaxConcurrencyLevel, &privateJson.MaxConcurrencyLevelLevel); err != nil {
 				return err
 			}
 		case string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds):
-			if err := marshallWarehousePocParameterInt(parameter, &privateJson.StatementQueuedTimeoutInSeconds, &privateJson.StatementQueuedTimeoutInSecondsLevel); err != nil {
+			if err := marshalWarehousePocParameterInt(parameter, &privateJson.StatementQueuedTimeoutInSeconds, &privateJson.StatementQueuedTimeoutInSecondsLevel); err != nil {
 				return err
 			}
 		case string(sdk.WarehouseParameterStatementTimeoutInSeconds):
-			if err := marshallWarehousePocParameterInt(parameter, &privateJson.StatementTimeoutInSeconds, &privateJson.StatementTimeoutInSecondsLevel); err != nil {
+			if err := marshalWarehousePocParameterInt(parameter, &privateJson.StatementTimeoutInSeconds, &privateJson.StatementTimeoutInSecondsLevel); err != nil {
 				return err
 			}
 		}
@@ -148,7 +148,7 @@ func marshallWarehousePocParameters(warehouseParameters []*sdk.Parameter, privat
 	return nil
 }
 
-func marshallWarehousePocParameterInt(parameter *sdk.Parameter, field *int, levelField *sdk.ParameterType) error {
+func marshalWarehousePocParameterInt(parameter *sdk.Parameter, field *int, levelField *sdk.ParameterType) error {
 	value, err := strconv.Atoi(parameter.Value)
 	if err != nil {
 		return err
@@ -536,7 +536,7 @@ func (r *WarehouseResource) readAfterCreateOrUpdate(ctx context.Context, id sdk.
 		return nil, diags
 	}
 
-	bytes, err := marshallWarehousePocPrivateJson(warehouse, warehouseParameters)
+	bytes, err := marshalWarehousePocPrivateJson(warehouse, warehouseParameters)
 	if err != nil {
 		diags.AddError("Could not marshal json", err.Error())
 		return nil, diags
@@ -659,7 +659,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		}
 	}
 
-	bytes, err := marshallWarehousePocPrivateJson(warehouse, warehouseParameters)
+	bytes, err := marshalWarehousePocPrivateJson(warehouse, warehouseParameters)
 	if err != nil {
 		diags.AddError("Could not marshal json", err.Error())
 		return diags

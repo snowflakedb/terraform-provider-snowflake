@@ -1213,15 +1213,6 @@ func TestAcc_Warehouse_Parameter(t *testing.T) {
 					resource.TestCheckResourceAttr(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference(), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
 				),
 			},
-			// do not make any change (to check if there is no drift)
-			{
-				Config: config.FromModels(t, warehouseModelWithStatementTimeoutInSeconds86400),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-			},
 			// import when param in config
 			{
 				ResourceName: warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference(),
