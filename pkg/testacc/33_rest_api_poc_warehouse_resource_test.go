@@ -102,7 +102,7 @@ func warehouseRestApiPocPrivateJsonFromWarehouseApiModel(warehouse *WarehouseApi
 	return privateJson, nil
 }
 
-func marshallWarehouseRestApiPocPrivateJson(warehouseApiModel *WarehouseApiModel) ([]byte, error) {
+func marshalWarehouseRestApiPocPrivateJson(warehouseApiModel *WarehouseApiModel) ([]byte, error) {
 	warehouseJson, err := warehouseRestApiPocPrivateJsonFromWarehouseApiModel(warehouseApiModel)
 	if err != nil {
 		return nil, fmt.Errorf("could not create private json: %w", err)
@@ -283,7 +283,7 @@ func (r *WarehouseRestApiPocResource) readAfterCreateOrUpdate(ctx context.Contex
 		return nil, diags
 	}
 
-	bytes, err := marshallWarehouseRestApiPocPrivateJson(warehouse)
+	bytes, err := marshalWarehouseRestApiPocPrivateJson(warehouse)
 	if err != nil {
 		diags.AddError("Could not marshal json", err.Error())
 		return nil, diags
@@ -393,7 +393,7 @@ func (r *WarehouseRestApiPocResource) read(ctx context.Context, data *warehouseP
 		return diags
 	}
 
-	bytes, err := marshallWarehouseRestApiPocPrivateJson(warehouse)
+	bytes, err := marshalWarehouseRestApiPocPrivateJson(warehouse)
 	if err != nil {
 		diags.AddError("Could not marshal json", err.Error())
 		return diags
@@ -428,6 +428,7 @@ func (r *WarehouseRestApiPocResource) Update(ctx context.Context, request resour
 		plan.Id = types.StringValue(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
+	plan.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	warehouseModel := r.planToApiModel(plan)
 
@@ -441,8 +442,6 @@ func (r *WarehouseRestApiPocResource) Update(ctx context.Context, request resour
 		response.Diagnostics.AddError("Could not run create or alter in REST API PoC warehouse", err.Error())
 		return
 	}
-
-	plan.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
 	if response.Diagnostics.HasError() {
