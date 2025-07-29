@@ -173,9 +173,9 @@ func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, 
 
 	// using warnings on purpose here
 	if restApiPocConfig, err := RestApiPocConfigFromDriverConfig(config); err != nil {
-		response.Diagnostics.AddWarning("Could not initialize REST API PoC client", err.Error())
+		response.Diagnostics.AddWarning("Could not initialize REST API PoC client - config error", err.Error())
 	} else if restApiPocClient, err := NewRestApiPocClient(restApiPocConfig); err != nil {
-		response.Diagnostics.AddWarning("Could not initialize REST API PoC client", err.Error())
+		response.Diagnostics.AddWarning("Could not initialize REST API PoC client - client init error", err.Error())
 	} else {
 		providerCtx.RestApiPocClient = restApiPocClient
 	}
