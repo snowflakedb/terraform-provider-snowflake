@@ -23,7 +23,7 @@ type RestApiPocConfig struct {
 
 func RestApiPocConfigFromDriverConfig(driverConfig *gosnowflake.Config) (*RestApiPocConfig, error) {
 	res := &RestApiPocConfig{}
-	if driverConfig.Token == "" {
+	if driverConfig.Account == "" {
 		return nil, fmt.Errorf("account is currently required for REST API PoC client initialization")
 	} else {
 		res.Account = driverConfig.Account
