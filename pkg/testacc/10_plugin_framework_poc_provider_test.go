@@ -197,6 +197,7 @@ func (p *pluginFrameworkPocProvider) Resources(_ context.Context) []func() resou
 	return []func() resource.Resource{
 		NewSomeResource,
 		NewWarehousePocResource,
+		NewWarehouseRestApiPocResource,
 	}
 }
 

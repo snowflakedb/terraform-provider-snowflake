@@ -30,6 +30,7 @@ func RestApiPocConfigFromDriverConfig(driverConfig *gosnowflake.Config) (*RestAp
 	return res, nil
 }
 
+// TODO [this PR]: verify connection after creation
 func NewRestApiPocClient(config *RestApiPocConfig) (*RestApiPocClient, error) {
 	c := &RestApiPocClient{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
