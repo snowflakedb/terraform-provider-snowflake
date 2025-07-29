@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/snowflakedb/gosnowflake"
 )
 
@@ -32,7 +33,7 @@ func RestApiPocConfigFromDriverConfig(driverConfig *gosnowflake.Config) (*RestAp
 	return res, nil
 }
 
-// TODO [this PR]: verify connection after creation
+// TODO [mux-PR]: verify connection after creation
 func NewRestApiPocClient(config *RestApiPocConfig) (*RestApiPocClient, error) {
 	c := &RestApiPocClient{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
@@ -93,7 +94,7 @@ func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method stri
 		return nil, err
 	}
 	defer resp.Body.Close()
-	accTestLog.Printf("[DEBUG] Response status for request %s: %s", resp.Request.URL, resp.Status)
+	accTestLog.Printf("[DEBUG] Response status for request [%s] %s: %s", method, resp.Request.URL, resp.Status)
 
 	response := &Response{}
 	if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
@@ -119,12 +120,18 @@ type Response struct {
 
 // TODO [mux-PR]: improve status codes handling
 func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T, error) {
-	resp, err := client.doRequest(ctx, http.MethodGet, path, nil, map[string]string{})
+	method := http.MethodGet
+	resp, err := client.doRequest(ctx, method, path, nil, map[string]string{})
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	accTestLog.Printf("[DEBUG] Response status for request %s: %s", resp.Request.URL, resp.Status)
+	accTestLog.Printf("[DEBUG] Response status for request [%s] %s: %s", method, resp.Request.URL, resp.Status)
+
+	if resp.StatusCode == http.StatusNotFound {
+		// using the existing SDK error for now
+		return nil, sdk.ErrObjectNotFound
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		d, err := httputil.DumpResponse(resp, true)
@@ -143,12 +150,13 @@ func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T,
 
 // TODO [mux-PR]: improve status codes handling
 func runDelete(ctx context.Context, client *RestApiPocClient, path string, queryParams map[string]string) (*Response, error) {
-	resp, err := client.doRequest(ctx, http.MethodDelete, path, nil, queryParams)
+	method := http.MethodDelete
+	resp, err := client.doRequest(ctx, method, path, nil, queryParams)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	accTestLog.Printf("[DEBUG] Response status for request %s: %s", resp.Request.URL, resp.Status)
+	accTestLog.Printf("[DEBUG] Response status for request [%s] %s: %s", method, resp.Request.URL, resp.Status)
 
 	response := &Response{}
 	if err = json.NewDecoder(resp.Body).Decode(response); err != nil {

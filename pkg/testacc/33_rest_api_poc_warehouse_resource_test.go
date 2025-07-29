@@ -274,7 +274,6 @@ func (r *WarehouseRestApiPocResource) readAfterCreateOrUpdate(ctx context.Contex
 	client := r.client
 	warehouse, err := client.Warehouses.GetByID(ctx, id)
 	if err != nil {
-		// TODO [this PR]: handle not found here
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			state.RemoveResource(ctx)
 			diags.AddWarning("Failed to query warehouse. Marking the resource as removed.", fmt.Sprintf("Warehouse id: %s, Err: %s", id.FullyQualifiedName(), err))
@@ -313,7 +312,6 @@ func (r *WarehouseRestApiPocResource) read(ctx context.Context, data *warehouseP
 	client := r.client
 	warehouse, err := client.Warehouses.GetByID(ctx, id)
 	if err != nil {
-		// TODO [this PR]: handle not found here
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			response.State.RemoveResource(ctx)
 			diags.AddWarning("Failed to query warehouse. Marking the resource as removed.", fmt.Sprintf("Warehouse id: %s, Err: %s", id.FullyQualifiedName(), err))
