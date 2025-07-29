@@ -269,10 +269,11 @@ func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) toOpts() *Create
 
 		OauthIssueRefreshTokens:   r.OauthIssueRefreshTokens,
 		OauthRefreshTokenValidity: r.OauthRefreshTokenValidity,
-		NetworkPolicy:             securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
-		OauthClientRsaPublicKey:   r.OauthClientRsaPublicKey,
-		OauthClientRsaPublicKey2:  r.OauthClientRsaPublicKey2,
-		Comment:                   r.Comment,
+		// Adjusted manually.
+		NetworkPolicy:            securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
+		OauthClientRsaPublicKey:  r.OauthClientRsaPublicKey,
+		OauthClientRsaPublicKey2: r.OauthClientRsaPublicKey2,
+		Comment:                  r.Comment,
 	}
 	if r.PreAuthorizedRolesList != nil {
 		opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{
@@ -315,12 +316,13 @@ func (r *CreateSaml2SecurityIntegrationRequest) toOpts() *CreateSaml2SecurityInt
 
 func (r *CreateScimSecurityIntegrationRequest) toOpts() *CreateScimSecurityIntegrationOptions {
 	opts := &CreateScimSecurityIntegrationOptions{
-		OrReplace:     r.OrReplace,
-		IfNotExists:   r.IfNotExists,
-		name:          r.name,
-		Enabled:       r.Enabled,
-		ScimClient:    r.ScimClient,
-		RunAsRole:     r.RunAsRole,
+		OrReplace:   r.OrReplace,
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		Enabled:     r.Enabled,
+		ScimClient:  r.ScimClient,
+		RunAsRole:   r.RunAsRole,
+		// Adjusted manually.
 		NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
 		SyncPassword:  r.SyncPassword,
 		Comment:       r.Comment,
@@ -518,10 +520,11 @@ func (r *AlterOauthForCustomClientsSecurityIntegrationRequest) toOpts() *AlterOa
 			OauthIssueRefreshTokens:   r.Set.OauthIssueRefreshTokens,
 			OauthRefreshTokenValidity: r.Set.OauthRefreshTokenValidity,
 			OauthUseSecondaryRoles:    r.Set.OauthUseSecondaryRoles,
-			NetworkPolicy:             securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
-			OauthClientRsaPublicKey:   r.Set.OauthClientRsaPublicKey,
-			OauthClientRsaPublicKey2:  r.Set.OauthClientRsaPublicKey2,
-			Comment:                   r.Set.Comment,
+			// Adjusted manually.
+			NetworkPolicy:            securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
+			OauthClientRsaPublicKey:  r.Set.OauthClientRsaPublicKey,
+			OauthClientRsaPublicKey2: r.Set.OauthClientRsaPublicKey2,
+			Comment:                  r.Set.Comment,
 		}
 		if r.Set.PreAuthorizedRolesList != nil {
 			opts.Set.PreAuthorizedRolesList = &PreAuthorizedRolesList{
@@ -596,7 +599,8 @@ func (r *AlterScimSecurityIntegrationRequest) toOpts() *AlterScimSecurityIntegra
 	}
 	if r.Set != nil {
 		opts.Set = &ScimIntegrationSet{
-			Enabled:       r.Set.Enabled,
+			Enabled: r.Set.Enabled,
+			// Adjusted manually.
 			NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
 			SyncPassword:  r.Set.SyncPassword,
 			Comment:       r.Set.Comment,

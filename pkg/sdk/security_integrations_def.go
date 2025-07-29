@@ -512,7 +512,7 @@ var oauthForCustomClientsIntegrationSetDef = g.NewQueryStruct("OauthForCustomCli
 		g.KindOfT[OauthSecurityIntegrationUseSecondaryRolesOption](),
 		g.ParameterOptions(),
 	).
-	OptionalIdentifier("NetworkPolicy", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("NETWORK_POLICY")).
+	OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
 	OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes()).
 	OptionalComment().
@@ -567,7 +567,7 @@ var saml2IntegrationUnsetDef = g.NewQueryStruct("Saml2IntegrationUnset").
 
 var scimIntegrationSetDef = g.NewQueryStruct("ScimIntegrationSet").
 	OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
-	OptionalIdentifier("NetworkPolicy", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("NETWORK_POLICY")).
+	OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
 	OptionalBooleanAssignment("SYNC_PASSWORD", g.ParameterOptions()).
 	// TODO(SNOW-1461780): use COMMENT in unset and here use OptionalComment
 	OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
@@ -746,7 +746,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses()).
 				OptionalBooleanAssignment("OAUTH_ISSUE_REFRESH_TOKENS", g.ParameterOptions()).
 				OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
-				OptionalIdentifier("NetworkPolicy", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("NETWORK_POLICY")).
+				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
 				OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes())
 		}),
@@ -802,7 +802,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 					g.KindOfT[ScimSecurityIntegrationRunAsRoleOption](),
 					g.ParameterOptions().SingleQuotes().Required(),
 				).
-				OptionalIdentifier("NetworkPolicy", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("NETWORK_POLICY")).
+				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("SYNC_PASSWORD", g.ParameterOptions())
 		}),
 	).
