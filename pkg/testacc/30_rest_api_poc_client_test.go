@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 	"time"
 
@@ -60,6 +61,7 @@ func (c *RestApiPocClient) doRequest(ctx context.Context, method string, path st
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	req.Header.Set("X-Snowflake-Authorization-Token-Type", "PROGRAMMATIC_ACCESS_TOKEN")
+	req.Header.Set("Accept", "application/json")
 
 	values := req.URL.Query()
 	for k, v := range queryParams {
@@ -92,21 +94,28 @@ func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method stri
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d, %v", resp.StatusCode, resp.Header)
-	}
-
 	response := &Response{}
 	if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		d, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return nil, fmt.Errorf("unexpected status code: %d, response: %v", resp.StatusCode, response)
+		}
+		return nil, fmt.Errorf("unexpected status code: %d, response: %v, dump: %q", resp.StatusCode, response, d)
+	}
+
 	accTestLog.Printf("[DEBUG] Response status for request %s: %s (%s)", resp.Request.URL, resp.Status, resp.Header.Get("X-Snowflake-Request-Id"))
 	accTestLog.Printf("[DEBUG] Response details %v", response)
 	return response, nil
 }
 
 type Response struct {
-	State string `json:"state"`
+	State   string `json:"state"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 // TODO [this PR]: add status codes handling

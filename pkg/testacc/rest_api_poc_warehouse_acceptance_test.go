@@ -17,7 +17,6 @@ import (
 )
 
 func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
-	t.Skip("Skipping for now due to connection problems")
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
