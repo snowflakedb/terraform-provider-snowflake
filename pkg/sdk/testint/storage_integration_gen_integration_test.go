@@ -326,6 +326,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertS3StorageIntegrationDescResult(t, props, false, s3AllowedLocations, []sdk.StorageLocation{}, "")
+		assert.NotEqual(t, "some-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
 	t.Run("Describe - S3", func(t *testing.T) {
