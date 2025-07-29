@@ -93,6 +93,7 @@ func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method stri
 		return nil, err
 	}
 	defer resp.Body.Close()
+	accTestLog.Printf("[DEBUG] Response status for request %s: %s", resp.Request.URL, resp.Status)
 
 	response := &Response{}
 	if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
@@ -107,8 +108,6 @@ func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method stri
 		return nil, fmt.Errorf("unexpected status code: %d, response: %v, dump: %q", resp.StatusCode, response, d)
 	}
 
-	accTestLog.Printf("[DEBUG] Response status for request %s: %s (%s)", resp.Request.URL, resp.Status, resp.Header.Get("X-Snowflake-Request-Id"))
-	accTestLog.Printf("[DEBUG] Response details %v", response)
 	return response, nil
 }
 
@@ -127,6 +126,14 @@ func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T,
 	defer resp.Body.Close()
 	accTestLog.Printf("[DEBUG] Response status for request %s: %s", resp.Request.URL, resp.Status)
 
+	if resp.StatusCode != http.StatusOK {
+		d, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		}
+		return nil, fmt.Errorf("unexpected status code: %d, dump: %q", resp.StatusCode, d)
+	}
+
 	var response T
 	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
@@ -141,10 +148,20 @@ func runDelete(ctx context.Context, client *RestApiPocClient, path string, query
 		return nil, err
 	}
 	defer resp.Body.Close()
+	accTestLog.Printf("[DEBUG] Response status for request %s: %s", resp.Request.URL, resp.Status)
 
 	response := &Response{}
 	if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		d, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return nil, fmt.Errorf("unexpected status code: %d, response: %v", resp.StatusCode, response)
+		}
+		return nil, fmt.Errorf("unexpected status code: %d, response: %v, dump: %q", resp.StatusCode, response, d)
+	}
+
 	return response, nil
 }
