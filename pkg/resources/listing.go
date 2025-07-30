@@ -300,7 +300,6 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				return diag.FromErr(err)
 			}
 
-			// We do not have to set review parameter in the update (it's required during creation).
 			if publish {
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true)); err != nil {
 					return diag.FromErr(err)

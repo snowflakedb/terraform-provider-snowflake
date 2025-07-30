@@ -23,6 +23,11 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.4.x ➞ v2.5.0
 
+### *(new feature)* snowflake_listing resource
+Added a new preview resource for managing listings. Check the official Snowflake documentation to know more [about listings](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about). You can read about the resource limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listing_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource
 
 Previously, this field was read-only. In this version, this field is an optional configurable attribute. Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)). Note that fields other than `storage_aws_external_id` do not leverage this field. This will be addressed during the resource rework.
