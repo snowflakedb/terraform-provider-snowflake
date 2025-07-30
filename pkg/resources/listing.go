@@ -351,6 +351,7 @@ func ReadListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		return diag.FromErr(err)
 	}
 
+	// TODO: Should I pass revision here?
 	listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
 	if err != nil {
 		return diag.FromErr(err)

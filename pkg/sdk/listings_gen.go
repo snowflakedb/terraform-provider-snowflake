@@ -299,13 +299,13 @@ type ShowVersionsListingOptions struct {
 type listingVersionDBRow struct {
 	CreatedOn         string         `db:"created_on"`
 	Name              string         `db:"name"`
-	Alias             string         `db:"alias"`
+	Alias             sql.NullString `db:"alias"`
 	LocationUrl       string         `db:"location_url"`
 	IsDefault         bool           `db:"is_default"`
 	IsLive            bool           `db:"is_live"`
 	IsFirst           bool           `db:"is_first"`
 	IsLast            bool           `db:"is_last"`
-	Comment           string         `db:"comment"`
+	Comment           sql.NullString `db:"comment"`
 	SourceLocationUrl string         `db:"source_location_url"`
 	GitCommitHash     sql.NullString `db:"git_commit_hash"`
 }
@@ -313,13 +313,13 @@ type listingVersionDBRow struct {
 type ListingVersion struct {
 	CreatedOn         string
 	Name              string
-	Alias             string
+	Alias             *string
 	LocationUrl       string
 	IsDefault         bool
 	IsLive            bool
 	IsFirst           bool
 	IsLast            bool
-	Comment           string
+	Comment           *string
 	SourceLocationUrl string
 	GitCommitHash     *string
 }

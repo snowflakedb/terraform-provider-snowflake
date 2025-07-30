@@ -33,6 +33,7 @@ func ListingWithStagedManifestWithOptionals(
 	name string,
 	stageId sdk.SchemaObjectIdentifier,
 	versionName string,
+	versionComment string,
 	location string,
 ) *ListingModel {
 	l := &ListingModel{ResourceModelMeta: config.Meta(resourceName, resources.Listing)}
@@ -41,9 +42,10 @@ func ListingWithStagedManifestWithOptionals(
 		tfconfig.MapVariable(map[string]tfconfig.Variable{
 			"from_stage": tfconfig.ListVariable(
 				tfconfig.MapVariable(map[string]tfconfig.Variable{
-					"stage":        tfconfig.StringVariable(stageId.FullyQualifiedName()),
-					"version_name": tfconfig.StringVariable(versionName),
-					"location":     tfconfig.StringVariable(location),
+					"stage":           tfconfig.StringVariable(stageId.FullyQualifiedName()),
+					"version_name":    tfconfig.StringVariable(versionName),
+					"version_comment": tfconfig.StringVariable(versionComment),
+					"location":        tfconfig.StringVariable(location),
 				}),
 			),
 		}),

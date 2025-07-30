@@ -229,26 +229,26 @@ var listingDetails = g.PlainStruct("ListingDetails").
 var listingVersionDbRow = g.DbStruct("listingVersionDBRow").
 	Text("created_on").
 	Text("name").
-	Text("alias").
+	OptionalText("alias").
 	Text("location_url").
 	Bool("is_default").
 	Bool("is_live").
 	Bool("is_first").
 	Bool("is_last").
-	Text("comment").
+	OptionalText("comment").
 	Text("source_location_url").
 	OptionalText("git_commit_hash")
 
 var listingVersion = g.PlainStruct("ListingVersion").
 	Text("CreatedOn").
 	Text("Name").
-	Text("Alias").
+	OptionalText("Alias").
 	Text("LocationUrl").
 	Bool("IsDefault").
 	Bool("IsLive").
 	Bool("IsFirst").
 	Bool("IsLast").
-	Text("Comment").
+	OptionalText("Comment").
 	Text("SourceLocationUrl").
 	OptionalText("GitCommitHash")
 
