@@ -4,7 +4,7 @@ package testacc
 
 import (
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"regexp"
 	"slices"
 	"testing"
 
@@ -16,9 +16,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -571,7 +573,112 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 	})
 }
 
-func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {}
+func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	manifest1, title1 := testClient().Listing.BasicManifestWithTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	title1Escaped := fmt.Sprintf(`\"%s\"`, title1)
+	manifest2, title2 := testClient().Listing.BasicManifestWithTargetAccountAndDifferentSubtitle(t, testClient().Context.CurrentAccountId(t))
+	title2Escaped := fmt.Sprintf(`\"%s\"`, title2)
+
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+	_ = testClient().Stage.PutInLocationWithContent(t, stage.Location()+"/manifest", "manifest.yml", manifest2)
+
+	share, shareCleanup := testClient().Share.CreateShare(t)
+	t.Cleanup(shareCleanup)
+	t.Cleanup(testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, testClient().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
+
+	modelInitialInlined := model.ListingWithInlineManifest("test", id.Name(), manifest1).
+		WithShare(share.ID().Name()).
+		WithPublish(r.BooleanTrue)
+
+	modelModifiedInlined := model.ListingWithInlineManifest("test", id.Name(), manifest2).
+		WithShare(share.ID().Name()).
+		WithPublish(r.BooleanTrue)
+
+	modelStaged := model.ListingWithStagedManifestWithLocation("test", id.Name(), stage.ID(), "manifest").
+		WithShare(share.ID().Name()).
+		WithPublish(r.BooleanTrue)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Listing),
+		Steps: []resource.TestStep{
+			// Create listing with inlined manifest (inline manifests don't track versions)
+			{
+				Config: accconfig.FromModels(t, modelInitialInlined),
+				Check: assertThat(t,
+					resourceassert.ListingResource(t, modelInitialInlined.ResourceReference()).
+						HasNameString(id.Name()).
+						HasManifestFromStringNotEmpty().
+						HasShareString(share.ID().FullyQualifiedName()).
+						HasPublishString(r.BooleanTrue),
+					resourceshowoutputassert.ListingShowOutput(t, modelInitialInlined.ResourceReference()).
+						HasName(id.Name()).
+						HasTitle(title1Escaped).
+						HasState(sdk.ListingStatePublished),
+					// Cannot assert versions (because SHOW VERSIONS IN LISTING will throw an error) for inlined manifests
+				),
+			},
+			// Modify the manifest and show that no version was produced
+			{
+				Config: accconfig.FromModels(t, modelModifiedInlined),
+				Check: assertThat(t,
+					resourceassert.ListingResource(t, modelModifiedInlined.ResourceReference()).
+						HasNameString(id.Name()).
+						HasManifestFromStringNotEmpty().
+						HasShareString(share.ID().FullyQualifiedName()).
+						HasPublishString(r.BooleanTrue),
+					resourceshowoutputassert.ListingShowOutput(t, modelModifiedInlined.ResourceReference()).
+						HasName(id.Name()).
+						HasTitle(title2Escaped).
+						HasState(sdk.ListingStatePublished),
+					// Cannot assert versions (because SHOW VERSIONS IN LISTING will throw an error) for inlined manifests
+				),
+			},
+			// Change the manifest source from inlined to staged (the manifest is the same; a new version is produced)
+			{
+				Config: accconfig.FromModels(t, modelStaged),
+				Check: assertThat(t,
+					resourceassert.ListingResource(t, modelStaged.ResourceReference()).
+						HasNameString(id.Name()).
+						HasManifestFromStageStageId(stage.ID()).
+						HasManifestFromStageLocation("manifest").
+						HasShareString(share.ID().FullyQualifiedName()).
+						HasPublishString(r.BooleanTrue),
+					resourceshowoutputassert.ListingShowOutput(t, modelStaged.ResourceReference()).
+						HasName(id.Name()).
+						HasTitle(title2).
+						HasState(sdk.ListingStatePublished),
+					assert.Check(assertContainsListingVersion(t, id, "VERSION$1", "null")),
+				),
+			},
+			// Switch back to the inlined manifest (the manifest is the same; a new version is produced).
+			// After listing being sourced from stage once, it will be recording every version from now on.
+			// Now, it doesn't matter if it's sourced from stage or back to inlined.
+			{
+				Config: accconfig.FromModels(t, modelModifiedInlined),
+				Check: assertThat(t,
+					resourceassert.ListingResource(t, modelModifiedInlined.ResourceReference()).
+						HasNameString(id.Name()).
+						HasManifestFromStringNotEmpty().
+						HasShareString(share.ID().FullyQualifiedName()).
+						HasPublishString(r.BooleanTrue),
+					resourceshowoutputassert.ListingShowOutput(t, modelModifiedInlined.ResourceReference()).
+						HasName(id.Name()).
+						HasTitle(title2Escaped).
+						HasState(sdk.ListingStatePublished),
+					assert.Check(assertContainsListingVersion(t, id, "VERSION$2", "")),
+				),
+			},
+		},
+	})
+}
 
 func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -729,26 +836,62 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 						HasName(id.Name()).
 						HasTitle(title2).
 						HasState(sdk.ListingStatePublished),
-					assert.Check(assertContainsListingVersion(t, id, "VERSION$6", "")),
+					assert.Check(assertDoesNotContainListingVersion(t, id, "VERSION$6", "")),
 				),
 			},
 		},
 	})
 }
 
-// TODO: Updates are tested above, maybe is there some situation that should be showed like external changes (e.g. to the manifest or changes to the publish state)?
-func TestAcc_Listing_Updates_Inlined(t *testing.T)   {}
-func TestAcc_Listing_Updates_FromStage(t *testing.T) {}
-
-func TestAcc_Listing_UpdateManifestSource(t *testing.T) {}
-
 func TestAcc_Listing_Validations(t *testing.T) {
-	// validations
-	// cannot set from_string and from_stage at the same time
-	// cannot set share and application_package at the same time
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	manifest, _ := testClient().Listing.BasicManifest(t)
+
+	listingModelWithoutManifest := func(resourceName string, name string) *model.ListingModel {
+		l := &model.ListingModel{ResourceModelMeta: accconfig.Meta(resourceName, resources.Listing)}
+		l.WithName(name)
+		return l
+	}
+
+	modelWithBothShareAndApplicationPackage := model.ListingWithInlineManifest("test", id.Name(), manifest).
+		WithShare("test_share").
+		WithApplicationPackage("test_app_package")
+
+	modelWithInvalidStageId := listingModelWithoutManifest("test", id.Name()).
+		WithManifestValue(tfconfig.ListVariable(
+			tfconfig.MapVariable(map[string]tfconfig.Variable{
+				"from_stage": tfconfig.ListVariable(
+					tfconfig.MapVariable(map[string]tfconfig.Variable{
+						"stage": tfconfig.StringVariable("invalid.stage.identifier.name"),
+					}),
+				),
+			}),
+		))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Listing),
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, modelWithBothShareAndApplicationPackage),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"application_package": conflicts with share`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelWithInvalidStageId),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Expected SchemaObjectIdentifier identifier type`),
+			},
+		},
+	})
 }
 
 func assertContainsListingVersion(t *testing.T, id sdk.AccountObjectIdentifier, expectedName string, expectedAlias string) resource.TestCheckFunc {
+	t.Helper()
 	return func(s *terraform.State) error {
 		versions := testClient().Listing.ShowVersions(t, id)
 
@@ -769,6 +912,7 @@ func assertContainsListingVersion(t *testing.T, id sdk.AccountObjectIdentifier, 
 }
 
 func assertDoesNotContainListingVersion(t *testing.T, id sdk.AccountObjectIdentifier, expectedName string, expectedAlias string) resource.TestCheckFunc {
+	t.Helper()
 	return func(s *terraform.State) error {
 		if err := assertContainsListingVersion(t, id, expectedName, expectedAlias)(s); err == nil {
 			return fmt.Errorf("expected version name '%s' with alias '%s' to not be present, but was found", expectedName, expectedAlias)

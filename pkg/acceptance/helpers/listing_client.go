@@ -80,7 +80,7 @@ func (c *ListingClient) ShowVersions(t *testing.T, id sdk.AccountObjectIdentifie
 
 func (c *ListingClient) BasicManifest(t *testing.T) (string, string) {
 	t.Helper()
-	return c.basicManifest(t, "basic_", "different_subtitle")
+	return c.basicManifest(t, "basic_", "subtitle")
 }
 
 func (c *ListingClient) BasicManifestWithDifferentSubtitle(t *testing.T) (string, string) {

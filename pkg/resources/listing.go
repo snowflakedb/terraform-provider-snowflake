@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -29,17 +30,17 @@ var listingSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from_string": {
-					Type:          schema.TypeString,
-					Optional:      true,
-					Description:   "Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.",
-					ConflictsWith: []string{"manifest.0.from_stage"},
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.",
+					ExactlyOneOf: []string{"manifest.0.from_string", "manifest.0.from_stage"},
 				},
 				"from_stage": {
-					Type:          schema.TypeList,
-					Optional:      true,
-					MaxItems:      1,
-					Description:   "Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). A proper YAML indentation (2 spaces) is required.",
-					ConflictsWith: []string{"manifest.0.from_string"},
+					Type:         schema.TypeList,
+					Optional:     true,
+					MaxItems:     1,
+					Description:  "Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). A proper YAML indentation (2 spaces) is required.",
+					ExactlyOneOf: []string{"manifest.0.from_string", "manifest.0.from_stage"},
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"stage": {
@@ -160,9 +161,10 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 			return diag.FromErr(err)
 		}
 
-		// The review value should mostly be the same as:
-		// - If publish is true, then review should be true as well (as the listing must be reviewed before publishing, even if it's not applicable, e.g., in a case of private listing)
-		// - If publish is false, then we do nothing. The Review process is only applicable for public listings which we do not support at the moment.
+		// The review value should be the same as the publish value. This comes from the Snowflake requirement/limitation.
+		// It requires the review value during creation even if the listing is private and no review process is needed.
+		// The alter doesn't require it, and it seems to be working correctly there (you can create a non-published listing
+		// and publish it in the next step without having to specify the review option).
 		if publish {
 			req.WithReview(true).WithPublish(true)
 		} else {
@@ -260,7 +262,6 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 			}
 		}
 
-		// TODO: Maybe only version_name should trigger a new version?
 		if d.HasChange("manifest.0.from_stage") {
 			if fromStage := d.Get("manifest.0.from_stage").([]any); len(fromStage) > 0 {
 				fromStageMap := fromStage[0].(map[string]any)
@@ -288,8 +289,6 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAddVersion(*req)); err != nil {
 					return diag.FromErr(err)
 				}
-
-				// TODO: Should call review and publish here (basically call the same review and publish commands as below)?
 			}
 		}
 	}
@@ -301,6 +300,7 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				return diag.FromErr(err)
 			}
 
+			// We do not have to set review parameter in the update (it's required during creation).
 			if publish {
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true)); err != nil {
 					return diag.FromErr(err)
@@ -351,20 +351,10 @@ func ReadListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		return diag.FromErr(err)
 	}
 
-	// TODO: Should I pass revision here?
 	listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	// TODO: It can be done as YAML is returned from the describe.
-	// TODO: Do we want to detect changes in manifest?
-	// TODO: Manifest (but only if inlined?)
-	//if _, ok := d.GetOk("manifest.0.from_string"); ok {
-	//	if err := d.Set("manifest.0.from_string", listingDetails.ManifestYaml); err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//}
 
 	if errs := errors.Join(
 		setOptionalValueWithMapping(d, "share", listingDetails.Share, (*sdk.AccountObjectIdentifier).FullyQualifiedName),
