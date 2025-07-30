@@ -2,7 +2,6 @@ package testfunctional_test
 
 import (
 	"context"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

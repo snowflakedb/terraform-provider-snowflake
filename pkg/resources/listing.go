@@ -25,7 +25,7 @@ var listingSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Required:    true,
 		MaxItems:    1,
-		Description: "Specifies the way manifest is provided for the listing. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference).",
+		Description: externalChangesNotDetectedFieldDescription("Specifies the way manifest is provided for the listing. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference)."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from_string": {
@@ -99,9 +99,9 @@ var listingSchema = map[string]*schema.Schema{
 	},
 	"publish": {
 		Type:        schema.TypeString,
+		Default:     BooleanDefault,
 		Optional:    true,
 		Description: "Determines if the listing should be published.",
-		Default:     BooleanDefault,
 	},
 	"comment": {
 		Type:        schema.TypeString,
@@ -128,8 +128,7 @@ func Listing() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		// TODO: Desc
-		Description: "",
+		Description: "Resource used to manage listing objects. For more information, check [listing documentation](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about).",
 
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ListingResource), TrackingCreateWrapper(resources.Listing, CreateListing)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ListingResource), TrackingReadWrapper(resources.Listing, ReadListing)),
@@ -138,7 +137,7 @@ func Listing() *schema.Resource {
 
 		Schema: listingSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.Listing, schema.ImportStatePassthroughContext),
+			StateContext: TrackingImportWrapper(resources.Listing, ImportName[sdk.AccountObjectIdentifier]),
 		},
 
 		Timeouts: defaultTimeouts,
@@ -155,6 +154,26 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 	req := sdk.NewCreateListingRequest(id)
 
+	if publishString := d.Get("publish").(string); publishString != BooleanDefault {
+		publish, err := booleanStringToBool(publishString)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// The review value should mostly be the same as:
+		// - If publish is true, then review should be true as well (as the listing must be reviewed before publishing, even if it's not applicable, e.g., in a case of private listing)
+		// - If publish is false, then we do nothing. The Review process is only applicable for public listings which we do not support at the moment.
+		if publish {
+			req.WithReview(true).WithPublish(true)
+		} else {
+			req.WithReview(false).WithPublish(false)
+		}
+	}
+
+	if comment := d.Get("comment").(string); comment != "" {
+		req.WithComment(comment)
+	}
+
 	manifest := d.Get("manifest").([]any)
 	if len(manifest) != 1 {
 		return diag.Errorf("manifest must be specified")
@@ -162,20 +181,12 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 	manifestMap := manifest[0].(map[string]any)
 
-	if v, ok := manifestMap["from_string"]; ok {
-		fromString := v.(string)
-		if fromString == "" {
-			return diag.Errorf("manifest.from_string cannot be empty")
-		}
+	if fromString := manifestMap["from_string"].(string); fromString != "" {
 		req.WithAs(fromString)
 	}
 
-	if v, ok := manifestMap["from_stage"]; ok {
-		if len(v.([]any)) != 1 {
-			return diag.Errorf("manifest.from_stage cannot be empty when specified")
-		}
-
-		fromStageMap := v.([]any)[0].(map[string]any)
+	if fromStage := manifestMap["from_stage"].([]any); len(fromStage) > 0 {
+		fromStageMap := fromStage[0].(map[string]any)
 
 		stage, err := sdk.ParseSchemaObjectIdentifier(fromStageMap["stage"].(string))
 		if err != nil {
@@ -191,6 +202,7 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	}
 
 	withReq := sdk.NewListingWithRequest()
+
 	if errs := errors.Join(
 		attributeMappedValueCreateBuilder(d, "share", withReq.WithShare, sdk.ParseAccountObjectIdentifier),
 		attributeMappedValueCreateBuilder(d, "application_package", withReq.WithApplicationPackage, sdk.ParseAccountObjectIdentifier),
@@ -198,7 +210,7 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		return diag.FromErr(errs)
 	}
 
-	if withReq != sdk.NewListingWithRequest() {
+	if *withReq != *sdk.NewListingWithRequest() {
 		req.WithWith(*withReq)
 	}
 
@@ -238,11 +250,8 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 			if manifest := d.Get("manifest.0.from_string").(string); manifest != "" {
 				req := sdk.NewAlterListingAsRequest(manifest)
 
-				if errs := errors.Join(
-					booleanStringAttributeCreate(d, "review", &req.Review),
-					booleanStringAttributeCreate(d, "publish", &req.Publish),
-				); errs != nil {
-					return diag.FromErr(errs)
+				if err := booleanStringAttributeCreate(d, "publish", &req.Publish); err != nil {
+					return diag.FromErr(err)
 				}
 
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAlterListingAs(*req)); err != nil {
@@ -253,11 +262,7 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 		// TODO: Maybe only version_name should trigger a new version?
 		if d.HasChange("manifest.0.from_stage") {
-			if v, ok := d.GetOk("manifest.0.from_stage"); ok {
-				fromStage := v.([]any)
-				if len(fromStage) != 1 {
-					return diag.Errorf("manifest.from_stage cannot be empty when specified")
-				}
+			if fromStage := d.Get("manifest.0.from_stage").([]any); len(fromStage) > 0 {
 				fromStageMap := fromStage[0].(map[string]any)
 
 				stage, err := sdk.ParseSchemaObjectIdentifier(fromStageMap["stage"].(string))
@@ -289,22 +294,21 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		}
 	}
 
-	if d.HasChanges("review") {
-		if d.Get("review").(bool) {
-			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true)); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
 	if d.HasChanges("publish") {
-		if d.Get("publish").(bool) {
-			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true)); err != nil {
+		if publishString := d.Get("publish").(string); publishString != BooleanDefault {
+			publish, err := booleanStringToBool(publishString)
+			if err != nil {
 				return diag.FromErr(err)
 			}
-		} else {
-			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true)); err != nil {
-				return diag.FromErr(err)
+
+			if publish {
+				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true)); err != nil {
+					return diag.FromErr(err)
+				}
+			} else {
+				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true)); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
@@ -355,17 +359,16 @@ func ReadListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	// TODO: It can be done as YAML is returned from the describe.
 	// TODO: Do we want to detect changes in manifest?
 	// TODO: Manifest (but only if inlined?)
-	if _, ok := d.GetOk("manifest.0.from_string"); ok {
-		if err := d.Set("manifest.0.from_string", listingDetails.ManifestYaml); err != nil {
-			return diag.FromErr(err)
-		}
-	}
+	//if _, ok := d.GetOk("manifest.0.from_string"); ok {
+	//	if err := d.Set("manifest.0.from_string", listingDetails.ManifestYaml); err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//}
 
 	if errs := errors.Join(
 		setOptionalValueWithMapping(d, "share", listingDetails.Share, (*sdk.AccountObjectIdentifier).FullyQualifiedName),
 		setOptionalValueWithMapping(d, "application_package", listingDetails.ApplicationPackage, (*sdk.AccountObjectIdentifier).FullyQualifiedName),
-		d.Set("publish", listing.State == sdk.ListingStatePublished),
-		// TODO: d.Set("review", listingDetails.ReviewState == ?),
+		d.Set("publish", booleanStringFromBool(listing.State == sdk.ListingStatePublished)),
 		d.Set("comment", listing.Comment),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ListingToSchema(listing)}),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),

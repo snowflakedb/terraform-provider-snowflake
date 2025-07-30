@@ -78,7 +78,7 @@ func (c *ListingClient) BasicManifest(t *testing.T) (string, string) {
 subtitle: "subtitle"
 description: "description"
 listing_terms:
-  type: "OFFLINE"
+  type: OFFLINE
 `, title), title
 }
 
@@ -89,7 +89,7 @@ func (c *ListingClient) BasicManifestWithDifferentSubtitle(t *testing.T) (string
 subtitle: "different_subtitle"
 description: "description"
 listing_terms:
-  type: "OFFLINE"
+  type: OFFLINE
 `, title), title
 }
 
@@ -101,7 +101,7 @@ title: "%s"
 subtitle: "subtitle"
 description: "description"
 listing_terms:
-  type: "OFFLINE"
+  type: OFFLINE
 targets:
   accounts: [%s.%s]
 `, title, targetAccount.OrganizationName(), targetAccount.AccountName()), title
