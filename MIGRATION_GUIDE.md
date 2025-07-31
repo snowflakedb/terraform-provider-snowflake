@@ -30,11 +30,11 @@ Previously, this field was read-only. In this version, this field is an optional
 Note that this resource is still in preview, and not officially supported. This change was requested and done by the community: [#3659](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3659).
 
 ### *(bugfix)* Fix setting network policies with lowercase characters in security integrations
-Previously, when the provider created or set a security integration (in `snowflake_oauth_integration_for_custom_clients` or `snowflake_scim_integration`) with a network policy containing lowercase letters, this could fail due to a different quoting used in Snowflake in these objects.
+Previously, when the provider created or set a security integration (in `snowflake_oauth_integration_for_custom_clients` or `snowflake_scim_integration`) with a network policy containing lowercase letters, this could fail due to a different quoting used in Snowflake in these objects. Namely, despite using the `"` quotes, the referenced network name was uppercased in Snowflake. This means that the uppercased network policy was used instead.
 Snowflake could return errors like `Network policy TEST does not exist or not authorized.`.
 In this case, a special quoting needs to be used (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake)). Instead of the usual `NETWORK_POLICY = "test"`, it needs to be `NETWORK_POLICY = '"test"'`.
 
-In this version, this behavior is fixed. The provider always uses the mixed `'"name"'` notation.
+In this version, this behavior is fixed. The provider always uses the mixed `'"name"'` notation, and the casing should match the name in Snowflake.
 
 References: [#3229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3229)
 
