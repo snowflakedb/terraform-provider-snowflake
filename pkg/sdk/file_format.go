@@ -770,6 +770,12 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				details.Options.CSVFieldOptionallyEnclosedBy = &v
 			case "NULL_IF":
 				newNullIf := []NullString{}
+				r := strings.Split(strings.Trim(v, "[]"), ", ")
+				if len(r) == 1 && r[0] == v {
+					details.Options.CSVNullIf = nil
+					continue
+				}
+
 				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
