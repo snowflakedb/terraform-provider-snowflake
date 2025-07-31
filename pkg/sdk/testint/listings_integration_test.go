@@ -4,6 +4,7 @@ package testint
 
 import (
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -364,14 +365,61 @@ func TestInt_Listings(t *testing.T) {
 		assert.Len(t, versions, 1)
 		assert.NotEmpty(t, versions[0].CreatedOn)
 		assert.NotEmpty(t, versions[0].Name)
-		assert.Equal(t, "v2", versions[0].Alias)
+		assert.Equal(t, "v2", *versions[0].Alias)
 		assert.Empty(t, versions[0].LocationUrl)
 		assert.True(t, versions[0].IsDefault)
 		assert.False(t, versions[0].IsLive)
 		assert.True(t, versions[0].IsFirst)
 		assert.True(t, versions[0].IsLast)
-		assert.Equal(t, comment, versions[0].Comment)
+		assert.Equal(t, comment, *versions[0].Comment)
 		assert.Nil(t, versions[0].GitCommitHash)
+	})
+
+	t.Run("alter: add version with inlined manifest", func(t *testing.T) {
+		versionStage, versionStageCleanup := testClientHelper().Stage.CreateStage(t)
+		t.Cleanup(versionStageCleanup)
+
+		_ = testClientHelper().Stage.PutInLocationWithContent(t, versionStage.Location(), "manifest.yml", basicManifest)
+		manifestLocation := sdk.NewStageLocation(versionStage.ID(), "")
+
+		listing, listingCleanup := testClientHelper().Listing.Create(t)
+		t.Cleanup(listingCleanup)
+
+		// Versions can be only added whenever listing was using manifest sourced from stage at any point
+		_, err := client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.ErrorContains(t, err, "Attached stage not exists")
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithAddVersion(*sdk.NewAddListingVersionRequest(manifestLocation).WithVersionName("v1")))
+		assert.NoError(t, err)
+
+		versions, err := client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.NoError(t, err)
+		require.Len(t, versions, 1)
+		require.NotNil(t, versions[0].Alias)
+		assert.Equal(t, "v1", *versions[0].Alias)
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithAlterListingAs(*sdk.NewAlterListingAsRequest(basicManifest).WithReview(false).WithPublish(false)))
+		assert.NoError(t, err)
+
+		versions, err = client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.NoError(t, err)
+		require.Len(t, versions, 2)
+
+		inlineVersion, err := collections.FindFirst(versions, func(v sdk.ListingVersion) bool { return v.Name == "VERSION$2" })
+		assert.NoError(t, err)
+		require.Nil(t, inlineVersion.Alias)
+		require.NotNil(t, inlineVersion.Comment)
+		assert.Equal(t, "Inline update", *inlineVersion.Comment) // This is the default comment for inline updates
+
+		// Removing referenced stage doesn't seem to break the listing's versioning
+		versionStageCleanup()
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithAlterListingAs(*sdk.NewAlterListingAsRequest(basicManifest).WithReview(false).WithPublish(false)))
+		assert.NoError(t, err)
+
+		versions, err = client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.NoError(t, err)
+		require.Len(t, versions, 3)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {

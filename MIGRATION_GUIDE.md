@@ -26,6 +26,10 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ### *(new feature)* snowflake_listing resource
 Added a new preview resource for managing listings. Check the official Snowflake documentation to know more [about listings](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about). You can read about the resource limitations in the documentation in the registry.
 
+> **Warning** This resource isn't suitable for public listings because its review process doesn't align with Terraform's standard method for managing infrastructure resources. The challenge is that the review process often takes time and might need several manual revisions. We need to reconsider how to integrate this process into a resource. Although we plan to support this in the future, it might be added later. Currently, the resource may not function well with public listings because review requests are closely connected to the publish field.
+
+> **Note** For inlined manifest version, only string is accepted. The manifest structure is not mapped to the resource schema to keep it simple and aligned with other resources that accept similar metadata (e.g., service templates). While it's more recommended to keep your manifest in a stage, the inlined version may be useful for initial setup and testing.
+
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listing_resource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource

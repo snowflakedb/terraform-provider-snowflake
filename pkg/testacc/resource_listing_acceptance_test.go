@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -25,16 +26,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	testifyassert "github.com/stretchr/testify/assert"
 )
 
 func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	basicManifest, listingTitle := testClient().Listing.BasicManifest(t)
-	listingTitleEscaped := fmt.Sprintf(`\"%s\"`, listingTitle)
-
-	manifestWithTargetAccounts, listingTitleWithTargetAccounts := testClient().Listing.BasicManifestWithTargetAccount(t, testClient().Context.CurrentAccountId(t))
-	listingTitleWithTargetAccountsEscaped := fmt.Sprintf(`\"%s\"`, listingTitleWithTargetAccounts)
+	basicManifest, listingTitle := testClient().Listing.BasicManifestWithUnquotedValues(t)
+	manifestWithTargetAccounts, listingTitleWithTargetAccounts := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
 
 	comment, newComment := random.Comment(), random.Comment()
 
@@ -57,6 +56,10 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 		WithPublish(r.BooleanFalse).
 		WithComment(newComment)
 
+	modelUnset := model.ListingWithInlineManifest("test", id.Name(), manifestWithTargetAccounts).
+		WithShare(share.ID().Name()).
+		WithPublish(r.BooleanFalse)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { TestAccPreCheck(t) },
@@ -78,8 +81,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 						HasCommentEmpty(),
 					resourceshowoutputassert.ListingShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(listingTitleEscaped).
-						HasSubtitle(`\"subtitle\"`).
+						HasTitle(listingTitle).
+						HasSubtitle("subtitle").
 						HasState(sdk.ListingStateDraft).
 						HasComment(""),
 				),
@@ -99,8 +102,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 						HasCommentEmpty(),
 					resourceshowoutputassert.ImportedListingShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasName(id.Name()).
-						HasTitle(listingTitleEscaped).
-						HasSubtitle(`\"subtitle\"`).
+						HasTitle(listingTitle).
+						HasSubtitle("subtitle").
 						HasState(sdk.ListingStateDraft).
 						HasComment(""),
 				),
@@ -123,8 +126,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 						HasCommentString(comment),
 					resourceshowoutputassert.ListingShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(listingTitleWithTargetAccountsEscaped).
-						HasSubtitle(`\"subtitle\"`).
+						HasTitle(listingTitleWithTargetAccounts).
+						HasSubtitle("subtitle").
 						HasState(sdk.ListingStatePublished).
 						HasComment(comment),
 				),
@@ -144,8 +147,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 						HasCommentString(comment),
 					resourceshowoutputassert.ImportedListingShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasName(id.Name()).
-						HasTitle(listingTitleWithTargetAccountsEscaped).
-						HasSubtitle(`\"subtitle\"`).
+						HasTitle(listingTitleWithTargetAccounts).
+						HasSubtitle("subtitle").
 						HasState(sdk.ListingStatePublished).
 						HasComment(comment),
 				),
@@ -163,8 +166,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 						HasCommentString(newComment),
 					resourceshowoutputassert.ListingShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(listingTitleWithTargetAccountsEscaped).
-						HasSubtitle(`\"subtitle\"`).
+						HasTitle(listingTitleWithTargetAccounts).
+						HasSubtitle("subtitle").
 						HasState(sdk.ListingStateUnpublished).
 						HasComment(newComment),
 				),
@@ -193,28 +196,33 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 						HasCommentString(newComment),
 					resourceshowoutputassert.ListingShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(listingTitleWithTargetAccountsEscaped).
-						HasSubtitle(`\"subtitle\"`).
+						HasTitle(listingTitleWithTargetAccounts).
+						HasSubtitle("subtitle").
 						HasState(sdk.ListingStateUnpublished).
 						HasComment(newComment),
 				),
 			},
 			// unset
 			{
-				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelUnset.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, modelUnset),
 				Check: assertThat(t,
-					resourceassert.ListingResource(t, modelBasic.ResourceReference()).
+					resourceassert.ListingResource(t, modelUnset.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
-						HasShareEmpty().
+						HasShareString(share.ID().FullyQualifiedName()).
 						HasApplicationPackageEmpty().
 						HasPublishString(r.BooleanFalse).
 						HasCommentEmpty(),
-					resourceshowoutputassert.ListingShowOutput(t, modelBasic.ResourceReference()).
+					resourceshowoutputassert.ListingShowOutput(t, modelUnset.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(listingTitleEscaped).
-						HasSubtitle(`\"subtitle\"`).
-						HasState(sdk.ListingStateDraft).
+						HasTitle(listingTitleWithTargetAccounts).
+						HasSubtitle("subtitle").
+						HasState(sdk.ListingStateUnpublished).
 						HasComment(""),
 				),
 			},
@@ -226,7 +234,7 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	basicManifest, listingTitle := testClient().Listing.BasicManifest(t)
-	manifestWithTargetAccounts, listingTitleWithTargetAccounts := testClient().Listing.BasicManifestWithTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	manifestWithTargetAccounts, listingTitleWithTargetAccounts := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
 
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
@@ -423,8 +431,7 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	manifest, title := testClient().Listing.BasicManifestWithTargetAccount(t, testClient().Context.CurrentAccountId(t))
-	titleEscaped := fmt.Sprintf(`\"%s\"`, title)
+	manifest, title := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
 
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
@@ -465,8 +472,8 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 						HasCommentString(comment),
 					resourceshowoutputassert.ListingShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(titleEscaped).
-						HasSubtitle(`\"subtitle\"`).
+						HasTitle(title).
+						HasSubtitle("subtitle").
 						HasState(sdk.ListingStatePublished).
 						HasComment(comment),
 				),
@@ -486,8 +493,8 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 						HasCommentString(comment),
 					resourceshowoutputassert.ImportedListingShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasName(id.Name()).
-						HasTitle(titleEscaped).
-						HasSubtitle(`\"subtitle\"`).
+						HasTitle(title).
+						HasSubtitle("subtitle").
 						HasState(sdk.ListingStatePublished).
 						HasComment(comment),
 				),
@@ -500,7 +507,7 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	manifest, title := testClient().Listing.BasicManifestWithTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	manifest, title := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
 
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
@@ -576,10 +583,8 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	manifest1, title1 := testClient().Listing.BasicManifestWithTargetAccount(t, testClient().Context.CurrentAccountId(t))
-	title1Escaped := fmt.Sprintf(`\"%s\"`, title1)
-	manifest2, title2 := testClient().Listing.BasicManifestWithTargetAccountAndDifferentSubtitle(t, testClient().Context.CurrentAccountId(t))
-	title2Escaped := fmt.Sprintf(`\"%s\"`, title2)
+	manifest1, title1 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	manifest2, title2 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccountAndDifferentSubtitle(t, testClient().Context.CurrentAccountId(t))
 
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
@@ -620,9 +625,9 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 						HasPublishString(r.BooleanTrue),
 					resourceshowoutputassert.ListingShowOutput(t, modelInitialInlined.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(title1Escaped).
+						HasTitle(title1).
 						HasState(sdk.ListingStatePublished),
-					// Cannot assert versions (because SHOW VERSIONS IN LISTING will throw an error) for inlined manifests
+					assert.Check(assertListingIsNotVersioned(t, id)),
 				),
 			},
 			// Modify the manifest and show that no version was produced
@@ -636,9 +641,9 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 						HasPublishString(r.BooleanTrue),
 					resourceshowoutputassert.ListingShowOutput(t, modelModifiedInlined.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(title2Escaped).
+						HasTitle(title2).
 						HasState(sdk.ListingStatePublished),
-					// Cannot assert versions (because SHOW VERSIONS IN LISTING will throw an error) for inlined manifests
+					assert.Check(assertListingIsNotVersioned(t, id)),
 				),
 			},
 			// Change the manifest source from inlined to staged (the manifest is the same; a new version is produced)
@@ -671,7 +676,7 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 						HasPublishString(r.BooleanTrue),
 					resourceshowoutputassert.ListingShowOutput(t, modelModifiedInlined.ResourceReference()).
 						HasName(id.Name()).
-						HasTitle(title2Escaped).
+						HasTitle(title2).
 						HasState(sdk.ListingStatePublished),
 					assert.Check(assertContainsListingVersion(t, id, "VERSION$2", "")),
 				),
@@ -683,8 +688,8 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	manifest1, title1 := testClient().Listing.BasicManifestWithTargetAccount(t, testClient().Context.CurrentAccountId(t))
-	manifest2, title2 := testClient().Listing.BasicManifestWithTargetAccountAndDifferentSubtitle(t, testClient().Context.CurrentAccountId(t))
+	manifest1, title1 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	manifest2, title2 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccountAndDifferentSubtitle(t, testClient().Context.CurrentAccountId(t))
 
 	stage1, stage1Cleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stage1Cleanup)
@@ -845,7 +850,7 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 
 func TestAcc_Listing_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	manifest, _ := testClient().Listing.BasicManifest(t)
+	manifest, _ := testClient().Listing.BasicManifestWithUnquotedValues(t)
 
 	listingModelWithoutManifest := func(resourceName string, name string) *model.ListingModel {
 		l := &model.ListingModel{ResourceModelMeta: accconfig.Meta(resourceName, resources.Listing)}
@@ -882,6 +887,11 @@ func TestAcc_Listing_Validations(t *testing.T) {
 				ExpectError: regexp.MustCompile(`"application_package": conflicts with share`),
 			},
 			{
+				Config:      accconfig.FromModels(t, modelWithBothShareAndApplicationPackage),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"share": conflicts with application_package`),
+			},
+			{
 				Config:      accconfig.FromModels(t, modelWithInvalidStageId),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Expected SchemaObjectIdentifier identifier type`),
@@ -893,7 +903,8 @@ func TestAcc_Listing_Validations(t *testing.T) {
 func assertContainsListingVersion(t *testing.T, id sdk.AccountObjectIdentifier, expectedName string, expectedAlias string) resource.TestCheckFunc {
 	t.Helper()
 	return func(s *terraform.State) error {
-		versions := testClient().Listing.ShowVersions(t, id)
+		versions, err := testClient().Listing.ShowVersions(t, id)
+		testifyassert.NoError(t, err)
 
 		versionNamesAndAliases := collections.Map(versions, func(v sdk.ListingVersion) string {
 			alias := "null"
@@ -916,6 +927,17 @@ func assertDoesNotContainListingVersion(t *testing.T, id sdk.AccountObjectIdenti
 	return func(s *terraform.State) error {
 		if err := assertContainsListingVersion(t, id, expectedName, expectedAlias)(s); err == nil {
 			return fmt.Errorf("expected version name '%s' with alias '%s' to not be present, but was found", expectedName, expectedAlias)
+		}
+		return nil
+	}
+}
+
+func assertListingIsNotVersioned(t *testing.T, id sdk.AccountObjectIdentifier) resource.TestCheckFunc {
+	t.Helper()
+	return func(s *terraform.State) error {
+		_, err := testClient().Listing.ShowVersions(t, id)
+		if !strings.Contains(err.Error(), "Attached stage not exists") {
+			return err
 		}
 		return nil
 	}

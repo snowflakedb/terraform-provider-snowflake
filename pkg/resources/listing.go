@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -20,6 +19,7 @@ var listingSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
+		ValidateDiagFunc: IsValidListingName,
 		Description:      "Specifies the listing identifier (name). It must be unique within the organization, regardless of which Snowflake region the account is located in. Must start with an alphabetic character and cannot contain spaces or special characters except for underscores.",
 	},
 	"manifest": {
@@ -32,14 +32,14 @@ var listingSchema = map[string]*schema.Schema{
 				"from_string": {
 					Type:         schema.TypeString,
 					Optional:     true,
-					Description:  "Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.",
+					Description:  "Manifest provided as a string. Wrapping `$$` signs are added by the provider automatically; do not include them. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.",
 					ExactlyOneOf: []string{"manifest.0.from_string", "manifest.0.from_stage"},
 				},
 				"from_stage": {
 					Type:         schema.TypeList,
 					Optional:     true,
 					MaxItems:     1,
-					Description:  "Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). A proper YAML indentation (2 spaces) is required.",
+					Description:  "Manifest provided from a given stage. If the manifest file is in the root, only stage needs to be passed. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). A proper YAML indentation (2 spaces) is required.",
 					ExactlyOneOf: []string{"manifest.0.from_string", "manifest.0.from_stage"},
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
@@ -154,6 +154,21 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	}
 
 	req := sdk.NewCreateListingRequest(id)
+	withReq := sdk.NewListingWithRequest()
+
+	if errs := errors.Join(
+		stringAttributeCreateBuilder(d, "manifest.0.from_string", req.WithAs),
+		stringAttributeCreateBuilder(d, "comment", req.WithComment),
+
+		attributeMappedValueCreateBuilder(d, "share", withReq.WithShare, sdk.ParseAccountObjectIdentifier),
+		attributeMappedValueCreateBuilder(d, "application_package", withReq.WithApplicationPackage, sdk.ParseAccountObjectIdentifier),
+	); errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if *withReq != *sdk.NewListingWithRequest() {
+		req.WithWith(*withReq)
+	}
 
 	if publishString := d.Get("publish").(string); publishString != BooleanDefault {
 		publish, err := booleanStringToBool(publishString)
@@ -172,23 +187,8 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		}
 	}
 
-	if comment := d.Get("comment").(string); comment != "" {
-		req.WithComment(comment)
-	}
-
-	manifest := d.Get("manifest").([]any)
-	if len(manifest) != 1 {
-		return diag.Errorf("manifest must be specified")
-	}
-
-	manifestMap := manifest[0].(map[string]any)
-
-	if fromString := manifestMap["from_string"].(string); fromString != "" {
-		req.WithAs(fromString)
-	}
-
-	if fromStage := manifestMap["from_stage"].([]any); len(fromStage) > 0 {
-		fromStageMap := fromStage[0].(map[string]any)
+	if fromStage, ok := d.GetOk("manifest.0.from_stage"); ok && len(fromStage.([]any)) == 1 {
+		fromStageMap := fromStage.([]any)[0].(map[string]any)
 
 		stage, err := sdk.ParseSchemaObjectIdentifier(fromStageMap["stage"].(string))
 		if err != nil {
@@ -201,19 +201,6 @@ func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		}
 
 		req.WithFrom(sdk.NewStageLocation(stage, location))
-	}
-
-	withReq := sdk.NewListingWithRequest()
-
-	if errs := errors.Join(
-		attributeMappedValueCreateBuilder(d, "share", withReq.WithShare, sdk.ParseAccountObjectIdentifier),
-		attributeMappedValueCreateBuilder(d, "application_package", withReq.WithApplicationPackage, sdk.ParseAccountObjectIdentifier),
-	); errs != nil {
-		return diag.FromErr(errs)
-	}
-
-	if *withReq != *sdk.NewListingWithRequest() {
-		req.WithWith(*withReq)
 	}
 
 	if err := client.Listings.Create(ctx, req); err != nil {
@@ -236,10 +223,12 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	if d.HasChange("name") {
 		newId, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 		if err != nil {
+			d.Partial(true)
 			return diag.FromErr(err)
 		}
 
 		if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithRenameTo(newId)); err != nil {
+			d.Partial(true)
 			return diag.FromErr(err)
 		}
 
@@ -253,10 +242,12 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				req := sdk.NewAlterListingAsRequest(manifest)
 
 				if err := booleanStringAttributeCreate(d, "publish", &req.Publish); err != nil {
+					d.Partial(true)
 					return diag.FromErr(err)
 				}
 
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAlterListingAs(*req)); err != nil {
+					d.Partial(true)
 					return diag.FromErr(err)
 				}
 			}
@@ -268,6 +259,7 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 				stage, err := sdk.ParseSchemaObjectIdentifier(fromStageMap["stage"].(string))
 				if err != nil {
+					d.Partial(true)
 					return diag.FromErr(err)
 				}
 
@@ -287,6 +279,7 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				}
 
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAddVersion(*req)); err != nil {
+					d.Partial(true)
 					return diag.FromErr(err)
 				}
 			}
@@ -297,15 +290,18 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		if publishString := d.Get("publish").(string); publishString != BooleanDefault {
 			publish, err := booleanStringToBool(publishString)
 			if err != nil {
+				d.Partial(true)
 				return diag.FromErr(err)
 			}
 
 			if publish {
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true)); err != nil {
+					d.Partial(true)
 					return diag.FromErr(err)
 				}
 			} else {
 				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true)); err != nil {
+					d.Partial(true)
 					return diag.FromErr(err)
 				}
 			}
@@ -315,10 +311,12 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	if d.HasChange("comment") {
 		if comment := d.Get("comment").(string); comment != "" {
 			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithSet(*sdk.NewListingSetRequest().WithComment(comment))); err != nil {
+				d.Partial(true)
 				return diag.FromErr(err)
 			}
 		} else {
 			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnset(*sdk.NewListingUnsetRequest().WithComment(true))); err != nil {
+				d.Partial(true)
 				return diag.FromErr(err)
 			}
 		}

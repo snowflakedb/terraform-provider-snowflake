@@ -13,7 +13,7 @@ description: |-
 
 !> **Warning** Versioning only works if your listing ever sourced the manifest from stage. This is a Snowflake limitation.
 
-!> **Warning** Changes to the manifest won't be detected by the provider automatically. You need to manually trigger updates when manifest content changes.
+!> **Warning** External changes to the manifest (inlined and staged) won't be detected by the provider automatically. You need to manually trigger updates when manifest content changes.
 
 !> **Warning** This resource isn't suitable for public listings because its review process doesn't align with Terraform's standard method for managing infrastructure resources. The challenge is that the review process often takes time and might need several manual revisions. We need to reconsider how to integrate this process into a resource. Although we plan to support this in the future, it might be added later. Currently, the resource may not function well with public listings because review requests are closely connected to the publish field.
 
