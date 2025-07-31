@@ -769,15 +769,23 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 			case "FIELD_OPTIONALLY_ENCLOSED_BY":
 				details.Options.CSVFieldOptionallyEnclosedBy = &v
 			case "NULL_IF":
-				newNullIf := []NullString{}
-				r := strings.Split(strings.Trim(v, "[]"), ", ")
+				trimmed := strings.Trim(v, "[]")
+				if trimmed == "" {
+					details.Options.CSVNullIf = nil
+					continue
+				}
+
+				r := strings.Split(trimmed, ", ")
 				if len(r) == 1 && r[0] == v {
 					details.Options.CSVNullIf = nil
 					continue
 				}
 
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
-					newNullIf = append(newNullIf, NullString{s})
+				newNullIf := []NullString{}
+				for _, s := range r {
+					if s != "" {
+						newNullIf = append(newNullIf, NullString{s})
+					}
 				}
 				details.Options.CSVNullIf = &newNullIf
 			case "COMPRESSION":
