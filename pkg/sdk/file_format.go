@@ -775,19 +775,13 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 					continue
 				}
 
-				r := strings.Split(trimmed, ", ")
-				if len(r) == 1 && r[0] == v {
-					details.Options.CSVNullIf = nil
-					continue
-				}
-
-				newNullIf := []NullString{}
-				for _, s := range r {
+				nullIf := []NullString{}
+				for _, s := range strings.Split(trimmed, ", ") {
 					if s != "" {
-						newNullIf = append(newNullIf, NullString{s})
+						nullIf = append(nullIf, NullString{s})
 					}
 				}
-				details.Options.CSVNullIf = &newNullIf
+				details.Options.CSVNullIf = &nullIf
 			case "COMPRESSION":
 				comp := CSVCompression(v)
 				details.Options.CSVCompression = &comp
