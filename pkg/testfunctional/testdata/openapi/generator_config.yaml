@@ -1,0 +1,14 @@
+provider:
+  name: snowflakepluginframeworkfunctionaltests
+resources:
+  warehouse:
+    create:
+      path: /api/v2/warehouses
+      method: POST
+    read:
+      path: /api/v2/warehouses/{name}
+      method: GET
+    schema:
+      attributes:
+        aliases:
+          name: id

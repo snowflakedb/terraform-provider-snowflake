@@ -6,6 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/computednestedlist"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/genrest"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/httpserver"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -79,6 +80,7 @@ func (p *pluginFrameworkFunctionalTestsProvider) Resources(_ context.Context) []
 		testfunctional.NewEnumHandlingResource,
 		testfunctional.NewOptionalComputedResource,
 		testfunctional.NewNestedSensitiveResource,
+		genrest.NewWarehouseResource,
 	}
 }
 
