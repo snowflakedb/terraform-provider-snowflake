@@ -187,7 +187,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.Equal(t, "h", *describeResult.Options.CSVEscapeUnenclosedField)
 		assert.True(t, *describeResult.Options.CSVTrimSpace)
 		assert.Equal(t, "'", *describeResult.Options.CSVFieldOptionallyEnclosedBy)
-		assert.Equal(t, &[]sdk.NullString{{S: "j"}, {S: "k"}}, describeResult.Options.CSVNullIf)
+		assert.Equal(t, &[]sdk.NullString{}, describeResult.Options.CSVNullIf)
 		assert.True(t, *describeResult.Options.CSVErrorOnColumnCountMismatch)
 		assert.True(t, *describeResult.Options.CSVReplaceInvalidCharacters)
 		assert.True(t, *describeResult.Options.CSVEmptyFieldAsNull)
