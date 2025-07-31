@@ -129,7 +129,7 @@ var ListingNameRegex = regexp.MustCompile("^\"?[a-zA-Z][a-zA-Z_0-9]*\"?$")
 func IsValidListingName(i any, path cty.Path) diag.Diagnostics {
 	v, ok := i.(string)
 	if !ok {
-		return diag.Errorf("expected type of %v to be string", path)
+		return diag.Errorf("Expected type of %v to be string", path)
 	}
 
 	if !ListingNameRegex.MatchString(v) {

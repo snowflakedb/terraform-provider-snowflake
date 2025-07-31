@@ -9,7 +9,7 @@ description: |-
 
 !> **Warning** Versioning only works if your listing ever sourced the manifest from stage. This is a Snowflake limitation.
 
-!> **Warning** Changes to the manifest won't be detected by the provider automatically. You need to manually trigger updates when manifest content changes.
+!> **Warning** External changes to the manifest (inlined and staged) won't be detected by the provider automatically. You need to manually trigger updates when manifest content changes.
 
 !> **Warning** This resource isn't suitable for public listings because its review process doesn't align with Terraform's standard method for managing infrastructure resources. The challenge is that the review process often takes time and might need several manual revisions. We need to reconsider how to integrate this process into a resource. Although we plan to support this in the future, it might be added later. Currently, the resource may not function well with public listings because review requests are closely connected to the publish field.
 
@@ -121,8 +121,8 @@ resource "snowflake_listing" "basic_staged" {
 
 Optional:
 
-- `from_stage` (Block List, Max: 1) Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). A proper YAML indentation (2 spaces) is required. (see [below for nested schema](#nestedblock--manifest--from_stage))
-- `from_string` (String) Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.
+- `from_stage` (Block List, Max: 1) Manifest provided from a given stage. If the manifest file is in the root, only stage needs to be passed. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). A proper YAML indentation (2 spaces) is required. (see [below for nested schema](#nestedblock--manifest--from_stage))
+- `from_string` (String) Manifest provided as a string. Wrapping `$$` signs are added by the provider automatically; do not include them. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.
 
 <a id="nestedblock--manifest--from_stage"></a>
 ### Nested Schema for `manifest.from_stage`

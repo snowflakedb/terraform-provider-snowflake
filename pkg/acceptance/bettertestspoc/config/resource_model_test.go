@@ -110,11 +110,6 @@ func (m *SomeModel) WithMultilineField(multilineContent string) *SomeModel {
 	return m
 }
 
-func (m *SomeModel) WithRawMultilineField(multilineContent string) *SomeModel {
-	m.MultilineField = config.RawMultilineWrapperVariable(multilineContent)
-	return m
-}
-
 func (m *SomeModel) WithDependsOn(values ...string) *SomeModel {
 	m.SetDependsOn(values...)
 	return m

@@ -660,7 +660,7 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 						HasName(id.Name()).
 						HasTitle(title2).
 						HasState(sdk.ListingStatePublished),
-					assert.Check(assertContainsListingVersion(t, id, "VERSION$1", "null")),
+					assert.Check(assertContainsListingVersion(t, id, "VERSION$1", "")),
 				),
 			},
 			// Switch back to the inlined manifest (the manifest is the same; a new version is produced).
@@ -678,7 +678,7 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 						HasName(id.Name()).
 						HasTitle(title2).
 						HasState(sdk.ListingStatePublished),
-					assert.Check(assertContainsListingVersion(t, id, "VERSION$2", "")),
+					assert.Check(assertContainsListingVersion(t, id, "VERSION$2", "null")),
 				),
 			},
 		},
@@ -873,6 +873,8 @@ func TestAcc_Listing_Validations(t *testing.T) {
 			}),
 		))
 
+	modelWithInvalidName := model.ListingWithInlineManifest("test", "_invalid_name", manifest)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { TestAccPreCheck(t) },
@@ -895,6 +897,11 @@ func TestAcc_Listing_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelWithInvalidStageId),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Expected SchemaObjectIdentifier identifier type`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelWithInvalidName),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores`),
 			},
 		},
 	})
