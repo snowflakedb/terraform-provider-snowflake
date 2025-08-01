@@ -129,6 +129,8 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 			return gosnowflake.Config{}, err
 		}
 		driverCfg.Authenticator = authenticator
+	} else {
+		driverCfg.Authenticator = GosnowflakeAuthTypeEmpty
 	}
 	pointerAttributeSet(c.InsecureMode, &driverCfg.InsecureMode) //nolint:staticcheck
 	if c.OcspFailOpen != nil {
@@ -207,7 +209,7 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if baseConfig.Port == 0 {
 		baseConfig.Port = mergeConfig.Port
 	}
-	if baseConfig.Authenticator == gosnowflakeAuthTypeEmpty {
+	if baseConfig.Authenticator == GosnowflakeAuthTypeEmpty {
 		baseConfig.Authenticator = mergeConfig.Authenticator
 	}
 	if baseConfig.Passcode == "" {
@@ -455,12 +457,12 @@ func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 	}
 }
 
-const gosnowflakeAuthTypeEmpty = gosnowflake.AuthType(-1)
+const GosnowflakeAuthTypeEmpty = gosnowflake.AuthType(-1)
 
 func ToExtendedAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 	switch strings.ToUpper(s) {
 	case string(AuthenticationTypeEmpty):
-		return gosnowflakeAuthTypeEmpty, nil
+		return GosnowflakeAuthTypeEmpty, nil
 	default:
 		return ToAuthenticatorType(s)
 	}
