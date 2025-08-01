@@ -28,6 +28,7 @@ Note that the generator does not support REST API definitions from multiple file
 - https://github.com/pb33f/libopenapi/issues/297
 - https://github.com/hashicorp/terraform-plugin-codegen-openapi/issues/89
 - https://pb33f.io/libopenapi/rolodex/
+
 This means that we use the `warehouse_modified.yaml` file instead. In this file, we appended the `common.yaml` file to the `warehouse.yaml` file and resolved `$ref` references to point to sections in the same file.
 
 Run the following:
@@ -35,7 +36,8 @@ Run the following:
 tfplugingen-framework scaffold resource \
   --name warehouse \
   --output-dir . \
-  --package genrest
+  --package genrest \
+  --force #override the existing file
 ```
 This command generates the `warehouse_resource.go` file with the scaffold code. This file is meant to be modified manually by the developers.
 
@@ -57,3 +59,5 @@ Note that the `tfplugingen-framework` generator outputs the resources in separat
 - In the `generator_config.yaml` file:
   - The provider name must not contain special characters - it must match `'^[a-z_][a-z0-9_]*$'`.
   - There is no way to specify the path prefix. This means that each path must be prefixed with `/api/v2/` manually.
+- The read-only files are not properly marked in the output code (they are marked as computed optionals).
+- Using multiple endpoints in one operation (e.g. SHOW & DESC in read; SET & RESUME in update) is not supported.

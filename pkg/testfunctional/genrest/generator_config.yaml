@@ -8,6 +8,12 @@ resources:
     read:
       path: /api/v2/warehouses/{name}
       method: GET
+    update:
+      path: /api/v2/warehouses/{name}
+      method: PUT
+    delete:
+      path: /api/v2/warehouses/{name}
+      method: DELETE
     schema:
       attributes:
         aliases:
