@@ -450,6 +450,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_image_repository":                                             resources.ImageRepository(),
 		"snowflake_job_service":                                                  resources.JobService(),
 		"snowflake_legacy_service_user":                                          resources.LegacyServiceUser(),
+		"snowflake_listing":                                                      resources.Listing(),
 		"snowflake_managed_account":                                              resources.ManagedAccount(),
 		"snowflake_masking_policy":                                               resources.MaskingPolicy(),
 		"snowflake_materialized_view":                                            resources.MaterializedView(),

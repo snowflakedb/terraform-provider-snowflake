@@ -138,17 +138,20 @@ func (s *AlterListingAsRequest) WithComment(Comment string) *AlterListingAsReque
 }
 
 func NewAddListingVersionRequest(
-	VersionName string,
 	From Location,
 ) *AddListingVersionRequest {
 	s := AddListingVersionRequest{}
-	s.VersionName = VersionName
 	s.From = From
 	return &s
 }
 
 func (s *AddListingVersionRequest) WithIfNotExists(IfNotExists bool) *AddListingVersionRequest {
 	s.IfNotExists = &IfNotExists
+	return s
+}
+
+func (s *AddListingVersionRequest) WithVersionName(VersionName string) *AddListingVersionRequest {
+	s.VersionName = VersionName
 	return s
 }
 

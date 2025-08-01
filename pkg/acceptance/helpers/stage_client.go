@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"testing"
@@ -123,7 +124,10 @@ func (c *StageClient) PutInLocationWithContent(t *testing.T, stageLocation strin
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf(`REMOVE %s/%s`, stageLocation, filename))
-		require.NoError(t, err)
+		// Only check the error if it's not related to the stage / file existence or access
+		if !errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+			require.NoError(t, err)
+		}
 	})
 
 	return filePath

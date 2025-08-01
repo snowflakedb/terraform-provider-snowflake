@@ -280,16 +280,16 @@ func (r listingVersionDBRow) convert() *ListingVersion {
 	lv := &ListingVersion{
 		CreatedOn:         r.CreatedOn,
 		Name:              r.Name,
-		Alias:             r.Alias,
 		LocationUrl:       r.LocationUrl,
 		IsDefault:         r.IsDefault,
 		IsLive:            r.IsLive,
 		IsFirst:           r.IsFirst,
 		IsLast:            r.IsLast,
-		Comment:           r.Comment,
 		SourceLocationUrl: r.SourceLocationUrl,
 	}
 
+	mapNullString(&lv.Alias, r.Alias)
+	mapNullString(&lv.Comment, r.Comment)
 	mapNullString(&lv.GitCommitHash, r.GitCommitHash)
 
 	return lv
