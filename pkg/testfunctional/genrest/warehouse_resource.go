@@ -3,8 +3,8 @@ package genrest
 import (
 	"context"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/genrest/resource_warehouse"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -25,13 +25,15 @@ func (r *warehouseResource) Metadata(ctx context.Context, req resource.MetadataR
 }
 
 func (r *warehouseResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Computed: true,
-			},
-		},
-	}
+	resp.Schema = resource_warehouse.WarehouseResourceSchema(ctx)
+	// This was edited manually; the original content is below.
+	// resp.Schema = schema.Schema{
+	// 	Attributes: map[string]schema.Attribute{
+	// 		"id": schema.StringAttribute{
+	// 			Computed: true,
+	// 		},
+	// 	},
+	// }
 }
 
 func (r *warehouseResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
