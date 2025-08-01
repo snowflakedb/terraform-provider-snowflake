@@ -493,7 +493,7 @@ func TestAcc_FileFormat_Rename(t *testing.T) {
 	})
 }
 
-func TestAcc_FileFormat_EmptyNullIf_NoPlanDiff(t *testing.T) {
+func TestAcc_FileFormat_CSV_EmptyNullIf_NoPlanDiff(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
@@ -517,6 +517,21 @@ func TestAcc_FileFormat_EmptyNullIf_NoPlanDiff(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_file_format.test", "null_if.#", "0"),
 				),
 			},
+		},
+	})
+}
+
+func TestAcc_FileFormat_JSON_EmptyNullIf_NoPlanDiff(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.FileFormat),
+		Steps: []resource.TestStep{
 			{
 				Config: fileFormatConfigEmptyNullIf(id, "JSON"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -530,6 +545,21 @@ func TestAcc_FileFormat_EmptyNullIf_NoPlanDiff(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_file_format.test", "null_if.#", "0"),
 				),
 			},
+		},
+	})
+}
+
+func TestAcc_FileFormat_AVRO_EmptyNullIf_NoPlanDiff(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.FileFormat),
+		Steps: []resource.TestStep{
 			{
 				Config: fileFormatConfigEmptyNullIf(id, "AVRO"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -543,6 +573,21 @@ func TestAcc_FileFormat_EmptyNullIf_NoPlanDiff(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_file_format.test", "null_if.#", "0"),
 				),
 			},
+		},
+	})
+}
+
+func TestAcc_FileFormat_ORC_EmptyNullIf_NoPlanDiff(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.FileFormat),
+		Steps: []resource.TestStep{
 			{
 				Config: fileFormatConfigEmptyNullIf(id, "ORC"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -556,6 +601,21 @@ func TestAcc_FileFormat_EmptyNullIf_NoPlanDiff(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_file_format.test", "null_if.#", "0"),
 				),
 			},
+		},
+	})
+}
+
+func TestAcc_FileFormat_PARQUET_EmptyNullIf_NoPlanDiff(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.FileFormat),
+		Steps: []resource.TestStep{
 			{
 				Config: fileFormatConfigEmptyNullIf(id, "PARQUET"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{

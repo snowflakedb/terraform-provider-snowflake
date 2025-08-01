@@ -15,6 +15,17 @@ func TestFileFormatsCreate(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = CSV`, id.FullyQualifiedName())
 	})
 
+	t.Run("CSV with empty null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeCSV,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				CSVNullIf: &[]NullString{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = CSV NULL_IF = ()`, id.FullyQualifiedName())
+	})
+
 	t.Run("complete CSV", func(t *testing.T) {
 		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
