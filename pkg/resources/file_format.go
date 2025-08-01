@@ -405,7 +405,6 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		if v, ok := d.GetOk("field_optionally_enclosed_by"); ok {
 			opts.CSVFieldOptionallyEnclosedBy = sdk.String(v.(string))
 		}
-		// Always set null_if, even if empty array
 		nullIf := []sdk.NullString{}
 		if v, ok := d.GetOk("null_if"); ok {
 			for _, s := range v.([]interface{}) {
@@ -445,7 +444,6 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.JSONBinaryFormat = &bf
 		}
 		opts.JSONTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
-		// Always set null_if, even if empty array
 		nullIf := []sdk.NullString{}
 		if v, ok := d.GetOk("null_if"); ok {
 			for _, s := range v.([]interface{}) {
@@ -474,7 +472,6 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.AvroCompression = &comp
 		}
 		opts.AvroTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
-		// Always set null_if, even if empty array
 		nullIf := []sdk.NullString{}
 		if v, ok := d.GetOk("null_if"); ok {
 			for _, s := range v.([]interface{}) {
@@ -489,7 +486,6 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		opts.AvroNullIf = &nullIf
 	case sdk.FileFormatTypeORC:
 		opts.ORCTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
-		// Always set null_if, even if empty array
 		nullIf := []sdk.NullString{}
 		if v, ok := d.GetOk("null_if"); ok {
 			for _, s := range v.([]interface{}) {
@@ -509,7 +505,6 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		opts.ParquetBinaryAsText = sdk.Bool(d.Get("binary_as_text").(bool))
 		opts.ParquetTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
-		// Always set null_if, even if empty array
 		nullIf := []sdk.NullString{}
 		if v, ok := d.GetOk("null_if"); ok {
 			for _, s := range v.([]interface{}) {
