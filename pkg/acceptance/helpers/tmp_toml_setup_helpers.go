@@ -81,6 +81,13 @@ func (c *TestClient) TempTomlConfigForServiceUserWithPatAsPassword(t *testing.T,
 	})
 }
 
+func (c *TestClient) TempTomlConfigForServiceUserWithoutAuthenticator(t *testing.T, legacyServiceUser *TmpLegacyServiceUser) *TmpTomlConfig {
+	t.Helper()
+	return c.StoreTempTomlConfig(t, func(profile string) string {
+		return TomlConfigForLegacyServiceUserWithoutAuthenticator(t, profile, legacyServiceUser.UserId, legacyServiceUser.RoleId, legacyServiceUser.WarehouseId, legacyServiceUser.AccountId, legacyServiceUser.Pass)
+	})
+}
+
 func (c *TestClient) StoreTempTomlConfig(t *testing.T, tomlProvider func(string) string) *TmpTomlConfig {
 	t.Helper()
 

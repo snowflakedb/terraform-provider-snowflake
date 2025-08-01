@@ -623,7 +623,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.Warehouse, "invalid")
 					t.Setenv(snowflakeenvs.Protocol, "invalid")
 					t.Setenv(snowflakeenvs.Port, "-1")
-					t.Setenv(snowflakeenvs.Token, "")
+					t.Setenv(snowflakeenvs.Token, "invalid")
 					t.Setenv(snowflakeenvs.Role, "invalid")
 					t.Setenv(snowflakeenvs.ValidateDefaultParameters, "false")
 					t.Setenv(snowflakeenvs.ClientIp, "2.2.2.2")
@@ -942,6 +942,7 @@ func TestAcc_Provider_SnowflakeAuth(t *testing.T) {
 
 	tmpLegacyServiceUser := testClient().SetUpTemporaryLegacyServiceUser(t)
 	tmpLegacyServiceUserConfig := testClient().TempTomlConfigForLegacyServiceUser(t, tmpLegacyServiceUser)
+	tmpLegacyServiceUserConfigWithoutAuthenticator := testClient().TempTomlConfigForServiceUserWithoutAuthenticator(t, tmpLegacyServiceUser)
 	incorrectLegacyServiceUserConfig := testClient().TempIncorrectTomlConfigForLegacyServiceUser(t, tmpLegacyServiceUser)
 
 	resource.Test(t, resource.TestCase{
@@ -963,6 +964,12 @@ func TestAcc_Provider_SnowflakeAuth(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpLegacyServiceUserConfig.Profile), datasourceModel()),
 			},
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, tmpLegacyServiceUserConfigWithoutAuthenticator.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpLegacyServiceUserConfigWithoutAuthenticator.Profile), datasourceModel()),
+			},
 		},
 	})
 }
@@ -972,6 +979,7 @@ func TestAcc_Provider_ProgrammaticAccessTokenAuth(t *testing.T) {
 
 	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
 	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
+	userWithPatTfConfig := providermodel.PatConfig(*userWithPat)
 
 	userWithPatAsPasswordConfig := testClient().TempTomlConfigForServiceUserWithPatAsPassword(t, userWithPat)
 
@@ -987,6 +995,13 @@ func TestAcc_Provider_ProgrammaticAccessTokenAuth(t *testing.T) {
 					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile), datasourceModel()),
+			},
+			// Authenticate with PROGRAMMATIC_ACCESS_TOKEN authenticator and PAT passed in token field (set in Terraform)
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, "")
+				},
+				Config: config.FromModels(t, userWithPatTfConfig, datasourceModel()),
 			},
 			// Authenticate with the default authenticator and PAT passed in password field
 			{
