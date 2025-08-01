@@ -15,7 +15,7 @@ jobs:
   all-tests:
     environment: test
     env:
-      TEST_SF_TF_TEST_OBJECT_SUFFIX: ${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.head.sha) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha) }}
+      TEST_SF_TF_TEST_OBJECT_SUFFIX: "${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.head.sha) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha) }}_${{ github.run_attempt }}"
     name: Run All
     runs-on: ubuntu-latest
     if: (github.event_name == 'repository_dispatch') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
