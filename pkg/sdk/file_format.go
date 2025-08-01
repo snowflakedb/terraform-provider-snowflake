@@ -418,7 +418,7 @@ type FileFormatTypeOptions struct {
 	CSVEscapeUnenclosedField      *string         `ddl:"parameter,single_quotes" sql:"ESCAPE_UNENCLOSED_FIELD"`
 	CSVTrimSpace                  *bool           `ddl:"parameter" sql:"TRIM_SPACE"`
 	CSVFieldOptionallyEnclosedBy  *string         `ddl:"parameter,single_quotes" sql:"FIELD_OPTIONALLY_ENCLOSED_BY"`
-	CSVNullIf                     *[]NullString   `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	CSVNullIf                     *[]NullString   `ddl:"parameter,must_parentheses" sql:"NULL_IF"`
 	CSVErrorOnColumnCountMismatch *bool           `ddl:"parameter" sql:"ERROR_ON_COLUMN_COUNT_MISMATCH"`
 	CSVReplaceInvalidCharacters   *bool           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	CSVEmptyFieldAsNull           *bool           `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
