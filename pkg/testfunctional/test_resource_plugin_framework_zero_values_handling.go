@@ -93,9 +93,9 @@ func (r *ZeroValuesResource) Create(ctx context.Context, request resource.Create
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &ZeroValuesOpts{}
-	booleanAttributeCreate(data.BoolValue, &opts.BoolValue)
-	int64AttributeCreate(data.IntValue, &opts.IntValue)
-	stringAttributeCreate(data.StringValue, &opts.StringValue)
+	_ = BooleanAttributeCreate(data.BoolValue, &opts.BoolValue)
+	_ = Int64AttributeCreate(data.IntValue, &opts.IntValue)
+	_ = StringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	setCreateActionsOutput(ctx, response, opts, data)
 

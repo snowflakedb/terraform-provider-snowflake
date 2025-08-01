@@ -1,9 +1,11 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testacc/poc/gen.PluginFrameworkProviderModel*/ -}}
 
+var existingSchema = provider.GetProviderSchema()
+
 var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 {{- range .SchemaEntries }}
     "{{ .Key }}": {{ .PluginFrameworkSchemaAttributeType }}{
-        Description: "{{ .Description }}",
+        Description: existingSchema["{{ .Key }}"].Description,
         Optional:    {{ .Optional }},
         Sensitive:   {{ .Sensitive }},
     },

@@ -94,7 +94,7 @@ func (r *ParameterHandlingPrivateResource) Create(ctx context.Context, request r
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &ParameterHandlingPrivateOpts{}
-	stringAttributeCreate(data.StringValue, &opts.StringValue)
+	_ = StringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	r.setCreateActionsOutput(ctx, response, opts, data)
 

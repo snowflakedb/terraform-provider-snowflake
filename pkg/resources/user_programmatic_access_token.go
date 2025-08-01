@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -23,6 +24,7 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The name of the user that the token is associated with. A user cannot use another user's programmatic access token to authenticate."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 	},
 	"name": {
 		Type:             schema.TypeString,
@@ -41,7 +43,7 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 		Type:             schema.TypeInt,
 		Optional:         true,
 		ForceNew:         true,
-		Description:      externalChangesNotDetectedFieldDescription("The number of days that the programmatic access token can be used for authentication."),
+		Description:      externalChangesNotDetectedFieldDescription("The number of days that the programmatic access token can be used for authentication. This field cannot be altered after the token is created. Instead, you must rotate the token with the `keeper` field."),
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 	},
 	"mins_to_bypass_network_policy_requirement": {
@@ -60,25 +62,33 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 			return x.(string) == string(sdk.ProgrammaticAccessTokenStatusDisabled)
 		}),
 	},
-	// TODO(next PR): add support for this field
-	// "expire_rotated_token_after_hours": {
-	// 	Type:             schema.TypeInt,
-	// 	Optional:         true,
-	// 	Description:      "Sets the expiration time of the existing token secret to expire after the specified number of hours. You can set this to a value of 0 to expire the current token secret immediately.",
-	// 	DiffSuppressFunc: IgnoreAfterCreation,
-	// ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-	// },
+	"expire_rotated_token_after_hours": {
+		Type:             schema.TypeInt,
+		Optional:         true,
+		Description:      "This field is only used when the token is rotated by changing the `keeper` field. Sets the expiration time of the existing token secret to expire after the specified number of hours. You can set this to a value of 0 to expire the current token secret immediately.",
+		Default:          IntDefault,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
+	},
+	"keeper": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Arbitrary string that, if and only if, changed from a non-empty to a different non-empty value (or known after apply), will trigger a key to be rotated. When you add this field to the configuration, or remove it from the configuration, the rotation is not triggered. When the token is rotated, the `token` and `rotated_token_name` fields are marked as computed.",
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Descriptive comment about the programmatic access token.",
 	},
 	"token": {
-		Type:      schema.TypeString,
-		Computed:  true,
-		Sensitive: true,
-		// TODO(next PR): update this description
-		Description: "The token itself. Use this to authenticate to an endpoint. The data in this field is updated only when the token is created.",
+		Type:        schema.TypeString,
+		Computed:    true,
+		Sensitive:   true,
+		Description: "The token itself. Use this to authenticate to an endpoint. The data in this field is updated only when the token is created or rotated. In this case, the field is marked as computed.",
+	},
+	"rotated_token_name": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "Name of the token that represents the prior secret. This field is updated only when the token is rotated. In this case, the field is marked as computed.",
 	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -102,8 +112,24 @@ func UserProgrammaticAccessToken() *schema.Resource {
 			"See [Using programmatic access tokens for authentication](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) user guide for more details.",
 		),
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.UserProgrammaticAccessToken,
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.UserProgrammaticAccessToken, customdiff.All(
 			ComputedIfAnyAttributeChanged(userProgrammaticAccessTokenSchema, ShowOutputAttributeName, "disabled", "mins_to_bypass_network_policy_requirement", "comment"),
+			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+				o, n := diff.GetChange("keeper")
+				// If the key is being rotated, mark the `token` and `rotated_token_name` as computed to inform that these values will change.
+				if shouldRotateToken(o.(string), n.(string), diff.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
+					errs := errors.Join(
+						diff.SetNewComputed("token"),
+						diff.SetNewComputed("rotated_token_name"),
+					)
+					if errs != nil {
+						return errs
+					}
+				}
+
+				return nil
+			},
+		),
 		),
 
 		Schema: userProgrammaticAccessTokenSchema,
@@ -113,6 +139,12 @@ func UserProgrammaticAccessToken() *schema.Resource {
 
 		Timeouts: defaultTimeouts,
 	}
+}
+
+// Rotate the token, but only when the change is from a non-empty to a non-empty value or the new value is unknown (known after apply).
+// When the value was empty, but is now known after apply, it means that the token is not being rotated.
+func shouldRotateToken(old, new string, isKnown bool) bool {
+	return old != "" && (new != "" && old != new || !isKnown)
 }
 
 func ImportUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
@@ -206,6 +238,7 @@ func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.Rea
 					},
 				}
 			}
+			return diag.FromErr(err)
 		}
 
 		if withExternalChangesMarking {
@@ -226,7 +259,6 @@ func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.Rea
 		if token.RoleRestriction != nil {
 			roleRestriction = token.RoleRestriction.Name()
 		}
-
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ProgrammaticAccessTokenToSchema(token)}),
 			d.Set("role_restriction", roleRestriction),
@@ -259,27 +291,80 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 		d.SetId(resourceId.String())
 	}
 
-	set, unset := sdk.NewModifyProgrammaticAccessTokenSetRequest(), sdk.NewModifyProgrammaticAccessTokenUnsetRequest()
-	errs := errors.Join(
-		// role_restriction and days_to_expiry are handled by forcenew
-		intAttributeUpdate(d, "mins_to_bypass_network_policy_requirement", &set.MinsToBypassNetworkPolicyRequirement, &unset.MinsToBypassNetworkPolicyRequirement),
-		booleanStringAttributeUpdate(d, "disabled", &set.Disabled, &unset.Disabled),
-		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-	)
-	if errs != nil {
-		return diag.FromErr(errs)
+	// TODO(SNOW-2210280): Call the alters as usual, after the behavior is fixed in Snowflake.
+	if d.HasChange("disabled") {
+		v := d.Get("disabled").(string)
+		if v != BooleanDefault {
+			parsed, err := booleanStringToBool(v)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithDisabled(parsed))); err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithDisabled(true))); err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		}
 	}
 
-	if (*set != sdk.ModifyProgrammaticAccessTokenSetRequest{}) {
-		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*set)); err != nil {
-			return diag.FromErr(err)
+	if d.HasChange("comment") {
+		comment := d.Get("comment").(string)
+		if comment != "" {
+			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithComment(comment)))
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		} else {
+			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithComment(true)))
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
 		}
 	}
-	if (*unset != sdk.ModifyProgrammaticAccessTokenUnsetRequest{}) {
-		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*unset)); err != nil {
-			return diag.FromErr(err)
+
+	if d.HasChange("mins_to_bypass_network_policy_requirement") {
+		v, ok := d.GetOk("mins_to_bypass_network_policy_requirement")
+		if ok {
+			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithMinsToBypassNetworkPolicyRequirement(v.(int))))
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		} else {
+			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithMinsToBypassNetworkPolicyRequirement(true)))
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
 		}
 	}
+
+	o, n := d.GetChange("keeper")
+	if shouldRotateToken(o.(string), n.(string), d.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
+		request := sdk.NewRotateUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName)
+		if v := d.Get("expire_rotated_token_after_hours").(int); v != IntDefault {
+			request.WithExpireRotatedTokenAfterHours(v)
+		}
+
+		token, err := client.Users.RotateProgrammaticAccessToken(ctx, request)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		errs := errors.Join(
+			d.Set("token", token.TokenSecret),
+			d.Set("rotated_token_name", token.RotatedTokenName),
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
+		}
+	}
+
 	return ReadUserProgrammaticAccessToken(false)(ctx, d, meta)
 }
 

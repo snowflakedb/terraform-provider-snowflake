@@ -32,6 +32,11 @@ func ImportedCurrentOrganizationAccountResource(t *testing.T, id string) *Curren
 // Attribute value string checks //
 ///////////////////////////////////
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNameString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("name", expected))
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasAbortDetachedQueryString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("abort_detached_query", expected))
 	return c
@@ -134,6 +139,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientSessionKeepAliveHear
 
 func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMappingString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("client_timestamp_type_mapping", expected))
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCommentString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("comment", expected))
 	return c
 }
 
@@ -636,6 +646,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasWeekStartString(expected s
 // Attribute no value checks //
 ///////////////////////////////
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNoName() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("name"))
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasNoAbortDetachedQuery() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("abort_detached_query"))
 	return c
@@ -738,6 +753,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasNoClientSessionKeepAliveHe
 
 func (c *CurrentOrganizationAccountResourceAssert) HasNoClientTimestampTypeMapping() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("client_timestamp_type_mapping"))
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasNoComment() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("comment"))
 	return c
 }
 
@@ -1345,6 +1365,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMapping
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasCommentEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("comment", ""))
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasCortexEnabledCrossRegionEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("cortex_enabled_cross_region", ""))
 	return c
@@ -1844,6 +1869,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasWeekStartEmpty() *CurrentO
 // Attribute presence checks //
 ///////////////////////////////
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNameNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("name"))
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasAbortDetachedQueryNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("abort_detached_query"))
 	return c
@@ -1946,6 +1976,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientSessionKeepAliveHear
 
 func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMappingNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("client_timestamp_type_mapping"))
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCommentNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("comment"))
 	return c
 }
 

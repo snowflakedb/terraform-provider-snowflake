@@ -21,3 +21,7 @@ variable "aws_object_acl" {
 variable "aws_role_arn" {
   type = string
 }
+
+variable "external_id" {
+  type = string
+}

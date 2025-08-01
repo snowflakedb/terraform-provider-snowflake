@@ -68,6 +68,14 @@ func (m *mockOrganizationAccounts) Show(ctx context.Context, request *sdk.ShowOr
 	return m.ShowResult, m.ShowResultErr
 }
 
+func (m *mockOrganizationAccounts) ShowByID(ctx context.Context, id sdk.AccountObjectIdentifier) (*sdk.OrganizationAccount, error) {
+	return nil, nil
+}
+
+func (m *mockOrganizationAccounts) ShowByIDSafely(ctx context.Context, id sdk.AccountObjectIdentifier) (*sdk.OrganizationAccount, error) {
+	return nil, nil
+}
+
 func (m *mockOrganizationAccounts) Create(ctx context.Context, request *sdk.CreateOrganizationAccountRequest) error {
 	return nil
 }
@@ -83,6 +91,16 @@ func (m *mockOrganizationAccounts) ShowParameters(ctx context.Context) ([]*sdk.P
 func (m *mockOrganizationAccounts) UnsetAllParameters(ctx context.Context) error {
 	return nil
 }
+
+func (m *mockOrganizationAccounts) UnsetPolicySafely(ctx context.Context, kind sdk.PolicyKind) error {
+	return nil
+}
+
+func (m *mockOrganizationAccounts) SetPolicySafely(ctx context.Context, kind sdk.PolicyKind, id sdk.SchemaObjectIdentifier) error {
+	return nil
+}
+
+func (m *mockOrganizationAccounts) UnsetAll(ctx context.Context) error { return nil }
 
 func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 	accountLocator := "ABC123123"

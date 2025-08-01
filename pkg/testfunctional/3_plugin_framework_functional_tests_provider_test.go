@@ -77,6 +77,8 @@ func (p *pluginFrameworkFunctionalTestsProvider) Resources(_ context.Context) []
 		testfunctional.NewParameterHandlingBackingFieldResource,
 		testfunctional.NewParameterHandlingPrivateResource,
 		testfunctional.NewEnumHandlingResource,
+		testfunctional.NewOptionalComputedResource,
+		testfunctional.NewNestedSensitiveResource,
 	}
 }
 

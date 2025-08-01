@@ -4,6 +4,12 @@ resource "snowflake_current_organization_account" "minimal" {
 
 ## Complete (with every optional set)
 resource "snowflake_current_organization_account" "complete" {
+  comment = "This is a comment for the current organization account resource"
+
+  resource_monitor = snowflake_resource_monitor.example.fully_qualified_name
+  session_policy   = "\"<database_name>\".\"<schema_name>\".\"<session_policy_name>\""
+  password_policy  = snowflake_password_policy.example.fully_qualified_name
+
   abort_detached_query                                       = true
   allow_client_mfa_caching                                   = true
   allow_id_token                                             = true
@@ -72,7 +78,6 @@ resource "snowflake_current_organization_account" "complete" {
   noorder_sequence_as_default                                = false
   oauth_add_privileged_roles_to_blocked_list                 = false
   odbc_treat_decimal_as_int                                  = true
-  password_policy                                            = snowflake_password_policy.example.fully_qualified_name
   periodic_data_rekeying                                     = false
   pipe_execution_paused                                      = true
   prevent_unload_to_inline_url                               = true
@@ -83,12 +88,10 @@ resource "snowflake_current_organization_account" "complete" {
   replace_invalid_characters                                 = true
   require_storage_integration_for_stage_creation             = true
   require_storage_integration_for_stage_operation            = true
-  resource_monitor                                           = snowflake_resource_monitor.example.fully_qualified_name
   rows_per_resultset                                         = 1000
   search_path                                                = "$current, $public"
   serverless_task_max_statement_size                         = "XLARGE"
   serverless_task_min_statement_size                         = "SMALL"
-  session_policy                                             = "\"<database_name>\".\"<schema_name>\".\"<session_policy_name>\""
   sso_login_page                                             = true
   statement_queued_timeout_in_seconds                        = 1
   statement_timeout_in_seconds                               = 1

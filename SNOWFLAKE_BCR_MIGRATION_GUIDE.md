@@ -22,10 +22,10 @@ Changed format in `Arguments` column from `SHOW FUNCTIONS/PROCEDURES` output is 
 - [`snowflake_functions`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/functions) and [`snowflake_procedures`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/procedures) being inoperable. Check: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822).
 - All function and all procedure resources failing to read their state from Snowflake, which leads to removing them from terraform state (if `terraform apply` or `terraform plan --refresh-only` is run). Check: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823).
 
-The parsing was improved and is available starting with the [2.3.0](https://registry.terraform.io/providers/snowflakedb/snowflake/2.3.0/docs/) version of the provider.
+The parsing was improved and is available starting with the [2.3.0](https://registry.terraform.io/providers/snowflakedb/snowflake/2.3.0/docs/) version of the provider. This fix was also backported to the [1.2.3](https://github.com/snowflakedb/terraform-provider-snowflake/releases/tag/v1.2.3) version.
 
 To use the provider with the bundles containing this change:
-1. Bump the provider to 2.3.0 version.
+1. Bump the provider to 2.3.0 version (or 1.2.3 version).
 2. Affected data sources should work without any further actions after bumping.
 3. If your function/procedure resources were removed from terraform state (you can check it by running `terraform state list`), you need to reimport them (follow our [resource migration guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/resource_migration)).
 4. If your function/procedure resources are still in the terraform state, they should work any further actions after bumping.

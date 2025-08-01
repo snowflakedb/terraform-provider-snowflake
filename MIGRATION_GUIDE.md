@@ -21,12 +21,45 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.4.x ➞ v2.5.0
+
+### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource
+
+Previously, this field was read-only. In this version, this field is an optional configurable attribute. Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)). Note that fields other than `storage_aws_external_id` do not leverage this field. This will be addressed during the resource rework.
+
+Note that this resource is still in preview, and not officially supported. This change was requested and done by the community: [#3659](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3659).
+
+### *(bugfix)* Fix setting network policies with lowercase characters in security integrations
+Previously, when the provider created or set a security integration (in `snowflake_oauth_integration_for_custom_clients` or `snowflake_scim_integration`) with a network policy containing lowercase letters, this could fail due to a different quoting used in Snowflake in these objects. Namely, despite using the `"` quotes, the referenced network name was uppercased in Snowflake. This means that the uppercased network policy was used instead.
+Snowflake could return errors like `Network policy TEST does not exist or not authorized.`.
+In this case, a special quoting needs to be used (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake)). Instead of the usual `NETWORK_POLICY = "test"`, it needs to be `NETWORK_POLICY = '"test"'`.
+
+In this version, this behavior is fixed. The provider always uses the mixed `'"name"'` notation, and the casing should match the name in Snowflake.
+
+References: [#3229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3229)
+
 ## v2.3.0 ➞ v2.4.0
 
-### *(new feature)* snowflake_user_programmatic_access_token resource
+### *(new feature)* snowflake_current_organization_account resource
+Added a new preview resource for managing the organization account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ORGANIZATION ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-organization-account). You can read about the resource limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_organization_account_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Handling Programmatic Access Tokens
+As we announced in our [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#pat-support), we implemented handling Programmatic Access Tokens (PATs) in the provider. In [v2.3.0](#v220--v230), we already added `PROGRAMMATIC_ACCESS_TOKEN` authenticator option.
+In this version, we enhanced the provider capabilities with handling PATs in a new resource and data source. See more in our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#pat-personal-access-token).
+
+#### New `snowflake_user_programmatic_access_tokens` data source
+Added a new preview data source for user programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_tokens_datasource` to `preview_features_enabled` field in the provider configuration.
+
+#### New `snowflake_user_programmatic_access_token` resource
 Added a new preview resource for managing users' programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) and a [user guide](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more details.
 
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token` to `preview_features_enabled` field in the provider configuration.
+This resource also supports token rotation. See our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#managing-pats) and the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/resources/user_programmatic_access_token).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token_resource` to `preview_features_enabled` field in the provider configuration.
 
 ## v2.2.0 ➞ v2.3.0
 
@@ -43,6 +76,7 @@ See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/
 > After adjusting parsing data types in the provider, it handles arguments with and without attributes.
 
 Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+This fix was also backported to version v1.2.3.
 
 References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
 
@@ -53,10 +87,12 @@ References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/
 > After adjusting parsing data types in the provider, it handles arguments with and without attributes.
 
 Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+This fix was also backported to version v1.2.3.
 
 References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
 
-## v2.1.0 ➞ v2.2.0
+## v2.1.x ➞ v2.2.0
+<a id="v210--v220"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -252,7 +288,8 @@ No configuration changes are necessary.
 
 As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
 
-## v2.1.0 -> v2.1.1
+## v2.1.0 ➞ v2.1.1
+<a id="v210---v211"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -262,7 +299,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, and v2.0.1.
 
-## v2.0.0 ➞ v2.1.0
+## v2.0.x ➞ v2.1.0
+<a id="v200--v210"></a>
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
 
@@ -306,7 +344,8 @@ No configuration changes are necessary.
 
 References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
 
-## v2.0.0 -> v2.0.1
+## v2.0.0 ➞ v2.0.1
+<a id="v200---v201"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -316,7 +355,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6, v1.1.1, and v1.2.2.
 
-## v1.2.1 ➞ v2.0.0
+## v1.2.x ➞ v2.0.0
+<a id="v121--v200"></a>
 
 ### Supported architectures
 
@@ -369,7 +409,7 @@ Planning failed. Terraform encountered an error while generating this plan.
 
 Some fields, like secure function definitions, can also contain sensitive values. However, because of [SDK v2](https://developer.hashicorp.com/terraform/plugin/sdkv2) limitations:
 - There is no possibility to mark sensitive values conditionally ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/736)). This means it is not possible to mark sensitive values based on other fields, like marking `body` based on the value of `secure` field in views, functions, and procedures. As a result, this field is not marked as sensitive. For such cases, we add disclaimers in the resource documentation.
-- There is no possibility to mark sensitive values in nested fields ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/201)). This means the nested fields, like these in `show_output` and `describe_output` cannot be sensitive. fields, like in `show_output` and `describe_output`, cannot be marked as sensitive.
+- There is no possibility to mark sensitive values in nested fields ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/201)). This means the nested fields, like these in `show_output` and `describe_output` cannot be marked as sensitive.
 
 Instead, we added notes in the documentation of the related resources. The full list includes:
 - `snowflake_execute` resource: `execute`, `revert`, `query` and `query_results` fields,
@@ -464,8 +504,19 @@ To be able to detect changes in config properly and to react to some external ch
 
 References: [#3580](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3580)
 
-## v1.2.0 ➞ v1.2.1
-No migration needed.
+## v1.2.2 ➞ v1.2.3
+
+### *(bugfix)* Fix `snowflake_functions` and `snowflake_procedures` data sources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
+
+### *(bugfix)* Fix all function and procedure resources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
 
 ## v1.2.1 -> v1.2.2
 
@@ -477,7 +528,11 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6 and v1.1.1.
 
-## v1.1.0 ➞ v1.2.0
+## v1.2.0 ➞ v1.2.1
+No migration needed.
+
+## v1.1.x ➞ v1.2.0
+<a id="v110--v120"></a>
 
 ### New behavior for Read and Delete operations when removing high-hierarchy objects
 Some objects in Snowflake are created in hierarchy, for example, tables (database → schema → table).
@@ -548,7 +603,8 @@ This version fixes this behavior. No action should be required on user side.
 
 References: [#3522](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3522)
 
-## v1.1.0 -> v1.1.1
+## v1.1.0 ➞ v1.1.1
+<a id="v110---v111"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -558,7 +614,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to version v1.0.6.
 
-## v1.0.5 ➞ v1.1.0
+## v1.0.x ➞ v1.1.0
+<a id="v105--v110"></a>
 
 ### Timeouts in resources
 By default, resource operation timeout after 20 minutes ([reference](https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/retries-and-customizable-timeouts#default-timeouts-and-deadline-exceeded-errors)). This caused some long running operations to timeout.
@@ -581,7 +638,8 @@ Instead of failing the whole action, we return a warning instead and the operati
 
 References: [#3507](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3507)
 
-## v1.0.5 -> v1.0.6
+## v1.0.5 ➞ v1.0.6
+<a id="v105---v106"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -2680,7 +2738,8 @@ The `comment` attribute is now optional. It was required before, but it is not r
 #### *(behavior change)* schema is now required with database
 The `schema` attribute is now required with `database` attribute to match old implementation `SHOW EXTERNAL FUNCTIONS IN SCHEMA "<database>"."<schema>"`. In the future this may change to make schema optional.
 
-## vX.XX.X -> v0.85.0
+## vX.XX.X ➞ v0.85.0
+<a id="vxxxx---v0850"></a>
 
 ### Migration from old (grant) resources to new ones
 

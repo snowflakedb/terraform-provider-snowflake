@@ -146,7 +146,7 @@ func (r *EnumHandlingResource) Create(ctx context.Context, request resource.Crea
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &EnumHandlingOpts{}
-	err := stringEnumAttributeCreate(data.EnumValue, &opts.EnumValue)
+	err := StringEnumAttributeCreate(data.EnumValue, &opts.EnumValue)
 	if err != nil {
 		response.Diagnostics.AddError("Error creating some enum type", err.Error())
 	}

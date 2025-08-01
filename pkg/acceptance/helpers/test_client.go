@@ -41,11 +41,13 @@ type TestClient struct {
 	HybridTable                  *HybridTableClient
 	ImageRepository              *ImageRepositoryClient
 	InformationSchema            *InformationSchemaClient
+	Listing                      *ListingClient
 	MaskingPolicy                *MaskingPolicyClient
 	MaterializedView             *MaterializedViewClient
 	NetworkPolicy                *NetworkPolicyClient
 	NetworkRule                  *NetworkRuleClient
 	NotificationIntegration      *NotificationIntegrationClient
+	OrganizationAccount          *OrganizationAccountClient
 	PackagesPolicy               *PackagesPolicyClient
 	Parameter                    *ParameterClient
 	PasswordPolicy               *PasswordPolicyClient
@@ -122,11 +124,13 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		HybridTable:                  NewHybridTableClient(context, idsGenerator),
 		ImageRepository:              NewImageRepositoryClient(context, idsGenerator),
 		InformationSchema:            NewInformationSchemaClient(context, idsGenerator),
+		Listing:                      NewListingClient(context, idsGenerator),
 		MaskingPolicy:                NewMaskingPolicyClient(context, idsGenerator),
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
 		NetworkRule:                  NewNetworkRuleClient(context, idsGenerator),
 		NotificationIntegration:      NewNotificationIntegrationClient(context, idsGenerator),
+		OrganizationAccount:          NewOrganizationAccountClient(context, idsGenerator),
 		PackagesPolicy:               NewPackagesPolicyClient(context, idsGenerator),
 		Parameter:                    NewParameterClient(context),
 		PasswordPolicy:               NewPasswordPolicyClient(context, idsGenerator),

@@ -16,8 +16,11 @@ type UserProgrammaticAccessTokenModel struct {
 	Comment                              tfconfig.Variable `json:"comment,omitempty"`
 	DaysToExpiry                         tfconfig.Variable `json:"days_to_expiry,omitempty"`
 	Disabled                             tfconfig.Variable `json:"disabled,omitempty"`
+	ExpireRotatedTokenAfterHours         tfconfig.Variable `json:"expire_rotated_token_after_hours,omitempty"`
+	Keeper                               tfconfig.Variable `json:"keeper,omitempty"`
 	MinsToBypassNetworkPolicyRequirement tfconfig.Variable `json:"mins_to_bypass_network_policy_requirement,omitempty"`
 	RoleRestriction                      tfconfig.Variable `json:"role_restriction,omitempty"`
+	RotatedTokenName                     tfconfig.Variable `json:"rotated_token_name,omitempty"`
 	Token                                tfconfig.Variable `json:"token,omitempty"`
 	User                                 tfconfig.Variable `json:"user,omitempty"`
 
@@ -100,6 +103,16 @@ func (u *UserProgrammaticAccessTokenModel) WithDisabled(disabled string) *UserPr
 	return u
 }
 
+func (u *UserProgrammaticAccessTokenModel) WithExpireRotatedTokenAfterHours(expireRotatedTokenAfterHours int) *UserProgrammaticAccessTokenModel {
+	u.ExpireRotatedTokenAfterHours = tfconfig.IntegerVariable(expireRotatedTokenAfterHours)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenModel) WithKeeper(keeper string) *UserProgrammaticAccessTokenModel {
+	u.Keeper = tfconfig.StringVariable(keeper)
+	return u
+}
+
 func (u *UserProgrammaticAccessTokenModel) WithMinsToBypassNetworkPolicyRequirement(minsToBypassNetworkPolicyRequirement int) *UserProgrammaticAccessTokenModel {
 	u.MinsToBypassNetworkPolicyRequirement = tfconfig.IntegerVariable(minsToBypassNetworkPolicyRequirement)
 	return u
@@ -107,6 +120,11 @@ func (u *UserProgrammaticAccessTokenModel) WithMinsToBypassNetworkPolicyRequirem
 
 func (u *UserProgrammaticAccessTokenModel) WithRoleRestriction(roleRestriction string) *UserProgrammaticAccessTokenModel {
 	u.RoleRestriction = tfconfig.StringVariable(roleRestriction)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenModel) WithRotatedTokenName(rotatedTokenName string) *UserProgrammaticAccessTokenModel {
+	u.RotatedTokenName = tfconfig.StringVariable(rotatedTokenName)
 	return u
 }
 
@@ -144,6 +162,16 @@ func (u *UserProgrammaticAccessTokenModel) WithDisabledValue(value tfconfig.Vari
 	return u
 }
 
+func (u *UserProgrammaticAccessTokenModel) WithExpireRotatedTokenAfterHoursValue(value tfconfig.Variable) *UserProgrammaticAccessTokenModel {
+	u.ExpireRotatedTokenAfterHours = value
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenModel) WithKeeperValue(value tfconfig.Variable) *UserProgrammaticAccessTokenModel {
+	u.Keeper = value
+	return u
+}
+
 func (u *UserProgrammaticAccessTokenModel) WithMinsToBypassNetworkPolicyRequirementValue(value tfconfig.Variable) *UserProgrammaticAccessTokenModel {
 	u.MinsToBypassNetworkPolicyRequirement = value
 	return u
@@ -151,6 +179,11 @@ func (u *UserProgrammaticAccessTokenModel) WithMinsToBypassNetworkPolicyRequirem
 
 func (u *UserProgrammaticAccessTokenModel) WithRoleRestrictionValue(value tfconfig.Variable) *UserProgrammaticAccessTokenModel {
 	u.RoleRestriction = value
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenModel) WithRotatedTokenNameValue(value tfconfig.Variable) *UserProgrammaticAccessTokenModel {
+	u.RotatedTokenName = value
 	return u
 }
 

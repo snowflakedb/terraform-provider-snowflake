@@ -7,7 +7,6 @@ import (
 	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/snowflakedb/gosnowflake"
 )
@@ -17,8 +16,6 @@ type Client struct {
 	db             *sqlx.DB
 	sessionID      string
 	accountLocator string
-	dryRun         bool
-	traceLogs      []string
 
 	// System-Defined Functions
 	ContextFunctions     ContextFunctions
@@ -106,15 +103,6 @@ func (c *Client) GetConn() *sqlx.DB {
 
 func NewDefaultClient(opts ...func(*FileReaderConfig)) (*Client, error) {
 	return NewClient(nil, opts...)
-}
-
-func NewDryRunClient() *Client {
-	client := &Client{
-		dryRun:    true,
-		traceLogs: []string{},
-	}
-	client.initialize()
-	return client
 }
 
 func NewClient(cfg *gosnowflake.Config, opts ...func(*FileReaderConfig)) (*Client, error) {
@@ -228,10 +216,6 @@ func (c *Client) initialize() {
 	c.Warehouses = &warehouses{client: c}
 }
 
-func (c *Client) TraceLogs() []string {
-	return c.traceLogs
-}
-
 func (c *Client) Ping() error {
 	return c.db.Ping()
 }
@@ -249,12 +233,6 @@ var snowflakeAccountLocatorContextKey accountLocatorContextKey
 
 // Exec executes a query that does not return rows.
 func (c *Client) exec(ctx context.Context, sql string) (sql.Result, error) {
-	if c.dryRun {
-		c.traceLogs = append(c.traceLogs, sql)
-		// TODO(SNOW-926146): Decide what to do with logs during plugin framework poc
-		// log.Printf("[DEBUG] sql-conn-exec-dry: %v", sql)
-		return nil, nil
-	}
 	ctx = context.WithValue(ctx, snowflakeAccountLocatorContextKey, c.accountLocator)
 	sql = appendQueryMetadata(ctx, sql)
 	result, err := c.db.ExecContext(ctx, sql)
@@ -263,12 +241,6 @@ func (c *Client) exec(ctx context.Context, sql string) (sql.Result, error) {
 
 // query runs a query and returns the rows. dest is expected to be a slice of structs.
 func (c *Client) query(ctx context.Context, dest interface{}, sql string) error {
-	if c.dryRun {
-		c.traceLogs = append(c.traceLogs, sql)
-		// TODO(SNOW-926146): Decide what to do with logs during plugin framework poc
-		// log.Printf("[DEBUG] sql-conn-query-dry: %v", sql)
-		return nil
-	}
 	ctx = context.WithValue(ctx, snowflakeAccountLocatorContextKey, c.accountLocator)
 	sql = appendQueryMetadata(ctx, sql)
 	return decodeDriverError(c.db.SelectContext(ctx, dest, sql))
@@ -276,12 +248,6 @@ func (c *Client) query(ctx context.Context, dest interface{}, sql string) error 
 
 // queryOne runs a query and returns one row. dest is expected to be a pointer to a struct.
 func (c *Client) queryOne(ctx context.Context, dest interface{}, sql string) error {
-	if c.dryRun {
-		c.traceLogs = append(c.traceLogs, sql)
-		// TODO(SNOW-926146): Decide what to do with logs during plugin framework poc
-		// log.Printf("[DEBUG] sql-conn-query-one-dry: %v", sql)
-		return nil
-	}
 	ctx = context.WithValue(ctx, snowflakeAccountLocatorContextKey, c.accountLocator)
 	sql = appendQueryMetadata(ctx, sql)
 	return decodeDriverError(c.db.GetContext(ctx, dest, sql))

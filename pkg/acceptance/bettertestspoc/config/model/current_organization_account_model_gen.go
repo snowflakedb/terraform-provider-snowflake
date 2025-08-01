@@ -12,6 +12,7 @@ import (
 )
 
 type CurrentOrganizationAccountModel struct {
+	Name                                             tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                               tfconfig.Variable `json:"abort_detached_query,omitempty"`
 	ActivePythonProfiler                             tfconfig.Variable `json:"active_python_profiler,omitempty"`
 	AllowClientMfaCaching                            tfconfig.Variable `json:"allow_client_mfa_caching,omitempty"`
@@ -33,6 +34,7 @@ type CurrentOrganizationAccountModel struct {
 	ClientSessionKeepAlive                           tfconfig.Variable `json:"client_session_keep_alive,omitempty"`
 	ClientSessionKeepAliveHeartbeatFrequency         tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
 	ClientTimestampTypeMapping                       tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
+	Comment                                          tfconfig.Variable `json:"comment,omitempty"`
 	CortexEnabledCrossRegion                         tfconfig.Variable `json:"cortex_enabled_cross_region,omitempty"`
 	CortexModelsAllowlist                            tfconfig.Variable `json:"cortex_models_allowlist,omitempty"`
 	CsvTimestampFormat                               tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
@@ -144,13 +146,18 @@ type CurrentOrganizationAccountModel struct {
 
 func CurrentOrganizationAccount(
 	resourceName string,
+	name string,
 ) *CurrentOrganizationAccountModel {
 	c := &CurrentOrganizationAccountModel{ResourceModelMeta: config.Meta(resourceName, resources.CurrentOrganizationAccount)}
+	c.WithName(name)
 	return c
 }
 
-func CurrentOrganizationAccountWithDefaultMeta() *CurrentOrganizationAccountModel {
+func CurrentOrganizationAccountWithDefaultMeta(
+	name string,
+) *CurrentOrganizationAccountModel {
 	c := &CurrentOrganizationAccountModel{ResourceModelMeta: config.DefaultMeta(resources.CurrentOrganizationAccount)}
+	c.WithName(name)
 	return c
 }
 
@@ -182,6 +189,11 @@ func (c *CurrentOrganizationAccountModel) WithDynamicBlock(dynamicBlock *config.
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
+
+func (c *CurrentOrganizationAccountModel) WithName(name string) *CurrentOrganizationAccountModel {
+	c.Name = tfconfig.StringVariable(name)
+	return c
+}
 
 func (c *CurrentOrganizationAccountModel) WithAbortDetachedQuery(abortDetachedQuery bool) *CurrentOrganizationAccountModel {
 	c.AbortDetachedQuery = tfconfig.BoolVariable(abortDetachedQuery)
@@ -285,6 +297,11 @@ func (c *CurrentOrganizationAccountModel) WithClientSessionKeepAliveHeartbeatFre
 
 func (c *CurrentOrganizationAccountModel) WithClientTimestampTypeMapping(clientTimestampTypeMapping string) *CurrentOrganizationAccountModel {
 	c.ClientTimestampTypeMapping = tfconfig.StringVariable(clientTimestampTypeMapping)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithComment(comment string) *CurrentOrganizationAccountModel {
+	c.Comment = tfconfig.StringVariable(comment)
 	return c
 }
 
@@ -787,6 +804,11 @@ func (c *CurrentOrganizationAccountModel) WithWeekStart(weekStart int) *CurrentO
 // below it's possible to set any value //
 //////////////////////////////////////////
 
+func (c *CurrentOrganizationAccountModel) WithNameValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.Name = value
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithAbortDetachedQueryValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.AbortDetachedQuery = value
 	return c
@@ -889,6 +911,11 @@ func (c *CurrentOrganizationAccountModel) WithClientSessionKeepAliveHeartbeatFre
 
 func (c *CurrentOrganizationAccountModel) WithClientTimestampTypeMappingValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.ClientTimestampTypeMapping = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithCommentValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.Comment = value
 	return c
 }
 

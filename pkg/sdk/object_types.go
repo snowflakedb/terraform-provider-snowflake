@@ -80,6 +80,7 @@ const (
 	ObjectTypeGitRepository        ObjectType = "GIT REPOSITORY"
 	ObjectTypeModel                ObjectType = "MODEL"
 	ObjectTypeService              ObjectType = "SERVICE"
+	ObjectTypeStorageIntegration   ObjectType = "STORAGE INTEGRATION"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
@@ -159,6 +160,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeGitRepository,
 	ObjectTypeModel,
 	ObjectTypeService,
+	ObjectTypeStorageIntegration,
 	ObjectTypeProgrammaticAccessToken,
 }
 
@@ -237,6 +239,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeModel:                   PluralObjectTypeModels,
 		ObjectTypeService:                 PluralObjectTypeServices,
 		ObjectTypeProgrammaticAccessToken: PluralObjectTypeProgrammaticAccessTokens,
+		ObjectTypeStorageIntegration:      PluralObjectTypeStorageIntegrations,
 	}
 }
 
@@ -349,6 +352,7 @@ const (
 	PluralObjectTypeModels                   PluralObjectType = "MODELS"
 	PluralObjectTypeServices                 PluralObjectType = "SERVICES"
 	PluralObjectTypeProgrammaticAccessTokens PluralObjectType = "PROGRAMMATIC ACCESS TOKENS" //nolint:gosec
+	PluralObjectTypeStorageIntegrations      PluralObjectType = "STORAGE INTEGRATIONS"
 )
 
 func (p PluralObjectType) String() string {

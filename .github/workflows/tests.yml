@@ -23,6 +23,7 @@ jobs:
       - name: Filter changed files
         uses: dorny/paths-filter@v3
         id: changes
+        if: github.event_name != 'repository_dispatch'
         with:
           filters: |
             run_tests:

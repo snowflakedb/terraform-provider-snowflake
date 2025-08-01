@@ -3,7 +3,6 @@ package testacc
 import (
 	"context"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -12,7 +11,6 @@ import (
 
 var testAccProtoV6ProviderFactoriesWithPluginPoc map[string]func() (tfprotov6.ProviderServer, error)
 
-// TODO [mux-PR]: use the provider with custom configure method
 func init() {
 	// based on https://developer.hashicorp.com/terraform/plugin/framework/migrating/mux#protocol-version-6
 	testAccProtoV6ProviderFactoriesWithPluginPoc = map[string]func() (tfprotov6.ProviderServer, error){
@@ -21,7 +19,8 @@ func init() {
 
 			upgradedSdkServer, err := tf5to6server.UpgradeServer(
 				ctx,
-				provider.Provider().GRPCProvider,
+				// using the test acc one, as it has the modified configure method (cache)
+				TestAccProvider.GRPCProvider,
 			)
 			if err != nil {
 				return nil, err

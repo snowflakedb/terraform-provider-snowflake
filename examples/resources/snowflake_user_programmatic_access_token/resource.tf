@@ -41,8 +41,28 @@ resource "snowflake_user_programmatic_access_token" "complete_with_external_refe
   comment                                   = "COMMENT"
 }
 
-# use the token returned from Snowflake and remember to mark it as sensitive
+# Use the token returned from Snowflake and remember to mark it as sensitive.
 output "token" {
   value     = snowflake_user_programmatic_access_token.complete.token
   sensitive = true
+}
+
+# Token Rotation
+
+# Rotate the token regularly using the keeper field and time_rotating resource.
+resource "snowflake_user_programmatic_access_token" "rotating" {
+  user = "USER"
+  name = "TOKEN"
+
+  # Use the keeper field to force token rotation. If, and only if, the value changes
+  # from a non-empty to a different non-empty value (or is known after apply), the token will be rotated.
+  # When you add this key or remove this key from the config, the token will not be rotated.
+  # When the token is rotated, the `token` and `rotated_token_name` fields are marked as computed.
+  keeper = time_rotating.rotation_schedule.rotation_rfc3339
+}
+
+# Note that the fields of this resource are updated only when Terraform is run.
+# This means that the schedule may not be respected if Terraform is not run regularly.
+resource "time_rotating" "rotation_schedule" {
+  rotation_days = 30
 }

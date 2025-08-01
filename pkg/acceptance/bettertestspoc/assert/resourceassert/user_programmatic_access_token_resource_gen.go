@@ -52,6 +52,16 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasDisabledString(expected s
 	return u
 }
 
+func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHoursString(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueSet("expire_rotated_token_after_hours", expected))
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperString(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueSet("keeper", expected))
+	return u
+}
+
 func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicyRequirementString(expected string) *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValueSet("mins_to_bypass_network_policy_requirement", expected))
 	return u
@@ -59,6 +69,11 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicy
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRoleRestrictionString(expected string) *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValueSet("role_restriction", expected))
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasRotatedTokenNameString(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueSet("rotated_token_name", expected))
 	return u
 }
 
@@ -96,6 +111,16 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasNoDisabled() *UserProgram
 	return u
 }
 
+func (u *UserProgrammaticAccessTokenResourceAssert) HasNoExpireRotatedTokenAfterHours() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueNotSet("expire_rotated_token_after_hours"))
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasNoKeeper() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueNotSet("keeper"))
+	return u
+}
+
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoMinsToBypassNetworkPolicyRequirement() *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValueNotSet("mins_to_bypass_network_policy_requirement"))
 	return u
@@ -103,6 +128,11 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasNoMinsToBypassNetworkPoli
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoRoleRestriction() *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValueNotSet("role_restriction"))
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasNoRotatedTokenName() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueNotSet("rotated_token_name"))
 	return u
 }
 
@@ -135,6 +165,16 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasDisabledEmpty() *UserProg
 	return u
 }
 
+func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHoursEmpty() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueSet("expire_rotated_token_after_hours", ""))
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperEmpty() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueSet("keeper", ""))
+	return u
+}
+
 func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicyRequirementEmpty() *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValueSet("mins_to_bypass_network_policy_requirement", ""))
 	return u
@@ -142,6 +182,11 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicy
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRoleRestrictionEmpty() *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValueSet("role_restriction", ""))
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasRotatedTokenNameEmpty() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValueSet("rotated_token_name", ""))
 	return u
 }
 
@@ -174,6 +219,16 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasDisabledNotEmpty() *UserP
 	return u
 }
 
+func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHoursNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValuePresent("expire_rotated_token_after_hours"))
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValuePresent("keeper"))
+	return u
+}
+
 func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicyRequirementNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValuePresent("mins_to_bypass_network_policy_requirement"))
 	return u
@@ -181,6 +236,11 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicy
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRoleRestrictionNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
 	u.AddAssertion(assert.ValuePresent("role_restriction"))
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasRotatedTokenNameNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
+	u.AddAssertion(assert.ValuePresent("rotated_token_name"))
 	return u
 }
 

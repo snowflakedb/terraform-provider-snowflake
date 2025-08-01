@@ -145,7 +145,7 @@ func (r *ParameterHandlingResourcePlanModifierResource) Create(ctx context.Conte
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &ParameterHandlingResourcePlanModifierOpts{}
-	stringAttributeCreate(data.StringValue, &opts.StringValue)
+	_ = StringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	r.setCreateActionsOutput(ctx, response, opts, data)
 

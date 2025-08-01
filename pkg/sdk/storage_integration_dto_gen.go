@@ -24,9 +24,10 @@ type CreateStorageIntegrationRequest struct {
 }
 
 type S3StorageParamsRequest struct {
-	Protocol            S3Protocol // required
-	StorageAwsRoleArn   string     // required
-	StorageAwsObjectAcl *string
+	Protocol             S3Protocol // required
+	StorageAwsRoleArn    string     // required
+	StorageAwsExternalId *string
+	StorageAwsObjectAcl  *string
 }
 
 type GCSStorageParamsRequest struct{}
@@ -54,8 +55,9 @@ type StorageIntegrationSetRequest struct {
 }
 
 type SetS3StorageParamsRequest struct {
-	StorageAwsRoleArn   string // required
-	StorageAwsObjectAcl *string
+	StorageAwsRoleArn    string // required
+	StorageAwsExternalId *string
+	StorageAwsObjectAcl  *string
 }
 
 type SetAzureStorageParamsRequest struct {
@@ -63,6 +65,7 @@ type SetAzureStorageParamsRequest struct {
 }
 
 type StorageIntegrationUnsetRequest struct {
+	StorageAwsExternalId    *bool
 	StorageAwsObjectAcl     *bool
 	Enabled                 *bool
 	StorageBlockedLocations *bool

@@ -9,10 +9,21 @@ type OrganizationAccounts interface {
 	Create(ctx context.Context, request *CreateOrganizationAccountRequest) error
 	Alter(ctx context.Context, request *AlterOrganizationAccountRequest) error
 	Show(ctx context.Context, request *ShowOrganizationAccountRequest) ([]OrganizationAccount, error)
+	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error)
+	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error)
 	// ShowParameters added manually
 	ShowParameters(ctx context.Context) ([]*Parameter, error)
 	// UnsetAllParameters added manually
 	UnsetAllParameters(ctx context.Context) error
+	// UnsetPolicySafely unsets a policy on the current account by a given supported kind.
+	// It ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.
+	UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
+	// SetPolicySafely sets a policy on the current account by a given supported kind.
+	// It firstly tries to unset the policy with UnsetPolicySafely method to make sure that the policy is not set,
+	// then proceeds by setting the passed policy on the organization account.
+	SetPolicySafely(ctx context.Context, kind PolicyKind, id SchemaObjectIdentifier) error
+	// UnsetAll added manually
+	UnsetAll(ctx context.Context) error
 }
 
 // CreateOrganizationAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-organization-account.
@@ -51,6 +62,7 @@ type OrganizationAccountSet struct {
 	ResourceMonitor *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	PasswordPolicy  *SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
 	SessionPolicy   *SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
+	Comment         *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type OrganizationAccountUnset struct {
@@ -58,6 +70,7 @@ type OrganizationAccountUnset struct {
 	ResourceMonitor *bool                   `ddl:"keyword" sql:"RESOURCE_MONITOR"`
 	PasswordPolicy  *bool                   `ddl:"keyword" sql:"PASSWORD POLICY"`
 	SessionPolicy   *bool                   `ddl:"keyword" sql:"SESSION POLICY"`
+	Comment         *bool                   `ddl:"keyword" sql:"COMMENT"`
 }
 
 type OrganizationAccountRename struct {
@@ -79,7 +92,7 @@ type organizationAccountDbRow struct {
 	Edition                              string         `db:"edition"`
 	AccountUrl                           string         `db:"account_url"`
 	CreatedOn                            string         `db:"created_on"`
-	Comment                              string         `db:"comment"`
+	Comment                              sql.NullString `db:"comment"`
 	AccountLocator                       string         `db:"account_locator"`
 	AccountLocatorUrl                    string         `db:"account_locator_url"`
 	ManagedAccounts                      int            `db:"managed_accounts"`
@@ -104,7 +117,7 @@ type OrganizationAccount struct {
 	Edition                              OrganizationAccountEdition
 	AccountUrl                           string
 	CreatedOn                            string
-	Comment                              string
+	Comment                              *string
 	AccountLocator                       string
 	AccountLocatorUrl                    string
 	ManagedAccounts                      int

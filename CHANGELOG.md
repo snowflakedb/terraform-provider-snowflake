@@ -1,5 +1,39 @@
 # Changelog
 
+## [2.4.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.3.0...v2.4.0) (2025-07-24)
+
+
+### 🎉 **What's new:**
+
+* Add a user_programmatic_access_token resource ([#3835](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3835)) ([9bbeb4b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9bbeb4bac067499f23955100e5b94d5183b4c139))
+* Add a user_programmatic_access_tokens data source ([#3838](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3838)) ([de41e0c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/de41e0c1c1c48198aa6551de0ee5a0d70253c49f))
+* Add Current Organization Account resource and related assertions ([#3846](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3846)) ([e59f929](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e59f9297d2577c319650b4c80156a55146147e3a))
+* Current organization account follow-up ([#3866](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3866)) ([4c11272](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4c1127252ec718e6f08c1b6e82afac47af9d3f24))
+* Implement Current Organization Account ([#3847](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3847)) ([4bbccea](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4bbccea192b6a96d797daf88a341fd377ff65896))
+* Implement rotating pats ([#3843](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3843)) ([c99f84d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c99f84da0d56abae37a63767da19c579852c14fb))
+
+
+### 🔧 **Misc**
+
+* Add acceptance tests for rotating pats with an external resource ([#3871](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3871)) ([b8289c8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b8289c86b67aa44510ef3e091732aa8ea18c0374))
+* Add an example of recreating the pipe on changing stage attributes ([#3729](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3729)) ([8fd4e7b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8fd4e7b7ce683caae5e2a0135ee8376af2e96586))
+* Add basic listings to sdk ([#3800](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3800)) ([500a19a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/500a19ac46f4c363eef1131f8b8c55024faf70e1))
+* Add builders for legacy config DTO ([#3842](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3842)) ([f3d4a9a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f3d4a9a2250c1ec539a217ef2d92c645d1aa2126))
+* Add current organization account resource sdk part ([#3818](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3818)) ([56ea900](https://github.com/snowflakedb/terraform-provider-snowflake/commit/56ea9007ccc7c11c888865c3739be43eccd9e32a))
+* Add PAT integration tests ([#3830](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3830)) ([6f688d6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6f688d65cfc13cd10ef60bac3082a76dc3910a90))
+* Address pre-push errors ([#3849](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3849)) ([39274dd](https://github.com/snowflakedb/terraform-provider-snowflake/commit/39274dd795fda0d7279967c735a196f46a57d753))
+* Adjust sweepers and test workflows ([#3876](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3876)) ([3a4bd36](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3a4bd366945faf7bfe129a0f2653aa4e67a93829))
+* Fix tests and update documentation after reverting changes from BCR 2025_03 ([#3851](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3851)) ([04071aa](https://github.com/snowflakedb/terraform-provider-snowflake/commit/04071aac31d6c5328d6d6443946fa9ec855cc68a))
+* Mark DecodeSnowflakeID function as legacy ([#3848](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3848)) ([d4a775f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d4a775f4023f761e4c591e19d559f0f4e1a9c9f1))
+* Test custom type with metadata ([#3856](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3856)) ([a168a24](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a168a24a92c101acd85776b7b3d9ba52152f169a))
+* Test enum handling (suppresion and validation) ([#3861](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3861)) ([0f051b8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0f051b82e855eefb9360233119fe87c112758b0b))
+* Test optional computed in plugin framework ([#3865](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3865)) ([6674c12](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6674c125b70b4f22474bd3976fbc1a370d2bd1b6))
+* Test optional with backing field ([#3857](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3857)) ([78e641a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/78e641af9b15a648b73b0e36bb2f405764405607))
+* Test parameters handling (multiple variants) ([#3858](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3858)) ([5b88c06](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5b88c06c4e2c00db1e4b24ab0e1e27951760f39e))
+* Test zero values in plugin framework ([#3850](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3850)) ([d7816fa](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d7816fa7df164a0f6140ccb105e019a9e85e5bca))
+* Update labels in the repository ([#3863](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3863)) ([92669bb](https://github.com/snowflakedb/terraform-provider-snowflake/commit/92669bb7df91a9f6f0179e0c3c001befb9605e82))
+* Use existing schema descriptions instead of string equivalents ([#3868](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3868)) ([e9d0448](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e9d044867d716cb412add8f1abbd6cafe07508ea))
+
 ## [2.3.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.2.0...v2.3.0) (2025-07-03)
 
 

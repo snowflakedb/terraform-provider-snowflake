@@ -3,11 +3,12 @@ package sdk
 //go:generate go run ./dto-builder-generator/main.go
 
 var (
-	_ optionsProvider[CreateListingOptions]   = new(CreateListingRequest)
-	_ optionsProvider[AlterListingOptions]    = new(AlterListingRequest)
-	_ optionsProvider[DropListingOptions]     = new(DropListingRequest)
-	_ optionsProvider[ShowListingOptions]     = new(ShowListingRequest)
-	_ optionsProvider[DescribeListingOptions] = new(DescribeListingRequest)
+	_ optionsProvider[CreateListingOptions]       = new(CreateListingRequest)
+	_ optionsProvider[AlterListingOptions]        = new(AlterListingRequest)
+	_ optionsProvider[DropListingOptions]         = new(DropListingRequest)
+	_ optionsProvider[ShowListingOptions]         = new(ShowListingRequest)
+	_ optionsProvider[DescribeListingOptions]     = new(DescribeListingRequest)
+	_ optionsProvider[ShowVersionsListingOptions] = new(ShowVersionsListingRequest)
 )
 
 type CreateListingRequest struct {
@@ -75,4 +76,9 @@ type ShowListingRequest struct {
 type DescribeListingRequest struct {
 	name     AccountObjectIdentifier // required
 	Revision *ListingRevision
+}
+
+type ShowVersionsListingRequest struct {
+	name  AccountObjectIdentifier // required
+	Limit *LimitFrom
 }
