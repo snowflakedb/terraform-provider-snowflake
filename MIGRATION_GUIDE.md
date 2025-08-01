@@ -23,6 +23,27 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.4.x ➞ v2.5.0
 
+### *(bugfix)* Fixed incorrect authenticator when using the `token` field
+
+Previously, the provider incorrectly set the default authenticator to `OAUTH` when the `token` field was specified in the Terraform configuration, or environmental variables, without possibility to override it. This resulted in errors like:
+```
+Planning failed. Terraform encountered an error while generating this plan.
+
+╷
+│ Error: open snowflake connection: 390303 (08004): Invalid OAuth access token. [fca49dca-38da-421e-b88e-94547d09b3cf]
+│
+│   with provider["registry.terraform.io/snowflakedb/snowflake"],
+│   on main.tf line 9, in provider "snowflake":
+│    9: provider "snowflake" {
+│
+╵
+```
+
+Now, the default authenticator can be overridden. For example, for the PAT authenticator, set one of the following:
+- `authenticator="PROGRAMMATIC_ACCESS_TOKEN"` in your Terraform configuration, or
+- `SNOWFLAKE_AUTHENTICATOR="PROGRAMMATIC_ACCESS_TOKEN"` in your environmental variables, or
+- `authenticator='PROGRAMMATIC_ACCESS_TOKEN'` in your TOML configuration file.
+
 ### *(bugfix)* Fixed `default_ddl_collation` for `snowflake_schema` resource
 
 Previously, the `default_ddl_collation` field in the `snowflake_schema` resource was not able to correctly handle setting an empty string as a proper value.

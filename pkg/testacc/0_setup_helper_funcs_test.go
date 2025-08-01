@@ -32,6 +32,11 @@ func setUpSdkClient(profile string, tests string) (*gosnowflake.Config, *sdk.Cli
 		return nil, nil, fmt.Errorf("%s config is required to run %s tests", profile, tests)
 	}
 
+	// we should probably just wrap sdk.NewClient with this if and reuse
+	if conf.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
+		conf.Authenticator = gosnowflake.AuthTypeSnowflake
+	}
+
 	c, err := sdk.NewClient(conf)
 	if err != nil {
 		return nil, nil, err

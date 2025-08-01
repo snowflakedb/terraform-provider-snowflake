@@ -241,7 +241,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"token": {
 			Type:        schema.TypeString,
-			Description: envNameFieldDescription("Token to use for OAuth and other forms of token based auth.", snowflakeenvs.Token),
+			Description: envNameFieldDescription("Token to use for OAuth and other forms of token based auth. When this field is set here, or in the TOML file, the provider sets the `authenticator` to `OAUTH`. Optionally, set the `authenticator` field to the authenticator you want to use.", snowflakeenvs.Token),
 			Sensitive:   true,
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Token, nil),
@@ -589,6 +589,13 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
 	}
+	if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
+		if config.Token != "" {
+			config.Authenticator = gosnowflake.AuthTypeOAuth
+		} else {
+			config.Authenticator = gosnowflake.AuthTypeSnowflake
+		}
+	}
 
 	providerCtx := &provider.Context{}
 	if client, err := sdk.NewClient(config); err != nil {
@@ -675,6 +682,13 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		}(),
 		handleStringField(s, "host", &config.Host),
 		handleIntAttribute(s, "port", &config.Port),
+		// token
+		func() error {
+			if v, ok := s.GetOk("token"); ok && v.(string) != "" {
+				config.Token = v.(string)
+			}
+			return nil
+		}(),
 		// authenticator
 		func() error {
 			authType, err := sdk.ToExtendedAuthenticatorType(s.Get("authenticator").(string))
@@ -716,14 +730,6 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 				} else {
 					config.OCSPFailOpen = gosnowflake.OCSPFailOpenFalse
 				}
-			}
-			return nil
-		}(),
-		// token
-		func() error {
-			if v, ok := s.GetOk("token"); ok && v.(string) != "" {
-				config.Token = v.(string)
-				config.Authenticator = gosnowflake.AuthTypeOAuth
 			}
 			return nil
 		}(),

@@ -91,6 +91,7 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 		WithValidateDefaultParameters("true").
 		WithClientIp("3.3.3.3").
 		WithAuthenticatorType(sdk.AuthenticationTypeJwt).
+		WithToken("token").
 		WithOktaUrl(testvars.ExampleOktaUrlString).
 		WithLoginTimeout(101).
 		WithRequestTimeout(201).
@@ -117,4 +118,15 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 				},
 			),
 		)
+}
+
+func PatConfig(h helpers.TmpServiceUserWithPat) *SnowflakeModel {
+	return SnowflakeProvider().
+		WithAuthenticatorType(sdk.AuthenticationTypeProgrammaticAccessToken).
+		WithUserId(h.UserId).
+		WithToken(h.Pat).
+		WithRoleId(h.RoleId).
+		WithOrganizationName(h.AccountId.OrganizationName()).
+		WithAccountName(h.AccountId.AccountName()).
+		WithWarehouseId(h.WarehouseId)
 }

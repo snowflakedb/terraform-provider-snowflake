@@ -170,6 +170,20 @@ func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.Acc
 	)
 }
 
+// TomlConfigForLegacyServiceUserWithoutAuthenticator is a temporary function used to test provider configuration
+func TomlConfigForLegacyServiceUserWithoutAuthenticator(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, pass string) string {
+	t.Helper()
+
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithUser(userId.Name()).
+		WithPassword(pass).
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithWarehouse(warehouseId.Name()),
+	)
+}
+
 // TomlConfigForServiceUserWithModifiers is a temporary function used to test provider configuration allowing to modify the toml config
 func TomlConfigForServiceUserWithModifiers(t *testing.T, profile string, serviceUser *TmpServiceUser, configDtoModifier func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO) string {
 	t.Helper()
