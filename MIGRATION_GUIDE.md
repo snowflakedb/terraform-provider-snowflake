@@ -23,14 +23,8 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.4.0 ➞ v2.5.0
 
-### *(bugfix)* File format `null_if` empty array permadiff resolved
-Fixed a permadiff issue where file formats with empty `null_if = []` arrays were causing persistent differences in Terraform state. This affects CSV, JSON, AVRO, ORC, and PARQUET file format types.
-
-**What changed**: Previously, empty `null_if` arrays would be converted to arrays containing null values, causing Terraform to continuously show diffs even when no actual changes were needed.
-
-**Impact**: If you were experiencing persistent diffs with file formats having empty `null_if` arrays, this will now be resolved automatically without requiring any configuration changes.
-
-**Action required**: None. Existing configurations with empty `null_if = []` arrays will now work correctly without constant diffs.
+### *(bugfix)* Fix file format `null_if` empty array permadiff
+Fixed a permadiff issue where file formats with empty `null_if = []` arrays were causing persistent differences in Terraform state.
 
 ## v2.3.0 ➞ v2.4.0
 
