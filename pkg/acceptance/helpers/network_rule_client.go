@@ -39,6 +39,16 @@ func (c *NetworkRuleClient) CreateIngress(t *testing.T) (*sdk.NetworkRule, func(
 	))
 }
 
+func (c *NetworkRuleClient) CreateIP(t *testing.T) (*sdk.NetworkRule, func()) {
+	t.Helper()
+	return c.CreateWithRequest(t, sdk.NewCreateNetworkRuleRequest(
+		c.ids.RandomSchemaObjectIdentifier(),
+		sdk.NetworkRuleTypeIpv4,
+		[]sdk.NetworkRuleValue{{Value: "1.2.3.4"}},
+		sdk.NetworkRuleModeIngress,
+	))
+}
+
 func (c *NetworkRuleClient) CreateEgressWithIdentifier(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.NetworkRule, func()) {
 	t.Helper()
 	return c.CreateWithRequest(t, sdk.NewCreateNetworkRuleRequest(

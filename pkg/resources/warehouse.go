@@ -111,21 +111,21 @@ var warehouseSchema = map[string]*schema.Schema{
 		Description:      "Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size.",
 		Default:          IntDefault,
 	},
-	strings.ToLower(string(sdk.ObjectParameterMaxConcurrencyLevel)): {
+	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
 		Type:             schema.TypeInt,
 		Optional:         true,
 		Computed:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 		Description:      "Object parameter that specifies the concurrency level for SQL statements (i.e. queries and DML) executed by a warehouse.",
 	},
-	strings.ToLower(string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds)): {
+	strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): {
 		Type:             schema.TypeInt,
 		Optional:         true,
 		Computed:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 		Description:      "Object parameter that specifies the time, in seconds, a SQL statement (query, DDL, DML, etc.) can be queued on a warehouse before it is canceled by the system.",
 	},
-	strings.ToLower(string(sdk.ObjectParameterStatementTimeoutInSeconds)): {
+	strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)): {
 		Type:             schema.TypeInt,
 		Optional:         true,
 		Computed:         true,
@@ -161,9 +161,9 @@ func warehouseParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.Accou
 
 func handleWarehouseParametersChanges(d *schema.ResourceData, set *sdk.WarehouseSet, unset *sdk.WarehouseUnset) diag.Diagnostics {
 	return JoinDiags(
-		handleParameterUpdate(d, sdk.ObjectParameterMaxConcurrencyLevel, &set.MaxConcurrencyLevel, &unset.MaxConcurrencyLevel),
-		handleParameterUpdate(d, sdk.ObjectParameterStatementQueuedTimeoutInSeconds, &set.StatementQueuedTimeoutInSeconds, &unset.StatementQueuedTimeoutInSeconds),
-		handleParameterUpdate(d, sdk.ObjectParameterStatementTimeoutInSeconds, &set.StatementTimeoutInSeconds, &unset.StatementTimeoutInSeconds),
+		handleParameterUpdate(d, sdk.WarehouseParameterMaxConcurrencyLevel, &set.MaxConcurrencyLevel, &unset.MaxConcurrencyLevel),
+		handleParameterUpdate(d, sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, &set.StatementQueuedTimeoutInSeconds, &unset.StatementQueuedTimeoutInSeconds),
+		handleParameterUpdate(d, sdk.WarehouseParameterStatementTimeoutInSeconds, &set.StatementTimeoutInSeconds, &unset.StatementTimeoutInSeconds),
 	)
 }
 
@@ -171,9 +171,9 @@ func handleWarehouseParameterRead(d *schema.ResourceData, warehouseParameters []
 	for _, parameter := range warehouseParameters {
 		switch parameter.Key {
 		case
-			string(sdk.ObjectParameterMaxConcurrencyLevel),
-			string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds),
-			string(sdk.ObjectParameterStatementTimeoutInSeconds):
+			string(sdk.WarehouseParameterMaxConcurrencyLevel),
+			string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds),
+			string(sdk.WarehouseParameterStatementTimeoutInSeconds):
 			value, err := strconv.Atoi(parameter.Value)
 			if err != nil {
 				return diag.FromErr(err)
@@ -583,20 +583,6 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			set.QueryAccelerationMaxScaleFactor = sdk.Int(v)
 		} else {
 			unset.QueryAccelerationMaxScaleFactor = sdk.Bool(true)
-		}
-	}
-	if d.HasChange("max_concurrency_level") {
-		if v := d.Get("max_concurrency_level").(int); v != IntDefault {
-			set.MaxConcurrencyLevel = sdk.Int(v)
-		} else {
-			unset.MaxConcurrencyLevel = sdk.Bool(true)
-		}
-	}
-	if d.HasChange("statement_queued_timeout_in_seconds") {
-		if v := d.Get("statement_queued_timeout_in_seconds").(int); v != IntDefault {
-			set.StatementQueuedTimeoutInSeconds = sdk.Int(v)
-		} else {
-			unset.StatementQueuedTimeoutInSeconds = sdk.Bool(true)
 		}
 	}
 

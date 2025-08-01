@@ -52,6 +52,7 @@ var StorageIntegrationDef = g.NewInterface(
 				g.NewQueryStruct("S3StorageParams").
 					PredefinedQueryStructField("Protocol", g.KindOfT[S3Protocol](), g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required()).
 					TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
+					OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()),
 				g.KeywordOptions(),
 			).
@@ -91,6 +92,7 @@ var StorageIntegrationDef = g.NewInterface(
 						"S3Params",
 						g.NewQueryStruct("SetS3StorageParams").
 							TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
+							OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 							OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()),
 						g.KeywordOptions(),
 					).
@@ -109,6 +111,7 @@ var StorageIntegrationDef = g.NewInterface(
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("StorageIntegrationUnset").
+					OptionalSQL("STORAGE_AWS_EXTERNAL_ID").
 					OptionalSQL("STORAGE_AWS_OBJECT_ACL").
 					OptionalSQL("ENABLED").
 					OptionalSQL("STORAGE_BLOCKED_LOCATIONS").

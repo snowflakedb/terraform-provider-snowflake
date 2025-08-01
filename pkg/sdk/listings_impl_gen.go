@@ -28,6 +28,14 @@ func (v *listings) Drop(ctx context.Context, request *DropListingRequest) error 
 }
 
 func (v *listings) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
+	// Adjusted manually
+	if l, err := v.ShowByIDSafely(ctx, id); err == nil {
+		if l.State == ListingStatePublished {
+			if err := v.Alter(ctx, NewAlterListingRequest(id).WithIfExists(true).WithUnpublish(true)); err != nil {
+				return err
+			}
+		}
+	}
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropListingRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
@@ -55,15 +63,23 @@ func (v *listings) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifie
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *listings) Describe(ctx context.Context, id AccountObjectIdentifier) (*ListingDetails, error) {
-	opts := &DescribeListingOptions{
-		name: id,
-	}
+func (v *listings) Describe(ctx context.Context, request *DescribeListingRequest) (*ListingDetails, error) {
+	opts := request.toOpts()
 	result, err := validateAndQueryOne[listingDetailsDBRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
 	return result.convert(), nil
+}
+
+func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[listingVersionDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	resultList := convertRows[listingVersionDBRow, ListingVersion](dbRows)
+	return resultList, nil
 }
 
 func (r *CreateListingRequest) toOpts() *CreateListingOptions {
@@ -150,7 +166,6 @@ func (r listingDBRow) convert() *Listing {
 		Profile:        r.Profile,
 		CreatedOn:      r.CreatedOn,
 		UpdatedOn:      r.UpdatedOn,
-		ReviewState:    r.ReviewState,
 		Owner:          r.Owner,
 		OwnerRoleType:  r.OwnerRoleType,
 		TargetAccounts: r.TargetAccounts,
@@ -161,6 +176,7 @@ func (r listingDBRow) convert() *Listing {
 	if state, err := ToListingState(r.State); err == nil {
 		l.State = state
 	}
+	mapNullString(&l.ReviewState, r.ReviewState)
 	mapNullString(&l.Subtitle, r.Subtitle)
 	mapNullString(&l.PublishedOn, r.PublishedOn)
 	mapNullString(&l.Comment, r.Comment)
@@ -195,13 +211,13 @@ func (r listingDetailsDBRow) convert() *ListingDetails {
 		UpdatedOn:     r.UpdatedOn,
 		Title:         r.Title,
 		Revisions:     r.Revisions,
-		ReviewState:   r.ReviewState,
 		ManifestYaml:  r.ManifestYaml,
 		IsMonetized:   r.IsMonetized,
 		IsApplication: r.IsApplication,
 		IsTargeted:    r.IsTargeted,
 	}
 
+	mapNullString(&ld.ReviewState, r.ReviewState)
 	mapNullString(&ld.PublishedOn, r.PublishedOn)
 	mapNullString(&ld.Subtitle, r.Subtitle)
 	mapNullString(&ld.Description, r.Description)
@@ -250,4 +266,31 @@ func (r listingDetailsDBRow) convert() *ListingDetails {
 	mapNullString(&ld.LegacyUniformListingLocators, r.LegacyUniformListingLocators)
 
 	return ld
+}
+
+func (r *ShowVersionsListingRequest) toOpts() *ShowVersionsListingOptions {
+	opts := &ShowVersionsListingOptions{
+		name:  r.name,
+		Limit: r.Limit,
+	}
+	return opts
+}
+
+func (r listingVersionDBRow) convert() *ListingVersion {
+	lv := &ListingVersion{
+		CreatedOn:         r.CreatedOn,
+		Name:              r.Name,
+		Alias:             r.Alias,
+		LocationUrl:       r.LocationUrl,
+		IsDefault:         r.IsDefault,
+		IsLive:            r.IsLive,
+		IsFirst:           r.IsFirst,
+		IsLast:            r.IsLast,
+		Comment:           r.Comment,
+		SourceLocationUrl: r.SourceLocationUrl,
+	}
+
+	mapNullString(&lv.GitCommitHash, r.GitCommitHash)
+
+	return lv
 }

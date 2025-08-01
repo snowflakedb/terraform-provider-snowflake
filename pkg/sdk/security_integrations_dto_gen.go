@@ -40,10 +40,6 @@ type CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest 
 	Comment                     *string
 }
 
-func (r *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 type CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest struct {
 	OrReplace                   *bool
 	IfNotExists                 *bool
@@ -61,10 +57,6 @@ type CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationReq
 	Comment                     *string
 }
 
-func (r *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 type CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationRequest struct {
 	OrReplace                  *bool
 	IfNotExists                *bool
@@ -80,10 +72,6 @@ type CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationRequest struct {
 	OauthAccessTokenValidity   *int
 	OauthRefreshTokenValidity  *int
 	Comment                    *string
-}
-
-func (r *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
 }
 
 type CreateExternalOauthSecurityIntegrationRequest struct {
@@ -105,10 +93,6 @@ type CreateExternalOauthSecurityIntegrationRequest struct {
 	ExternalOauthScopeDelimiter                *string
 	ExternalOauthScopeMappingAttribute         *string
 	Comment                                    *string
-}
-
-func (r *CreateExternalOauthSecurityIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
 }
 
 type BlockedRolesListRequest struct {
@@ -137,10 +121,6 @@ type CreateOauthForPartnerApplicationsSecurityIntegrationRequest struct {
 	Comment                   *string
 }
 
-func (r *CreateOauthForPartnerApplicationsSecurityIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 type CreateOauthForCustomClientsSecurityIntegrationRequest struct {
 	OrReplace                   *bool
 	IfNotExists                 *bool
@@ -159,10 +139,6 @@ type CreateOauthForCustomClientsSecurityIntegrationRequest struct {
 	OauthClientRsaPublicKey     *string
 	OauthClientRsaPublicKey2    *string
 	Comment                     *string
-}
-
-func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
 }
 
 type PreAuthorizedRolesListRequest struct {
@@ -192,10 +168,6 @@ type CreateSaml2SecurityIntegrationRequest struct {
 	Comment                        *string
 }
 
-func (r *CreateSaml2SecurityIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 type CreateScimSecurityIntegrationRequest struct {
 	OrReplace     *bool
 	IfNotExists   *bool
@@ -206,10 +178,6 @@ type CreateScimSecurityIntegrationRequest struct {
 	NetworkPolicy *AccountObjectIdentifier
 	SyncPassword  *bool
 	Comment       *string
-}
-
-func (r *CreateScimSecurityIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
 }
 
 type AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest struct {

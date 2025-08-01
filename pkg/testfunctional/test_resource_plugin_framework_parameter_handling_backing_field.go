@@ -106,7 +106,7 @@ func (r *ParameterHandlingBackingFieldResource) Create(ctx context.Context, requ
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &ParameterHandlingBackingFieldOpts{}
-	stringAttributeCreate(data.StringValue, &opts.StringValue)
+	_ = StringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	r.setCreateActionsOutput(ctx, response, opts, data)
 

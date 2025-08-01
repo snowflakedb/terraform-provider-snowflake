@@ -73,7 +73,7 @@ The current provider was developed due to the initial lack of alternatives for m
 Adopting this new provider represents a significant change. We intend to proceed cautiously, initially focusing on validating its benefits and limitations through a proof of concept involving a limited number of resources. This approach will allow us to assess its viability without impacting the stability of the existing provider, as we anticipate running duplicate resources during this phase. We may also seek user feedback on these new resources to inform our decision-making process.
 
 ## (2025-04-23) v2.0.0 release - GA
-<a name="23042025-v200-release---ga"></a>
+<a id="23042025-v200-release---ga"></a>
 
 As announced previously, we have released today the v2.0.0 version of the provider, which is an officially supported Snowflake product!
 
@@ -81,14 +81,14 @@ Some essential information:
 - We updated the project state in the registry docs and the project's README.
 - The [official docs](https://docs.snowflake.com/en/user-guide/terraform) will be refreshed soon.
 - Before upgrading, please read the [migration guide](MIGRATION_GUIDE.md#v121--v200) carefully, as there are some breaking changes. We wanted to make them as smooth as possible, so for some of them, there is the "opt-out" option (e.g. skipping the file permission validation can still be set in the provider config through [skip_toml_file_permission_verification](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#skip_toml_file_permission_verification-1) attribute), which will be removed in future major releases.
-- For more details on "what is GA?" check the [previous entry](#10042025-ga-announcement). 
+- For more details on "what is GA?" check the [previous entry](#10042025-ga-announcement).
 - In case of any migration issues, please contact us.
 - We will share our next milestones in early May (as the next roadmap entry). One of our main priorities is to help with migrations, so that everyone can benefit from the official support.
 
 As always, we encourage you to contact us with any questions or issues. Happy Terraforming!
 
 ## (2025-04-10) GA announcement
-<a name="10042025-ga-announcement"></a>
+<a id="10042025-ga-announcement"></a>
 
 ### GA release
 
@@ -141,7 +141,7 @@ The migration to the snowflakedb GitHub organization was successfully concluded.
 The old namespace will be deleted on **July 31st**. We will soon add the deprecation notice to the old namespace. Please contact us if you encounter any problems switching to the provider in the new namespace.
 
 ## (2025-03-24) snowflakedb migration
-<a name="24032025-snowflakedb-migration"></a>
+<a id="24032025-snowflakedb-migration"></a>
 
 As part of GA preparation, we must migrate out of the [Snowflake-Labs](https://github.com/Snowflake-Labs) GitHub organization to [snowflakedb](https://github.com/snowflakedb), as noted in the [previous Roadmap entry](#what-is-ga). It should happen within a few days. A few important notes on that:
 - **The [old terraform registry](http://registry.terraform.io/providers/Snowflake-Labs/snowflake/latest/docs) will still be accessible so no immediate action is needed** (at least for now; we will have separate communication regarding its deprecation). However, don’t wait with the migration, as we plan to deprecate and remove the old registry sooner rather than later.
@@ -154,7 +154,7 @@ If you have any questions about the migration topic, please contact us through G
 We will announce the GA date soon, so stay tuned!
 
 ## (2025-02-07) GA scope and roadmap
-<a name="07022025-ga-scope-and-roadmap"></a>
+<a id="07022025-ga-scope-and-roadmap"></a>
 
 ### Current focus and goals
 
@@ -283,7 +283,7 @@ The same applies to the non-critical issues where a workaround exists.
 We will still fix the critical issues as part of our best-effort support.
 
 ## (2024-12-13) V1 release update
-<a name="13122024-v1-release-update"></a>
+<a id="13122024-v1-release-update"></a>
 
 We have released a long-awaited [v1.0.0](https://github.com/snowflakedb/terraform-provider-snowflake/releases/tag/v1.0.0). A few things to know now:
 - Together with v1.0.0 we have also released "the last" 0.x.x version - 0.100.0. v1.0.0 is built on top of that; it removed the [deprecated resources](https://github.com/snowflakedb/terraform-provider-snowflake/blob/ab015e8cf6f4db762b4043e8bfce2a010b623602/v1-preparations/LIST_OF_REMOVED_RESOURCES_FOR_V1.md) and attributes mostly, so if you are using one of the latest 0.x versions, you should be really close to v1.
@@ -296,7 +296,7 @@ We have released a long-awaited [v1.0.0](https://github.com/snowflakedb/terrafor
 - Besides the GA, we want to focus mostly on stabilizing the preview resources. We will share their current prioritization in January. The main ones for now are functions, procedures, and tables.
 
 ## (2024-10-25) Project state overview
-<a name="25102024-project-state-overview"></a>
+<a id="25102024-project-state-overview"></a>
 
 ### Goals
 
@@ -407,7 +407,7 @@ This is only a general overview of the next year and may be subject to change:
 * Introduce Terraform modules
 
 ## (2024-05-05) Roadmap Overview
-<a name="05052024-roadmap-overview"></a>
+<a id="05052024-roadmap-overview"></a>
 
 ### Goals
 Since the last update we have focused on:
@@ -463,7 +463,7 @@ This will be the moment to validate our V1 efforts by checking if everything was
 - Support for the public preview features
 
 ## (2024-01-19) Roadmap Overview
-<a name="19012024-roadmap-overview"></a>
+<a id="19012024-roadmap-overview"></a>
 ### Goals
 The primary goals we are working on currently are:
 - Adding missing and updating existing functionalities (resources and data sources);

@@ -75,6 +75,7 @@ body:
         - resource:image_repository
         - resource:job_service
         - resource:legacy_service_user
+        - resource:listing
         - resource:managed_account
         - resource:masking_policy
         - resource:materialized_view

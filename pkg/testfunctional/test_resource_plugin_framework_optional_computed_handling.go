@@ -81,7 +81,7 @@ func (r *OptionalComputedResource) Create(ctx context.Context, request resource.
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &OptionalComputedOpts{}
-	stringAttributeCreate(data.StringValue, &opts.StringValue)
+	_ = StringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	response.Diagnostics.Append(r.create(opts)...)
 	if response.Diagnostics.HasError() {

@@ -219,3 +219,16 @@ func (s *DescribeListingRequest) WithRevision(Revision ListingRevision) *Describ
 	s.Revision = &Revision
 	return s
 }
+
+func NewShowVersionsListingRequest(
+	name AccountObjectIdentifier,
+) *ShowVersionsListingRequest {
+	s := ShowVersionsListingRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *ShowVersionsListingRequest) WithLimit(Limit LimitFrom) *ShowVersionsListingRequest {
+	s.Limit = &Limit
+	return s
+}
