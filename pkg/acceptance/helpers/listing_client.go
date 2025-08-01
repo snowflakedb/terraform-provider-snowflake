@@ -96,24 +96,24 @@ func (c *ListingClient) BasicManifestWithUnquotedValuesAndDifferentSubtitle(t *t
 	return c.basicManifestWithUnquotedValues(t, "basic_with_diff_subtitle_", "different_subtitle")
 }
 
-func (c *ListingClient) BasicManifestWithTargetAccount(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) BasicManifestWithTargetAccount(t *testing.T) (string, string) {
 	t.Helper()
-	return c.basicManifestWithTargetAccount(t, "with_target_accounts_", "subtitle", targetAccount)
+	return c.basicManifestWithTargetAccount(t, "with_target_accounts_", "subtitle")
 }
 
-func (c *ListingClient) BasicManifestWithTargetAccountAndDifferentSubtitle(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) BasicManifestWithTargetAccountAndDifferentSubtitle(t *testing.T) (string, string) {
 	t.Helper()
-	return c.basicManifestWithTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccount)
+	return c.basicManifestWithTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle")
 }
 
-func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccount(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccount(t *testing.T) (string, string) {
 	t.Helper()
-	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_", "subtitle", targetAccount)
+	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_", "subtitle")
 }
 
-func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccountAndDifferentSubtitle(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccountAndDifferentSubtitle(t *testing.T) (string, string) {
 	t.Helper()
-	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccount)
+	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle")
 }
 
 func (c *ListingClient) basicManifest(t *testing.T, titleSuffix string, subtitle string) (string, string) {
@@ -138,7 +138,7 @@ listing_terms:
 `, title, subtitle), title
 }
 
-func (c *ListingClient) basicManifestWithTargetAccount(t *testing.T, titleSuffix string, subtitle string, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) basicManifestWithTargetAccount(t *testing.T, titleSuffix string, subtitle string) (string, string) {
 	t.Helper()
 	title := c.ids.WithTestObjectSuffix(titleSuffix)
 	return fmt.Sprintf(`title: "%s"
@@ -147,11 +147,11 @@ description: "description"
 listing_terms:
   type: "OFFLINE"
 targets:
-  accounts: [%s.%s]
-`, title, subtitle, targetAccount.OrganizationName(), targetAccount.AccountName()), title
+  accounts: []
+`, title, subtitle), title
 }
 
-func (c *ListingClient) basicManifestWithUnquotedValuesAndTargetAccount(t *testing.T, titleSuffix string, subtitle string, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) basicManifestWithUnquotedValuesAndTargetAccount(t *testing.T, titleSuffix string, subtitle string) (string, string) {
 	t.Helper()
 	title := c.ids.WithTestObjectSuffix(titleSuffix)
 	return fmt.Sprintf(`title: %s
@@ -160,6 +160,6 @@ description: description
 listing_terms:
   type: OFFLINE
 targets:
-  accounts: [%s.%s]
-`, title, subtitle, targetAccount.OrganizationName(), targetAccount.AccountName()), title
+  accounts: []
+`, title, subtitle), title
 }

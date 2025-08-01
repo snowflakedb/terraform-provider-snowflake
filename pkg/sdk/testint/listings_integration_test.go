@@ -3,7 +3,6 @@
 package testint
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -35,14 +34,11 @@ func TestInt_Listings(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	accountId := testClientHelper().Context.CurrentAccountId(t)
-	targetAccount := fmt.Sprintf("%s.%s", accountId.OrganizationName(), accountId.AccountName())
-
 	basicManifest, basicManifestTitle := testClientHelper().Listing.BasicManifest(t)
 	_ = testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/basic", "manifest.yml", basicManifest)
 	basicManifestStageLocation := sdk.NewStageLocation(stage.ID(), "basic")
 
-	basicManifestWithTarget, basicManifestWithTargetTitle := testClientHelper().Listing.BasicManifestWithTargetAccount(t, accountId)
+	basicManifestWithTarget, basicManifestWithTargetTitle := testClientHelper().Listing.BasicManifestWithTargetAccount(t)
 	testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/with_target", "manifest.yml", basicManifestWithTarget)
 	basicManifestWithTargetStageLocation := sdk.NewStageLocation(stage.ID(), "with_target")
 
@@ -124,7 +120,7 @@ func TestInt_Listings(t *testing.T) {
 				HasNoReviewState().
 				HasComment(comment).
 				HasNoRegions().
-				HasTargetAccounts(targetAccount).
+				HasTargetAccounts("").
 				HasIsMonetized(false).
 				HasIsApplication(false).
 				HasIsTargeted(true).
@@ -189,7 +185,7 @@ func TestInt_Listings(t *testing.T) {
 				HasNoReviewState().
 				HasComment(comment).
 				HasNoRegions().
-				HasTargetAccounts(targetAccount).
+				HasTargetAccounts("").
 				HasIsMonetized(false).
 				HasIsApplication(true).
 				HasIsTargeted(true).
