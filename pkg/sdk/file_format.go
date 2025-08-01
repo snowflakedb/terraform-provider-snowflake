@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -367,6 +366,7 @@ func (v *fileFormats) Create(ctx context.Context, id SchemaObjectIdentifier, opt
 	if err != nil {
 		return err
 	}
+
 	_, err = v.client.exec(ctx, sql)
 	return err
 }
@@ -769,19 +769,13 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 			case "FIELD_OPTIONALLY_ENCLOSED_BY":
 				details.Options.CSVFieldOptionallyEnclosedBy = &v
 			case "NULL_IF":
-				trimmed := strings.Trim(v, "[]")
-				if trimmed == "" {
-					details.Options.CSVNullIf = nil
-					continue
-				}
-
-				nullIf := []NullString{}
-				for _, s := range strings.Split(trimmed, ", ") {
+				newNullIf := []NullString{}
+				for _, s := range ParseCommaSeparatedStringArray(v, false) {
 					if s != "" {
-						nullIf = append(nullIf, NullString{s})
+						newNullIf = append(newNullIf, NullString{s})
 					}
 				}
-				details.Options.CSVNullIf = &nullIf
+				details.Options.CSVNullIf = &newNullIf
 			case "COMPRESSION":
 				comp := CSVCompression(v)
 				details.Options.CSVCompression = &comp
@@ -848,7 +842,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				details.Options.JSONTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for _, s := range ParseCommaSeparatedStringArray(v, false) {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.JSONNullIf = newNullIf
@@ -914,7 +908,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				details.Options.AvroTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for _, s := range ParseCommaSeparatedStringArray(v, false) {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.AvroNullIf = &newNullIf
@@ -944,7 +938,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				details.Options.ORCTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for _, s := range ParseCommaSeparatedStringArray(v, false) {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.ORCNullIf = &newNullIf
@@ -971,7 +965,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				details.Options.ParquetTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for _, s := range ParseCommaSeparatedStringArray(v, false) {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.ParquetNullIf = &newNullIf
