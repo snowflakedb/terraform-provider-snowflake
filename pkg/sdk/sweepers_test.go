@@ -2,11 +2,12 @@ package sdk
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/acceptancetests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 // TODO [SNOW-867247]: move the sweepers outside of the sdk package
