@@ -193,11 +193,11 @@ func TestAcc_GrantPrivilegesToShare_OnDynamicTable(t *testing.T) {
 	dynamicTableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
 	configVariables := config.Variables{
-		"to_share": config.StringVariable(share.ID().Name()),
-		"database": config.StringVariable(database.ID().Name()),
-		"schema":   config.StringVariable(schema.ID().Name()),
-		"warehouse":  config.StringVariable(TestWarehouseName),
-		"on_table": config.StringVariable(dynamicTableId.Name()),
+		"to_share":  config.StringVariable(share.ID().Name()),
+		"database":  config.StringVariable(database.ID().Name()),
+		"schema":    config.StringVariable(schema.ID().Name()),
+		"warehouse": config.StringVariable(TestWarehouseName),
+		"on_table":  config.StringVariable(dynamicTableId.Name()),
 		"privileges": config.ListVariable(
 			config.StringVariable(sdk.ObjectPrivilegeSelect.String()),
 		),

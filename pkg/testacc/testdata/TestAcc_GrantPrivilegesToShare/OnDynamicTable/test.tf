@@ -10,14 +10,14 @@ resource "snowflake_table" "base_table" {
 }
 
 resource "snowflake_dynamic_table" "test_dynamic_table" {
-  name       = var.on_table
-  database   = var.database
-  schema     = var.schema
+  name     = var.on_table
+  database = var.database
+  schema   = var.schema
   target_lag {
     maximum_duration = "2 minutes"
   }
   warehouse = var.warehouse
-  query = <<-EOT
+  query     = <<-EOT
     with temp as (
       select "id" from ${snowflake_table.base_table.fully_qualified_name}
     )
