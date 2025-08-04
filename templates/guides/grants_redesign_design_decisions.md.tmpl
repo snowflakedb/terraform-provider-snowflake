@@ -227,6 +227,113 @@ Grants have one show page in the documentation and were already represented as o
 
 [Documentation Reference](https://docs.snowflake.com/en/sql-reference/sql/show-grants)
 
+### Why we decide to stick with resources repressing single grant instead of multiple ones like in old resources
+
+With the redesign of grant resources, our goal was to simplify how grants are represented in the provider.
+Previously, each resource represented a single object with multiple grant options, which was difficult to maintain since the implementation had to be repeated for every object type.
+The new design introduces a more generic resource that can be used for all types of grantable objects while adhering to the single responsibility principle followed by most resources.
+This was a solid starting point, allowing us to begin with a simpler resource that could be improved based on your feedback through GitHub issues and discussions, which we greatly appreciate.
+
+However, as more users transitioned to the new resources, there was increased demand for more complex grant resources capable of representing multiple grants in a single resource.
+This demand is largely related to pricing models that base costs on the number of managed resources, an issue we are aware of and plan to address in the future.
+To follow our current plans, see the roadmap in our GitHub repository: [ROADMAP.md](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md).
+It is updated regularly, usually in the first month of each quarter.
+
+For now, we recommend using Terraform built-in functionalities like `for_each` or `count` to create multiple resources within a single configuration.
+Here's an example configuration for granting account roles to multiple roles and users:
+
+```terraform
+locals {
+  granting_roles = ["role1", "role2", "role3"]
+
+  roles = ["role1", "role2", "role3"]
+  users = ["user1", "user2", "user3"]
+
+  roles_to_grant = flatten([
+    for a in local.granting_roles : [
+      for b in local.roles : {
+        granting_role    = a
+        parent_role_name = b
+      }
+    ]
+  ])
+  users_to_grant = flatten([
+    for a in local.granting_roles : [
+      for b in local.users : {
+        granting_role = a
+        user_name     = b
+      }
+    ]
+  ])
+}
+
+resource "snowflake_grant_account_role" "grants_to_account_roles" {
+  count = length(local.roles_to_grant)
+
+  role_name        = local.roles_to_grant[count.index].granting_role
+  parent_role_name = local.roles_to_grant[count.index].parent_role_name
+}
+
+resource "snowflake_grant_account_role" "grants_to_users" {
+  count = length(local.users_to_grant)
+
+  role_name = local.users_to_grant[count.index].granting_role
+  user_name = local.users_to_grant[count.index].user_name
+}
+```
+
+You can also combine both local variables to use only one resource configuration:
+```terraform
+locals {
+  combined_grants = concat(
+    [
+      for grant in local.roles_to_grant : {
+      granting_role    = grant.granting_role
+      parent_role_name = grant.parent_role_name
+      user_name        = null
+    }
+    ],
+    [
+      for grant in local.users_to_grant : {
+      granting_role    = grant.granting_role
+      parent_role_name = null
+      user_name        = grant.user_name
+    }
+    ]
+  )
+}
+
+resource "snowflake_grant_account_role" "combined_grants" {
+  count = length(local.combined_grants)
+
+  role_name        = local.combined_grants[count.index].granting_role
+  parent_role_name = local.combined_grants[count.index].parent_role_name
+  user_name        = local.combined_grants[count.index].user_name
+}
+```
+
+By modifying the above example, you can also use `for_each` to create multiple resources in a single resource configuration, like so:
+
+```terraform
+locals {
+  roles_to_grant = toset(flatten([
+    for a in local.granting_roles : [
+      for b in local.roles : "${a}_${b}" # Be careful with the separator being a part of an identifier
+    ]
+  ]))
+}
+
+resource "snowflake_grant_account_role" "grants_to_account_roles" {
+  for_each = local.roles_to_grant
+
+  role_name        = split("_", each.value)[0]
+  parent_role_name = split("_", each.value)[1]
+}
+```
+
+Those are only an examples, and they should be adjusted to your needs, but it shows how you can use Terraform to create multiple resources in a single resource configuration.
+Make sure you also know the pros and cons between using `for_each` and `count` ([comparison documentation](https://developer.hashicorp.com/terraform/language/meta-arguments/count#when-to-use-for_each-instead-of-count)).
+
 ### A snowflake_grant_privileges_to_application resource won’t be added
 We didn’t implement the snowflake_grant_privileges_to_application resource, because granting/revoking privileges to/from application roles is only possible to perform from within the application context.
 

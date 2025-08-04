@@ -1034,21 +1034,29 @@ output "simple_output" {
 ```
 
 ### snowflake_tag_association resource changes
+
 #### *(behavior change)* new id format
-To provide more functionality for tagging objects, we have changed the resource id from `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"` to `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"|TAG_VALUE|OBJECT_TYPE`. This allows to group tags associations per tag ID, tag value and object type in one resource.
-```
+To provide more functionality for tagging objects, we have changed the resource id from `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"` to `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"|TAG_VALUE|OBJECT_TYPE`.
+
+The state is migrated automatically. There is no need to adjust configuration files, unless you use resource id `snowflake_tag_association.example.id` as a reference in other resources.
+
+This change allows to group tags associations per tag ID, tag value and object type in one resource, like so:
+
+```terraform
 resource "snowflake_tag_association" "gold_warehouses" {
   object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name]
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "gold"
 }
+
 resource "snowflake_tag_association" "silver_warehouses" {
   object_identifiers = [snowflake_warehouse.w3.fully_qualified_name]
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "silver"
 }
+
 resource "snowflake_tag_association" "silver_databases" {
   object_identifiers = [snowflake_database.d1.fully_qualified_name]
   object_type = "DATABASE"
@@ -1057,10 +1065,41 @@ resource "snowflake_tag_association" "silver_databases" {
 }
 ```
 
-Note that if you want to promote silver instances to gold, you can not simply change `tag_value` in `silver_warehouses`. Instead, you should first remove `object_identifiers` from `silver_warehouses`, run `terraform apply`, and then add the relevant `object_identifiers` in `gold_warehouses`, like this (note that `silver_warehouses` resource was deleted):
-```
+Note that if you want to promote `silver` instances to `gold`, you cannot change the `tag_value` in `silver_warehouses` to `gold`.
+Instead, you should first remove `object_identifiers` from `silver_warehouses`, run `terraform apply`.
+Your configuration should like as follows:
+
+```terraform
+resource "snowflake_tag_association" "silver_databases" {
+  object_identifiers = [snowflake_database.d1.fully_qualified_name]
+  object_type = "DATABASE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "silver"
+}
+
+## "snowflake_tag_association" "silver_warehouses" was removed
+
 resource "snowflake_tag_association" "gold_warehouses" {
-  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name, snowflake_warehouse.w3.fully_qualified_name]
+  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name]
+  object_type = "WAREHOUSE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "gold"
+}
+```
+
+Then, add the relevant object identifiers in `gold_warehouses`'s `object_identifiers` field.
+With those changes, you should end up with the following configuration:
+
+```terraform
+resource "snowflake_tag_association" "silver_databases" {
+  object_identifiers = [snowflake_database.d1.fully_qualified_name]
+  object_type = "DATABASE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "silver"
+}
+
+resource "snowflake_tag_association" "gold_warehouses" {
+  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name, snowflake_warehouse.w3.fully_qualified_name] # New warehouse was added
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "gold"
@@ -1068,9 +1107,7 @@ resource "snowflake_tag_association" "gold_warehouses" {
 ```
 and run `terraform apply` again.
 
-Note that the order of operations is not deterministic in this case, and if you do these operations in one step, it is possible that the tag value will be changed first, and unset later because of removing the resource with old value.
-
-The state is migrated automatically. There is no need to adjust configuration files, unless you use resource id `snowflake_tag_association.example.id` as a reference in other resources.
+> Note: This operation has to be done in two steps. Otherwise, they will run in the non-deterministic order and may end up in the incorrect state.
 
 #### *(behavior change)* changed fields
 Behavior of some fields was changed:
