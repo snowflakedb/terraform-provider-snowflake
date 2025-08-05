@@ -5,6 +5,7 @@ package testacc
 import (
 	"cmp"
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"regexp"
 	"slices"
 	"strconv"
@@ -1077,6 +1078,70 @@ func TestAcc_Schema_IdentifierQuotingDiffSuppression(t *testing.T) {
 					resource.TestCheckResourceAttr(basicSchemaModelWithQuotes.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(basicSchemaModelWithQuotes.ResourceReference(), "id", id.FullyQualifiedName()),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
+	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+	parameterSet := model.Schema("test", id.DatabaseName(), id.Name()).WithDefaultDdlCollation("en_nz")
+	parameterSetToNull := model.Schema("test", id.DatabaseName(), id.Name()).WithDefaultDdlCollationValue(accconfig.ReplacementPlaceholderVariable(accconfig.SnowflakeProviderConfigNull))
+	parameterSetToEmptyString := model.Schema("test", id.DatabaseName(), id.Name()).WithDefaultDdlCollation("")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Schema),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, parameterSet),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "database", id.DatabaseName()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, parameterSetToNull),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSetToNull.ResourceReference(), "database", id.DatabaseName()),
+					resource.TestCheckResourceAttr(parameterSetToNull.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSetToNull.ResourceReference(), "default_ddl_collation", ""),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, parameterSetToEmptyString),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
+					// Prove the parameter is set to empty string and on the right level.
+					objectparametersassert.SchemaParameters(t, id).
+						HasDefaultDdlCollation("").
+						HasDefaultDdlCollationLevel(sdk.ParameterTypeSchema),
+				),
+			},
+			// We set it back to demonstrate that going from set value straight to empty string won't work (an intermediate step with null value is required).
+			{
+				Config: accconfig.FromModels(t, parameterSet),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "database", id.DatabaseName()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, parameterSetToEmptyString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "database", id.DatabaseName()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
+				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
