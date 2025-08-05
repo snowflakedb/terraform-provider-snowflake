@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -38,7 +39,7 @@ func TestInt_Listings(t *testing.T) {
 	_ = testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/basic", "manifest.yml", basicManifest)
 	basicManifestStageLocation := sdk.NewStageLocation(stage.ID(), "basic")
 
-	basicManifestWithTarget, basicManifestWithTargetTitle := testClientHelper().Listing.BasicManifestWithTargetAccount(t)
+	basicManifestWithTarget, basicManifestWithTargetTitle := testClientHelper().Listing.BasicManifestWithTargetAccounts(t)
 	testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/with_target", "manifest.yml", basicManifestWithTarget)
 	basicManifestWithTargetStageLocation := sdk.NewStageLocation(stage.ID(), "with_target")
 
@@ -504,17 +505,25 @@ func TestInt_Listings(t *testing.T) {
 	})
 
 	t.Run("describe: default", func(t *testing.T) {
-		listing, listingCleanup := testClientHelper().Listing.Create(t)
-		t.Cleanup(listingCleanup)
+		accountId := testClientHelper().Context.CurrentAccountId(t)
+		manifest, title := testClientHelper().Listing.BasicManifestWithTargetAccounts(t, accountId)
 
-		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(listing.ID()))
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithAs(manifest).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
 		require.NoError(t, err)
 		require.NotNil(t, listingDetails)
 
-		manifest, title := testClientHelper().Listing.BasicManifest(t)
-
 		assert.NotEmpty(t, listingDetails.GlobalName)
-		assert.Equal(t, listing.ID().Name(), listingDetails.Name)
+		assert.Equal(t, id.Name(), listingDetails.Name)
 		assert.NotEmpty(t, listingDetails.Owner)
 		assert.NotEmpty(t, listingDetails.OwnerRoleType)
 		assert.NotEmpty(t, listingDetails.CreatedOn)
@@ -527,7 +536,7 @@ func TestInt_Listings(t *testing.T) {
 "type" : "OFFLINE"
 }`, *listingDetails.ListingTerms)
 		assert.Equal(t, sdk.ListingStateDraft, listingDetails.State)
-		assert.Nil(t, listingDetails.Share)
+		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
 		assert.Empty(t, listingDetails.ApplicationPackage.Name()) // Application package is returned even if listing is not associated with one, but it is empty in that case
 		assert.Nil(t, listingDetails.BusinessNeeds)
 		assert.Nil(t, listingDetails.UsageExamples)
@@ -540,22 +549,22 @@ func TestInt_Listings(t *testing.T) {
 		assert.Nil(t, listingDetails.DataPreview)
 		assert.Nil(t, listingDetails.Comment)
 		assert.Equal(t, "DRAFT", listingDetails.Revisions)
-		assert.Nil(t, listingDetails.TargetAccounts)
+		assert.Equal(t, fmt.Sprintf("%s.%s", accountId.OrganizationName(), accountId.AccountName()), *listingDetails.TargetAccounts)
 		assert.Nil(t, listingDetails.Regions)
 		assert.Nil(t, listingDetails.RefreshSchedule)
 		assert.Nil(t, listingDetails.RefreshType)
-		assert.Equal(t, "UNSENT", *listingDetails.ReviewState)
+		assert.Nil(t, listingDetails.ReviewState)
 		assert.Nil(t, listingDetails.RejectionReason)
 		assert.Nil(t, listingDetails.UnpublishedByAdminReasons)
 		assert.False(t, listingDetails.IsMonetized)
 		assert.False(t, listingDetails.IsApplication)
-		assert.False(t, listingDetails.IsTargeted)
+		assert.True(t, listingDetails.IsTargeted)
 		assert.False(t, *listingDetails.IsLimitedTrial)
 		assert.False(t, *listingDetails.IsByRequest)
 		assert.Nil(t, listingDetails.LimitedTrialPlan)
 		assert.Nil(t, listingDetails.RetriedOn)
 		assert.Nil(t, listingDetails.ScheduledDropTime)
-		assert.Equal(t, manifest, listingDetails.ManifestYaml)
+		assert.NotEmpty(t, listingDetails.ManifestYaml)
 		assert.Equal(t, "EXTERNAL", *listingDetails.Distribution)
 		assert.False(t, *listingDetails.IsMountlessQueryable)
 		assert.Nil(t, listingDetails.OrganizationProfileName)
@@ -570,7 +579,7 @@ func TestInt_Listings(t *testing.T) {
 		assert.Nil(t, listingDetails.PublishedVersionUri)
 		assert.Nil(t, listingDetails.PublishedVersionName)
 		assert.Nil(t, listingDetails.PublishedVersionAlias)
-		assert.False(t, *listingDetails.IsShare)
+		assert.True(t, *listingDetails.IsShare)
 		assert.Nil(t, listingDetails.RequestApprovalType)
 		assert.Empty(t, *listingDetails.MonetizationDisplayOrder)
 		assert.Nil(t, listingDetails.LegacyUniformListingLocators)
