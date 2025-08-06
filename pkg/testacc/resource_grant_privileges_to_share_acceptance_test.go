@@ -180,6 +180,59 @@ func TestAcc_GrantPrivilegesToShare_OnTable(t *testing.T) {
 	})
 }
 
+func TestAcc_GrantPrivilegesToShare_OnDynamicTable(t *testing.T) {
+	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	share, shareCleanup := testClient().Share.CreateShare(t)
+	t.Cleanup(shareCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+
+	configVariables := config.Variables{
+		"to_share":  config.StringVariable(share.ID().Name()),
+		"database":  config.StringVariable(id.DatabaseName()),
+		"schema":    config.StringVariable(id.SchemaName()),
+		"warehouse": config.StringVariable(TestWarehouseName),
+		"on_table":  config.StringVariable(id.Name()),
+		"privileges": config.ListVariable(
+			config.StringVariable(sdk.ObjectPrivilegeSelect.String()),
+		),
+	}
+
+	resourceName := "snowflake_grant_privileges_to_share.test"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToShare/OnDynamicTable"),
+				ConfigVariables: configVariables,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "to_share", share.ID().Name()),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", sdk.ObjectPrivilegeSelect.String()),
+					resource.TestCheckResourceAttr(resourceName, "on_table", id.FullyQualifiedName()),
+				),
+			},
+			{
+				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantPrivilegesToShare/OnDynamicTable"),
+				ConfigVariables:   configVariables,
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAcc_GrantPrivilegesToShare_OnAllTablesInSchema(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)

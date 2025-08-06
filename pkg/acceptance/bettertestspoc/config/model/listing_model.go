@@ -39,7 +39,7 @@ func ListingWithInlineManifest(
 	l.WithName(name)
 	l.WithManifestValue(tfconfig.ListVariable(
 		tfconfig.MapVariable(map[string]tfconfig.Variable{
-			"from_string": tfconfig.StringVariable(manifest),
+			"from_string": config.MultilineWrapperVariable(manifest),
 		}),
 	))
 	return l

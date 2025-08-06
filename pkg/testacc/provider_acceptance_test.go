@@ -623,7 +623,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.Warehouse, "invalid")
 					t.Setenv(snowflakeenvs.Protocol, "invalid")
 					t.Setenv(snowflakeenvs.Port, "-1")
-					t.Setenv(snowflakeenvs.Token, "")
+					t.Setenv(snowflakeenvs.Token, "invalid")
 					t.Setenv(snowflakeenvs.Role, "invalid")
 					t.Setenv(snowflakeenvs.ValidateDefaultParameters, "false")
 					t.Setenv(snowflakeenvs.ClientIp, "2.2.2.2")
@@ -677,7 +677,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
 					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
-					assert.Equal(t, "token", config.Token)
+					assert.Equal(t, "correct token", config.Token)
 					assert.True(t, config.KeepSessionAlive)
 					assert.True(t, config.DisableTelemetry)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
@@ -942,6 +942,7 @@ func TestAcc_Provider_SnowflakeAuth(t *testing.T) {
 
 	tmpLegacyServiceUser := testClient().SetUpTemporaryLegacyServiceUser(t)
 	tmpLegacyServiceUserConfig := testClient().TempTomlConfigForLegacyServiceUser(t, tmpLegacyServiceUser)
+	tmpLegacyServiceUserConfigWithoutAuthenticator := testClient().TempTomlConfigForServiceUserWithoutAuthenticator(t, tmpLegacyServiceUser)
 	incorrectLegacyServiceUserConfig := testClient().TempIncorrectTomlConfigForLegacyServiceUser(t, tmpLegacyServiceUser)
 
 	resource.Test(t, resource.TestCase{
@@ -963,6 +964,12 @@ func TestAcc_Provider_SnowflakeAuth(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpLegacyServiceUserConfig.Profile), datasourceModel()),
 			},
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, tmpLegacyServiceUserConfigWithoutAuthenticator.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpLegacyServiceUserConfigWithoutAuthenticator.Profile), datasourceModel()),
+			},
 		},
 	})
 }
@@ -971,7 +978,9 @@ func TestAcc_Provider_ProgrammaticAccessTokenAuth(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
+	tmpIncorrectServiceUserConfig := testClient().TempIncorrectTomlConfigForTmpUser(t, &userWithPat.TmpUser)
 	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
+	userWithPatTfConfig := providermodel.PatConfig(*userWithPat)
 
 	userWithPatAsPasswordConfig := testClient().TempTomlConfigForServiceUserWithPatAsPassword(t, userWithPat)
 
@@ -988,12 +997,51 @@ func TestAcc_Provider_ProgrammaticAccessTokenAuth(t *testing.T) {
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile), datasourceModel()),
 			},
+			// Authenticate with PROGRAMMATIC_ACCESS_TOKEN authenticator and PAT passed in token field (set in Terraform)
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, tmpIncorrectServiceUserConfig.Path)
+				},
+				Config: config.FromModels(t, userWithPatTfConfig, datasourceModel()),
+			},
 			// Authenticate with the default authenticator and PAT passed in password field
 			{
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, userWithPatAsPasswordConfig.Path)
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatAsPasswordConfig.Profile), datasourceModel()),
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_ProgrammaticAccessTokenAuth_tokenInTfConfig(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
+	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Setting the proper PAT token in tf config results in error due to incorrect authenticator setting
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.4.0"),
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
+				},
+				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile).WithToken(userWithPat.Pat), datasourceModel()),
+				ExpectError: regexp.MustCompile("Invalid OAuth access token"),
+			},
+			// Behavior is fixed in the new version
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile).WithToken(userWithPat.Pat), datasourceModel()),
 			},
 		},
 	})

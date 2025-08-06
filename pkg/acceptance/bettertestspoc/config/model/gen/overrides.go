@@ -18,6 +18,8 @@ var multilineAttributesOverrides = map[string][]string{
 	"Account":                          {"admin_rsa_public_key"},
 	"Saml2SecurityIntegration":         {"saml2_x509_cert"},
 	"OauthIntegrationForCustomClients": {"oauth_client_rsa_public_key", "oauth_client_rsa_public_key_2"},
+	// TODO(SNOW-1501905): Uncomment once listings are generated
+	// "Listing":                          {"manifest.0.from_string"},
 }
 
 var complexListAttributesOverrides = map[string]map[string]string{

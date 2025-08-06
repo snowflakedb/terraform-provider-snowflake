@@ -182,6 +182,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.LegacyServiceUser: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Users.ShowByID)
 	},
+	resources.Listing: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Listings.ShowByID)
+	},
 	resources.ManagedAccount: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ManagedAccounts.ShowByID)
 	},

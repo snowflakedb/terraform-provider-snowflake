@@ -351,4 +351,12 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.ProcedureParameterTraceLevel), ParameterType: "sdk.TraceLevel", DefaultValue: "sdk.TraceLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},
 	},
+	{
+		Name:   "Schema",
+		IdType: "sdk.DatabaseObjectIdentifier",
+		Level:  sdk.ParameterTypeObject,
+		Parameters: []SnowflakeParameter{
+			{ParameterName: string(sdk.ObjectParameterDefaultDDLCollation), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+		},
+	},
 }

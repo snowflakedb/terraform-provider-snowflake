@@ -159,15 +159,14 @@ func TomlIncorrectConfigForServiceUser(t *testing.T, profile string, accountIden
 func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, pass string) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithUser(userId.Name()).
-		WithPassword(pass).
-		WithRole(roleId.Name()).
-		WithOrganizationName(accountIdentifier.OrganizationName()).
-		WithAccountName(accountIdentifier.AccountName()).
-		WithWarehouse(warehouseId.Name()).
-		WithAuthenticator(string(sdk.AuthenticationTypeSnowflake)),
-	)
+	return configDtoToTomlString(t, profile, sdk.ConfigForSnowflakeAuth(accountIdentifier, userId, pass, roleId, warehouseId))
+}
+
+// TomlConfigForLegacyServiceUserWithoutAuthenticator is a temporary function used to test provider configuration
+func TomlConfigForLegacyServiceUserWithoutAuthenticator(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, pass string) string {
+	t.Helper()
+
+	return configDtoToTomlString(t, profile, sdk.ConfigForSnowflakeAuth(accountIdentifier, userId, pass, roleId, warehouseId).WithAuthenticatorNil())
 }
 
 // TomlConfigForServiceUserWithModifiers is a temporary function used to test provider configuration allowing to modify the toml config
