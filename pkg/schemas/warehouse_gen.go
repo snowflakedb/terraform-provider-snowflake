@@ -113,6 +113,10 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"resource_constraint": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -149,6 +153,7 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema["query_acceleration_max_scale_factor"] = warehouse.QueryAccelerationMaxScaleFactor
 	warehouseSchema["resource_monitor"] = warehouse.ResourceMonitor.Name()
 	warehouseSchema["scaling_policy"] = string(warehouse.ScalingPolicy)
+	warehouseSchema["resource_constraint"] = string(warehouse.ResourceConstraint)
 	warehouseSchema["owner_role_type"] = warehouse.OwnerRoleType
 	return warehouseSchema
 }

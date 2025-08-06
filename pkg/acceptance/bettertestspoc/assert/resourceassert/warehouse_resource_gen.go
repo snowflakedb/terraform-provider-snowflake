@@ -87,6 +87,11 @@ func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactorString(expec
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasResourceConstraintString(expected string) *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueSet("resource_constraint", expected))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasResourceMonitorString(expected string) *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("resource_monitor", expected))
 	return w
@@ -173,6 +178,11 @@ func (w *WarehouseResourceAssert) HasNoMinClusterCount() *WarehouseResourceAsser
 
 func (w *WarehouseResourceAssert) HasNoQueryAccelerationMaxScaleFactor() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueNotSet("query_acceleration_max_scale_factor"))
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasNoResourceConstraint() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("resource_constraint"))
 	return w
 }
 

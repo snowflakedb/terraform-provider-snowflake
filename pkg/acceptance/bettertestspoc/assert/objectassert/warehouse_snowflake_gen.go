@@ -296,6 +296,17 @@ func (w *WarehouseAssert) HasQueryAccelerationMaxScaleFactor(expected int) *Ware
 	return w
 }
 
+func (w *WarehouseAssert) HasResourceConstraint(expected sdk.ResourceConstraint) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.ResourceConstraint != expected {
+			return fmt.Errorf("expected resource constraint: %v; got: %v", expected, o.ResourceConstraint)
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasResourceMonitor(expected sdk.AccountObjectIdentifier) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()

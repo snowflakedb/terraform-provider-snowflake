@@ -35,6 +35,12 @@ var ValidWarehouseTypesString = []string{
 	string(WarehouseTypeSnowparkOptimized),
 }
 
+// ValidResourceConstraintsString is based on https://docs.snowflake.com/en/user-guide/warehouses-gen2
+var ValidResourceConstraintsString = []string{
+	string(ResourceConstraintStandardGen1),
+	string(ResourceConstraintStandardGen2),
+}
+
 // WarehouseParameters is based on https://docs.snowflake.com/en/sql-reference/parameters#object-parameters
 var WarehouseParameters = []ObjectParameter{
 	ObjectParameterMaxConcurrencyLevel,

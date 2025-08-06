@@ -15,6 +15,7 @@ resource "snowflake_warehouse" "warehouse" {
   auto_resume                         = false
   initially_suspended                 = false
   resource_monitor                    = snowflake_resource_monitor.monitor.fully_qualified_name
+  resource_constraint                 = "STANDARD_GEN_2"
   comment                             = "An example warehouse."
   enable_query_acceleration           = true
   query_acceleration_max_scale_factor = 4
@@ -22,4 +23,13 @@ resource "snowflake_warehouse" "warehouse" {
   max_concurrency_level               = 4
   statement_queued_timeout_in_seconds = 5
   statement_timeout_in_seconds        = 86400
+}
+
+# Gen2 warehouse example
+resource "snowflake_warehouse" "gen2_warehouse" {
+  name                = "GEN2_WAREHOUSE"
+  warehouse_type      = "STANDARD"
+  warehouse_size      = "LARGE"
+  resource_constraint = "STANDARD_GEN_2"
+  comment             = "A Generation 2 warehouse for improved performance."
 }

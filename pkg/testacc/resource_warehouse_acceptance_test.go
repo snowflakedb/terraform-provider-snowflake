@@ -2139,3 +2139,54 @@ resource "snowflake_warehouse" "test" {
 }
 `, id.Name())
 }
+
+func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	warehouseModelGen1 := model.BasicWarehouseModel(warehouseId, comment).
+		WithResourceConstraintEnum(sdk.ResourceConstraintStandardGen1)
+	warehouseModelGen2 := model.BasicWarehouseModel(warehouseId, comment).
+		WithResourceConstraintEnum(sdk.ResourceConstraintStandardGen2)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			// Create with Gen1
+			{
+				Config: config.FromModels(t, warehouseModelGen1),
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, warehouseModelGen1.ResourceReference()).
+						HasNameString(warehouseId.Name()).
+						HasResourceConstraintString(string(sdk.ResourceConstraintStandardGen1)),
+					objectassert.Warehouse(t, warehouseId).
+						HasName(warehouseId.Name()).
+						HasResourceConstraint(sdk.ResourceConstraintStandardGen1),
+				),
+			},
+			// Update to Gen2
+			{
+				Config: config.FromModels(t, warehouseModelGen2),
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, warehouseModelGen2.ResourceReference()).
+						HasNameString(warehouseId.Name()).
+						HasResourceConstraintString(string(sdk.ResourceConstraintStandardGen2)),
+					objectassert.Warehouse(t, warehouseId).
+						HasName(warehouseId.Name()).
+						HasResourceConstraint(sdk.ResourceConstraintStandardGen2),
+				),
+			},
+			// Import
+			{
+				ResourceName:      warehouseModelGen2.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

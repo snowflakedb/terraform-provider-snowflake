@@ -90,6 +90,13 @@ var warehouseSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor")),
 		Description:      relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the warehouse.", resources.ResourceMonitor),
 	},
+	"resource_constraint": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: sdkValidation(sdk.ToResourceConstraint),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToResourceConstraint), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
+		Description:      fmt.Sprintf("Specifies the generation of the virtual warehouse. Valid values are (case-insensitive): %s. Gen2 warehouses offer improved performance at a higher credit cost.", possibleValuesListed(sdk.ValidResourceConstraintsString)),
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -210,7 +217,7 @@ func Warehouse() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Warehouse, customdiff.All(
-			ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor"),
+			ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "resource_constraint", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor"),
 			ComputedIfAnyAttributeChanged(warehouseSchema, ParametersAttributeName, strings.ToLower(string(sdk.ObjectParameterMaxConcurrencyLevel)), strings.ToLower(string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds)), strings.ToLower(string(sdk.ObjectParameterStatementTimeoutInSeconds))),
 			ComputedIfAnyAttributeChanged(warehouseSchema, FullyQualifiedNameAttributeName, "name"),
 
@@ -277,6 +284,9 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	if err = d.Set("resource_monitor", w.ResourceMonitor.Name()); err != nil {
 		return nil, err
 	}
+	if err = d.Set("resource_constraint", string(w.ResourceConstraint)); err != nil {
+		return nil, err
+	}
 	if err = d.Set("comment", w.Comment); err != nil {
 		return nil, err
 	}
@@ -340,6 +350,13 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 	}
 	if v, ok := d.GetOk("resource_monitor"); ok {
 		createOptions.ResourceMonitor = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+	}
+	if v, ok := d.GetOk("resource_constraint"); ok {
+		resourceConstraint, err := sdk.ToResourceConstraint(v.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createOptions.ResourceConstraint = &resourceConstraint
 	}
 	if v, ok := d.GetOk("comment"); ok {
 		createOptions.Comment = sdk.String(v.(string))
@@ -411,6 +428,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 				outputMapping{"auto_suspend", "auto_suspend", w.AutoSuspend, w.AutoSuspend, nil},
 				outputMapping{"auto_resume", "auto_resume", w.AutoResume, fmt.Sprintf("%t", w.AutoResume), nil},
 				outputMapping{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
+				outputMapping{"resource_constraint", "resource_constraint", string(w.ResourceConstraint), w.ResourceConstraint, nil},
 				outputMapping{"enable_query_acceleration", "enable_query_acceleration", w.EnableQueryAcceleration, fmt.Sprintf("%t", w.EnableQueryAcceleration), nil},
 				outputMapping{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor, w.QueryAccelerationMaxScaleFactor, nil},
 			); err != nil {
@@ -433,6 +451,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			"auto_suspend",
 			"auto_resume",
 			"resource_monitor",
+			"resource_constraint",
 			"enable_query_acceleration",
 			"query_acceleration_max_scale_factor",
 		}); err != nil {
@@ -558,6 +577,17 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			set.ResourceMonitor = sdk.NewAccountObjectIdentifier(v.(string))
 		} else {
 			unset.ResourceMonitor = sdk.Bool(true)
+		}
+	}
+	if d.HasChange("resource_constraint") {
+		if v, ok := d.GetOk("resource_constraint"); ok {
+			resourceConstraint, err := sdk.ToResourceConstraint(v.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			set.ResourceConstraint = &resourceConstraint
+		} else {
+			unset.ResourceConstraint = sdk.Bool(true)
 		}
 	}
 	if d.HasChange("comment") {
