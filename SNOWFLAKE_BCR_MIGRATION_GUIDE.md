@@ -46,6 +46,14 @@ and have this bundle enabled, the provider will return an error.
 
 Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
 
+## [Bundle 2025_04](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04_bundle)
+
+### Primary role requires stage access during `CREATE EXTERNAL TABLE` command
+
+Creating an external table succeeds only if a user’s primary role has the `USAGE` privilege on the stage referenced in the `snowflake_external_table` resource. If you manage external tables in the provider, please grant the `USAGE` privilege on the relevant stages to the connection role.
+
+Reference: [BCR-1993](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1993)
+
 ## [Bundle 2025_03](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle)
 
 ### The `CREATE DATA EXCHANGE LISTING` privilege rename
