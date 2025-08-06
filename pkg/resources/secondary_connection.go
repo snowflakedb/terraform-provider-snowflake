@@ -145,7 +145,7 @@ func ReadContextSecondaryConnection(ctx context.Context, d *schema.ResourceData,
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ConnectionToSchema(connection)}),
 		d.Set("comment", connection.Comment),
-		d.Set("as_replica_of", connection.Primary),
+		d.Set("as_replica_of", connection.Primary.FullyQualifiedName()),
 	))
 }
 
