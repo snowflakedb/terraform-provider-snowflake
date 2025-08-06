@@ -4,7 +4,6 @@ package testacc
 
 import (
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -12,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -36,8 +36,8 @@ func TestAcc_Procedures(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceName, "database", schema.ID().DatabaseName()),
 					resource.TestCheckResourceAttr(dataSourceName, "schema", schema.ID().Name()),
-					// Extra 1 in procedure count above due to ASSOCIATE_SEMANTIC_CATEGORY_TAGS appearing in all "SHOW PROCEDURES IN ..." commands
-					resource.TestCheckResourceAttr(dataSourceName, "procedures.#", "3"),
+					// Every schema contains extra procedures added by Snowflake, which makes the number of procedures hard to predict assert by exact number.
+					resource.TestCheckResourceAttrSet(dataSourceName, "procedures.#"),
 				),
 			},
 		},
