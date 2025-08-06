@@ -31,6 +31,13 @@ func (c *TestClient) TempIncorrectTomlConfigForServiceUser(t *testing.T, service
 	})
 }
 
+func (c *TestClient) TempIncorrectTomlConfigForTmpUser(t *testing.T, tmpUser *TmpUser) *TmpTomlConfig {
+	t.Helper()
+	return c.StoreTempTomlConfig(t, func(profile string) string {
+		return TomlIncorrectConfigForServiceUser(t, profile, tmpUser.AccountId)
+	})
+}
+
 func (c *TestClient) TempIncorrectTomlConfigForServiceUserWithEncryptedKey(t *testing.T, serviceUser *TmpServiceUser) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
