@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: Print object suffix
         run: |
-          echo "$TEST_SF_TF_TEST_OBJECT_SUFFIX"
+          echo \"${{ env.TEST_SF_TF_TEST_OBJECT_SUFFIX }}\"
       - name: Filter changed files
         uses: dorny/paths-filter@v3
         id: changes
