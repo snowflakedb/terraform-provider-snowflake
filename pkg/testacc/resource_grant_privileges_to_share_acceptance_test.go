@@ -181,10 +181,16 @@ func TestAcc_GrantPrivilegesToShare_OnTable(t *testing.T) {
 }
 
 func TestAcc_GrantPrivilegesToShare_OnDynamicTable(t *testing.T) {
+	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
 	share, shareCleanup := testClient().Share.CreateShare(t)
 	t.Cleanup(shareCleanup)
 
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
 	configVariables := config.Variables{
 		"to_share":  config.StringVariable(share.ID().Name()),
