@@ -12,7 +12,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -22,9 +21,6 @@ import (
 
 // proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629 is fixed
 func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
-	t.Skip("TODO(SNOW-2081651): re-enable this if the test is still relevant without the BCR bundle update as now it's enabled by default in Snowflake")
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	databaseRole, databaseRoleCleanup := secondaryTestClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -45,7 +41,6 @@ func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2025_02")
 					secondaryTestClient().Grant.GrantDatabaseRoleToUser(t, databaseRole.ID(), user.ID())
 				},
 				ExternalProviders: ExternalProviderWithExactVersion("2.0.0"),

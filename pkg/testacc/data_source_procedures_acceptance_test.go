@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -18,8 +19,10 @@ import (
 func TestAcc_Procedures(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
-	dataSourceName := "data.snowflake_procedures.procedures"
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
 
+	dataSourceName := "data.snowflake_procedures.procedures"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { TestAccPreCheck(t) },
@@ -29,13 +32,12 @@ func TestAcc_Procedures(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.ProcedureJava),
 		Steps: []resource.TestStep{
 			{
-				Config: proceduresConfig(t),
+				Config: proceduresConfig(t, schema.ID()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(dataSourceName, "database", TestDatabaseName),
-					resource.TestCheckResourceAttr(dataSourceName, "schema", TestSchemaName),
-					resource.TestCheckResourceAttrSet(dataSourceName, "procedures.#"),
-					// resource.TestCheckResourceAttr(dataSourceName, "procedures.#", "3"),
+					resource.TestCheckResourceAttr(dataSourceName, "database", schema.ID().DatabaseName()),
+					resource.TestCheckResourceAttr(dataSourceName, "schema", schema.ID().Name()),
 					// Extra 1 in procedure count above due to ASSOCIATE_SEMANTIC_CATEGORY_TAGS appearing in all "SHOW PROCEDURES IN ..." commands
+					resource.TestCheckResourceAttr(dataSourceName, "procedures.#", "3"),
 				),
 			},
 		},
@@ -43,7 +45,7 @@ func TestAcc_Procedures(t *testing.T) {
 }
 
 // TODO [SNOW-1348103]: use generated config builder when reworking the datasource
-func proceduresConfig(t *testing.T) string {
+func proceduresConfig(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) string {
 	t.Helper()
 
 	className := "TestFunc"
@@ -54,8 +56,8 @@ func proceduresConfig(t *testing.T) string {
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Procedure.SampleJavaDefinition(t, className, funcName, argName)
 
-	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
+	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
 
 	functionsSetup := config.FromModels(t,
 		model.ProcedureJavaBasicInline("p1", id1, dataType, handler, definition).WithArgument(argName, dataType),
@@ -69,5 +71,5 @@ data "snowflake_procedures" "procedures" {
   schema     = "%s"
   depends_on = [snowflake_procedure_java.p1, snowflake_procedure_java.p2]
 }
-`, functionsSetup, TestDatabaseName, TestSchemaName)
+`, functionsSetup, schemaId.DatabaseName(), schemaId.Name())
 }
