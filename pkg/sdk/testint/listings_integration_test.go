@@ -131,7 +131,7 @@ func TestInt_Listings(t *testing.T) {
 				HasIsMountlessQueryable(false).
 				HasOrganizationProfileName("").
 				HasNoUniformListingLocator().
-				HasDetailedTargetAccountsNotEmpty(),
+				HasNoDetailedTargetAccounts(),
 		)
 	}
 
@@ -196,7 +196,7 @@ func TestInt_Listings(t *testing.T) {
 				HasIsMountlessQueryable(false).
 				HasOrganizationProfileName("").
 				HasNoUniformListingLocator().
-				HasDetailedTargetAccountsNotEmpty(),
+				HasNoDetailedTargetAccounts(),
 		)
 	}
 
