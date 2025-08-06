@@ -91,7 +91,7 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 		WithValidateDefaultParameters("true").
 		WithClientIp("3.3.3.3").
 		WithAuthenticatorType(sdk.AuthenticationTypeJwt).
-		WithToken("token").
+		WithToken("correct token").
 		WithOktaUrl(testvars.ExampleOktaUrlString).
 		WithLoginTimeout(101).
 		WithRequestTimeout(201).

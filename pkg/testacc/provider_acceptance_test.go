@@ -677,7 +677,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
 					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
-					assert.Equal(t, "token", config.Token)
+					assert.Equal(t, "correct token", config.Token)
 					assert.True(t, config.KeepSessionAlive)
 					assert.True(t, config.DisableTelemetry)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
