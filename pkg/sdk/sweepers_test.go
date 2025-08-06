@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/stretchr/testify/require"
 	"log"
 	"slices"
 	"strings"
@@ -66,9 +69,9 @@ func sweep(client *Client, suffix string) error {
 		nukeUsers(client, suffix),
 		getFailoverGroupSweeper(client, suffix),
 		getShareSweeper(client, suffix),
-		getDatabaseSweeper(client, suffix),
 		getWarehouseSweeper(client, suffix),
 		getRoleSweeper(client, suffix),
+		getDatabaseSweeper(client, suffix),
 	}
 	for _, sweeper := range sweepers {
 		if err := sweeper(); err != nil {
@@ -316,4 +319,77 @@ func nukeUsers(client *Client, suffix string) func() error {
 
 		return errors.Join(errs...)
 	}
+}
+
+func nukeObject[ID ObjectIdentifier, Object interface{ ID() ID }](
+	client *Client,
+	suffix string,
+	objectNameSingular string,
+	objectNamePlural string,
+	dropCondition func(Object) bool,
+	showObjects func(client *Client, ctx context.Context) ([]Object, error),
+	dropObject func(client *Client, ctx context.Context, id ID) error,
+) func() error {
+	return func() error {
+		ctx := context.Background()
+
+		log.Printf("[DEBUG] Sweeping %s with suffix %s", objectNamePlural, suffix)
+
+		objects, err := showObjects(client, ctx)
+		if err != nil {
+			return fmt.Errorf("SHOW %s ended with error, err = %w", strings.ToUpper(objectNamePlural), err)
+		}
+
+		log.Printf("[DEBUG] Found %d %s", len(objects), objectNamePlural)
+
+		var errs []error
+		for idx, object := range objects {
+			log.Printf("[DEBUG] Processing %s [%d/%d]: %s...", objectNameSingular, idx+1, len(objects), object.ID().FullyQualifiedName())
+
+			if dropCondition(object) {
+				log.Printf("[DEBUG] Dropping %s %s", objectNameSingular, object.ID().FullyQualifiedName())
+				if err := dropObject(client, ctx, object.ID()); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping %s %s ended with error, err = %w", objectNameSingular, object.ID().FullyQualifiedName(), err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping %s %s", objectNameSingular, object.ID().FullyQualifiedName())
+			}
+		}
+
+		return errors.Join(errs...)
+	}
+}
+
+func TestNukeObject(t *testing.T) {
+	client := defaultTestClient(t)
+
+	ctx := context.Background()
+
+	suffix := "nuke_object_test_suffix"
+	id := NewAccountObjectIdentifier(random.StringN(12) + "_" + suffix)
+	err := client.Databases.Create(ctx, id, &CreateDatabaseOptions{})
+	require.NoError(t, err)
+
+	nukeDbs := nukeObject[AccountObjectIdentifier, *Database](
+		client,
+		suffix,
+		"database",
+		"databases",
+		func(db *Database) bool { return strings.HasSuffix(db.Name, suffix) },
+		func(client *Client, ctx context.Context) ([]*Database, error) {
+			dbs, err := client.Databases.Show(ctx, &ShowDatabasesOptions{Like: &Like{Pattern: String(fmt.Sprintf("%%_%s", suffix))}})
+			if err != nil {
+				return nil, fmt.Errorf("SHOW DATABASES ended with error, err = %w", err)
+			}
+			return collections.Map(dbs, func(db Database) *Database { return &db }), nil
+		},
+		func(client *Client, ctx context.Context, id AccountObjectIdentifier) error {
+			return client.Databases.DropSafely(ctx, id)
+		})
+
+	assert.NoError(t, nukeDbs())
+
+	dbs, err := client.Databases.ShowByIDSafely(ctx, id)
+	assert.ErrorIs(t, err, ErrObjectNotFound)
+	assert.Nil(t, dbs)
 }
