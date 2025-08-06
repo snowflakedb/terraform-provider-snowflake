@@ -23,6 +23,23 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.4.x ➞ v2.5.0
 
+### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource
+
+Previously, this field was read-only. In this version, this field is an optional configurable attribute. Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)). Note that fields other than `storage_aws_external_id` do not leverage this field. This will be addressed during the resource rework.
+
+Note that this resource is still in preview, and not officially supported. This change was requested and done by the community: [#3659](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3659).
+
+### *(bugfix)* Fix setting network policies with lowercase characters in security integrations
+Previously, when the provider created or set a security integration (in `snowflake_oauth_integration_for_custom_clients` or `snowflake_scim_integration`) with a network policy containing lowercase letters, this could fail due to a different quoting used in Snowflake in these objects. Namely, despite using the `"` quotes, the referenced network name was uppercased in Snowflake. This means that the uppercased network policy was used instead.
+Snowflake could return errors like `Network policy TEST does not exist or not authorized.`.
+In this case, a special quoting needs to be used (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake)). Instead of the usual `NETWORK_POLICY = "test"`, it needs to be `NETWORK_POLICY = '"test"'`.
+
+In this version, this behavior is fixed. The provider always uses the mixed `'"name"'` notation, and the casing should match the name in Snowflake.
+
+References: [#3229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3229)
+
+## v2.4.0 ➞ v2.4.1
+
 ### *(bugfix)* Fixed incorrect authenticator when using the `token` field
 
 Previously, the provider incorrectly set the default authenticator to `OAUTH` when the `token` field was specified in the Terraform configuration, or environmental variables, without possibility to override it. This resulted in errors like:
