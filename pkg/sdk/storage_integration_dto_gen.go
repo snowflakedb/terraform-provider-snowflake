@@ -24,16 +24,18 @@ type CreateStorageIntegrationRequest struct {
 }
 
 type S3StorageParamsRequest struct {
-	Protocol             S3Protocol // required
-	StorageAwsRoleArn    string     // required
-	StorageAwsExternalId *string
-	StorageAwsObjectAcl  *string
+	Protocol               S3Protocol // required
+	StorageAwsRoleArn      string     // required
+	StorageAwsExternalId   *string
+	StorageAwsObjectAcl    *string
+	UsePrivateLinkEndpoint *bool
 }
 
 type GCSStorageParamsRequest struct{}
 
 type AzureStorageParamsRequest struct {
-	AzureTenantId *string // required
+	AzureTenantId          *string // required
+	UsePrivateLinkEndpoint *bool
 }
 
 type AlterStorageIntegrationRequest struct {
@@ -55,13 +57,15 @@ type StorageIntegrationSetRequest struct {
 }
 
 type SetS3StorageParamsRequest struct {
-	StorageAwsRoleArn    string // required
-	StorageAwsExternalId *string
-	StorageAwsObjectAcl  *string
+	StorageAwsRoleArn      string // required
+	StorageAwsExternalId   *string
+	StorageAwsObjectAcl    *string
+	UsePrivateLinkEndpoint *bool
 }
 
 type SetAzureStorageParamsRequest struct {
-	AzureTenantId string // required
+	AzureTenantId          string // required
+	UsePrivateLinkEndpoint *bool
 }
 
 type StorageIntegrationUnsetRequest struct {
@@ -70,6 +74,7 @@ type StorageIntegrationUnsetRequest struct {
 	Enabled                 *bool
 	StorageBlockedLocations *bool
 	Comment                 *bool
+	UsePrivateLinkEndpoint  *bool
 }
 
 type DropStorageIntegrationRequest struct {

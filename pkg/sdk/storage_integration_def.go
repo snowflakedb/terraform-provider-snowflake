@@ -53,7 +53,8 @@ var StorageIntegrationDef = g.NewInterface(
 					PredefinedQueryStructField("Protocol", g.KindOfT[S3Protocol](), g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required()).
 					TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
-					OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()),
+					OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
+					OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
@@ -66,7 +67,8 @@ var StorageIntegrationDef = g.NewInterface(
 				"AzureStorageProviderParams",
 				g.NewQueryStruct("AzureStorageParams").
 					PredefinedQueryStructField("storageProvider", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'AZURE'")).
-					OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()),
+					OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
+					OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
@@ -93,13 +95,15 @@ var StorageIntegrationDef = g.NewInterface(
 						g.NewQueryStruct("SetS3StorageParams").
 							TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 							OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
-							OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()),
+							OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
+							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 						g.KeywordOptions(),
 					).
 					OptionalQueryStructField(
 						"AzureParams",
 						g.NewQueryStruct("SetAzureStorageParams").
-							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()),
+							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
+							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 						g.KeywordOptions(),
 					).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
@@ -115,7 +119,8 @@ var StorageIntegrationDef = g.NewInterface(
 					OptionalSQL("STORAGE_AWS_OBJECT_ACL").
 					OptionalSQL("ENABLED").
 					OptionalSQL("STORAGE_BLOCKED_LOCATIONS").
-					OptionalSQL("COMMENT"),
+					OptionalSQL("COMMENT").
+					OptionalSQL("USE_PRIVATELINK_ENDPOINT"),
 				g.ListOptions().SQL("UNSET"),
 			).
 			OptionalSetTags().
