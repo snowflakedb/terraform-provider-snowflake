@@ -44,10 +44,6 @@ Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bu
 The `MFA_AUTHENTICATION_METHODS` property is deprecated. Setting the `MFA_AUTHENTICATION_METHODS` property returns an error. If you use the [authentication_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) resource with `mfa_authentication_methods` field
 and have this bundle enabled, the provider will return an error.
 
-A new `MFA_POLICY` property is available with an `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` option, which accepts `ALL` or `NONE` as values.
-Authentication policies with the `MFA_AUTHENTICATION_METHODS` specified return a deprecation message under the DESCRIPTION column in the output of a DESCRIBE AUTHENTICATION POLICY command.
-This will be addressed in the next versions of the provider.
-
 Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
 
 ## [Bundle 2025_03](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle)
