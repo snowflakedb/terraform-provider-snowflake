@@ -48,7 +48,6 @@ func SweepAfterAcceptanceTests(client *Client, suffix string) error {
 	return sweep(client, suffix)
 }
 
-// TODO [SNOW-867247]: move this to test code
 // TODO [SNOW-867247]: use if exists/use method from helper for dropping
 // TODO [SNOW-867247]: sweep all missing account-level objects (like users, integrations, replication groups, network policies, ...)
 // TODO [SNOW-867247]: extract sweepers to a separate dir
@@ -285,12 +284,12 @@ func nukeUsers(client *Client, suffix string) func() error {
 		if suffix != "" {
 			log.Printf("[DEBUG] Sweeping users with suffix %s", suffix)
 			userDropCondition = func(u User) bool {
-				return strings.HasSuffix(u.Name, suffix) && !slices.Contains(protectedUsers, u.ID().Name())
+				return strings.HasSuffix(u.Name, suffix)
 			}
 		} else {
 			log.Println("[DEBUG] Sweeping stale users")
 			userDropCondition = func(u User) bool {
-				return !slices.Contains(protectedUsers, u.Name) && u.CreatedOn.Before(time.Now().Add(-15*time.Minute))
+				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
 			}
 		}
 
@@ -305,7 +304,7 @@ func nukeUsers(client *Client, suffix string) func() error {
 		for idx, user := range urs {
 			log.Printf("[DEBUG] Processing user [%d/%d]: %s...", idx+1, len(urs), user.ID().FullyQualifiedName())
 
-			if userDropCondition(user) {
+			if !slices.Contains(protectedUsers, user.Name) && userDropCondition(user) {
 				log.Printf("[DEBUG] Dropping user %s", user.ID().FullyQualifiedName())
 				if err := client.Users.Drop(ctx, user.ID(), &DropUserOptions{IfExists: Bool(true)}); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping user %s ended with error, err = %w", user.ID().FullyQualifiedName(), err))
