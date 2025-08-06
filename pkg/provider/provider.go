@@ -589,11 +589,10 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
 	}
+	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
 	if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
 		if config.Token != "" {
 			config.Authenticator = gosnowflake.AuthTypeOAuth
-		} else {
-			config.Authenticator = gosnowflake.AuthTypeSnowflake
 		}
 	}
 

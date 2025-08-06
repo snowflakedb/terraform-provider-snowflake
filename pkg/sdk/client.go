@@ -108,6 +108,11 @@ func NewClient(cfg *gosnowflake.Config, opts ...func(*FileReaderConfig)) (*Clien
 		cfg = DefaultConfig(opts...)
 	}
 
+	// If authenticator was not set on any level we use the driver's default.
+	if cfg.Authenticator == GosnowflakeAuthTypeEmpty {
+		cfg.Authenticator = gosnowflake.AuthTypeSnowflake
+	}
+
 	dsn, err := gosnowflake.DSN(cfg)
 	if err != nil {
 		return nil, err
