@@ -23,6 +23,40 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.4.x ➞ v2.5.0
 
+### *(bugfix)* Fixed `default_ddl_collation` for `snowflake_schema` resource
+
+Previously, the `default_ddl_collation` field in the `snowflake_schema` resource was not able to correctly handle setting an empty string as a proper value.
+This is mostly connected to both things: [Terraform empty value handling](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#empty-values) and our [internal parameter handling](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#snowflake-parameters).
+With the provided fix, we were able to make it work, however, it is not a perfect solution as it requires an intermediate step.
+To set the `default_ddl_collation` to an empty string from non-empty value, you need to:
+- Set it to `null` (or remove it from the resource configuration) and run `terraform apply` to remove the value from the state
+- Then set it to an empty string and run `terraform apply` again to set the value to an empty string in Snowflake on the schema level.
+
+As we already confirmed, this shouldn't be a problem in the future, once we move our provider to the new Terraform Plugin Framework, but for now, this is the best solution we can provide.
+We will be checking other resources that may have similar issues and will fix them in the future releases.
+No configuration changes are needed, but if you want to set the `default_ddl_collation` to an empty string, please follow the steps above.
+
+References: [#3510](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3510)
+
+### *(bugfix)* Fixed granting other table types in `snowflake_grant_privileges_to_share` resource
+
+Previously, the `snowflake_grant_privileges_to_share` resource was not able to grant privileges on other table types than `TABLE`.
+For example, granting on hybrid table wouldn't work as it has different type than `TABLE` returned by SHOW GRANTS in Snowflake.
+With the help of the community ([PR reference](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3859)), we are able to provide the fix this issue.
+Now, the configurations like the following will work as expected:
+
+```terraform
+resource "snowflake_grant_privileges_to_share" "test" {
+  to_share   = "<share_name>"
+  privileges = ["<privilege>"]
+  on_table   = "<hybrid_table_name>"
+}
+```
+
+No changes to the current configurations are needed.
+
+References: [#3167](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3167)
+
 ### *(new feature)* snowflake_listing resource
 Added a new preview resource for managing listings. Check the official Snowflake documentation to know more [about listings](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about). You can read about the resource limitations in the documentation in the registry.
 
