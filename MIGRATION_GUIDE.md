@@ -102,6 +102,10 @@ In this version, this behavior is fixed. The provider always uses the mixed `'"n
 
 References: [#3229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3229)
 
+
+### *(bugfix)* Fix file format `null_if` empty array permadiff
+Fixed a permadiff issue where file formats with empty `null_if = []` arrays were causing persistent differences in Terraform state.
+
 ## v2.3.0 ➞ v2.4.0
 
 ### *(new feature)* snowflake_current_organization_account resource
