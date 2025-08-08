@@ -42,3 +42,19 @@ type ShowSemanticViewsOptions struct {
 	StartsWith    *string    `ddl:"parameter,no_equals,single_quotes" sql:"STARTS WITH"`
 	Limit         *LimitFrom `ddl:"parameter,no_equals" sql:"LIMIT"`
 }
+
+type semanticViewsRow struct {
+	ObjectKind    string `db:"object_kind"`
+	ObjectName    string `db:"object_name"`
+	ParentEntity  string `db:"parent_entity"`
+	Property      string `db:"property"`
+	PropertyValue string `db:"property_value"`
+}
+
+type SemanticView struct {
+	ObjectKind    string
+	ObjectName    string
+	ParentEntity  string
+	Property      string
+	PropertyValue string
+}
