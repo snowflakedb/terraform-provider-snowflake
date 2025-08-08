@@ -20,9 +20,15 @@ func (v *semanticViews) Drop(ctx context.Context, request *DropSemanticViewReque
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *semanticViews) Describe(ctx context.Context, request *DescribeSemanticViewRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
+func (v *semanticViews) Describe(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error) {
+	opts := &DescribeSemanticViewOptions{
+		name: id,
+	}
+	result, err := validateAndQueryOne[semanticViewsRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return result.convert(), nil
 }
 
 func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewsRequest) error {
@@ -65,4 +71,16 @@ func (r *ShowSemanticViewsRequest) toOpts() *ShowSemanticViewsOptions {
 		Limit:      r.Limit,
 	}
 	return opts
+}
+
+func (r semanticViewsRow) convert() *SemanticView {
+	semanticView := &SemanticView{
+		ObjectKind:    r.ObjectKind,
+		ObjectName:    r.ObjectName,
+		ParentEntity:  r.ParentEntity,
+		Property:      r.Property,
+		PropertyValue: r.PropertyValue,
+	}
+
+	return semanticView
 }

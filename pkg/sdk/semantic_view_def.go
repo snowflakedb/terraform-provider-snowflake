@@ -58,8 +58,8 @@ var SemanticViewsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views",
-	gitRepositoryDbRow,
-	gitRepository,
+	semanticViewDbRow,
+	semanticView,
 	g.NewQueryStruct("ShowSemanticViews").
 		Show().
 		Terse().
