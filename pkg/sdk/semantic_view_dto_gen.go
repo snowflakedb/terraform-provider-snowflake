@@ -3,8 +3,10 @@ package sdk
 //go:generate go run ./dto-builder-generator/main.go
 
 var (
-	_ optionsProvider[CreateSemanticViewOptions] = new(CreateSemanticViewRequest)
-	_ optionsProvider[DropSemanticViewOptions]   = new(DropSemanticViewRequest)
+	_ optionsProvider[CreateSemanticViewOptions]   = new(CreateSemanticViewRequest)
+	_ optionsProvider[DropSemanticViewOptions]     = new(DropSemanticViewRequest)
+	_ optionsProvider[DescribeSemanticViewOptions] = new(DescribeSemanticViewRequest)
+	_ optionsProvider[ShowSemanticViewsOptions]    = new(ShowSemanticViewsRequest)
 )
 
 type CreateSemanticViewRequest struct {
@@ -16,9 +18,18 @@ type CreateSemanticViewRequest struct {
 }
 
 type DropSemanticViewRequest struct {
-	OrReplace   *bool
-	IfNotExists *bool
-	name        SchemaObjectIdentifier // required
-	Comment     *string
-	CopyGrants  *bool
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+}
+
+type DescribeSemanticViewRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type ShowSemanticViewsRequest struct {
+	Like       *Like
+	Terse      *bool
+	In         *In
+	StartsWith *string
+	Limit      *LimitFrom
 }

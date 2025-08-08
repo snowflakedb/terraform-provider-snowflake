@@ -15,8 +15,9 @@ type CreateSemanticViewOptions struct {
 	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
 	IfNotExists  *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name         SchemaObjectIdentifier `ddl:"identifier"`
-	Comment      *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	CopyGrants   *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+
+	Comment    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	CopyGrants *bool   `ddl:"keyword" sql:"COPY GRANTS"`
 }
 
 type DropSemanticViewOptions struct {
@@ -24,4 +25,20 @@ type DropSemanticViewOptions struct {
 	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
 	IfExists     *bool                  `ddl:"keyword" sql:"IF EXISTS"`
 	name         SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type DescribeSemanticViewOptions struct {
+	describe     bool                   `ddl:"static" sql:"DESCRIBE"`
+	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
+	name         SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type ShowSemanticViewsOptions struct {
+	show          bool       `ddl:"static" sql:"SHOW"`
+	Terse         *bool      `ddl:"keyword" sql:"TERSE"`
+	semanticViews bool       `ddl:"static" sql:"SEMANTIC VIEWS"`
+	Like          *Like      `ddl:"keyword" sql:"LIKE"`
+	In            *In        `ddl:"keyword" sql:"IN"`
+	StartsWith    *string    `ddl:"parameter,no_equals,single_quotes" sql:"STARTS WITH"`
+	Limit         *LimitFrom `ddl:"parameter,no_equals" sql:"LIMIT"`
 }
