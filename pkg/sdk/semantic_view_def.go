@@ -40,10 +40,31 @@ var SemanticViewsDef = g.NewInterface(
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
-	g.NewQueryStruct("DropGitRepository").
+	g.NewQueryStruct("DropSemanticView").
 		Drop().
 		SQL("SEMANTIC VIEW").
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+).DescribeOperation(
+	g.DescriptionMappingKindSingleValue,
+	"https://docs.snowflake.com/en/sql-reference/sql/desc-semantic-view",
+	semanticViewDbRow,
+	semanticView,
+	g.NewQueryStruct("DescribeSemanticView").
+		Describe().
+		SQL("SEMANTIC VIEW").
+		Name().
+		WithValidation(g.ValidIdentifier, "name"),
+).ShowOperation(
+	"https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views",
+	gitRepositoryDbRow,
+	gitRepository,
+	g.NewQueryStruct("ShowSemanticViews").
+		Show().
+		Terse().
+		SQL("SEMANTIC VIEWS").
+		OptionalLike().
+		OptionalIn().
+		OptionalLimit(),
 )

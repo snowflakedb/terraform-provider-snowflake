@@ -29,3 +29,22 @@ func (opts *DropSemanticViewOptions) validate() error {
 	}
 	return JoinErrors(errs...)
 }
+
+func (opts *DescribeSemanticViewOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowSemanticViewsOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	return JoinErrors(errs...)
+}
