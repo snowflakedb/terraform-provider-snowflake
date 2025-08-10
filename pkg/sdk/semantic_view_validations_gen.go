@@ -3,6 +3,8 @@ package sdk
 var (
 	_ validatable = new(CreateSemanticViewOptions)
 	_ validatable = new(DropSemanticViewOptions)
+	_ validatable = new(DescribeSemanticViewOptions)
+	_ validatable = new(ShowSemanticViewsOptions)
 )
 
 func (opts *CreateSemanticViewOptions) validate() error {
