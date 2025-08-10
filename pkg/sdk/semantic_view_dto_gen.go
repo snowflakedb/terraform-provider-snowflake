@@ -10,11 +10,16 @@ var (
 )
 
 type CreateSemanticViewRequest struct {
-	OrReplace   *bool
-	IfNotExists *bool
-	name        SchemaObjectIdentifier // required
-	Comment     *string
-	CopyGrants  *bool
+	OrReplace     *bool
+	IfNotExists   *bool
+	name          SchemaObjectIdentifier   // required
+	tables        []LogicalTableIdentifier // required
+	relationships []RelationshipIdentifier
+	facts         []SemanticExpression
+	dimensions    []SemanticExpression
+	metrics       []SemanticExpression
+	Comment       *string
+	CopyGrants    *bool
 }
 
 type DropSemanticViewRequest struct {

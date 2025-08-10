@@ -43,11 +43,16 @@ func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewsRequ
 
 func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 	opts := &CreateSemanticViewOptions{
-		OrReplace:   r.OrReplace,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		Comment:     r.Comment,
-		CopyGrants:  r.CopyGrants,
+		OrReplace:     r.OrReplace,
+		IfNotExists:   r.IfNotExists,
+		name:          r.name,
+		tables:        r.tables,
+		relationships: r.relationships,
+		facts:         r.facts,
+		dimensions:    r.dimensions,
+		metrics:       r.metrics,
+		Comment:       r.Comment,
+		CopyGrants:    r.CopyGrants,
 	}
 	return opts
 }
