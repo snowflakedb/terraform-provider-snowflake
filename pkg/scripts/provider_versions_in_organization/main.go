@@ -14,9 +14,8 @@ import (
 
 const (
 	githubAPIBase  = "https://api.github.com"
-	githubRawBase  = "https://raw.githubusercontent.com"
 	searchEndpoint = "/search/code"
-	perPage        = 100 // max allowed by GitHub
+	perPage        = 1 // max allowed by GitHub
 )
 
 // All previous and current registries for the Snowflake Terraform Provider.
@@ -31,15 +30,29 @@ type SearchResult struct {
 }
 
 type searchResultItem struct {
-	Name       string                     `json:"name"`
-	Path       string                     `json:"path"`
-	HtmlURL    string                     `json:"html_url"`
-	Repository searchResultItemRepository `json:"repository"`
+	Name        string                      `json:"name"`
+	Path        string                      `json:"path"`
+	HtmlURL     string                      `json:"html_url"`
+	Repository  searchResultItemRepository  `json:"repository"`
+	TextMatches []searchResultItemTextMatch `json:"text_matches,omitempty"`
 }
 
 type searchResultItemRepository struct {
 	FullName string `json:"full_name"`
 	HtmlURL  string `json:"html_url"`
+}
+
+type searchResultItemTextMatch struct {
+	ObjectUrl  string                           `json:"object_url"`
+	ObjectType string                           `json:"object_type"`
+	Property   string                           `json:"property"`
+	Fragment   string                           `json:"fragment"`
+	Matches    []searchResultItemTextMatchMatch `json:"matches"`
+}
+
+type searchResultItemTextMatchMatch struct {
+	Text    string `json:"text"`
+	Indices []int  `json:"indices"`
 }
 
 type result struct {
@@ -62,7 +75,7 @@ func main() {
 		}
 		common.ScriptsDebug("Hits for registry '%s': %d", registry, len(results.Items))
 		for i, item := range results.Items {
-			common.ScriptsDebug("Hit %03d: %s %s %s", i+1, item.Repository.FullName, item.Path, item.HtmlURL)
+			common.ScriptsDebug("Hit %03d: %s %s %s %v", i+1, item.Repository.FullName, item.Path, item.HtmlURL, item.TextMatches)
 		}
 	}
 }
@@ -95,7 +108,7 @@ func ghSearch(accessToken string, phraseUrl string, page int) (*SearchResult, er
 	ghSearchFullUrl := fmt.Sprintf("%s&per_page=%d&page=%d", phraseUrl, perPage, page)
 	common.ScriptsDebug("Searching url: %s", ghSearchFullUrl)
 	req, _ := http.NewRequest("GET", ghSearchFullUrl, nil)
-	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("Accept", "application/vnd.github.text-match+json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
