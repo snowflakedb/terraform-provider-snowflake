@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -416,7 +417,8 @@ func Test_Warehouse_ToScalingPolicy(t *testing.T) {
 func Test_Warehouse_Convert(t *testing.T) {
 	correctRow := func() warehouseDBRow {
 		return warehouseDBRow{
-			Size: string(WarehouseSizeXSmall),
+			Size:      string(WarehouseSizeXSmall),
+			Available: "100",
 		}
 	}
 
@@ -426,7 +428,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 
 		wh, err := row.convertErr()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "invalid warehouse size: INCORRECT_SIZE")
 		require.Nil(t, wh)
 	})
 
@@ -436,7 +438,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 
 		wh, err := row.convertErr()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "row 'available' has incorrect value 'not a number'")
 		require.Nil(t, wh)
 	})
 
@@ -447,6 +449,8 @@ func Test_Warehouse_Convert(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, wh)
+		assert.Equal(t, WarehouseSizeXSmall, wh.Size)
+		assert.Equal(t, 100.0, wh.Available)
 	})
 
 	t.Run("convert correct: available empty", func(t *testing.T) {
@@ -457,5 +461,6 @@ func Test_Warehouse_Convert(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, wh)
+		assert.Equal(t, 0.0, wh.Available)
 	})
 }

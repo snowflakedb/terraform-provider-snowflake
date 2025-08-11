@@ -533,28 +533,28 @@ func (row warehouseDBRow) convertErr() (*Warehouse, error) {
 	}
 	if available := strings.TrimSpace(row.Available); available != "" {
 		if val, err := strconv.ParseFloat(available, 64); err != nil {
-			return nil, fmt.Errorf(`row "available" has incorrect value %s, %w`, available, err)
+			return nil, fmt.Errorf(`row 'available' has incorrect value '%s', %w`, available, err)
 		} else {
 			wh.Available = val
 		}
 	}
 	if provisioning := strings.TrimSpace(row.Provisioning); provisioning != "" {
 		if val, err := strconv.ParseFloat(provisioning, 64); err != nil {
-			return nil, fmt.Errorf(`row "provisioning" has incorrect value %s, %w`, provisioning, err)
+			return nil, fmt.Errorf(`row 'provisioning' has incorrect value '%s', %w`, provisioning, err)
 		} else {
 			wh.Provisioning = val
 		}
 	}
 	if quiescing := strings.TrimSpace(row.Available); quiescing != "" {
 		if val, err := strconv.ParseFloat(quiescing, 64); err != nil {
-			return nil, fmt.Errorf(`row "quiescing" has incorrect value %s, %w`, quiescing, err)
+			return nil, fmt.Errorf(`row 'quiescing' has incorrect value '%s', %w`, quiescing, err)
 		} else {
 			wh.Quiescing = val
 		}
 	}
 	if other := strings.TrimSpace(row.Available); other != "" {
 		if val, err := strconv.ParseFloat(other, 64); err != nil {
-			return nil, fmt.Errorf(`row "other" has incorrect value %s, %w`, other, err)
+			return nil, fmt.Errorf(`row 'other' has incorrect value '%s', %w`, other, err)
 		} else {
 			wh.Other = val
 		}
