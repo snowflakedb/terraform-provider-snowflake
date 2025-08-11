@@ -412,3 +412,50 @@ func Test_Warehouse_ToScalingPolicy(t *testing.T) {
 		})
 	}
 }
+
+func Test_Warehouse_Convert(t *testing.T) {
+	correctRow := func() warehouseDBRow {
+		return warehouseDBRow{
+			Size: string(WarehouseSizeXSmall),
+		}
+	}
+
+	t.Run("convert error: size invalid", func(t *testing.T) {
+		row := correctRow()
+		row.Size = "INCORRECT_SIZE"
+
+		wh, err := row.convertErr()
+
+		require.Error(t, err)
+		require.Nil(t, wh)
+	})
+
+	t.Run("convert error: available NaN", func(t *testing.T) {
+		row := correctRow()
+		row.Available = "not a number"
+
+		wh, err := row.convertErr()
+
+		require.Error(t, err)
+		require.Nil(t, wh)
+	})
+
+	t.Run("convert correct", func(t *testing.T) {
+		row := correctRow()
+
+		wh, err := row.convertErr()
+
+		require.NoError(t, err)
+		require.NotNil(t, wh)
+	})
+
+	t.Run("convert correct: available empty", func(t *testing.T) {
+		row := correctRow()
+		row.Available = " "
+
+		wh, err := row.convertErr()
+
+		require.NoError(t, err)
+		require.NotNil(t, wh)
+	})
+}
