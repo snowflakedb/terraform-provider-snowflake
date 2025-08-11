@@ -20,6 +20,8 @@ var (
 	_ validatable = new(DropWarehouseOptions)
 	_ validatable = new(ShowWarehouseOptions)
 	_ validatable = new(describeWarehouseOptions)
+
+	_ convertibleRow[Warehouse] = new(warehouseDBRow)
 )
 
 type Warehouses interface {
@@ -500,57 +502,6 @@ type warehouseDBRow struct {
 	UUID                            string         `db:"uuid"`
 	ScalingPolicy                   string         `db:"scaling_policy"`
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
-}
-
-func (row warehouseDBRow) convert() *Warehouse {
-	size, err := ToWarehouseSize(row.Size)
-	if err != nil {
-		size = WarehouseSize(strings.ToUpper(row.Size))
-	}
-	wh := &Warehouse{
-		Name:                            row.Name,
-		State:                           WarehouseState(row.State),
-		Type:                            WarehouseType(row.Type),
-		Size:                            size,
-		MinClusterCount:                 row.MinClusterCount,
-		MaxClusterCount:                 row.MaxClusterCount,
-		StartedClusters:                 row.StartedClusters,
-		Running:                         row.Running,
-		Queued:                          row.Queued,
-		IsDefault:                       row.IsDefault == "Y",
-		IsCurrent:                       row.IsCurrent == "Y",
-		AutoResume:                      row.AutoResume,
-		CreatedOn:                       row.CreatedOn,
-		ResumedOn:                       row.ResumedOn,
-		UpdatedOn:                       row.UpdatedOn,
-		Owner:                           row.Owner,
-		Comment:                         row.Comment,
-		EnableQueryAcceleration:         row.EnableQueryAcceleration,
-		QueryAccelerationMaxScaleFactor: row.QueryAccelerationMaxScaleFactor,
-		ScalingPolicy:                   ScalingPolicy(row.ScalingPolicy),
-	}
-	if val, err := strconv.ParseFloat(row.Available, 64); err != nil {
-		wh.Available = val
-	}
-	if val, err := strconv.ParseFloat(row.Provisioning, 64); err != nil {
-		wh.Provisioning = val
-	}
-	if val, err := strconv.ParseFloat(row.Quiescing, 64); err != nil {
-		wh.Quiescing = val
-	}
-	if val, err := strconv.ParseFloat(row.Other, 64); err != nil {
-		wh.Other = val
-	}
-	if row.AutoSuspend.Valid {
-		wh.AutoSuspend = int(row.AutoSuspend.Int64)
-	}
-	if row.OwnerRoleType.Valid {
-		wh.OwnerRoleType = row.OwnerRoleType.String
-	}
-	if row.ResourceMonitor != "null" {
-		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
-	}
-	return wh
 }
 
 func (row warehouseDBRow) convertErr() (*Warehouse, error) {
