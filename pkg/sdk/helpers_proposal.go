@@ -78,6 +78,22 @@ func convertRows[T convertibleRowDeprecated[U], U any](dbRows []T) []U {
 	return resultList
 }
 
+type convertibleRow[T any] interface {
+	convertErr() (*T, error)
+}
+
+func convertRowsErr[T convertibleRow[U], U any](dbRows []T) ([]U, error) {
+	resultList := make([]U, len(dbRows))
+	for i, row := range dbRows {
+		converted, err := row.convertErr()
+		if err != nil {
+			return nil, err
+		}
+		resultList[i] = *converted
+	}
+	return resultList, nil
+}
+
 type optionsProvider[T any] interface {
 	toOpts() *T
 }
