@@ -35,11 +35,15 @@ var SemanticViewsDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		ListQueryStructField("LogicalTable", logicalTable, g.ListOptions()).
+		ListQueryStructField("Relationships", semanticExpression, g.ListOptions()).
+		ListQueryStructField("Facts", semanticExpression, g.ListOptions()).
+		ListQueryStructField("Dimensions", semanticExpression, g.ListOptions()).
+		ListQueryStructField("Metrics", semanticExpression, g.ListOptions()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"). // both can't be used at the same time
-		WithValidation(g.AtLeastOneValueSet, "dimensions", "metrics"), // at least one dimension or metric must be defined
+		WithValidation(g.AtLeastOneValueSet, "Dimensions", "Metrics"), // at least one dimension or metric must be defined
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
 	g.NewQueryStruct("DropSemanticView").
@@ -76,5 +80,11 @@ var SemanticViewsDef = g.NewInterface(
 )
 
 var logicalTable = g.NewQueryStruct("LogicalTable").
-	Identifier("LogicalTables", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("TABLES").Required()).
+	Identifier("LogicalTables", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("TABLES").Required()).
 	WithValidation(g.ValidIdentifier, "LogicalTable")
+
+var semanticExpression = g.NewQueryStruct("SemanticExpression").
+	Identifier("Relationships", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RELATIONSHIPS")).
+	Identifier("Facts", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FACTS")).
+	Identifier("Dimensions", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("DIMENSIONS")).
+	Identifier("Metrics", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("METRICS"))
