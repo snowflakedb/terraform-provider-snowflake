@@ -553,6 +553,65 @@ func (row warehouseDBRow) convert() *Warehouse {
 	return wh
 }
 
+func (row warehouseDBRow) convertErr() (*Warehouse, error) {
+	wh := &Warehouse{
+		Name:                            row.Name,
+		State:                           WarehouseState(row.State),
+		Type:                            WarehouseType(row.Type),
+		MinClusterCount:                 row.MinClusterCount,
+		MaxClusterCount:                 row.MaxClusterCount,
+		StartedClusters:                 row.StartedClusters,
+		Running:                         row.Running,
+		Queued:                          row.Queued,
+		IsDefault:                       row.IsDefault == "Y",
+		IsCurrent:                       row.IsCurrent == "Y",
+		AutoResume:                      row.AutoResume,
+		CreatedOn:                       row.CreatedOn,
+		ResumedOn:                       row.ResumedOn,
+		UpdatedOn:                       row.UpdatedOn,
+		Owner:                           row.Owner,
+		Comment:                         row.Comment,
+		EnableQueryAcceleration:         row.EnableQueryAcceleration,
+		QueryAccelerationMaxScaleFactor: row.QueryAccelerationMaxScaleFactor,
+		ScalingPolicy:                   ScalingPolicy(row.ScalingPolicy),
+	}
+	if size, err := ToWarehouseSize(row.Size); err != nil {
+		return nil, err
+	} else {
+		wh.Size = size
+	}
+	if val, err := strconv.ParseFloat(row.Available, 64); err != nil {
+		return nil, err
+	} else {
+		wh.Available = val
+	}
+	if val, err := strconv.ParseFloat(row.Provisioning, 64); err != nil {
+		return nil, err
+	} else {
+		wh.Provisioning = val
+	}
+	if val, err := strconv.ParseFloat(row.Quiescing, 64); err != nil {
+		return nil, err
+	} else {
+		wh.Quiescing = val
+	}
+	if val, err := strconv.ParseFloat(row.Other, 64); err != nil {
+		return nil, err
+	} else {
+		wh.Other = val
+	}
+	if row.AutoSuspend.Valid {
+		wh.AutoSuspend = int(row.AutoSuspend.Int64)
+	}
+	if row.OwnerRoleType.Valid {
+		wh.OwnerRoleType = row.OwnerRoleType.String
+	}
+	if row.ResourceMonitor != "null" {
+		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
+	}
+	return wh, nil
+}
+
 func (c *warehouses) Show(ctx context.Context, opts *ShowWarehouseOptions) ([]Warehouse, error) {
 	opts = createIfNil(opts)
 	dbRows, err := validateAndQuery[warehouseDBRow](c.client, ctx, opts)
