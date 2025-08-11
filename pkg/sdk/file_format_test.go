@@ -26,6 +26,17 @@ func TestFileFormatsCreate(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = CSV NULL_IF = ()`, id.FullyQualifiedName())
 	})
 
+	t.Run("CSV with empty string null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeCSV,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				CSVNullIf: &[]NullString{{""}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = CSV NULL_IF = ('')`, id.FullyQualifiedName())
+	})
+
 	t.Run("complete CSV", func(t *testing.T) {
 		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
@@ -94,6 +105,28 @@ func TestFileFormatsCreate(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = JSON COMPRESSION = BROTLI DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH:mm:SS' TIMESTAMP_FORMAT = 'aze' BINARY_FORMAT = HEX TRIM_SPACE = true NULL_IF = ('c1', 'c2') FILE_EXTENSION = 'json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = true`, id.FullyQualifiedName())
 	})
 
+	t.Run("JSON with empty null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeJSON,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				JSONNullIf: []NullString{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = JSON NULL_IF = ()`, id.FullyQualifiedName())
+	})
+
+	t.Run("JSON with empty string null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeJSON,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				JSONNullIf: []NullString{{""}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = JSON NULL_IF = ('')`, id.FullyQualifiedName())
+	})
+
 	t.Run("complete Avro", func(t *testing.T) {
 		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
@@ -110,6 +143,28 @@ func TestFileFormatsCreate(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = AVRO COMPRESSION = DEFLATE TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nul')`, id.FullyQualifiedName())
+	})
+
+	t.Run("AVRO with empty null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeAvro,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				AvroNullIf: &[]NullString{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = AVRO NULL_IF = ()`, id.FullyQualifiedName())
+	})
+
+	t.Run("AVRO with empty string null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeAvro,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				AvroNullIf: &[]NullString{{""}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = AVRO NULL_IF = ('')`, id.FullyQualifiedName())
 	})
 
 	t.Run("complete ORC", func(t *testing.T) {
@@ -129,6 +184,28 @@ func TestFileFormatsCreate(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nul')`, id.FullyQualifiedName())
 	})
 
+	t.Run("ORC with empty null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeORC,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				ORCNullIf: &[]NullString{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = ORC NULL_IF = ()`, id.FullyQualifiedName())
+	})
+
+	t.Run("ORC with empty string null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeORC,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				ORCNullIf: &[]NullString{{""}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = ORC NULL_IF = ('')`, id.FullyQualifiedName())
+	})
+
 	t.Run("complete Parquet", func(t *testing.T) {
 		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
@@ -146,6 +223,28 @@ func TestFileFormatsCreate(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = PARQUET COMPRESSION = LZO BINARY_AS_TEXT = true TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
+	})
+
+	t.Run("PARQUET with empty null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeParquet,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				ParquetNullIf: &[]NullString{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = PARQUET NULL_IF = ()`, id.FullyQualifiedName())
+	})
+
+	t.Run("PARQUET with empty string null_if", func(t *testing.T) {
+		opts := &CreateFileFormatOptions{
+			name: id,
+			Type: FileFormatTypeParquet,
+			FileFormatTypeOptions: FileFormatTypeOptions{
+				ParquetNullIf: &[]NullString{{""}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = PARQUET NULL_IF = ('')`, id.FullyQualifiedName())
 	})
 
 	t.Run("complete XML", func(t *testing.T) {

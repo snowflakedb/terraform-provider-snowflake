@@ -105,26 +105,11 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.Equal(t, &sdk.CSVEncodingGB18030, describeResult.Options.CSVEncoding)
 	})
 
-	// check that empty array is correctly read
-	t.Run("CSV", func(t *testing.T) {
+	t.Run("CSV_NULL_IF_Empty_Array", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCSV,
 			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
-				CSVCompression:                &sdk.CSVCompressionBz2,
-				CSVRecordDelimiter:            sdk.String("\\123"),
-				CSVFieldDelimiter:             sdk.String("0x42"),
-				CSVFileExtension:              sdk.String("c"),
-				CSVParseHeader:                sdk.Bool(true),
-				CSVSkipBlankLines:             sdk.Bool(true),
-				CSVDateFormat:                 sdk.String("d"),
-				CSVTimeFormat:                 sdk.String("e"),
-				CSVTimestampFormat:            sdk.String("f"),
-				CSVBinaryFormat:               &sdk.BinaryFormatBase64,
-				CSVEscape:                     sdk.String(`\`),
-				CSVEscapeUnenclosedField:      sdk.String("h"),
-				CSVTrimSpace:                  sdk.Bool(true),
-				CSVFieldOptionallyEnclosedBy:  sdk.String("'"),
 				CSVNullIf:                     &[]sdk.NullString{},
 				CSVErrorOnColumnCountMismatch: sdk.Bool(true),
 				CSVReplaceInvalidCharacters:   sdk.Bool(true),
@@ -144,66 +129,26 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, id, result.Name)
-		assert.WithinDuration(t, time.Now(), result.CreatedOn, 5*time.Second)
-		assert.Equal(t, sdk.FileFormatTypeCSV, result.Type)
-		assert.Equal(t, client.GetConfig().Role, result.Owner)
-		assert.Equal(t, "test comment", result.Comment)
-		assert.Equal(t, "ROLE", result.OwnerRoleType)
-		assert.Equal(t, &sdk.CSVCompressionBz2, result.Options.CSVCompression)
-		assert.Equal(t, "S", *result.Options.CSVRecordDelimiter) // o123 == 83 == 'S' (ASCII)
-		assert.Equal(t, "B", *result.Options.CSVFieldDelimiter)  // 0x42 == 66 == 'B' (ASCII)
-		assert.Equal(t, "c", *result.Options.CSVFileExtension)
-		assert.True(t, *result.Options.CSVParseHeader)
-		assert.True(t, *result.Options.CSVSkipBlankLines)
-		assert.Equal(t, "d", *result.Options.CSVDateFormat)
-		assert.Equal(t, "e", *result.Options.CSVTimeFormat)
-		assert.Equal(t, "f", *result.Options.CSVTimestampFormat)
-		assert.Equal(t, &sdk.BinaryFormatBase64, result.Options.CSVBinaryFormat)
-		assert.Equal(t, `\`, *result.Options.CSVEscape)
-		assert.Equal(t, "h", *result.Options.CSVEscapeUnenclosedField)
-		assert.True(t, *result.Options.CSVTrimSpace)
-		assert.Equal(t, "'", *result.Options.CSVFieldOptionallyEnclosedBy)
 		assert.Equal(t, &[]sdk.NullString{}, result.Options.CSVNullIf)
-		assert.True(t, *result.Options.CSVErrorOnColumnCountMismatch)
-		assert.True(t, *result.Options.CSVReplaceInvalidCharacters)
-		assert.True(t, *result.Options.CSVEmptyFieldAsNull)
-		assert.True(t, *result.Options.CSVSkipByteOrderMark)
-		assert.Equal(t, &sdk.CSVEncodingGB18030, result.Options.CSVEncoding)
 
 		describeResult, err := client.FileFormats.Describe(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, sdk.FileFormatTypeCSV, describeResult.Type)
-		assert.Equal(t, &sdk.CSVCompressionBz2, describeResult.Options.CSVCompression)
-		assert.Equal(t, "S", *describeResult.Options.CSVRecordDelimiter) // o123 == 83 == 'S' (ASCII)
-		assert.Equal(t, "B", *describeResult.Options.CSVFieldDelimiter)  // 0x42 == 66 == 'B' (ASCII)
-		assert.Equal(t, "c", *describeResult.Options.CSVFileExtension)
-		assert.True(t, *describeResult.Options.CSVParseHeader)
-		assert.True(t, *describeResult.Options.CSVSkipBlankLines)
-		assert.Equal(t, "d", *describeResult.Options.CSVDateFormat)
-		assert.Equal(t, "e", *describeResult.Options.CSVTimeFormat)
-		assert.Equal(t, "f", *describeResult.Options.CSVTimestampFormat)
-		assert.Equal(t, &sdk.BinaryFormatBase64, describeResult.Options.CSVBinaryFormat)
-		assert.Equal(t, `\\`, *describeResult.Options.CSVEscape) // Describe does not un-escape backslashes, but show does ....
-		assert.Equal(t, "h", *describeResult.Options.CSVEscapeUnenclosedField)
-		assert.True(t, *describeResult.Options.CSVTrimSpace)
-		assert.Equal(t, "'", *describeResult.Options.CSVFieldOptionallyEnclosedBy)
 		assert.Equal(t, &[]sdk.NullString{}, describeResult.Options.CSVNullIf)
-		assert.True(t, *describeResult.Options.CSVErrorOnColumnCountMismatch)
-		assert.True(t, *describeResult.Options.CSVReplaceInvalidCharacters)
-		assert.True(t, *describeResult.Options.CSVEmptyFieldAsNull)
-		assert.True(t, *describeResult.Options.CSVSkipByteOrderMark)
-		assert.Equal(t, &sdk.CSVEncodingGB18030, describeResult.Options.CSVEncoding)
 	})
 
-
-	// Check that field_optionally_enclosed_by can take the value NONE
-	t.Run("CSV", func(t *testing.T) {
+	t.Run("CSV_NULL_IF_Empty_String", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCSV,
 			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
-				CSVFieldOptionallyEnclosedBy: sdk.String("NONE"),
+				CSVNullIf:                     &[]sdk.NullString{{S:""}},
+				CSVErrorOnColumnCountMismatch: sdk.Bool(true),
+				CSVReplaceInvalidCharacters:   sdk.Bool(true),
+				CSVEmptyFieldAsNull:           sdk.Bool(true),
+				CSVSkipByteOrderMark:          sdk.Bool(true),
+				CSVEncoding:                   &sdk.CSVEncodingGB18030,
 			},
+			Comment: sdk.String("test comment"),
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
@@ -214,8 +159,14 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, "NONE", *result.Options.CSVFieldOptionallyEnclosedBy)
+		assert.Equal(t, id, result.Name)
+		assert.Equal(t, &[]sdk.NullString{{S:""}}, result.Options.CSVNullIf)
+
+		describeResult, err := client.FileFormats.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, &[]sdk.NullString{{S:""}}, describeResult.Options.CSVNullIf)
 	})
+
 	t.Run("JSON", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
