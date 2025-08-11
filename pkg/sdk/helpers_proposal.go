@@ -80,9 +80,11 @@ func convertRows[T convertibleRowDeprecated[U], U any](dbRows []T) []U {
 }
 
 type convertibleRow[T any] interface {
+	// TODO [SNOW-2259477]: rename to convertErr
 	convertErr() (*T, error)
 }
 
+// TODO [SNOW-2259477]: rename to convertRows
 func convertRowsErr[T convertibleRow[U], U any](dbRows []T) ([]U, error) {
 	resultList := make([]U, len(dbRows))
 	for i, row := range dbRows {
