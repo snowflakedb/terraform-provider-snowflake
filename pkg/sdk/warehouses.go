@@ -531,25 +531,33 @@ func (row warehouseDBRow) convertErr() (*Warehouse, error) {
 	} else {
 		wh.Size = size
 	}
-	if val, err := strconv.ParseFloat(row.Available, 64); err != nil {
-		return nil, err
-	} else {
-		wh.Available = val
+	if available := strings.TrimSpace(row.Available); available != "" {
+		if val, err := strconv.ParseFloat(available, 64); err != nil {
+			return nil, fmt.Errorf(`row "available" has incorrect value %s, %w`, available, err)
+		} else {
+			wh.Available = val
+		}
 	}
-	if val, err := strconv.ParseFloat(row.Provisioning, 64); err != nil {
-		return nil, err
-	} else {
-		wh.Provisioning = val
+	if provisioning := strings.TrimSpace(row.Provisioning); provisioning != "" {
+		if val, err := strconv.ParseFloat(provisioning, 64); err != nil {
+			return nil, fmt.Errorf(`row "provisioning" has incorrect value %s, %w`, provisioning, err)
+		} else {
+			wh.Provisioning = val
+		}
 	}
-	if val, err := strconv.ParseFloat(row.Quiescing, 64); err != nil {
-		return nil, err
-	} else {
-		wh.Quiescing = val
+	if quiescing := strings.TrimSpace(row.Available); quiescing != "" {
+		if val, err := strconv.ParseFloat(quiescing, 64); err != nil {
+			return nil, fmt.Errorf(`row "quiescing" has incorrect value %s, %w`, quiescing, err)
+		} else {
+			wh.Quiescing = val
+		}
 	}
-	if val, err := strconv.ParseFloat(row.Other, 64); err != nil {
-		return nil, err
-	} else {
-		wh.Other = val
+	if other := strings.TrimSpace(row.Available); other != "" {
+		if val, err := strconv.ParseFloat(other, 64); err != nil {
+			return nil, fmt.Errorf(`row "other" has incorrect value %s, %w`, other, err)
+		} else {
+			wh.Other = val
+		}
 	}
 	if row.AutoSuspend.Valid {
 		wh.AutoSuspend = int(row.AutoSuspend.Int64)
