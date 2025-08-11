@@ -2,9 +2,10 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -450,7 +451,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, wh)
 		assert.Equal(t, WarehouseSizeXSmall, wh.Size)
-		assert.Equal(t, 100.0, wh.Available)
+		assert.InDelta(t, 100.0, wh.Available, testvars.FloatEpsilon)
 	})
 
 	t.Run("convert correct: available empty", func(t *testing.T) {
@@ -461,6 +462,6 @@ func Test_Warehouse_Convert(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, wh)
-		assert.Equal(t, 0.0, wh.Available)
+		assert.InDelta(t, 0.0, wh.Available, testvars.FloatEpsilon)
 	})
 }
