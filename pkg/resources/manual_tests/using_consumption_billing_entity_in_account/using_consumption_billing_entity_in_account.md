@@ -1,6 +1,6 @@
 # Using consumption billing entity in the account resource
 
-Important: To run this test, a non-production environment is should be used.
+Important: To run this test, a non-production environment should be used.
 
 ## Snowflake setup
 
