@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var _ convertibleRow[Grant] = new(grantRow)
+var _ convertibleRowDeprecated[Grant] = new(grantRow)
 
 type Grants interface {
 	GrantPrivilegesToAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *GrantPrivilegesToAccountRoleOptions) error

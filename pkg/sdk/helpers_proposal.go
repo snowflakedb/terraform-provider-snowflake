@@ -66,11 +66,11 @@ func createIfNil[T any](t *T) *T {
 	return t
 }
 
-type convertibleRow[T any] interface {
+type convertibleRowDeprecated[T any] interface {
 	convert() *T
 }
 
-func convertRows[T convertibleRow[U], U any](dbRows []T) []U {
+func convertRows[T convertibleRowDeprecated[U], U any](dbRows []T) []U {
 	resultList := make([]U, len(dbRows))
 	for i, row := range dbRows {
 		resultList[i] = *(row.convert())

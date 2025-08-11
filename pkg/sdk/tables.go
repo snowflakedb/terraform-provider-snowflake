@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var _ convertibleRow[Table] = new(tableDBRow)
+var _ convertibleRowDeprecated[Table] = new(tableDBRow)
 
 // TODO [SNOW-1007542]: add missing features:
 // - show columns (https://docs.snowflake.com/en/sql-reference/sql/show-columns)

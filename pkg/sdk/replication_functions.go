@@ -15,7 +15,7 @@ var (
 	_ validatable = new(ShowReplicationDatabasesOptions)
 )
 
-var _ convertibleRow[ReplicationDatabase] = new(replicationDatabaseRow)
+var _ convertibleRowDeprecated[ReplicationDatabase] = new(replicationDatabaseRow)
 
 type ReplicationFunctions interface {
 	ShowReplicationAccounts(ctx context.Context) ([]*ReplicationAccount, error)

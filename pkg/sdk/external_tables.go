@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	_ convertibleRow[ExternalTable]              = (*externalTableRow)(nil)
-	_ convertibleRow[ExternalTableColumnDetails] = (*externalTableColumnDetailsRow)(nil)
-	_ convertibleRow[ExternalTableStageDetails]  = (*externalTableStageDetailsRow)(nil)
+	_ convertibleRowDeprecated[ExternalTable]              = (*externalTableRow)(nil)
+	_ convertibleRowDeprecated[ExternalTableColumnDetails] = (*externalTableColumnDetailsRow)(nil)
+	_ convertibleRowDeprecated[ExternalTableStageDetails]  = (*externalTableStageDetailsRow)(nil)
 )
 
 type ExternalTables interface {

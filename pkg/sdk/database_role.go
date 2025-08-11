@@ -5,7 +5,7 @@ import (
 	"database/sql"
 )
 
-var _ convertibleRow[DatabaseRole] = new(databaseRoleDBRow)
+var _ convertibleRowDeprecated[DatabaseRole] = new(databaseRoleDBRow)
 
 type DatabaseRoles interface {
 	Create(ctx context.Context, request *CreateDatabaseRoleRequest) error

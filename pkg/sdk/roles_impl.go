@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	_ Roles                = (*roles)(nil)
-	_ convertibleRow[Role] = (*roleDBRow)(nil)
+	_ Roles                          = (*roles)(nil)
+	_ convertibleRowDeprecated[Role] = (*roleDBRow)(nil)
 )
 
 type roles struct {
