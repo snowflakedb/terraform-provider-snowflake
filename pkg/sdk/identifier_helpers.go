@@ -453,32 +453,3 @@ func (i TableColumnIdentifier) FullyQualifiedName() string {
 func (i TableColumnIdentifier) SchemaObjectId() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(i.databaseName, i.schemaName, i.tableName)
 }
-
-type LogicalTableIdentifier struct {
-	tableName  SchemaObjectIdentifier
-	alias      string                  // optional
-	primaryKey []TableColumnIdentifier // optional
-	uniqueKey  []UniqueKeyIdentifier   // optional
-	synonyms   []string                // optional
-	comment    string                  // optional
-}
-
-type UniqueKeyIdentifier struct {
-	columnNames []string
-}
-
-type RelationshipIdentifier struct {
-	alias         string //optional
-	tableAlias    string
-	columnName    []TableColumnIdentifier
-	refTableAlias string
-	refColumnName []TableColumnIdentifier //optional
-}
-
-type SemanticExpression struct {
-	tableAlias    string
-	name          string
-	sqlExpression string
-	synonyms      []string //optional
-	comment       string   //optional
-}

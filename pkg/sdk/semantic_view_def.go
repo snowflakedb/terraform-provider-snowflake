@@ -34,21 +34,12 @@ var SemanticViewsDef = g.NewInterface(
 		SQL("SEMANTIC VIEW").
 		IfNotExists().
 		Name().
-		SQL("TABLES").
-		OptionalSQL("RELATIONSHIPS").
-		OptionalSQL("FACTS").
-		OptionalSQL("DIMENSIONS").
-		OptionalSQL("METRICS").
+		ListQueryStructField("LogicalTable", logicalTable, g.ListOptions()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ValidIdentifier, "tables").
-		WithValidation(g.ValidIdentifierIfSet, "relationships").
-		WithValidation(g.ValidIdentifierIfSet, "facts").
-		WithValidation(g.ValidIdentifierIfSet, "dimensions").
-		WithValidation(g.ValidIdentifierIfSet, "metrics").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"). // both can't be used at the same time
-		WithValidation(g.AtLeastOneValueSet, "dimensions", "metrics"),   // at least one dimension or metric must be defined
+		WithValidation(g.AtLeastOneValueSet, "dimensions", "metrics"), // at least one dimension or metric must be defined
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
 	g.NewQueryStruct("DropSemanticView").
@@ -58,7 +49,7 @@ var SemanticViewsDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).DescribeOperation(
-	g.DescriptionMappingKindSingleValue,
+	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-semantic-view",
 	semanticViewDbRow,
 	semanticView,
@@ -77,5 +68,13 @@ var SemanticViewsDef = g.NewInterface(
 		SQL("SEMANTIC VIEWS").
 		OptionalLike().
 		OptionalIn().
+		OptionalStartsWith().
 		OptionalLimit(),
+).ShowByIdOperationWithFiltering(
+	g.ShowByIDInFiltering,
+	g.ShowByIDLikeFiltering,
 )
+
+var logicalTable = g.NewQueryStruct("LogicalTable").
+	Identifier("LogicalTables", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("TABLES").Required()).
+	WithValidation(g.ValidIdentifier, "LogicalTable")

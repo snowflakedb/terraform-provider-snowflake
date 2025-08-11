@@ -17,11 +17,11 @@ type CreateSemanticViewOptions struct {
 	semanticView  bool                     `ddl:"static" sql:"SEMANTIC VIEW"`
 	IfNotExists   *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name          SchemaObjectIdentifier   `ddl:"identifier"`
-	tables        []LogicalTableIdentifier `ddl:"tables" sql:"TABLES"`
-	relationships []RelationshipIdentifier `ddl:"relationships" sql:"RELATIONSHIPS"`
-	facts         []SemanticExpression     `ddl:"facts" sql:"FACTS"`
-	dimensions    []SemanticExpression     `ddl:"dimensions" sql:"DIMENSIONS"`
-	metrics       []SemanticExpression     `ddl:"metrics" sql:"METRICS"`
+	tables        []SchemaObjectIdentifier `ddl:"tables" sql:"TABLES"`
+	relationships []SchemaObjectIdentifier `ddl:"relationships" sql:"RELATIONSHIPS"`
+	facts         []SchemaObjectIdentifier `ddl:"facts" sql:"FACTS"`
+	dimensions    []SchemaObjectIdentifier `ddl:"dimensions" sql:"DIMENSIONS"`
+	metrics       []SchemaObjectIdentifier `ddl:"metrics" sql:"METRICS"`
 	Comment       *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants    *bool                    `ddl:"keyword" sql:"COPY GRANTS"`
 }
