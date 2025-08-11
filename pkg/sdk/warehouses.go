@@ -577,8 +577,7 @@ func (c *warehouses) Show(ctx context.Context, opts *ShowWarehouseOptions) ([]Wa
 	if err != nil {
 		return nil, err
 	}
-	resultList, err := convertRowsErr[warehouseDBRow, Warehouse](dbRows)
-	return resultList, err
+	return convertRowsErr[warehouseDBRow, Warehouse](dbRows)
 }
 
 func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {

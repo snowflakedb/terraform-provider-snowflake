@@ -80,7 +80,7 @@ func convertRows[T convertibleRowDeprecated[U], U any](dbRows []T) []U {
 }
 
 type convertibleRow[T any] interface {
-	// TODO [SNOW-2259477]: rename to convertErr
+	// TODO [SNOW-2259477]: rename to convert
 	convertErr() (*T, error)
 }
 
