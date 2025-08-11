@@ -34,11 +34,6 @@ var SemanticViewsDef = g.NewInterface(
 		SQL("SEMANTIC VIEW").
 		IfNotExists().
 		Name().
-		ListQueryStructField("LogicalTable", logicalTable, g.ListOptions()).
-		ListQueryStructField("Relationships", semanticExpression, g.ListOptions()).
-		ListQueryStructField("Facts", semanticExpression, g.ListOptions()).
-		ListQueryStructField("Dimensions", semanticExpression, g.ListOptions()).
-		ListQueryStructField("Metrics", semanticExpression, g.ListOptions()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
@@ -78,13 +73,3 @@ var SemanticViewsDef = g.NewInterface(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 )
-
-var logicalTable = g.NewQueryStruct("LogicalTable").
-	Identifier("LogicalTables", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("TABLES").Required()).
-	WithValidation(g.ValidIdentifier, "LogicalTable")
-
-var semanticExpression = g.NewQueryStruct("SemanticExpression").
-	Identifier("Relationships", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RELATIONSHIPS")).
-	Identifier("Facts", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FACTS")).
-	Identifier("Dimensions", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("DIMENSIONS")).
-	Identifier("Metrics", g.KindOfTSlice[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("METRICS"))
