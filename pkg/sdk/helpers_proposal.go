@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 )
 
 // validatable is our sdk interface for anything that can be validated (e.g. CreateXxxOptions).
@@ -85,13 +86,21 @@ type convertibleRow[T any] interface {
 func convertRowsErr[T convertibleRow[U], U any](dbRows []T) ([]U, error) {
 	resultList := make([]U, len(dbRows))
 	for i, row := range dbRows {
-		converted, err := row.convertErr()
+		converted, err := conversionErrorWrapped(row.convertErr())
 		if err != nil {
 			return nil, err
 		}
 		resultList[i] = *converted
 	}
 	return resultList, nil
+}
+
+func conversionErrorWrapped[U any](converted *U, err error) (*U, error) {
+	if err != nil {
+		return nil, fmt.Errorf("conversion from Snowflake failed with error: %w", err)
+	} else {
+		return converted, nil
+	}
 }
 
 type optionsProvider[T any] interface {
