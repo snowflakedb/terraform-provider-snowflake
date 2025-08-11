@@ -211,6 +211,7 @@ func nukeDatabases(client *Client, prefix string) func() error {
 	protectedDatabases := []string{
 		"SNOWFLAKE",
 		"MFA_ENFORCEMENT_POLICY",
+		"TERRAFORM_TEST_SETUP_OBJECTS",
 	}
 
 	return func() error {
