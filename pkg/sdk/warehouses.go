@@ -545,14 +545,14 @@ func (row warehouseDBRow) convertErr() (*Warehouse, error) {
 			wh.Provisioning = val
 		}
 	}
-	if quiescing := strings.TrimSpace(row.Available); quiescing != "" {
+	if quiescing := strings.TrimSpace(row.Quiescing); quiescing != "" {
 		if val, err := strconv.ParseFloat(quiescing, 64); err != nil {
 			return nil, fmt.Errorf(`row 'quiescing' has incorrect value '%s', %w`, quiescing, err)
 		} else {
 			wh.Quiescing = val
 		}
 	}
-	if other := strings.TrimSpace(row.Available); other != "" {
+	if other := strings.TrimSpace(row.Other); other != "" {
 		if val, err := strconv.ParseFloat(other, 64); err != nil {
 			return nil, fmt.Errorf(`row 'other' has incorrect value '%s', %w`, other, err)
 		} else {
