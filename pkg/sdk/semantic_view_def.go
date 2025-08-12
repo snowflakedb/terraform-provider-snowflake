@@ -13,7 +13,7 @@ var semanticViewDbRow = g.DbStruct("semanticViewsRow").
 	Text("owner_role_type").
 	OptionalText("comment")
 
-var semanticView = g.PlainStruct("semanticView").
+var semanticViewRow = g.PlainStruct("semanticViewRow").
 	Time("CreatedOn").
 	Text("Name").
 	Text("DatabaseName").
@@ -34,11 +34,13 @@ var SemanticViewsDef = g.NewInterface(
 		SQL("SEMANTIC VIEW").
 		IfNotExists().
 		Name().
+		ListAssignment("TABLES", "LogicalTable", g.ParameterOptions().Parentheses().Required()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"). // both can't be used at the same time
-		WithValidation(g.AtLeastOneValueSet, "Dimensions", "Metrics"), // at least one dimension or metric must be defined
+		WithValidation(g.AtLeastOneValueSet, "Dimensions", "Metrics"),   // at least one dimension or metric must be defined
+	logicalTable,
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
 	g.NewQueryStruct("DropSemanticView").
@@ -51,7 +53,7 @@ var SemanticViewsDef = g.NewInterface(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-semantic-view",
 	semanticViewDbRow,
-	semanticView,
+	semanticViewRow,
 	g.NewQueryStruct("DescribeSemanticView").
 		Describe().
 		SQL("SEMANTIC VIEW").
@@ -60,7 +62,7 @@ var SemanticViewsDef = g.NewInterface(
 ).ShowOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views",
 	semanticViewDbRow,
-	semanticView,
+	semanticViewRow,
 	g.NewQueryStruct("ShowSemanticViews").
 		Show().
 		Terse().
@@ -73,3 +75,11 @@ var SemanticViewsDef = g.NewInterface(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 )
+
+var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
+	Identifier("logicalTableAlias", g.KindOfT[StringProperty](), g.IdentifierOptions().Required()).
+	TextAssignment("AS", g.ParameterOptions().SingleQuotes())
+
+var logicalTable = g.NewQueryStruct("LogicalTable").
+	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.IdentifierOptions()).
+	Identifier("logicalTableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required())

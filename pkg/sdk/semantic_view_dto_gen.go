@@ -6,20 +6,16 @@ var (
 	_ optionsProvider[CreateSemanticViewOptions]   = new(CreateSemanticViewRequest)
 	_ optionsProvider[DropSemanticViewOptions]     = new(DropSemanticViewRequest)
 	_ optionsProvider[DescribeSemanticViewOptions] = new(DescribeSemanticViewRequest)
-	_ optionsProvider[ShowSemanticViewsOptions]    = new(ShowSemanticViewsRequest)
+	_ optionsProvider[ShowSemanticViewsOptions]    = new(ShowSemanticViewRequest)
 )
 
 type CreateSemanticViewRequest struct {
-	OrReplace     *bool
-	IfNotExists   *bool
-	name          SchemaObjectIdentifier   // required
-	tables        []SchemaObjectIdentifier // required
-	relationships []SchemaObjectIdentifier
-	facts         []SchemaObjectIdentifier
-	dimensions    []SchemaObjectIdentifier
-	metrics       []SchemaObjectIdentifier
-	Comment       *string
-	CopyGrants    *bool
+	OrReplace   *bool
+	IfNotExists *bool
+	name        SchemaObjectIdentifier // required
+	Tables      []LogicalTable         // required
+	Comment     *string
+	CopyGrants  *bool
 }
 
 type DropSemanticViewRequest struct {
@@ -31,9 +27,9 @@ type DescribeSemanticViewRequest struct {
 	name SchemaObjectIdentifier // required
 }
 
-type ShowSemanticViewsRequest struct {
-	Like       *Like
+type ShowSemanticViewRequest struct {
 	Terse      *bool
+	Like       *Like
 	In         *In
 	StartsWith *string
 	Limit      *LimitFrom
