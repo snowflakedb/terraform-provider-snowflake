@@ -102,12 +102,12 @@ func TestSemanticViews_Describe(t *testing.T) {
 }
 
 func TestSemanticViews_Show(t *testing.T) {
-	defaultOpts := func() *ShowSemanticViewsOptions {
-		return &ShowSemanticViewsOptions{}
+	defaultOpts := func() *ShowSemanticViewOptions {
+		return &ShowSemanticViewOptions{}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *ShowSemanticViewsOptions = nil
+		var opts *ShowSemanticViewOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 

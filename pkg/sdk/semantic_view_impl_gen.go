@@ -2,8 +2,6 @@ package sdk
 
 import (
 	"context"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ SemanticViews = (*semanticViews)(nil)
@@ -26,40 +24,25 @@ func (v *semanticViews) DropSafely(ctx context.Context, id SchemaObjectIdentifie
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropSemanticViewRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
-func (v *semanticViews) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]semanticView, error) {
+func (v *semanticViews) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SemanticViewDetails, error) {
 	opts := &DescribeSemanticViewOptions{
 		name: id,
 	}
-	rows, err := validateAndQuery[semanticViewsRow](v.client, ctx, opts)
+	rows, err := validateAndQuery[semanticViewDetailsRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[semanticViewsRow, semanticView](rows), nil
+	return convertRows[semanticViewDetailsRow, SemanticViewDetails](rows), nil
 }
 
-func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewsRequest) ([]semanticView, error) {
+func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[semanticViewsRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[semanticViewDBRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[semanticViewsRow, semanticView](dbRows)
+	resultList := convertRows[semanticViewDBRow, SemanticView](dbRows)
 	return resultList, nil
-}
-
-func (v *semanticViews) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*semanticView, error) {
-	request := NewShowSemanticViewRequest().
-		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(In{Schema: id.SchemaId()})
-	semanticViews, err := v.Show(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return collections.FindFirst(semanticViews, func(r semanticView) bool { return r.Name == id.Name() })
-}
-
-func (v *semanticViews) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*semanticView, error) {
-	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
 func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
@@ -89,13 +72,13 @@ func (r *DescribeSemanticViewRequest) toOpts() *DescribeSemanticViewOptions {
 	return opts
 }
 
-func (r semanticViewsRow) convert() *semanticView {
+func (r semanticViewDetailsRow) convert() *SemanticViewDetails {
 	// TODO: Mapping
-	return &semanticView{}
+	return &SemanticViewDetails{}
 }
 
-func (r *ShowSemanticViewsRequest) toOpts() *ShowSemanticViewsOptions {
-	opts := &ShowSemanticViewsOptions{
+func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
+	opts := &ShowSemanticViewOptions{
 		Terse:      r.Terse,
 		Like:       r.Like,
 		In:         r.In,
@@ -103,4 +86,9 @@ func (r *ShowSemanticViewsRequest) toOpts() *ShowSemanticViewsOptions {
 		Limit:      r.Limit,
 	}
 	return opts
+}
+
+func (r semanticViewDBRow) convert() *SemanticView {
+	// TODO: Mapping
+	return &SemanticView{}
 }

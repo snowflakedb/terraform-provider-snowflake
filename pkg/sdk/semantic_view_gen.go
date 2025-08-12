@@ -10,10 +10,8 @@ type SemanticViews interface {
 	Create(ctx context.Context, request *CreateSemanticViewRequest) error
 	Drop(ctx context.Context, request *DropSemanticViewRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
-	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]semanticView, error)
-	Show(ctx context.Context, request *ShowSemanticViewsRequest) ([]semanticView, error)
-	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*semanticView, error)
-	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*semanticView, error)
+	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SemanticViewDetails, error)
+	Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error)
 }
 
 // CreateSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view.
@@ -34,8 +32,8 @@ type LogicalTable struct {
 }
 
 type LogicalTableAlias struct {
-	logicalTableAlias StringProperty `ddl:"identifier"`
-	As                string         `ddl:"parameter,single_quotes" sql:"AS"`
+	logicalTableAlias string `ddl:"keyword"`
+	as                bool   `ddl:"static" sql:"AS"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.
@@ -53,7 +51,7 @@ type DescribeSemanticViewOptions struct {
 	name         SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-type semanticViewsRow struct {
+type semanticViewDetailsRow struct {
 	CreatedOn     time.Time      `db:"created_on"`
 	Name          string         `db:"name"`
 	DatabaseName  string         `db:"database_name"`
@@ -63,7 +61,7 @@ type semanticViewsRow struct {
 	Comment       sql.NullString `db:"comment"`
 }
 
-type semanticView struct {
+type SemanticViewDetails struct {
 	CreatedOn     time.Time
 	Name          string
 	DatabaseName  string
@@ -73,8 +71,8 @@ type semanticView struct {
 	Comment       *string
 }
 
-// ShowSemanticViewsOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views.
-type ShowSemanticViewsOptions struct {
+// ShowSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views.
+type ShowSemanticViewOptions struct {
 	show          bool       `ddl:"static" sql:"SHOW"`
 	Terse         *bool      `ddl:"keyword" sql:"TERSE"`
 	semanticViews bool       `ddl:"static" sql:"SEMANTIC VIEWS"`
@@ -82,4 +80,28 @@ type ShowSemanticViewsOptions struct {
 	In            *In        `ddl:"keyword" sql:"IN"`
 	StartsWith    *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 	Limit         *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+}
+
+type semanticViewDBRow struct {
+	CreatedOn     time.Time      `db:"created_on"`
+	Name          string         `db:"name"`
+	DatabaseName  string         `db:"database_name"`
+	SchemaName    string         `db:"schema_name"`
+	Owner         string         `db:"owner"`
+	OwnerRoleType string         `db:"owner_role_type"`
+	Comment       sql.NullString `db:"comment"`
+}
+
+type SemanticView struct {
+	CreatedOn     time.Time
+	Name          string
+	DatabaseName  string
+	SchemaName    string
+	Owner         string
+	OwnerRoleType string
+	Comment       *string
+}
+
+func (v *SemanticView) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }

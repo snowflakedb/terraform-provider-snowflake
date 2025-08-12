@@ -4,7 +4,7 @@ import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/gen
 
 //go:generate go run ./poc/main.go
 
-var semanticViewDbRow = g.DbStruct("semanticViewsRow").
+var semanticViewDbRow = g.DbStruct("semanticViewDBRow").
 	Time("created_on").
 	Text("name").
 	Text("database_name").
@@ -13,7 +13,25 @@ var semanticViewDbRow = g.DbStruct("semanticViewsRow").
 	Text("owner_role_type").
 	OptionalText("comment")
 
-var semanticViewRow = g.PlainStruct("semanticViewRow").
+var semanticView = g.PlainStruct("SemanticView").
+	Time("CreatedOn").
+	Text("Name").
+	Text("DatabaseName").
+	Text("SchemaName").
+	Text("Owner").
+	Text("OwnerRoleType").
+	OptionalText("Comment")
+
+var semanticViewDetailsDbRow = g.DbStruct("semanticViewDetailsRow").
+	Time("created_on").
+	Text("name").
+	Text("database_name").
+	Text("schema_name").
+	Text("owner").
+	Text("owner_role_type").
+	OptionalText("comment")
+
+var semanticViewDetails = g.PlainStruct("SemanticViewDetails").
 	Time("CreatedOn").
 	Text("Name").
 	Text("DatabaseName").
@@ -38,8 +56,7 @@ var SemanticViewsDef = g.NewInterface(
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"). // both can't be used at the same time
-		WithValidation(g.AtLeastOneValueSet, "Dimensions", "Metrics"),   // at least one dimension or metric must be defined
+		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"), // both can't be used at the same time
 	logicalTable,
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
@@ -52,8 +69,8 @@ var SemanticViewsDef = g.NewInterface(
 ).DescribeOperation(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-semantic-view",
-	semanticViewDbRow,
-	semanticViewRow,
+	semanticViewDetailsDbRow,
+	semanticViewDetails,
 	g.NewQueryStruct("DescribeSemanticView").
 		Describe().
 		SQL("SEMANTIC VIEW").
@@ -62,7 +79,7 @@ var SemanticViewsDef = g.NewInterface(
 ).ShowOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views",
 	semanticViewDbRow,
-	semanticViewRow,
+	semanticView,
 	g.NewQueryStruct("ShowSemanticViews").
 		Show().
 		Terse().
@@ -71,14 +88,11 @@ var SemanticViewsDef = g.NewInterface(
 		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimit(),
-).ShowByIdOperationWithFiltering(
-	g.ShowByIDInFiltering,
-	g.ShowByIDLikeFiltering,
 )
 
 var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
-	Identifier("logicalTableAlias", g.KindOfT[StringProperty](), g.IdentifierOptions().Required()).
-	TextAssignment("AS", g.ParameterOptions().SingleQuotes())
+	Text("logicalTableAlias", g.KeywordOptions().Required()).
+	SQL("AS")
 
 var logicalTable = g.NewQueryStruct("LogicalTable").
 	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.IdentifierOptions()).

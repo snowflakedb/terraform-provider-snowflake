@@ -4,7 +4,7 @@ var (
 	_ validatable = new(CreateSemanticViewOptions)
 	_ validatable = new(DropSemanticViewOptions)
 	_ validatable = new(DescribeSemanticViewOptions)
-	_ validatable = new(ShowSemanticViewsOptions)
+	_ validatable = new(ShowSemanticViewOptions)
 )
 
 func (opts *CreateSemanticViewOptions) validate() error {
@@ -43,7 +43,7 @@ func (opts *DescribeSemanticViewOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
-func (opts *ShowSemanticViewsOptions) validate() error {
+func (opts *ShowSemanticViewOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}

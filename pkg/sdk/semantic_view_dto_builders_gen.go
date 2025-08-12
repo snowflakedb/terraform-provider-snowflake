@@ -55,31 +55,31 @@ func NewDescribeSemanticViewRequest(
 	return &s
 }
 
-func NewShowSemanticViewRequest() *ShowSemanticViewsRequest {
-	return &ShowSemanticViewsRequest{}
+func NewShowSemanticViewRequest() *ShowSemanticViewRequest {
+	return &ShowSemanticViewRequest{}
 }
 
-func (s *ShowSemanticViewsRequest) WithTerse(Terse bool) *ShowSemanticViewsRequest {
+func (s *ShowSemanticViewRequest) WithTerse(Terse bool) *ShowSemanticViewRequest {
 	s.Terse = &Terse
 	return s
 }
 
-func (s *ShowSemanticViewsRequest) WithLike(Like Like) *ShowSemanticViewsRequest {
+func (s *ShowSemanticViewRequest) WithLike(Like Like) *ShowSemanticViewRequest {
 	s.Like = &Like
 	return s
 }
 
-func (s *ShowSemanticViewsRequest) WithIn(In In) *ShowSemanticViewsRequest {
+func (s *ShowSemanticViewRequest) WithIn(In In) *ShowSemanticViewRequest {
 	s.In = &In
 	return s
 }
 
-func (s *ShowSemanticViewsRequest) WithStartsWith(StartsWith string) *ShowSemanticViewsRequest {
+func (s *ShowSemanticViewRequest) WithStartsWith(StartsWith string) *ShowSemanticViewRequest {
 	s.StartsWith = &StartsWith
 	return s
 }
 
-func (s *ShowSemanticViewsRequest) WithLimit(Limit LimitFrom) *ShowSemanticViewsRequest {
+func (s *ShowSemanticViewRequest) WithLimit(Limit LimitFrom) *ShowSemanticViewRequest {
 	s.Limit = &Limit
 	return s
 }
