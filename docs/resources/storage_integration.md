@@ -2,7 +2,7 @@
 page_title: "snowflake_storage_integration Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-
+  
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
@@ -34,7 +34,6 @@ resource "snowflake_storage_integration" "integration" {
   storage_aws_external_id  = "ABC12345_DEFRole=2_123ABC459AWQmtAdRqwe/A=="
   storage_aws_iam_user_arn = "..."
   storage_aws_role_arn     = "..."
-  use_private_link_endpoint = true
 
   # azure_tenant_id
 }
