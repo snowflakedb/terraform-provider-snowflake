@@ -11,7 +11,7 @@ type SemanticViews interface {
 	Drop(ctx context.Context, request *DropSemanticViewRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]semanticView, error)
-	Show(ctx context.Context, request *ShowSemanticViewRequest) ([]semanticView, error)
+	Show(ctx context.Context, request *ShowSemanticViewsRequest) ([]semanticView, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*semanticView, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*semanticView, error)
 }

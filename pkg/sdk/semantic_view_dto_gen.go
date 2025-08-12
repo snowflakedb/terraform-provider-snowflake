@@ -6,7 +6,7 @@ var (
 	_ optionsProvider[CreateSemanticViewOptions]   = new(CreateSemanticViewRequest)
 	_ optionsProvider[DropSemanticViewOptions]     = new(DropSemanticViewRequest)
 	_ optionsProvider[DescribeSemanticViewOptions] = new(DescribeSemanticViewRequest)
-	_ optionsProvider[ShowSemanticViewsOptions]    = new(ShowSemanticViewRequest)
+	_ optionsProvider[ShowSemanticViewsOptions]    = new(ShowSemanticViewsRequest)
 )
 
 type CreateSemanticViewRequest struct {
@@ -27,7 +27,7 @@ type DescribeSemanticViewRequest struct {
 	name SchemaObjectIdentifier // required
 }
 
-type ShowSemanticViewRequest struct {
+type ShowSemanticViewsRequest struct {
 	Terse      *bool
 	Like       *Like
 	In         *In

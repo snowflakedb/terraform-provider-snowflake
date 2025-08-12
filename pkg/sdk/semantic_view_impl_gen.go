@@ -37,7 +37,7 @@ func (v *semanticViews) Describe(ctx context.Context, id SchemaObjectIdentifier)
 	return convertRows[semanticViewsRow, semanticView](rows), nil
 }
 
-func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewRequest) ([]semanticView, error) {
+func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewsRequest) ([]semanticView, error) {
 	opts := request.toOpts()
 	dbRows, err := validateAndQuery[semanticViewsRow](v.client, ctx, opts)
 	if err != nil {
@@ -94,7 +94,7 @@ func (r semanticViewsRow) convert() *semanticView {
 	return &semanticView{}
 }
 
-func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewsOptions {
+func (r *ShowSemanticViewsRequest) toOpts() *ShowSemanticViewsOptions {
 	opts := &ShowSemanticViewsOptions{
 		Terse:      r.Terse,
 		Like:       r.Like,
