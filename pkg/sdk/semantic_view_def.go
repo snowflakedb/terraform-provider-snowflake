@@ -52,12 +52,11 @@ var SemanticViewsDef = g.NewInterface(
 		SQL("SEMANTIC VIEW").
 		IfNotExists().
 		Name().
-		ListAssignment("TABLES", "LogicalTable", g.ParameterOptions().Parentheses().Required()).
+		ListQueryStructField("tables", logicalTable, g.ListOptions().Parentheses().Required()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"), // both can't be used at the same time
-	logicalTable,
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
 	g.NewQueryStruct("DropSemanticView").
@@ -90,10 +89,5 @@ var SemanticViewsDef = g.NewInterface(
 		OptionalLimit(),
 )
 
-var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
-	Text("logicalTableAlias", g.KeywordOptions().Required()).
-	SQL("AS")
-
 var logicalTable = g.NewQueryStruct("LogicalTable").
-	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.IdentifierOptions()).
 	Identifier("logicalTableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required())

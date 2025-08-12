@@ -13,9 +13,13 @@ type CreateSemanticViewRequest struct {
 	OrReplace   *bool
 	IfNotExists *bool
 	name        SchemaObjectIdentifier // required
-	Tables      []LogicalTable         // required
+	tables      []LogicalTableRequest  // required
 	Comment     *string
 	CopyGrants  *bool
+}
+
+type LogicalTableRequest struct {
+	logicalTableName SchemaObjectIdentifier // required
 }
 
 type DropSemanticViewRequest struct {

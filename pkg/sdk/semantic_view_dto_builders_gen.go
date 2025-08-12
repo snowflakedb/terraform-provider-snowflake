@@ -6,11 +6,11 @@ import ()
 
 func NewCreateSemanticViewRequest(
 	name SchemaObjectIdentifier,
-	Tables []LogicalTable,
+	tables []LogicalTableRequest,
 ) *CreateSemanticViewRequest {
 	s := CreateSemanticViewRequest{}
 	s.name = name
-	s.Tables = Tables
+	s.tables = tables
 	return &s
 }
 
@@ -32,6 +32,14 @@ func (s *CreateSemanticViewRequest) WithComment(Comment string) *CreateSemanticV
 func (s *CreateSemanticViewRequest) WithCopyGrants(CopyGrants bool) *CreateSemanticViewRequest {
 	s.CopyGrants = &CopyGrants
 	return s
+}
+
+func NewLogicalTableRequest(
+	logicalTableName SchemaObjectIdentifier,
+) *LogicalTableRequest {
+	s := LogicalTableRequest{}
+	s.logicalTableName = logicalTableName
+	return &s
 }
 
 func NewDropSemanticViewRequest(

@@ -67,7 +67,6 @@ type Client struct {
 	Schemas                      Schemas
 	Secrets                      Secrets
 	SecurityIntegrations         SecurityIntegrations
-	SemanticViews                SemanticViews
 	Services                     Services
 	Sequences                    Sequences
 	SessionPolicies              SessionPolicies
@@ -199,7 +198,6 @@ func (c *Client) initialize() {
 	c.Schemas = &schemas{client: c}
 	c.Secrets = &secrets{client: c}
 	c.SecurityIntegrations = &securityIntegrations{client: c}
-	c.SemanticViews = &semanticViews{client: c}
 	c.Sequences = &sequences{client: c}
 	c.Services = &services{client: c}
 	c.SessionPolicies = &sessionPolicies{client: c}

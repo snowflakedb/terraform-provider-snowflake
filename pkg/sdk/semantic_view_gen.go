@@ -21,19 +21,13 @@ type CreateSemanticViewOptions struct {
 	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
 	IfNotExists  *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name         SchemaObjectIdentifier `ddl:"identifier"`
-	Tables       []LogicalTable         `ddl:"parameter,parentheses" sql:"TABLES"`
+	tables       []LogicalTable         `ddl:"list,parentheses"`
 	Comment      *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants   *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
 }
 
 type LogicalTable struct {
-	logicalTableAlias *LogicalTableAlias     `ddl:"identifier"`
-	logicalTableName  SchemaObjectIdentifier `ddl:"identifier"`
-}
-
-type LogicalTableAlias struct {
-	logicalTableAlias string `ddl:"keyword"`
-	as                bool   `ddl:"static" sql:"AS"`
+	logicalTableName SchemaObjectIdentifier `ddl:"identifier"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.
