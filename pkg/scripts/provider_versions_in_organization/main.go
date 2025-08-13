@@ -159,9 +159,10 @@ func transformToResult(registry string, resultItem searchResultItem) []result {
 			openIdx := max(strings.LastIndex(m.Fragment[:st], "{"), 0)
 			closeIdx := strings.Index(m.Fragment[end:], "}")
 			if closeIdx == -1 {
-				closeIdx = end
+				frag = m.Fragment[openIdx:]
+			} else {
+				frag = m.Fragment[openIdx : end+closeIdx+1]
 			}
-			frag = m.Fragment[openIdx : end+closeIdx+1]
 			versionRegex := regexp.MustCompile(`version\s+=\s+"(.*)"`)
 			vMatches := versionRegex.FindStringSubmatch(frag)
 			if len(vMatches) == 0 {
