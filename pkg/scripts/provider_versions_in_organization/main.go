@@ -187,12 +187,19 @@ func saveResults(results []result) {
 	w := csv.NewWriter(file)
 	w.Comma = ';'
 	data := make([][]string, 0, len(results))
+	data = append(data, []string{"Registry", "Estimated Version", "RepoURL", "FileURL", "Fragment"})
 	for _, r := range results {
+		if strings.HasPrefix(r.Version, "") {
+			r.Version = "'" + r.Version
+		}
+		if strings.HasPrefix(r.Fragment, "") {
+			r.Fragment = "'" + r.Fragment
+		}
 		row := []string{
 			r.Registry,
+			r.Version,
 			r.RepoURL,
 			r.FileURL,
-			r.Version,
 			r.Fragment,
 		}
 		data = append(data, row)
