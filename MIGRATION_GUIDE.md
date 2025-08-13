@@ -89,9 +89,17 @@ This feature will be marked as a stable feature in future releases. Breaking cha
 
 ### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource
 
-Previously, this field was read-only. In this version, this field is an optional configurable attribute. Additionally, we added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)). Note that fields other than `storage_aws_external_id` do not leverage this field. This will be addressed during the resource rework.
+Previously, this field was read-only. In this version, this field is promoted to optional configurable attribute. Because config was previously empty, and there is a value in state, the provider will show the planned change to `null`. After applying, the plan should be empty. This apply is effectively a no-op, as it will run ALTER UNSET on the integration, which will revert the `storage_aws_external_id` to the default (the same value as there was no option to set it through the resource before). In case, when the value was changed externally (manually or through `snowflake_execute`), make sure to set this value in config before bumping the version.
+
+If `storage_aws_external_id` was used as input in other fields, it needs to be changed because of the SDKv2 limitations (read more [here](./v1-preparations/CHANGES_BEFORE_V1.md#config-values-in-the-state) and [here](./v1-preparations/CHANGES_BEFORE_V1.md#raw-snowflake-output)). To reference it in other blocks:
+- set its value directly in the resource OR
+- use `snowflake_storage_integration.<resource_name>.describe_output.0.storage_aws_external_id.0.value` instead.
+
+We added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)). Note that fields other than `storage_aws_external_id` do not leverage this field. This will be addressed during the resource rework.
 
 Note that this resource is still in preview, and not officially supported. This change was requested and done by the community: [#3659](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3659).
+
+References: [#3924](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3924)
 
 ### *(bugfix)* Fix setting network policies with lowercase characters in security integrations
 Previously, when the provider created or set a security integration (in `snowflake_oauth_integration_for_custom_clients` or `snowflake_scim_integration`) with a network policy containing lowercase letters, this could fail due to a different quoting used in Snowflake in these objects. Namely, despite using the `"` quotes, the referenced network name was uppercased in Snowflake. This means that the uppercased network policy was used instead.
