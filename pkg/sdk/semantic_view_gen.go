@@ -23,7 +23,7 @@ type CreateSemanticViewOptions struct {
 	name                      SchemaObjectIdentifier     `ddl:"identifier"`
 	tables                    bool                       `ddl:"static" sql:"TABLES"`
 	logicalTables             []LogicalTable             `ddl:"list,parentheses"`
-	semanticViewRelationships []SemanticViewRelationship `ddl:"list,parentheses"`
+	semanticViewRelationships []SemanticViewRelationship `ddl:"list"`
 	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
 }
@@ -59,18 +59,22 @@ type SemanticViewColumn struct {
 }
 
 type SemanticViewRelationship struct {
-	relationships              bool                 `ddl:"static" sql:"RELATIONSHIPS"`
-	relationshipAlias          *RelationshipAlias   `ddl:"keyword"`
-	tableName                  LogicalTableAlias    `ddl:"identifier"`
-	relationshipColumnNames    []SemanticViewColumn `ddl:"list,parentheses,no_equals"`
-	references                 bool                 `ddl:"static" sql:"REFERENCES"`
-	refTableName               LogicalTableAlias    `ddl:"identifier"`
-	relationshipRefColumnNames []SemanticViewColumn `ddl:"list,parentheses,no_equals"`
+	relationships              bool                    `ddl:"static" sql:"RELATIONSHIPS"`
+	relationshipAlias          *RelationshipAlias      `ddl:"keyword"`
+	tableName                  *RelationshipTableAlias `ddl:"keyword"`
+	relationshipColumnNames    []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
+	references                 bool                    `ddl:"static" sql:"REFERENCES"`
+	refTableName               *RelationshipTableAlias `ddl:"keyword"`
+	relationshipRefColumnNames []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
 }
 
 type RelationshipAlias struct {
 	RelationshipAlias string `ddl:"keyword"`
 	as                bool   `ddl:"static" sql:"AS"`
+}
+
+type RelationshipTableAlias struct {
+	RelationshipTableAlias string `ddl:"keyword"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.

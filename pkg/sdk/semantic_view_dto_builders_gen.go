@@ -109,9 +109,9 @@ func (s *SynonymsRequest) WithWithSynonyms(WithSynonyms []string) *SynonymsReque
 }
 
 func NewSemanticViewRelationshipRequest(
-	tableName LogicalTableAlias,
+	tableName *RelationshipTableAliasRequest,
 	relationshipColumnNames []SemanticViewColumnRequest,
-	refTableName LogicalTableAlias,
+	refTableName *RelationshipTableAliasRequest,
 ) *SemanticViewRelationshipRequest {
 	s := SemanticViewRelationshipRequest{}
 	s.tableName = tableName
@@ -136,6 +136,15 @@ func NewRelationshipAliasRequest() *RelationshipAliasRequest {
 
 func (s *RelationshipAliasRequest) WithRelationshipAlias(RelationshipAlias string) *RelationshipAliasRequest {
 	s.RelationshipAlias = RelationshipAlias
+	return s
+}
+
+func NewRelationshipTableAliasRequest() *RelationshipTableAliasRequest {
+	return &RelationshipTableAliasRequest{}
+}
+
+func (s *RelationshipTableAliasRequest) WithRelationshipTableAlias(RelationshipTableAlias string) *RelationshipTableAliasRequest {
+	s.RelationshipTableAlias = RelationshipTableAlias
 	return s
 }
 

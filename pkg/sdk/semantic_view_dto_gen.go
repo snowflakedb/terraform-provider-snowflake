@@ -46,14 +46,18 @@ type SynonymsRequest struct {
 
 type SemanticViewRelationshipRequest struct {
 	relationshipAlias          *RelationshipAliasRequest
-	tableName                  LogicalTableAlias           // required
-	relationshipColumnNames    []SemanticViewColumnRequest // required
-	refTableName               LogicalTableAlias           // required
+	tableName                  *RelationshipTableAliasRequest // required
+	relationshipColumnNames    []SemanticViewColumnRequest    // required
+	refTableName               *RelationshipTableAliasRequest // required
 	relationshipRefColumnNames []SemanticViewColumnRequest
 }
 
 type RelationshipAliasRequest struct {
 	RelationshipAlias string
+}
+
+type RelationshipTableAliasRequest struct {
+	RelationshipTableAlias string
 }
 
 type SemanticViewColumnRequest struct {

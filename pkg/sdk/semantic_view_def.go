@@ -54,7 +54,7 @@ var SemanticViewsDef = g.NewInterface(
 		Name().
 		SQL("TABLES").
 		ListQueryStructField("logicalTables", logicalTable, g.ListOptions().Required().Parentheses()).
-		ListQueryStructField("semanticViewRelationships", semanticViewRelationship, g.ListOptions().Parentheses()).
+		ListQueryStructField("semanticViewRelationships", semanticViewRelationship, g.ListOptions()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
@@ -122,11 +122,14 @@ var relationshipAlias = g.NewQueryStruct("RelationshipAlias").
 	Text("RelationshipAlias", g.KeywordOptions()).
 	SQL("AS")
 
+var relationshipTableAlias = g.NewQueryStruct("RelationshipTableAlias").
+	Text("RelationshipTableAlias", g.KeywordOptions())
+
 var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
 	SQL("RELATIONSHIPS").
 	OptionalQueryStructField("relationshipAlias", relationshipAlias, g.KeywordOptions()).
-	Identifier("tableName", g.KindOfT[LogicalTableAlias](), g.IdentifierOptions().Required()).
+	OptionalQueryStructField("tableName", relationshipTableAlias, g.KeywordOptions().Required()).
 	ListQueryStructField("relationshipColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses().Required()).
 	SQL("REFERENCES").
-	Identifier("refTableName", g.KindOfT[LogicalTableAlias](), g.IdentifierOptions().Required()).
+	OptionalQueryStructField("refTableName", relationshipTableAlias, g.KeywordOptions().Required()).
 	ListQueryStructField("relationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())
