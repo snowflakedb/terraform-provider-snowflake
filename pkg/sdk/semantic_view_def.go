@@ -52,11 +52,14 @@ var SemanticViewsDef = g.NewInterface(
 		SQL("SEMANTIC VIEW").
 		IfNotExists().
 		Name().
-		ListQueryStructField("tables", logicalTable, g.ListOptions().Parentheses().Required()).
+		SQL("TABLES").
+		ListQueryStructField("logicalTables", logicalTable, g.ListOptions().Required().Parentheses()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"), // both can't be used at the same time
+	logicalTable,
+	semanticViewColumn,
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
 	g.NewQueryStruct("DropSemanticView").
@@ -89,5 +92,21 @@ var SemanticViewsDef = g.NewInterface(
 		OptionalLimit(),
 )
 
+var primaryKey = g.NewQueryStruct("PrimaryKeys").
+	ListAssignment("PRIMARY KEY", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals())
+
+var uniqueKey = g.NewQueryStruct("UniqueKeys").
+	ListAssignment("UNIQUE", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals())
+
+var synonym = g.NewQueryStruct("Synonyms").
+	ListAssignment("WITH SYNONYMS", "string", g.ParameterOptions().NoEquals().Parentheses())
+
 var logicalTable = g.NewQueryStruct("LogicalTable").
-	Identifier("logicalTableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required())
+	Identifier("TableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+	OptionalQueryStructField("primaryKeys", primaryKey, g.ParameterOptions().NoEquals()).
+	ListQueryStructField("uniqueKeys", uniqueKey, g.ListOptions().NoEquals()).
+	OptionalQueryStructField("synonyms", synonym, g.ParameterOptions().NoEquals()).
+	OptionalComment()
+
+var semanticViewColumn = g.NewQueryStruct("SemanticViewColumn").
+	Text("Name", g.KeywordOptions().Required())

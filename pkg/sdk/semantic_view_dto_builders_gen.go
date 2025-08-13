@@ -6,11 +6,11 @@ import ()
 
 func NewCreateSemanticViewRequest(
 	name SchemaObjectIdentifier,
-	tables []LogicalTableRequest,
+	logicalTables []LogicalTableRequest,
 ) *CreateSemanticViewRequest {
 	s := CreateSemanticViewRequest{}
 	s.name = name
-	s.tables = tables
+	s.logicalTables = logicalTables
 	return &s
 }
 
@@ -35,11 +35,58 @@ func (s *CreateSemanticViewRequest) WithCopyGrants(CopyGrants bool) *CreateSeman
 }
 
 func NewLogicalTableRequest(
-	logicalTableName SchemaObjectIdentifier,
+	TableName SchemaObjectIdentifier,
 ) *LogicalTableRequest {
 	s := LogicalTableRequest{}
-	s.logicalTableName = logicalTableName
+	s.TableName = TableName
 	return &s
+}
+
+func (s *LogicalTableRequest) WithPrimaryKeys(primaryKeys PrimaryKeysRequest) *LogicalTableRequest {
+	s.primaryKeys = &primaryKeys
+	return s
+}
+
+func (s *LogicalTableRequest) WithUniqueKeys(uniqueKeys []UniqueKeysRequest) *LogicalTableRequest {
+	s.uniqueKeys = uniqueKeys
+	return s
+}
+
+func (s *LogicalTableRequest) WithSynonyms(synonyms SynonymsRequest) *LogicalTableRequest {
+	s.synonyms = &synonyms
+	return s
+}
+
+func (s *LogicalTableRequest) WithComment(Comment string) *LogicalTableRequest {
+	s.Comment = &Comment
+	return s
+}
+
+func NewPrimaryKeysRequest() *PrimaryKeysRequest {
+	return &PrimaryKeysRequest{}
+}
+
+func (s *PrimaryKeysRequest) WithPrimaryKey(PrimaryKey []SemanticViewColumn) *PrimaryKeysRequest {
+	s.PrimaryKey = PrimaryKey
+	return s
+}
+
+func NewUniqueKeysRequest() *UniqueKeysRequest {
+	return &UniqueKeysRequest{}
+}
+
+func (s *UniqueKeysRequest) WithUnique(Unique []SemanticViewColumn) *UniqueKeysRequest {
+	s.Unique = Unique
+	return s
+}
+
+func NewSynonymsRequest() *SynonymsRequest {
+	return &SynonymsRequest{}
+}
+
+func (s *SynonymsRequest) WithWithSynonyms(WithSynonyms []string) *SynonymsRequest {
+	s.WithSynonyms = WithSynonyms
+	return s
 }
 
 func NewDropSemanticViewRequest(

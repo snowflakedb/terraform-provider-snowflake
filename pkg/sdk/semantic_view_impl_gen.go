@@ -50,18 +50,37 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 		OrReplace:   r.OrReplace,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-
-		Comment:    r.Comment,
-		CopyGrants: r.CopyGrants,
+		Comment:     r.Comment,
+		CopyGrants:  r.CopyGrants,
 	}
-	if r.tables != nil {
-		s := make([]LogicalTable, len(r.tables))
-		for i, v := range r.tables {
+	if r.logicalTables != nil {
+		s := make([]LogicalTable, len(r.logicalTables))
+		for i, v := range r.logicalTables {
 			s[i] = LogicalTable{
-				logicalTableName: v.logicalTableName,
+				TableName: v.TableName,
+				Comment:   v.Comment,
+			}
+			if v.primaryKeys != nil {
+				s[i].primaryKeys = &PrimaryKeys{
+					PrimaryKey: v.primaryKeys.PrimaryKey,
+				}
+			}
+			if v.synonyms != nil {
+				s[i].synonyms = &Synonyms{
+					WithSynonyms: v.synonyms.WithSynonyms,
+				}
+			}
+			if v.uniqueKeys != nil {
+				u := make([]UniqueKeys, len(v.uniqueKeys))
+				for j, w := range v.uniqueKeys {
+					u[j] = UniqueKeys{
+						Unique: w.Unique,
+					}
+				}
+				s[i].uniqueKeys = u
 			}
 		}
-		opts.tables = s
+		opts.logicalTables = s
 	}
 	return opts
 }

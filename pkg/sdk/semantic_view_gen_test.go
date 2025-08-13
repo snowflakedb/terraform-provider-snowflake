@@ -3,10 +3,12 @@ package sdk
 import "testing"
 
 func TestSemanticViews_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
 
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid CreateSemanticViewOptions
 	defaultOpts := func() *CreateSemanticViewOptions {
 		return &CreateSemanticViewOptions{
+
 			name: id,
 		}
 	}
@@ -15,39 +17,75 @@ func TestSemanticViews_Create(t *testing.T) {
 		var opts *CreateSemanticViewOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
-
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SEMANTIC VIEW %s", id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s COMMENT = '%s'`, id.FullyQualifiedName(), "comment")
+		logicalTableId1 := randomSchemaObjectIdentifier()
+		logicalTableId2 := randomSchemaObjectIdentifier()
+		logicalTableComment1 := String("logical table comment 1")
+		logicalTableComment2 := String("logical table comment 2")
+		tablesObj := []LogicalTable{
+			{
+				//logicalTableAlias: &tableAliasObj,
+				TableName: logicalTableId1,
+				primaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
+					{
+						Name: "pk1.1",
+					},
+					{
+						Name: "pk1.2",
+					},
+				}},
+				synonyms: &Synonyms{WithSynonyms: []string{"'test1'", "'test2'"}},
+				Comment:  logicalTableComment1,
+			},
+			{
+				TableName: logicalTableId2,
+				primaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
+					{
+						Name: "pk2.1",
+					},
+					{
+						Name: "pk2.2",
+					},
+				}},
+				synonyms: &Synonyms{WithSynonyms: []string{"'test3'", "'test4'"}},
+				Comment:  logicalTableComment2,
+			},
+		}
+		opts := &CreateSemanticViewOptions{
+			name:          id,
+			Comment:       String("comment"),
+			IfNotExists:   Bool(true),
+			logicalTables: tablesObj,
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES (%s PRIMARY KEY (pk1.1, pk1.2) WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', %s PRIMARY KEY (pk2.1, pk2.2) WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') COMMENT = '%s'`, id.FullyQualifiedName(), logicalTableId1.FullyQualifiedName(), *logicalTableComment1, logicalTableId2.FullyQualifiedName(), *logicalTableComment2, "comment")
 	})
 }
 
 func TestSemanticViews_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
 
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid DropSemanticViewOptions
 	defaultOpts := func() *DropSemanticViewOptions {
 		return &DropSemanticViewOptions{
+
 			name: id,
 		}
 	}
@@ -56,30 +94,32 @@ func TestSemanticViews_Drop(t *testing.T) {
 		var opts *DropSemanticViewOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
-
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP SEMANTIC VIEW %s`, id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP SEMANTIC VIEW IF EXISTS %s`, id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
 func TestSemanticViews_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
 
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid DescribeSemanticViewOptions
 	defaultOpts := func() *DescribeSemanticViewOptions {
 		return &DescribeSemanticViewOptions{
+
 			name: id,
 		}
 	}
@@ -88,20 +128,27 @@ func TestSemanticViews_Describe(t *testing.T) {
 		var opts *DescribeSemanticViewOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
-
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SEMANTIC VIEW %s", id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
 func TestSemanticViews_Show(t *testing.T) {
+	// Minimal valid ShowSemanticViewOptions
 	defaultOpts := func() *ShowSemanticViewOptions {
 		return &ShowSemanticViewOptions{}
 	}
@@ -113,22 +160,13 @@ func TestSemanticViews_Show(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SEMANTIC VIEWS")
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		opts.Like = &Like{
-			Pattern: String("semantic-view-name"),
-		}
-		opts.In = &In{
-			Database: NewAccountObjectIdentifier("database-name"),
-		}
-		opts.StartsWith = String("semantic-view-name-start")
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE SEMANTIC VIEWS LIKE 'semantic-view-name' IN DATABASE "database-name" STARTS WITH 'semantic-view-name-start' LIMIT 10`)
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }

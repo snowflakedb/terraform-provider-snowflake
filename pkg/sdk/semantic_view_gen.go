@@ -16,18 +16,39 @@ type SemanticViews interface {
 
 // CreateSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view.
 type CreateSemanticViewOptions struct {
-	create       bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace    *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
-	IfNotExists  *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name         SchemaObjectIdentifier `ddl:"identifier"`
-	tables       []LogicalTable         `ddl:"list,parentheses"`
-	Comment      *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	CopyGrants   *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+	create        bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace     *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	semanticView  bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
+	IfNotExists   *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name          SchemaObjectIdentifier `ddl:"identifier"`
+	tables        bool                   `ddl:"static" sql:"TABLES"`
+	logicalTables []LogicalTable         `ddl:"list,parentheses"`
+	Comment       *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	CopyGrants    *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
 }
 
 type LogicalTable struct {
-	logicalTableName SchemaObjectIdentifier `ddl:"identifier"`
+	TableName   SchemaObjectIdentifier `ddl:"identifier"`
+	primaryKeys *PrimaryKeys           `ddl:"parameter,no_equals"`
+	uniqueKeys  []UniqueKeys           `ddl:"list,no_equals"`
+	synonyms    *Synonyms              `ddl:"parameter,no_equals"`
+	Comment     *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type PrimaryKeys struct {
+	PrimaryKey []SemanticViewColumn `ddl:"parameter,parentheses,no_equals" sql:"PRIMARY KEY"`
+}
+
+type UniqueKeys struct {
+	Unique []SemanticViewColumn `ddl:"parameter,parentheses,no_equals" sql:"UNIQUE"`
+}
+
+type Synonyms struct {
+	WithSynonyms []string `ddl:"parameter,parentheses,no_equals" sql:"WITH SYNONYMS"`
+}
+
+type SemanticViewColumn struct {
+	Name string `ddl:"keyword"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.
