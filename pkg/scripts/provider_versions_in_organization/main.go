@@ -18,7 +18,7 @@ import (
 const (
 	githubAPIBase  = "https://api.github.com"
 	searchEndpoint = "/search/code"
-	perPage        = 1 // max allowed by GitHub
+	perPage        = 100 // max allowed by GitHub
 )
 
 // All previous and current registries for the Snowflake Terraform Provider.
@@ -66,13 +66,21 @@ type result struct {
 	Fragment string
 }
 
+// Usage: SF_TF_SCRIPT_GH_ACCESS_TOKEN=<token> go run ./pkg/scripts/provider_versions_in_organization/main.go <GH organization>
 func main() {
 	accessToken := common.GetAccessToken()
+
+	if len(os.Args) != 2 {
+		common.ScriptsDebug("Organization expected, got %v", os.Args)
+		os.Exit(1)
+	}
+	organization := os.Args[1]
+	common.ScriptsDebug("Searching for organization: %s", organization)
 
 	allResults := make([]result, 0)
 	for _, registry := range registries {
 		common.ScriptsDebug("Searching for registry: %s", registry)
-		results, err := ghSearchInOrganization(accessToken, registry)
+		results, err := ghSearchInOrganization(accessToken, organization, registry)
 		if err != nil {
 			common.ScriptsDebug("Searching ended with err: %v", err)
 			os.Exit(1)
@@ -83,30 +91,28 @@ func main() {
 			allResults = append(allResults, transformToResult(registry, item)...)
 		}
 	}
-	//saveResults(allResults)
+	saveResults(allResults)
 }
 
-func ghSearchInOrganization(accessToken string, phrase string) (*SearchResult, error) {
-	query := fmt.Sprintf(`"%s" extension:tf org:snowflakedb`, phrase)
-	//queryEscaped := strings.ReplaceAll(query, " ", "+")
-	//queryEscaped = url.QueryEscape(queryEscaped)
+func ghSearchInOrganization(accessToken string, organization string, phrase string) (*SearchResult, error) {
+	query := fmt.Sprintf(`"%s" extension:tf org:%s`, phrase, organization)
 	queryEscaped := url.QueryEscape(query)
 	phraseUrl := fmt.Sprintf("%s%s?q=%s", githubAPIBase, searchEndpoint, queryEscaped)
 
 	allResults := &SearchResult{Items: []searchResultItem{}}
 	page := 1
-	//for {
-	results, err := ghSearch(accessToken, phraseUrl, page)
-	if err != nil {
-		return nil, err
+	for {
+		results, err := ghSearch(accessToken, phraseUrl, page)
+		if err != nil {
+			return nil, err
+		}
+		if len(results.Items) == 0 {
+			break
+		}
+		allResults.Items = append(allResults.Items, results.Items...)
+		page++
+		time.Sleep(5 * time.Second)
 	}
-	//if len(results.Items) == 0 {
-	//	break
-	//}
-	allResults.Items = append(allResults.Items, results.Items...)
-	page++
-	time.Sleep(1 * time.Second)
-	//}
 	return allResults, nil
 }
 
@@ -148,8 +154,8 @@ func transformToResult(registry string, resultItem searchResultItem) []result {
 		} else {
 			st := m.Matches[0].Indices[0]
 			end := m.Matches[0].Indices[1]
-			openIdx := strings.LastIndex(m.Fragment[:st], "{")
-			closeIdx := strings.Index(m.Fragment[end:], "}")
+			openIdx := max(strings.LastIndex(m.Fragment[:st], "{"), 0)
+			closeIdx := min(strings.Index(m.Fragment[end:], "}"), end)
 			frag = m.Fragment[openIdx : end+closeIdx+1]
 			versionRegex := regexp.MustCompile(`version\s+=\s+"(.*)"`)
 			vMatches := versionRegex.FindStringSubmatch(frag)
@@ -179,7 +185,7 @@ func saveResults(results []result) {
 	}
 	defer file.Close()
 	w := csv.NewWriter(file)
-
+	w.Comma = ';'
 	data := make([][]string, 0, len(results))
 	for _, r := range results {
 		row := []string{
@@ -187,6 +193,7 @@ func saveResults(results []result) {
 			r.RepoURL,
 			r.FileURL,
 			r.Version,
+			r.Fragment,
 		}
 		data = append(data, row)
 	}
