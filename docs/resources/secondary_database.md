@@ -137,6 +137,9 @@ Optional:
 
 ## Import
 
+Make sure that `is_transient` is set in your config explicitly before import to avoid diff and recreation
+(reasons are presented in [this migration guide entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#behavior-change-boolean-type-changes-1)).
+
 Import is supported using the following syntax:
 
 ```shell
