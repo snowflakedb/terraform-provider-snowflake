@@ -17,6 +17,9 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > - focus on changes to authentication to make sure your provider is set up correctly in the newest version;
 > - check changes to resource schemas; if in doubt, you can always simplify the resource and let the terraform figure out the changes (you can use plan output to make the configuration appropriate);
 > - reimport your infrastructure using the target provider version, preferably in smaller chunks (or experiment with 1-2 resources of each type first).
+>
+> What should be considered an ancient version?
+> The rule of thumb should be: if you are on ~0.85.0 (or close so that you can bump to it), you can follow this guide step by step. If you are on a lower version, import your infrastructure into config using the newest version.
 
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
