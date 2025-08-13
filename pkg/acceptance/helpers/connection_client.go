@@ -61,6 +61,13 @@ func (c *ConnectionClient) Alter(t *testing.T, req *sdk.AlterConnectionRequest) 
 	require.NoError(t, err)
 }
 
+func (c *ConnectionClient) Drop(t *testing.T, id sdk.AccountObjectIdentifier) error {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Drop(ctx, sdk.NewDropConnectionRequest(id).WithIfExists(true))
+}
+
 func (c *ConnectionClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
@@ -15,7 +16,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -232,8 +232,8 @@ func TestAcc_PrimaryConnection_ExternalChanges(t *testing.T) {
 							connectionModel.ResourceReference(),
 							"enable_failover_to_accounts",
 							tfjson.ActionUpdate,
-							sdk.String(fmt.Sprintf("[%s]", secondaryAccountId.FullyQualifiedName())),
-							nil,
+							sdk.String(fmt.Sprintf("[%s.%s]", secondaryAccountId.OrganizationName(), secondaryAccountId.AccountName())),
+							sdk.String("[]"),
 						),
 					},
 				},
@@ -259,8 +259,8 @@ func TestAcc_PrimaryConnection_ExternalChanges(t *testing.T) {
 							connectionModel.ResourceReference(),
 							"enable_failover_to_accounts",
 							tfjson.ActionUpdate,
-							nil,
-							sdk.String(fmt.Sprintf("[%s]", secondaryAccountId.FullyQualifiedName())),
+							sdk.String("[]"),
+							sdk.String(fmt.Sprintf("[%s.%s]", secondaryAccountId.OrganizationName(), secondaryAccountId.AccountName())),
 						),
 					},
 				},
