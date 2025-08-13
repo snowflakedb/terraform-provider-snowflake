@@ -38,12 +38,14 @@ func TestSemanticViews_Create(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		logicalTableId1 := randomSchemaObjectIdentifier()
 		logicalTableId2 := randomSchemaObjectIdentifier()
+		tableAlias1 := "table1"
+		tableAlias2 := "table2"
 		logicalTableComment1 := String("logical table comment 1")
 		logicalTableComment2 := String("logical table comment 2")
 		tablesObj := []LogicalTable{
 			{
-				//logicalTableAlias: &tableAliasObj,
-				TableName: logicalTableId1,
+				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
+				TableName:         logicalTableId1,
 				primaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
 					{
 						Name: "pk1.1",
@@ -56,7 +58,8 @@ func TestSemanticViews_Create(t *testing.T) {
 				Comment:  logicalTableComment1,
 			},
 			{
-				TableName: logicalTableId2,
+				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias2},
+				TableName:         logicalTableId2,
 				primaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
 					{
 						Name: "pk2.1",
@@ -75,7 +78,7 @@ func TestSemanticViews_Create(t *testing.T) {
 			IfNotExists:   Bool(true),
 			logicalTables: tablesObj,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES (%s PRIMARY KEY (pk1.1, pk1.2) WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', %s PRIMARY KEY (pk2.1, pk2.2) WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') COMMENT = '%s'`, id.FullyQualifiedName(), logicalTableId1.FullyQualifiedName(), *logicalTableComment1, logicalTableId2.FullyQualifiedName(), *logicalTableComment2, "comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES (%s AS %s PRIMARY KEY (pk1.1, pk1.2) WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', %s AS %s PRIMARY KEY (pk2.1, pk2.2) WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') COMMENT = '%s'`, id.FullyQualifiedName(), tableAlias1, logicalTableId1.FullyQualifiedName(), *logicalTableComment1, tableAlias2, logicalTableId2.FullyQualifiedName(), *logicalTableComment2, "comment")
 	})
 }
 

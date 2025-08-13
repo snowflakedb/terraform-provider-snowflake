@@ -60,6 +60,11 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 				TableName: v.TableName,
 				Comment:   v.Comment,
 			}
+			if v.logicalTableAlias != nil {
+				s[i].logicalTableAlias = &LogicalTableAlias{
+					LogicalTableAlias: v.logicalTableAlias.LogicalTableAlias,
+				}
+			}
 			if v.primaryKeys != nil {
 				s[i].primaryKeys = &PrimaryKeys{
 					PrimaryKey: v.primaryKeys.PrimaryKey,

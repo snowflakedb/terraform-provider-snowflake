@@ -28,11 +28,17 @@ type CreateSemanticViewOptions struct {
 }
 
 type LogicalTable struct {
-	TableName   SchemaObjectIdentifier `ddl:"identifier"`
-	primaryKeys *PrimaryKeys           `ddl:"parameter,no_equals"`
-	uniqueKeys  []UniqueKeys           `ddl:"list,no_equals"`
-	synonyms    *Synonyms              `ddl:"parameter,no_equals"`
-	Comment     *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	logicalTableAlias *LogicalTableAlias     `ddl:"keyword"`
+	TableName         SchemaObjectIdentifier `ddl:"identifier"`
+	primaryKeys       *PrimaryKeys           `ddl:"parameter,no_equals"`
+	uniqueKeys        []UniqueKeys           `ddl:"list,no_equals"`
+	synonyms          *Synonyms              `ddl:"parameter,no_equals"`
+	Comment           *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type LogicalTableAlias struct {
+	LogicalTableAlias string `ddl:"keyword"`
+	as                bool   `ddl:"static" sql:"AS"`
 }
 
 type PrimaryKeys struct {

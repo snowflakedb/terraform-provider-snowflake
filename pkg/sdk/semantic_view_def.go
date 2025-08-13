@@ -101,7 +101,12 @@ var uniqueKey = g.NewQueryStruct("UniqueKeys").
 var synonym = g.NewQueryStruct("Synonyms").
 	ListAssignment("WITH SYNONYMS", "string", g.ParameterOptions().NoEquals().Parentheses())
 
+var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
+	Text("LogicalTableAlias", g.KeywordOptions()).
+	SQL("AS")
+
 var logicalTable = g.NewQueryStruct("LogicalTable").
+	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.KeywordOptions()).
 	Identifier("TableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	OptionalQueryStructField("primaryKeys", primaryKey, g.ParameterOptions().NoEquals()).
 	ListQueryStructField("uniqueKeys", uniqueKey, g.ListOptions().NoEquals()).

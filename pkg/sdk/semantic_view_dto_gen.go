@@ -19,11 +19,16 @@ type CreateSemanticViewRequest struct {
 }
 
 type LogicalTableRequest struct {
-	TableName   SchemaObjectIdentifier // required
-	primaryKeys *PrimaryKeysRequest
-	uniqueKeys  []UniqueKeysRequest
-	synonyms    *SynonymsRequest
-	Comment     *string
+	logicalTableAlias *LogicalTableAliasRequest
+	TableName         SchemaObjectIdentifier // required
+	primaryKeys       *PrimaryKeysRequest
+	uniqueKeys        []UniqueKeysRequest
+	synonyms          *SynonymsRequest
+	Comment           *string
+}
+
+type LogicalTableAliasRequest struct {
+	LogicalTableAlias string
 }
 
 type PrimaryKeysRequest struct {

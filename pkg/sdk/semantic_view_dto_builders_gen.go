@@ -42,6 +42,11 @@ func NewLogicalTableRequest(
 	return &s
 }
 
+func (s *LogicalTableRequest) WithLogicalTableAlias(logicalTableAlias LogicalTableAliasRequest) *LogicalTableRequest {
+	s.logicalTableAlias = &logicalTableAlias
+	return s
+}
+
 func (s *LogicalTableRequest) WithPrimaryKeys(primaryKeys PrimaryKeysRequest) *LogicalTableRequest {
 	s.primaryKeys = &primaryKeys
 	return s
@@ -59,6 +64,15 @@ func (s *LogicalTableRequest) WithSynonyms(synonyms SynonymsRequest) *LogicalTab
 
 func (s *LogicalTableRequest) WithComment(Comment string) *LogicalTableRequest {
 	s.Comment = &Comment
+	return s
+}
+
+func NewLogicalTableAliasRequest() *LogicalTableAliasRequest {
+	return &LogicalTableAliasRequest{}
+}
+
+func (s *LogicalTableAliasRequest) WithLogicalTableAlias(LogicalTableAlias string) *LogicalTableAliasRequest {
+	s.LogicalTableAlias = LogicalTableAlias
 	return s
 }
 
