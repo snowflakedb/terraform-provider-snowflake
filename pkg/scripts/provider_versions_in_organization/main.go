@@ -157,7 +157,10 @@ func transformToResult(registry string, resultItem searchResultItem) []result {
 			st := m.Matches[0].Indices[0]
 			end := m.Matches[0].Indices[1]
 			openIdx := max(strings.LastIndex(m.Fragment[:st], "{"), 0)
-			closeIdx := min(strings.Index(m.Fragment[end:], "}"), end)
+			closeIdx := strings.Index(m.Fragment[end:], "}")
+			if closeIdx == -1 {
+				closeIdx = end
+			}
 			frag = m.Fragment[openIdx : end+closeIdx+1]
 			versionRegex := regexp.MustCompile(`version\s+=\s+"(.*)"`)
 			vMatches := versionRegex.FindStringSubmatch(frag)
@@ -191,10 +194,10 @@ func saveResults(results []result) {
 	data := make([][]string, 0, len(results))
 	data = append(data, []string{"Registry", "Estimated Version", "RepoURL", "FileURL", "Fragment"})
 	for _, r := range results {
-		if strings.HasPrefix(r.Version, "") {
+		if strings.HasPrefix(r.Version, "=") {
 			r.Version = "'" + r.Version
 		}
-		if strings.HasPrefix(r.Fragment, "") {
+		if strings.HasPrefix(r.Fragment, "=") {
 			r.Fragment = "'" + r.Fragment
 		}
 		row := []string{
