@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/common"
@@ -59,13 +62,14 @@ type result struct {
 	Registry string
 	RepoURL  string
 	FileURL  string
-	LineNum  int
 	Version  string
+	Fragment string
 }
 
 func main() {
 	accessToken := common.GetAccessToken()
 
+	allResults := make([]result, 0)
 	for _, registry := range registries {
 		common.ScriptsDebug("Searching for registry: %s", registry)
 		results, err := ghSearchInOrganization(accessToken, registry)
@@ -76,8 +80,10 @@ func main() {
 		common.ScriptsDebug("Hits for registry '%s': %d", registry, len(results.Items))
 		for i, item := range results.Items {
 			common.ScriptsDebug("Hit %03d: %s %s %s %v", i+1, item.Repository.FullName, item.Path, item.HtmlURL, item.TextMatches)
+			allResults = append(allResults, transformToResult(registry, item)...)
 		}
 	}
+	//saveResults(allResults)
 }
 
 func ghSearchInOrganization(accessToken string, phrase string) (*SearchResult, error) {
@@ -126,4 +132,63 @@ func ghSearch(accessToken string, phraseUrl string, page int) (*SearchResult, er
 		return nil, err
 	}
 	return &searchResult, nil
+}
+
+func transformToResult(registry string, resultItem searchResultItem) []result {
+	results := make([]result, 0)
+
+	for _, m := range resultItem.TextMatches {
+		if len(m.Matches) != 1 {
+			common.ScriptsWarn("Unexpected matches [%d] for fragment %s", len(m.Matches), m.Fragment)
+		}
+		frag := m.Fragment
+		var version string
+		if len(m.Matches) == 0 || len(m.Matches[0].Indices) != 2 {
+			version = "unknown"
+		} else {
+			st := m.Matches[0].Indices[0]
+			end := m.Matches[0].Indices[1]
+			openIdx := strings.LastIndex(m.Fragment[:st], "{")
+			closeIdx := strings.Index(m.Fragment[end:], "}")
+			frag = m.Fragment[openIdx : end+closeIdx+1]
+			versionRegex := regexp.MustCompile(`version\s+=\s+"(.*)"`)
+			vMatches := versionRegex.FindStringSubmatch(frag)
+			if len(vMatches) == 0 {
+				version = "unknown"
+			} else {
+				version = vMatches[1]
+			}
+			common.ScriptsDebug("Version: %s, Frag: %s", version, frag)
+		}
+		results = append(results, result{
+			Registry: registry,
+			RepoURL:  resultItem.Repository.HtmlURL,
+			FileURL:  resultItem.HtmlURL,
+			Version:  version,
+			Fragment: frag,
+		})
+	}
+
+	return results
+}
+
+func saveResults(results []result) {
+	file, err := os.Create("results.csv")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	w := csv.NewWriter(file)
+
+	data := make([][]string, 0, len(results))
+	for _, r := range results {
+		row := []string{
+			r.Registry,
+			r.RepoURL,
+			r.FileURL,
+			r.Version,
+		}
+		data = append(data, row)
+	}
+	_ = w.WriteAll(data)
 }
