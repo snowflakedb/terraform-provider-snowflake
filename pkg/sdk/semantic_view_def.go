@@ -54,12 +54,14 @@ var SemanticViewsDef = g.NewInterface(
 		Name().
 		SQL("TABLES").
 		ListQueryStructField("logicalTables", logicalTable, g.ListOptions().Required().Parentheses()).
+		ListQueryStructField("semanticViewRelationships", semanticViewRelationship, g.ListOptions().Parentheses()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"), // both can't be used at the same time
 	logicalTable,
 	semanticViewColumn,
+	semanticViewRelationship,
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
 	g.NewQueryStruct("DropSemanticView").
@@ -105,6 +107,9 @@ var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
 	Text("LogicalTableAlias", g.KeywordOptions()).
 	SQL("AS")
 
+var semanticViewColumn = g.NewQueryStruct("SemanticViewColumn").
+	Text("Name", g.KeywordOptions().Required())
+
 var logicalTable = g.NewQueryStruct("LogicalTable").
 	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.KeywordOptions()).
 	Identifier("TableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
@@ -113,5 +118,15 @@ var logicalTable = g.NewQueryStruct("LogicalTable").
 	OptionalQueryStructField("synonyms", synonym, g.ParameterOptions().NoEquals()).
 	OptionalComment()
 
-var semanticViewColumn = g.NewQueryStruct("SemanticViewColumn").
-	Text("Name", g.KeywordOptions().Required())
+var relationshipAlias = g.NewQueryStruct("RelationshipAlias").
+	Text("RelationshipAlias", g.KeywordOptions()).
+	SQL("AS")
+
+var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
+	SQL("RELATIONSHIPS").
+	OptionalQueryStructField("relationshipAlias", relationshipAlias, g.KeywordOptions()).
+	Identifier("tableName", g.KindOfT[LogicalTableAlias](), g.IdentifierOptions().Required()).
+	ListQueryStructField("relationshipColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses().Required()).
+	SQL("REFERENCES").
+	Identifier("refTableName", g.KindOfT[LogicalTableAlias](), g.IdentifierOptions().Required()).
+	ListQueryStructField("relationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())

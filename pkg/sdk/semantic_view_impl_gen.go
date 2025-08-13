@@ -87,6 +87,39 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 		}
 		opts.logicalTables = s
 	}
+	if r.semanticViewRelationships != nil {
+		s := make([]SemanticViewRelationship, len(r.semanticViewRelationships))
+		for i, v := range r.semanticViewRelationships {
+			s[i] = SemanticViewRelationship{
+				tableName:    v.tableName,
+				refTableName: v.refTableName,
+			}
+			if v.relationshipAlias != nil {
+				s[i].relationshipAlias = &RelationshipAlias{
+					RelationshipAlias: v.relationshipAlias.RelationshipAlias,
+				}
+			}
+			if v.relationshipColumnNames != nil {
+				u := make([]SemanticViewColumn, len(v.relationshipColumnNames))
+				for j, w := range v.relationshipColumnNames {
+					u[j] = SemanticViewColumn{
+						Name: w.Name,
+					}
+				}
+				s[i].relationshipColumnNames = u
+			}
+			if v.relationshipRefColumnNames != nil {
+				u := make([]SemanticViewColumn, len(v.relationshipRefColumnNames))
+				for j, w := range v.relationshipRefColumnNames {
+					u[j] = SemanticViewColumn{
+						Name: w.Name,
+					}
+				}
+				s[i].relationshipRefColumnNames = u
+			}
+		}
+		opts.semanticViewRelationships = s
+	}
 	return opts
 }
 

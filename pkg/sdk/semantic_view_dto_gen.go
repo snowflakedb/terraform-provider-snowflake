@@ -10,12 +10,13 @@ var (
 )
 
 type CreateSemanticViewRequest struct {
-	OrReplace     *bool
-	IfNotExists   *bool
-	name          SchemaObjectIdentifier // required
-	logicalTables []LogicalTableRequest  // required
-	Comment       *string
-	CopyGrants    *bool
+	OrReplace                 *bool
+	IfNotExists               *bool
+	name                      SchemaObjectIdentifier // required
+	logicalTables             []LogicalTableRequest  // required
+	semanticViewRelationships []SemanticViewRelationshipRequest
+	Comment                   *string
+	CopyGrants                *bool
 }
 
 type LogicalTableRequest struct {
@@ -41,6 +42,22 @@ type UniqueKeysRequest struct {
 
 type SynonymsRequest struct {
 	WithSynonyms []string
+}
+
+type SemanticViewRelationshipRequest struct {
+	relationshipAlias          *RelationshipAliasRequest
+	tableName                  LogicalTableAlias           // required
+	relationshipColumnNames    []SemanticViewColumnRequest // required
+	refTableName               LogicalTableAlias           // required
+	relationshipRefColumnNames []SemanticViewColumnRequest
+}
+
+type RelationshipAliasRequest struct {
+	RelationshipAlias string
+}
+
+type SemanticViewColumnRequest struct {
+	Name string // required
 }
 
 type DropSemanticViewRequest struct {

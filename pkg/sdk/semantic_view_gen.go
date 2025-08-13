@@ -16,15 +16,16 @@ type SemanticViews interface {
 
 // CreateSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view.
 type CreateSemanticViewOptions struct {
-	create        bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace     *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	semanticView  bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
-	IfNotExists   *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name          SchemaObjectIdentifier `ddl:"identifier"`
-	tables        bool                   `ddl:"static" sql:"TABLES"`
-	logicalTables []LogicalTable         `ddl:"list,parentheses"`
-	Comment       *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	CopyGrants    *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+	create                    bool                       `ddl:"static" sql:"CREATE"`
+	OrReplace                 *bool                      `ddl:"keyword" sql:"OR REPLACE"`
+	semanticView              bool                       `ddl:"static" sql:"SEMANTIC VIEW"`
+	IfNotExists               *bool                      `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                      SchemaObjectIdentifier     `ddl:"identifier"`
+	tables                    bool                       `ddl:"static" sql:"TABLES"`
+	logicalTables             []LogicalTable             `ddl:"list,parentheses"`
+	semanticViewRelationships []SemanticViewRelationship `ddl:"list,parentheses"`
+	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
 }
 
 type LogicalTable struct {
@@ -55,6 +56,21 @@ type Synonyms struct {
 
 type SemanticViewColumn struct {
 	Name string `ddl:"keyword"`
+}
+
+type SemanticViewRelationship struct {
+	relationships              bool                 `ddl:"static" sql:"RELATIONSHIPS"`
+	relationshipAlias          *RelationshipAlias   `ddl:"keyword"`
+	tableName                  LogicalTableAlias    `ddl:"identifier"`
+	relationshipColumnNames    []SemanticViewColumn `ddl:"list,parentheses,no_equals"`
+	references                 bool                 `ddl:"static" sql:"REFERENCES"`
+	refTableName               LogicalTableAlias    `ddl:"identifier"`
+	relationshipRefColumnNames []SemanticViewColumn `ddl:"list,parentheses,no_equals"`
+}
+
+type RelationshipAlias struct {
+	RelationshipAlias string `ddl:"keyword"`
+	as                bool   `ddl:"static" sql:"AS"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.

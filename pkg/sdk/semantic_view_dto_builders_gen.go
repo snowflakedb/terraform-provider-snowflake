@@ -24,6 +24,11 @@ func (s *CreateSemanticViewRequest) WithIfNotExists(IfNotExists bool) *CreateSem
 	return s
 }
 
+func (s *CreateSemanticViewRequest) WithSemanticViewRelationships(semanticViewRelationships []SemanticViewRelationshipRequest) *CreateSemanticViewRequest {
+	s.semanticViewRelationships = semanticViewRelationships
+	return s
+}
+
 func (s *CreateSemanticViewRequest) WithComment(Comment string) *CreateSemanticViewRequest {
 	s.Comment = &Comment
 	return s
@@ -101,6 +106,45 @@ func NewSynonymsRequest() *SynonymsRequest {
 func (s *SynonymsRequest) WithWithSynonyms(WithSynonyms []string) *SynonymsRequest {
 	s.WithSynonyms = WithSynonyms
 	return s
+}
+
+func NewSemanticViewRelationshipRequest(
+	tableName LogicalTableAlias,
+	relationshipColumnNames []SemanticViewColumnRequest,
+	refTableName LogicalTableAlias,
+) *SemanticViewRelationshipRequest {
+	s := SemanticViewRelationshipRequest{}
+	s.tableName = tableName
+	s.relationshipColumnNames = relationshipColumnNames
+	s.refTableName = refTableName
+	return &s
+}
+
+func (s *SemanticViewRelationshipRequest) WithRelationshipAlias(relationshipAlias RelationshipAliasRequest) *SemanticViewRelationshipRequest {
+	s.relationshipAlias = &relationshipAlias
+	return s
+}
+
+func (s *SemanticViewRelationshipRequest) WithRelationshipRefColumnNames(relationshipRefColumnNames []SemanticViewColumnRequest) *SemanticViewRelationshipRequest {
+	s.relationshipRefColumnNames = relationshipRefColumnNames
+	return s
+}
+
+func NewRelationshipAliasRequest() *RelationshipAliasRequest {
+	return &RelationshipAliasRequest{}
+}
+
+func (s *RelationshipAliasRequest) WithRelationshipAlias(RelationshipAlias string) *RelationshipAliasRequest {
+	s.RelationshipAlias = RelationshipAlias
+	return s
+}
+
+func NewSemanticViewColumnRequest(
+	Name string,
+) *SemanticViewColumnRequest {
+	s := SemanticViewColumnRequest{}
+	s.Name = Name
+	return &s
 }
 
 func NewDropSemanticViewRequest(
