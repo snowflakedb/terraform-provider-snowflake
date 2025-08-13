@@ -116,6 +116,8 @@ func ghSearchInOrganization(accessToken string, organization string, phrase stri
 	return allResults, nil
 }
 
+// https://docs.github.com/en/rest/search/search?apiVersion=2022-11-28#search-code
+// https://docs.github.com/en/rest/search/search?apiVersion=2022-11-28#text-match-metadata
 func ghSearch(accessToken string, phraseUrl string, page int) (*SearchResult, error) {
 	ghSearchFullUrl := fmt.Sprintf("%s&per_page=%d&page=%d", phraseUrl, perPage, page)
 	common.ScriptsDebug("Searching url: %s", ghSearchFullUrl)
