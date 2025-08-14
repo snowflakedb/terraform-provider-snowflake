@@ -50,7 +50,10 @@ func (v *connections) ShowByID(ctx context.Context, id AccountObjectIdentifier) 
 	if err != nil {
 		return nil, err
 	}
-	return collections.FindFirst(connections, func(r Connection) bool { return r.Name == id.Name() })
+	return collections.FindFirst(connections, func(r Connection) bool {
+		// manually adjusted
+		return r.Name == id.Name() && r.AccountLocator == v.client.GetAccountLocator()
+	})
 }
 
 func (v *connections) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Connection, error) {

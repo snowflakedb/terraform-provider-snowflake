@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -61,13 +62,26 @@ func (c *ConnectionClient) Alter(t *testing.T, req *sdk.AlterConnectionRequest) 
 	require.NoError(t, err)
 }
 
+func (c *ConnectionClient) Drop(t *testing.T, id sdk.AccountObjectIdentifier) error {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Drop(ctx, sdk.NewDropConnectionRequest(id).WithIfExists(true))
+}
+
 func (c *ConnectionClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropConnectionRequest(id).WithIfExists(true))
-		require.NoError(t, err)
+		require.Eventually(t, func() bool {
+			err := c.client().Drop(ctx, sdk.NewDropConnectionRequest(id).WithIfExists(true))
+			if err != nil {
+				t.Logf("drop connection failed: %s", err)
+				return false
+			}
+			return true
+		}, 10*time.Second, time.Second)
 	}
 }
 

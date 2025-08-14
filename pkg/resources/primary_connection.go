@@ -131,7 +131,7 @@ func ReadContextPrimaryConnection(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	connection, err := client.Connections.ShowByID(ctx, id)
+	connection, err := client.Connections.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
