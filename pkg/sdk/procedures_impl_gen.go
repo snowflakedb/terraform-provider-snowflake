@@ -2,13 +2,17 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Procedures = (*procedures)(nil)
+var (
+	_ Procedures                      = (*procedures)(nil)
+	_ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
+	_ convertibleRow[Procedure]       = new(procedureRow)
+)
 
 type procedures struct {
 	client *Client
@@ -59,8 +63,7 @@ func (v *procedures) Show(ctx context.Context, request *ShowProcedureRequest) ([
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[procedureRow, Procedure](dbRows)
-	return resultList, nil
+	return convertRows[procedureRow, Procedure](dbRows)
 }
 
 func (v *procedures) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Procedure, error) {
@@ -86,7 +89,7 @@ func (v *procedures) Describe(ctx context.Context, id SchemaObjectIdentifierWith
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[procedureDetailRow, ProcedureDetail](rows), nil
+	return convertRows[procedureDetailRow, ProcedureDetail](rows)
 }
 
 func (v *procedures) Call(ctx context.Context, request *CallProcedureRequest) error {
@@ -488,7 +491,7 @@ func (r *ShowProcedureRequest) toOpts() *ShowProcedureOptions {
 	return opts
 }
 
-func (r procedureRow) convert() *Procedure {
+func (r procedureRow) convert() (*Procedure, error) {
 	e := &Procedure{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -509,7 +512,7 @@ func (r procedureRow) convert() *Procedure {
 	e.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
 	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
 	if err != nil {
-		log.Printf("[DEBUG] failed to parse procedure arguments, err = %s", err)
+		return nil, fmt.Errorf("failed to parse procedure arguments: %w", err)
 	} else {
 		e.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
 			return DataType(a.ArgType)
@@ -518,7 +521,7 @@ func (r procedureRow) convert() *Procedure {
 	if r.IsSecure.Valid {
 		e.IsSecure = r.IsSecure.String == "Y"
 	}
-	return e
+	return e, nil
 }
 
 func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
@@ -528,14 +531,14 @@ func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
 	return opts
 }
 
-func (r procedureDetailRow) convert() *ProcedureDetail {
+func (r procedureDetailRow) convert() (*ProcedureDetail, error) {
 	e := &ProcedureDetail{
 		Property: r.Property,
 	}
 	if r.Value.Valid && r.Value.String != "null" {
 		e.Value = String(r.Value.String)
 	}
-	return e
+	return e, nil
 }
 
 func (r *CallProcedureRequest) toOpts() *CallProcedureOptions {

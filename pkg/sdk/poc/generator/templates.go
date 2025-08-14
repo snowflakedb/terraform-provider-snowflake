@@ -63,6 +63,12 @@ var (
 	//go:embed templates/sub_templates/convert.tmpl
 	convertTemplateContent string
 
+	//go:embed templates/sub_templates/convert_guard.tmpl
+	convertGuardTemplateContent string
+
+	//go:embed templates/sub_templates/convert_guards.tmpl
+	convertGuardsTemplateContent string
+
 	//go:embed templates/sub_templates/implementation_mappings.tmpl
 	implementationMappingsTemplateContent string
 
@@ -86,6 +92,8 @@ func init() {
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
 	subTemplates, _ = subTemplates.New("convert").Parse(convertTemplateContent)
+	subTemplates, _ = subTemplates.New("convertGuard").Parse(convertGuardTemplateContent)
+	subTemplates, _ = subTemplates.New("convertGuards").Parse(convertGuardsTemplateContent)
 	subTemplates, _ = subTemplates.New("implementationMappings").Parse(implementationMappingsTemplateContent)
 	subTemplates, _ = subTemplates.New("implementationFunctions").Parse(implementationFunctionsTemplateContent)
 	subTemplates, _ = subTemplates.New("validationTest").Parse(validationTestTemplateContent)

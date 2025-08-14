@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Applications = (*applications)(nil)
+var (
+	_ Applications                        = (*applications)(nil)
+	_ convertibleRow[Application]         = new(applicationRow)
+	_ convertibleRow[ApplicationProperty] = new(applicationPropertyRow)
+)
 
 type applications struct {
 	client *Client
@@ -37,8 +41,7 @@ func (v *applications) Show(ctx context.Context, request *ShowApplicationRequest
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[applicationRow, Application](dbRows)
-	return resultList, nil
+	return convertRows[applicationRow, Application](dbRows)
 }
 
 func (v *applications) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Application, error) {
@@ -63,7 +66,7 @@ func (v *applications) Describe(ctx context.Context, id AccountObjectIdentifier)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[applicationPropertyRow, ApplicationProperty](rows), nil
+	return convertRows[applicationPropertyRow, ApplicationProperty](rows)
 }
 
 func (r *CreateApplicationRequest) toOpts() *CreateApplicationOptions {
@@ -155,7 +158,7 @@ func (r *ShowApplicationRequest) toOpts() *ShowApplicationOptions {
 	return opts
 }
 
-func (r applicationRow) convert() *Application {
+func (r applicationRow) convert() (*Application, error) {
 	return &Application{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -170,7 +173,7 @@ func (r applicationRow) convert() *Application {
 		Patch:         r.Patch,
 		Options:       r.Options,
 		RetentionTime: r.RetentionTime,
-	}
+	}, nil
 }
 
 func (r *DescribeApplicationRequest) toOpts() *DescribeApplicationOptions {
@@ -180,12 +183,12 @@ func (r *DescribeApplicationRequest) toOpts() *DescribeApplicationOptions {
 	return opts
 }
 
-func (r applicationPropertyRow) convert() *ApplicationProperty {
+func (r applicationPropertyRow) convert() (*ApplicationProperty, error) {
 	e := &ApplicationProperty{
 		Property: r.Property,
 	}
 	if r.Value.Valid {
 		e.Value = r.Value.String
 	}
-	return e
+	return e, nil
 }

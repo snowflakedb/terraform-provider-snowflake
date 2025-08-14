@@ -6,7 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ DatabaseRoles = (*databaseRoles)(nil)
+var (
+	_ DatabaseRoles                = (*databaseRoles)(nil)
+	_ convertibleRow[DatabaseRole] = new(databaseRoleDBRow)
+)
 
 type databaseRoles struct {
 	client *Client
@@ -38,7 +41,10 @@ func (v *databaseRoles) Show(ctx context.Context, request *ShowDatabaseRoleReque
 		return nil, err
 	}
 
-	resultList := convertRows[databaseRoleDBRow, DatabaseRole](dbRows)
+	resultList, err := convertRows[databaseRoleDBRow, DatabaseRole](dbRows)
+	if err != nil {
+		return nil, err
+	}
 
 	for i := range resultList {
 		resultList[i].DatabaseName = request.database.name

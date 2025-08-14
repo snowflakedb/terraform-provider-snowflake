@@ -6,7 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ OrganizationAccounts = (*organizationAccounts)(nil)
+var (
+	_ OrganizationAccounts                = (*organizationAccounts)(nil)
+	_ convertibleRow[OrganizationAccount] = new(organizationAccountDbRow)
+)
 
 type organizationAccounts struct {
 	client *Client
@@ -28,8 +31,7 @@ func (v *organizationAccounts) Show(ctx context.Context, request *ShowOrganizati
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[organizationAccountDbRow, OrganizationAccount](dbRows)
-	return resultList, nil
+	return convertRows[organizationAccountDbRow, OrganizationAccount](dbRows)
 }
 
 func (v *organizationAccounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error) {
@@ -107,7 +109,7 @@ func (r *ShowOrganizationAccountRequest) toOpts() *ShowOrganizationAccountOption
 	return opts
 }
 
-func (r organizationAccountDbRow) convert() *OrganizationAccount {
+func (r organizationAccountDbRow) convert() (*OrganizationAccount, error) {
 	oa := &OrganizationAccount{
 		OrganizationName:                     r.OrganizationName,
 		AccountName:                          r.AccountName,
@@ -132,5 +134,5 @@ func (r organizationAccountDbRow) convert() *OrganizationAccount {
 	mapNullString(&oa.OrganizationOldUrl, r.OrganizationOldUrl)
 	mapNullString(&oa.OrganizationOldUrlSavedOn, r.OrganizationOldUrlSavedOn)
 	mapNullString(&oa.OrganizationOldUrlLastUsed, r.OrganizationOldUrlLastUsed)
-	return oa
+	return oa, nil
 }

@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Secrets = (*secrets)(nil)
+var (
+	_ Secrets                       = (*secrets)(nil)
+	_ convertibleRow[Secret]        = new(secretDBRow)
+	_ convertibleRow[SecretDetails] = new(secretDetailsDBRow)
+)
 
 type secrets struct {
 	client *Client
@@ -52,8 +56,7 @@ func (v *secrets) Show(ctx context.Context, request *ShowSecretRequest) ([]Secre
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[secretDBRow, Secret](dbRows)
-	return resultList, nil
+	return convertRows[secretDBRow, Secret](dbRows)
 }
 
 func (v *secrets) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Secret, error) {
@@ -79,7 +82,7 @@ func (v *secrets) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Sec
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateWithOAuthClientCredentialsFlowSecretRequest) toOpts() *CreateWithOAuthClientCredentialsFlowSecretOptions {
@@ -207,7 +210,7 @@ func (r *ShowSecretRequest) toOpts() *ShowSecretOptions {
 	return opts
 }
 
-func (r secretDBRow) convert() *Secret {
+func (r secretDBRow) convert() (*Secret, error) {
 	s := &Secret{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -223,7 +226,7 @@ func (r secretDBRow) convert() *Secret {
 	if r.OauthScopes.Valid {
 		s.OauthScopes = ParseCommaSeparatedStringArray(r.OauthScopes.String, false)
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeSecretRequest) toOpts() *DescribeSecretOptions {
@@ -233,7 +236,7 @@ func (r *DescribeSecretRequest) toOpts() *DescribeSecretOptions {
 	return opts
 }
 
-func (r secretDetailsDBRow) convert() *SecretDetails {
+func (r secretDetailsDBRow) convert() (*SecretDetails, error) {
 	s := &SecretDetails{
 		CreatedOn:                   r.CreatedOn,
 		Name:                        r.Name,
@@ -256,5 +259,5 @@ func (r secretDetailsDBRow) convert() *SecretDetails {
 	if r.IntegrationName.Valid {
 		s.IntegrationName = String(r.IntegrationName.String)
 	}
-	return s
+	return s, nil
 }
