@@ -7,6 +7,8 @@ import (
 )
 
 var _ Applications = (*applications)(nil)
+var _ convertibleRow[Application] = new(applicationRow)
+var _ convertibleRow[ApplicationProperty] = new(applicationPropertyRow)
 
 type applications struct {
 	client *Client
@@ -154,7 +156,7 @@ func (r *ShowApplicationRequest) toOpts() *ShowApplicationOptions {
 	return opts
 }
 
-func (r applicationRow) convert() *Application {
+func (r applicationRow) convertErr() (*Application, error) {
 	return &Application{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -169,7 +171,7 @@ func (r applicationRow) convert() *Application {
 		Patch:         r.Patch,
 		Options:       r.Options,
 		RetentionTime: r.RetentionTime,
-	}
+	}, nil
 }
 
 func (r *DescribeApplicationRequest) toOpts() *DescribeApplicationOptions {
@@ -179,12 +181,12 @@ func (r *DescribeApplicationRequest) toOpts() *DescribeApplicationOptions {
 	return opts
 }
 
-func (r applicationPropertyRow) convert() *ApplicationProperty {
+func (r applicationPropertyRow) convertErr() (*ApplicationProperty, error) {
 	e := &ApplicationProperty{
 		Property: r.Property,
 	}
 	if r.Value.Valid {
 		e.Value = r.Value.String
 	}
-	return e
+	return e, nil
 }

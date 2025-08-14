@@ -7,6 +7,7 @@ import (
 )
 
 var _ ManagedAccounts = (*managedAccounts)(nil)
+var _ convertibleRow[ManagedAccount] = new(managedAccountDBRow)
 
 type managedAccounts struct {
 	client *Client
@@ -76,7 +77,7 @@ func (r *ShowManagedAccountRequest) toOpts() *ShowManagedAccountOptions {
 	return opts
 }
 
-func (r managedAccountDBRow) convert() *ManagedAccount {
+func (r managedAccountDBRow) convertErr() (*ManagedAccount, error) {
 	managedAccount := &ManagedAccount{
 		Cloud:             r.Cloud,
 		Region:            r.Region,
@@ -107,5 +108,5 @@ func (r managedAccountDBRow) convert() *ManagedAccount {
 		managedAccount.Comment = &r.Comment.String
 	}
 
-	return managedAccount
+	return managedAccount, nil
 }

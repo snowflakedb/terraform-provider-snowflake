@@ -7,6 +7,8 @@ import (
 )
 
 var _ DynamicTables = (*dynamicTables)(nil)
+var _ convertibleRow[DynamicTable] = new(dynamicTableRow)
+var _ convertibleRow[DynamicTableDetails] = new(dynamicTableDetailsRow)
 
 type dynamicTables struct {
 	client *Client
@@ -37,7 +39,7 @@ func (v *dynamicTables) Describe(ctx context.Context, request *DescribeDynamicTa
 	if err != nil {
 		return nil, err
 	}
-	return row.convert(), nil
+	return row.convertErr()
 }
 
 func (v *dynamicTables) Show(ctx context.Context, request *ShowDynamicTableRequest) ([]DynamicTable, error) {

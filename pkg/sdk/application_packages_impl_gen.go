@@ -7,6 +7,7 @@ import (
 )
 
 var _ ApplicationPackages = (*applicationPackages)(nil)
+var _ convertibleRow[ApplicationPackage] = new(applicationPackageRow)
 
 type applicationPackages struct {
 	client *Client
@@ -159,7 +160,7 @@ func (r *ShowApplicationPackageRequest) toOpts() *ShowApplicationPackageOptions 
 	return opts
 }
 
-func (r applicationPackageRow) convert() *ApplicationPackage {
+func (r applicationPackageRow) convertErr() (*ApplicationPackage, error) {
 	e := &ApplicationPackage{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -177,5 +178,5 @@ func (r applicationPackageRow) convert() *ApplicationPackage {
 	if r.ApplicationClass.Valid {
 		e.ApplicationClass = r.ApplicationClass.String
 	}
-	return e
+	return e, nil
 }

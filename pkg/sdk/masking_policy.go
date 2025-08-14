@@ -13,6 +13,7 @@ import (
 )
 
 var _ MaskingPolicies = (*maskingPolicies)(nil)
+var _ convertibleRow[MaskingPolicy] = new(maskingPolicyDBRow)
 
 var (
 	_ validatable = new(CreateMaskingPolicyOptions)
@@ -287,12 +288,10 @@ type maskingPolicyDBRow struct {
 	Options       string    `db:"options"`
 }
 
-func (row maskingPolicyDBRow) convert() *MaskingPolicy {
+func (row maskingPolicyDBRow) convertErr() (*MaskingPolicy, error) {
 	options, err := ParseMaskingPolicyOptions(row.Options)
 	if err != nil {
-		log.Printf("[DEBUG] converting masking policy row: error unmarshaling options: %v", err)
-		log.Printf("[DEBUG] setting exempt_other_policies = false")
-		options.ExemptOtherPolicies = false
+		return nil, fmt.Errorf("converting masking policy row: error unmarshaling options: %w", err)
 	}
 	return &MaskingPolicy{
 		CreatedOn:           row.CreatedOn,
@@ -304,7 +303,7 @@ func (row maskingPolicyDBRow) convert() *MaskingPolicy {
 		Comment:             row.Comment,
 		ExemptOtherPolicies: options.ExemptOtherPolicies,
 		OwnerRoleType:       row.OwnerRoleType,
-	}
+	}, nil
 }
 
 // List all the masking policies by pattern.

@@ -16,6 +16,8 @@ var (
 	_ validatable = new(DropShareOptions)
 	_ validatable = new(ShowShareOptions)
 	_ validatable = new(describeShareOptions)
+
+	_ convertibleRow[Share] = new(shareRow)
 )
 
 type Shares interface {
@@ -76,7 +78,7 @@ type shareRow struct {
 	Comment      string    `db:"comment"`
 }
 
-func (r shareRow) convert() *Share {
+func (r shareRow) convertErr() (*Share, error) {
 	toAccounts := strings.Split(r.To, ",")
 	var to []AccountIdentifier
 	if len(toAccounts) != 0 {
@@ -103,7 +105,7 @@ func (r shareRow) convert() *Share {
 		To:           to,
 		Owner:        r.Owner,
 		Comment:      r.Comment,
-	}
+	}, nil
 }
 
 // CreateShareOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-share.

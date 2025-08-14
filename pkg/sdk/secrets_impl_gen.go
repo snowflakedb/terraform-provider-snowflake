@@ -7,6 +7,8 @@ import (
 )
 
 var _ Secrets = (*secrets)(nil)
+var _ convertibleRow[Secret] = new(secretDBRow)
+var _ convertibleRow[SecretDetails] = new(secretDetailsDBRow)
 
 type secrets struct {
 	client *Client
@@ -78,7 +80,7 @@ func (v *secrets) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Sec
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (r *CreateWithOAuthClientCredentialsFlowSecretRequest) toOpts() *CreateWithOAuthClientCredentialsFlowSecretOptions {
@@ -206,7 +208,7 @@ func (r *ShowSecretRequest) toOpts() *ShowSecretOptions {
 	return opts
 }
 
-func (r secretDBRow) convert() *Secret {
+func (r secretDBRow) convertErr() (*Secret, error) {
 	s := &Secret{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -222,7 +224,7 @@ func (r secretDBRow) convert() *Secret {
 	if r.OauthScopes.Valid {
 		s.OauthScopes = ParseCommaSeparatedStringArray(r.OauthScopes.String, false)
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeSecretRequest) toOpts() *DescribeSecretOptions {
@@ -232,7 +234,7 @@ func (r *DescribeSecretRequest) toOpts() *DescribeSecretOptions {
 	return opts
 }
 
-func (r secretDetailsDBRow) convert() *SecretDetails {
+func (r secretDetailsDBRow) convertErr() (*SecretDetails, error) {
 	s := &SecretDetails{
 		CreatedOn:                   r.CreatedOn,
 		Name:                        r.Name,
@@ -255,5 +257,5 @@ func (r secretDetailsDBRow) convert() *SecretDetails {
 	if r.IntegrationName.Valid {
 		s.IntegrationName = String(r.IntegrationName.String)
 	}
-	return s
+	return s, nil
 }

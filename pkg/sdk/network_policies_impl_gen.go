@@ -7,6 +7,8 @@ import (
 )
 
 var _ NetworkPolicies = (*networkPolicies)(nil)
+var _ convertibleRow[NetworkPolicyProperty] = new(describeNetworkPolicyDBRow)
+var _ convertibleRow[NetworkPolicy] = new(showNetworkPolicyDBRow)
 
 type networkPolicies struct {
 	client *Client
@@ -173,7 +175,7 @@ func (r *ShowNetworkPolicyRequest) toOpts() *ShowNetworkPolicyOptions {
 	return opts
 }
 
-func (r showNetworkPolicyDBRow) convert() *NetworkPolicy {
+func (r showNetworkPolicyDBRow) convertErr() (*NetworkPolicy, error) {
 	return &NetworkPolicy{
 		CreatedOn:                    r.CreatedOn,
 		Name:                         r.Name,
@@ -182,7 +184,7 @@ func (r showNetworkPolicyDBRow) convert() *NetworkPolicy {
 		EntriesInBlockedIpList:       r.EntriesInBlockedIpList,
 		EntriesInAllowedNetworkRules: r.EntriesInAllowedNetworkRules,
 		EntriesInBlockedNetworkRules: r.EntriesInBlockedNetworkRules,
-	}
+	}, nil
 }
 
 func (r *DescribeNetworkPolicyRequest) toOpts() *DescribeNetworkPolicyOptions {
@@ -192,9 +194,9 @@ func (r *DescribeNetworkPolicyRequest) toOpts() *DescribeNetworkPolicyOptions {
 	return opts
 }
 
-func (r describeNetworkPolicyDBRow) convert() *NetworkPolicyProperty {
+func (r describeNetworkPolicyDBRow) convertErr() (*NetworkPolicyProperty, error) {
 	return &NetworkPolicyProperty{
 		Name:  r.Name,
 		Value: r.Value,
-	}
+	}, nil
 }

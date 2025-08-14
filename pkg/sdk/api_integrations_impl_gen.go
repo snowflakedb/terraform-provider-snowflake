@@ -7,6 +7,8 @@ import (
 )
 
 var _ ApiIntegrations = (*apiIntegrations)(nil)
+var _ convertibleRow[ApiIntegration] = new(showApiIntegrationsDbRow)
+var _ convertibleRow[ApiIntegrationProperty] = new(descApiIntegrationsDbRow)
 
 type apiIntegrations struct {
 	client *Client
@@ -158,7 +160,7 @@ func (r *ShowApiIntegrationRequest) toOpts() *ShowApiIntegrationOptions {
 	return opts
 }
 
-func (r showApiIntegrationsDbRow) convert() *ApiIntegration {
+func (r showApiIntegrationsDbRow) convertErr() (*ApiIntegration, error) {
 	s := &ApiIntegration{
 		Name:      r.Name,
 		ApiType:   r.Type,
@@ -169,7 +171,7 @@ func (r showApiIntegrationsDbRow) convert() *ApiIntegration {
 	if r.Comment.Valid {
 		s.Comment = r.Comment.String
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions {
@@ -179,11 +181,11 @@ func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions 
 	return opts
 }
 
-func (r descApiIntegrationsDbRow) convert() *ApiIntegrationProperty {
+func (r descApiIntegrationsDbRow) convertErr() (*ApiIntegrationProperty, error) {
 	return &ApiIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }

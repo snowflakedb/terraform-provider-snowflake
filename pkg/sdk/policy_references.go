@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-var _ convertibleRowDeprecated[PolicyReference] = new(policyReferenceDBRow)
-
 type PolicyReferences interface {
 	GetForEntity(ctx context.Context, request *GetForEntityPolicyReferenceRequest) ([]PolicyReference, error)
 }
@@ -116,7 +114,7 @@ type policyReferenceDBRow struct {
 	PolicyStatus      sql.NullString `db:"POLICY_STATUS"`
 }
 
-func (row policyReferenceDBRow) convert() *PolicyReference {
+func (row policyReferenceDBRow) convertErr() (*PolicyReference, error) {
 	policyReference := PolicyReference{
 		PolicyName:      row.PolicyName,
 		PolicyKind:      PolicyKind(row.PolicyKind),
@@ -153,5 +151,5 @@ func (row policyReferenceDBRow) convert() *PolicyReference {
 	if row.PolicyStatus.Valid {
 		policyReference.PolicyStatus = &row.PolicyStatus.String
 	}
-	return &policyReference
+	return &policyReference, nil
 }

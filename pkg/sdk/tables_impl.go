@@ -7,6 +7,9 @@ import (
 )
 
 var _ Tables = (*tables)(nil)
+var _ convertibleRow[TableColumnDetails] = new(tableColumnDetailsRow)
+var _ convertibleRow[TableStageDetails] = new(tableStageDetailsRow)
+var _ convertibleRow[Table] = new(tableDBRow)
 
 var (
 	_ optionsProvider[createTableOptions]              = new(CreateTableRequest)

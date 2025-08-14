@@ -2,12 +2,13 @@ package sdk
 
 import (
 	"context"
-	"log"
-
+	"fmt"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ Services = (*services)(nil)
+var _ convertibleRow[Service] = new(servicesRow)
+var _ convertibleRow[ServiceDetails] = new(serviceDescRow)
 
 type services struct {
 	client *Client
@@ -69,7 +70,7 @@ func (v *services) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Se
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
@@ -229,7 +230,7 @@ func (r *ShowServiceRequest) toOpts() *ShowServiceOptions {
 	return opts
 }
 
-func (r servicesRow) convert() *Service {
+func (r servicesRow) convertErr() (*Service, error) {
 	service := &Service{
 		Name:              r.Name,
 		DatabaseName:      r.DatabaseName,
@@ -253,7 +254,7 @@ func (r servicesRow) convert() *Service {
 	}
 	serviceStatus, err := ToServiceStatus(r.Status)
 	if err != nil {
-		log.Printf("[DEBUG] error converting service status: %v", err)
+		return nil, fmt.Errorf("error converting service status: %w", err)
 	} else {
 		service.Status = serviceStatus
 	}
@@ -268,14 +269,14 @@ func (r servicesRow) convert() *Service {
 	}
 	computePoolId, err := ParseAccountObjectIdentifier(r.ComputePool)
 	if err != nil {
-		log.Printf("[DEBUG] failed to parse compute pool in service: %v", err)
+		return nil, fmt.Errorf("failed to parse compute pool in service: %w", err)
 	} else {
 		service.ComputePool = computePoolId
 	}
 	if r.QueryWarehouse.Valid {
 		id, err := ParseAccountObjectIdentifier(r.QueryWarehouse.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse query warehouse in service: %v", err)
+			return nil, fmt.Errorf("failed to parse query warehouse in service: %w", err)
 		} else {
 			service.QueryWarehouse = &id
 		}
@@ -289,12 +290,12 @@ func (r servicesRow) convert() *Service {
 	if r.ExternalAccessIntegrations.Valid {
 		eaiIds, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse external access integrations in service: %v", err)
+			return nil, fmt.Errorf("failed to parse external access integrations in service: %w", err)
 		} else {
 			service.ExternalAccessIntegrations = eaiIds
 		}
 	}
-	return service
+	return service, nil
 }
 
 func (r *DescribeServiceRequest) toOpts() *DescribeServiceOptions {
@@ -304,7 +305,7 @@ func (r *DescribeServiceRequest) toOpts() *DescribeServiceOptions {
 	return opts
 }
 
-func (r serviceDescRow) convert() *ServiceDetails {
+func (r serviceDescRow) convertErr() (*ServiceDetails, error) {
 	service := &ServiceDetails{
 		Name:              r.Name,
 		DatabaseName:      r.DatabaseName,
@@ -329,7 +330,7 @@ func (r serviceDescRow) convert() *ServiceDetails {
 	}
 	serviceStatus, err := ToServiceStatus(r.Status)
 	if err != nil {
-		log.Printf("[DEBUG] error converting service status: %v", err)
+		return nil, fmt.Errorf("error converting service status: %w", err)
 	} else {
 		service.Status = serviceStatus
 	}
@@ -344,14 +345,14 @@ func (r serviceDescRow) convert() *ServiceDetails {
 	}
 	computePoolId, err := ParseAccountObjectIdentifier(r.ComputePool)
 	if err != nil {
-		log.Printf("[DEBUG] failed to parse compute pool in service: %v", err)
+		return nil, fmt.Errorf("failed to parse compute pool in service: %w", err)
 	} else {
 		service.ComputePool = computePoolId
 	}
 	if r.QueryWarehouse.Valid {
 		id, err := ParseAccountObjectIdentifier(r.QueryWarehouse.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse query warehouse in service: %v", err)
+			return nil, fmt.Errorf("failed to parse query warehouse in service: %w", err)
 		} else {
 			service.QueryWarehouse = &id
 		}
@@ -365,10 +366,10 @@ func (r serviceDescRow) convert() *ServiceDetails {
 	if r.ExternalAccessIntegrations.Valid {
 		eaiIds, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse external access integrations in service: %v", err)
+			return nil, fmt.Errorf("failed to parse external access integrations in service: %w", err)
 		} else {
 			service.ExternalAccessIntegrations = eaiIds
 		}
 	}
-	return service
+	return service, nil
 }

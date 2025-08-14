@@ -7,6 +7,7 @@ import (
 )
 
 var _ Tags = (*tags)(nil)
+var _ convertibleRow[Tag] = new(tagRow)
 
 type tags struct {
 	client *Client

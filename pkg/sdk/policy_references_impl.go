@@ -3,6 +3,7 @@ package sdk
 import "context"
 
 var _ PolicyReferences = new(policyReference)
+var _ convertibleRow[PolicyReference] = new(policyReferenceDBRow)
 
 type policyReference struct {
 	client *Client

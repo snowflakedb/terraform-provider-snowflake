@@ -17,6 +17,8 @@ var (
 	_ validatable = new(DropUserOptions)
 	_ validatable = new(describeUserOptions)
 	_ validatable = new(ShowUserOptions)
+
+	_ convertibleRow[User] = new(userDBRow)
 )
 
 type Users interface {
@@ -124,7 +126,7 @@ type userDBRow struct {
 	HasMfa                sql.NullBool   `db:"has_mfa"`
 }
 
-func (row userDBRow) convert() *User {
+func (row userDBRow) convertErr() (*User, error) {
 	user := &User{
 		Name:      row.Name,
 		CreatedOn: row.CreatedOn,
@@ -197,7 +199,7 @@ func (row userDBRow) convert() *User {
 	if row.HasMfa.Valid {
 		user.HasMfa = row.HasMfa.Bool
 	}
-	return user
+	return user, nil
 }
 
 func (v *User) ID() AccountObjectIdentifier {

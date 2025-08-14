@@ -7,6 +7,8 @@ import (
 )
 
 var _ SecurityIntegrations = (*securityIntegrations)(nil)
+var _ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
+var _ convertibleRow[SecurityIntegration] = new(securityIntegrationShowRow)
 
 type securityIntegrations struct {
 	client *Client
@@ -630,13 +632,13 @@ func (r *DescribeSecurityIntegrationRequest) toOpts() *DescribeSecurityIntegrati
 	return opts
 }
 
-func (r securityIntegrationDescRow) convert() *SecurityIntegrationProperty {
+func (r securityIntegrationDescRow) convertErr() (*SecurityIntegrationProperty, error) {
 	return &SecurityIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }
 
 func (r *ShowSecurityIntegrationRequest) toOpts() *ShowSecurityIntegrationOptions {
@@ -646,7 +648,7 @@ func (r *ShowSecurityIntegrationRequest) toOpts() *ShowSecurityIntegrationOption
 	return opts
 }
 
-func (r securityIntegrationShowRow) convert() *SecurityIntegration {
+func (r securityIntegrationShowRow) convertErr() (*SecurityIntegration, error) {
 	s := &SecurityIntegration{
 		Name:            r.Name,
 		IntegrationType: r.Type,
@@ -657,5 +659,5 @@ func (r securityIntegrationShowRow) convert() *SecurityIntegration {
 	if r.Comment.Valid {
 		s.Comment = r.Comment.String
 	}
-	return s
+	return s, nil
 }

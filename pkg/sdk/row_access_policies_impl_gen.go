@@ -2,12 +2,14 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ RowAccessPolicies = (*rowAccessPolicies)(nil)
+var _ convertibleRow[RowAccessPolicy] = new(rowAccessPolicyDBRow)
+var _ convertibleRow[RowAccessPolicyDescription] = new(describeRowAccessPolicyDBRow)
 
 type rowAccessPolicies struct {
 	client *Client
@@ -64,7 +66,7 @@ func (v *rowAccessPolicies) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (r *CreateRowAccessPolicyRequest) toOpts() *CreateRowAccessPolicyOptions {
@@ -116,7 +118,7 @@ func (r *ShowRowAccessPolicyRequest) toOpts() *ShowRowAccessPolicyOptions {
 	return opts
 }
 
-func (r rowAccessPolicyDBRow) convert() *RowAccessPolicy {
+func (r rowAccessPolicyDBRow) convertErr() (*RowAccessPolicy, error) {
 	rowAccessPolicy := &RowAccessPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -130,7 +132,7 @@ func (r rowAccessPolicyDBRow) convert() *RowAccessPolicy {
 	if r.Comment.Valid {
 		rowAccessPolicy.Comment = r.Comment.String
 	}
-	return rowAccessPolicy
+	return rowAccessPolicy, nil
 }
 
 func (r *DescribeRowAccessPolicyRequest) toOpts() *DescribeRowAccessPolicyOptions {
@@ -140,7 +142,7 @@ func (r *DescribeRowAccessPolicyRequest) toOpts() *DescribeRowAccessPolicyOption
 	return opts
 }
 
-func (r describeRowAccessPolicyDBRow) convert() *RowAccessPolicyDescription {
+func (r describeRowAccessPolicyDBRow) convertErr() (*RowAccessPolicyDescription, error) {
 	rowAccessPolicyDescription := &RowAccessPolicyDescription{
 		Name:       r.Name,
 		ReturnType: r.ReturnType,
@@ -148,9 +150,9 @@ func (r describeRowAccessPolicyDBRow) convert() *RowAccessPolicyDescription {
 	}
 	signature, err := ParseTableColumnSignature(r.Signature)
 	if err != nil {
-		log.Printf("[DEBUG] parsing table column signature: %v", err)
+		return nil, fmt.Errorf("parsing table column signature: %w", err)
 	} else {
 		rowAccessPolicyDescription.Signature = signature
 	}
-	return rowAccessPolicyDescription
+	return rowAccessPolicyDescription, nil
 }

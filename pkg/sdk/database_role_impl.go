@@ -7,6 +7,7 @@ import (
 )
 
 var _ DatabaseRoles = (*databaseRoles)(nil)
+var _ convertibleRow[DatabaseRole] = new(databaseRoleDBRow)
 
 type databaseRoles struct {
 	client *Client

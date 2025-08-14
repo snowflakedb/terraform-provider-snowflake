@@ -10,15 +10,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/snowflakedb/gosnowflake"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/snowflakedb/gosnowflake"
 )
 
 var (
 	_ validatable = new(CreateAccountOptions)
 	_ validatable = new(AlterAccountOptions)
 	_ validatable = new(ShowAccountOptions)
+
+	_ convertibleRow[Account] = new(accountDBRow)
 )
 
 type Accounts interface {
@@ -461,7 +462,7 @@ type accountDBRow struct {
 	OrganizationUrlExpirationOn sql.NullTime   `db:"organization_URL_expiration_on"`
 }
 
-func (row accountDBRow) convert() *Account {
+func (row accountDBRow) convertErr() (*Account, error) {
 	acc := &Account{
 		OrganizationName:      row.OrganizationName,
 		AccountName:           row.AccountName,
@@ -541,7 +542,7 @@ func (row accountDBRow) convert() *Account {
 	if row.OrganizationUrlExpirationOn.Valid {
 		acc.OrganizationUrlExpirationOn = &row.OrganizationUrlExpirationOn.Time
 	}
-	return acc
+	return acc, nil
 }
 
 func (c *accounts) Show(ctx context.Context, opts *ShowAccountOptions) ([]Account, error) {

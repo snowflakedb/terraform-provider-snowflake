@@ -2,13 +2,15 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ ExternalFunctions = (*externalFunctions)(nil)
+var _ convertibleRow[ExternalFunctionProperty] = new(externalFunctionPropertyRow)
+var _ convertibleRow[ExternalFunction] = new(externalFunctionRow)
 
 type externalFunctions struct {
 	client *Client
@@ -152,7 +154,7 @@ func (r *ShowExternalFunctionRequest) toOpts() *ShowExternalFunctionOptions {
 	return opts
 }
 
-func (r externalFunctionRow) convert() *ExternalFunction {
+func (r externalFunctionRow) convertErr() (*ExternalFunction, error) {
 	e := &ExternalFunction{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -172,7 +174,7 @@ func (r externalFunctionRow) convert() *ExternalFunction {
 	returnIndex := strings.Index(arguments, ") RETURN ")
 	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
 	if err != nil {
-		log.Printf("[DEBUG] failed to parse external function arguments, err = %s", err)
+		return nil, fmt.Errorf("failed to parse external function arguments: %w", err)
 	} else {
 		e.Arguments = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
 			return DataType(a.ArgType)
@@ -193,7 +195,7 @@ func (r externalFunctionRow) convert() *ExternalFunction {
 	if r.IsDataMetric.Valid {
 		e.IsDataMetric = r.IsDataMetric.String == "Y"
 	}
-	return e
+	return e, nil
 }
 
 func (r *DescribeExternalFunctionRequest) toOpts() *DescribeExternalFunctionOptions {
@@ -203,9 +205,9 @@ func (r *DescribeExternalFunctionRequest) toOpts() *DescribeExternalFunctionOpti
 	return opts
 }
 
-func (r externalFunctionPropertyRow) convert() *ExternalFunctionProperty {
+func (r externalFunctionPropertyRow) convertErr() (*ExternalFunctionProperty, error) {
 	return &ExternalFunctionProperty{
 		Property: r.Property,
 		Value:    r.Value,
-	}
+	}, nil
 }

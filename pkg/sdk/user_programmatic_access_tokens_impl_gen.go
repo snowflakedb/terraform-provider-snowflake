@@ -2,12 +2,15 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ UserProgrammaticAccessTokens = (*userProgrammaticAccessTokens)(nil)
+var _ convertibleRow[ProgrammaticAccessToken] = new(programmaticAccessTokenResultDBRow)
+var _ convertibleRow[AddProgrammaticAccessTokenResult] = new(addProgrammaticAccessTokenResultDBRow)
+var _ convertibleRow[RotateProgrammaticAccessTokenResult] = new(rotateProgrammaticAccessTokenResultDBRow)
 
 type userProgrammaticAccessTokens struct {
 	client *Client
@@ -19,7 +22,7 @@ func (v *userProgrammaticAccessTokens) Add(ctx context.Context, request *AddUser
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (v *userProgrammaticAccessTokens) Modify(ctx context.Context, request *ModifyUserProgrammaticAccessTokenRequest) error {
@@ -33,7 +36,7 @@ func (v *userProgrammaticAccessTokens) Rotate(ctx context.Context, request *Rota
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (v *userProgrammaticAccessTokens) Remove(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
@@ -83,11 +86,11 @@ func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAcc
 	return opts
 }
 
-func (r addProgrammaticAccessTokenResultDBRow) convert() *AddProgrammaticAccessTokenResult {
+func (r addProgrammaticAccessTokenResultDBRow) convertErr() (*AddProgrammaticAccessTokenResult, error) {
 	return &AddProgrammaticAccessTokenResult{
 		TokenName:   r.TokenName,
 		TokenSecret: r.TokenSecret,
-	}
+	}, nil
 }
 
 func (r *ModifyUserProgrammaticAccessTokenRequest) toOpts() *ModifyUserProgrammaticAccessTokenOptions {
@@ -125,12 +128,12 @@ func (r *RotateUserProgrammaticAccessTokenRequest) toOpts() *RotateUserProgramma
 	return opts
 }
 
-func (r rotateProgrammaticAccessTokenResultDBRow) convert() *RotateProgrammaticAccessTokenResult {
+func (r rotateProgrammaticAccessTokenResultDBRow) convertErr() (*RotateProgrammaticAccessTokenResult, error) {
 	return &RotateProgrammaticAccessTokenResult{
 		TokenName:        r.TokenName,
 		TokenSecret:      r.TokenSecret,
 		RotatedTokenName: r.RotatedTokenName,
-	}
+	}, nil
 }
 
 func (r *RemoveUserProgrammaticAccessTokenRequest) toOpts() *RemoveUserProgrammaticAccessTokenOptions {
@@ -149,7 +152,7 @@ func (r *ShowUserProgrammaticAccessTokenRequest) toOpts() *ShowUserProgrammaticA
 	return opts
 }
 
-func (r programmaticAccessTokenResultDBRow) convert() *ProgrammaticAccessToken {
+func (r programmaticAccessTokenResultDBRow) convertErr() (*ProgrammaticAccessToken, error) {
 	token := &ProgrammaticAccessToken{
 		Name:      r.Name,
 		ExpiresAt: r.ExpiresAt,
@@ -158,20 +161,20 @@ func (r programmaticAccessTokenResultDBRow) convert() *ProgrammaticAccessToken {
 	}
 	userName, err := ParseAccountObjectIdentifier(r.UserName)
 	if err != nil {
-		log.Println("[DEBUG] error parsing user name", err)
+		return nil, fmt.Errorf("error parsing user name: %w", err)
 	} else {
 		token.UserName = userName
 	}
 	if r.RoleRestriction != "" {
 		roleRestriction, err := ParseAccountObjectIdentifier(r.RoleRestriction)
 		if err != nil {
-			log.Println("[DEBUG] error parsing role restriction", err)
+			return nil, fmt.Errorf("error parsing role restriction: %w", err)
 		}
 		token.RoleRestriction = &roleRestriction
 	}
 	status, err := toProgrammaticAccessTokenStatus(r.Status)
 	if err != nil {
-		log.Println("[DEBUG] error parsing programmatic access token status", err)
+		return nil, fmt.Errorf("error parsing programmatic access token status: %w", err)
 	} else {
 		token.Status = status
 	}
@@ -184,5 +187,5 @@ func (r programmaticAccessTokenResultDBRow) convert() *ProgrammaticAccessToken {
 	if r.RotatedTo.Valid {
 		token.RotatedTo = &r.RotatedTo.String
 	}
-	return token
+	return token, nil
 }

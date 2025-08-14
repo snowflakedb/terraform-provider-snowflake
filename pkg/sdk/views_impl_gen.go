@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ Views = (*views)(nil)
+var _ convertibleRow[ViewDetails] = new(viewDetailsRow)
+var _ convertibleRow[View] = new(viewDBRow)
 
 type views struct {
 	client *Client
@@ -271,7 +272,7 @@ func (r *ShowViewRequest) toOpts() *ShowViewOptions {
 	return opts
 }
 
-func (r viewDBRow) convert() *View {
+func (r viewDBRow) convertErr() (*View, error) {
 	view := View{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -305,7 +306,7 @@ func (r viewDBRow) convert() *View {
 	if r.ChangeTracking.Valid {
 		view.ChangeTracking = r.ChangeTracking.String
 	}
-	return &view
+	return &view, nil
 }
 
 func (r *DescribeViewRequest) toOpts() *DescribeViewOptions {
@@ -315,7 +316,7 @@ func (r *DescribeViewRequest) toOpts() *DescribeViewOptions {
 	return opts
 }
 
-func (r viewDetailsRow) convert() *ViewDetails {
+func (r viewDetailsRow) convertErr() (*ViewDetails, error) {
 	details := &ViewDetails{
 		Name:       r.Name,
 		Type:       r.Type,
@@ -339,5 +340,5 @@ func (r viewDetailsRow) convert() *ViewDetails {
 	if r.PolicyName.Valid {
 		details.PolicyName = String(r.PolicyName.String)
 	}
-	return details
+	return details, nil
 }

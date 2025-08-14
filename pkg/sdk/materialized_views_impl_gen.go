@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ MaterializedViews = (*materializedViews)(nil)
+var _ convertibleRow[MaterializedViewDetails] = new(materializedViewDetailsRow)
+var _ convertibleRow[MaterializedView] = new(materializedViewDBRow)
 
 type materializedViews struct {
 	client *Client
@@ -163,7 +164,7 @@ func (r *ShowMaterializedViewRequest) toOpts() *ShowMaterializedViewOptions {
 	return opts
 }
 
-func (r materializedViewDBRow) convert() *MaterializedView {
+func (r materializedViewDBRow) convertErr() (*MaterializedView, error) {
 	materializedView := MaterializedView{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -201,7 +202,7 @@ func (r materializedViewDBRow) convert() *MaterializedView {
 	if r.Budget.Valid {
 		materializedView.Budget = r.Budget.String
 	}
-	return &materializedView
+	return &materializedView, nil
 }
 
 func (r *DescribeMaterializedViewRequest) toOpts() *DescribeMaterializedViewOptions {
@@ -211,7 +212,7 @@ func (r *DescribeMaterializedViewRequest) toOpts() *DescribeMaterializedViewOpti
 	return opts
 }
 
-func (r materializedViewDetailsRow) convert() *MaterializedViewDetails {
+func (r materializedViewDetailsRow) convertErr() (*MaterializedViewDetails, error) {
 	details := &MaterializedViewDetails{
 		Name:       r.Name,
 		Type:       r.Type,
@@ -232,5 +233,5 @@ func (r materializedViewDetailsRow) convert() *MaterializedViewDetails {
 	if r.Comment.Valid {
 		details.Comment = String(r.Comment.String)
 	}
-	return details
+	return details, nil
 }

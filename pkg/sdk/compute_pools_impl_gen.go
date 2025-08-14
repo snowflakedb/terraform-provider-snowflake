@@ -2,12 +2,14 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ ComputePools = (*computePools)(nil)
+var _ convertibleRow[ComputePool] = new(computePoolsRow)
+var _ convertibleRow[ComputePoolDetails] = new(computePoolDescRow)
 
 type computePools struct {
 	client *Client
@@ -70,7 +72,7 @@ func (v *computePools) Describe(ctx context.Context, id AccountObjectIdentifier)
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (r *CreateComputePoolRequest) toOpts() *CreateComputePoolOptions {
@@ -137,7 +139,7 @@ func (r *ShowComputePoolRequest) toOpts() *ShowComputePoolOptions {
 	return opts
 }
 
-func (r computePoolsRow) convert() *ComputePool {
+func (r computePoolsRow) convertErr() (*ComputePool, error) {
 	cp := &ComputePool{
 		Name:            r.Name,
 		MinNodes:        r.MinNodes,
@@ -161,24 +163,24 @@ func (r computePoolsRow) convert() *ComputePool {
 	if r.Application.Valid {
 		id, err := ParseAccountObjectIdentifier(r.Application.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse application in compute pool: %v", err)
+			return nil, fmt.Errorf("failed to parse application in compute pool: %w", err)
 		} else {
 			cp.Application = &id
 		}
 	}
 	instanceFamily, err := ToComputePoolInstanceFamily(r.InstanceFamily)
 	if err != nil {
-		log.Printf("[DEBUG] error converting compute pool instance family: %v", err)
+		return nil, fmt.Errorf("error converting compute pool instance family: %w", err)
 	} else {
 		cp.InstanceFamily = instanceFamily
 	}
 	state, err := ToComputePoolState(r.State)
 	if err != nil {
-		log.Printf("[DEBUG] error converting compute pool state: %v", err)
+		return nil, fmt.Errorf("error converting compute pool state: %w", err)
 	} else {
 		cp.State = state
 	}
-	return cp
+	return cp, err
 }
 
 func (r *DescribeComputePoolRequest) toOpts() *DescribeComputePoolOptions {
@@ -188,7 +190,7 @@ func (r *DescribeComputePoolRequest) toOpts() *DescribeComputePoolOptions {
 	return opts
 }
 
-func (r computePoolDescRow) convert() *ComputePoolDetails {
+func (r computePoolDescRow) convertErr() (*ComputePoolDetails, error) {
 	cp := &ComputePoolDetails{
 		Name:            r.Name,
 		MinNodes:        r.MinNodes,
@@ -214,22 +216,22 @@ func (r computePoolDescRow) convert() *ComputePoolDetails {
 	if r.Application.Valid {
 		id, err := ParseAccountObjectIdentifier(r.Application.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse application in compute pool: %v", err)
+			return nil, fmt.Errorf("failed to parse application in compute pool: %w", err)
 		} else {
 			cp.Application = &id
 		}
 	}
 	instanceFamily, err := ToComputePoolInstanceFamily(r.InstanceFamily)
 	if err != nil {
-		log.Printf("[DEBUG] error converting compute pool instance family: %v", err)
+		return nil, fmt.Errorf(" error converting compute pool instance family: %w", err)
 	} else {
 		cp.InstanceFamily = instanceFamily
 	}
 	state, err := ToComputePoolState(r.State)
 	if err != nil {
-		log.Printf("[DEBUG] error converting compute pool state: %v", err)
+		return nil, fmt.Errorf("error converting compute pool state: %w", err)
 	} else {
 		cp.State = state
 	}
-	return cp
+	return cp, err
 }

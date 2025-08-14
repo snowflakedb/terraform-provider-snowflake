@@ -7,6 +7,8 @@ import (
 )
 
 var _ Stages = (*stages)(nil)
+var _ convertibleRow[StageProperty] = new(stageDescRow)
+var _ convertibleRow[Stage] = new(stageShowRow)
 
 type stages struct {
 	client *Client
@@ -630,7 +632,7 @@ func (r *DescribeStageRequest) toOpts() *DescribeStageOptions {
 	return opts
 }
 
-func (r stageDescRow) convert() *StageProperty {
+func (r stageDescRow) convertErr() (*StageProperty, error) {
 	stageProp := &StageProperty{
 		Parent:  r.ParentProperty,
 		Name:    r.Property,
@@ -638,7 +640,7 @@ func (r stageDescRow) convert() *StageProperty {
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
 	}
-	return stageProp
+	return stageProp, nil
 }
 
 func (r *ShowStageRequest) toOpts() *ShowStageOptions {
@@ -649,7 +651,7 @@ func (r *ShowStageRequest) toOpts() *ShowStageOptions {
 	return opts
 }
 
-func (r stageShowRow) convert() *Stage {
+func (r stageShowRow) convertErr() (*Stage, error) {
 	stage := &Stage{
 		CreatedOn:        r.CreatedOn,
 		Name:             r.Name,
@@ -678,5 +680,5 @@ func (r stageShowRow) convert() *Stage {
 	if r.OwnerRoleType.Valid {
 		stage.OwnerRoleType = &r.OwnerRoleType.String
 	}
-	return stage
+	return stage, nil
 }

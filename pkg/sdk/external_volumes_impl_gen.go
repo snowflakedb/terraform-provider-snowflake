@@ -7,6 +7,8 @@ import (
 )
 
 var _ ExternalVolumes = (*externalVolumes)(nil)
+var _ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
+var _ convertibleRow[ExternalVolume] = new(externalVolumeShowRow)
 
 type externalVolumes struct {
 	client *Client
@@ -149,14 +151,14 @@ func (r *DescribeExternalVolumeRequest) toOpts() *DescribeExternalVolumeOptions 
 	return opts
 }
 
-func (r externalVolumeDescRow) convert() *ExternalVolumeProperty {
+func (r externalVolumeDescRow) convertErr() (*ExternalVolumeProperty, error) {
 	return &ExternalVolumeProperty{
 		Parent:  r.ParentProperty,
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }
 
 func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
@@ -166,7 +168,7 @@ func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
 	return opts
 }
 
-func (r externalVolumeShowRow) convert() *ExternalVolume {
+func (r externalVolumeShowRow) convertErr() (*ExternalVolume, error) {
 	externalVolume := ExternalVolume{
 		Name:        r.Name,
 		AllowWrites: r.AllowWrites,
@@ -176,5 +178,5 @@ func (r externalVolumeShowRow) convert() *ExternalVolume {
 		externalVolume.Comment = r.Comment.String
 	}
 
-	return &externalVolume
+	return &externalVolume, nil
 }

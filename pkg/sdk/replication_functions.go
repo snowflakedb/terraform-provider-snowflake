@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
+	"fmt"
 	"time"
 )
 
@@ -15,7 +15,7 @@ var (
 	_ validatable = new(ShowReplicationDatabasesOptions)
 )
 
-var _ convertibleRowDeprecated[ReplicationDatabase] = new(replicationDatabaseRow)
+var _ convertibleRow[ReplicationDatabase] = new(replicationDatabaseRow)
 
 type ReplicationFunctions interface {
 	ShowReplicationAccounts(ctx context.Context) ([]*ReplicationAccount, error)
@@ -91,7 +91,7 @@ type ReplicationDatabase struct {
 	AccountLocator               string
 }
 
-func (row replicationDatabaseRow) convert() *ReplicationDatabase {
+func (row replicationDatabaseRow) convertErr() (*ReplicationDatabase, error) {
 	db := &ReplicationDatabase{
 		SnowflakeRegion:  row.SnowflakeRegion,
 		CreatedOn:        row.CreatedOn,
@@ -104,7 +104,7 @@ func (row replicationDatabaseRow) convert() *ReplicationDatabase {
 	if row.PrimaryDatabase != "" {
 		primaryDatabaseId, err := ParseExternalObjectIdentifier(row.PrimaryDatabase)
 		if err != nil {
-			log.Printf("[DEBUG] unable to parse primary database identifier: %v, err = %s", row.PrimaryDatabase, err)
+			return nil, fmt.Errorf("unable to parse primary database identifier: %w", err)
 		} else {
 			db.PrimaryDatabase = &primaryDatabaseId
 		}
@@ -121,7 +121,7 @@ func (row replicationDatabaseRow) convert() *ReplicationDatabase {
 	if row.FailoverAllowedToAccounts.Valid {
 		db.FailoverAllowedToAccounts = row.FailoverAllowedToAccounts.String
 	}
-	return db
+	return db, nil
 }
 
 // ShowReplicationDatabasesOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-replication-databases.

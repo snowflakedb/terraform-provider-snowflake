@@ -5,8 +5,6 @@ import (
 	"database/sql"
 )
 
-var _ convertibleRowDeprecated[DatabaseRole] = new(databaseRoleDBRow)
-
 type DatabaseRoles interface {
 	Create(ctx context.Context, request *CreateDatabaseRoleRequest) error
 	Alter(ctx context.Context, request *AlterDatabaseRoleRequest) error
@@ -116,7 +114,7 @@ func (v DatabaseRole) ID() DatabaseObjectIdentifier {
 	return NewDatabaseObjectIdentifier(v.DatabaseName, v.Name)
 }
 
-func (row databaseRoleDBRow) convert() *DatabaseRole {
+func (row databaseRoleDBRow) convertErr() (*DatabaseRole, error) {
 	databaseRole := DatabaseRole{
 		CreatedOn:              row.CreatedOn,
 		Name:                   row.Name,
@@ -140,7 +138,7 @@ func (row databaseRoleDBRow) convert() *DatabaseRole {
 	if row.OwnerRoleType.Valid {
 		databaseRole.OwnerRoleType = row.OwnerRoleType.String
 	}
-	return &databaseRole
+	return &databaseRole, nil
 }
 
 // grantDatabaseRoleOptions is based on https://docs.snowflake.com/en/sql-reference/sql/grant-database-role.

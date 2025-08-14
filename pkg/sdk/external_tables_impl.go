@@ -7,6 +7,9 @@ import (
 )
 
 var _ ExternalTables = (*externalTables)(nil)
+var _ convertibleRow[ExternalTable] = new(externalTableRow)
+var _ convertibleRow[ExternalTableColumnDetails] = new(externalTableColumnDetailsRow)
+var _ convertibleRow[ExternalTableStageDetails] = new(externalTableStageDetailsRow)
 
 type externalTables struct {
 	client *Client

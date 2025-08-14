@@ -7,6 +7,7 @@ import (
 )
 
 var _ OrganizationAccounts = (*organizationAccounts)(nil)
+var _ convertibleRow[OrganizationAccount] = new(organizationAccountDbRow)
 
 type organizationAccounts struct {
 	client *Client
@@ -106,7 +107,7 @@ func (r *ShowOrganizationAccountRequest) toOpts() *ShowOrganizationAccountOption
 	return opts
 }
 
-func (r organizationAccountDbRow) convert() *OrganizationAccount {
+func (r organizationAccountDbRow) convertErr() (*OrganizationAccount, error) {
 	oa := &OrganizationAccount{
 		OrganizationName:                     r.OrganizationName,
 		AccountName:                          r.AccountName,
@@ -131,5 +132,5 @@ func (r organizationAccountDbRow) convert() *OrganizationAccount {
 	mapNullString(&oa.OrganizationOldUrl, r.OrganizationOldUrl)
 	mapNullString(&oa.OrganizationOldUrlSavedOn, r.OrganizationOldUrlSavedOn)
 	mapNullString(&oa.OrganizationOldUrlLastUsed, r.OrganizationOldUrlLastUsed)
-	return oa
+	return oa, nil
 }

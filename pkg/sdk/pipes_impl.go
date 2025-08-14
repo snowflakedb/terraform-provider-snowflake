@@ -7,6 +7,7 @@ import (
 )
 
 var _ Pipes = (*pipes)(nil)
+var _ convertibleRow[Pipe] = new(pipeDBRow)
 
 type pipes struct {
 	client *Client
@@ -72,5 +73,5 @@ func (v *pipes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Pipe,
 	if err != nil {
 		return nil, err
 	}
-	return pipeRow.convert(), nil
+	return pipeRow.convertErr()
 }

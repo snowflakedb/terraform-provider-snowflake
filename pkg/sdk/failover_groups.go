@@ -12,6 +12,7 @@ import (
 )
 
 var _ FailoverGroups = (*failoverGroups)(nil)
+var _ convertibleRow[FailoverGroup] = new(failoverGroupDBRow)
 
 var (
 	_ validatable = new(CreateDatabaseOptions)
@@ -433,7 +434,7 @@ type failoverGroupDBRow struct {
 	Owner                   sql.NullString `db:"owner"`
 }
 
-func (row failoverGroupDBRow) convert() *FailoverGroup {
+func (row failoverGroupDBRow) convertErr() (*FailoverGroup, error) {
 	ots := strings.Split(row.ObjectTypes, ",")
 	pluralObjectTypes := make([]PluralObjectType, 0, len(ots))
 	for _, ot := range ots {
@@ -500,7 +501,7 @@ func (row failoverGroupDBRow) convert() *FailoverGroup {
 		NextScheduledRefresh:    nextScheduledRefresh,
 		Owner:                   row.Owner.String,
 		Type:                    row.Type,
-	}
+	}, nil
 }
 
 func (v *failoverGroups) Show(ctx context.Context, opts *ShowFailoverGroupOptions) ([]FailoverGroup, error) {

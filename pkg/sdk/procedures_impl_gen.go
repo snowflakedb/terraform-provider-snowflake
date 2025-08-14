@@ -2,13 +2,15 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ Procedures = (*procedures)(nil)
+var _ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
+var _ convertibleRow[Procedure] = new(procedureRow)
 
 type procedures struct {
 	client *Client
@@ -487,7 +489,7 @@ func (r *ShowProcedureRequest) toOpts() *ShowProcedureOptions {
 	return opts
 }
 
-func (r procedureRow) convert() *Procedure {
+func (r procedureRow) convertErr() (*Procedure, error) {
 	e := &Procedure{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -508,7 +510,7 @@ func (r procedureRow) convert() *Procedure {
 	e.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
 	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
 	if err != nil {
-		log.Printf("[DEBUG] failed to parse procedure arguments, err = %s", err)
+		return nil, fmt.Errorf("failed to parse procedure arguments: %w", err)
 	} else {
 		e.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
 			return DataType(a.ArgType)
@@ -517,7 +519,7 @@ func (r procedureRow) convert() *Procedure {
 	if r.IsSecure.Valid {
 		e.IsSecure = r.IsSecure.String == "Y"
 	}
-	return e
+	return e, nil
 }
 
 func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
@@ -527,14 +529,14 @@ func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
 	return opts
 }
 
-func (r procedureDetailRow) convert() *ProcedureDetail {
+func (r procedureDetailRow) convertErr() (*ProcedureDetail, error) {
 	e := &ProcedureDetail{
 		Property: r.Property,
 	}
 	if r.Value.Valid && r.Value.String != "null" {
 		e.Value = String(r.Value.String)
 	}
-	return e
+	return e, nil
 }
 
 func (r *CallProcedureRequest) toOpts() *CallProcedureOptions {

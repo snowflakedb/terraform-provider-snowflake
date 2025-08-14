@@ -7,6 +7,8 @@ import (
 )
 
 var _ Streamlits = (*streamlits)(nil)
+var _ convertibleRow[Streamlit] = new(streamlitsRow)
+var _ convertibleRow[StreamlitDetail] = new(streamlitsDetailRow)
 
 type streamlits struct {
 	client *Client
@@ -63,7 +65,7 @@ func (v *streamlits) Describe(ctx context.Context, id SchemaObjectIdentifier) (*
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (r *CreateStreamlitRequest) toOpts() *CreateStreamlitOptions {
@@ -141,7 +143,7 @@ func (r *ShowStreamlitRequest) toOpts() *ShowStreamlitOptions {
 	return opts
 }
 
-func (r streamlitsRow) convert() *Streamlit {
+func (r streamlitsRow) convertErr() (*Streamlit, error) {
 	e := &Streamlit{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -160,7 +162,7 @@ func (r streamlitsRow) convert() *Streamlit {
 	if r.QueryWarehouse.Valid {
 		e.QueryWarehouse = r.QueryWarehouse.String
 	}
-	return e
+	return e, nil
 }
 
 func (r *DescribeStreamlitRequest) toOpts() *DescribeStreamlitOptions {
@@ -170,7 +172,7 @@ func (r *DescribeStreamlitRequest) toOpts() *DescribeStreamlitOptions {
 	return opts
 }
 
-func (r streamlitsDetailRow) convert() *StreamlitDetail {
+func (r streamlitsDetailRow) convertErr() (*StreamlitDetail, error) {
 	e := &StreamlitDetail{
 		Name:                       r.Name,
 		RootLocation:               r.RootLocation,
@@ -194,5 +196,5 @@ func (r streamlitsDetailRow) convert() *StreamlitDetail {
 		externalAccessIntegrations[i] = NewObjectIdentifierFromFullyQualifiedName(v).Name()
 	}
 	e.ExternalAccessIntegrations = externalAccessIntegrations
-	return e
+	return e, nil
 }

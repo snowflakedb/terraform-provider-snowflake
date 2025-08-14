@@ -7,6 +7,7 @@ import (
 )
 
 var _ ApplicationRoles = (*applicationRoles)(nil)
+var _ convertibleRow[ApplicationRole] = new(applicationRoleDbRow)
 
 type applicationRoles struct {
 	client *Client
@@ -77,12 +78,12 @@ func (r *ShowApplicationRoleRequest) toOpts() *ShowApplicationRoleOptions {
 	return opts
 }
 
-func (r applicationRoleDbRow) convert() *ApplicationRole {
+func (r applicationRoleDbRow) convertErr() (*ApplicationRole, error) {
 	return &ApplicationRole{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		Owner:         r.Owner,
 		Comment:       r.Comment,
 		OwnerRoleType: r.OwnerRoleType,
-	}
+	}, nil
 }

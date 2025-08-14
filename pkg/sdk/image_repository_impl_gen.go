@@ -7,6 +7,7 @@ import (
 )
 
 var _ ImageRepositories = (*imageRepositories)(nil)
+var _ convertibleRow[ImageRepository] = new(imageRepositoriesRow)
 
 type imageRepositories struct {
 	client *Client
@@ -98,7 +99,7 @@ func (r *ShowImageRepositoryRequest) toOpts() *ShowImageRepositoryOptions {
 	return opts
 }
 
-func (r imageRepositoriesRow) convert() *ImageRepository {
+func (r imageRepositoriesRow) convertErr() (*ImageRepository, error) {
 	return &ImageRepository{
 		CreatedOn:                r.CreatedOn,
 		Name:                     r.Name,
@@ -109,5 +110,5 @@ func (r imageRepositoriesRow) convert() *ImageRepository {
 		OwnerRoleType:            r.OwnerRoleType,
 		Comment:                  r.Comment,
 		PrivatelinkRepositoryUrl: r.PrivatelinkRepositoryUrl,
-	}
+	}, nil
 }

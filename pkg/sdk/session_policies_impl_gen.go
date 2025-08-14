@@ -7,6 +7,8 @@ import (
 )
 
 var _ SessionPolicies = (*sessionPolicies)(nil)
+var _ convertibleRow[SessionPolicy] = new(showSessionPolicyDBRow)
+var _ convertibleRow[SessionPolicyDescription] = new(describeSessionPolicyDBRow)
 
 type sessionPolicies struct {
 	client *Client
@@ -61,7 +63,7 @@ func (v *sessionPolicies) Describe(ctx context.Context, id SchemaObjectIdentifie
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (r *CreateSessionPolicyRequest) toOpts() *CreateSessionPolicyOptions {
@@ -115,7 +117,7 @@ func (r *ShowSessionPolicyRequest) toOpts() *ShowSessionPolicyOptions {
 	return opts
 }
 
-func (r showSessionPolicyDBRow) convert() *SessionPolicy {
+func (r showSessionPolicyDBRow) convertErr() (*SessionPolicy, error) {
 	return &SessionPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -126,7 +128,7 @@ func (r showSessionPolicyDBRow) convert() *SessionPolicy {
 		Comment:       r.Comment,
 		Options:       r.Options,
 		OwnerRoleType: r.OwnerRoleType,
-	}
+	}, nil
 }
 
 func (r *DescribeSessionPolicyRequest) toOpts() *DescribeSessionPolicyOptions {
@@ -136,7 +138,7 @@ func (r *DescribeSessionPolicyRequest) toOpts() *DescribeSessionPolicyOptions {
 	return opts
 }
 
-func (r describeSessionPolicyDBRow) convert() *SessionPolicyDescription {
+func (r describeSessionPolicyDBRow) convertErr() (*SessionPolicyDescription, error) {
 	sessionPolicyDescription := SessionPolicyDescription{
 		CreatedOn:                r.CreatedOn,
 		Name:                     r.Name,
@@ -146,5 +148,5 @@ func (r describeSessionPolicyDBRow) convert() *SessionPolicyDescription {
 	if r.Comment.Valid {
 		sessionPolicyDescription.Comment = r.Comment.String
 	}
-	return &sessionPolicyDescription
+	return &sessionPolicyDescription, nil
 }

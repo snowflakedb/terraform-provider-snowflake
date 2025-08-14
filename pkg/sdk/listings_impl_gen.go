@@ -7,6 +7,9 @@ import (
 )
 
 var _ Listings = (*listings)(nil)
+var _ convertibleRow[Listing] = new(listingDBRow)
+var _ convertibleRow[ListingDetails] = new(listingDetailsDBRow)
+var _ convertibleRow[ListingVersion] = new(listingVersionDBRow)
 
 type listings struct {
 	client *Client
@@ -68,7 +71,7 @@ func (v *listings) Describe(ctx context.Context, request *DescribeListingRequest
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error) {
@@ -156,7 +159,7 @@ func (r *ShowListingRequest) toOpts() *ShowListingOptions {
 	return opts
 }
 
-func (r listingDBRow) convert() *Listing {
+func (r listingDBRow) convertErr() (*Listing, error) {
 	l := &Listing{
 		GlobalName:     r.GlobalName,
 		Name:           r.Name,
@@ -188,7 +191,7 @@ func (r listingDBRow) convert() *Listing {
 	mapNullString(&l.UniformListingLocator, r.UniformListingLocator)
 	mapNullString(&l.DetailedTargetAccounts, r.DetailedTargetAccounts)
 
-	return l
+	return l, nil
 }
 
 func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
@@ -199,7 +202,7 @@ func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
 	return opts
 }
 
-func (r listingDetailsDBRow) convert() *ListingDetails {
+func (r listingDetailsDBRow) convertErr() (*ListingDetails, error) {
 	ld := &ListingDetails{
 		GlobalName:    r.GlobalName,
 		Name:          r.Name,
@@ -263,7 +266,7 @@ func (r listingDetailsDBRow) convert() *ListingDetails {
 	mapNullString(&ld.MonetizationDisplayOrder, r.MonetizationDisplayOrder)
 	mapNullString(&ld.LegacyUniformListingLocators, r.LegacyUniformListingLocators)
 
-	return ld
+	return ld, nil
 }
 
 func (r *ShowVersionsListingRequest) toOpts() *ShowVersionsListingOptions {
@@ -274,7 +277,7 @@ func (r *ShowVersionsListingRequest) toOpts() *ShowVersionsListingOptions {
 	return opts
 }
 
-func (r listingVersionDBRow) convert() *ListingVersion {
+func (r listingVersionDBRow) convertErr() (*ListingVersion, error) {
 	lv := &ListingVersion{
 		CreatedOn:         r.CreatedOn,
 		Name:              r.Name,
@@ -290,5 +293,5 @@ func (r listingVersionDBRow) convert() *ListingVersion {
 	mapNullString(&lv.Comment, r.Comment)
 	mapNullString(&lv.GitCommitHash, r.GitCommitHash)
 
-	return lv
+	return lv, nil
 }

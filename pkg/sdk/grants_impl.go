@@ -12,6 +12,7 @@ import (
 )
 
 var _ Grants = (*grants)(nil)
+var _ convertibleRow[Grant] = new(grantRow)
 
 type grants struct {
 	client *Client

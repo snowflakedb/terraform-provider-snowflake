@@ -2,13 +2,14 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ Connections = (*connections)(nil)
+var _ convertibleRow[Connection] = new(connectionRow)
 
 type connections struct {
 	client *Client
@@ -119,7 +120,7 @@ func (r *ShowConnectionRequest) toOpts() *ShowConnectionOptions {
 	return opts
 }
 
-func (r connectionRow) convert() *Connection {
+func (r connectionRow) convertErr() (*Connection, error) {
 	c := &Connection{
 		SnowflakeRegion:  r.SnowflakeRegion,
 		CreatedOn:        r.CreatedOn,
@@ -132,20 +133,20 @@ func (r connectionRow) convert() *Connection {
 
 	parsedIsPrimary, err := strconv.ParseBool(r.IsPrimary)
 	if err != nil {
-		log.Printf("[DEBUG] Unable to parse bool is_primary for connection: %v, err = %s", r.IsPrimary, err)
+		return nil, fmt.Errorf("unable to parse bool is_primary for connection: %w", err)
 	} else {
 		c.IsPrimary = parsedIsPrimary
 	}
 
 	primaryExternalId, err := ParseExternalObjectIdentifier(r.Primary)
 	if err != nil {
-		log.Printf("[DEBUG] Unable to parse primary connection external identifier: %v, err = %s", r.Primary, err)
+		return nil, fmt.Errorf("unable to parse primary connection external identifier: %w", err)
 	} else {
 		c.Primary = primaryExternalId
 	}
 
 	if allowedToAccounts, err := ParseCommaSeparatedAccountIdentifierArray(r.FailoverAllowedToAccounts); err != nil {
-		log.Printf("[DEBUG] Unable to parse account identifier list for enable failover to accounts, err = %v", err)
+		return nil, fmt.Errorf("unable to parse account identifier list for enable failover to accounts: %w", err)
 	} else {
 		c.FailoverAllowedToAccounts = allowedToAccounts
 	}
@@ -154,5 +155,5 @@ func (r connectionRow) convert() *Connection {
 		c.Comment = String(r.Comment.String)
 	}
 
-	return c
+	return c, nil
 }

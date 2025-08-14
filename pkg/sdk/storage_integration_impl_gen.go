@@ -7,6 +7,8 @@ import (
 )
 
 var _ StorageIntegrations = (*storageIntegrations)(nil)
+var _ convertibleRow[StorageIntegrationProperty] = new(descStorageIntegrationsDbRow)
+var _ convertibleRow[StorageIntegration] = new(showStorageIntegrationsDbRow)
 
 type storageIntegrations struct {
 	client *Client
@@ -150,7 +152,7 @@ func (r *ShowStorageIntegrationRequest) toOpts() *ShowStorageIntegrationOptions 
 	return opts
 }
 
-func (r showStorageIntegrationsDbRow) convert() *StorageIntegration {
+func (r showStorageIntegrationsDbRow) convertErr() (*StorageIntegration, error) {
 	s := &StorageIntegration{
 		Name:        r.Name,
 		StorageType: r.Type,
@@ -161,7 +163,7 @@ func (r showStorageIntegrationsDbRow) convert() *StorageIntegration {
 	if r.Comment.Valid {
 		s.Comment = r.Comment.String
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeStorageIntegrationRequest) toOpts() *DescribeStorageIntegrationOptions {
@@ -171,11 +173,11 @@ func (r *DescribeStorageIntegrationRequest) toOpts() *DescribeStorageIntegration
 	return opts
 }
 
-func (r descStorageIntegrationsDbRow) convert() *StorageIntegrationProperty {
+func (r descStorageIntegrationsDbRow) convertErr() (*StorageIntegrationProperty, error) {
 	return &StorageIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }

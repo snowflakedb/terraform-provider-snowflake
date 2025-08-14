@@ -18,6 +18,8 @@ var (
 	_ validatable = new(AlterAlertOptions)
 	_ validatable = new(DropAlertOptions)
 	_ validatable = new(ShowAlertOptions)
+
+	_ convertibleRow[Alert] = new(alertDBRow)
 )
 
 type Alerts interface {
@@ -256,7 +258,7 @@ type alertDBRow struct {
 	OwnerRoleType sql.NullString `db:"owner_role_type"`
 }
 
-func (row alertDBRow) convert() *Alert {
+func (row alertDBRow) convertErr() (*Alert, error) {
 	alert := &Alert{
 		CreatedOn:    row.CreatedOn,
 		Name:         row.Name,
@@ -274,7 +276,7 @@ func (row alertDBRow) convert() *Alert {
 		alert.OwnerRoleType = row.OwnerRoleType.String
 	}
 
-	return alert
+	return alert, nil
 }
 
 func (opts *ShowAlertOptions) validate() error {

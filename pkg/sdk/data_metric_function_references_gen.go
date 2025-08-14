@@ -3,7 +3,7 @@ package sdk
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"strings"
 )
 
@@ -62,7 +62,7 @@ type DataMetricFunctionReference struct {
 	ScheduleStatus        string
 }
 
-func (row dataMetricFunctionReferencesRow) convert() *DataMetricFunctionReference {
+func (row dataMetricFunctionReferencesRow) convertErr() (*DataMetricFunctionReference, error) {
 	x := &DataMetricFunctionReference{
 		MetricDatabaseName:    strings.Trim(row.MetricDatabaseName, `"`),
 		MetricSchemaName:      strings.Trim(row.MetricSchemaName, `"`),
@@ -79,7 +79,7 @@ func (row dataMetricFunctionReferencesRow) convert() *DataMetricFunctionReferenc
 	}
 	err := json.Unmarshal([]byte(row.RefArguments), &x.RefArguments)
 	if err != nil {
-		log.Printf("[DEBUG] Failed to unmarshal data metric function reference arguments, err = %v", err)
+		return nil, fmt.Errorf("failed to unmarshal data metric function reference arguments: %w", err)
 	}
-	return x
+	return x, nil
 }

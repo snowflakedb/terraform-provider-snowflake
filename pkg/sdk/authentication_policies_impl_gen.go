@@ -7,6 +7,8 @@ import (
 )
 
 var _ AuthenticationPolicies = (*authenticationPolicies)(nil)
+var _ convertibleRow[AuthenticationPolicy] = new(showAuthenticationPolicyDBRow)
+var _ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
 
 type authenticationPolicies struct {
 	client *Client
@@ -132,7 +134,7 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 	return opts
 }
 
-func (r showAuthenticationPolicyDBRow) convert() *AuthenticationPolicy {
+func (r showAuthenticationPolicyDBRow) convertErr() (*AuthenticationPolicy, error) {
 	return &AuthenticationPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -142,7 +144,7 @@ func (r showAuthenticationPolicyDBRow) convert() *AuthenticationPolicy {
 		OwnerRoleType: r.OwnerRoleType,
 		Options:       r.Options,
 		Comment:       r.Comment,
-	}
+	}, nil
 }
 
 func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPolicyOptions {
@@ -152,11 +154,11 @@ func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPo
 	return opts
 }
 
-func (r describeAuthenticationPolicyDBRow) convert() *AuthenticationPolicyDescription {
+func (r describeAuthenticationPolicyDBRow) convertErr() (*AuthenticationPolicyDescription, error) {
 	return &AuthenticationPolicyDescription{
 		Property:    r.Property,
 		Value:       r.Value,
 		Default:     r.Default,
 		Description: r.Description,
-	}
+	}, nil
 }

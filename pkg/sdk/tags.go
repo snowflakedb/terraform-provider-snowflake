@@ -91,7 +91,7 @@ type tagRow struct {
 	OwnerRoleType string         `db:"owner_role_type"`
 }
 
-func (tr tagRow) convert() *Tag {
+func (tr tagRow) convertErr() (*Tag, error) {
 	t := &Tag{
 		CreatedOn:     tr.CreatedOn,
 		Name:          tr.Name,
@@ -104,7 +104,7 @@ func (tr tagRow) convert() *Tag {
 	if tr.AllowedValues.Valid {
 		t.AllowedValues = ParseCommaSeparatedStringArray(tr.AllowedValues.String, true)
 	}
-	return t
+	return t, nil
 }
 
 type TagSetMaskingPolicies struct {

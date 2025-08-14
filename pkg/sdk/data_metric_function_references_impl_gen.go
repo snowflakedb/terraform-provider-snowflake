@@ -5,6 +5,7 @@ import (
 )
 
 var _ DataMetricFunctionReferences = (*dataMetricFunctionReferences)(nil)
+var _ convertibleRow[DataMetricFunctionReference] = new(dataMetricFunctionReferencesRow)
 
 type dataMetricFunctionReferences struct {
 	client *Client

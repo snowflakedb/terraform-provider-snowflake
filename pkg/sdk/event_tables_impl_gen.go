@@ -7,6 +7,8 @@ import (
 )
 
 var _ EventTables = (*eventTables)(nil)
+var _ convertibleRow[EventTable] = new(eventTableRow)
+var _ convertibleRow[EventTableDetails] = new(eventTableDetailsRow)
 
 type eventTables struct {
 	client *Client
@@ -49,7 +51,7 @@ func (v *eventTables) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (v *eventTables) Drop(ctx context.Context, request *DropEventTableRequest) error {
@@ -95,7 +97,7 @@ func (r *ShowEventTableRequest) toOpts() *ShowEventTableOptions {
 	return opts
 }
 
-func (r eventTableRow) convert() *EventTable {
+func (r eventTableRow) convertErr() (*EventTable, error) {
 	t := &EventTable{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -111,7 +113,7 @@ func (r eventTableRow) convert() *EventTable {
 	if r.OwnerRoleType.Valid {
 		t.OwnerRoleType = r.OwnerRoleType.String
 	}
-	return t
+	return t, nil
 }
 
 func (r *DescribeEventTableRequest) toOpts() *DescribeEventTableOptions {
@@ -121,12 +123,12 @@ func (r *DescribeEventTableRequest) toOpts() *DescribeEventTableOptions {
 	return opts
 }
 
-func (r eventTableDetailsRow) convert() *EventTableDetails {
+func (r eventTableDetailsRow) convertErr() (*EventTableDetails, error) {
 	return &EventTableDetails{
 		Name:    r.Name,
 		Kind:    r.Kind,
 		Comment: r.Comment,
-	}
+	}, nil
 }
 
 func (r *DropEventTableRequest) toOpts() *DropEventTableOptions {

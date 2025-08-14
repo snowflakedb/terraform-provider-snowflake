@@ -7,6 +7,8 @@ import (
 )
 
 var _ NotificationIntegrations = (*notificationIntegrations)(nil)
+var _ convertibleRow[NotificationIntegrationProperty] = new(descNotificationIntegrationsDbRow)
+var _ convertibleRow[NotificationIntegration] = new(showNotificationIntegrationsDbRow)
 
 type notificationIntegrations struct {
 	client *Client
@@ -180,7 +182,7 @@ func (r *ShowNotificationIntegrationRequest) toOpts() *ShowNotificationIntegrati
 	return opts
 }
 
-func (r showNotificationIntegrationsDbRow) convert() *NotificationIntegration {
+func (r showNotificationIntegrationsDbRow) convertErr() (*NotificationIntegration, error) {
 	s := &NotificationIntegration{
 		Name:             r.Name,
 		NotificationType: r.Type,
@@ -191,7 +193,7 @@ func (r showNotificationIntegrationsDbRow) convert() *NotificationIntegration {
 	if r.Comment.Valid {
 		s.Comment = r.Comment.String
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeNotificationIntegrationRequest) toOpts() *DescribeNotificationIntegrationOptions {
@@ -201,11 +203,11 @@ func (r *DescribeNotificationIntegrationRequest) toOpts() *DescribeNotificationI
 	return opts
 }
 
-func (r descNotificationIntegrationsDbRow) convert() *NotificationIntegrationProperty {
+func (r descNotificationIntegrationsDbRow) convertErr() (*NotificationIntegrationProperty, error) {
 	return &NotificationIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }

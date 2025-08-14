@@ -18,6 +18,8 @@ var (
 	_ validatable = new(DropFileFormatOptions)
 	_ validatable = new(ShowFileFormatsOptions)
 	_ validatable = new(describeFileFormatOptions)
+
+	_ convertibleRow[FileFormat] = new(FileFormatRow)
 )
 
 type FileFormats interface {
@@ -110,12 +112,11 @@ type showFileFormatsOptionsResult struct {
 	DisableAutoConvert   bool `json:"DISABLE_AUTO_CONVERT"`
 }
 
-func (row FileFormatRow) convert() *FileFormat {
+func (row FileFormatRow) convertErr() (*FileFormat, error) {
 	inputOptions := showFileFormatsOptionsResult{}
 	err := json.Unmarshal([]byte(row.FormatOptions), &inputOptions)
 	if err != nil {
-		fmt.Printf("%s", err)
-		panic("cannot parse options json")
+		return nil, fmt.Errorf("cannot parse format options: %w", err)
 	}
 
 	ff := &FileFormat{
@@ -198,7 +199,7 @@ func (row FileFormatRow) convert() *FileFormat {
 		ff.Options.XMLSkipByteOrderMark = &inputOptions.SkipByteOrderMark
 	}
 
-	return ff
+	return ff, nil
 }
 
 type FileFormatType string

@@ -7,6 +7,8 @@ import (
 )
 
 var _ Sequences = (*sequences)(nil)
+var _ convertibleRow[Sequence] = new(sequenceRow)
+var _ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
 
 type sequences struct {
 	client *Client
@@ -54,7 +56,7 @@ func (v *sequences) Describe(ctx context.Context, id SchemaObjectIdentifier) (*S
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return result.convertErr()
 }
 
 func (v *sequences) Drop(ctx context.Context, request *DropSequenceRequest) error {
@@ -105,7 +107,7 @@ func (r *ShowSequenceRequest) toOpts() *ShowSequenceOptions {
 	return opts
 }
 
-func (r sequenceRow) convert() *Sequence {
+func (r sequenceRow) convertErr() (*Sequence, error) {
 	return &Sequence{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -117,7 +119,7 @@ func (r sequenceRow) convert() *Sequence {
 		OwnerRoleType: r.OwnerRoleType,
 		Comment:       r.Comment,
 		Ordered:       r.Ordered == "Y",
-	}
+	}, nil
 }
 
 func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
@@ -127,7 +129,7 @@ func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
 	return opts
 }
 
-func (r sequenceDetailRow) convert() *SequenceDetail {
+func (r sequenceDetailRow) convertErr() (*SequenceDetail, error) {
 	return &SequenceDetail{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -139,7 +141,7 @@ func (r sequenceDetailRow) convert() *SequenceDetail {
 		OwnerRoleType: r.OwnerRoleType,
 		Comment:       r.Comment,
 		Ordered:       r.Ordered == "Y",
-	}
+	}, nil
 }
 
 func (r *DropSequenceRequest) toOpts() *DropSequenceOptions {
