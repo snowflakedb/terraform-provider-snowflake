@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ AuthenticationPolicies = (*authenticationPolicies)(nil)
-var _ convertibleRow[AuthenticationPolicy] = new(showAuthenticationPolicyDBRow)
-var _ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
+var (
+	_ AuthenticationPolicies                          = (*authenticationPolicies)(nil)
+	_ convertibleRow[AuthenticationPolicy]            = new(showAuthenticationPolicyDBRow)
+	_ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
+)
 
 type authenticationPolicies struct {
 	client *Client

@@ -6,10 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tables = (*tables)(nil)
-var _ convertibleRow[TableColumnDetails] = new(tableColumnDetailsRow)
-var _ convertibleRow[TableStageDetails] = new(tableStageDetailsRow)
-var _ convertibleRow[Table] = new(tableDBRow)
+var (
+	_ Tables                             = (*tables)(nil)
+	_ convertibleRow[TableColumnDetails] = new(tableColumnDetailsRow)
+	_ convertibleRow[TableStageDetails]  = new(tableStageDetailsRow)
+	_ convertibleRow[Table]              = new(tableDBRow)
+)
 
 var (
 	_ optionsProvider[createTableOptions]              = new(CreateTableRequest)

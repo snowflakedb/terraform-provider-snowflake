@@ -7,9 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ MaterializedViews = (*materializedViews)(nil)
-var _ convertibleRow[MaterializedViewDetails] = new(materializedViewDetailsRow)
-var _ convertibleRow[MaterializedView] = new(materializedViewDBRow)
+var (
+	_ MaterializedViews                       = (*materializedViews)(nil)
+	_ convertibleRow[MaterializedViewDetails] = new(materializedViewDetailsRow)
+	_ convertibleRow[MaterializedView]        = new(materializedViewDBRow)
+)
 
 type materializedViews struct {
 	client *Client

@@ -6,8 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tags = (*tags)(nil)
-var _ convertibleRow[Tag] = new(tagRow)
+var (
+	_ Tags                = (*tags)(nil)
+	_ convertibleRow[Tag] = new(tagRow)
+)
 
 type tags struct {
 	client *Client

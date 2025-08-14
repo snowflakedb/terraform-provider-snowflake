@@ -12,8 +12,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
-var _ MaskingPolicies = (*maskingPolicies)(nil)
-var _ convertibleRow[MaskingPolicy] = new(maskingPolicyDBRow)
+var (
+	_ MaskingPolicies               = (*maskingPolicies)(nil)
+	_ convertibleRow[MaskingPolicy] = new(maskingPolicyDBRow)
+)
 
 var (
 	_ validatable = new(CreateMaskingPolicyOptions)

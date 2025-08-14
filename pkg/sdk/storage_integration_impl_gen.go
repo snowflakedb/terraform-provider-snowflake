@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ StorageIntegrations = (*storageIntegrations)(nil)
-var _ convertibleRow[StorageIntegrationProperty] = new(descStorageIntegrationsDbRow)
-var _ convertibleRow[StorageIntegration] = new(showStorageIntegrationsDbRow)
+var (
+	_ StorageIntegrations                        = (*storageIntegrations)(nil)
+	_ convertibleRow[StorageIntegrationProperty] = new(descStorageIntegrationsDbRow)
+	_ convertibleRow[StorageIntegration]         = new(showStorageIntegrationsDbRow)
+)
 
 type storageIntegrations struct {
 	client *Client

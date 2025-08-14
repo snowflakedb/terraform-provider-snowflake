@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NotificationIntegrations = (*notificationIntegrations)(nil)
-var _ convertibleRow[NotificationIntegrationProperty] = new(descNotificationIntegrationsDbRow)
-var _ convertibleRow[NotificationIntegration] = new(showNotificationIntegrationsDbRow)
+var (
+	_ NotificationIntegrations                        = (*notificationIntegrations)(nil)
+	_ convertibleRow[NotificationIntegrationProperty] = new(descNotificationIntegrationsDbRow)
+	_ convertibleRow[NotificationIntegration]         = new(showNotificationIntegrationsDbRow)
+)
 
 type notificationIntegrations struct {
 	client *Client

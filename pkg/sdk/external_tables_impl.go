@@ -6,10 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ExternalTables = (*externalTables)(nil)
-var _ convertibleRow[ExternalTable] = new(externalTableRow)
-var _ convertibleRow[ExternalTableColumnDetails] = new(externalTableColumnDetailsRow)
-var _ convertibleRow[ExternalTableStageDetails] = new(externalTableStageDetailsRow)
+var (
+	_ ExternalTables                             = (*externalTables)(nil)
+	_ convertibleRow[ExternalTable]              = new(externalTableRow)
+	_ convertibleRow[ExternalTableColumnDetails] = new(externalTableColumnDetailsRow)
+	_ convertibleRow[ExternalTableStageDetails]  = new(externalTableStageDetailsRow)
+)
 
 type externalTables struct {
 	client *Client

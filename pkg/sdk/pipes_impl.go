@@ -6,8 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Pipes = (*pipes)(nil)
-var _ convertibleRow[Pipe] = new(pipeDBRow)
+var (
+	_ Pipes                = (*pipes)(nil)
+	_ convertibleRow[Pipe] = new(pipeDBRow)
+)
 
 type pipes struct {
 	client *Client

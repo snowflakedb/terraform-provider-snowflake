@@ -6,8 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ManagedAccounts = (*managedAccounts)(nil)
-var _ convertibleRow[ManagedAccount] = new(managedAccountDBRow)
+var (
+	_ ManagedAccounts                = (*managedAccounts)(nil)
+	_ convertibleRow[ManagedAccount] = new(managedAccountDBRow)
+)
 
 type managedAccounts struct {
 	client *Client

@@ -7,10 +7,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ UserProgrammaticAccessTokens = (*userProgrammaticAccessTokens)(nil)
-var _ convertibleRow[ProgrammaticAccessToken] = new(programmaticAccessTokenResultDBRow)
-var _ convertibleRow[AddProgrammaticAccessTokenResult] = new(addProgrammaticAccessTokenResultDBRow)
-var _ convertibleRow[RotateProgrammaticAccessTokenResult] = new(rotateProgrammaticAccessTokenResultDBRow)
+var (
+	_ UserProgrammaticAccessTokens                        = (*userProgrammaticAccessTokens)(nil)
+	_ convertibleRow[ProgrammaticAccessToken]             = new(programmaticAccessTokenResultDBRow)
+	_ convertibleRow[AddProgrammaticAccessTokenResult]    = new(addProgrammaticAccessTokenResultDBRow)
+	_ convertibleRow[RotateProgrammaticAccessTokenResult] = new(rotateProgrammaticAccessTokenResultDBRow)
+)
 
 type userProgrammaticAccessTokens struct {
 	client *Client

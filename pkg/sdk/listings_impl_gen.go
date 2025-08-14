@@ -6,10 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Listings = (*listings)(nil)
-var _ convertibleRow[Listing] = new(listingDBRow)
-var _ convertibleRow[ListingDetails] = new(listingDetailsDBRow)
-var _ convertibleRow[ListingVersion] = new(listingVersionDBRow)
+var (
+	_ Listings                       = (*listings)(nil)
+	_ convertibleRow[Listing]        = new(listingDBRow)
+	_ convertibleRow[ListingDetails] = new(listingDetailsDBRow)
+	_ convertibleRow[ListingVersion] = new(listingVersionDBRow)
+)
 
 type listings struct {
 	client *Client

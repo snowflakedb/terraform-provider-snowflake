@@ -7,9 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ CortexSearchServices = (*cortexSearchServices)(nil)
-var _ convertibleRow[CortexSearchService] = new(cortexSearchServiceRow)
-var _ convertibleRow[CortexSearchServiceDetails] = new(cortexSearchServiceDetailsRow)
+var (
+	_ CortexSearchServices                       = (*cortexSearchServices)(nil)
+	_ convertibleRow[CortexSearchService]        = new(cortexSearchServiceRow)
+	_ convertibleRow[CortexSearchServiceDetails] = new(cortexSearchServiceDetailsRow)
+)
 
 type cortexSearchServices struct {
 	client *Client

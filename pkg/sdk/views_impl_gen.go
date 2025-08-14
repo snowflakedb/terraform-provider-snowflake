@@ -7,9 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Views = (*views)(nil)
-var _ convertibleRow[ViewDetails] = new(viewDetailsRow)
-var _ convertibleRow[View] = new(viewDBRow)
+var (
+	_ Views                       = (*views)(nil)
+	_ convertibleRow[ViewDetails] = new(viewDetailsRow)
+	_ convertibleRow[View]        = new(viewDBRow)
+)
 
 type views struct {
 	client *Client

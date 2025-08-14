@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Secrets = (*secrets)(nil)
-var _ convertibleRow[Secret] = new(secretDBRow)
-var _ convertibleRow[SecretDetails] = new(secretDetailsDBRow)
+var (
+	_ Secrets                       = (*secrets)(nil)
+	_ convertibleRow[Secret]        = new(secretDBRow)
+	_ convertibleRow[SecretDetails] = new(secretDetailsDBRow)
+)
 
 type secrets struct {
 	client *Client

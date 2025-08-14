@@ -8,9 +8,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Functions = (*functions)(nil)
-var _ convertibleRow[FunctionDetail] = new(functionDetailRow)
-var _ convertibleRow[Function] = new(functionRow)
+var (
+	_ Functions                      = (*functions)(nil)
+	_ convertibleRow[FunctionDetail] = new(functionDetailRow)
+	_ convertibleRow[Function]       = new(functionRow)
+)
 
 type functions struct {
 	client *Client

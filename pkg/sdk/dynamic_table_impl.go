@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ DynamicTables = (*dynamicTables)(nil)
-var _ convertibleRow[DynamicTable] = new(dynamicTableRow)
-var _ convertibleRow[DynamicTableDetails] = new(dynamicTableDetailsRow)
+var (
+	_ DynamicTables                       = (*dynamicTables)(nil)
+	_ convertibleRow[DynamicTable]        = new(dynamicTableRow)
+	_ convertibleRow[DynamicTableDetails] = new(dynamicTableDetailsRow)
+)
 
 type dynamicTables struct {
 	client *Client

@@ -7,9 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NetworkRules = (*networkRules)(nil)
-var _ convertibleRow[NetworkRule] = new(ShowNetworkRulesRow)
-var _ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
+var (
+	_ NetworkRules                       = (*networkRules)(nil)
+	_ convertibleRow[NetworkRule]        = new(ShowNetworkRulesRow)
+	_ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
+)
 
 type networkRules struct {
 	client *Client

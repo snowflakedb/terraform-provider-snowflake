@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ SecurityIntegrations = (*securityIntegrations)(nil)
-var _ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
-var _ convertibleRow[SecurityIntegration] = new(securityIntegrationShowRow)
+var (
+	_ SecurityIntegrations                        = (*securityIntegrations)(nil)
+	_ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
+	_ convertibleRow[SecurityIntegration]         = new(securityIntegrationShowRow)
+)
 
 type securityIntegrations struct {
 	client *Client

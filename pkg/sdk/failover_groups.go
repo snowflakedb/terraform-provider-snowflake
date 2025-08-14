@@ -11,8 +11,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ FailoverGroups = (*failoverGroups)(nil)
-var _ convertibleRow[FailoverGroup] = new(failoverGroupDBRow)
+var (
+	_ FailoverGroups                = (*failoverGroups)(nil)
+	_ convertibleRow[FailoverGroup] = new(failoverGroupDBRow)
+)
 
 var (
 	_ validatable = new(CreateDatabaseOptions)

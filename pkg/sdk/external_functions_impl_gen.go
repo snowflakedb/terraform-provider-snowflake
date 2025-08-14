@@ -8,9 +8,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ExternalFunctions = (*externalFunctions)(nil)
-var _ convertibleRow[ExternalFunctionProperty] = new(externalFunctionPropertyRow)
-var _ convertibleRow[ExternalFunction] = new(externalFunctionRow)
+var (
+	_ ExternalFunctions                        = (*externalFunctions)(nil)
+	_ convertibleRow[ExternalFunctionProperty] = new(externalFunctionPropertyRow)
+	_ convertibleRow[ExternalFunction]         = new(externalFunctionRow)
+)
 
 type externalFunctions struct {
 	client *Client

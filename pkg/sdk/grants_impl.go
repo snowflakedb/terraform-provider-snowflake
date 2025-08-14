@@ -11,8 +11,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Grants = (*grants)(nil)
-var _ convertibleRow[Grant] = new(grantRow)
+var (
+	_ Grants                = (*grants)(nil)
+	_ convertibleRow[Grant] = new(grantRow)
+)
 
 type grants struct {
 	client *Client

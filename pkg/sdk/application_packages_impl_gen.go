@@ -6,8 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ApplicationPackages = (*applicationPackages)(nil)
-var _ convertibleRow[ApplicationPackage] = new(applicationPackageRow)
+var (
+	_ ApplicationPackages                = (*applicationPackages)(nil)
+	_ convertibleRow[ApplicationPackage] = new(applicationPackageRow)
+)
 
 type applicationPackages struct {
 	client *Client

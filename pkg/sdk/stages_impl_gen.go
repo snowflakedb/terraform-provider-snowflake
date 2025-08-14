@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Stages = (*stages)(nil)
-var _ convertibleRow[StageProperty] = new(stageDescRow)
-var _ convertibleRow[Stage] = new(stageShowRow)
+var (
+	_ Stages                        = (*stages)(nil)
+	_ convertibleRow[StageProperty] = new(stageDescRow)
+	_ convertibleRow[Stage]         = new(stageShowRow)
+)
 
 type stages struct {
 	client *Client

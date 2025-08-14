@@ -8,9 +8,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Procedures = (*procedures)(nil)
-var _ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
-var _ convertibleRow[Procedure] = new(procedureRow)
+var (
+	_ Procedures                      = (*procedures)(nil)
+	_ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
+	_ convertibleRow[Procedure]       = new(procedureRow)
+)
 
 type procedures struct {
 	client *Client

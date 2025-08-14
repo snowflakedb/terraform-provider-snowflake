@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NetworkPolicies = (*networkPolicies)(nil)
-var _ convertibleRow[NetworkPolicyProperty] = new(describeNetworkPolicyDBRow)
-var _ convertibleRow[NetworkPolicy] = new(showNetworkPolicyDBRow)
+var (
+	_ NetworkPolicies                       = (*networkPolicies)(nil)
+	_ convertibleRow[NetworkPolicyProperty] = new(describeNetworkPolicyDBRow)
+	_ convertibleRow[NetworkPolicy]         = new(showNetworkPolicyDBRow)
+)
 
 type networkPolicies struct {
 	client *Client

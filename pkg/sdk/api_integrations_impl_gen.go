@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ApiIntegrations = (*apiIntegrations)(nil)
-var _ convertibleRow[ApiIntegration] = new(showApiIntegrationsDbRow)
-var _ convertibleRow[ApiIntegrationProperty] = new(descApiIntegrationsDbRow)
+var (
+	_ ApiIntegrations                        = (*apiIntegrations)(nil)
+	_ convertibleRow[ApiIntegration]         = new(showApiIntegrationsDbRow)
+	_ convertibleRow[ApiIntegrationProperty] = new(descApiIntegrationsDbRow)
+)
 
 type apiIntegrations struct {
 	client *Client

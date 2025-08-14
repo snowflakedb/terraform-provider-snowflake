@@ -8,8 +8,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Connections = (*connections)(nil)
-var _ convertibleRow[Connection] = new(connectionRow)
+var (
+	_ Connections                = (*connections)(nil)
+	_ convertibleRow[Connection] = new(connectionRow)
+)
 
 type connections struct {
 	client *Client

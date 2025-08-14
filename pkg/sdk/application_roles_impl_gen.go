@@ -6,8 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ApplicationRoles = (*applicationRoles)(nil)
-var _ convertibleRow[ApplicationRole] = new(applicationRoleDbRow)
+var (
+	_ ApplicationRoles                = (*applicationRoles)(nil)
+	_ convertibleRow[ApplicationRole] = new(applicationRoleDbRow)
+)
 
 type applicationRoles struct {
 	client *Client

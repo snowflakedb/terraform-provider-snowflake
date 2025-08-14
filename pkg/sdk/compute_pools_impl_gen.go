@@ -7,9 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ComputePools = (*computePools)(nil)
-var _ convertibleRow[ComputePool] = new(computePoolsRow)
-var _ convertibleRow[ComputePoolDetails] = new(computePoolDescRow)
+var (
+	_ ComputePools                       = (*computePools)(nil)
+	_ convertibleRow[ComputePool]        = new(computePoolsRow)
+	_ convertibleRow[ComputePoolDetails] = new(computePoolDescRow)
+)
 
 type computePools struct {
 	client *Client

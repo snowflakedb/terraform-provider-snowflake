@@ -7,8 +7,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Streams = (*streams)(nil)
-var _ convertibleRow[Stream] = new(showStreamsDbRow)
+var (
+	_ Streams                = (*streams)(nil)
+	_ convertibleRow[Stream] = new(showStreamsDbRow)
+)
 
 type streams struct {
 	client *Client

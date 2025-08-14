@@ -6,8 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ImageRepositories = (*imageRepositories)(nil)
-var _ convertibleRow[ImageRepository] = new(imageRepositoriesRow)
+var (
+	_ ImageRepositories               = (*imageRepositories)(nil)
+	_ convertibleRow[ImageRepository] = new(imageRepositoriesRow)
+)
 
 type imageRepositories struct {
 	client *Client

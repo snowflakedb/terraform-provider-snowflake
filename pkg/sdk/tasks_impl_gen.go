@@ -12,8 +12,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tasks = (*tasks)(nil)
-var _ convertibleRow[Task] = new(taskDBRow)
+var (
+	_ Tasks                = (*tasks)(nil)
+	_ convertibleRow[Task] = new(taskDBRow)
+)
 
 type tasks struct {
 	client *Client

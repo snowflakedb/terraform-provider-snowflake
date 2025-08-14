@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ SessionPolicies = (*sessionPolicies)(nil)
-var _ convertibleRow[SessionPolicy] = new(showSessionPolicyDBRow)
-var _ convertibleRow[SessionPolicyDescription] = new(describeSessionPolicyDBRow)
+var (
+	_ SessionPolicies                          = (*sessionPolicies)(nil)
+	_ convertibleRow[SessionPolicy]            = new(showSessionPolicyDBRow)
+	_ convertibleRow[SessionPolicyDescription] = new(describeSessionPolicyDBRow)
+)
 
 type sessionPolicies struct {
 	client *Client
