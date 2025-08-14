@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.5.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.5.0...v2.5.1) (2025-08-14)
+
+
+### 🔧 **Misc**
+
+* Add new roadmap entry ([#3935](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3935)) ([6bfb929](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6bfb92999ba9ece400991feede9c7ad41f0ea899))
+* Adjust PAT alter after fixes in snowflake ([#3922](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3922)) ([b76a0ea](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b76a0eadbc1c1d77d0604fb6466baa8d99cd4590))
+* Find versions of provider in gh organization ([#3932](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3932)) ([c3e6051](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c3e6051a4dacfb75a544089a0030af1c5f0fc1a9))
+
+
+### 🐛 **Bug fixes:**
+
+* Change convert signature for a single object ([#3926](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3926)) ([edec510](https://github.com/snowflakedb/terraform-provider-snowflake/commit/edec5107cb87ece817e4ba9076db4aaa2455a085))
+* Update migration guide, import docs, and task tests ([#3933](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3933)) ([ca1568d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ca1568d5aa88f429a438307151cbd29b215d9ef2))
+
 ## [2.5.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.4.0...v2.5.0) (2025-08-07)
 
 
