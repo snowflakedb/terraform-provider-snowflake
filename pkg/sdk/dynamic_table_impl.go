@@ -39,7 +39,7 @@ func (v *dynamicTables) Describe(ctx context.Context, request *DescribeDynamicTa
 	if err != nil {
 		return nil, err
 	}
-	return row.convertErr()
+	return conversionErrorWrapped(row.convertErr())
 }
 
 func (v *dynamicTables) Show(ctx context.Context, request *ShowDynamicTableRequest) ([]DynamicTable, error) {

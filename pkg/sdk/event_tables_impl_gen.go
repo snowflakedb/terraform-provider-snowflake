@@ -51,7 +51,7 @@ func (v *eventTables) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (v *eventTables) Drop(ctx context.Context, request *DropEventTableRequest) error {

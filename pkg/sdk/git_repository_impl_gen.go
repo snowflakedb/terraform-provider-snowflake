@@ -43,7 +43,7 @@ func (v *gitRepositories) Describe(ctx context.Context, id SchemaObjectIdentifie
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (v *gitRepositories) Show(ctx context.Context, request *ShowGitRepositoryRequest) ([]GitRepository, error) {

@@ -85,7 +85,7 @@ func (v *streams) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Str
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (r *CreateOnTableStreamRequest) toOpts() *CreateOnTableStreamOptions {

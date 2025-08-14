@@ -66,7 +66,7 @@ func (v *rowAccessPolicies) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (r *CreateRowAccessPolicyRequest) toOpts() *CreateRowAccessPolicyOptions {

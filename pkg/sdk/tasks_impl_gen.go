@@ -88,7 +88,7 @@ func (v *tasks) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Task,
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (v *tasks) Execute(ctx context.Context, request *ExecuteTaskRequest) error {

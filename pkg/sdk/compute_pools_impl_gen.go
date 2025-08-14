@@ -72,7 +72,7 @@ func (v *computePools) Describe(ctx context.Context, id AccountObjectIdentifier)
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (r *CreateComputePoolRequest) toOpts() *CreateComputePoolOptions {

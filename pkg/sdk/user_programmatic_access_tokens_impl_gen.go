@@ -22,7 +22,7 @@ func (v *userProgrammaticAccessTokens) Add(ctx context.Context, request *AddUser
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (v *userProgrammaticAccessTokens) Modify(ctx context.Context, request *ModifyUserProgrammaticAccessTokenRequest) error {
@@ -36,7 +36,7 @@ func (v *userProgrammaticAccessTokens) Rotate(ctx context.Context, request *Rota
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (v *userProgrammaticAccessTokens) Remove(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {

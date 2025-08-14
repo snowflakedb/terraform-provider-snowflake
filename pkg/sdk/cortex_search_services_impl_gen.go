@@ -57,7 +57,7 @@ func (v *cortexSearchServices) Describe(ctx context.Context, id SchemaObjectIden
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (v *cortexSearchServices) Drop(ctx context.Context, request *DropCortexSearchServiceRequest) error {

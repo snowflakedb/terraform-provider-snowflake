@@ -70,7 +70,7 @@ func (v *services) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Se
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {

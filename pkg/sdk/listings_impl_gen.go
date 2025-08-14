@@ -71,7 +71,7 @@ func (v *listings) Describe(ctx context.Context, request *DescribeListingRequest
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error) {

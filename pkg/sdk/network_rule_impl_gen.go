@@ -66,7 +66,7 @@ func (v *networkRules) Describe(ctx context.Context, id SchemaObjectIdentifier) 
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (r *CreateNetworkRuleRequest) toOpts() *CreateNetworkRuleOptions {

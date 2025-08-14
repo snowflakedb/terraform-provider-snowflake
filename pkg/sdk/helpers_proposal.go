@@ -67,10 +67,6 @@ func createIfNil[T any](t *T) *T {
 	return t
 }
 
-type convertibleRowDeprecated[T any] interface {
-	convert() *T
-}
-
 type convertibleRow[T any] interface {
 	// TODO [SNOW-2259477]: rename to convert
 	convertErr() (*T, error)

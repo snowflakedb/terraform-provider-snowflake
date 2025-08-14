@@ -80,7 +80,7 @@ func (v *secrets) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Sec
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (r *CreateWithOAuthClientCredentialsFlowSecretRequest) toOpts() *CreateWithOAuthClientCredentialsFlowSecretOptions {

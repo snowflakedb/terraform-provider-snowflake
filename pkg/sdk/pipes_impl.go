@@ -73,5 +73,5 @@ func (v *pipes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Pipe,
 	if err != nil {
 		return nil, err
 	}
-	return pipeRow.convertErr()
+	return conversionErrorWrapped(pipeRow.convertErr())
 }

@@ -63,7 +63,7 @@ func (v *sessionPolicies) Describe(ctx context.Context, id SchemaObjectIdentifie
 	if err != nil {
 		return nil, err
 	}
-	return result.convertErr()
+	return conversionErrorWrapped(result.convertErr())
 }
 
 func (r *CreateSessionPolicyRequest) toOpts() *CreateSessionPolicyOptions {
