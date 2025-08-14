@@ -61,7 +61,7 @@ func (v *procedures) Show(ctx context.Context, request *ShowProcedureRequest) ([
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[procedureRow, Procedure](dbRows)
+	return convertRows[procedureRow, Procedure](dbRows)
 }
 
 func (v *procedures) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Procedure, error) {
@@ -87,7 +87,7 @@ func (v *procedures) Describe(ctx context.Context, id SchemaObjectIdentifierWith
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[procedureDetailRow, ProcedureDetail](rows)
+	return convertRows[procedureDetailRow, ProcedureDetail](rows)
 }
 
 func (v *procedures) Call(ctx context.Context, request *CallProcedureRequest) error {
@@ -489,7 +489,7 @@ func (r *ShowProcedureRequest) toOpts() *ShowProcedureOptions {
 	return opts
 }
 
-func (r procedureRow) convertErr() (*Procedure, error) {
+func (r procedureRow) convert() (*Procedure, error) {
 	e := &Procedure{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -529,7 +529,7 @@ func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
 	return opts
 }
 
-func (r procedureDetailRow) convertErr() (*ProcedureDetail, error) {
+func (r procedureDetailRow) convert() (*ProcedureDetail, error) {
 	e := &ProcedureDetail{
 		Property: r.Property,
 	}

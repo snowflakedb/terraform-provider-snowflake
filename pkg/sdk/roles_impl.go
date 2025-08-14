@@ -36,7 +36,7 @@ func (v *roles) Show(ctx context.Context, req *ShowRoleRequest) ([]Role, error) 
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[roleDBRow, Role](dbRows)
+	return convertRows[roleDBRow, Role](dbRows)
 }
 
 func (v *roles) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Role, error) {

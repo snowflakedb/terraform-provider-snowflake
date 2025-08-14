@@ -91,7 +91,7 @@ type tagRow struct {
 	OwnerRoleType string         `db:"owner_role_type"`
 }
 
-func (tr tagRow) convertErr() (*Tag, error) {
+func (tr tagRow) convert() (*Tag, error) {
 	t := &Tag{
 		CreatedOn:     tr.CreatedOn,
 		Name:          tr.Name,

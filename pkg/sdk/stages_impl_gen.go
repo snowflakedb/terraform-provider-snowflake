@@ -86,7 +86,7 @@ func (v *stages) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]Sta
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[stageDescRow, StageProperty](rows)
+	return convertRows[stageDescRow, StageProperty](rows)
 }
 
 func (v *stages) Show(ctx context.Context, request *ShowStageRequest) ([]Stage, error) {
@@ -95,7 +95,7 @@ func (v *stages) Show(ctx context.Context, request *ShowStageRequest) ([]Stage, 
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[stageShowRow, Stage](dbRows)
+	return convertRows[stageShowRow, Stage](dbRows)
 }
 
 func (v *stages) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Stage, error) {
@@ -632,7 +632,7 @@ func (r *DescribeStageRequest) toOpts() *DescribeStageOptions {
 	return opts
 }
 
-func (r stageDescRow) convertErr() (*StageProperty, error) {
+func (r stageDescRow) convert() (*StageProperty, error) {
 	stageProp := &StageProperty{
 		Parent:  r.ParentProperty,
 		Name:    r.Property,
@@ -651,7 +651,7 @@ func (r *ShowStageRequest) toOpts() *ShowStageOptions {
 	return opts
 }
 
-func (r stageShowRow) convertErr() (*Stage, error) {
+func (r stageShowRow) convert() (*Stage, error) {
 	stage := &Stage{
 		CreatedOn:        r.CreatedOn,
 		Name:             r.Name,

@@ -39,7 +39,7 @@ func (v *databaseRoles) Show(ctx context.Context, request *ShowDatabaseRoleReque
 		return nil, err
 	}
 
-	resultList, err := convertRowsErr[databaseRoleDBRow, DatabaseRole](dbRows)
+	resultList, err := convertRows[databaseRoleDBRow, DatabaseRole](dbRows)
 	if err != nil {
 		return nil, err
 	}

@@ -126,7 +126,7 @@ type userDBRow struct {
 	HasMfa                sql.NullBool   `db:"has_mfa"`
 }
 
-func (row userDBRow) convertErr() (*User, error) {
+func (row userDBRow) convert() (*User, error) {
 	user := &User{
 		Name:      row.Name,
 		CreatedOn: row.CreatedOn,
@@ -696,7 +696,7 @@ func (v *users) Show(ctx context.Context, opts *ShowUserOptions) ([]User, error)
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[userDBRow, User](dbRows)
+	return convertRows[userDBRow, User](dbRows)
 }
 
 func (v *users) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*User, error) {

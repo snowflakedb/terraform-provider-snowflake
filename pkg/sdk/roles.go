@@ -54,7 +54,7 @@ type roleDBRow struct {
 	Comment         sql.NullString `db:"comment"`
 }
 
-func (row roleDBRow) convertErr() (*Role, error) {
+func (row roleDBRow) convert() (*Role, error) {
 	role := &Role{
 		CreatedOn:       row.CreatedOn,
 		Name:            row.Name,

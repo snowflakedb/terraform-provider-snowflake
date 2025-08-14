@@ -462,7 +462,7 @@ type accountDBRow struct {
 	OrganizationUrlExpirationOn sql.NullTime   `db:"organization_URL_expiration_on"`
 }
 
-func (row accountDBRow) convertErr() (*Account, error) {
+func (row accountDBRow) convert() (*Account, error) {
 	acc := &Account{
 		OrganizationName:      row.OrganizationName,
 		AccountName:           row.AccountName,
@@ -551,7 +551,7 @@ func (c *accounts) Show(ctx context.Context, opts *ShowAccountOptions) ([]Accoun
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[accountDBRow, Account](dbRows)
+	return convertRows[accountDBRow, Account](dbRows)
 }
 
 func (c *accounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Account, error) {

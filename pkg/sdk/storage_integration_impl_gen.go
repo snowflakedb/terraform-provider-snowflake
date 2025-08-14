@@ -39,7 +39,7 @@ func (v *storageIntegrations) Show(ctx context.Context, request *ShowStorageInte
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[showStorageIntegrationsDbRow, StorageIntegration](dbRows)
+	return convertRows[showStorageIntegrationsDbRow, StorageIntegration](dbRows)
 }
 
 func (v *storageIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error) {
@@ -64,7 +64,7 @@ func (v *storageIntegrations) Describe(ctx context.Context, id AccountObjectIden
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[descStorageIntegrationsDbRow, StorageIntegrationProperty](rows)
+	return convertRows[descStorageIntegrationsDbRow, StorageIntegrationProperty](rows)
 }
 
 func (r *CreateStorageIntegrationRequest) toOpts() *CreateStorageIntegrationOptions {
@@ -152,7 +152,7 @@ func (r *ShowStorageIntegrationRequest) toOpts() *ShowStorageIntegrationOptions 
 	return opts
 }
 
-func (r showStorageIntegrationsDbRow) convertErr() (*StorageIntegration, error) {
+func (r showStorageIntegrationsDbRow) convert() (*StorageIntegration, error) {
 	s := &StorageIntegration{
 		Name:        r.Name,
 		StorageType: r.Type,
@@ -173,7 +173,7 @@ func (r *DescribeStorageIntegrationRequest) toOpts() *DescribeStorageIntegration
 	return opts
 }
 
-func (r descStorageIntegrationsDbRow) convertErr() (*StorageIntegrationProperty, error) {
+func (r descStorageIntegrationsDbRow) convert() (*StorageIntegrationProperty, error) {
 	return &StorageIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,

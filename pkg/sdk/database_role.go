@@ -114,7 +114,7 @@ func (v DatabaseRole) ID() DatabaseObjectIdentifier {
 	return NewDatabaseObjectIdentifier(v.DatabaseName, v.Name)
 }
 
-func (row databaseRoleDBRow) convertErr() (*DatabaseRole, error) {
+func (row databaseRoleDBRow) convert() (*DatabaseRole, error) {
 	databaseRole := DatabaseRole{
 		CreatedOn:              row.CreatedOn,
 		Name:                   row.Name,

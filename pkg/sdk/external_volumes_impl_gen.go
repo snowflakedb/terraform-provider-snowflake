@@ -41,7 +41,7 @@ func (v *externalVolumes) Describe(ctx context.Context, id AccountObjectIdentifi
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[externalVolumeDescRow, ExternalVolumeProperty](rows)
+	return convertRows[externalVolumeDescRow, ExternalVolumeProperty](rows)
 }
 
 func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error) {
@@ -50,7 +50,7 @@ func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeR
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[externalVolumeShowRow, ExternalVolume](dbRows)
+	return convertRows[externalVolumeShowRow, ExternalVolume](dbRows)
 }
 
 func (v *externalVolumes) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error) {
@@ -151,7 +151,7 @@ func (r *DescribeExternalVolumeRequest) toOpts() *DescribeExternalVolumeOptions 
 	return opts
 }
 
-func (r externalVolumeDescRow) convertErr() (*ExternalVolumeProperty, error) {
+func (r externalVolumeDescRow) convert() (*ExternalVolumeProperty, error) {
 	return &ExternalVolumeProperty{
 		Parent:  r.ParentProperty,
 		Name:    r.Property,
@@ -168,7 +168,7 @@ func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
 	return opts
 }
 
-func (r externalVolumeShowRow) convertErr() (*ExternalVolume, error) {
+func (r externalVolumeShowRow) convert() (*ExternalVolume, error) {
 	externalVolume := ExternalVolume{
 		Name:        r.Name,
 		AllowWrites: r.AllowWrites,

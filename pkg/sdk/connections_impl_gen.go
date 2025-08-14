@@ -40,7 +40,7 @@ func (v *connections) Show(ctx context.Context, request *ShowConnectionRequest) 
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[connectionRow, Connection](dbRows)
+	return convertRows[connectionRow, Connection](dbRows)
 }
 
 func (v *connections) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Connection, error) {
@@ -120,7 +120,7 @@ func (r *ShowConnectionRequest) toOpts() *ShowConnectionOptions {
 	return opts
 }
 
-func (r connectionRow) convertErr() (*Connection, error) {
+func (r connectionRow) convert() (*Connection, error) {
 	c := &Connection{
 		SnowflakeRegion:  r.SnowflakeRegion,
 		CreatedOn:        r.CreatedOn,

@@ -253,7 +253,7 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 	if err != nil {
 		return nil, err
 	}
-	resultList, err := convertRowsErr[grantRow, Grant](dbRows)
+	resultList, err := convertRows[grantRow, Grant](dbRows)
 	if err != nil {
 		return nil, err
 	}

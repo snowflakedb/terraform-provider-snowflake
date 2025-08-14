@@ -39,7 +39,7 @@ func (v *apiIntegrations) Show(ctx context.Context, request *ShowApiIntegrationR
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[showApiIntegrationsDbRow, ApiIntegration](dbRows)
+	return convertRows[showApiIntegrationsDbRow, ApiIntegration](dbRows)
 }
 
 func (v *apiIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegration, error) {
@@ -64,7 +64,7 @@ func (v *apiIntegrations) Describe(ctx context.Context, id AccountObjectIdentifi
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[descApiIntegrationsDbRow, ApiIntegrationProperty](rows)
+	return convertRows[descApiIntegrationsDbRow, ApiIntegrationProperty](rows)
 }
 
 func (r *CreateApiIntegrationRequest) toOpts() *CreateApiIntegrationOptions {
@@ -160,7 +160,7 @@ func (r *ShowApiIntegrationRequest) toOpts() *ShowApiIntegrationOptions {
 	return opts
 }
 
-func (r showApiIntegrationsDbRow) convertErr() (*ApiIntegration, error) {
+func (r showApiIntegrationsDbRow) convert() (*ApiIntegration, error) {
 	s := &ApiIntegration{
 		Name:      r.Name,
 		ApiType:   r.Type,
@@ -181,7 +181,7 @@ func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions 
 	return opts
 }
 
-func (r descApiIntegrationsDbRow) convertErr() (*ApiIntegrationProperty, error) {
+func (r descApiIntegrationsDbRow) convert() (*ApiIntegrationProperty, error) {
 	return &ApiIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,

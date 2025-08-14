@@ -352,7 +352,7 @@ type externalTableRow struct {
 	OwnerRoleType       string         `db:"owner_role_type"`
 }
 
-func (e externalTableRow) convertErr() (*ExternalTable, error) {
+func (e externalTableRow) convert() (*ExternalTable, error) {
 	et := &ExternalTable{
 		CreatedOn:      e.CreatedOn,
 		Name:           e.Name,
@@ -423,7 +423,7 @@ type externalTableColumnDetailsRow struct {
 	PolicyName sql.NullString `db:"policy name"`
 }
 
-func (r externalTableColumnDetailsRow) convertErr() (*ExternalTableColumnDetails, error) {
+func (r externalTableColumnDetailsRow) convert() (*ExternalTableColumnDetails, error) {
 	details := &ExternalTableColumnDetails{
 		Name:       r.Name,
 		Type:       r.Type,
@@ -472,7 +472,7 @@ type externalTableStageDetailsRow struct {
 	PropertyDefault string `db:"property_default"`
 }
 
-func (r externalTableStageDetailsRow) convertErr() (*ExternalTableStageDetails, error) {
+func (r externalTableStageDetailsRow) convert() (*ExternalTableStageDetails, error) {
 	return &ExternalTableStageDetails{
 		ParentProperty:  r.ParentProperty,
 		Property:        r.Property,

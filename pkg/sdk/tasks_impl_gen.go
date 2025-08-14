@@ -54,7 +54,7 @@ func (v *tasks) Show(ctx context.Context, request *ShowTaskRequest) ([]Task, err
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[taskDBRow, Task](dbRows)
+	return convertRows[taskDBRow, Task](dbRows)
 }
 
 func (v *tasks) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Task, error) {
@@ -88,7 +88,7 @@ func (v *tasks) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Task,
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *tasks) Execute(ctx context.Context, request *ExecuteTaskRequest) error {
@@ -325,7 +325,7 @@ func (r *ShowTaskRequest) toOpts() *ShowTaskOptions {
 	return opts
 }
 
-func (r taskDBRow) convertErr() (*Task, error) {
+func (r taskDBRow) convert() (*Task, error) {
 	task := Task{
 		CreatedOn:                 r.CreatedOn,
 		Id:                        r.Id,

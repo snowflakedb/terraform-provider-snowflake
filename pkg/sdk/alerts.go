@@ -258,7 +258,7 @@ type alertDBRow struct {
 	OwnerRoleType sql.NullString `db:"owner_role_type"`
 }
 
-func (row alertDBRow) convertErr() (*Alert, error) {
+func (row alertDBRow) convert() (*Alert, error) {
 	alert := &Alert{
 		CreatedOn:    row.CreatedOn,
 		Name:         row.Name,
@@ -292,7 +292,7 @@ func (v *alerts) Show(ctx context.Context, opts *ShowAlertOptions) ([]Alert, err
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[alertDBRow, Alert](dbRows)
+	return convertRows[alertDBRow, Alert](dbRows)
 }
 
 func (v *alerts) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error) {

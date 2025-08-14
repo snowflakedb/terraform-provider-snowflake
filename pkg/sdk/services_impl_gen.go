@@ -44,7 +44,7 @@ func (v *services) Show(ctx context.Context, request *ShowServiceRequest) ([]Ser
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[servicesRow, Service](dbRows)
+	return convertRows[servicesRow, Service](dbRows)
 }
 
 func (v *services) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Service, error) {
@@ -70,7 +70,7 @@ func (v *services) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Se
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
@@ -230,7 +230,7 @@ func (r *ShowServiceRequest) toOpts() *ShowServiceOptions {
 	return opts
 }
 
-func (r servicesRow) convertErr() (*Service, error) {
+func (r servicesRow) convert() (*Service, error) {
 	service := &Service{
 		Name:              r.Name,
 		DatabaseName:      r.DatabaseName,
@@ -305,7 +305,7 @@ func (r *DescribeServiceRequest) toOpts() *DescribeServiceOptions {
 	return opts
 }
 
-func (r serviceDescRow) convertErr() (*ServiceDetails, error) {
+func (r serviceDescRow) convert() (*ServiceDetails, error) {
 	service := &ServiceDetails{
 		Name:              r.Name,
 		DatabaseName:      r.DatabaseName,

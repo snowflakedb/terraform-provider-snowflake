@@ -22,7 +22,7 @@ func (v *userProgrammaticAccessTokens) Add(ctx context.Context, request *AddUser
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *userProgrammaticAccessTokens) Modify(ctx context.Context, request *ModifyUserProgrammaticAccessTokenRequest) error {
@@ -36,7 +36,7 @@ func (v *userProgrammaticAccessTokens) Rotate(ctx context.Context, request *Rota
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *userProgrammaticAccessTokens) Remove(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
@@ -55,7 +55,7 @@ func (v *userProgrammaticAccessTokens) Show(ctx context.Context, request *ShowUs
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[programmaticAccessTokenResultDBRow, ProgrammaticAccessToken](dbRows)
+	return convertRows[programmaticAccessTokenResultDBRow, ProgrammaticAccessToken](dbRows)
 }
 
 // Adjusted manually to include the user id in the request.
@@ -86,7 +86,7 @@ func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAcc
 	return opts
 }
 
-func (r addProgrammaticAccessTokenResultDBRow) convertErr() (*AddProgrammaticAccessTokenResult, error) {
+func (r addProgrammaticAccessTokenResultDBRow) convert() (*AddProgrammaticAccessTokenResult, error) {
 	return &AddProgrammaticAccessTokenResult{
 		TokenName:   r.TokenName,
 		TokenSecret: r.TokenSecret,
@@ -128,7 +128,7 @@ func (r *RotateUserProgrammaticAccessTokenRequest) toOpts() *RotateUserProgramma
 	return opts
 }
 
-func (r rotateProgrammaticAccessTokenResultDBRow) convertErr() (*RotateProgrammaticAccessTokenResult, error) {
+func (r rotateProgrammaticAccessTokenResultDBRow) convert() (*RotateProgrammaticAccessTokenResult, error) {
 	return &RotateProgrammaticAccessTokenResult{
 		TokenName:        r.TokenName,
 		TokenSecret:      r.TokenSecret,
@@ -152,7 +152,7 @@ func (r *ShowUserProgrammaticAccessTokenRequest) toOpts() *ShowUserProgrammaticA
 	return opts
 }
 
-func (r programmaticAccessTokenResultDBRow) convertErr() (*ProgrammaticAccessToken, error) {
+func (r programmaticAccessTokenResultDBRow) convert() (*ProgrammaticAccessToken, error) {
 	token := &ProgrammaticAccessToken{
 		Name:      r.Name,
 		ExpiresAt: r.ExpiresAt,

@@ -38,7 +38,7 @@ func (v *applicationPackages) Show(ctx context.Context, request *ShowApplication
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[applicationPackageRow, ApplicationPackage](dbRows)
+	return convertRows[applicationPackageRow, ApplicationPackage](dbRows)
 }
 
 func (v *applicationPackages) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ApplicationPackage, error) {
@@ -160,7 +160,7 @@ func (r *ShowApplicationPackageRequest) toOpts() *ShowApplicationPackageOptions 
 	return opts
 }
 
-func (r applicationPackageRow) convertErr() (*ApplicationPackage, error) {
+func (r applicationPackageRow) convert() (*ApplicationPackage, error) {
 	e := &ApplicationPackage{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,

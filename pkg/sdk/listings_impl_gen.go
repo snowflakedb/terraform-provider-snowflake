@@ -48,7 +48,7 @@ func (v *listings) Show(ctx context.Context, request *ShowListingRequest) ([]Lis
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[listingDBRow, Listing](dbRows)
+	return convertRows[listingDBRow, Listing](dbRows)
 }
 
 func (v *listings) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error) {
@@ -71,7 +71,7 @@ func (v *listings) Describe(ctx context.Context, request *DescribeListingRequest
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error) {
@@ -80,7 +80,7 @@ func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListin
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[listingVersionDBRow, ListingVersion](dbRows)
+	return convertRows[listingVersionDBRow, ListingVersion](dbRows)
 }
 
 func (r *CreateListingRequest) toOpts() *CreateListingOptions {
@@ -159,7 +159,7 @@ func (r *ShowListingRequest) toOpts() *ShowListingOptions {
 	return opts
 }
 
-func (r listingDBRow) convertErr() (*Listing, error) {
+func (r listingDBRow) convert() (*Listing, error) {
 	l := &Listing{
 		GlobalName:     r.GlobalName,
 		Name:           r.Name,
@@ -202,7 +202,7 @@ func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
 	return opts
 }
 
-func (r listingDetailsDBRow) convertErr() (*ListingDetails, error) {
+func (r listingDetailsDBRow) convert() (*ListingDetails, error) {
 	ld := &ListingDetails{
 		GlobalName:    r.GlobalName,
 		Name:          r.Name,
@@ -277,7 +277,7 @@ func (r *ShowVersionsListingRequest) toOpts() *ShowVersionsListingOptions {
 	return opts
 }
 
-func (r listingVersionDBRow) convertErr() (*ListingVersion, error) {
+func (r listingVersionDBRow) convert() (*ListingVersion, error) {
 	lv := &ListingVersion{
 		CreatedOn:         r.CreatedOn,
 		Name:              r.Name,

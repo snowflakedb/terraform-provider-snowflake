@@ -62,7 +62,7 @@ type DataMetricFunctionReference struct {
 	ScheduleStatus        string
 }
 
-func (row dataMetricFunctionReferencesRow) convertErr() (*DataMetricFunctionReference, error) {
+func (row dataMetricFunctionReferencesRow) convert() (*DataMetricFunctionReference, error) {
 	x := &DataMetricFunctionReference{
 		MetricDatabaseName:    strings.Trim(row.MetricDatabaseName, `"`),
 		MetricSchemaName:      strings.Trim(row.MetricSchemaName, `"`),

@@ -111,7 +111,7 @@ func (v *securityIntegrations) Describe(ctx context.Context, id AccountObjectIde
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[securityIntegrationDescRow, SecurityIntegrationProperty](rows)
+	return convertRows[securityIntegrationDescRow, SecurityIntegrationProperty](rows)
 }
 
 func (v *securityIntegrations) Show(ctx context.Context, request *ShowSecurityIntegrationRequest) ([]SecurityIntegration, error) {
@@ -120,7 +120,7 @@ func (v *securityIntegrations) Show(ctx context.Context, request *ShowSecurityIn
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[securityIntegrationShowRow, SecurityIntegration](dbRows)
+	return convertRows[securityIntegrationShowRow, SecurityIntegration](dbRows)
 }
 
 func (v *securityIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*SecurityIntegration, error) {
@@ -632,7 +632,7 @@ func (r *DescribeSecurityIntegrationRequest) toOpts() *DescribeSecurityIntegrati
 	return opts
 }
 
-func (r securityIntegrationDescRow) convertErr() (*SecurityIntegrationProperty, error) {
+func (r securityIntegrationDescRow) convert() (*SecurityIntegrationProperty, error) {
 	return &SecurityIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
@@ -648,7 +648,7 @@ func (r *ShowSecurityIntegrationRequest) toOpts() *ShowSecurityIntegrationOption
 	return opts
 }
 
-func (r securityIntegrationShowRow) convertErr() (*SecurityIntegration, error) {
+func (r securityIntegrationShowRow) convert() (*SecurityIntegration, error) {
 	s := &SecurityIntegration{
 		Name:            r.Name,
 		IntegrationType: r.Type,

@@ -114,7 +114,7 @@ type policyReferenceDBRow struct {
 	PolicyStatus      sql.NullString `db:"POLICY_STATUS"`
 }
 
-func (row policyReferenceDBRow) convertErr() (*PolicyReference, error) {
+func (row policyReferenceDBRow) convert() (*PolicyReference, error) {
 	policyReference := PolicyReference{
 		PolicyName:      row.PolicyName,
 		PolicyKind:      PolicyKind(row.PolicyKind),

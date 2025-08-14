@@ -29,7 +29,7 @@ func (v *applicationRoles) Show(ctx context.Context, request *ShowApplicationRol
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[applicationRoleDbRow, ApplicationRole](dbRows)
+	return convertRows[applicationRoleDbRow, ApplicationRole](dbRows)
 }
 
 func (v *applicationRoles) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*ApplicationRole, error) {
@@ -78,7 +78,7 @@ func (r *ShowApplicationRoleRequest) toOpts() *ShowApplicationRoleOptions {
 	return opts
 }
 
-func (r applicationRoleDbRow) convertErr() (*ApplicationRole, error) {
+func (r applicationRoleDbRow) convert() (*ApplicationRole, error) {
 	return &ApplicationRole{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,

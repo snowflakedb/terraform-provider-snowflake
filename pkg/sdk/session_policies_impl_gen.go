@@ -39,7 +39,7 @@ func (v *sessionPolicies) Show(ctx context.Context, request *ShowSessionPolicyRe
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[showSessionPolicyDBRow, SessionPolicy](dbRows)
+	return convertRows[showSessionPolicyDBRow, SessionPolicy](dbRows)
 }
 
 func (v *sessionPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error) {
@@ -63,7 +63,7 @@ func (v *sessionPolicies) Describe(ctx context.Context, id SchemaObjectIdentifie
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateSessionPolicyRequest) toOpts() *CreateSessionPolicyOptions {
@@ -117,7 +117,7 @@ func (r *ShowSessionPolicyRequest) toOpts() *ShowSessionPolicyOptions {
 	return opts
 }
 
-func (r showSessionPolicyDBRow) convertErr() (*SessionPolicy, error) {
+func (r showSessionPolicyDBRow) convert() (*SessionPolicy, error) {
 	return &SessionPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -138,7 +138,7 @@ func (r *DescribeSessionPolicyRequest) toOpts() *DescribeSessionPolicyOptions {
 	return opts
 }
 
-func (r describeSessionPolicyDBRow) convertErr() (*SessionPolicyDescription, error) {
+func (r describeSessionPolicyDBRow) convert() (*SessionPolicyDescription, error) {
 	sessionPolicyDescription := SessionPolicyDescription{
 		CreatedOn:                r.CreatedOn,
 		Name:                     r.Name,

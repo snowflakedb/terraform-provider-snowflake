@@ -126,7 +126,7 @@ func (v *Pipe) ObjectType() ObjectType {
 	return ObjectTypePipe
 }
 
-func (row pipeDBRow) convertErr() (*Pipe, error) {
+func (row pipeDBRow) convert() (*Pipe, error) {
 	pipe := Pipe{
 		CreatedOn:    row.CreatedOn,
 		Name:         row.Name,

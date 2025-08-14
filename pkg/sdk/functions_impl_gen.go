@@ -61,7 +61,7 @@ func (v *functions) Show(ctx context.Context, request *ShowFunctionRequest) ([]F
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[functionRow, Function](dbRows)
+	return convertRows[functionRow, Function](dbRows)
 }
 
 func (v *functions) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Function, error) {
@@ -87,7 +87,7 @@ func (v *functions) Describe(ctx context.Context, id SchemaObjectIdentifierWithA
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[functionDetailRow, FunctionDetail](rows)
+	return convertRows[functionDetailRow, FunctionDetail](rows)
 }
 
 func (r *CreateForJavaFunctionRequest) toOpts() *CreateForJavaFunctionOptions {
@@ -475,7 +475,7 @@ func (r *ShowFunctionRequest) toOpts() *ShowFunctionOptions {
 	return opts
 }
 
-func (r functionRow) convertErr() (*Function, error) {
+func (r functionRow) convert() (*Function, error) {
 	e := &Function{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -530,7 +530,7 @@ func (r *DescribeFunctionRequest) toOpts() *DescribeFunctionOptions {
 	return opts
 }
 
-func (r functionDetailRow) convertErr() (*FunctionDetail, error) {
+func (r functionDetailRow) convert() (*FunctionDetail, error) {
 	e := &FunctionDetail{
 		Property: r.Property,
 	}

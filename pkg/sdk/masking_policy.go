@@ -288,7 +288,7 @@ type maskingPolicyDBRow struct {
 	Options       string    `db:"options"`
 }
 
-func (row maskingPolicyDBRow) convertErr() (*MaskingPolicy, error) {
+func (row maskingPolicyDBRow) convert() (*MaskingPolicy, error) {
 	options, err := ParseMaskingPolicyOptions(row.Options)
 	if err != nil {
 		return nil, fmt.Errorf("converting masking policy row: error unmarshaling options: %w", err)
@@ -313,7 +313,7 @@ func (v *maskingPolicies) Show(ctx context.Context, opts *ShowMaskingPolicyOptio
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[maskingPolicyDBRow, MaskingPolicy](dbRows)
+	return convertRows[maskingPolicyDBRow, MaskingPolicy](dbRows)
 }
 
 func (v *maskingPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicy, error) {

@@ -42,7 +42,7 @@ func (v *pipes) Show(ctx context.Context, opts *ShowPipeOptions) ([]Pipe, error)
 		return nil, err
 	}
 
-	return convertRowsErr[pipeDBRow, Pipe](dbRows)
+	return convertRows[pipeDBRow, Pipe](dbRows)
 }
 
 func (v *pipes) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error) {
@@ -73,5 +73,5 @@ func (v *pipes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Pipe,
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(pipeRow.convertErr())
+	return conversionErrorWrapped(pipeRow.convert())
 }

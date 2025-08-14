@@ -79,7 +79,7 @@ func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, 
 		return nil, err
 	}
 
-	return convertRowsErr[tableDBRow, Table](dbRows)
+	return convertRows[tableDBRow, Table](dbRows)
 }
 
 func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
@@ -101,7 +101,7 @@ func (v *tables) DescribeColumns(ctx context.Context, req *DescribeTableColumnsR
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[tableColumnDetailsRow, TableColumnDetails](rows)
+	return convertRows[tableColumnDetailsRow, TableColumnDetails](rows)
 }
 
 func (v *tables) DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error) {
@@ -109,7 +109,7 @@ func (v *tables) DescribeStage(ctx context.Context, req *DescribeTableStageReque
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[tableStageDetailsRow, TableStageDetails](rows)
+	return convertRows[tableStageDetailsRow, TableStageDetails](rows)
 }
 
 func (s *AlterTableRequest) toOpts() *alterTableOptions {

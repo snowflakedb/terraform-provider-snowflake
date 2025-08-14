@@ -92,7 +92,7 @@ type databaseRow struct {
 	OwnerRoleType sql.NullString `db:"owner_role_type"`
 }
 
-func (row databaseRow) convertErr() (*Database, error) {
+func (row databaseRow) convert() (*Database, error) {
 	database := &Database{
 		CreatedOn: row.CreatedOn,
 		Name:      row.Name,
@@ -786,7 +786,7 @@ func (v *databases) Show(ctx context.Context, opts *ShowDatabasesOptions) ([]Dat
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[databaseRow, Database](dbRows)
+	return convertRows[databaseRow, Database](dbRows)
 }
 
 func (v *databases) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Database, error) {

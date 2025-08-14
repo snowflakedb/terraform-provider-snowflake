@@ -39,7 +39,7 @@ func (v *applications) Show(ctx context.Context, request *ShowApplicationRequest
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[applicationRow, Application](dbRows)
+	return convertRows[applicationRow, Application](dbRows)
 }
 
 func (v *applications) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Application, error) {
@@ -64,7 +64,7 @@ func (v *applications) Describe(ctx context.Context, id AccountObjectIdentifier)
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[applicationPropertyRow, ApplicationProperty](rows)
+	return convertRows[applicationPropertyRow, ApplicationProperty](rows)
 }
 
 func (r *CreateApplicationRequest) toOpts() *CreateApplicationOptions {
@@ -156,7 +156,7 @@ func (r *ShowApplicationRequest) toOpts() *ShowApplicationOptions {
 	return opts
 }
 
-func (r applicationRow) convertErr() (*Application, error) {
+func (r applicationRow) convert() (*Application, error) {
 	return &Application{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -181,7 +181,7 @@ func (r *DescribeApplicationRequest) toOpts() *DescribeApplicationOptions {
 	return opts
 }
 
-func (r applicationPropertyRow) convertErr() (*ApplicationProperty, error) {
+func (r applicationPropertyRow) convert() (*ApplicationProperty, error) {
 	e := &ApplicationProperty{
 		Property: r.Property,
 	}

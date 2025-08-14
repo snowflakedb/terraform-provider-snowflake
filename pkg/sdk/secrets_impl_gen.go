@@ -54,7 +54,7 @@ func (v *secrets) Show(ctx context.Context, request *ShowSecretRequest) ([]Secre
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[secretDBRow, Secret](dbRows)
+	return convertRows[secretDBRow, Secret](dbRows)
 }
 
 func (v *secrets) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Secret, error) {
@@ -80,7 +80,7 @@ func (v *secrets) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Sec
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateWithOAuthClientCredentialsFlowSecretRequest) toOpts() *CreateWithOAuthClientCredentialsFlowSecretOptions {
@@ -208,7 +208,7 @@ func (r *ShowSecretRequest) toOpts() *ShowSecretOptions {
 	return opts
 }
 
-func (r secretDBRow) convertErr() (*Secret, error) {
+func (r secretDBRow) convert() (*Secret, error) {
 	s := &Secret{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -234,7 +234,7 @@ func (r *DescribeSecretRequest) toOpts() *DescribeSecretOptions {
 	return opts
 }
 
-func (r secretDetailsDBRow) convertErr() (*SecretDetails, error) {
+func (r secretDetailsDBRow) convert() (*SecretDetails, error) {
 	s := &SecretDetails{
 		CreatedOn:                   r.CreatedOn,
 		Name:                        r.Name,

@@ -32,7 +32,7 @@ func (v *externalFunctions) Show(ctx context.Context, request *ShowExternalFunct
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[externalFunctionRow, ExternalFunction](dbRows)
+	return convertRows[externalFunctionRow, ExternalFunction](dbRows)
 }
 
 func (v *externalFunctions) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ExternalFunction, error) {
@@ -58,7 +58,7 @@ func (v *externalFunctions) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[externalFunctionPropertyRow, ExternalFunctionProperty](rows)
+	return convertRows[externalFunctionPropertyRow, ExternalFunctionProperty](rows)
 }
 
 func (r *CreateExternalFunctionRequest) toOpts() *CreateExternalFunctionOptions {
@@ -154,7 +154,7 @@ func (r *ShowExternalFunctionRequest) toOpts() *ShowExternalFunctionOptions {
 	return opts
 }
 
-func (r externalFunctionRow) convertErr() (*ExternalFunction, error) {
+func (r externalFunctionRow) convert() (*ExternalFunction, error) {
 	e := &ExternalFunction{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -205,7 +205,7 @@ func (r *DescribeExternalFunctionRequest) toOpts() *DescribeExternalFunctionOpti
 	return opts
 }
 
-func (r externalFunctionPropertyRow) convertErr() (*ExternalFunctionProperty, error) {
+func (r externalFunctionPropertyRow) convert() (*ExternalFunctionProperty, error) {
 	return &ExternalFunctionProperty{
 		Property: r.Property,
 		Value:    r.Value,

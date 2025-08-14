@@ -162,7 +162,7 @@ type dynamicTableRow struct {
 	OwnerRoleType       sql.NullString `db:"owner_role_type"`
 }
 
-func (dtr dynamicTableRow) convertErr() (*DynamicTable, error) {
+func (dtr dynamicTableRow) convert() (*DynamicTable, error) {
 	dt := &DynamicTable{
 		CreatedOn:           dtr.CreatedOn,
 		Name:                dtr.Name,
@@ -234,7 +234,7 @@ type dynamicTableDetailsRow struct {
 	PolicyName sql.NullString `db:"policy name"`
 }
 
-func (row dynamicTableDetailsRow) convertErr() (*DynamicTableDetails, error) {
+func (row dynamicTableDetailsRow) convert() (*DynamicTableDetails, error) {
 	typ, _ := datatypes.ParseDataType(row.Type)
 	dtd := &DynamicTableDetails{
 		Name:       row.Name,

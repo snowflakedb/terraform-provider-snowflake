@@ -40,7 +40,7 @@ func (v *materializedViews) Show(ctx context.Context, request *ShowMaterializedV
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[materializedViewDBRow, MaterializedView](dbRows)
+	return convertRows[materializedViewDBRow, MaterializedView](dbRows)
 }
 
 func (v *materializedViews) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaterializedView, error) {
@@ -66,7 +66,7 @@ func (v *materializedViews) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[materializedViewDetailsRow, MaterializedViewDetails](rows)
+	return convertRows[materializedViewDetailsRow, MaterializedViewDetails](rows)
 }
 
 func (r *CreateMaterializedViewRequest) toOpts() *CreateMaterializedViewOptions {
@@ -164,7 +164,7 @@ func (r *ShowMaterializedViewRequest) toOpts() *ShowMaterializedViewOptions {
 	return opts
 }
 
-func (r materializedViewDBRow) convertErr() (*MaterializedView, error) {
+func (r materializedViewDBRow) convert() (*MaterializedView, error) {
 	materializedView := MaterializedView{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -212,7 +212,7 @@ func (r *DescribeMaterializedViewRequest) toOpts() *DescribeMaterializedViewOpti
 	return opts
 }
 
-func (r materializedViewDetailsRow) convertErr() (*MaterializedViewDetails, error) {
+func (r materializedViewDetailsRow) convert() (*MaterializedViewDetails, error) {
 	details := &MaterializedViewDetails{
 		Name:       r.Name,
 		Type:       r.Type,

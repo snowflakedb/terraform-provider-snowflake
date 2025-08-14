@@ -59,7 +59,7 @@ func (v *streams) Show(ctx context.Context, request *ShowStreamRequest) ([]Strea
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[showStreamsDbRow, Stream](dbRows)
+	return convertRows[showStreamsDbRow, Stream](dbRows)
 }
 
 func (v *streams) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Stream, error) {
@@ -85,7 +85,7 @@ func (v *streams) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Str
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateOnTableStreamRequest) toOpts() *CreateOnTableStreamOptions {
@@ -228,7 +228,7 @@ func (r *ShowStreamRequest) toOpts() *ShowStreamOptions {
 	return opts
 }
 
-func (r showStreamsDbRow) convertErr() (*Stream, error) {
+func (r showStreamsDbRow) convert() (*Stream, error) {
 	s := &Stream{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,

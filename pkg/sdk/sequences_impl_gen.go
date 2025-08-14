@@ -30,7 +30,7 @@ func (v *sequences) Show(ctx context.Context, request *ShowSequenceRequest) ([]S
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[sequenceRow, Sequence](dbRows)
+	return convertRows[sequenceRow, Sequence](dbRows)
 }
 
 func (v *sequences) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Sequence, error) {
@@ -56,7 +56,7 @@ func (v *sequences) Describe(ctx context.Context, id SchemaObjectIdentifier) (*S
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *sequences) Drop(ctx context.Context, request *DropSequenceRequest) error {
@@ -107,7 +107,7 @@ func (r *ShowSequenceRequest) toOpts() *ShowSequenceOptions {
 	return opts
 }
 
-func (r sequenceRow) convertErr() (*Sequence, error) {
+func (r sequenceRow) convert() (*Sequence, error) {
 	return &Sequence{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -129,7 +129,7 @@ func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
 	return opts
 }
 
-func (r sequenceDetailRow) convertErr() (*SequenceDetail, error) {
+func (r sequenceDetailRow) convert() (*SequenceDetail, error) {
 	return &SequenceDetail{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,

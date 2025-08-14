@@ -29,7 +29,7 @@ func (v *organizationAccounts) Show(ctx context.Context, request *ShowOrganizati
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[organizationAccountDbRow, OrganizationAccount](dbRows)
+	return convertRows[organizationAccountDbRow, OrganizationAccount](dbRows)
 }
 
 func (v *organizationAccounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error) {
@@ -107,7 +107,7 @@ func (r *ShowOrganizationAccountRequest) toOpts() *ShowOrganizationAccountOption
 	return opts
 }
 
-func (r organizationAccountDbRow) convertErr() (*OrganizationAccount, error) {
+func (r organizationAccountDbRow) convert() (*OrganizationAccount, error) {
 	oa := &OrganizationAccount{
 		OrganizationName:                     r.OrganizationName,
 		AccountName:                          r.AccountName,

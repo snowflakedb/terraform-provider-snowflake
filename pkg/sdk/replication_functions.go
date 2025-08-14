@@ -91,7 +91,7 @@ type ReplicationDatabase struct {
 	AccountLocator               string
 }
 
-func (row replicationDatabaseRow) convertErr() (*ReplicationDatabase, error) {
+func (row replicationDatabaseRow) convert() (*ReplicationDatabase, error) {
 	db := &ReplicationDatabase{
 		SnowflakeRegion:  row.SnowflakeRegion,
 		CreatedOn:        row.CreatedOn,
@@ -149,7 +149,7 @@ func (c *replicationFunctions) ShowReplicationDatabases(ctx context.Context, opt
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[replicationDatabaseRow, ReplicationDatabase](dbRows)
+	return convertRows[replicationDatabaseRow, ReplicationDatabase](dbRows)
 }
 
 type CloudType string

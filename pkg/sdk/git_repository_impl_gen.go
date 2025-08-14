@@ -43,7 +43,7 @@ func (v *gitRepositories) Describe(ctx context.Context, id SchemaObjectIdentifie
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *gitRepositories) Show(ctx context.Context, request *ShowGitRepositoryRequest) ([]GitRepository, error) {
@@ -52,7 +52,7 @@ func (v *gitRepositories) Show(ctx context.Context, request *ShowGitRepositoryRe
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[gitRepositoriesRow, GitRepository](dbRows)
+	return convertRows[gitRepositoriesRow, GitRepository](dbRows)
 }
 
 func (v *gitRepositories) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error) {
@@ -76,7 +76,7 @@ func (v *gitRepositories) ShowGitBranches(ctx context.Context, request *ShowGitB
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[gitBranchesRow, GitBranch](dbRows)
+	return convertRows[gitBranchesRow, GitBranch](dbRows)
 }
 
 func (v *gitRepositories) ShowGitTags(ctx context.Context, request *ShowGitTagsGitRepositoryRequest) ([]GitTag, error) {
@@ -85,7 +85,7 @@ func (v *gitRepositories) ShowGitTags(ctx context.Context, request *ShowGitTagsG
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[gitTagsRow, GitTag](dbRows)
+	return convertRows[gitTagsRow, GitTag](dbRows)
 }
 
 func (r *CreateGitRepositoryRequest) toOpts() *CreateGitRepositoryOptions {
@@ -142,7 +142,7 @@ func (r *DescribeGitRepositoryRequest) toOpts() *DescribeGitRepositoryOptions {
 	return opts
 }
 
-func (r gitRepositoriesRow) convertErr() (*GitRepository, error) {
+func (r gitRepositoriesRow) convert() (*GitRepository, error) {
 	gitRepository := &GitRepository{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -197,7 +197,7 @@ func (r *ShowGitBranchesGitRepositoryRequest) toOpts() *ShowGitBranchesGitReposi
 	return opts
 }
 
-func (r gitBranchesRow) convertErr() (*GitBranch, error) {
+func (r gitBranchesRow) convert() (*GitBranch, error) {
 	return &GitBranch{
 		Name:       r.Name,
 		Path:       r.Path,
@@ -215,7 +215,7 @@ func (r *ShowGitTagsGitRepositoryRequest) toOpts() *ShowGitTagsGitRepositoryOpti
 	return opts
 }
 
-func (r gitTagsRow) convertErr() (*GitTag, error) {
+func (r gitTagsRow) convert() (*GitTag, error) {
 	return &GitTag{
 		Name:       r.Name,
 		Path:       r.Path,

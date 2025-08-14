@@ -3,6 +3,7 @@ package sdk
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -300,7 +301,8 @@ func TestRowAccessPolicyDescription_Signature(t *testing.T) {
 			d := &describeRowAccessPolicyDBRow{
 				Signature: tt.signature,
 			}
-			got := d.convert()
+			got, err := d.convert()
+			assert.NoError(t, err)
 			require.Equal(t, tt.want, got.Signature)
 		})
 	}

@@ -40,7 +40,7 @@ func (v *rowAccessPolicies) Show(ctx context.Context, request *ShowRowAccessPoli
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[rowAccessPolicyDBRow, RowAccessPolicy](dbRows)
+	return convertRows[rowAccessPolicyDBRow, RowAccessPolicy](dbRows)
 }
 
 func (v *rowAccessPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*RowAccessPolicy, error) {
@@ -66,7 +66,7 @@ func (v *rowAccessPolicies) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateRowAccessPolicyRequest) toOpts() *CreateRowAccessPolicyOptions {
@@ -118,7 +118,7 @@ func (r *ShowRowAccessPolicyRequest) toOpts() *ShowRowAccessPolicyOptions {
 	return opts
 }
 
-func (r rowAccessPolicyDBRow) convertErr() (*RowAccessPolicy, error) {
+func (r rowAccessPolicyDBRow) convert() (*RowAccessPolicy, error) {
 	rowAccessPolicy := &RowAccessPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -142,7 +142,7 @@ func (r *DescribeRowAccessPolicyRequest) toOpts() *DescribeRowAccessPolicyOption
 	return opts
 }
 
-func (r describeRowAccessPolicyDBRow) convertErr() (*RowAccessPolicyDescription, error) {
+func (r describeRowAccessPolicyDBRow) convert() (*RowAccessPolicyDescription, error) {
 	rowAccessPolicyDescription := &RowAccessPolicyDescription{
 		Name:       r.Name,
 		ReturnType: r.ReturnType,

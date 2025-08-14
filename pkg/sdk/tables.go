@@ -593,7 +593,7 @@ func splitClusterBy(statementWithoutLinear string) []string {
 	return keysClean
 }
 
-func (row tableDBRow) convertErr() (*Table, error) {
+func (row tableDBRow) convert() (*Table, error) {
 	table := Table{
 		CreatedOn:    row.CreatedOn,
 		Name:         row.Name,
@@ -700,7 +700,7 @@ type tableColumnDetailsRow struct {
 	SchemaEvolutionRecord sql.NullString `db:"schema evolution record"`
 }
 
-func (r tableColumnDetailsRow) convertErr() (*TableColumnDetails, error) {
+func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
 	type_, collation := r.splitTypeAndCollation()
 
 	details := &TableColumnDetails{
@@ -767,7 +767,7 @@ type tableStageDetailsRow struct {
 	PropertyDefault string `db:"property_default"`
 }
 
-func (r tableStageDetailsRow) convertErr() (*TableStageDetails, error) {
+func (r tableStageDetailsRow) convert() (*TableStageDetails, error) {
 	return &TableStageDetails{
 		ParentProperty:  r.ParentProperty,
 		Property:        r.Property,

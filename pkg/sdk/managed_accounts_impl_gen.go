@@ -33,7 +33,7 @@ func (v *managedAccounts) Show(ctx context.Context, request *ShowManagedAccountR
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[managedAccountDBRow, ManagedAccount](dbRows)
+	return convertRows[managedAccountDBRow, ManagedAccount](dbRows)
 }
 
 func (v *managedAccounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ManagedAccount, error) {
@@ -77,7 +77,7 @@ func (r *ShowManagedAccountRequest) toOpts() *ShowManagedAccountOptions {
 	return opts
 }
 
-func (r managedAccountDBRow) convertErr() (*ManagedAccount, error) {
+func (r managedAccountDBRow) convert() (*ManagedAccount, error) {
 	managedAccount := &ManagedAccount{
 		Cloud:             r.Cloud,
 		Region:            r.Region,

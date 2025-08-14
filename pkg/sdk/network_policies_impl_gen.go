@@ -39,7 +39,7 @@ func (v *networkPolicies) Show(ctx context.Context, request *ShowNetworkPolicyRe
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[showNetworkPolicyDBRow, NetworkPolicy](dbRows)
+	return convertRows[showNetworkPolicyDBRow, NetworkPolicy](dbRows)
 }
 
 func (v *networkPolicies) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*NetworkPolicy, error) {
@@ -65,7 +65,7 @@ func (v *networkPolicies) Describe(ctx context.Context, id AccountObjectIdentifi
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[describeNetworkPolicyDBRow, NetworkPolicyProperty](rows)
+	return convertRows[describeNetworkPolicyDBRow, NetworkPolicyProperty](rows)
 }
 
 func (r *CreateNetworkPolicyRequest) toOpts() *CreateNetworkPolicyOptions {
@@ -175,7 +175,7 @@ func (r *ShowNetworkPolicyRequest) toOpts() *ShowNetworkPolicyOptions {
 	return opts
 }
 
-func (r showNetworkPolicyDBRow) convertErr() (*NetworkPolicy, error) {
+func (r showNetworkPolicyDBRow) convert() (*NetworkPolicy, error) {
 	return &NetworkPolicy{
 		CreatedOn:                    r.CreatedOn,
 		Name:                         r.Name,
@@ -194,7 +194,7 @@ func (r *DescribeNetworkPolicyRequest) toOpts() *DescribeNetworkPolicyOptions {
 	return opts
 }
 
-func (r describeNetworkPolicyDBRow) convertErr() (*NetworkPolicyProperty, error) {
+func (r describeNetworkPolicyDBRow) convert() (*NetworkPolicyProperty, error) {
 	return &NetworkPolicyProperty{
 		Name:  r.Name,
 		Value: r.Value,

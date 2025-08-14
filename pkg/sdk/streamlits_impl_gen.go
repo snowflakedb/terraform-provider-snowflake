@@ -39,7 +39,7 @@ func (v *streamlits) Show(ctx context.Context, request *ShowStreamlitRequest) ([
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[streamlitsRow, Streamlit](dbRows)
+	return convertRows[streamlitsRow, Streamlit](dbRows)
 }
 
 func (v *streamlits) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Streamlit, error) {
@@ -65,7 +65,7 @@ func (v *streamlits) Describe(ctx context.Context, id SchemaObjectIdentifier) (*
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateStreamlitRequest) toOpts() *CreateStreamlitOptions {
@@ -143,7 +143,7 @@ func (r *ShowStreamlitRequest) toOpts() *ShowStreamlitOptions {
 	return opts
 }
 
-func (r streamlitsRow) convertErr() (*Streamlit, error) {
+func (r streamlitsRow) convert() (*Streamlit, error) {
 	e := &Streamlit{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -172,7 +172,7 @@ func (r *DescribeStreamlitRequest) toOpts() *DescribeStreamlitOptions {
 	return opts
 }
 
-func (r streamlitsDetailRow) convertErr() (*StreamlitDetail, error) {
+func (r streamlitsDetailRow) convert() (*StreamlitDetail, error) {
 	e := &StreamlitDetail{
 		Name:                       r.Name,
 		RootLocation:               r.RootLocation,

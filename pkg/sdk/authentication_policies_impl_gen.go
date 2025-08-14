@@ -39,7 +39,7 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
+	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {
@@ -65,7 +65,7 @@ func (v *authenticationPolicies) Describe(ctx context.Context, id SchemaObjectId
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[describeAuthenticationPolicyDBRow, AuthenticationPolicyDescription](rows)
+	return convertRows[describeAuthenticationPolicyDBRow, AuthenticationPolicyDescription](rows)
 }
 
 func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicyOptions {
@@ -134,7 +134,7 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 	return opts
 }
 
-func (r showAuthenticationPolicyDBRow) convertErr() (*AuthenticationPolicy, error) {
+func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
 	return &AuthenticationPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -154,7 +154,7 @@ func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPo
 	return opts
 }
 
-func (r describeAuthenticationPolicyDBRow) convertErr() (*AuthenticationPolicyDescription, error) {
+func (r describeAuthenticationPolicyDBRow) convert() (*AuthenticationPolicyDescription, error) {
 	return &AuthenticationPolicyDescription{
 		Property:    r.Property,
 		Value:       r.Value,

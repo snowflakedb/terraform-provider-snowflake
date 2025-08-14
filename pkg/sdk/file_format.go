@@ -112,7 +112,7 @@ type showFileFormatsOptionsResult struct {
 	DisableAutoConvert   bool `json:"DISABLE_AUTO_CONVERT"`
 }
 
-func (row FileFormatRow) convertErr() (*FileFormat, error) {
+func (row FileFormatRow) convert() (*FileFormat, error) {
 	inputOptions := showFileFormatsOptionsResult{}
 	err := json.Unmarshal([]byte(row.FormatOptions), &inputOptions)
 	if err != nil {
@@ -649,7 +649,7 @@ func (v *fileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[FileFormatRow, FileFormat](dbRows)
+	return convertRows[FileFormatRow, FileFormat](dbRows)
 }
 
 func (v *fileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {

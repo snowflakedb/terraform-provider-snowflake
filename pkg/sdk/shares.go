@@ -78,7 +78,7 @@ type shareRow struct {
 	Comment      string    `db:"comment"`
 }
 
-func (r shareRow) convertErr() (*Share, error) {
+func (r shareRow) convert() (*Share, error) {
 	toAccounts := strings.Split(r.To, ",")
 	var to []AccountIdentifier
 	if len(toAccounts) != 0 {
@@ -311,7 +311,7 @@ func (s *shares) Show(ctx context.Context, opts *ShowShareOptions) ([]Share, err
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[shareRow, Share](dbRows)
+	return convertRows[shareRow, Share](dbRows)
 }
 
 func (s *shares) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Share, error) {

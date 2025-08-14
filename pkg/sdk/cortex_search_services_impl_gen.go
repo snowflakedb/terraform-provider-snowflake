@@ -31,7 +31,7 @@ func (v *cortexSearchServices) Show(ctx context.Context, request *ShowCortexSear
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[cortexSearchServiceRow, CortexSearchService](dbRows)
+	return convertRows[cortexSearchServiceRow, CortexSearchService](dbRows)
 }
 
 func (v *cortexSearchServices) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*CortexSearchService, error) {
@@ -57,7 +57,7 @@ func (v *cortexSearchServices) Describe(ctx context.Context, id SchemaObjectIden
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *cortexSearchServices) Drop(ctx context.Context, request *DropCortexSearchServiceRequest) error {
@@ -119,7 +119,7 @@ func (r *ShowCortexSearchServiceRequest) toOpts() *ShowCortexSearchServiceOption
 	return opts
 }
 
-func (r cortexSearchServiceRow) convertErr() (*CortexSearchService, error) {
+func (r cortexSearchServiceRow) convert() (*CortexSearchService, error) {
 	cortexSearchService := &CortexSearchService{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -139,7 +139,7 @@ func (r *DescribeCortexSearchServiceRequest) toOpts() *DescribeCortexSearchServi
 	return opts
 }
 
-func (r cortexSearchServiceDetailsRow) convertErr() (*CortexSearchServiceDetails, error) {
+func (r cortexSearchServiceDetailsRow) convert() (*CortexSearchServiceDetails, error) {
 	row := &CortexSearchServiceDetails{
 		CreatedOn:         r.CreatedOn,
 		Name:              r.Name,

@@ -17,7 +17,7 @@ func (v *dataMetricFunctionReferences) GetForEntity(ctx context.Context, request
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[dataMetricFunctionReferencesRow, DataMetricFunctionReference](dbRows)
+	return convertRows[dataMetricFunctionReferencesRow, DataMetricFunctionReference](dbRows)
 }
 
 func (r *GetForEntityDataMetricFunctionReferenceRequest) toOpts() *GetForEntityDataMetricFunctionReferenceOptions {

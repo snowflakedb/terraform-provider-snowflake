@@ -47,7 +47,7 @@ func (v *computePools) Show(ctx context.Context, request *ShowComputePoolRequest
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[computePoolsRow, ComputePool](dbRows)
+	return convertRows[computePoolsRow, ComputePool](dbRows)
 }
 
 func (v *computePools) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ComputePool, error) {
@@ -72,7 +72,7 @@ func (v *computePools) Describe(ctx context.Context, id AccountObjectIdentifier)
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convertErr())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateComputePoolRequest) toOpts() *CreateComputePoolOptions {
@@ -139,7 +139,7 @@ func (r *ShowComputePoolRequest) toOpts() *ShowComputePoolOptions {
 	return opts
 }
 
-func (r computePoolsRow) convertErr() (*ComputePool, error) {
+func (r computePoolsRow) convert() (*ComputePool, error) {
 	cp := &ComputePool{
 		Name:            r.Name,
 		MinNodes:        r.MinNodes,
@@ -190,7 +190,7 @@ func (r *DescribeComputePoolRequest) toOpts() *DescribeComputePoolOptions {
 	return opts
 }
 
-func (r computePoolDescRow) convertErr() (*ComputePoolDetails, error) {
+func (r computePoolDescRow) convert() (*ComputePoolDetails, error) {
 	cp := &ComputePoolDetails{
 		Name:            r.Name,
 		MinNodes:        r.MinNodes,
