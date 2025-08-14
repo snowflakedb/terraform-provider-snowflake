@@ -63,7 +63,7 @@
                     if err != nil {
                         return nil, err
                     }
-                    return convertRows[{{ .DescribeMapping.From.Name }}, {{ .DescribeMapping.To.Name }}](rows), nil
+                    return convertRows[{{ .DescribeMapping.From.Name }}, {{ .DescribeMapping.To.Name }}](rows)
                 }
             {{ end }}
         {{ end }}
