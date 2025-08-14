@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -30,27 +30,26 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 	t.Skipf("Skipped due to 003813 (23001): The connection cannot be failed over to an account in the same region")
 
 	// create primary connection
-	connection, connectionCleanup := testClient().Connection.Create(t)
+	connection, connectionCleanup := secondaryTestClient().Connection.Create(t)
 	t.Cleanup(connectionCleanup)
 
-	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
-	testClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).
+	accountId := testClient().Account.GetAccountIdentifier(t)
+	secondaryTestClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).
 		WithEnableConnectionFailover(
-			*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId}),
+			*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{accountId}),
 		),
 	)
 
-	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(testClient().Account.GetAccountIdentifier(t), connection.ID())
+	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(secondaryTestClient().Account.GetAccountIdentifier(t), connection.ID())
 	comment := random.Comment()
 
-	provider := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
 	secondaryConnectionModel := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName())
 	secondaryConnectionModelWithComment := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName()).
 		WithComment(comment)
 
 	assert.Eventually(t, func() bool {
-		if _, err := secondaryTestClient().Connection.CreateReplication(t, connection.ID(), primaryConnectionAsExternalId); err == nil {
-			secondaryTestClient().Connection.DropFunc(t, connection.ID())()
+		if _, err := testClient().Connection.CreateReplication(t, connection.ID(), primaryConnectionAsExternalId); err == nil {
+			testClient().Connection.DropFunc(t, connection.ID())()
 			return true
 		}
 		return false
@@ -62,12 +61,10 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		// TODO: Check destroy is client dependent (which means we should be able to use dedicated client for checking: e.g. secondary in this case)
-		//   Or just reverse it (create on secondary and use primary for resources)
-		// CheckDestroy: CheckDestroy(t, resources.SecondaryConnection),
+		CheckDestroy: CheckDestroy(t, resources.SecondaryConnection),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, provider, secondaryConnectionModel),
+				Config: config.FromModels(t, secondaryConnectionModel),
 				Check: resource.ComposeTestCheckFunc(
 					assertThat(t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModel.ResourceReference()).
@@ -78,28 +75,27 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 							HasCommentString(""),
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModel.ResourceReference()).
 							HasName(connection.ID().Name()).
-							HasSnowflakeRegion(secondaryTestClient().Context.CurrentRegion(t)).
-							HasAccountLocator(secondaryTestClient().GetAccountLocator()).
-							HasAccountName(secondaryAccountId.AccountName()).
-							HasOrganizationName(secondaryAccountId.OrganizationName()).
+							HasSnowflakeRegion(testClient().Context.CurrentRegion(t)).
+							HasAccountLocator(testClient().GetAccountLocator()).
+							HasAccountName(accountId.AccountName()).
+							HasOrganizationName(accountId.OrganizationName()).
 							HasComment("").
 							HasIsPrimary(false).
 							HasPrimaryIdentifier(primaryConnectionAsExternalId).
 							HasFailoverAllowedToAccounts().
-							HasConnectionUrl(testClient().Connection.GetConnectionUrl(secondaryAccountId.OrganizationName(), connection.ID().Name())),
+							HasConnectionUrl(secondaryTestClient().Connection.GetConnectionUrl(accountId.OrganizationName(), connection.ID().Name())),
 					),
 				),
 			},
 			// set comment
 			{
-				Config: config.FromModels(t, provider, secondaryConnectionModelWithComment),
+				Config: config.FromModels(t, secondaryConnectionModelWithComment),
 				Check: resource.ComposeTestCheckFunc(
 					assertThat(t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModelWithComment.ResourceReference()).
 							HasNameString(connection.ID().Name()).
 							HasFullyQualifiedNameString(connection.ID().FullyQualifiedName()).
 							HasCommentString(comment),
-
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModelWithComment.ResourceReference()).
 							HasComment(comment),
 					),
@@ -117,7 +113,7 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 			},
 			// unset comment
 			{
-				Config: config.FromModels(t, provider, secondaryConnectionModel),
+				Config: config.FromModels(t, secondaryConnectionModel),
 				Check: resource.ComposeTestCheckFunc(
 					assertThat(t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModel.ResourceReference()).
@@ -129,9 +125,9 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					secondaryTestClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).WithSet(*sdk.NewConnectionSetRequest().WithComment(comment)))
+					testClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).WithSet(*sdk.NewConnectionSetRequest().WithComment(comment)))
 				},
-				Config: config.FromModels(t, provider, secondaryConnectionModel),
+				Config: config.FromModels(t, secondaryConnectionModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(secondaryConnectionModel.ResourceReference(), plancheck.ResourceActionUpdate),

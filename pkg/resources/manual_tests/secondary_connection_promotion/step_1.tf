@@ -2,6 +2,7 @@
 # - Ensure both accounts were primary and secondary connections will be created have:
 #   - Correct edition: BUSINESS_CRITICAL
 #   - Replication enabled: https://docs.snowflake.com/alias/replication/enable-account-repl
+# For more information on how to set up the accounts, refer to the internal documentation
 # Commands to run
 # - terraform apply
 

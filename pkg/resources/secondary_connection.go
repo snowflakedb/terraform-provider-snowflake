@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -116,26 +115,22 @@ func ReadContextSecondaryConnection(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	connections, err := client.Connections.Show(ctx, sdk.NewShowConnectionRequest().WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
+	connection, err := client.Connections.ShowByIDSafely(ctx, id)
 	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query secondary connection. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Secondary connection id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Error,
-				Summary:  "Failed to retrieve connection.",
-				Detail:   fmt.Sprintf("Connection name: %s, Err: %s", id.FullyQualifiedName(), err),
-			},
-		}
-	}
-
-	connection, err := collections.FindFirst(connections, func(c sdk.Connection) bool {
-		return c.Name == id.Name() && c.AccountLocator == client.GetAccountLocator()
-	})
-	if errors.Is(err, sdk.ErrObjectNotFound) {
-		d.SetId("")
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Failed to query secondary connection. Marking the resource as removed.",
+				Summary:  "Failed to query secondary connection.",
 				Detail:   fmt.Sprintf("Secondary connection id: %s, Err: %s", id.FullyQualifiedName(), err),
 			},
 		}
@@ -204,7 +199,7 @@ func DeleteContextSecondaryConnection(ctx context.Context, d *schema.ResourceDat
 		if err := client.Connections.DropSafely(ctx, id); err != nil && strings.Contains(err.Error(), "is currently a primary connection in a replication relationship and cannot be dropped") {
 			return nil, false
 		} else {
-			log.Print("[DEBUG] Drop secondary connection failed, err = %w", err)
+			log.Printf("[DEBUG] Drop secondary connection failed, err = %s", err)
 			return err, true
 		}
 	}); err != nil {

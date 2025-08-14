@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -131,26 +131,22 @@ func ReadContextPrimaryConnection(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	connections, err := client.Connections.Show(ctx, sdk.NewShowConnectionRequest().WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
+	connection, err := client.Connections.ShowByIDSafely(ctx, id)
 	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to retrieve connection. Target object not found. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Connection name: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Failed to retrieve connection.",
-				Detail:   fmt.Sprintf("Connection name: %s, Err: %s", id.FullyQualifiedName(), err),
-			},
-		}
-	}
-
-	connection, err := collections.FindFirst(connections, func(c sdk.Connection) bool {
-		return c.Name == id.Name() && c.AccountLocator == client.GetAccountLocator()
-	})
-	if errors.Is(err, sdk.ErrObjectNotFound) {
-		d.SetId("")
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Failed to retrieve connection. Target object not found. Marking the resource as removed.",
 				Detail:   fmt.Sprintf("Connection name: %s, Err: %s", id.FullyQualifiedName(), err),
 			},
 		}
