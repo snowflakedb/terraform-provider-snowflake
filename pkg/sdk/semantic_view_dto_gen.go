@@ -15,6 +15,9 @@ type CreateSemanticViewRequest struct {
 	name                      SchemaObjectIdentifier // required
 	logicalTables             []LogicalTableRequest  // required
 	semanticViewRelationships []SemanticViewRelationshipRequest
+	semanticViewFacts         []SemanticExpressionRequest
+	semanticViewDimensions    []SemanticExpressionRequest
+	semanticViewMetrics       []SemanticExpressionRequest
 	Comment                   *string
 	CopyGrants                *bool
 }
@@ -62,6 +65,21 @@ type RelationshipTableAliasRequest struct {
 
 type SemanticViewColumnRequest struct {
 	Name string // required
+}
+
+type SemanticExpressionRequest struct {
+	qualifiedExpressionName *QualifiedExpressionNameRequest // required
+	sqlExpression           *SemanticSqlExpressionRequest   // required
+	synonyms                *SynonymsRequest
+	Comment                 *string
+}
+
+type QualifiedExpressionNameRequest struct {
+	QualifiedExpressionName string
+}
+
+type SemanticSqlExpressionRequest struct {
+	SqlExpression string
 }
 
 type DropSemanticViewRequest struct {

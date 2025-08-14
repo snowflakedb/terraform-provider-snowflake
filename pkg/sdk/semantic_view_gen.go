@@ -23,7 +23,14 @@ type CreateSemanticViewOptions struct {
 	name                      SchemaObjectIdentifier     `ddl:"identifier"`
 	tables                    bool                       `ddl:"static" sql:"TABLES"`
 	logicalTables             []LogicalTable             `ddl:"list,parentheses"`
-	semanticViewRelationships []SemanticViewRelationship `ddl:"list"`
+	relationships             bool                       `ddl:"static" sql:"RELATIONSHIPS"`
+	semanticViewRelationships []SemanticViewRelationship `ddl:"list,parentheses"`
+	facts                     bool                       `ddl:"static" sql:"FACTS"`
+	semanticViewFacts         []SemanticExpression       `ddl:"list,parentheses"`
+	dimensions                bool                       `ddl:"static" sql:"DIMENSIONS"`
+	semanticViewDimensions    []SemanticExpression       `ddl:"list,parentheses"`
+	metrics                   bool                       `ddl:"static" sql:"METRICS"`
+	semanticViewMetrics       []SemanticExpression       `ddl:"list,parentheses"`
 	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
 }
@@ -54,12 +61,7 @@ type Synonyms struct {
 	WithSynonyms []string `ddl:"parameter,parentheses,no_equals" sql:"WITH SYNONYMS"`
 }
 
-type SemanticViewColumn struct {
-	Name string `ddl:"keyword"`
-}
-
 type SemanticViewRelationship struct {
-	relationships              bool                    `ddl:"static" sql:"RELATIONSHIPS"`
 	relationshipAlias          *RelationshipAlias      `ddl:"keyword"`
 	tableName                  *RelationshipTableAlias `ddl:"keyword"`
 	relationshipColumnNames    []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
@@ -75,6 +77,26 @@ type RelationshipAlias struct {
 
 type RelationshipTableAlias struct {
 	RelationshipTableAlias string `ddl:"keyword"`
+}
+
+type SemanticViewColumn struct {
+	Name string `ddl:"keyword"`
+}
+
+type SemanticExpression struct {
+	qualifiedExpressionName *QualifiedExpressionName `ddl:"keyword"`
+	as                      bool                     `ddl:"static" sql:"AS"`
+	sqlExpression           *SemanticSqlExpression   `ddl:"keyword"`
+	synonyms                *Synonyms                `ddl:"parameter,no_equals"`
+	Comment                 *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type QualifiedExpressionName struct {
+	QualifiedExpressionName string `ddl:"keyword"`
+}
+
+type SemanticSqlExpression struct {
+	SqlExpression string `ddl:"keyword,no_quotes"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.

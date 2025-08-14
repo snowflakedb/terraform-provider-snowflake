@@ -43,6 +43,12 @@ func TestSemanticViews_Create(t *testing.T) {
 		relationshipAlias1 := "rel1"
 		logicalTableComment1 := String("logical table comment 1")
 		logicalTableComment2 := String("logical table comment 2")
+		factExpression := "fact_sql_expression"
+		factName := "fact_name"
+		dimensionExpression := "dimension_sql_expression"
+		dimensionName := "dimension_name"
+		metricExpression := "metric_sql_expression"
+		metricName := "metric_name"
 		tablesObj := []LogicalTable{
 			{
 				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
@@ -96,14 +102,42 @@ func TestSemanticViews_Create(t *testing.T) {
 				},
 			},
 		}
+		factsObj := []SemanticExpression{
+			{
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: factName},
+				sqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
+				synonyms:                &Synonyms{WithSynonyms: []string{"'test1'", "'test2'"}},
+				Comment:                 String("fact_comment"),
+			},
+		}
+		dimensionsObj := []SemanticExpression{
+			{
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: dimensionName},
+				sqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
+				synonyms:                &Synonyms{WithSynonyms: []string{"'test3'", "'test4'"}},
+				Comment:                 String("dimension_comment"),
+			},
+		}
+		metricsObj := []SemanticExpression{
+			{
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
+				sqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
+				synonyms:                &Synonyms{WithSynonyms: []string{"'test5'", "'test6'"}},
+				Comment:                 String("metric_comment"),
+			},
+		}
+
 		opts := &CreateSemanticViewOptions{
 			name:                      id,
 			Comment:                   String("comment"),
 			IfNotExists:               Bool(true),
 			logicalTables:             tablesObj,
 			semanticViewRelationships: relationshipsObj,
+			semanticViewFacts:         factsObj,
+			semanticViewDimensions:    dimensionsObj,
+			semanticViewMetrics:       metricsObj,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES (%s AS %s PRIMARY KEY (pk1.1, pk1.2) WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', %s AS %s PRIMARY KEY (pk2.1, pk2.2) WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS %s AS %s (pk1.1, pk1.2) REFERENCES %s (pk2.1, pk2.2) COMMENT = '%s'`, id.FullyQualifiedName(), tableAlias1, logicalTableId1.FullyQualifiedName(), *logicalTableComment1, tableAlias2, logicalTableId2.FullyQualifiedName(), *logicalTableComment2, relationshipAlias1, tableAlias1, tableAlias2, "comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES (%s AS %s PRIMARY KEY (pk1.1, pk1.2) WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', %s AS %s PRIMARY KEY (pk2.1, pk2.2) WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS (%s AS %s (pk1.1, pk1.2) REFERENCES %s (pk2.1, pk2.2)) FACTS (%s AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS (%s AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (%s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s') COMMENT = '%s'`, id.FullyQualifiedName(), tableAlias1, logicalTableId1.FullyQualifiedName(), *logicalTableComment1, tableAlias2, logicalTableId2.FullyQualifiedName(), *logicalTableComment2, relationshipAlias1, tableAlias1, tableAlias2, factName, factExpression, *factsObj[0].Comment, dimensionName, dimensionExpression, *dimensionsObj[0].Comment, metricName, metricExpression, *metricsObj[0].Comment, "comment")
 	})
 }
 

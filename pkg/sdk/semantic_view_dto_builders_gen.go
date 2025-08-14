@@ -29,6 +29,21 @@ func (s *CreateSemanticViewRequest) WithSemanticViewRelationships(semanticViewRe
 	return s
 }
 
+func (s *CreateSemanticViewRequest) WithSemanticViewFacts(semanticViewFacts []SemanticExpressionRequest) *CreateSemanticViewRequest {
+	s.semanticViewFacts = semanticViewFacts
+	return s
+}
+
+func (s *CreateSemanticViewRequest) WithSemanticViewDimensions(semanticViewDimensions []SemanticExpressionRequest) *CreateSemanticViewRequest {
+	s.semanticViewDimensions = semanticViewDimensions
+	return s
+}
+
+func (s *CreateSemanticViewRequest) WithSemanticViewMetrics(semanticViewMetrics []SemanticExpressionRequest) *CreateSemanticViewRequest {
+	s.semanticViewMetrics = semanticViewMetrics
+	return s
+}
+
 func (s *CreateSemanticViewRequest) WithComment(Comment string) *CreateSemanticViewRequest {
 	s.Comment = &Comment
 	return s
@@ -154,6 +169,44 @@ func NewSemanticViewColumnRequest(
 	s := SemanticViewColumnRequest{}
 	s.Name = Name
 	return &s
+}
+
+func NewSemanticExpressionRequest(
+	qualifiedExpressionName *QualifiedExpressionNameRequest,
+	sqlExpression *SemanticSqlExpressionRequest,
+) *SemanticExpressionRequest {
+	s := SemanticExpressionRequest{}
+	s.qualifiedExpressionName = qualifiedExpressionName
+	s.sqlExpression = sqlExpression
+	return &s
+}
+
+func (s *SemanticExpressionRequest) WithSynonyms(synonyms SynonymsRequest) *SemanticExpressionRequest {
+	s.synonyms = &synonyms
+	return s
+}
+
+func (s *SemanticExpressionRequest) WithComment(Comment string) *SemanticExpressionRequest {
+	s.Comment = &Comment
+	return s
+}
+
+func NewQualifiedExpressionNameRequest() *QualifiedExpressionNameRequest {
+	return &QualifiedExpressionNameRequest{}
+}
+
+func (s *QualifiedExpressionNameRequest) WithQualifiedExpressionName(QualifiedExpressionName string) *QualifiedExpressionNameRequest {
+	s.QualifiedExpressionName = QualifiedExpressionName
+	return s
+}
+
+func NewSemanticSqlExpressionRequest() *SemanticSqlExpressionRequest {
+	return &SemanticSqlExpressionRequest{}
+}
+
+func (s *SemanticSqlExpressionRequest) WithSqlExpression(SqlExpression string) *SemanticSqlExpressionRequest {
+	s.SqlExpression = SqlExpression
+	return s
 }
 
 func NewDropSemanticViewRequest(

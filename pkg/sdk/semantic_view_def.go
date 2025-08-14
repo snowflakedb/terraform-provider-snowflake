@@ -54,14 +54,21 @@ var SemanticViewsDef = g.NewInterface(
 		Name().
 		SQL("TABLES").
 		ListQueryStructField("logicalTables", logicalTable, g.ListOptions().Required().Parentheses()).
-		ListQueryStructField("semanticViewRelationships", semanticViewRelationship, g.ListOptions()).
+		OptionalSQL("RELATIONSHIPS").
+		ListQueryStructField("semanticViewRelationships", semanticViewRelationship, g.ListOptions().Parentheses()).
+		OptionalSQL("FACTS").
+		ListQueryStructField("semanticViewFacts", semanticExpression, g.ListOptions().Parentheses()).
+		OptionalSQL("DIMENSIONS").
+		ListQueryStructField("semanticViewDimensions", semanticExpression, g.ListOptions().Parentheses()).
+		OptionalSQL("METRICS").
+		ListQueryStructField("semanticViewMetrics", semanticExpression, g.ListOptions().Parentheses()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"), // both can't be used at the same time
 	logicalTable,
-	semanticViewColumn,
 	semanticViewRelationship,
+	semanticExpression,
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
 	g.NewQueryStruct("DropSemanticView").
@@ -126,10 +133,22 @@ var relationshipTableAlias = g.NewQueryStruct("RelationshipTableAlias").
 	Text("RelationshipTableAlias", g.KeywordOptions())
 
 var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
-	SQL("RELATIONSHIPS").
 	OptionalQueryStructField("relationshipAlias", relationshipAlias, g.KeywordOptions()).
 	OptionalQueryStructField("tableName", relationshipTableAlias, g.KeywordOptions().Required()).
 	ListQueryStructField("relationshipColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses().Required()).
 	SQL("REFERENCES").
 	OptionalQueryStructField("refTableName", relationshipTableAlias, g.KeywordOptions().Required()).
 	ListQueryStructField("relationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())
+
+var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
+	Text("QualifiedExpressionName", g.KeywordOptions())
+
+var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
+	Text("SqlExpression", g.KeywordOptions().NoQuotes())
+
+var semanticExpression = g.NewQueryStruct("SemanticExpression").
+	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
+	SQL("AS").
+	OptionalQueryStructField("sqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
+	OptionalQueryStructField("synonyms", synonym, g.ParameterOptions().NoEquals()).
+	OptionalComment()

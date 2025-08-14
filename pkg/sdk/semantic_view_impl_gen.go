@@ -120,6 +120,54 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 		}
 		opts.semanticViewRelationships = s
 	}
+	if r.semanticViewFacts != nil {
+		s := make([]SemanticExpression, len(r.semanticViewFacts))
+		for i, v := range r.semanticViewFacts {
+			s[i] = SemanticExpression{
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.qualifiedExpressionName.QualifiedExpressionName},
+				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.sqlExpression.SqlExpression},
+				Comment:                 v.Comment,
+			}
+			if v.synonyms != nil {
+				s[i].synonyms = &Synonyms{
+					WithSynonyms: v.synonyms.WithSynonyms,
+				}
+			}
+		}
+		opts.semanticViewFacts = s
+	}
+	if r.semanticViewDimensions != nil {
+		s := make([]SemanticExpression, len(r.semanticViewDimensions))
+		for i, v := range r.semanticViewDimensions {
+			s[i] = SemanticExpression{
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.qualifiedExpressionName.QualifiedExpressionName},
+				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.sqlExpression.SqlExpression},
+				Comment:                 v.Comment,
+			}
+			if v.synonyms != nil {
+				s[i].synonyms = &Synonyms{
+					WithSynonyms: v.synonyms.WithSynonyms,
+				}
+			}
+		}
+		opts.semanticViewDimensions = s
+	}
+	if r.semanticViewMetrics != nil {
+		s := make([]SemanticExpression, len(r.semanticViewMetrics))
+		for i, v := range r.semanticViewMetrics {
+			s[i] = SemanticExpression{
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.qualifiedExpressionName.QualifiedExpressionName},
+				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.sqlExpression.SqlExpression},
+				Comment:                 v.Comment,
+			}
+			if v.synonyms != nil {
+				s[i].synonyms = &Synonyms{
+					WithSynonyms: v.synonyms.WithSynonyms,
+				}
+			}
+		}
+		opts.semanticViewMetrics = s
+	}
 	return opts
 }
 
