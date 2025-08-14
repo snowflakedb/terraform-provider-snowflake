@@ -14,9 +14,13 @@ type CreateSemanticViewRequest struct {
 	IfNotExists               *bool
 	name                      SchemaObjectIdentifier // required
 	logicalTables             []LogicalTableRequest  // required
+	Relationships             *bool
 	semanticViewRelationships []SemanticViewRelationshipRequest
+	Facts                     *bool
 	semanticViewFacts         []SemanticExpressionRequest
+	Dimensions                *bool
 	semanticViewDimensions    []SemanticExpressionRequest
+	Metrics                   *bool
 	semanticViewMetrics       []SemanticExpressionRequest
 	Comment                   *string
 	CopyGrants                *bool

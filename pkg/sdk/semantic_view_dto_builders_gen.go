@@ -24,8 +24,18 @@ func (s *CreateSemanticViewRequest) WithIfNotExists(IfNotExists bool) *CreateSem
 	return s
 }
 
+func (s *CreateSemanticViewRequest) WithRelationships(Relationships bool) *CreateSemanticViewRequest {
+	s.Relationships = &Relationships
+	return s
+}
+
 func (s *CreateSemanticViewRequest) WithSemanticViewRelationships(semanticViewRelationships []SemanticViewRelationshipRequest) *CreateSemanticViewRequest {
 	s.semanticViewRelationships = semanticViewRelationships
+	return s
+}
+
+func (s *CreateSemanticViewRequest) WithFacts(Facts bool) *CreateSemanticViewRequest {
+	s.Facts = &Facts
 	return s
 }
 
@@ -34,8 +44,18 @@ func (s *CreateSemanticViewRequest) WithSemanticViewFacts(semanticViewFacts []Se
 	return s
 }
 
+func (s *CreateSemanticViewRequest) WithDimensions(Dimensions bool) *CreateSemanticViewRequest {
+	s.Dimensions = &Dimensions
+	return s
+}
+
 func (s *CreateSemanticViewRequest) WithSemanticViewDimensions(semanticViewDimensions []SemanticExpressionRequest) *CreateSemanticViewRequest {
 	s.semanticViewDimensions = semanticViewDimensions
+	return s
+}
+
+func (s *CreateSemanticViewRequest) WithMetrics(Metrics bool) *CreateSemanticViewRequest {
+	s.Metrics = &Metrics
 	return s
 }
 

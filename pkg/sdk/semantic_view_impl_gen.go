@@ -119,6 +119,7 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 			}
 		}
 		opts.semanticViewRelationships = s
+		opts.Relationships = Bool(true)
 	}
 	if r.semanticViewFacts != nil {
 		s := make([]SemanticExpression, len(r.semanticViewFacts))
@@ -135,6 +136,7 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 			}
 		}
 		opts.semanticViewFacts = s
+		opts.Facts = Bool(true)
 	}
 	if r.semanticViewDimensions != nil {
 		s := make([]SemanticExpression, len(r.semanticViewDimensions))
@@ -151,6 +153,7 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 			}
 		}
 		opts.semanticViewDimensions = s
+		opts.Dimensions = Bool(true)
 	}
 	if r.semanticViewMetrics != nil {
 		s := make([]SemanticExpression, len(r.semanticViewMetrics))
@@ -167,6 +170,7 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 			}
 		}
 		opts.semanticViewMetrics = s
+		opts.Metrics = Bool(true)
 	}
 	return opts
 }
