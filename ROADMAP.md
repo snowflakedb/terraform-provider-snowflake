@@ -1,5 +1,10 @@
 # Our roadmap
 
+We have created this roadmap to publicly announce the team’s current plans and rationale.
+We usually create new entries in quarterly cycles, so expect an entry in the first three weeks of February, May, August, and November.
+We may add more entries when we have some bigger announcements.
+These should be treated as projections and not strict commitments. Keep in mind that the plan can be subject to change.
+
 ## (2025-05-22) Roadmap after GA
 
 Recent efforts concentrated on stabilization, SnowflakeDB migration, and the Terraform provider's GA release, which delayed [feature parity](#feature-gap-closing---the-current-approach) and [grants migration](#grants-migration). With the provider now GA and officially supported by Snowflake, we can prioritize further improvements.
