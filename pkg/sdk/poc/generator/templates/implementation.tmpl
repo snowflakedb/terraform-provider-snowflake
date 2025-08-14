@@ -8,16 +8,7 @@ import (
 
 {{ $impl := .NameLowerCased }}
 var _ {{ .Name }} = (*{{ $impl }})(nil)
-{{ range .Operations }}
-    {{- if .OptsField }}
-        {{ if .ShowMapping }}
-            _ convertibleRow[{{ .To.KindNoPtr }}] = new({{ .From.Name }})
-        {{ end }}
-        {{ if .DescribeMapping }}
-            _ convertibleRow[{{ .To.KindNoPtr }}] = new({{ .From.Name }})
-        {{ end }}
-    {{- end}}
-{{ end }}
+{{- template "convertGuards" . -}}
 
 type {{ $impl }} struct {
 client *Client
