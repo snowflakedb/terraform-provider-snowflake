@@ -156,10 +156,18 @@ func (row userDBRow) convert() (*User, error) {
 	if row.Comment.Valid {
 		user.Comment = row.Comment.String
 	}
-	handleNullableBoolString(row.Disabled, &user.Disabled)
-	handleNullableBoolString(row.MustChangePassword, &user.MustChangePassword)
-	handleNullableBoolString(row.SnowflakeLock, &user.SnowflakeLock)
-	handleNullableBoolString(row.ExtAuthnDuo, &user.ExtAuthnDuo)
+	if err := handleNullableBoolString(row.Disabled, &user.Disabled); err != nil {
+		return nil, fmt.Errorf("error parsing disabled: %w", err)
+	}
+	if err := handleNullableBoolString(row.MustChangePassword, &user.MustChangePassword); err != nil {
+		return nil, fmt.Errorf("error parsing must change password: %w", err)
+	}
+	if err := handleNullableBoolString(row.SnowflakeLock, &user.SnowflakeLock); err != nil {
+		return nil, fmt.Errorf("error parsing snowflake lock: %w", err)
+	}
+	if err := handleNullableBoolString(row.ExtAuthnDuo, &user.ExtAuthnDuo); err != nil {
+		return nil, fmt.Errorf("error parsing ext authn duo: %w", err)
+	}
 	if row.ExtAuthnUid.Valid {
 		user.ExtAuthnUid = row.ExtAuthnUid.String
 	}
