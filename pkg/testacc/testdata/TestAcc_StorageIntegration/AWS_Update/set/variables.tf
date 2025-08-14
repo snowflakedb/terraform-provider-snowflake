@@ -25,3 +25,7 @@ variable "aws_role_arn" {
 variable "external_id" {
   type = string
 }
+
+variable "use_private_link_endpoint" {
+  type = bool
+}
