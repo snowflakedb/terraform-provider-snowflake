@@ -39,8 +39,7 @@ func (v *materializedViews) Show(ctx context.Context, request *ShowMaterializedV
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[materializedViewDBRow, MaterializedView](dbRows)
-	return resultList, nil
+	return convertRowsErr[materializedViewDBRow, MaterializedView](dbRows)
 }
 
 func (v *materializedViews) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaterializedView, error) {
@@ -66,7 +65,7 @@ func (v *materializedViews) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[materializedViewDetailsRow, MaterializedViewDetails](rows), nil
+	return convertRowsErr[materializedViewDetailsRow, MaterializedViewDetails](rows)
 }
 
 func (r *CreateMaterializedViewRequest) toOpts() *CreateMaterializedViewOptions {

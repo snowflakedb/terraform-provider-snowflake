@@ -39,8 +39,7 @@ func (v *views) Show(ctx context.Context, request *ShowViewRequest) ([]View, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[viewDBRow, View](dbRows)
-	return resultList, nil
+	return convertRowsErr[viewDBRow, View](dbRows)
 }
 
 func (v *views) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*View, error) {
@@ -66,7 +65,7 @@ func (v *views) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]View
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[viewDetailsRow, ViewDetails](rows), nil
+	return convertRowsErr[viewDetailsRow, ViewDetails](rows)
 }
 
 func (r *CreateViewRequest) toOpts() *CreateViewOptions {

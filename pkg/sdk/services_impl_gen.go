@@ -43,8 +43,7 @@ func (v *services) Show(ctx context.Context, request *ShowServiceRequest) ([]Ser
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[servicesRow, Service](dbRows)
-	return resultList, nil
+	return convertRowsErr[servicesRow, Service](dbRows)
 }
 
 func (v *services) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Service, error) {

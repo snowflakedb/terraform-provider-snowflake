@@ -28,8 +28,7 @@ func (v *sequences) Show(ctx context.Context, request *ShowSequenceRequest) ([]S
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[sequenceRow, Sequence](dbRows)
-	return resultList, nil
+	return convertRowsErr[sequenceRow, Sequence](dbRows)
 }
 
 func (v *sequences) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Sequence, error) {

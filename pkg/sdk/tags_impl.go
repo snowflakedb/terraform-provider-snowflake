@@ -28,8 +28,7 @@ func (v *tags) Show(ctx context.Context, request *ShowTagRequest) ([]Tag, error)
 	if err != nil {
 		return nil, err
 	}
-	result := convertRows[tagRow, Tag](rows)
-	return result, nil
+	return convertRowsErr[tagRow, Tag](rows)
 }
 
 func (v *tags) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Tag, error) {

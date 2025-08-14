@@ -49,8 +49,7 @@ func (v *gitRepositories) Show(ctx context.Context, request *ShowGitRepositoryRe
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[gitRepositoriesRow, GitRepository](dbRows)
-	return resultList, nil
+	return convertRowsErr[gitRepositoriesRow, GitRepository](dbRows)
 }
 
 func (v *gitRepositories) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error) {
@@ -74,8 +73,7 @@ func (v *gitRepositories) ShowGitBranches(ctx context.Context, request *ShowGitB
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[gitBranchesRow, GitBranch](dbRows)
-	return resultList, nil
+	return convertRowsErr[gitBranchesRow, GitBranch](dbRows)
 }
 
 func (v *gitRepositories) ShowGitTags(ctx context.Context, request *ShowGitTagsGitRepositoryRequest) ([]GitTag, error) {
@@ -84,8 +82,7 @@ func (v *gitRepositories) ShowGitTags(ctx context.Context, request *ShowGitTagsG
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[gitTagsRow, GitTag](dbRows)
-	return resultList, nil
+	return convertRowsErr[gitTagsRow, GitTag](dbRows)
 }
 
 func (r *CreateGitRepositoryRequest) toOpts() *CreateGitRepositoryOptions {

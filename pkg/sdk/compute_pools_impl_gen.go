@@ -45,8 +45,7 @@ func (v *computePools) Show(ctx context.Context, request *ShowComputePoolRequest
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[computePoolsRow, ComputePool](dbRows)
-	return resultList, nil
+	return convertRowsErr[computePoolsRow, ComputePool](dbRows)
 }
 
 func (v *computePools) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ComputePool, error) {

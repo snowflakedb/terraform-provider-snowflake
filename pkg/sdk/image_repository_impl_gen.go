@@ -37,8 +37,7 @@ func (v *imageRepositories) Show(ctx context.Context, request *ShowImageReposito
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[imageRepositoriesRow, ImageRepository](dbRows)
-	return resultList, nil
+	return convertRowsErr[imageRepositoriesRow, ImageRepository](dbRows)
 }
 
 func (v *imageRepositories) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*ImageRepository, error) {

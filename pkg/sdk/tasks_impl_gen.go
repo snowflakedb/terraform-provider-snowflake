@@ -53,8 +53,7 @@ func (v *tasks) Show(ctx context.Context, request *ShowTaskRequest) ([]Task, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[taskDBRow, Task](dbRows)
-	return resultList, nil
+	return convertRowsErr[taskDBRow, Task](dbRows)
 }
 
 func (v *tasks) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Task, error) {

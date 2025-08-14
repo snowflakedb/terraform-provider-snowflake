@@ -786,8 +786,7 @@ func (v *databases) Show(ctx context.Context, opts *ShowDatabasesOptions) ([]Dat
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[databaseRow, Database](dbRows)
-	return resultList, nil
+	return convertRowsErr[databaseRow, Database](dbRows)
 }
 
 func (v *databases) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Database, error) {

@@ -23,8 +23,7 @@ func (v *eventTables) Show(ctx context.Context, request *ShowEventTableRequest) 
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[eventTableRow, EventTable](dbRows)
-	return resultList, nil
+	return convertRowsErr[eventTableRow, EventTable](dbRows)
 }
 
 func (v *eventTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*EventTable, error) {

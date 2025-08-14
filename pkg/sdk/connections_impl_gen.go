@@ -39,8 +39,7 @@ func (v *connections) Show(ctx context.Context, request *ShowConnectionRequest) 
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[connectionRow, Connection](dbRows)
-	return resultList, nil
+	return convertRowsErr[connectionRow, Connection](dbRows)
 }
 
 func (v *connections) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Connection, error) {

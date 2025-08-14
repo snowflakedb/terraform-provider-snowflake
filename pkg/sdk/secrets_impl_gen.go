@@ -52,8 +52,7 @@ func (v *secrets) Show(ctx context.Context, request *ShowSecretRequest) ([]Secre
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[secretDBRow, Secret](dbRows)
-	return resultList, nil
+	return convertRowsErr[secretDBRow, Secret](dbRows)
 }
 
 func (v *secrets) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Secret, error) {

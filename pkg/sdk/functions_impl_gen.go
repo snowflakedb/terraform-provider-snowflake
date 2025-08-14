@@ -59,8 +59,7 @@ func (v *functions) Show(ctx context.Context, request *ShowFunctionRequest) ([]F
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[functionRow, Function](dbRows)
-	return resultList, nil
+	return convertRowsErr[functionRow, Function](dbRows)
 }
 
 func (v *functions) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Function, error) {
@@ -86,7 +85,7 @@ func (v *functions) Describe(ctx context.Context, id SchemaObjectIdentifierWithA
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[functionDetailRow, FunctionDetail](rows), nil
+	return convertRowsErr[functionDetailRow, FunctionDetail](rows)
 }
 
 func (r *CreateForJavaFunctionRequest) toOpts() *CreateForJavaFunctionOptions {

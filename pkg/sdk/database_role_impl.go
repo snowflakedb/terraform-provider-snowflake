@@ -38,7 +38,10 @@ func (v *databaseRoles) Show(ctx context.Context, request *ShowDatabaseRoleReque
 		return nil, err
 	}
 
-	resultList := convertRows[databaseRoleDBRow, DatabaseRole](dbRows)
+	resultList, err := convertRowsErr[databaseRoleDBRow, DatabaseRole](dbRows)
+	if err != nil {
+		return nil, err
+	}
 
 	for i := range resultList {
 		resultList[i].DatabaseName = request.database.name

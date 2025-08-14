@@ -37,8 +37,7 @@ func (v *apiIntegrations) Show(ctx context.Context, request *ShowApiIntegrationR
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showApiIntegrationsDbRow, ApiIntegration](dbRows)
-	return resultList, nil
+	return convertRowsErr[showApiIntegrationsDbRow, ApiIntegration](dbRows)
 }
 
 func (v *apiIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegration, error) {
@@ -63,7 +62,7 @@ func (v *apiIntegrations) Describe(ctx context.Context, id AccountObjectIdentifi
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[descApiIntegrationsDbRow, ApiIntegrationProperty](rows), nil
+	return convertRowsErr[descApiIntegrationsDbRow, ApiIntegrationProperty](rows)
 }
 
 func (r *CreateApiIntegrationRequest) toOpts() *CreateApiIntegrationOptions {

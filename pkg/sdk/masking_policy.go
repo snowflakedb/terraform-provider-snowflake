@@ -314,8 +314,7 @@ func (v *maskingPolicies) Show(ctx context.Context, opts *ShowMaskingPolicyOptio
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[maskingPolicyDBRow, MaskingPolicy](dbRows)
-	return resultList, nil
+	return convertRowsErr[maskingPolicyDBRow, MaskingPolicy](dbRows)
 }
 
 func (v *maskingPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicy, error) {

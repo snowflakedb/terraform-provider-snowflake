@@ -149,8 +149,7 @@ func (c *replicationFunctions) ShowReplicationDatabases(ctx context.Context, opt
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[replicationDatabaseRow, ReplicationDatabase](dbRows)
-	return resultList, nil
+	return convertRowsErr[replicationDatabaseRow, ReplicationDatabase](dbRows)
 }
 
 type CloudType string

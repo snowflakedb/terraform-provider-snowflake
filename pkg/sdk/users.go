@@ -694,8 +694,7 @@ func (v *users) Show(ctx context.Context, opts *ShowUserOptions) ([]User, error)
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[userDBRow, User](dbRows)
-	return resultList, nil
+	return convertRowsErr[userDBRow, User](dbRows)
 }
 
 func (v *users) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*User, error) {

@@ -32,8 +32,7 @@ func (v *managedAccounts) Show(ctx context.Context, request *ShowManagedAccountR
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[managedAccountDBRow, ManagedAccount](dbRows)
-	return resultList, nil
+	return convertRowsErr[managedAccountDBRow, ManagedAccount](dbRows)
 }
 
 func (v *managedAccounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ManagedAccount, error) {

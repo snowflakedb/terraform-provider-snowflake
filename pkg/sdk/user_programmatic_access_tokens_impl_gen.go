@@ -52,8 +52,7 @@ func (v *userProgrammaticAccessTokens) Show(ctx context.Context, request *ShowUs
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[programmaticAccessTokenResultDBRow, ProgrammaticAccessToken](dbRows)
-	return resultList, nil
+	return convertRowsErr[programmaticAccessTokenResultDBRow, ProgrammaticAccessToken](dbRows)
 }
 
 // Adjusted manually to include the user id in the request.

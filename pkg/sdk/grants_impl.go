@@ -252,7 +252,10 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[grantRow, Grant](dbRows)
+	resultList, err := convertRowsErr[grantRow, Grant](dbRows)
+	if err != nil {
+		return nil, err
+	}
 	for i, grant := range resultList {
 		// SHOW GRANTS of DATABASE ROLE requires a special handling:
 		// - it returns no account name, so for other SHOW GRANTS types it needs to be skipped

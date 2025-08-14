@@ -71,14 +71,6 @@ type convertibleRowDeprecated[T any] interface {
 	convert() *T
 }
 
-func convertRows[T convertibleRowDeprecated[U], U any](dbRows []T) []U {
-	resultList := make([]U, len(dbRows))
-	for i, row := range dbRows {
-		resultList[i] = *(row.convert())
-	}
-	return resultList
-}
-
 type convertibleRow[T any] interface {
 	// TODO [SNOW-2259477]: rename to convert
 	convertErr() (*T, error)

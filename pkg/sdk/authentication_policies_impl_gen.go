@@ -37,8 +37,7 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
-	return resultList, nil
+	return convertRowsErr[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {
@@ -64,7 +63,7 @@ func (v *authenticationPolicies) Describe(ctx context.Context, id SchemaObjectId
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[describeAuthenticationPolicyDBRow, AuthenticationPolicyDescription](rows), nil
+	return convertRowsErr[describeAuthenticationPolicyDBRow, AuthenticationPolicyDescription](rows)
 }
 
 func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicyOptions {

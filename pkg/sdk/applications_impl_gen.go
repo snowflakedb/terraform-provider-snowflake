@@ -37,8 +37,7 @@ func (v *applications) Show(ctx context.Context, request *ShowApplicationRequest
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[applicationRow, Application](dbRows)
-	return resultList, nil
+	return convertRowsErr[applicationRow, Application](dbRows)
 }
 
 func (v *applications) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Application, error) {
@@ -63,7 +62,7 @@ func (v *applications) Describe(ctx context.Context, id AccountObjectIdentifier)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[applicationPropertyRow, ApplicationProperty](rows), nil
+	return convertRowsErr[applicationPropertyRow, ApplicationProperty](rows)
 }
 
 func (r *CreateApplicationRequest) toOpts() *CreateApplicationOptions {

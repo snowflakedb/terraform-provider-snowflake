@@ -28,8 +28,7 @@ func (v *organizationAccounts) Show(ctx context.Context, request *ShowOrganizati
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[organizationAccountDbRow, OrganizationAccount](dbRows)
-	return resultList, nil
+	return convertRowsErr[organizationAccountDbRow, OrganizationAccount](dbRows)
 }
 
 func (v *organizationAccounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error) {

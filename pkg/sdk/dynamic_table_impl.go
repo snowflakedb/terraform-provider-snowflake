@@ -46,8 +46,7 @@ func (v *dynamicTables) Show(ctx context.Context, request *ShowDynamicTableReque
 	if err != nil {
 		return nil, err
 	}
-	result := convertRows[dynamicTableRow, DynamicTable](rows)
-	return result, nil
+	return convertRowsErr[dynamicTableRow, DynamicTable](rows)
 }
 
 func (v *dynamicTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*DynamicTable, error) {

@@ -37,8 +37,7 @@ func (v *streamlits) Show(ctx context.Context, request *ShowStreamlitRequest) ([
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[streamlitsRow, Streamlit](dbRows)
-	return resultList, nil
+	return convertRowsErr[streamlitsRow, Streamlit](dbRows)
 }
 
 func (v *streamlits) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Streamlit, error) {

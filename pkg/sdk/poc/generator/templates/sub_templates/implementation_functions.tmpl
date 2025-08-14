@@ -21,8 +21,7 @@
                     if err != nil {
                         return nil, err
                     }
-                    resultList := convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
-                    return resultList, nil
+                    return convertRowsErr[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
                 }
             {{ end }}
         {{ end }}

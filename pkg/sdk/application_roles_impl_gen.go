@@ -28,8 +28,7 @@ func (v *applicationRoles) Show(ctx context.Context, request *ShowApplicationRol
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[applicationRoleDbRow, ApplicationRole](dbRows)
-	return resultList, nil
+	return convertRowsErr[applicationRoleDbRow, ApplicationRole](dbRows)
 }
 
 func (v *applicationRoles) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*ApplicationRole, error) {

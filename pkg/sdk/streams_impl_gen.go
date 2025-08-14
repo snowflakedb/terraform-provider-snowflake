@@ -58,8 +58,7 @@ func (v *streams) Show(ctx context.Context, request *ShowStreamRequest) ([]Strea
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showStreamsDbRow, Stream](dbRows)
-	return resultList, nil
+	return convertRowsErr[showStreamsDbRow, Stream](dbRows)
 }
 
 func (v *streams) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Stream, error) {

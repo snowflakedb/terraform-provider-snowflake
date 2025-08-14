@@ -37,8 +37,7 @@ func (v *sessionPolicies) Show(ctx context.Context, request *ShowSessionPolicyRe
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showSessionPolicyDBRow, SessionPolicy](dbRows)
-	return resultList, nil
+	return convertRowsErr[showSessionPolicyDBRow, SessionPolicy](dbRows)
 }
 
 func (v *sessionPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error) {

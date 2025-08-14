@@ -29,8 +29,7 @@ func (v *cortexSearchServices) Show(ctx context.Context, request *ShowCortexSear
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[cortexSearchServiceRow, CortexSearchService](dbRows)
-	return resultList, nil
+	return convertRowsErr[cortexSearchServiceRow, CortexSearchService](dbRows)
 }
 
 func (v *cortexSearchServices) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*CortexSearchService, error) {

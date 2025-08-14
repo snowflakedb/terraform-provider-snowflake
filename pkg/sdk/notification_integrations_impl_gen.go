@@ -37,8 +37,7 @@ func (v *notificationIntegrations) Show(ctx context.Context, request *ShowNotifi
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showNotificationIntegrationsDbRow, NotificationIntegration](dbRows)
-	return resultList, nil
+	return convertRowsErr[showNotificationIntegrationsDbRow, NotificationIntegration](dbRows)
 }
 
 func (v *notificationIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*NotificationIntegration, error) {
@@ -63,7 +62,7 @@ func (v *notificationIntegrations) Describe(ctx context.Context, id AccountObjec
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[descNotificationIntegrationsDbRow, NotificationIntegrationProperty](rows), nil
+	return convertRowsErr[descNotificationIntegrationsDbRow, NotificationIntegrationProperty](rows)
 }
 
 func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationIntegrationOptions {

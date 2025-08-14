@@ -39,7 +39,7 @@ func (v *externalVolumes) Describe(ctx context.Context, id AccountObjectIdentifi
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalVolumeDescRow, ExternalVolumeProperty](rows), nil
+	return convertRowsErr[externalVolumeDescRow, ExternalVolumeProperty](rows)
 }
 
 func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error) {
@@ -48,8 +48,7 @@ func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeR
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[externalVolumeShowRow, ExternalVolume](dbRows)
-	return resultList, nil
+	return convertRowsErr[externalVolumeShowRow, ExternalVolume](dbRows)
 }
 
 func (v *externalVolumes) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error) {

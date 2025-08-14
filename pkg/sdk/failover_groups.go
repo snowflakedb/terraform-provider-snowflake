@@ -509,8 +509,7 @@ func (v *failoverGroups) Show(ctx context.Context, opts *ShowFailoverGroupOption
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[failoverGroupDBRow, FailoverGroup](dbRows)
-	return resultList, nil
+	return convertRowsErr[failoverGroupDBRow, FailoverGroup](dbRows)
 }
 
 func (v *failoverGroups) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*FailoverGroup, error) {

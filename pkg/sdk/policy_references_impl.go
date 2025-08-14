@@ -14,6 +14,5 @@ func (v *policyReference) GetForEntity(ctx context.Context, request *GetForEntit
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[policyReferenceDBRow, PolicyReference](dbRows)
-	return resultList, nil
+	return convertRowsErr[policyReferenceDBRow, PolicyReference](dbRows)
 }

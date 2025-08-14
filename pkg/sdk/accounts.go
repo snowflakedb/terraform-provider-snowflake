@@ -550,8 +550,7 @@ func (c *accounts) Show(ctx context.Context, opts *ShowAccountOptions) ([]Accoun
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[accountDBRow, Account](dbRows)
-	return resultList, nil
+	return convertRowsErr[accountDBRow, Account](dbRows)
 }
 
 func (c *accounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Account, error) {

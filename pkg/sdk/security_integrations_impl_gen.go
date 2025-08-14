@@ -109,7 +109,7 @@ func (v *securityIntegrations) Describe(ctx context.Context, id AccountObjectIde
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[securityIntegrationDescRow, SecurityIntegrationProperty](rows), nil
+	return convertRowsErr[securityIntegrationDescRow, SecurityIntegrationProperty](rows)
 }
 
 func (v *securityIntegrations) Show(ctx context.Context, request *ShowSecurityIntegrationRequest) ([]SecurityIntegration, error) {
@@ -118,8 +118,7 @@ func (v *securityIntegrations) Show(ctx context.Context, request *ShowSecurityIn
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[securityIntegrationShowRow, SecurityIntegration](dbRows)
-	return resultList, nil
+	return convertRowsErr[securityIntegrationShowRow, SecurityIntegration](dbRows)
 }
 
 func (v *securityIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*SecurityIntegration, error) {

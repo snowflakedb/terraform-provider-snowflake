@@ -290,8 +290,7 @@ func (v *alerts) Show(ctx context.Context, opts *ShowAlertOptions) ([]Alert, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[alertDBRow, Alert](dbRows)
-	return resultList, nil
+	return convertRowsErr[alertDBRow, Alert](dbRows)
 }
 
 func (v *alerts) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error) {

@@ -38,8 +38,7 @@ func (v *rowAccessPolicies) Show(ctx context.Context, request *ShowRowAccessPoli
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[rowAccessPolicyDBRow, RowAccessPolicy](dbRows)
-	return resultList, nil
+	return convertRowsErr[rowAccessPolicyDBRow, RowAccessPolicy](dbRows)
 }
 
 func (v *rowAccessPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*RowAccessPolicy, error) {

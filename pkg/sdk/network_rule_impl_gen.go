@@ -38,8 +38,7 @@ func (v *networkRules) Show(ctx context.Context, request *ShowNetworkRuleRequest
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[ShowNetworkRulesRow, NetworkRule](dbRows)
-	return resultList, nil
+	return convertRowsErr[ShowNetworkRulesRow, NetworkRule](dbRows)
 }
 
 func (v *networkRules) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*NetworkRule, error) {

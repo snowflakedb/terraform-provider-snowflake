@@ -45,8 +45,7 @@ func (v *listings) Show(ctx context.Context, request *ShowListingRequest) ([]Lis
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[listingDBRow, Listing](dbRows)
-	return resultList, nil
+	return convertRowsErr[listingDBRow, Listing](dbRows)
 }
 
 func (v *listings) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error) {
@@ -78,8 +77,7 @@ func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListin
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[listingVersionDBRow, ListingVersion](dbRows)
-	return resultList, nil
+	return convertRowsErr[listingVersionDBRow, ListingVersion](dbRows)
 }
 
 func (r *CreateListingRequest) toOpts() *CreateListingOptions {

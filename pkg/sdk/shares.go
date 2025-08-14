@@ -309,8 +309,7 @@ func (s *shares) Show(ctx context.Context, opts *ShowShareOptions) ([]Share, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[shareRow, Share](dbRows)
-	return resultList, nil
+	return convertRowsErr[shareRow, Share](dbRows)
 }
 
 func (s *shares) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Share, error) {

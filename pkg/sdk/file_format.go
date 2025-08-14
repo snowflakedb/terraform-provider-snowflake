@@ -648,8 +648,7 @@ func (v *fileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[FileFormatRow, FileFormat](dbRows)
-	return resultList, nil
+	return convertRowsErr[FileFormatRow, FileFormat](dbRows)
 }
 
 func (v *fileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {

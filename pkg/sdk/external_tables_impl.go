@@ -49,8 +49,7 @@ func (v *externalTables) Show(ctx context.Context, req *ShowExternalTableRequest
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[externalTableRow, ExternalTable](dbRows)
-	return resultList, nil
+	return convertRowsErr[externalTableRow, ExternalTable](dbRows)
 }
 
 func (v *externalTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*ExternalTable, error) {
@@ -77,7 +76,7 @@ func (v *externalTables) DescribeColumns(ctx context.Context, req *DescribeExter
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalTableColumnDetailsRow, ExternalTableColumnDetails](rows), nil
+	return convertRowsErr[externalTableColumnDetailsRow, ExternalTableColumnDetails](rows)
 }
 
 func (v *externalTables) DescribeStage(ctx context.Context, req *DescribeExternalTableStageRequest) ([]ExternalTableStageDetails, error) {
@@ -85,5 +84,5 @@ func (v *externalTables) DescribeStage(ctx context.Context, req *DescribeExterna
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalTableStageDetailsRow, ExternalTableStageDetails](rows), nil
+	return convertRowsErr[externalTableStageDetailsRow, ExternalTableStageDetails](rows)
 }

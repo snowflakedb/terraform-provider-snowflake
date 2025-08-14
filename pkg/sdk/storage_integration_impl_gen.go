@@ -37,8 +37,7 @@ func (v *storageIntegrations) Show(ctx context.Context, request *ShowStorageInte
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showStorageIntegrationsDbRow, StorageIntegration](dbRows)
-	return resultList, nil
+	return convertRowsErr[showStorageIntegrationsDbRow, StorageIntegration](dbRows)
 }
 
 func (v *storageIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error) {
@@ -63,7 +62,7 @@ func (v *storageIntegrations) Describe(ctx context.Context, id AccountObjectIden
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[descStorageIntegrationsDbRow, StorageIntegrationProperty](rows), nil
+	return convertRowsErr[descStorageIntegrationsDbRow, StorageIntegrationProperty](rows)
 }
 
 func (r *CreateStorageIntegrationRequest) toOpts() *CreateStorageIntegrationOptions {

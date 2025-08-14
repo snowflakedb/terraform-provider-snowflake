@@ -59,8 +59,7 @@ func (v *procedures) Show(ctx context.Context, request *ShowProcedureRequest) ([
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[procedureRow, Procedure](dbRows)
-	return resultList, nil
+	return convertRowsErr[procedureRow, Procedure](dbRows)
 }
 
 func (v *procedures) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Procedure, error) {
@@ -86,7 +85,7 @@ func (v *procedures) Describe(ctx context.Context, id SchemaObjectIdentifierWith
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[procedureDetailRow, ProcedureDetail](rows), nil
+	return convertRowsErr[procedureDetailRow, ProcedureDetail](rows)
 }
 
 func (v *procedures) Call(ctx context.Context, request *CallProcedureRequest) error {

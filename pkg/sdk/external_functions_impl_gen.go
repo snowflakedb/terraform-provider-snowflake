@@ -30,8 +30,7 @@ func (v *externalFunctions) Show(ctx context.Context, request *ShowExternalFunct
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[externalFunctionRow, ExternalFunction](dbRows)
-	return resultList, nil
+	return convertRowsErr[externalFunctionRow, ExternalFunction](dbRows)
 }
 
 func (v *externalFunctions) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ExternalFunction, error) {
@@ -57,7 +56,7 @@ func (v *externalFunctions) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalFunctionPropertyRow, ExternalFunctionProperty](rows), nil
+	return convertRowsErr[externalFunctionPropertyRow, ExternalFunctionProperty](rows)
 }
 
 func (r *CreateExternalFunctionRequest) toOpts() *CreateExternalFunctionOptions {
