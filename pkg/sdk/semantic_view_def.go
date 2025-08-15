@@ -9,36 +9,34 @@ var semanticViewDbRow = g.DbStruct("semanticViewDBRow").
 	Text("name").
 	Text("database_name").
 	Text("schema_name").
+	OptionalText("comment").
 	Text("owner").
 	Text("owner_role_type").
-	OptionalText("comment")
+	OptionalText("extension")
 
 var semanticView = g.PlainStruct("SemanticView").
 	Time("CreatedOn").
 	Text("Name").
 	Text("DatabaseName").
 	Text("SchemaName").
+	OptionalText("Comment").
 	Text("Owner").
 	Text("OwnerRoleType").
-	OptionalText("Comment")
+	OptionalText("Extension")
 
 var semanticViewDetailsDbRow = g.DbStruct("semanticViewDetailsRow").
-	Time("created_on").
-	Text("name").
-	Text("database_name").
-	Text("schema_name").
-	Text("owner").
-	Text("owner_role_type").
-	OptionalText("comment")
+	Text("object_kind").
+	Text("object_name").
+	Text("parent_entity").
+	Text("property").
+	Text("property_value")
 
 var semanticViewDetails = g.PlainStruct("SemanticViewDetails").
-	Time("CreatedOn").
-	Text("Name").
-	Text("DatabaseName").
-	Text("SchemaName").
-	Text("Owner").
-	Text("OwnerRoleType").
-	OptionalText("Comment")
+	Text("ObjectKind").
+	Text("ObjectName").
+	Text("ParentEntity").
+	Text("Property").
+	Text("PropertyValue")
 
 var SemanticViewsDef = g.NewInterface(
 	"SemanticViews",

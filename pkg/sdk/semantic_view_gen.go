@@ -115,23 +115,19 @@ type DescribeSemanticViewOptions struct {
 }
 
 type semanticViewDetailsRow struct {
-	CreatedOn     time.Time      `db:"created_on"`
-	Name          string         `db:"name"`
-	DatabaseName  string         `db:"database_name"`
-	SchemaName    string         `db:"schema_name"`
-	Owner         string         `db:"owner"`
-	OwnerRoleType string         `db:"owner_role_type"`
-	Comment       sql.NullString `db:"comment"`
+	ObjectKind    string `db:"object_kind"`
+	ObjectName    string `db:"object_name"`
+	ParentEntity  string `db:"parent_entity"`
+	Property      string `db:"property"`
+	PropertyValue string `db:"property_value"`
 }
 
 type SemanticViewDetails struct {
-	CreatedOn     time.Time
-	Name          string
-	DatabaseName  string
-	SchemaName    string
-	Owner         string
-	OwnerRoleType string
-	Comment       *string
+	ObjectKind    string
+	ObjectName    string
+	ParentEntity  string
+	Property      string
+	PropertyValue string
 }
 
 // ShowSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views.
@@ -150,9 +146,10 @@ type semanticViewDBRow struct {
 	Name          string         `db:"name"`
 	DatabaseName  string         `db:"database_name"`
 	SchemaName    string         `db:"schema_name"`
+	Comment       sql.NullString `db:"comment"`
 	Owner         string         `db:"owner"`
 	OwnerRoleType string         `db:"owner_role_type"`
-	Comment       sql.NullString `db:"comment"`
+	Extension     sql.NullString `db:"extension"`
 }
 
 type SemanticView struct {
@@ -160,9 +157,10 @@ type SemanticView struct {
 	Name          string
 	DatabaseName  string
 	SchemaName    string
+	Comment       *string
 	Owner         string
 	OwnerRoleType string
-	Comment       *string
+	Extension     *string
 }
 
 func (v *SemanticView) ID() SchemaObjectIdentifier {
