@@ -3,13 +3,17 @@ package sdk
 import "testing"
 
 func TestSemanticViews_Create(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
+	logicalTableId := randomSchemaObjectIdentifier()
 	// Minimal valid CreateSemanticViewOptions
 	defaultOpts := func() *CreateSemanticViewOptions {
 		return &CreateSemanticViewOptions{
-
 			name: id,
+			logicalTables: []LogicalTable{
+				{
+					TableName: logicalTableId,
+				},
+			},
 		}
 	}
 
@@ -18,7 +22,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+	t.Run("validation: invalid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
@@ -33,13 +37,7 @@ func TestSemanticViews_Create(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		logicalTableId := randomSchemaObjectIdentifier()
 		opts.OrReplace = Bool(true)
-		opts.logicalTables = []LogicalTable{
-			{
-				TableName: logicalTableId,
-			},
-		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SEMANTIC VIEW %s TABLES (%s)", id.FullyQualifiedName(), logicalTableId.FullyQualifiedName())
 	})
 
@@ -154,12 +152,10 @@ func TestSemanticViews_Create(t *testing.T) {
 }
 
 func TestSemanticViews_Drop(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid DropSemanticViewOptions
 	defaultOpts := func() *DropSemanticViewOptions {
 		return &DropSemanticViewOptions{
-
 			name: id,
 		}
 	}
@@ -169,32 +165,29 @@ func TestSemanticViews_Drop(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+	t.Run("validation: invalid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "DROP SEMANTIC VIEW %s", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.IfExists = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "DROP SEMANTIC VIEW IF EXISTS %s", id.FullyQualifiedName())
 	})
 }
 
 func TestSemanticViews_Describe(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid DescribeSemanticViewOptions
 	defaultOpts := func() *DescribeSemanticViewOptions {
 		return &DescribeSemanticViewOptions{
-
 			name: id,
 		}
 	}
@@ -203,22 +196,16 @@ func TestSemanticViews_Describe(t *testing.T) {
 		var opts *DescribeSemanticViewOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+
+	t.Run("validation: invalid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SEMANTIC VIEW %s", id.FullyQualifiedName())
 	})
 }
 
@@ -235,13 +222,20 @@ func TestSemanticViews_Show(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "SHOW SEMANTIC VIEWS")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Terse = Bool(true)
+		opts.Like = &Like{
+			Pattern: String("my_account"),
+		}
+		opts.In = &In{
+			Account: Bool(true),
+		}
+		opts.StartsWith = String("sem")
+		opts.Limit = &LimitFrom{Rows: Int(10)}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW TERSE SEMANTIC VIEWS LIKE 'my_account' IN ACCOUNT STARTS WITH 'sem' LIMIT 10")
 	})
 }
