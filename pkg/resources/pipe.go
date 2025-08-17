@@ -65,6 +65,7 @@ var pipeSchema = map[string]*schema.Schema{
 	"integration": {
 		Type:        schema.TypeString,
 		Optional:    true,
+		ForceNew:    true,
 		Description: "Specifies an integration for the pipe.",
 	},
 	"notification_channel": {
@@ -80,6 +81,7 @@ var pipeSchema = map[string]*schema.Schema{
 	"error_integration": {
 		Type:        schema.TypeString,
 		Optional:    true,
+		ForceNew:    true,
 		Description: "Specifies the name of the notification integration used for error notifications.",
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
