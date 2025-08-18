@@ -39,7 +39,7 @@ type LogicalTable struct {
 	logicalTableAlias *LogicalTableAlias     `ddl:"keyword"`
 	TableName         SchemaObjectIdentifier `ddl:"identifier"`
 	primaryKeys       *PrimaryKeys           `ddl:"parameter,no_equals"`
-	uniqueKeys        []UniqueKeys           `ddl:"list,no_equals"`
+	uniqueKeys        []UniqueKeys           `ddl:"list,no_equals,no_comma"`
 	synonyms          *Synonyms              `ddl:"parameter,no_equals"`
 	Comment           *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
