@@ -196,8 +196,13 @@ func (r *DescribeSemanticViewRequest) toOpts() *DescribeSemanticViewOptions {
 }
 
 func (r semanticViewDetailsRow) convert() *SemanticViewDetails {
-	// TODO: Mapping
-	return &SemanticViewDetails{}
+	return &SemanticViewDetails{
+		ObjectKind:    r.ObjectKind,
+		ObjectName:    r.ObjectName,
+		ParentEntity:  r.ParentEntity,
+		Property:      r.Property,
+		PropertyValue: r.PropertyValue,
+	}
 }
 
 func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
@@ -212,8 +217,24 @@ func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
 }
 
 func (r semanticViewDBRow) convert() *SemanticView {
-	// TODO: Mapping
-	return &SemanticView{}
+	semanticViewShow := &SemanticView{
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		DatabaseName:  r.DatabaseName,
+		SchemaName:    r.SchemaName,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
+	}
+
+	if r.Comment.Valid {
+		semanticViewShow.Comment = String(r.Comment.String)
+	}
+
+	if r.Extension.Valid {
+		semanticViewShow.Extension = String(r.Extension.String)
+	}
+
+	return semanticViewShow
 }
 
 func (r *AlterSemanticViewRequest) toOpts() *AlterSemanticViewOptions {
