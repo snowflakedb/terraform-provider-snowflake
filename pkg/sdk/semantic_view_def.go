@@ -96,7 +96,7 @@ var SemanticViewsDef = g.NewInterface(
 		OptionalLike().
 		OptionalIn().
 		OptionalStartsWith().
-		OptionalLimit(),
+		OptionalLimitFrom(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view",
 	g.NewQueryStruct("AlterSemanticView").
