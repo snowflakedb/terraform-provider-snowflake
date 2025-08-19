@@ -266,4 +266,8 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "Warehouse",
 		schema: resources.Warehouse().Schema,
 	},
+	{
+		name:   "GrantPrivilegesToAccountRole",
+		schema: resources.GrantPrivilegesToAccountRole().Schema,
+	},
 }

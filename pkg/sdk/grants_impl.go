@@ -248,11 +248,11 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 		opts = &ShowGrantOptions{}
 	}
 
-	dbRows, err := validateAndQuery[grantRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[GrantRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[grantRow, Grant](dbRows)
+	resultList := convertRows[GrantRow, Grant](dbRows)
 	for i, grant := range resultList {
 		// SHOW GRANTS of DATABASE ROLE requires a special handling:
 		// - it returns no account name, so for other SHOW GRANTS types it needs to be skipped

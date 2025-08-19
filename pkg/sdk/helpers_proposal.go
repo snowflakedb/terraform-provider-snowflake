@@ -71,6 +71,11 @@ type convertibleRowDeprecated[T any] interface {
 	convert() *T
 }
 
+// TODO: Used in Option 1 for convert (remove if not chosen)
+type ConvertibleRowDeprecated[T any] interface {
+	Convert() *T
+}
+
 func convertRows[T convertibleRowDeprecated[U], U any](dbRows []T) []U {
 	resultList := make([]U, len(dbRows))
 	for i, row := range dbRows {

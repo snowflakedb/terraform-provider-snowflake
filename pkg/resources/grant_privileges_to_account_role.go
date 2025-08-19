@@ -101,21 +101,11 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"object_type": {
-					Type:        schema.TypeString,
-					Required:    true,
-					ForceNew:    true,
-					Description: "The object type of the account object on which privileges will be granted. Valid values are: USER | RESOURCE MONITOR | WAREHOUSE | COMPUTE POOL | DATABASE | INTEGRATION | FAILOVER GROUP | REPLICATION GROUP | EXTERNAL VOLUME",
-					ValidateFunc: validation.StringInSlice([]string{
-						"USER",
-						"RESOURCE MONITOR",
-						"WAREHOUSE",
-						"COMPUTE POOL",
-						"DATABASE",
-						"INTEGRATION",
-						"FAILOVER GROUP",
-						"REPLICATION GROUP",
-						"EXTERNAL VOLUME",
-					}, true),
+					Type:         schema.TypeString,
+					Required:     true,
+					ForceNew:     true,
+					Description:  "The object type of the account object on which privileges will be granted. Valid values are: USER | RESOURCE MONITOR | WAREHOUSE | COMPUTE POOL | DATABASE | INTEGRATION | FAILOVER GROUP | REPLICATION GROUP | EXTERNAL VOLUME",
+					ValidateFunc: validation.StringInSlice(sdk.ValidGrantToAccountObjectTypesString, true),
 				},
 				"object_name": {
 					Type:             schema.TypeString,
@@ -202,7 +192,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					ForceNew:    true,
-					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToObjectTypesString, " | ")),
+					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToSchemaObjectTypesString, " | ")),
 					RequiredWith: []string{
 						"on_schema_object.0.object_name",
 					},
@@ -210,7 +200,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
 					},
-					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToObjectTypesString, true),
+					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToSchemaObjectTypesString, true),
 				},
 				"object_name": {
 					Type:        schema.TypeString,

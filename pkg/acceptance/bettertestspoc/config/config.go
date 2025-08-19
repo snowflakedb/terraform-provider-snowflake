@@ -23,7 +23,9 @@ func ResourceFromModel(t *testing.T, model ResourceModel) string {
 
 	hcl, err := DefaultHclConfigProvider.HclFromJson(resourceJson)
 	require.NoError(t, err)
-	t.Logf("Generated config:\n%s", hcl)
+
+	// TODO: Uncomment or change to log.Println as it breaks migration script due to incorrectly set up testing.T
+	//t.Logf("Generated config:\n%s", hcl)
 
 	return hcl
 }

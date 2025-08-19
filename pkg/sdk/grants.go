@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var _ convertibleRowDeprecated[Grant] = new(grantRow)
+var _ convertibleRowDeprecated[Grant] = new(GrantRow)
 
 type Grants interface {
 	GrantPrivilegesToAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *GrantPrivilegesToAccountRoleOptions) error
@@ -196,7 +196,7 @@ type ShowGrantsOf struct {
 	Share           AccountObjectIdentifier  `ddl:"identifier" sql:"SHARE"`
 }
 
-type grantRow struct {
+type GrantRow struct {
 	CreatedOn   time.Time `db:"created_on"`
 	Privilege   string    `db:"privilege"`
 	GrantedOn   string    `db:"granted_on"`
@@ -226,8 +226,13 @@ func (v *Grant) ID() ObjectIdentifier {
 	return v.Name
 }
 
+// TODO: Remove if option 1 for convert is not chosen
+func (row GrantRow) Convert() *Grant {
+	return row.convert()
+}
+
 // TODO(SNOW-2097063): Improve SHOW GRANTS implementation
-func (row grantRow) convert() *Grant {
+func (row GrantRow) convert() *Grant {
 	grantedTo := ObjectType(strings.ReplaceAll(row.GrantedTo, "_", " "))
 	grantTo := ObjectType(strings.ReplaceAll(row.GrantTo, "_", " "))
 	var grantedOn ObjectType
