@@ -45,6 +45,11 @@ func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewReque
 	return resultList, nil
 }
 
+func (v *semanticViews) Alter(ctx context.Context, request *AlterSemanticViewRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 	opts := &CreateSemanticViewOptions{
 		OrReplace:   r.OrReplace,
@@ -191,13 +196,8 @@ func (r *DescribeSemanticViewRequest) toOpts() *DescribeSemanticViewOptions {
 }
 
 func (r semanticViewDetailsRow) convert() *SemanticViewDetails {
-	return &SemanticViewDetails{
-		ObjectKind:    r.ObjectKind,
-		ObjectName:    r.ObjectName,
-		ParentEntity:  r.ParentEntity,
-		Property:      r.Property,
-		PropertyValue: r.PropertyValue,
-	}
+	// TODO: Mapping
+	return &SemanticViewDetails{}
 }
 
 func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
@@ -212,22 +212,16 @@ func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
 }
 
 func (r semanticViewDBRow) convert() *SemanticView {
-	semanticViewShow := &SemanticView{
-		CreatedOn:     r.CreatedOn,
-		Name:          r.Name,
-		DatabaseName:  r.DatabaseName,
-		SchemaName:    r.SchemaName,
-		Owner:         r.Owner,
-		OwnerRoleType: r.OwnerRoleType,
-	}
+	// TODO: Mapping
+	return &SemanticView{}
+}
 
-	if r.Comment.Valid {
-		semanticViewShow.Comment = String(r.Comment.String)
+func (r *AlterSemanticViewRequest) toOpts() *AlterSemanticViewOptions {
+	opts := &AlterSemanticViewOptions{
+		IfExists:     r.IfExists,
+		name:         r.name,
+		SetComment:   r.SetComment,
+		UnsetComment: r.UnsetComment,
 	}
-
-	if r.Extension.Valid {
-		semanticViewShow.Extension = String(r.Extension.String)
-	}
-
-	return semanticViewShow
+	return opts
 }

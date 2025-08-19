@@ -97,6 +97,16 @@ var SemanticViewsDef = g.NewInterface(
 		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimit(),
+).AlterOperation(
+	"https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view",
+	g.NewQueryStruct("AlterSemanticView").
+		Alter().
+		SQL("SEMANTIC VIEW").
+		IfExists().
+		Name().
+		OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
+		OptionalSQL("UNSET COMMENT").
+		WithValidation(g.ValidIdentifier, "name"),
 )
 
 var primaryKey = g.NewQueryStruct("PrimaryKeys").

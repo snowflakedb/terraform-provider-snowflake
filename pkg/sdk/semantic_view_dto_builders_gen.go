@@ -278,3 +278,26 @@ func (s *ShowSemanticViewRequest) WithLimit(Limit LimitFrom) *ShowSemanticViewRe
 	s.Limit = &Limit
 	return s
 }
+
+func NewAlterSemanticViewRequest(
+	name SchemaObjectIdentifier,
+) *AlterSemanticViewRequest {
+	s := AlterSemanticViewRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *AlterSemanticViewRequest) WithIfExists(IfExists bool) *AlterSemanticViewRequest {
+	s.IfExists = &IfExists
+	return s
+}
+
+func (s *AlterSemanticViewRequest) WithSetComment(SetComment string) *AlterSemanticViewRequest {
+	s.SetComment = &SetComment
+	return s
+}
+
+func (s *AlterSemanticViewRequest) WithUnsetComment(UnsetComment bool) *AlterSemanticViewRequest {
+	s.UnsetComment = &UnsetComment
+	return s
+}

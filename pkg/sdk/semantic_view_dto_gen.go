@@ -7,6 +7,7 @@ var (
 	_ optionsProvider[DropSemanticViewOptions]     = new(DropSemanticViewRequest)
 	_ optionsProvider[DescribeSemanticViewOptions] = new(DescribeSemanticViewRequest)
 	_ optionsProvider[ShowSemanticViewOptions]     = new(ShowSemanticViewRequest)
+	_ optionsProvider[AlterSemanticViewOptions]    = new(AlterSemanticViewRequest)
 )
 
 type CreateSemanticViewRequest struct {
@@ -101,4 +102,11 @@ type ShowSemanticViewRequest struct {
 	In         *In
 	StartsWith *string
 	Limit      *LimitFrom
+}
+
+type AlterSemanticViewRequest struct {
+	IfExists     *bool
+	name         SchemaObjectIdentifier // required
+	SetComment   *string
+	UnsetComment *bool
 }

@@ -12,6 +12,7 @@ type SemanticViews interface {
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SemanticViewDetails, error)
 	Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error)
+	Alter(ctx context.Context, request *AlterSemanticViewRequest) error
 }
 
 // CreateSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view.
@@ -165,4 +166,17 @@ type SemanticView struct {
 
 func (v *SemanticView) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}
+func (v *SemanticView) ObjectType() ObjectType {
+	return ObjectTypeSemanticView
+}
+
+// AlterSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view.
+type AlterSemanticViewOptions struct {
+	alter        bool                   `ddl:"static" sql:"ALTER"`
+	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
+	IfExists     *bool                  `ddl:"keyword" sql:"IF EXISTS"`
+	name         SchemaObjectIdentifier `ddl:"identifier"`
+	SetComment   *string                `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
+	UnsetComment *bool                  `ddl:"keyword" sql:"UNSET COMMENT"`
 }

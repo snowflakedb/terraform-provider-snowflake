@@ -255,3 +255,44 @@ func TestSemanticViews_Show(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "SHOW TERSE SEMANTIC VIEWS LIKE 'my_account' IN ACCOUNT STARTS WITH 'sem' LIMIT 10")
 	})
 }
+
+func TestSemanticViews_Alter(t *testing.T) {
+
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid AlterSemanticViewOptions
+	defaultOpts := func() *AlterSemanticViewOptions {
+		return &AlterSemanticViewOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *AlterSemanticViewOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: invalid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("set comment", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetComment = String("comment")
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s SET COMMENT = 'comment'", id.FullyQualifiedName())
+	})
+
+	t.Run("unset comment", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetComment = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s UNSET COMMENT", id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetComment = String("comment")
+		opts.IfExists = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW IF EXISTS %s SET COMMENT = 'comment'", id.FullyQualifiedName())
+	})
+}

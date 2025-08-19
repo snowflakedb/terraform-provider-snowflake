@@ -5,6 +5,7 @@ var (
 	_ validatable = new(DropSemanticViewOptions)
 	_ validatable = new(DescribeSemanticViewOptions)
 	_ validatable = new(ShowSemanticViewOptions)
+	_ validatable = new(AlterSemanticViewOptions)
 )
 
 func (opts *CreateSemanticViewOptions) validate() error {
@@ -48,5 +49,16 @@ func (opts *ShowSemanticViewOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterSemanticViewOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	return JoinErrors(errs...)
 }
