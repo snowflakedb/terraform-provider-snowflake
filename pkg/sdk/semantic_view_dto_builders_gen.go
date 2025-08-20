@@ -246,13 +246,16 @@ func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunct
 func NewWindowFunctionMetricDefinitionRequest(
 	WindowFunction string,
 	Metric string,
-	OverClause *WindowFunctionOverClauseRequest,
 ) *WindowFunctionMetricDefinitionRequest {
 	s := WindowFunctionMetricDefinitionRequest{}
 	s.WindowFunction = WindowFunction
 	s.Metric = Metric
-	s.OverClause = OverClause
 	return &s
+}
+
+func (s *WindowFunctionMetricDefinitionRequest) WithOverClause(OverClause WindowFunctionOverClauseRequest) *WindowFunctionMetricDefinitionRequest {
+	s.OverClause = &OverClause
+	return s
 }
 
 func NewWindowFunctionOverClauseRequest() *WindowFunctionOverClauseRequest {

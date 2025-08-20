@@ -93,9 +93,9 @@ type MetricDefinitionRequest struct {
 }
 
 type WindowFunctionMetricDefinitionRequest struct {
-	WindowFunction string                           // required
-	Metric         string                           // required
-	OverClause     *WindowFunctionOverClauseRequest // required
+	WindowFunction string // required
+	Metric         string // required
+	OverClause     *WindowFunctionOverClauseRequest
 }
 
 type WindowFunctionOverClauseRequest struct {

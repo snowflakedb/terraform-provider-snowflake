@@ -174,7 +174,7 @@ var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefin
 	SQL("AS").
 	Text("Metric", g.KeywordOptions().Required()).
 	SQL("OVER").
-	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ParameterOptions().Parentheses())
+	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.KeywordOptions().Parentheses())
 
 var metricDefinition = g.NewQueryStruct("MetricDefinition").
 	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions()).
