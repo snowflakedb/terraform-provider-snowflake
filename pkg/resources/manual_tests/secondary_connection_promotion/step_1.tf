@@ -1,5 +1,5 @@
 # Prerequisites:
-# - Ensure both accounts were primary and secondary connections will be created have:
+# - Ensure both accounts, where primary and secondary connections will be created, have:
 #   - Correct edition: BUSINESS_CRITICAL
 #   - Replication enabled: https://docs.snowflake.com/alias/replication/enable-account-repl
 # For more information on how to set up the accounts, refer to the internal documentation
@@ -19,12 +19,12 @@ provider "snowflake" {}
 
 provider "snowflake" {
   profile = "secondary_test_account"
-  alias   = second_account
+  alias   = "second_account"
 }
 
 resource "snowflake_primary_connection" "primary_connection" {
   name = "TEST_CONNECTION"
-  enable_failover_to_accounts = ["<organization_name>.<seconary_connection_account_name>"]
+  enable_failover_to_accounts = ["<organization_name>.<secondary_connection_account_name>"]
 }
 
 resource "snowflake_secondary_connection" "secondary_connection" {

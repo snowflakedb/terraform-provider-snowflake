@@ -191,9 +191,9 @@ func DeleteContextSecondaryConnection(ctx context.Context, d *schema.ResourceDat
 
 	// Retry is necessary for cases where the changes in Snowflake didn't have enough time to propagate.
 	// An example would be having the following setup:
-	// 1. primary connection (con1) -> secondary connection (con2)
+	// 1. Config with primary connection (con1) and secondary connection (con2)
 	// 2. Setting secondary connection (con2) as primary
-	// 3. Setting previously primary connection (con1) as primary (we will have the same hierarchy as in the first step)
+	// 3. Setting previously primary connection (con1) as primary (we will have the connection dependencies as in the first step)
 	// 4. Deleting secondary connection (con2; this may fail without waiting a bit for Snowflake to propagate the changes)
 	if err := util.Retry(3, time.Second, func() (error, bool) {
 		if err := client.Connections.DropSafely(ctx, id); err != nil && strings.Contains(err.Error(), "is currently a primary connection in a replication relationship and cannot be dropped") {
