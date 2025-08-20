@@ -4,13 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"strings"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -60,7 +56,7 @@ func SecondaryConnection() *schema.Resource {
 		CreateContext: TrackingCreateWrapper(resources.SecondaryConnection, CreateContextSecondaryConnection),
 		ReadContext:   TrackingReadWrapper(resources.SecondaryConnection, ReadContextSecondaryConnection),
 		UpdateContext: TrackingUpdateWrapper(resources.SecondaryConnection, UpdateContextSecondaryConnection),
-		DeleteContext: TrackingDeleteWrapper(resources.SecondaryConnection, DeleteContextSecondaryConnection),
+		DeleteContext: TrackingDeleteWrapper(resources.SecondaryConnection, DeleteConnection),
 		Description:   "Resource used to manage secondary (replicated) connections. To manage primary connection check resource [snowflake_primary_connection](./primary_connection). For more information, check [connection documentation](https://docs.snowflake.com/en/sql-reference/sql/create-connection.html).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SecondaryConnection, customdiff.All(
@@ -179,34 +175,4 @@ func UpdateContextSecondaryConnection(ctx context.Context, d *schema.ResourceDat
 	}
 
 	return ReadContextSecondaryConnection(ctx, d, meta)
-}
-
-func DeleteContextSecondaryConnection(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// Retry is necessary for cases where the changes in Snowflake didn't have enough time to propagate.
-	// An example would be having the following setup:
-	// 1. Config with primary connection (con1) and secondary connection (con2)
-	// 2. Setting secondary connection (con2) as primary
-	// 3. Setting previously primary connection (con1) as primary (we will have the connection dependencies as in the first step)
-	// 4. Deleting secondary connection (con2; this may fail without waiting a bit for Snowflake to propagate the changes)
-	if err := util.Retry(3, time.Second, func() (error, bool) {
-		if err := client.Connections.DropSafely(ctx, id); err != nil && strings.Contains(err.Error(), "is currently a primary connection in a replication relationship and cannot be dropped") {
-			return nil, false
-		} else {
-			log.Printf("[DEBUG] Drop secondary connection failed, err = %s", err)
-			return err, true
-		}
-	}); err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-
-	return nil
 }
