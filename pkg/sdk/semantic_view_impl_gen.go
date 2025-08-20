@@ -181,9 +181,9 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 					WindowFunction: v.windowFunctionMetricDefinition.WindowFunction,
 					Metric:         v.windowFunctionMetricDefinition.Metric,
 					OverClause: &WindowFunctionOverClause{
-						partitionBy:       v.windowFunctionMetricDefinition.OverClause.PartitionByClause != nil,
+						PartitionBy:       Bool(v.windowFunctionMetricDefinition.OverClause.PartitionByClause != nil),
 						PartitionByClause: v.windowFunctionMetricDefinition.OverClause.PartitionByClause,
-						orderBy:           v.windowFunctionMetricDefinition.OverClause.OrderByClause != nil,
+						OrderBy:           Bool(v.windowFunctionMetricDefinition.OverClause.OrderByClause != nil),
 						OrderByClause:     v.windowFunctionMetricDefinition.OverClause.OrderByClause,
 						WindowFrameClause: v.windowFunctionMetricDefinition.OverClause.WindowFrameClause,
 					},

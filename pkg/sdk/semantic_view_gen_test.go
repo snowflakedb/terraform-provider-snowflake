@@ -155,9 +155,9 @@ func TestSemanticViews_Create(t *testing.T) {
 					as:             true,
 					Metric:         "SUM(table_1.metric_1)",
 					OverClause: &WindowFunctionOverClause{
-						partitionBy:       true,
+						PartitionBy:       Bool(true),
 						PartitionByClause: String("table_1.dimension_2, table_1.dimension_3"),
-						orderBy:           true,
+						OrderBy:           Bool(true),
 						OrderByClause:     String("table_1.dimension_2"),
 					},
 				},

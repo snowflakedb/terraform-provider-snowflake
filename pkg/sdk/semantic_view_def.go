@@ -164,9 +164,9 @@ var semanticExpression = g.NewQueryStruct("SemanticExpression").
 	OptionalComment()
 
 var windowFunctionOverClause = g.NewQueryStruct("WindowFunctionOverClause").
-	SQL("PARTITION BY").
+	OptionalSQL("PARTITION BY").
 	OptionalText("PartitionByClause", g.KeywordOptions()).
-	SQL("ORDER BY").
+	OptionalSQL("ORDER BY").
 	OptionalText("OrderByClause", g.KeywordOptions()).
 	OptionalText("WindowFrameClause", g.KeywordOptions())
 

@@ -99,7 +99,9 @@ type WindowFunctionMetricDefinitionRequest struct {
 }
 
 type WindowFunctionOverClauseRequest struct {
+	PartitionBy       *bool
 	PartitionByClause *string
+	OrderBy           *bool
 	OrderByClause     *string
 	WindowFrameClause *string
 }

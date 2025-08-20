@@ -113,9 +113,9 @@ type WindowFunctionMetricDefinition struct {
 }
 
 type WindowFunctionOverClause struct {
-	partitionBy       bool    `ddl:"static" sql:"PARTITION BY"`
+	PartitionBy       *bool   `ddl:"keyword" sql:"PARTITION BY"`
 	PartitionByClause *string `ddl:"keyword"`
-	orderBy           bool    `ddl:"static" sql:"ORDER BY"`
+	OrderBy           *bool   `ddl:"keyword" sql:"ORDER BY"`
 	OrderByClause     *string `ddl:"keyword"`
 	WindowFrameClause *string `ddl:"keyword"`
 }

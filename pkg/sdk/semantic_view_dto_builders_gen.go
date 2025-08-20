@@ -262,8 +262,18 @@ func NewWindowFunctionOverClauseRequest() *WindowFunctionOverClauseRequest {
 	return &WindowFunctionOverClauseRequest{}
 }
 
+func (s *WindowFunctionOverClauseRequest) WithPartitionBy(PartitionBy bool) *WindowFunctionOverClauseRequest {
+	s.PartitionBy = &PartitionBy
+	return s
+}
+
 func (s *WindowFunctionOverClauseRequest) WithPartitionByClause(PartitionByClause string) *WindowFunctionOverClauseRequest {
 	s.PartitionByClause = &PartitionByClause
+	return s
+}
+
+func (s *WindowFunctionOverClauseRequest) WithOrderBy(OrderBy bool) *WindowFunctionOverClauseRequest {
+	s.OrderBy = &OrderBy
 	return s
 }
 
