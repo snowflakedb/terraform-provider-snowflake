@@ -18,6 +18,12 @@ func TestHandleGrants(t *testing.T) {
 		Name:        sdk.NewAccountObjectIdentifier("TEST_ACCOUNT"),
 		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_ACCOUNT"),
 	}
+	grantOnAccount2 := sdk.Grant{
+		Privilege:   "APPLY MASKING POLICY",
+		GrantedOn:   sdk.ObjectTypeAccount,
+		Name:        sdk.NewAccountObjectIdentifier("TEST_ACCOUNT"),
+		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_ACCOUNT"),
+	}
 	grantOnAccountObject := sdk.Grant{
 		Privilege:   "USAGE",
 		GrantedOn:   sdk.ObjectTypeDatabase,
@@ -32,6 +38,12 @@ func TestHandleGrants(t *testing.T) {
 	}
 	grantOnSchemaObject := sdk.Grant{
 		Privilege:   "SELECT",
+		GrantedOn:   sdk.ObjectTypeTable,
+		Name:        sdk.NewSchemaObjectIdentifier("TEST_DATABASE", "TEST_SCHEMA", "TEST_TABLE"),
+		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_SCHEMA_OBJECT"),
+	}
+	grantOnSchemaObject2 := sdk.Grant{
+		Privilege:   "INSERT",
 		GrantedOn:   sdk.ObjectTypeTable,
 		Name:        sdk.NewSchemaObjectIdentifier("TEST_DATABASE", "TEST_SCHEMA", "TEST_TABLE"),
 		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_SCHEMA_OBJECT"),
@@ -53,7 +65,7 @@ func TestHandleGrants(t *testing.T) {
 resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account" {
   account_role_name = "TEST_ROLE_ON_ACCOUNT"
   on_account = true
-  privileges = ["CREATE DATABASE"]
+  privileges = ["CREATE DATABASE", "APPLY MASKING POLICY"]
   with_grant_option = false
 }
 
@@ -82,7 +94,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
     object_name = "\"TEST_DATABASE\".\"TEST_SCHEMA\".\"TEST_TABLE\""
     object_type = "TABLE"
   }
-  privileges = ["SELECT"]
+  privileges = ["SELECT", "INSERT"]
   with_grant_option = false
 }
 `, "\n"),
