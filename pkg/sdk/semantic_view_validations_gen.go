@@ -67,5 +67,8 @@ func (opts *AlterSemanticViewOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !exactlyOneValueSet(opts.SetComment, opts.UnsetComment) {
+		errs = append(errs, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment"))
+	}
 	return JoinErrors(errs...)
 }

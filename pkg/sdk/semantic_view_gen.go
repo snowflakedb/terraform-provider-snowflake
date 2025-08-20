@@ -109,8 +109,7 @@ type WindowFunctionMetricDefinition struct {
 	WindowFunction string                    `ddl:"keyword"`
 	as             bool                      `ddl:"static" sql:"AS"`
 	Metric         string                    `ddl:"keyword"`
-	over           bool                      `ddl:"static" sql:"OVER"`
-	OverClause     *WindowFunctionOverClause `ddl:"keyword,parentheses"`
+	OverClause     *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
 }
 
 type WindowFunctionOverClause struct {

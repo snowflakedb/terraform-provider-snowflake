@@ -107,7 +107,8 @@ var SemanticViewsDef = g.NewInterface(
 		Name().
 		OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalSQL("UNSET COMMENT").
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment"),
 )
 
 var primaryKey = g.NewQueryStruct("PrimaryKeys").
@@ -173,8 +174,7 @@ var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefin
 	Text("WindowFunction", g.KeywordOptions().Required()).
 	SQL("AS").
 	Text("Metric", g.KeywordOptions().Required()).
-	SQL("OVER").
-	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.KeywordOptions().Parentheses())
+	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ListOptions().Parentheses().NoComma().SQL("OVER"))
 
 var metricDefinition = g.NewQueryStruct("MetricDefinition").
 	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions()).
