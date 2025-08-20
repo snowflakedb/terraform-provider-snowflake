@@ -120,6 +120,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
+	t.Run("sweep integrations", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeIntegrations(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
 	t.Run("sweep users", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeUsers(c, "")()
@@ -365,9 +372,11 @@ func nukeIntegrations(client *Client, suffix string) func() error {
 
 			if !slices.Contains(protectedIntegrations, integration.Name) && integrationDropCondition(integration) {
 				log.Printf("[DEBUG] Dropping integration %s", integration.Name)
-				//if _, err := client.ExecForTests(ctx, fmt.Sprintf(`DROP INTEGRATION "%s"`, integration.Name)); err != nil {
+				// Commented out intentionally, uncomment after review
+
+				// if _, err := client.ExecForTests(ctx, fmt.Sprintf(`DROP INTEGRATION "%s"`, integration.Name)); err != nil {
 				//	errs = append(errs, fmt.Errorf("sweeping integration %s ended with error, err = %w", integration.Name, err))
-				//}
+				// }
 			} else {
 				log.Printf("[DEBUG] Skipping integration %s", integration.Name)
 			}
@@ -375,9 +384,4 @@ func nukeIntegrations(client *Client, suffix string) func() error {
 
 		return errors.Join(errs...)
 	}
-}
-
-func TestIntegrations(t *testing.T) {
-	client := defaultTestClient(t)
-	assert.NoError(t, nukeIntegrations(client, "")())
 }
