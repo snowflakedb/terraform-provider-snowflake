@@ -35,6 +35,37 @@ func TestSemanticViews_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	})
 
+	t.Run("validation: exactly one field for [metricDefinition.semanticExpression metricDefinition.windowFunctionMetricDefinition]", func(t *testing.T) {
+		metricsObj := []MetricDefinition{
+			{
+				semanticExpression: &SemanticExpression{
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: "metricName"},
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: "metricExpression"},
+					synonyms:                &Synonyms{WithSynonyms: []string{"'test5'", "'test6'"}},
+					Comment:                 String("metric_comment"),
+				},
+				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
+					WindowFunction: "metric1",
+					as:             true,
+					Metric:         "SUM(table_1.metric_1)",
+					OverClause: &WindowFunctionOverClause{
+						PartitionBy:       Bool(true),
+						PartitionByClause: String("table_1.dimension_2, table_1.dimension_3"),
+						OrderBy:           Bool(true),
+						OrderByClause:     String("table_1.dimension_2"),
+					},
+				},
+			},
+		}
+		opts := &CreateSemanticViewOptions{
+			name:                id,
+			Comment:             String("comment"),
+			Metrics:             Bool(true),
+			semanticViewMetrics: metricsObj,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
