@@ -31,7 +31,7 @@ type CreateSemanticViewOptions struct {
 	Dimensions                *bool                      `ddl:"keyword" sql:"DIMENSIONS"`
 	semanticViewDimensions    []SemanticExpression       `ddl:"list,parentheses"`
 	Metrics                   *bool                      `ddl:"keyword" sql:"METRICS"`
-	semanticViewMetrics       []SemanticExpression       `ddl:"list,parentheses"`
+	semanticViewMetrics       []MetricDefinition         `ddl:"list,parentheses"`
 	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
 }
@@ -98,6 +98,27 @@ type QualifiedExpressionName struct {
 
 type SemanticSqlExpression struct {
 	SqlExpression string `ddl:"keyword,no_quotes"`
+}
+
+type MetricDefinition struct {
+	semanticExpression             *SemanticExpression             `ddl:"keyword"`
+	windowFunctionMetricDefinition *WindowFunctionMetricDefinition `ddl:"keyword"`
+}
+
+type WindowFunctionMetricDefinition struct {
+	WindowFunction string                    `ddl:"keyword"`
+	as             bool                      `ddl:"static" sql:"AS"`
+	Metric         string                    `ddl:"keyword,parentheses"`
+	over           bool                      `ddl:"static" sql:"OVER"`
+	OverClause     *WindowFunctionOverClause `ddl:"keyword,parentheses"`
+}
+
+type WindowFunctionOverClause struct {
+	partitionBy       bool    `ddl:"static" sql:"PARTITION BY"`
+	PartitionByClause *string `ddl:"keyword"`
+	orderBy           bool    `ddl:"static" sql:"ORDER BY"`
+	OrderByClause     *string `ddl:"keyword"`
+	WindowFrameClause *string `ddl:"keyword"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.

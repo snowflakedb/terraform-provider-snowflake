@@ -59,7 +59,7 @@ func (s *CreateSemanticViewRequest) WithMetrics(Metrics bool) *CreateSemanticVie
 	return s
 }
 
-func (s *CreateSemanticViewRequest) WithSemanticViewMetrics(semanticViewMetrics []SemanticExpressionRequest) *CreateSemanticViewRequest {
+func (s *CreateSemanticViewRequest) WithSemanticViewMetrics(semanticViewMetrics []MetricDefinitionRequest) *CreateSemanticViewRequest {
 	s.semanticViewMetrics = semanticViewMetrics
 	return s
 }
@@ -226,6 +226,51 @@ func NewSemanticSqlExpressionRequest() *SemanticSqlExpressionRequest {
 
 func (s *SemanticSqlExpressionRequest) WithSqlExpression(SqlExpression string) *SemanticSqlExpressionRequest {
 	s.SqlExpression = SqlExpression
+	return s
+}
+
+func NewMetricDefinitionRequest() *MetricDefinitionRequest {
+	return &MetricDefinitionRequest{}
+}
+
+func (s *MetricDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *MetricDefinitionRequest {
+	s.semanticExpression = &semanticExpression
+	return s
+}
+
+func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunctionMetricDefinition WindowFunctionMetricDefinitionRequest) *MetricDefinitionRequest {
+	s.windowFunctionMetricDefinition = &windowFunctionMetricDefinition
+	return s
+}
+
+func NewWindowFunctionMetricDefinitionRequest(
+	WindowFunction string,
+	Metric string,
+	OverClause *WindowFunctionOverClauseRequest,
+) *WindowFunctionMetricDefinitionRequest {
+	s := WindowFunctionMetricDefinitionRequest{}
+	s.WindowFunction = WindowFunction
+	s.Metric = Metric
+	s.OverClause = OverClause
+	return &s
+}
+
+func NewWindowFunctionOverClauseRequest() *WindowFunctionOverClauseRequest {
+	return &WindowFunctionOverClauseRequest{}
+}
+
+func (s *WindowFunctionOverClauseRequest) WithPartitionByClause(PartitionByClause string) *WindowFunctionOverClauseRequest {
+	s.PartitionByClause = &PartitionByClause
+	return s
+}
+
+func (s *WindowFunctionOverClauseRequest) WithOrderByClause(OrderByClause string) *WindowFunctionOverClauseRequest {
+	s.OrderByClause = &OrderByClause
+	return s
+}
+
+func (s *WindowFunctionOverClauseRequest) WithWindowFrameClause(WindowFrameClause string) *WindowFunctionOverClauseRequest {
+	s.WindowFrameClause = &WindowFrameClause
 	return s
 }
 

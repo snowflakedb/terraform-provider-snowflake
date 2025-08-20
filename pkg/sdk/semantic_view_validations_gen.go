@@ -19,6 +19,13 @@ func (opts *CreateSemanticViewOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	}
+	if valueSet(opts.semanticViewMetrics) {
+		for _, v := range opts.semanticViewMetrics {
+			if !exactlyOneValueSet(v.semanticExpression, v.windowFunctionMetricDefinition) {
+				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

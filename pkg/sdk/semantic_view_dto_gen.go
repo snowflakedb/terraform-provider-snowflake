@@ -22,7 +22,7 @@ type CreateSemanticViewRequest struct {
 	Dimensions                *bool
 	semanticViewDimensions    []SemanticExpressionRequest
 	Metrics                   *bool
-	semanticViewMetrics       []SemanticExpressionRequest
+	semanticViewMetrics       []MetricDefinitionRequest
 	Comment                   *string
 	CopyGrants                *bool
 }
@@ -85,6 +85,23 @@ type QualifiedExpressionNameRequest struct {
 
 type SemanticSqlExpressionRequest struct {
 	SqlExpression string
+}
+
+type MetricDefinitionRequest struct {
+	semanticExpression             *SemanticExpressionRequest
+	windowFunctionMetricDefinition *WindowFunctionMetricDefinitionRequest
+}
+
+type WindowFunctionMetricDefinitionRequest struct {
+	WindowFunction string                           // required
+	Metric         string                           // required
+	OverClause     *WindowFunctionOverClauseRequest // required
+}
+
+type WindowFunctionOverClauseRequest struct {
+	PartitionByClause *string
+	OrderByClause     *string
+	WindowFrameClause *string
 }
 
 type DropSemanticViewRequest struct {

@@ -161,16 +161,32 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 		opts.Dimensions = Bool(true)
 	}
 	if r.semanticViewMetrics != nil {
-		s := make([]SemanticExpression, len(r.semanticViewMetrics))
+		s := make([]MetricDefinition, len(r.semanticViewMetrics))
 		for i, v := range r.semanticViewMetrics {
-			s[i] = SemanticExpression{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.qualifiedExpressionName.QualifiedExpressionName},
-				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.sqlExpression.SqlExpression},
-				Comment:                 v.Comment,
+			s[i] = MetricDefinition{}
+			if v.semanticExpression != nil {
+				s[i].semanticExpression = &SemanticExpression{
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.semanticExpression.qualifiedExpressionName.QualifiedExpressionName},
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: v.semanticExpression.sqlExpression.SqlExpression},
+					Comment:                 v.semanticExpression.Comment,
+				}
+				if v.semanticExpression.synonyms != nil {
+					s[i].semanticExpression.synonyms = &Synonyms{
+						WithSynonyms: v.semanticExpression.synonyms.WithSynonyms,
+					}
+				}
 			}
-			if v.synonyms != nil {
-				s[i].synonyms = &Synonyms{
-					WithSynonyms: v.synonyms.WithSynonyms,
+			if v.windowFunctionMetricDefinition != nil {
+				s[i].windowFunctionMetricDefinition = &WindowFunctionMetricDefinition{
+					WindowFunction: v.windowFunctionMetricDefinition.WindowFunction,
+					Metric:         v.windowFunctionMetricDefinition.Metric,
+					OverClause: &WindowFunctionOverClause{
+						partitionBy:       v.windowFunctionMetricDefinition.OverClause.PartitionByClause != nil,
+						PartitionByClause: v.windowFunctionMetricDefinition.OverClause.PartitionByClause,
+						orderBy:           v.windowFunctionMetricDefinition.OverClause.OrderByClause != nil,
+						OrderByClause:     v.windowFunctionMetricDefinition.OverClause.OrderByClause,
+						WindowFrameClause: v.windowFunctionMetricDefinition.OverClause.WindowFrameClause,
+					},
 				}
 			}
 		}

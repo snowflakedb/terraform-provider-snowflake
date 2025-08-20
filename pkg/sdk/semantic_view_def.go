@@ -59,7 +59,7 @@ var SemanticViewsDef = g.NewInterface(
 		OptionalSQL("DIMENSIONS").
 		ListQueryStructField("semanticViewDimensions", semanticExpression, g.ListOptions().Parentheses()).
 		OptionalSQL("METRICS").
-		ListQueryStructField("semanticViewMetrics", semanticExpression, g.ListOptions().Parentheses()).
+		ListQueryStructField("semanticViewMetrics", metricDefinition, g.ListOptions().Parentheses()).
 		OptionalComment().
 		OptionalCopyGrants().
 		WithValidation(g.ValidIdentifier, "name").
@@ -67,6 +67,7 @@ var SemanticViewsDef = g.NewInterface(
 	logicalTable,
 	semanticViewRelationship,
 	semanticExpression,
+	metricDefinition,
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
 	g.NewQueryStruct("DropSemanticView").
@@ -160,3 +161,22 @@ var semanticExpression = g.NewQueryStruct("SemanticExpression").
 	OptionalQueryStructField("sqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
 	OptionalQueryStructField("synonyms", synonym, g.ParameterOptions().NoEquals()).
 	OptionalComment()
+
+var windowFunctionOverClause = g.NewQueryStruct("WindowFunctionOverClause").
+	SQL("PARTITION BY").
+	OptionalText("PartitionByClause", g.KeywordOptions()).
+	SQL("ORDER BY").
+	OptionalText("OrderByClause", g.KeywordOptions()).
+	OptionalText("WindowFrameClause", g.KeywordOptions())
+
+var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefinition").
+	Text("WindowFunction", g.KeywordOptions().Required()).
+	SQL("AS").
+	Text("Metric", g.KeywordOptions().Required()).
+	SQL("OVER").
+	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ParameterOptions().Parentheses())
+
+var metricDefinition = g.NewQueryStruct("MetricDefinition").
+	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions()).
+	OptionalQueryStructField("windowFunctionMetricDefinition", windowFunctionMetricDefinition, g.KeywordOptions()).
+	WithValidation(g.ExactlyOneValueSet, "semanticExpression", "windowFunctionMetricDefinition")
