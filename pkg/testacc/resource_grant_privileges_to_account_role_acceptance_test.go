@@ -10,8 +10,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -1304,26 +1306,17 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShare(t, externalShareId)
 	t.Cleanup(databaseFromShareCleanup)
 
-	configVariables := config.Variables{
-		"role_name":            config.StringVariable(role.ID().Name()),
-		"shared_database_name": config.StringVariable(databaseFromShare.ID().Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(sdk.AccountObjectPrivilegeImportedPrivileges.String()),
-		),
-	}
-
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/ImportedPrivileges"),
-				ConfigVariables: configVariables,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -1335,14 +1328,58 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/ImportedPrivileges"),
-				ConfigVariables:   configVariables,
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
+				ResourceName:             resourceName,
+				ImportState:              true,
+				ImportStateVerify:        true,
+			},
+			// Expect an error in 2.5.0.
+			{
+				PreConfig: func() {
+					testClient().Grant.RevokePrivilegesOnDatabaseFromAccountRole(t, role.ID(), databaseFromShare.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImportedPrivileges})
+				},
+				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceName, "privileges", tfjson.ActionUpdate, sdk.Pointer("[]"), sdk.Pointer(fmt.Sprintf("[%s]", string(sdk.AccountObjectPrivilegeImportedPrivileges)))),
+					},
+				},
+				Config:      grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
+				ExpectError: regexp.MustCompile("aaa"),
+			},
+			// Prove the fix in later versions.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceName, "privileges", tfjson.ActionUpdate, sdk.Pointer("[]"), sdk.Pointer(fmt.Sprintf("[%s]", string(sdk.AccountObjectPrivilegeImportedPrivileges)))),
+					},
+				},
+				Config: grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", sdk.AccountObjectPrivilegeImportedPrivileges.String()),
+				),
 			},
 		},
 	})
+}
+
+func grantPrivilegesToAccountObjectConfig(roleName, databaseName sdk.AccountObjectIdentifier, privilege string) string {
+	return fmt.Sprintf(`
+
+resource "snowflake_grant_privileges_to_account_role" "test" {
+	role_name = "%s"
+	privileges = ["%s"]
+	on_account_object {
+		object_type = "DATABASE"
+		object_name = "%s"
+	}
+}
+`, roleName.FullyQualifiedName(), privilege, databaseName.FullyQualifiedName())
 }
 
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/1998 is fixed
