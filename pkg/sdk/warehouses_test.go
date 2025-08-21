@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -536,4 +538,55 @@ func Test_Warehouse_ToScalingPolicy(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func Test_Warehouse_Convert(t *testing.T) {
+	correctRow := func() warehouseDBRow {
+		return warehouseDBRow{
+			Size:      string(WarehouseSizeXSmall),
+			Available: "100",
+		}
+	}
+
+	t.Run("convert error: size invalid", func(t *testing.T) {
+		row := correctRow()
+		row.Size = "INCORRECT_SIZE"
+
+		wh, err := row.convertErr()
+
+		require.ErrorContains(t, err, "invalid warehouse size: INCORRECT_SIZE")
+		require.Nil(t, wh)
+	})
+
+	t.Run("convert error: available NaN", func(t *testing.T) {
+		row := correctRow()
+		row.Available = "not a number"
+
+		wh, err := row.convertErr()
+
+		require.ErrorContains(t, err, "row 'available' has incorrect value 'not a number'")
+		require.Nil(t, wh)
+	})
+
+	t.Run("convert correct", func(t *testing.T) {
+		row := correctRow()
+
+		wh, err := row.convertErr()
+
+		require.NoError(t, err)
+		require.NotNil(t, wh)
+		assert.Equal(t, WarehouseSizeXSmall, wh.Size)
+		assert.InDelta(t, 100.0, wh.Available, testvars.FloatEpsilon)
+	})
+
+	t.Run("convert correct: available empty", func(t *testing.T) {
+		row := correctRow()
+		row.Available = " "
+
+		wh, err := row.convertErr()
+
+		require.NoError(t, err)
+		require.NotNil(t, wh)
+		assert.InDelta(t, 0.0, wh.Available, testvars.FloatEpsilon)
+	})
 }

@@ -8,44 +8,6 @@ import (
 	"strings"
 )
 
-func SweepAfterIntegrationTests(client *Client, suffix string) error {
-	return sweep(client, suffix)
-}
-
-func SweepAfterAcceptanceTests(client *Client, suffix string) error {
-	return sweep(client, suffix)
-}
-
-// TODO [SNOW-867247]: move this to test code
-// TODO [SNOW-867247]: use if exists/use method from helper for dropping
-// TODO [SNOW-867247]: sweep all missing account-level objects (like users, integrations, replication groups, network policies, ...)
-// TODO [SNOW-867247]: extract sweepers to a separate dir
-// TODO [SNOW-867247]: rework the sweepers (funcs -> objects)
-// TODO [SNOW-867247]: consider generalization (almost all the sweepers follow the same pattern: show, drop if matches)
-// TODO [SNOW-867247]: consider failing after all sweepers and not with the first error
-// TODO [SNOW-867247]: consider showing only objects with the given suffix (in almost every sweeper)
-func sweep(client *Client, suffix string) error {
-	if suffix == "" {
-		return fmt.Errorf("suffix is required to run sweepers")
-	}
-	sweepers := []func() error{
-		getAccountPolicyAttachmentsSweeper(client),
-		getResourceMonitorSweeper(client, suffix),
-		getNetworkPolicySweeper(client, suffix),
-		getFailoverGroupSweeper(client, suffix),
-		getShareSweeper(client, suffix),
-		getDatabaseSweeper(client, suffix),
-		getWarehouseSweeper(client, suffix),
-		getRoleSweeper(client, suffix),
-	}
-	for _, sweeper := range sweepers {
-		if err := sweeper(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func getAccountPolicyAttachmentsSweeper(client *Client) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Unsetting password and session policies set on the account level")

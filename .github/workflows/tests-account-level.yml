@@ -22,11 +22,14 @@ jobs:
     environment: test
     env:
       ## adding additional suffix to don't have conflict in non-account level tests and their pre-created objects
-      TEST_SF_TF_TEST_OBJECT_SUFFIX: ${{ ((github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.head.sha) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha)) && 'AL' }}
+      TEST_SF_TF_TEST_OBJECT_SUFFIX: ${{ format('{0}{1}', ((github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.head.sha) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha)), 'AL') }}
     name: Run all account-level tests
     runs-on: ubuntu-latest
     if: (github.event_name == 'repository_dispatch') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     steps:
+      - name: Print object suffix
+        run: |
+          echo "$TEST_SF_TF_TEST_OBJECT_SUFFIX"
       - name: Filter changed files
         uses: dorny/paths-filter@v3
         id: changes
@@ -65,7 +68,7 @@ jobs:
         if: (github.event_name == 'repository_dispatch')
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+          ref: ${{ github.event.client_payload.slash_command.args.named.sha }}
           persist-credentials: false
 
       - name: Checkout Code (Pull Request Event)

@@ -4,10 +4,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+type AccountInformation interface {
+	GetAccountLocator() string
+}
+
 type TestClient struct {
 	context *TestClientContext
 
 	Ids *IdsGenerator
+	AccountInformation
 
 	Account                      *AccountClient
 	AggregationPolicy            *AggregationPolicyClient
@@ -41,6 +46,7 @@ type TestClient struct {
 	HybridTable                  *HybridTableClient
 	ImageRepository              *ImageRepositoryClient
 	InformationSchema            *InformationSchemaClient
+	Listing                      *ListingClient
 	MaskingPolicy                *MaskingPolicyClient
 	MaterializedView             *MaterializedViewClient
 	NetworkPolicy                *NetworkPolicyClient
@@ -89,7 +95,8 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 	return &TestClient{
 		context: context,
 
-		Ids: idsGenerator,
+		Ids:                idsGenerator,
+		AccountInformation: context.client,
 
 		Account:                      NewAccountClient(context, idsGenerator),
 		AggregationPolicy:            NewAggregationPolicyClient(context, idsGenerator),
@@ -123,6 +130,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		HybridTable:                  NewHybridTableClient(context, idsGenerator),
 		ImageRepository:              NewImageRepositoryClient(context, idsGenerator),
 		InformationSchema:            NewInformationSchemaClient(context, idsGenerator),
+		Listing:                      NewListingClient(context, idsGenerator),
 		MaskingPolicy:                NewMaskingPolicyClient(context, idsGenerator),
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
@@ -166,8 +174,4 @@ type TestClientContext struct {
 	schema           string
 	warehouse        string
 	testObjectSuffix string
-}
-
-func (c *TestClient) GetAccountLocator() string {
-	return c.context.client.GetAccountLocator()
 }

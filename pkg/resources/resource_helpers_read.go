@@ -64,6 +64,13 @@ func attributeMappedValueReadOrDefault[T, R any](d *schema.ResourceData, key str
 	return d.Set(key, nil)
 }
 
+func setOptionalValueWithMapping[T, R any](d *schema.ResourceData, key string, value *T, mapper func(*T) R) error {
+	if value != nil {
+		return d.Set(key, mapper(value))
+	}
+	return d.Set(key, nil)
+}
+
 func setOptionalFromStringPtr(d *schema.ResourceData, key string, ptr *string) error {
 	if ptr != nil {
 		if err := d.Set(key, *ptr); err != nil {

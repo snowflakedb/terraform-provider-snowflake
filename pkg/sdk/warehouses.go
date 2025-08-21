@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 )
 
@@ -21,6 +20,8 @@ var (
 	_ validatable = new(DropWarehouseOptions)
 	_ validatable = new(ShowWarehouseOptions)
 	_ validatable = new(describeWarehouseOptions)
+
+	_ convertibleRow[Warehouse] = new(warehouseDBRow)
 )
 
 type Warehouses interface {
@@ -57,6 +58,10 @@ func ToWarehouseType(s string) (WarehouseType, error) {
 	default:
 		return "", fmt.Errorf("invalid warehouse type: %s", s)
 	}
+}
+
+func (e WarehouseType) FromString(s string) (WarehouseType, error) {
+	return ToWarehouseType(s)
 }
 
 type WarehouseSize string
@@ -101,6 +106,10 @@ func ToWarehouseSize(s string) (WarehouseSize, error) {
 	}
 }
 
+func (e WarehouseSize) FromString(s string) (WarehouseSize, error) {
+	return ToWarehouseSize(s)
+}
+
 type ScalingPolicy string
 
 const (
@@ -117,6 +126,10 @@ func ToScalingPolicy(s string) (ScalingPolicy, error) {
 	default:
 		return "", fmt.Errorf("invalid scaling policy: %s", s)
 	}
+}
+
+func (e ScalingPolicy) FromString(s string) (ScalingPolicy, error) {
+	return ToScalingPolicy(s)
 }
 
 type ResourceConstraint string
@@ -547,16 +560,11 @@ type warehouseDBRow struct {
 	ResourceConstraint              string         `db:"resource_constraint"`
 }
 
-func (row warehouseDBRow) convert() *Warehouse {
-	size, err := ToWarehouseSize(row.Size)
-	if err != nil {
-		size = WarehouseSize(strings.ToUpper(row.Size))
-	}
+func (row warehouseDBRow) convertErr() (*Warehouse, error) {
 	wh := &Warehouse{
 		Name:                            row.Name,
 		State:                           WarehouseState(row.State),
 		Type:                            WarehouseType(row.Type),
-		Size:                            size,
 		MinClusterCount:                 row.MinClusterCount,
 		MaxClusterCount:                 row.MaxClusterCount,
 		StartedClusters:                 row.StartedClusters,
@@ -575,17 +583,38 @@ func (row warehouseDBRow) convert() *Warehouse {
 		ScalingPolicy:                   ScalingPolicy(row.ScalingPolicy),
 		ResourceConstraint:              ResourceConstraint(row.ResourceConstraint),
 	}
-	if val, err := strconv.ParseFloat(row.Available, 64); err != nil {
-		wh.Available = val
+	if size, err := ToWarehouseSize(row.Size); err != nil {
+		return nil, err
+	} else {
+		wh.Size = size
 	}
-	if val, err := strconv.ParseFloat(row.Provisioning, 64); err != nil {
-		wh.Provisioning = val
+	if available := strings.TrimSpace(row.Available); available != "" {
+		if val, err := strconv.ParseFloat(available, 64); err != nil {
+			return nil, fmt.Errorf(`row 'available' has incorrect value '%s', %w`, available, err)
+		} else {
+			wh.Available = val
+		}
 	}
-	if val, err := strconv.ParseFloat(row.Quiescing, 64); err != nil {
-		wh.Quiescing = val
+	if provisioning := strings.TrimSpace(row.Provisioning); provisioning != "" {
+		if val, err := strconv.ParseFloat(provisioning, 64); err != nil {
+			return nil, fmt.Errorf(`row 'provisioning' has incorrect value '%s', %w`, provisioning, err)
+		} else {
+			wh.Provisioning = val
+		}
 	}
-	if val, err := strconv.ParseFloat(row.Other, 64); err != nil {
-		wh.Other = val
+	if quiescing := strings.TrimSpace(row.Quiescing); quiescing != "" {
+		if val, err := strconv.ParseFloat(quiescing, 64); err != nil {
+			return nil, fmt.Errorf(`row 'quiescing' has incorrect value '%s', %w`, quiescing, err)
+		} else {
+			wh.Quiescing = val
+		}
+	}
+	if other := strings.TrimSpace(row.Other); other != "" {
+		if val, err := strconv.ParseFloat(other, 64); err != nil {
+			return nil, fmt.Errorf(`row 'other' has incorrect value '%s', %w`, other, err)
+		} else {
+			wh.Other = val
+		}
 	}
 	if row.AutoSuspend.Valid {
 		wh.AutoSuspend = int(row.AutoSuspend.Int64)
@@ -596,7 +625,7 @@ func (row warehouseDBRow) convert() *Warehouse {
 	if row.ResourceMonitor != "null" {
 		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
 	}
-	return wh
+	return wh, nil
 }
 
 func (c *warehouses) Show(ctx context.Context, opts *ShowWarehouseOptions) ([]Warehouse, error) {
@@ -605,8 +634,7 @@ func (c *warehouses) Show(ctx context.Context, opts *ShowWarehouseOptions) ([]Wa
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[warehouseDBRow, Warehouse](dbRows)
-	return resultList, nil
+	return convertRowsErr[warehouseDBRow, Warehouse](dbRows)
 }
 
 func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {

@@ -28,6 +28,7 @@ const (
 	DatabaseRoleDatasource                        feature = "snowflake_database_role_datasource"
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
 	DynamicTablesDatasource                       feature = "snowflake_dynamic_tables_datasource"
+	EmailNotificationIntegrationResource          feature = "snowflake_email_notification_integration_resource"
 	ExternalFunctionResource                      feature = "snowflake_external_function_resource"
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
@@ -48,12 +49,12 @@ const (
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	JobServiceResource                            feature = "snowflake_job_service_resource"
+	ListingResource                               feature = "snowflake_listing_resource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
-	EmailNotificationIntegrationResource          feature = "snowflake_email_notification_integration_resource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
@@ -130,6 +131,7 @@ var allPreviewFeatures = []feature{
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
 	JobServiceResource,
+	ListingResource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,

@@ -74,13 +74,14 @@ func TestStorageIntegrations_Create(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.S3StorageProviderParams = &S3StorageParams{
-			Protocol:            RegularS3Protocol,
-			StorageAwsRoleArn:   "arn:aws:iam::001234567890:role/role",
-			StorageAwsObjectAcl: String("bucket-owner-full-control"),
+			Protocol:             RegularS3Protocol,
+			StorageAwsRoleArn:    "arn:aws:iam::001234567890:role/role",
+			StorageAwsExternalId: String("external-id-12345"),
+			StorageAwsObjectAcl:  String("bucket-owner-full-control"),
 		}
 		opts.StorageBlockedLocations = []StorageLocation{{Path: "blocked-loc-1"}, {Path: "blocked-loc-2"}}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STORAGE INTEGRATION IF NOT EXISTS %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::001234567890:role/role' STORAGE_AWS_OBJECT_ACL = 'bucket-owner-full-control' ENABLED = true STORAGE_ALLOWED_LOCATIONS = ('allowed-loc-1', 'allowed-loc-2') STORAGE_BLOCKED_LOCATIONS = ('blocked-loc-1', 'blocked-loc-2') COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STORAGE INTEGRATION IF NOT EXISTS %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::001234567890:role/role' STORAGE_AWS_EXTERNAL_ID = 'external-id-12345' STORAGE_AWS_OBJECT_ACL = 'bucket-owner-full-control' ENABLED = true STORAGE_ALLOWED_LOCATIONS = ('allowed-loc-1', 'allowed-loc-2') STORAGE_BLOCKED_LOCATIONS = ('blocked-loc-1', 'blocked-loc-2') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - gcs", func(t *testing.T) {
@@ -159,15 +160,16 @@ func TestStorageIntegrations_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &StorageIntegrationSet{
 			S3Params: &SetS3StorageParams{
-				StorageAwsRoleArn:   "new-aws-role-arn",
-				StorageAwsObjectAcl: String("new-aws-object-acl"),
+				StorageAwsRoleArn:    "new-aws-role-arn",
+				StorageAwsExternalId: String("new-external-id"),
+				StorageAwsObjectAcl:  String("new-aws-object-acl"),
 			},
 			Enabled:                 Bool(false),
 			StorageAllowedLocations: []StorageLocation{{Path: "new-allowed-location"}},
 			StorageBlockedLocations: []StorageLocation{{Path: "new-blocked-location"}},
 			Comment:                 String("changed comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s SET STORAGE_AWS_ROLE_ARN = 'new-aws-role-arn' STORAGE_AWS_OBJECT_ACL = 'new-aws-object-acl' ENABLED = false STORAGE_ALLOWED_LOCATIONS = ('new-allowed-location') STORAGE_BLOCKED_LOCATIONS = ('new-blocked-location') COMMENT = 'changed comment'", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s SET STORAGE_AWS_ROLE_ARN = 'new-aws-role-arn' STORAGE_AWS_EXTERNAL_ID = 'new-external-id' STORAGE_AWS_OBJECT_ACL = 'new-aws-object-acl' ENABLED = false STORAGE_ALLOWED_LOCATIONS = ('new-allowed-location') STORAGE_BLOCKED_LOCATIONS = ('new-blocked-location') COMMENT = 'changed comment'", id.FullyQualifiedName())
 	})
 
 	t.Run("set - azure", func(t *testing.T) {
@@ -203,12 +205,13 @@ func TestStorageIntegrations_Alter(t *testing.T) {
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &StorageIntegrationUnset{
+			StorageAwsExternalId:    Bool(true),
 			StorageAwsObjectAcl:     Bool(true),
 			Enabled:                 Bool(true),
 			StorageBlockedLocations: Bool(true),
 			Comment:                 Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET STORAGE_AWS_OBJECT_ACL, ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET STORAGE_AWS_EXTERNAL_ID, STORAGE_AWS_OBJECT_ACL, ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
 	})
 
 	t.Run("unset tags", func(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 )
 
-var _ convertibleRow[Pipe] = new(pipeDBRow)
+var _ convertibleRowDeprecated[Pipe] = new(pipeDBRow)
 
 type Pipes interface {
 	Create(ctx context.Context, id SchemaObjectIdentifier, copyStatement string, opts *CreatePipeOptions) error

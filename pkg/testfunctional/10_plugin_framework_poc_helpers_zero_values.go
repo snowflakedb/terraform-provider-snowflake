@@ -7,10 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func booleanAttributeCreate(boolAttribute types.Bool, createField **bool) {
+func BooleanAttributeCreate(boolAttribute types.Bool, createField **bool) error {
 	if !boolAttribute.IsNull() {
 		*createField = boolAttribute.ValueBoolPointer()
 	}
+	return nil
 }
 
 func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **bool, unsetField **bool) {
@@ -23,10 +24,35 @@ func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 	}
 }
 
-func int64AttributeCreate(int64Attribute types.Int64, createField **int) {
+// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **bool, unsetField **bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = planned.ValueBoolPointer()
+		}
+	}
+	return nil
+}
+
+// TODO [mux-PR]: add functional test for this variant
+func BooleanAttributeUpdateSetDefaultInsteadOfUnset(planned types.Bool, inState types.Bool, setField **bool, defaultValue bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() {
+			*setField = sdk.Bool(defaultValue)
+		} else {
+			*setField = planned.ValueBoolPointer()
+		}
+	}
+	return nil
+}
+
+func Int64AttributeCreate(int64Attribute types.Int64, createField **int) error {
 	if !int64Attribute.IsNull() {
 		*createField = sdk.Int(int(int64Attribute.ValueInt64()))
 	}
+	return nil
 }
 
 // For now, we use here two same set/unset pointers as the test server handles a single HTTP call.
@@ -42,10 +68,43 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 	}
 }
 
-func stringAttributeCreate(stringAttribute types.String, createField **string) {
+// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = sdk.Int(int(planned.ValueInt64()))
+		}
+	}
+	return nil
+}
+
+// TODO [mux-PR]: add functional test for this variant
+func Int64AttributeUpdateSetDefaultInsteadOfUnset(planned types.Int64, inState types.Int64, setField **int, defaultValue int) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() {
+			*setField = sdk.Int(defaultValue)
+		} else {
+			*setField = sdk.Int(int(planned.ValueInt64()))
+		}
+	}
+	return nil
+}
+
+func StringAttributeCreate(stringAttribute types.String, createField **string) error {
 	if !stringAttribute.IsNull() {
 		*createField = stringAttribute.ValueStringPointer()
 	}
+	return nil
+}
+
+// TODO [mux-PR]: test and adjust when adding identifier suppression
+func IdAttributeCreate(stringAttribute types.String, createField **sdk.AccountObjectIdentifier) error {
+	if !stringAttribute.IsNull() {
+		*createField = sdk.Pointer(sdk.NewAccountObjectIdentifier(stringAttribute.ValueString()))
+	}
+	return nil
 }
 
 func stringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **string) {
@@ -56,4 +115,28 @@ func stringAttributeUpdate(planned types.String, inState types.String, setField 
 			*setField = planned.ValueStringPointer()
 		}
 	}
+}
+
+// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+func StringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() || planned.IsUnknown() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = planned.ValueStringPointer()
+		}
+	}
+	return nil
+}
+
+// TODO [mux-PR]: test and adjust when adding identifier suppression
+func IdAttributeUpdate(planned types.String, inState types.String, setField *sdk.AccountObjectIdentifier, unsetField **bool) error {
+	if !planned.Equal(inState) {
+		if planned.IsNull() || planned.IsUnknown() {
+			*unsetField = sdk.Bool(true)
+		} else {
+			*setField = sdk.NewAccountObjectIdentifier(planned.ValueString())
+		}
+	}
+	return nil
 }

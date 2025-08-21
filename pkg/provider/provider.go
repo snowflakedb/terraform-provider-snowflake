@@ -241,7 +241,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"token": {
 			Type:        schema.TypeString,
-			Description: envNameFieldDescription("Token to use for OAuth and other forms of token based auth.", snowflakeenvs.Token),
+			Description: envNameFieldDescription("Token to use for OAuth and other forms of token based auth. When this field is set here, or in the TOML file, the provider sets the `authenticator` to `OAUTH`. Optionally, set the `authenticator` field to the authenticator you want to use.", snowflakeenvs.Token),
 			Sensitive:   true,
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Token, nil),
@@ -450,6 +450,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_image_repository":                                             resources.ImageRepository(),
 		"snowflake_job_service":                                                  resources.JobService(),
 		"snowflake_legacy_service_user":                                          resources.LegacyServiceUser(),
+		"snowflake_listing":                                                      resources.Listing(),
 		"snowflake_managed_account":                                              resources.ManagedAccount(),
 		"snowflake_masking_policy":                                               resources.MaskingPolicy(),
 		"snowflake_materialized_view":                                            resources.MaterializedView(),
@@ -582,23 +583,28 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 	}
 
 	if v, ok := s.GetOk("profile"); ok && v.(string) != "" {
-		tomlConfig, err := getDriverConfigFromTOML(v.(string), verifyPermissions, useLegacyTomlFile)
+		tomlConfig, err := GetDriverConfigFromTOML(v.(string), verifyPermissions, useLegacyTomlFile)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
 	}
+	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
+	if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
+		if config.Token != "" {
+			config.Authenticator = gosnowflake.AuthTypeOAuth
+		}
+	}
 
-	client, clientErr := sdk.NewClient(config)
-
-	providerCtx := &provider.Context{Client: client}
+	providerCtx := &provider.Context{}
+	if client, err := sdk.NewClient(config); err != nil {
+		return nil, diag.FromErr(err)
+	} else {
+		providerCtx.Client = client
+	}
 
 	if v, ok := s.GetOk("preview_features_enabled"); ok {
 		providerCtx.EnabledFeatures = expandStringList(v.(*schema.Set).List())
-	}
-
-	if clientErr != nil {
-		return nil, diag.FromErr(clientErr)
 	}
 
 	return providerCtx, nil
@@ -616,7 +622,7 @@ func expandStringList(configured []interface{}) []string {
 	return vs
 }
 
-func getDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile bool) (*gosnowflake.Config, error) {
+func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile bool) (*gosnowflake.Config, error) {
 	if profile == "default" {
 		return sdk.DefaultConfig(
 			sdk.WithVerifyPermissions(verifyPermissions),
@@ -675,6 +681,13 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		}(),
 		handleStringField(s, "host", &config.Host),
 		handleIntAttribute(s, "port", &config.Port),
+		// token
+		func() error {
+			if v, ok := s.GetOk("token"); ok && v.(string) != "" {
+				config.Token = v.(string)
+			}
+			return nil
+		}(),
 		// authenticator
 		func() error {
 			authType, err := sdk.ToExtendedAuthenticatorType(s.Get("authenticator").(string))
@@ -716,14 +729,6 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 				} else {
 					config.OCSPFailOpen = gosnowflake.OCSPFailOpenFalse
 				}
-			}
-			return nil
-		}(),
-		// token
-		func() error {
-			if v, ok := s.GetOk("token"); ok && v.(string) != "" {
-				config.Token = v.(string)
-				config.Authenticator = gosnowflake.AuthTypeOAuth
 			}
 			return nil
 		}(),
@@ -794,7 +799,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 
 	privateKey := s.Get("private_key").(string)
 	privateKeyPassphrase := s.Get("private_key_passphrase").(string)
-	v, err := getPrivateKey(privateKey, privateKeyPassphrase)
+	v, err := GetPrivateKey(privateKey, privateKeyPassphrase)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve private key: %w", err)
 	}

@@ -135,7 +135,7 @@ func (r *ParameterHandlingReadLogicResource) Create(ctx context.Context, request
 	data.Id = types.StringValue(id.FullyQualifiedName())
 
 	opts := &ParameterHandlingReadLogicOpts{}
-	stringAttributeCreate(data.StringValue, &opts.StringValue)
+	_ = StringAttributeCreate(data.StringValue, &opts.StringValue)
 
 	r.setCreateActionsOutput(ctx, response, opts, data)
 

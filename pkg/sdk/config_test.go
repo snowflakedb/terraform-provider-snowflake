@@ -504,7 +504,7 @@ func Test_MergeConfig(t *testing.T) {
 
 	t.Run("special authenticator value", func(t *testing.T) {
 		config := MergeConfig(&gosnowflake.Config{
-			Authenticator: gosnowflakeAuthTypeEmpty,
+			Authenticator: GosnowflakeAuthTypeEmpty,
 		}, config1)
 
 		require.Equal(t, config1, config)
@@ -613,7 +613,7 @@ func Test_ToExtendedAuthenticatorType(t *testing.T) {
 		{input: "TOKENACCESSOR", want: gosnowflake.AuthTypeTokenAccessor},
 		{input: "USERNAMEPASSWORDMFA", want: gosnowflake.AuthTypeUsernamePasswordMFA},
 		{input: "PROGRAMMATIC_ACCESS_TOKEN", want: gosnowflake.AuthTypePat},
-		{input: "", want: gosnowflakeAuthTypeEmpty},
+		{input: "", want: GosnowflakeAuthTypeEmpty},
 	}
 
 	invalid := []test{
@@ -773,6 +773,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "org-acc", got.Account)
 				assert.Equal(t, "user", got.User)
 				assert.Equal(t, "pass", got.Password)
+				assert.Equal(t, GosnowflakeAuthTypeEmpty, got.Authenticator)
 			},
 		},
 		{
@@ -883,6 +884,12 @@ func TestConfigDTODriverConfig(t *testing.T) {
 			input: NewConfigDTO().
 				WithAuthenticator("invalid"),
 			err: fmt.Errorf("invalid authenticator type: invalid"),
+		},
+		{
+			name: "invalid authenticator - empty",
+			input: NewConfigDTO().
+				WithAuthenticator(""),
+			err: fmt.Errorf("invalid authenticator type: "),
 		},
 		{
 			name: "invalid privatekey",

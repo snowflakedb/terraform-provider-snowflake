@@ -17,9 +17,101 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > - focus on changes to authentication to make sure your provider is set up correctly in the newest version;
 > - check changes to resource schemas; if in doubt, you can always simplify the resource and let the terraform figure out the changes (you can use plan output to make the configuration appropriate);
 > - reimport your infrastructure using the target provider version, preferably in smaller chunks (or experiment with 1-2 resources of each type first).
+>
+> What should be considered an ancient version?
+> The rule of thumb should be: if you are on ~0.85.0 (or close so that you can bump to it), you can follow this guide step by step. If you are on a lower version, import your infrastructure into config using the newest version.
 
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
+
+## v2.4.x ➞ v2.5.0
+
+### *(bugfix)* Fixed incorrect authenticator when using the `token` field
+
+Previously, the provider incorrectly set the default authenticator to `OAUTH` when the `token` field was specified in the Terraform configuration, or environmental variables, without possibility to override it. This resulted in errors like:
+```
+Planning failed. Terraform encountered an error while generating this plan.
+
+╷
+│ Error: open snowflake connection: 390303 (08004): Invalid OAuth access token. [fca49dca-38da-421e-b88e-94547d09b3cf]
+│
+│   with provider["registry.terraform.io/snowflakedb/snowflake"],
+│   on main.tf line 9, in provider "snowflake":
+│    9: provider "snowflake" {
+│
+╵
+```
+
+Now, the default authenticator can be overridden. For example, for the PAT authenticator, set one of the following:
+- `authenticator="PROGRAMMATIC_ACCESS_TOKEN"` in your Terraform configuration, or
+- `SNOWFLAKE_AUTHENTICATOR="PROGRAMMATIC_ACCESS_TOKEN"` in your environmental variables, or
+- `authenticator='PROGRAMMATIC_ACCESS_TOKEN'` in your TOML configuration file.
+
+### *(bugfix)* Fixed `default_ddl_collation` for `snowflake_schema` resource
+
+Previously, the `default_ddl_collation` field in the `snowflake_schema` resource was not able to correctly handle setting an empty string as a proper value.
+This is mostly connected to both things: [Terraform empty value handling](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#empty-values) and our [internal parameter handling](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#snowflake-parameters).
+With the provided fix, we were able to make it work, however, it is not a perfect solution as it requires an intermediate step.
+To set the `default_ddl_collation` to an empty string from non-empty value, you need to:
+- Set it to `null` (or remove it from the resource configuration) and run `terraform apply` to remove the value from the state
+- Then set it to an empty string and run `terraform apply` again to set the value to an empty string in Snowflake on the schema level.
+
+As we already confirmed, this shouldn't be a problem in the future, once we move our provider to the new Terraform Plugin Framework, but for now, this is the best solution we can provide.
+We will be checking other resources that may have similar issues and will fix them in the future releases.
+No configuration changes are needed, but if you want to set the `default_ddl_collation` to an empty string, please follow the steps above.
+
+References: [#3510](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3510)
+
+### *(bugfix)* Fixed granting other table types in `snowflake_grant_privileges_to_share` resource
+
+Previously, the `snowflake_grant_privileges_to_share` resource was not able to grant privileges on other table types than `TABLE`.
+For example, granting on hybrid table wouldn't work as it has different type than `TABLE` returned by SHOW GRANTS in Snowflake.
+With the help of the community ([PR reference](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3859)), we are able to provide the fix this issue.
+Now, the configurations like the following will work as expected:
+
+```terraform
+resource "snowflake_grant_privileges_to_share" "test" {
+  to_share   = "<share_name>"
+  privileges = ["<privilege>"]
+  on_table   = "<hybrid_table_name>"
+}
+```
+
+No changes to the current configurations are needed.
+
+References: [#3167](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3167)
+
+### *(new feature)* snowflake_listing resource
+Added a new preview resource for managing listings. Check the official Snowflake documentation to know more [about listings](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about). You can read about the resource limitations in the documentation in the registry.
+
+> **Warning** This resource isn't suitable for public listings because its review process doesn't align with Terraform's standard method for managing infrastructure resources. The challenge is that the review process often takes time and might need several manual revisions. We need to reconsider how to integrate this process into a resource. Although we plan to support this in the future, it might be added later. Currently, the resource may not function well with public listings because review requests are closely connected to the publish field.
+
+> **Note** For inlined manifest version, only string is accepted. The manifest structure is not mapped to the resource schema to keep it simple and aligned with other resources that accept similar metadata (e.g., service templates). While it's more recommended to keep your manifest in a stage, the inlined version may be useful for initial setup and testing.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listing_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource
+
+Previously, this field was read-only. In this version, this field is promoted to optional configurable attribute. Because config was previously empty, and there is a value in state, the provider will show the planned change to `null`. After applying, the plan should be empty. This apply is effectively a no-op, as it will run ALTER UNSET on the integration, which will revert the `storage_aws_external_id` to the default (the same value as there was no option to set it through the resource before). In case, when the value was changed externally (manually or through `snowflake_execute`), make sure to set this value in config before bumping the version.
+
+If `storage_aws_external_id` was used as input in other fields, it needs to be changed because of the SDKv2 limitations (read more [here](./v1-preparations/CHANGES_BEFORE_V1.md#config-values-in-the-state) and [here](./v1-preparations/CHANGES_BEFORE_V1.md#raw-snowflake-output)). To reference it in other blocks:
+- set its value directly in the resource OR
+- use `snowflake_storage_integration.<resource_name>.describe_output.0.storage_aws_external_id.0.value` instead.
+
+We added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)). Note that fields other than `storage_aws_external_id` do not leverage this field. This will be addressed during the resource rework.
+
+Note that this resource is still in preview, and not officially supported. This change was requested and done by the community: [#3659](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3659).
+
+References: [#3924](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3924)
+
+### *(bugfix)* Fix setting network policies with lowercase characters in security integrations
+Previously, when the provider created or set a security integration (in `snowflake_oauth_integration_for_custom_clients` or `snowflake_scim_integration`) with a network policy containing lowercase letters, this could fail due to a different quoting used in Snowflake in these objects. Namely, despite using the `"` quotes, the referenced network name was uppercased in Snowflake. This means that the uppercased network policy was used instead.
+Snowflake could return errors like `Network policy TEST does not exist or not authorized.`.
+In this case, a special quoting needs to be used (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake)). Instead of the usual `NETWORK_POLICY = "test"`, it needs to be `NETWORK_POLICY = '"test"'`.
+
+In this version, this behavior is fixed. The provider always uses the mixed `'"name"'` notation, and the casing should match the name in Snowflake.
+
+References: [#3229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3229)
 
 ## v2.3.0 ➞ v2.4.0
 
@@ -59,6 +151,7 @@ See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/
 > After adjusting parsing data types in the provider, it handles arguments with and without attributes.
 
 Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+This fix was also backported to version v1.2.3.
 
 References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
 
@@ -69,10 +162,12 @@ References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/
 > After adjusting parsing data types in the provider, it handles arguments with and without attributes.
 
 Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+This fix was also backported to version v1.2.3.
 
 References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
 
-## v2.1.0 ➞ v2.2.0
+## v2.1.x ➞ v2.2.0
+<a id="v210--v220"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -268,7 +363,8 @@ No configuration changes are necessary.
 
 As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
 
-## v2.1.0 -> v2.1.1
+## v2.1.0 ➞ v2.1.1
+<a id="v210---v211"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -278,7 +374,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, and v2.0.1.
 
-## v2.0.0 ➞ v2.1.0
+## v2.0.x ➞ v2.1.0
+<a id="v200--v210"></a>
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
 
@@ -322,7 +419,8 @@ No configuration changes are necessary.
 
 References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
 
-## v2.0.0 -> v2.0.1
+## v2.0.0 ➞ v2.0.1
+<a id="v200---v201"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -332,7 +430,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6, v1.1.1, and v1.2.2.
 
-## v1.2.1 ➞ v2.0.0
+## v1.2.x ➞ v2.0.0
+<a id="v121--v200"></a>
 
 ### Supported architectures
 
@@ -385,7 +484,7 @@ Planning failed. Terraform encountered an error while generating this plan.
 
 Some fields, like secure function definitions, can also contain sensitive values. However, because of [SDK v2](https://developer.hashicorp.com/terraform/plugin/sdkv2) limitations:
 - There is no possibility to mark sensitive values conditionally ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/736)). This means it is not possible to mark sensitive values based on other fields, like marking `body` based on the value of `secure` field in views, functions, and procedures. As a result, this field is not marked as sensitive. For such cases, we add disclaimers in the resource documentation.
-- There is no possibility to mark sensitive values in nested fields ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/201)). This means the nested fields, like these in `show_output` and `describe_output` cannot be sensitive. fields, like in `show_output` and `describe_output`, cannot be marked as sensitive.
+- There is no possibility to mark sensitive values in nested fields ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/201)). This means the nested fields, like these in `show_output` and `describe_output` cannot be marked as sensitive.
 
 Instead, we added notes in the documentation of the related resources. The full list includes:
 - `snowflake_execute` resource: `execute`, `revert`, `query` and `query_results` fields,
@@ -480,8 +579,19 @@ To be able to detect changes in config properly and to react to some external ch
 
 References: [#3580](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3580)
 
-## v1.2.0 ➞ v1.2.1
-No migration needed.
+## v1.2.2 ➞ v1.2.3
+
+### *(bugfix)* Fix `snowflake_functions` and `snowflake_procedures` data sources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
+
+### *(bugfix)* Fix all function and procedure resources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
 
 ## v1.2.1 -> v1.2.2
 
@@ -493,7 +603,11 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6 and v1.1.1.
 
-## v1.1.0 ➞ v1.2.0
+## v1.2.0 ➞ v1.2.1
+No migration needed.
+
+## v1.1.x ➞ v1.2.0
+<a id="v110--v120"></a>
 
 ### New behavior for Read and Delete operations when removing high-hierarchy objects
 Some objects in Snowflake are created in hierarchy, for example, tables (database → schema → table).
@@ -564,7 +678,8 @@ This version fixes this behavior. No action should be required on user side.
 
 References: [#3522](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3522)
 
-## v1.1.0 -> v1.1.1
+## v1.1.0 ➞ v1.1.1
+<a id="v110---v111"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -574,7 +689,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to version v1.0.6.
 
-## v1.0.5 ➞ v1.1.0
+## v1.0.x ➞ v1.1.0
+<a id="v105--v110"></a>
 
 ### Timeouts in resources
 By default, resource operation timeout after 20 minutes ([reference](https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/retries-and-customizable-timeouts#default-timeouts-and-deadline-exceeded-errors)). This caused some long running operations to timeout.
@@ -597,7 +713,8 @@ Instead of failing the whole action, we return a warning instead and the operati
 
 References: [#3507](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3507)
 
-## v1.0.5 -> v1.0.6
+## v1.0.5 ➞ v1.0.6
+<a id="v105---v106"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -992,21 +1109,29 @@ output "simple_output" {
 ```
 
 ### snowflake_tag_association resource changes
+
 #### *(behavior change)* new id format
-To provide more functionality for tagging objects, we have changed the resource id from `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"` to `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"|TAG_VALUE|OBJECT_TYPE`. This allows to group tags associations per tag ID, tag value and object type in one resource.
-```
+To provide more functionality for tagging objects, we have changed the resource id from `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"` to `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"|TAG_VALUE|OBJECT_TYPE`.
+
+The state is migrated automatically. There is no need to adjust configuration files, unless you use resource id `snowflake_tag_association.example.id` as a reference in other resources.
+
+This change allows to group tags associations per tag ID, tag value and object type in one resource, like so:
+
+```terraform
 resource "snowflake_tag_association" "gold_warehouses" {
   object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name]
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "gold"
 }
+
 resource "snowflake_tag_association" "silver_warehouses" {
   object_identifiers = [snowflake_warehouse.w3.fully_qualified_name]
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "silver"
 }
+
 resource "snowflake_tag_association" "silver_databases" {
   object_identifiers = [snowflake_database.d1.fully_qualified_name]
   object_type = "DATABASE"
@@ -1015,10 +1140,41 @@ resource "snowflake_tag_association" "silver_databases" {
 }
 ```
 
-Note that if you want to promote silver instances to gold, you can not simply change `tag_value` in `silver_warehouses`. Instead, you should first remove `object_identifiers` from `silver_warehouses`, run `terraform apply`, and then add the relevant `object_identifiers` in `gold_warehouses`, like this (note that `silver_warehouses` resource was deleted):
-```
+Note that if you want to promote `silver` instances to `gold`, you cannot change the `tag_value` in `silver_warehouses` to `gold`.
+Instead, you should first remove `object_identifiers` from `silver_warehouses`, run `terraform apply`.
+Your configuration should like as follows:
+
+```terraform
+resource "snowflake_tag_association" "silver_databases" {
+  object_identifiers = [snowflake_database.d1.fully_qualified_name]
+  object_type = "DATABASE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "silver"
+}
+
+## "snowflake_tag_association" "silver_warehouses" was removed
+
 resource "snowflake_tag_association" "gold_warehouses" {
-  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name, snowflake_warehouse.w3.fully_qualified_name]
+  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name]
+  object_type = "WAREHOUSE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "gold"
+}
+```
+
+Then, add the relevant object identifiers in `gold_warehouses`'s `object_identifiers` field.
+With those changes, you should end up with the following configuration:
+
+```terraform
+resource "snowflake_tag_association" "silver_databases" {
+  object_identifiers = [snowflake_database.d1.fully_qualified_name]
+  object_type = "DATABASE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "silver"
+}
+
+resource "snowflake_tag_association" "gold_warehouses" {
+  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name, snowflake_warehouse.w3.fully_qualified_name] # New warehouse was added
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "gold"
@@ -1026,9 +1182,7 @@ resource "snowflake_tag_association" "gold_warehouses" {
 ```
 and run `terraform apply` again.
 
-Note that the order of operations is not deterministic in this case, and if you do these operations in one step, it is possible that the tag value will be changed first, and unset later because of removing the resource with old value.
-
-The state is migrated automatically. There is no need to adjust configuration files, unless you use resource id `snowflake_tag_association.example.id` as a reference in other resources.
+> Note: This operation has to be done in two steps. Otherwise, they will run in the non-deterministic order and may end up in the incorrect state.
 
 #### *(behavior change)* changed fields
 Behavior of some fields was changed:
@@ -2696,7 +2850,8 @@ The `comment` attribute is now optional. It was required before, but it is not r
 #### *(behavior change)* schema is now required with database
 The `schema` attribute is now required with `database` attribute to match old implementation `SHOW EXTERNAL FUNCTIONS IN SCHEMA "<database>"."<schema>"`. In the future this may change to make schema optional.
 
-## vX.XX.X -> v0.85.0
+## vX.XX.X ➞ v0.85.0
+<a id="vxxxx---v0850"></a>
 
 ### Migration from old (grant) resources to new ones
 

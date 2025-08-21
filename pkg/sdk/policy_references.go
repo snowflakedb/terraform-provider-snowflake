@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var _ convertibleRow[PolicyReference] = new(policyReferenceDBRow)
+var _ convertibleRowDeprecated[PolicyReference] = new(policyReferenceDBRow)
 
 type PolicyReferences interface {
 	GetForEntity(ctx context.Context, request *GetForEntityPolicyReferenceRequest) ([]PolicyReference, error)

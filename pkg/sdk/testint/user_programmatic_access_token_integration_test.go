@@ -93,8 +93,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		)
 	})
 
-	// TODO(SNOW-2210280): Adjust `modify` tests after the behavior is fixed in Snowflake.
-	t.Run("modify - set and unset disabled", func(t *testing.T) {
+	t.Run("modify - set and unset", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewAddUserProgrammaticAccessTokenRequest(user.ID(), id)
 
@@ -102,102 +101,38 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.RemoveProgrammaticAccessTokenFunc(t, user.ID(), id))
 
-		setRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().
-				WithDisabled(true),
-			)
-
-		err = client.Users.ModifyProgrammaticAccessToken(ctx, setRequest)
-		require.NoError(t, err)
-
 		tokenShowObject := testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled),
+			HasNoComment().
+			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+			HasNoMinsToBypassNetworkPolicyRequirement(),
 		)
 
-		unsetRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().
-				WithDisabled(true),
-			)
-
-		err = client.Users.ModifyProgrammaticAccessToken(ctx, unsetRequest)
-		require.NoError(t, err)
-
-		tokenShowObject = testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive),
-		)
-	})
-	t.Run("modify - set and unset comment", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		comment := random.Comment()
-		request := sdk.NewAddUserProgrammaticAccessTokenRequest(user.ID(), id)
-
-		_, err := client.Users.AddProgrammaticAccessToken(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().User.RemoveProgrammaticAccessTokenFunc(t, user.ID(), id))
-
+		mins := 15
 		setRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
 			WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().
-				WithComment(comment),
+				WithComment(comment).
+				WithDisabled(true).
+				WithMinsToBypassNetworkPolicyRequirement(mins),
 			)
 
 		err = client.Users.ModifyProgrammaticAccessToken(ctx, setRequest)
-		require.NoError(t, err)
-
-		tokenShowObject := testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasComment(comment),
-		)
-
-		unsetRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().
-				WithComment(true),
-			)
-
-		err = client.Users.ModifyProgrammaticAccessToken(ctx, unsetRequest)
 		require.NoError(t, err)
 
 		tokenShowObject = testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasNoComment(),
-		)
-	})
-
-	t.Run("modify - set and unset MinsToBypassNetworkPolicyRequirement", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewAddUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithDaysToExpiry(1)
-
-		_, err := client.Users.AddProgrammaticAccessToken(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().User.RemoveProgrammaticAccessTokenFunc(t, user.ID(), id))
-
-		setRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().
-				WithMinsToBypassNetworkPolicyRequirement(15),
-			)
-
-		err = client.Users.ModifyProgrammaticAccessToken(ctx, setRequest)
-		require.NoError(t, err)
-
-		tokenShowObject := testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasMinsToBypassNetworkPolicyRequirementWithTolerance(15),
+			HasComment(comment).
+			HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled).
+			HasMinsToBypassNetworkPolicyRequirementWithTolerance(mins),
 		)
 
 		unsetRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
 			WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().
+				WithComment(true).
+				WithDisabled(true).
 				WithMinsToBypassNetworkPolicyRequirement(true),
 			)
 
@@ -205,87 +140,11 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		require.NoError(t, err)
 
 		tokenShowObject = testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-
 		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
 			HasName(id.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement(),
-		)
-	})
-
-	t.Run("modify - setting all fields does not change all object values", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		comment := random.Comment()
-		request := sdk.NewAddUserProgrammaticAccessTokenRequest(user.ID(), id)
-
-		_, err := client.Users.AddProgrammaticAccessToken(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().User.RemoveProgrammaticAccessTokenFunc(t, user.ID(), id))
-
-		setRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().
-				WithDisabled(true).
-				WithMinsToBypassNetworkPolicyRequirement(10).
-				WithComment(comment),
-			)
-
-		err = client.Users.ModifyProgrammaticAccessToken(ctx, setRequest)
-		require.NoError(t, err)
-
-		tokenShowObject := testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled).
-			// Comment is not set, when we also set Disabled
 			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			// MinsToBypassNetworkPolicyRequirement is not set, when we also set Disabled.
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedToEmpty(),
-		)
-	})
-
-	t.Run("modify - unsetting all fields does not change all object values", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		comment := random.Comment()
-		request := sdk.NewAddUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithDaysToExpiry(1).
-			WithMinsToBypassNetworkPolicyRequirement(10).
-			WithComment(comment)
-
-		_, err := client.Users.AddProgrammaticAccessToken(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().User.RemoveProgrammaticAccessTokenFunc(t, user.ID(), id))
-
-		unsetRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().
-				WithDisabled(true).
-				WithMinsToBypassNetworkPolicyRequirement(true).
-				WithComment(true),
-			)
-
-		err = client.Users.ModifyProgrammaticAccessToken(ctx, unsetRequest)
-		require.NoError(t, err)
-
-		tokenShowObject := testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
 			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			// Comment is set, when we also unset Disabled.
-			HasComment(comment).
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			// MinsToBypassNetworkPolicyRequirement is set, when we also unset Disabled.
-			HasMinsToBypassNetworkPolicyRequirementWithTolerance(10).
-			HasRotatedToEmpty(),
+			HasNoMinsToBypassNetworkPolicyRequirement(),
 		)
 	})
 

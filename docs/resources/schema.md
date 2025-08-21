@@ -11,6 +11,8 @@ description: |-
 !> **Note** A schema cannot be dropped successfully if it contains network rule-network policy associations. The error looks like `098508 (2BP01): Cannot drop schema SCHEMA as it includes network rule - policy associations.
 `. Currently, the provider does not unassign such objects automatically. Before dropping the resource, first unassign the network rule from the relevant objects. See [guide](../guides/unassigning_policies) for more details.
 
+!> **Note** Setting the `default_ddl_collation` field to an empty string from non-empty value requires two steps. Firstly, set it to `null` (or just remove it from the resource configuration), and then to an empty string. This is due to the way [Terraform handles empty and default values](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#empty-values) and our [internal parameter handling](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#snowflake-parameters).
+
 # snowflake_schema (Resource)
 
 Resource used to manage schema objects. For more information, check [schema documentation](https://docs.snowflake.com/en/sql-reference/sql/create-schema).
@@ -364,6 +366,9 @@ Read-Only:
 - `retention_time` (String)
 
 ## Import
+
+Make sure that `is_transient` and `with_managed_access` are set in your config explicitly before import to avoid diff and recreation
+(reasons are presented in [this migration guide entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#behavior-change-boolean-type-changes-1)).
 
 Import is supported using the following syntax:
 
