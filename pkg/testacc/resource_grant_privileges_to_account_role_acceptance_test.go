@@ -1370,16 +1370,15 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 
 func grantPrivilegesToAccountObjectConfig(roleName, databaseName sdk.AccountObjectIdentifier, privilege string) string {
 	return fmt.Sprintf(`
-
 resource "snowflake_grant_privileges_to_account_role" "test" {
-	role_name = "%s"
+	account_role_name = "\"%s\""
 	privileges = ["%s"]
 	on_account_object {
 		object_type = "DATABASE"
-		object_name = "%s"
+		object_name = "\"%s\""
 	}
 }
-`, roleName.FullyQualifiedName(), privilege, databaseName.FullyQualifiedName())
+`, roleName.Name(), privilege, databaseName.Name())
 }
 
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/1998 is fixed

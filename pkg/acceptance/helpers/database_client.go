@@ -221,7 +221,7 @@ func (c *DatabaseClient) CreateDatabaseFromShare(t *testing.T, externalShareId s
 		// Origin is returned as "<revoked>" in those cases, because it's not valid sdk.ExternalObjectIdentifier parser sets it as nil.
 		// Once it turns into valid sdk.ExternalObjectIdentifier, we're ready to proceed with the actual test.
 		return database.Origin != nil
-	}, 2*time.Minute, time.Second*6)
+	}, 3*time.Minute, time.Second*6)
 
 	return database, c.DropDatabaseFunc(t, databaseId)
 }
