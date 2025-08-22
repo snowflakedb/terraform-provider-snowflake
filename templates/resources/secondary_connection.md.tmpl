@@ -20,7 +20,7 @@ description: |-
 
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 
--> **Note** Creating secondary connections with `snowflake_primary_connection` should be done in two steps (terraform applies): first create the primary connection, then create the secondary connection. Snowflake needs some time to register the primary connection before you can create secondary connections based on it.
+-> **Note** Creating secondary connections with `snowflake_primary_connection` may fail and should be done in two steps (terraform applies): first create the primary connection, then create the secondary connection. Snowflake needs some time to register the primary connection before you can create secondary connections based on it. The provider is handling it internally with a retry mechanism, but the time to register may differ and be longer than retry's maximum wait time.
 
 -> **Note** To promote `snowflake_secondary_connection` to [`snowflake_primary_connection`](./primary_connection), resources need to be migrated manually. For guidance on removing and importing resources into the state check [resource migration](../guides/resource_migration). Remove the resource from the state with [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm), then promote it manually using:
     ```
