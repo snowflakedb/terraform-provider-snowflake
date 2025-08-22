@@ -56,7 +56,7 @@ type Database struct {
 	Name          string
 	IsDefault     bool
 	IsCurrent     bool
-	Origin        *ExternalObjectIdentifier
+	Origin        ObjectIdentifier
 	Owner         string
 	Comment       string
 	Options       string
@@ -103,12 +103,12 @@ func (row databaseRow) convert() (*Database, error) {
 	if row.IsCurrent.Valid {
 		database.IsCurrent = row.IsCurrent.String == "Y"
 	}
-	if row.Origin.Valid && row.Origin.String != "" {
-		originId, err := ParseExternalObjectIdentifier(row.Origin.String)
+	if row.Origin.Valid && row.Origin.String != "" && row.Origin.String != "<revoked>" {
+		originId, err := ParseObjectIdentifierString(row.Origin.String)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse origin ID: %w", err)
 		} else {
-			database.Origin = &originId
+			database.Origin = originId
 		}
 	}
 	if row.Owner.Valid {

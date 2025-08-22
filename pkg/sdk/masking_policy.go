@@ -291,21 +291,26 @@ type maskingPolicyDBRow struct {
 }
 
 func (row maskingPolicyDBRow) convert() (*MaskingPolicy, error) {
-	options, err := ParseMaskingPolicyOptions(row.Options)
-	if err != nil {
-		return nil, fmt.Errorf("converting masking policy row: error unmarshaling options: %w", err)
+	maskingPolicy := &MaskingPolicy{
+		CreatedOn:     row.CreatedOn,
+		Name:          row.Name,
+		DatabaseName:  row.DatabaseName,
+		SchemaName:    row.SchemaName,
+		Kind:          row.Kind,
+		Owner:         row.Owner,
+		Comment:       row.Comment,
+		OwnerRoleType: row.OwnerRoleType,
 	}
-	return &MaskingPolicy{
-		CreatedOn:           row.CreatedOn,
-		Name:                row.Name,
-		DatabaseName:        row.DatabaseName,
-		SchemaName:          row.SchemaName,
-		Kind:                row.Kind,
-		Owner:               row.Owner,
-		Comment:             row.Comment,
-		ExemptOtherPolicies: options.ExemptOtherPolicies,
-		OwnerRoleType:       row.OwnerRoleType,
-	}, nil
+
+	if row.Options != "" {
+		options, err := ParseMaskingPolicyOptions(row.Options)
+		if err != nil {
+			return nil, fmt.Errorf("converting masking policy row: error unmarshaling options: %w", err)
+		}
+		maskingPolicy.ExemptOtherPolicies = options.ExemptOtherPolicies
+	}
+
+	return maskingPolicy, nil
 }
 
 // List all the masking policies by pattern.

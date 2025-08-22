@@ -339,11 +339,13 @@ func (r taskDBRow) convert() (*Task, error) {
 		AllowOverlappingExecution: r.AllowOverlappingExecution == "true",
 		OwnerRoleType:             r.OwnerRoleType,
 	}
-	taskRelations, err := ToTaskRelations(r.TaskRelations)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert task relations: %w", err)
-	} else {
-		task.TaskRelations = taskRelations
+	if r.TaskRelations != "" {
+		taskRelations, err := ToTaskRelations(r.TaskRelations)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert task relations: %w", err)
+		} else {
+			task.TaskRelations = taskRelations
+		}
 	}
 	if r.Comment.Valid {
 		task.Comment = r.Comment.String
