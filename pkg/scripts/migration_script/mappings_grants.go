@@ -121,17 +121,13 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privilegeListVariable t
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeDatabase:
 		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema", grant.GranteeName.Name()).
-				WithPrivilegesValue(tfconfig.ListVariable(
-					tfconfig.StringVariable(grant.Privilege),
-				)).
+				WithPrivilegesValue(privilegeListVariable).
 				WithOnDatabase(grant.Name.Name()).
 				WithWithGrantOption(grant.GrantOption),
 			nil
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
 		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema", grant.GranteeName.Name()).
-				WithPrivilegesValue(tfconfig.ListVariable(
-					tfconfig.StringVariable(grant.Privilege),
-				)).
+				WithPrivilegesValue(privilegeListVariable).
 				WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 					"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
 				})).
@@ -139,9 +135,7 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privilegeListVariable t
 			nil
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
 		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
-				WithPrivilegesValue(tfconfig.ListVariable(
-					tfconfig.StringVariable(grant.Privilege),
-				)).
+				WithPrivilegesValue(privilegeListVariable).
 				WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 					"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
 					"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
