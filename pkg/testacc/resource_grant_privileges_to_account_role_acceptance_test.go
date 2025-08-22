@@ -1366,12 +1366,12 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges_issue2803(t *testin
 					testClient().Grant.RevokePrivilegesOnDatabaseFromAccountRole(t, role.ID(), databaseFromShare.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImportedPrivileges})
 				},
 				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
-				// ConfigPlanChecks: resource.ConfigPlanChecks{
-				// 	PreApply: []plancheck.PlanCheck{
-				// 		plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
-				// 		planchecks.ExpectChange(resourceName, "privileges", tfjson.ActionUpdate, sdk.Pointer("[]"), sdk.Pointer(fmt.Sprintf("[%s]", string(sdk.AccountObjectPrivilegeImportedPrivileges)))),
-				// 	},
-				// },
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceName, "privileges", tfjson.ActionUpdate, sdk.Pointer("[]"), sdk.Pointer(fmt.Sprintf("[%s]", string(sdk.AccountObjectPrivilegeImportedPrivileges)))),
+					},
+				},
 				Config:      grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
 				ExpectError: regexp.MustCompile("Failed to revoke privileges to add"),
 			},
