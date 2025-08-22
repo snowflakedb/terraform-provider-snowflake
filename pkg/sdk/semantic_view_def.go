@@ -109,7 +109,7 @@ var SemanticViewsDef = g.NewInterface(
 		OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalSQL("UNSET COMMENT").
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment"),
+		WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment"), // both can't be done at the same time
 )
 
 var primaryKey = g.NewQueryStruct("PrimaryKeys").
