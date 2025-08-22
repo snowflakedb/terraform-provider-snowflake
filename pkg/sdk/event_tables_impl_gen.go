@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ EventTables = (*eventTables)(nil)
+var (
+	_ EventTables                       = (*eventTables)(nil)
+	_ convertibleRow[EventTable]        = new(eventTableRow)
+	_ convertibleRow[EventTableDetails] = new(eventTableDetailsRow)
+)
 
 type eventTables struct {
 	client *Client
@@ -23,8 +27,7 @@ func (v *eventTables) Show(ctx context.Context, request *ShowEventTableRequest) 
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[eventTableRow, EventTable](dbRows)
-	return resultList, nil
+	return convertRows[eventTableRow, EventTable](dbRows)
 }
 
 func (v *eventTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*EventTable, error) {
@@ -50,7 +53,7 @@ func (v *eventTables) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *eventTables) Drop(ctx context.Context, request *DropEventTableRequest) error {
@@ -96,7 +99,7 @@ func (r *ShowEventTableRequest) toOpts() *ShowEventTableOptions {
 	return opts
 }
 
-func (r eventTableRow) convert() *EventTable {
+func (r eventTableRow) convert() (*EventTable, error) {
 	t := &EventTable{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -112,7 +115,7 @@ func (r eventTableRow) convert() *EventTable {
 	if r.OwnerRoleType.Valid {
 		t.OwnerRoleType = r.OwnerRoleType.String
 	}
-	return t
+	return t, nil
 }
 
 func (r *DescribeEventTableRequest) toOpts() *DescribeEventTableOptions {
@@ -122,12 +125,12 @@ func (r *DescribeEventTableRequest) toOpts() *DescribeEventTableOptions {
 	return opts
 }
 
-func (r eventTableDetailsRow) convert() *EventTableDetails {
+func (r eventTableDetailsRow) convert() (*EventTableDetails, error) {
 	return &EventTableDetails{
 		Name:    r.Name,
 		Kind:    r.Kind,
 		Comment: r.Comment,
-	}
+	}, nil
 }
 
 func (r *DropEventTableRequest) toOpts() *DropEventTableOptions {

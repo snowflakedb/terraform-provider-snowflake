@@ -6,7 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ManagedAccounts = (*managedAccounts)(nil)
+var (
+	_ ManagedAccounts                = (*managedAccounts)(nil)
+	_ convertibleRow[ManagedAccount] = new(managedAccountDBRow)
+)
 
 type managedAccounts struct {
 	client *Client
@@ -32,8 +35,7 @@ func (v *managedAccounts) Show(ctx context.Context, request *ShowManagedAccountR
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[managedAccountDBRow, ManagedAccount](dbRows)
-	return resultList, nil
+	return convertRows[managedAccountDBRow, ManagedAccount](dbRows)
 }
 
 func (v *managedAccounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ManagedAccount, error) {
@@ -77,7 +79,7 @@ func (r *ShowManagedAccountRequest) toOpts() *ShowManagedAccountOptions {
 	return opts
 }
 
-func (r managedAccountDBRow) convert() *ManagedAccount {
+func (r managedAccountDBRow) convert() (*ManagedAccount, error) {
 	managedAccount := &ManagedAccount{
 		Cloud:             r.Cloud,
 		Region:            r.Region,
@@ -108,5 +110,5 @@ func (r managedAccountDBRow) convert() *ManagedAccount {
 		managedAccount.Comment = &r.Comment.String
 	}
 
-	return managedAccount
+	return managedAccount, nil
 }

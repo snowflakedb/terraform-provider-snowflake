@@ -6,7 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ImageRepositories = (*imageRepositories)(nil)
+var (
+	_ ImageRepositories               = (*imageRepositories)(nil)
+	_ convertibleRow[ImageRepository] = new(imageRepositoriesRow)
+)
 
 type imageRepositories struct {
 	client *Client
@@ -37,8 +40,7 @@ func (v *imageRepositories) Show(ctx context.Context, request *ShowImageReposito
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[imageRepositoriesRow, ImageRepository](dbRows)
-	return resultList, nil
+	return convertRows[imageRepositoriesRow, ImageRepository](dbRows)
 }
 
 func (v *imageRepositories) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*ImageRepository, error) {
@@ -99,7 +101,7 @@ func (r *ShowImageRepositoryRequest) toOpts() *ShowImageRepositoryOptions {
 	return opts
 }
 
-func (r imageRepositoriesRow) convert() *ImageRepository {
+func (r imageRepositoriesRow) convert() (*ImageRepository, error) {
 	return &ImageRepository{
 		CreatedOn:                r.CreatedOn,
 		Name:                     r.Name,
@@ -110,5 +112,5 @@ func (r imageRepositoriesRow) convert() *ImageRepository {
 		OwnerRoleType:            r.OwnerRoleType,
 		Comment:                  r.Comment,
 		PrivatelinkRepositoryUrl: r.PrivatelinkRepositoryUrl,
-	}
+	}, nil
 }
