@@ -24,11 +24,11 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.5.x ➞ v2.6.0
+## v2.5.0 ➞ v2.5.1
 
 ### *(improvement)* Handling conversion-based errors
 
-Previously, when an error occurred during the conversion, the error would be printed as a debug log.
+Previously, when an error occurred during the conversion from Snowflake data to the SDK object, the error would be printed as a debug log.
 We would then proceed with the conversion and later handle the standard operations within the resource or data source with potentially incorrectly converted data.
 
 This could result in errors at the resource or data source level, sometimes causing undefined behavior.
