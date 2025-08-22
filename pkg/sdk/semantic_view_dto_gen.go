@@ -49,14 +49,14 @@ type UniqueKeysRequest struct {
 }
 
 type SynonymsRequest struct {
-	WithSynonyms []string
+	WithSynonyms []Synonym
 }
 
 type SemanticViewRelationshipRequest struct {
 	relationshipAlias          *RelationshipAliasRequest
-	tableName                  *RelationshipTableAliasRequest // required
+	tableNameOrAlias           *RelationshipTableAliasRequest // required
 	relationshipColumnNames    []SemanticViewColumnRequest    // required
-	refTableName               *RelationshipTableAliasRequest // required
+	refTableNameOrAlias        *RelationshipTableAliasRequest // required
 	relationshipRefColumnNames []SemanticViewColumnRequest
 }
 
@@ -65,7 +65,8 @@ type RelationshipAliasRequest struct {
 }
 
 type RelationshipTableAliasRequest struct {
-	RelationshipTableAlias string
+	RelationshipTableName  *SchemaObjectIdentifier
+	RelationshipTableAlias *string
 }
 
 type SemanticViewColumnRequest struct {

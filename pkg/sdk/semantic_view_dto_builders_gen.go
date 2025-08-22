@@ -138,20 +138,20 @@ func NewSynonymsRequest() *SynonymsRequest {
 	return &SynonymsRequest{}
 }
 
-func (s *SynonymsRequest) WithWithSynonyms(WithSynonyms []string) *SynonymsRequest {
+func (s *SynonymsRequest) WithWithSynonyms(WithSynonyms []Synonym) *SynonymsRequest {
 	s.WithSynonyms = WithSynonyms
 	return s
 }
 
 func NewSemanticViewRelationshipRequest(
-	tableName *RelationshipTableAliasRequest,
+	tableNameOrAlias *RelationshipTableAliasRequest,
 	relationshipColumnNames []SemanticViewColumnRequest,
-	refTableName *RelationshipTableAliasRequest,
+	refTableNameOrAlias *RelationshipTableAliasRequest,
 ) *SemanticViewRelationshipRequest {
 	s := SemanticViewRelationshipRequest{}
-	s.tableName = tableName
+	s.tableNameOrAlias = tableNameOrAlias
 	s.relationshipColumnNames = relationshipColumnNames
-	s.refTableName = refTableName
+	s.refTableNameOrAlias = refTableNameOrAlias
 	return &s
 }
 
@@ -178,8 +178,13 @@ func NewRelationshipTableAliasRequest() *RelationshipTableAliasRequest {
 	return &RelationshipTableAliasRequest{}
 }
 
+func (s *RelationshipTableAliasRequest) WithRelationshipTableName(RelationshipTableName SchemaObjectIdentifier) *RelationshipTableAliasRequest {
+	s.RelationshipTableName = &RelationshipTableName
+	return s
+}
+
 func (s *RelationshipTableAliasRequest) WithRelationshipTableAlias(RelationshipTableAlias string) *RelationshipTableAliasRequest {
-	s.RelationshipTableAlias = RelationshipTableAlias
+	s.RelationshipTableAlias = &RelationshipTableAlias
 	return s
 }
 

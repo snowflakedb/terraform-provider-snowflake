@@ -41,7 +41,6 @@ func TestSemanticViews_Create(t *testing.T) {
 				semanticExpression: &SemanticExpression{
 					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: "metricName"},
 					sqlExpression:           &SemanticSqlExpression{SqlExpression: "metricExpression"},
-					synonyms:                &Synonyms{WithSynonyms: []string{"'test5'", "'test6'"}},
 					Comment:                 String("metric_comment"),
 				},
 				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
@@ -114,7 +113,7 @@ func TestSemanticViews_Create(t *testing.T) {
 						},
 					},
 				},
-				synonyms: &Synonyms{WithSynonyms: []string{"'test1'", "'test2'"}},
+				synonyms: &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
 				Comment:  logicalTableComment1,
 			},
 			{
@@ -128,14 +127,14 @@ func TestSemanticViews_Create(t *testing.T) {
 						Name: "pk2.2",
 					},
 				}},
-				synonyms: &Synonyms{WithSynonyms: []string{"'test3'", "'test4'"}},
+				synonyms: &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
 				Comment:  logicalTableComment2,
 			},
 		}
 		relationshipsObj := []SemanticViewRelationship{
 			{
 				relationshipAlias: &RelationshipAlias{RelationshipAlias: relationshipAlias1},
-				tableName:         &RelationshipTableAlias{RelationshipTableAlias: tableAlias1},
+				tableNameOrAlias:  &RelationshipTableAlias{RelationshipTableAlias: &tableAlias1},
 				relationshipColumnNames: []SemanticViewColumn{
 					{
 						Name: "pk1.1",
@@ -144,7 +143,7 @@ func TestSemanticViews_Create(t *testing.T) {
 						Name: "pk1.2",
 					},
 				},
-				refTableName: &RelationshipTableAlias{RelationshipTableAlias: tableAlias2},
+				refTableNameOrAlias: &RelationshipTableAlias{RelationshipTableAlias: &tableAlias2},
 				relationshipRefColumnNames: []SemanticViewColumn{
 					{
 						Name: "pk2.1",
@@ -159,7 +158,7 @@ func TestSemanticViews_Create(t *testing.T) {
 			{
 				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: factName},
 				sqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
-				synonyms:                &Synonyms{WithSynonyms: []string{"'test1'", "'test2'"}},
+				synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
 				Comment:                 String("fact_comment"),
 			},
 		}
@@ -167,7 +166,7 @@ func TestSemanticViews_Create(t *testing.T) {
 			{
 				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: dimensionName},
 				sqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
-				synonyms:                &Synonyms{WithSynonyms: []string{"'test3'", "'test4'"}},
+				synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
 				Comment:                 String("dimension_comment"),
 			},
 		}
@@ -176,7 +175,7 @@ func TestSemanticViews_Create(t *testing.T) {
 				semanticExpression: &SemanticExpression{
 					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
 					sqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
-					synonyms:                &Synonyms{WithSynonyms: []string{"'test5'", "'test6'"}},
+					synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test5"}, {Synonym: "test6"}}},
 					Comment:                 String("metric_comment"),
 				},
 			},

@@ -65,6 +65,7 @@ var SemanticViewsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"), // both can't be used at the same time
 	logicalTable,
+	synonym,
 	semanticViewRelationship,
 	semanticExpression,
 	metricDefinition,
@@ -117,8 +118,11 @@ var primaryKey = g.NewQueryStruct("PrimaryKeys").
 var uniqueKey = g.NewQueryStruct("UniqueKeys").
 	ListAssignment("UNIQUE", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals())
 
-var synonym = g.NewQueryStruct("Synonyms").
-	ListAssignment("WITH SYNONYMS", "string", g.ParameterOptions().NoEquals().Parentheses())
+var synonym = g.NewQueryStruct("Synonym").
+	Text("Synonym", g.KeywordOptions().SingleQuotes().Required())
+
+var synonyms = g.NewQueryStruct("Synonyms").
+	ListAssignment("WITH SYNONYMS", "Synonym", g.ParameterOptions().NoEquals().Parentheses())
 
 var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
 	Text("LogicalTableAlias", g.KeywordOptions()).
@@ -132,22 +136,24 @@ var logicalTable = g.NewQueryStruct("LogicalTable").
 	Identifier("TableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	OptionalQueryStructField("primaryKeys", primaryKey, g.ParameterOptions().NoEquals()).
 	ListQueryStructField("uniqueKeys", uniqueKey, g.ListOptions().NoEquals().NoComma()).
-	OptionalQueryStructField("synonyms", synonym, g.ParameterOptions().NoEquals()).
+	OptionalQueryStructField("synonyms", synonyms, g.ParameterOptions().NoEquals()).
 	OptionalComment()
 
 var relationshipAlias = g.NewQueryStruct("RelationshipAlias").
 	Text("RelationshipAlias", g.KeywordOptions()).
 	SQL("AS")
 
-var relationshipTableAlias = g.NewQueryStruct("RelationshipTableAlias").
-	Text("RelationshipTableAlias", g.KeywordOptions())
+var relationshipTableNameOrAlias = g.NewQueryStruct("RelationshipTableAlias").
+	OptionalIdentifier("RelationshipTableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions()).
+	OptionalText("RelationshipTableAlias", g.KeywordOptions()).
+	WithValidation(g.ExactlyOneValueSet, "RelationshipTableName", "RelationshipTableAlias")
 
 var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
 	OptionalQueryStructField("relationshipAlias", relationshipAlias, g.KeywordOptions()).
-	OptionalQueryStructField("tableName", relationshipTableAlias, g.KeywordOptions().Required()).
+	OptionalQueryStructField("tableNameOrAlias", relationshipTableNameOrAlias, g.KeywordOptions().Required()).
 	ListQueryStructField("relationshipColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses().Required()).
 	SQL("REFERENCES").
-	OptionalQueryStructField("refTableName", relationshipTableAlias, g.KeywordOptions().Required()).
+	OptionalQueryStructField("refTableNameOrAlias", relationshipTableNameOrAlias, g.KeywordOptions().Required()).
 	ListQueryStructField("relationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())
 
 var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
@@ -160,7 +166,7 @@ var semanticExpression = g.NewQueryStruct("SemanticExpression").
 	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
 	SQL("AS").
 	OptionalQueryStructField("sqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
-	OptionalQueryStructField("synonyms", synonym, g.ParameterOptions().NoEquals()).
+	OptionalQueryStructField("synonyms", synonyms, g.ParameterOptions().NoEquals()).
 	OptionalComment()
 
 var windowFunctionOverClause = g.NewQueryStruct("WindowFunctionOverClause").

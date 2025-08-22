@@ -59,15 +59,19 @@ type UniqueKeys struct {
 }
 
 type Synonyms struct {
-	WithSynonyms []string `ddl:"parameter,parentheses,no_equals" sql:"WITH SYNONYMS"`
+	WithSynonyms []Synonym `ddl:"parameter,parentheses,no_equals" sql:"WITH SYNONYMS"`
+}
+
+type Synonym struct {
+	Synonym string `ddl:"keyword,single_quotes"`
 }
 
 type SemanticViewRelationship struct {
 	relationshipAlias          *RelationshipAlias      `ddl:"keyword"`
-	tableName                  *RelationshipTableAlias `ddl:"keyword"`
+	tableNameOrAlias           *RelationshipTableAlias `ddl:"keyword"`
 	relationshipColumnNames    []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
 	references                 bool                    `ddl:"static" sql:"REFERENCES"`
-	refTableName               *RelationshipTableAlias `ddl:"keyword"`
+	refTableNameOrAlias        *RelationshipTableAlias `ddl:"keyword"`
 	relationshipRefColumnNames []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
 }
 
@@ -77,7 +81,8 @@ type RelationshipAlias struct {
 }
 
 type RelationshipTableAlias struct {
-	RelationshipTableAlias string `ddl:"keyword"`
+	RelationshipTableName  *SchemaObjectIdentifier `ddl:"identifier"`
+	RelationshipTableAlias *string                 `ddl:"keyword"`
 }
 
 type SemanticViewColumn struct {

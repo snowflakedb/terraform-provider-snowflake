@@ -96,8 +96,8 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 		s := make([]SemanticViewRelationship, len(r.semanticViewRelationships))
 		for i, v := range r.semanticViewRelationships {
 			s[i] = SemanticViewRelationship{
-				tableName:    &RelationshipTableAlias{RelationshipTableAlias: v.tableName.RelationshipTableAlias},
-				refTableName: &RelationshipTableAlias{RelationshipTableAlias: v.refTableName.RelationshipTableAlias},
+				tableNameOrAlias:    &RelationshipTableAlias{RelationshipTableAlias: v.tableNameOrAlias.RelationshipTableAlias},
+				refTableNameOrAlias: &RelationshipTableAlias{RelationshipTableAlias: v.refTableNameOrAlias.RelationshipTableAlias},
 			}
 			if v.relationshipAlias != nil {
 				s[i].relationshipAlias = &RelationshipAlias{
