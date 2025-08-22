@@ -213,6 +213,7 @@ func (c *DatabaseClient) CreateDatabaseFromShare(t *testing.T, externalShareId s
 	require.NoError(t, err)
 
 	var database *sdk.Database
+	// TODO(SNOW-2290624): Set up a cleanup function in case require.Eventually fails.
 	require.Eventually(t, func() bool {
 		database, err = c.Show(t, databaseId)
 		if err != nil {
@@ -222,6 +223,19 @@ func (c *DatabaseClient) CreateDatabaseFromShare(t *testing.T, externalShareId s
 		// Once it turns into valid sdk.ExternalObjectIdentifier, we're ready to proceed with the actual test.
 		return database.Origin != nil
 	}, 3*time.Minute, time.Second*6)
+
+	return database, c.DropDatabaseFunc(t, databaseId)
+}
+
+func (c *DatabaseClient) CreateDatabaseFromShareSkipWaitingForOrigin(t *testing.T, externalShareId sdk.ExternalObjectIdentifier) (*sdk.Database, func()) {
+	t.Helper()
+
+	databaseId := c.ids.RandomAccountObjectIdentifier()
+	err := c.client().CreateShared(context.Background(), databaseId, externalShareId, c.testParametersSetSharedDatabase())
+	require.NoError(t, err)
+
+	database, err := c.Show(t, databaseId)
+	require.NoError(t, err)
 
 	return database, c.DropDatabaseFunc(t, databaseId)
 }

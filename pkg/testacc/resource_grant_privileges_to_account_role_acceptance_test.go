@@ -1303,7 +1303,7 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 
 	externalShareId := createSharedDatabaseOnSecondaryAccount(t)
 
-	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShare(t, externalShareId)
+	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShareSkipWaitingForOrigin(t, externalShareId)
 	t.Cleanup(databaseFromShareCleanup)
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1334,20 +1334,46 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 				ImportState:              true,
 				ImportStateVerify:        true,
 			},
-			// Expect an error in 2.5.0.
+		},
+	})
+}
+
+// prove https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2803 is fixed
+func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges_issue2803(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	externalShareId := createSharedDatabaseOnSecondaryAccount(t)
+
+	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShareSkipWaitingForOrigin(t, externalShareId)
+	t.Cleanup(databaseFromShareCleanup)
+
+	resourceName := "snowflake_grant_privileges_to_account_role.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { TestAccPreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				Config:            grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
+			},
+			// Expect an error when the import privilege is revoked externally in 2.5.0.
 			{
 				PreConfig: func() {
 					testClient().Grant.RevokePrivilegesOnDatabaseFromAccountRole(t, role.ID(), databaseFromShare.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImportedPrivileges})
 				},
 				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceName, "privileges", tfjson.ActionUpdate, sdk.Pointer("[]"), sdk.Pointer(fmt.Sprintf("[%s]", string(sdk.AccountObjectPrivilegeImportedPrivileges)))),
-					},
-				},
+				// ConfigPlanChecks: resource.ConfigPlanChecks{
+				// 	PreApply: []plancheck.PlanCheck{
+				// 		plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+				// 		planchecks.ExpectChange(resourceName, "privileges", tfjson.ActionUpdate, sdk.Pointer("[]"), sdk.Pointer(fmt.Sprintf("[%s]", string(sdk.AccountObjectPrivilegeImportedPrivileges)))),
+				// 	},
+				// },
 				Config:      grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
-				ExpectError: regexp.MustCompile("aaa"),
+				ExpectError: regexp.MustCompile("Failed to revoke privileges to add"),
 			},
 			// Prove the fix in later versions.
 			{
