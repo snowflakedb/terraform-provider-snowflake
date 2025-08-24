@@ -26,10 +26,11 @@ var secretClientCredentialsSchema = func() map[string]*schema.Schema {
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 		"oauth_scopes": {
-			Type:        schema.TypeSet,
-			Elem:        &schema.Schema{Type: schema.TypeString},
-			Required:    true,
-			Description: "Specifies a list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow.",
+			Type:             schema.TypeSet,
+			Elem:             &schema.Schema{Type: schema.TypeString},
+			Optional:         true,
+			Description:      "Specifies a list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow.",
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeListValueInDescribe("oauth_scopes"),
 		},
 	}
 	return collections.MergeMaps(secretCommonSchema, secretClientCredentials)

@@ -31,7 +31,7 @@ func TestAcc_Secrets_WithClientCredentials(t *testing.T) {
 	)
 	t.Cleanup(apiIntegrationCleanup)
 
-	secretModel := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), []string{"username", "test_scope"})
+	secretModel := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name()).WithOauthScopes([]string{"username", "test_scope"})
 	secretsModel := datasourcemodel.Secrets("test").
 		WithInDatabase(id.DatabaseId()).
 		WithDependsOn(secretModel.ResourceReference())
@@ -227,7 +227,7 @@ func TestAcc_Secrets_Filtering(t *testing.T) {
 
 	secretModelBasicAuth := model.SecretWithBasicAuthentication("s", idOne.DatabaseName(), idOne.SchemaName(), idOne.Name(), pass, "test_username")
 	secretModelGenericString := model.SecretWithGenericString("s2", idTwo.DatabaseName(), idTwo.SchemaName(), idTwo.Name(), pass)
-	secretModelClientCredentials := model.SecretWithClientCredentials("s3", idThree.DatabaseName(), idThree.SchemaName(), idThree.Name(), integrationId.Name(), []string{"first_scope", "second_scope"})
+	secretModelClientCredentials := model.SecretWithClientCredentials("s3", idThree.DatabaseName(), idThree.SchemaName(), idThree.Name(), integrationId.Name()).WithOauthScopes([]string{"first_scope", "second_scope"})
 	secretModelAuthorizationCodeGrant := model.SecretWithAuthorizationCodeGrant("s4", idFour.DatabaseName(), idFour.SchemaName(), idFour.Name(), integrationId.Name(), pass, time.Now().Add(24*time.Hour).Format(time.DateTime))
 	secretModelInDifferentSchema := model.SecretWithBasicAuthentication("s5", idFive.DatabaseName(), idFive.SchemaName(), idFive.Name(), pass, "test_username")
 	allSecretModels := []accconfig.ResourceModel{secretModelBasicAuth, secretModelGenericString, secretModelClientCredentials, secretModelAuthorizationCodeGrant, secretModelInDifferentSchema}
