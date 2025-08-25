@@ -34,7 +34,7 @@ func stringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planValue customtyp
 	return nil
 }
 
-// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [SNOW-2296350]: add functional test for this variant (with unset) to be closer to our implementation
 func StringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planValue customtypes.EnumValue[T], stateValue customtypes.EnumValue[T], setField **T, unsetField **bool) error {
 	// currently Equal is enough as we have customplanmodifiers.EnumSuppressor which checks normalized equality for planValue and stateValue
 	if !planValue.Equal(stateValue) {

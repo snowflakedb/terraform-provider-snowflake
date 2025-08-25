@@ -24,7 +24,7 @@ func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 	}
 }
 
-// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [SNOW-2296350]: add functional test for this variant (with unset) to be closer to our implementation
 func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **bool, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -68,7 +68,7 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 	}
 }
 
-// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [SNOW-2296350]: add functional test for this variant (with unset) to be closer to our implementation
 func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -117,7 +117,7 @@ func stringAttributeUpdate(planned types.String, inState types.String, setField 
 	}
 }
 
-// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [SNOW-2296350]: add functional test for this variant (with unset) to be closer to our implementation
 func StringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() || planned.IsUnknown() {
