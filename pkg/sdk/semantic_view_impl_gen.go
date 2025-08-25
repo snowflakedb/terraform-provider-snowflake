@@ -2,6 +2,8 @@ package sdk
 
 import (
 	"context"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ SemanticViews = (*semanticViews)(nil)
@@ -11,6 +13,11 @@ type semanticViews struct {
 }
 
 func (v *semanticViews) Create(ctx context.Context, request *CreateSemanticViewRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *semanticViews) Alter(ctx context.Context, request *AlterSemanticViewRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -45,9 +52,19 @@ func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewReque
 	return resultList, nil
 }
 
-func (v *semanticViews) Alter(ctx context.Context, request *AlterSemanticViewRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
+func (v *semanticViews) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error) {
+	request := NewShowSemanticViewRequest().
+		WithLike(Like{Pattern: String(id.Name())}).
+		WithIn(In{Schema: id.SchemaId()})
+	semanticViews, err := v.Show(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return collections.FindFirst(semanticViews, func(r SemanticView) bool { return r.Name == id.Name() })
+}
+
+func (v *semanticViews) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error) {
+	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
 func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
@@ -55,8 +72,15 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 		OrReplace:   r.OrReplace,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		Comment:     r.Comment,
-		CopyGrants:  r.CopyGrants,
+		// Adjusted manually, removed (invalid conversion, e.g., LogicalTables <- LogicalTablesRequest):
+		// logicalTables:             r.logicalTables,
+		// semanticViewRelationships: r.semanticViewRelationships,
+		// semanticViewFacts:         r.semanticViewFacts,
+		// semanticViewDimensions:    r.semanticViewDimensions,
+		// semanticViewMetrics:       r.semanticViewMetrics,
+		// the mapping is done manually below
+		Comment:    r.Comment,
+		CopyGrants: r.CopyGrants,
 	}
 	if r.logicalTables != nil {
 		s := make([]LogicalTable, len(r.logicalTables))

@@ -4,28 +4,51 @@ package sdk
 
 var (
 	_ optionsProvider[CreateSemanticViewOptions]   = new(CreateSemanticViewRequest)
+	_ optionsProvider[AlterSemanticViewOptions]    = new(AlterSemanticViewRequest)
 	_ optionsProvider[DropSemanticViewOptions]     = new(DropSemanticViewRequest)
 	_ optionsProvider[DescribeSemanticViewOptions] = new(DescribeSemanticViewRequest)
 	_ optionsProvider[ShowSemanticViewOptions]     = new(ShowSemanticViewRequest)
-	_ optionsProvider[AlterSemanticViewOptions]    = new(AlterSemanticViewRequest)
 )
 
 type CreateSemanticViewRequest struct {
-	OrReplace                 *bool
-	IfNotExists               *bool
-	name                      SchemaObjectIdentifier // required
-	logicalTables             []LogicalTableRequest  // required
-	Relationships             *bool
+	OrReplace   *bool
+	IfNotExists *bool
+	name        SchemaObjectIdentifier // required
+	// Adjusted manually (changed from opt structs to Requests)
+	logicalTables             []LogicalTableRequest // required
 	semanticViewRelationships []SemanticViewRelationshipRequest
-	Facts                     *bool
 	semanticViewFacts         []SemanticExpressionRequest
-	Dimensions                *bool
 	semanticViewDimensions    []SemanticExpressionRequest
-	Metrics                   *bool
 	semanticViewMetrics       []MetricDefinitionRequest
 	Comment                   *string
 	CopyGrants                *bool
 }
+
+type AlterSemanticViewRequest struct {
+	IfExists     *bool
+	name         SchemaObjectIdentifier // required
+	SetComment   *string
+	UnsetComment *bool
+}
+
+type DropSemanticViewRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+}
+
+type DescribeSemanticViewRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type ShowSemanticViewRequest struct {
+	Terse      *bool
+	Like       *Like
+	In         *In
+	StartsWith *string
+	Limit      *LimitFrom
+}
+
+// The requests below added manually
 
 type LogicalTableRequest struct {
 	logicalTableAlias *LogicalTableAliasRequest
@@ -105,28 +128,4 @@ type WindowFunctionOverClauseRequest struct {
 	OrderBy           *bool
 	OrderByClause     *string
 	WindowFrameClause *string
-}
-
-type DropSemanticViewRequest struct {
-	IfExists *bool
-	name     SchemaObjectIdentifier // required
-}
-
-type DescribeSemanticViewRequest struct {
-	name SchemaObjectIdentifier // required
-}
-
-type ShowSemanticViewRequest struct {
-	Terse      *bool
-	Like       *Like
-	In         *In
-	StartsWith *string
-	Limit      *LimitFrom
-}
-
-type AlterSemanticViewRequest struct {
-	IfExists     *bool
-	name         SchemaObjectIdentifier // required
-	SetComment   *string
-	UnsetComment *bool
 }

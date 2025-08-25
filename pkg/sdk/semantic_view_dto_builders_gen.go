@@ -24,18 +24,8 @@ func (s *CreateSemanticViewRequest) WithIfNotExists(IfNotExists bool) *CreateSem
 	return s
 }
 
-func (s *CreateSemanticViewRequest) WithRelationships(Relationships bool) *CreateSemanticViewRequest {
-	s.Relationships = &Relationships
-	return s
-}
-
 func (s *CreateSemanticViewRequest) WithSemanticViewRelationships(semanticViewRelationships []SemanticViewRelationshipRequest) *CreateSemanticViewRequest {
 	s.semanticViewRelationships = semanticViewRelationships
-	return s
-}
-
-func (s *CreateSemanticViewRequest) WithFacts(Facts bool) *CreateSemanticViewRequest {
-	s.Facts = &Facts
 	return s
 }
 
@@ -44,18 +34,8 @@ func (s *CreateSemanticViewRequest) WithSemanticViewFacts(semanticViewFacts []Se
 	return s
 }
 
-func (s *CreateSemanticViewRequest) WithDimensions(Dimensions bool) *CreateSemanticViewRequest {
-	s.Dimensions = &Dimensions
-	return s
-}
-
 func (s *CreateSemanticViewRequest) WithSemanticViewDimensions(semanticViewDimensions []SemanticExpressionRequest) *CreateSemanticViewRequest {
 	s.semanticViewDimensions = semanticViewDimensions
-	return s
-}
-
-func (s *CreateSemanticViewRequest) WithMetrics(Metrics bool) *CreateSemanticViewRequest {
-	s.Metrics = &Metrics
 	return s
 }
 
@@ -71,6 +51,79 @@ func (s *CreateSemanticViewRequest) WithComment(Comment string) *CreateSemanticV
 
 func (s *CreateSemanticViewRequest) WithCopyGrants(CopyGrants bool) *CreateSemanticViewRequest {
 	s.CopyGrants = &CopyGrants
+	return s
+}
+
+func NewAlterSemanticViewRequest(
+	name SchemaObjectIdentifier,
+) *AlterSemanticViewRequest {
+	s := AlterSemanticViewRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *AlterSemanticViewRequest) WithIfExists(IfExists bool) *AlterSemanticViewRequest {
+	s.IfExists = &IfExists
+	return s
+}
+
+func (s *AlterSemanticViewRequest) WithSetComment(SetComment string) *AlterSemanticViewRequest {
+	s.SetComment = &SetComment
+	return s
+}
+
+func (s *AlterSemanticViewRequest) WithUnsetComment(UnsetComment bool) *AlterSemanticViewRequest {
+	s.UnsetComment = &UnsetComment
+	return s
+}
+
+func NewDropSemanticViewRequest(
+	name SchemaObjectIdentifier,
+) *DropSemanticViewRequest {
+	s := DropSemanticViewRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *DropSemanticViewRequest) WithIfExists(IfExists bool) *DropSemanticViewRequest {
+	s.IfExists = &IfExists
+	return s
+}
+
+func NewDescribeSemanticViewRequest(
+	name SchemaObjectIdentifier,
+) *DescribeSemanticViewRequest {
+	s := DescribeSemanticViewRequest{}
+	s.name = name
+	return &s
+}
+
+func NewShowSemanticViewRequest() *ShowSemanticViewRequest {
+	return &ShowSemanticViewRequest{}
+}
+
+func (s *ShowSemanticViewRequest) WithTerse(Terse bool) *ShowSemanticViewRequest {
+	s.Terse = &Terse
+	return s
+}
+
+func (s *ShowSemanticViewRequest) WithLike(Like Like) *ShowSemanticViewRequest {
+	s.Like = &Like
+	return s
+}
+
+func (s *ShowSemanticViewRequest) WithIn(In In) *ShowSemanticViewRequest {
+	s.In = &In
+	return s
+}
+
+func (s *ShowSemanticViewRequest) WithStartsWith(StartsWith string) *ShowSemanticViewRequest {
+	s.StartsWith = &StartsWith
+	return s
+}
+
+func (s *ShowSemanticViewRequest) WithLimit(Limit LimitFrom) *ShowSemanticViewRequest {
+	s.Limit = &Limit
 	return s
 }
 
@@ -289,78 +342,5 @@ func (s *WindowFunctionOverClauseRequest) WithOrderByClause(OrderByClause string
 
 func (s *WindowFunctionOverClauseRequest) WithWindowFrameClause(WindowFrameClause string) *WindowFunctionOverClauseRequest {
 	s.WindowFrameClause = &WindowFrameClause
-	return s
-}
-
-func NewDropSemanticViewRequest(
-	name SchemaObjectIdentifier,
-) *DropSemanticViewRequest {
-	s := DropSemanticViewRequest{}
-	s.name = name
-	return &s
-}
-
-func (s *DropSemanticViewRequest) WithIfExists(IfExists bool) *DropSemanticViewRequest {
-	s.IfExists = &IfExists
-	return s
-}
-
-func NewDescribeSemanticViewRequest(
-	name SchemaObjectIdentifier,
-) *DescribeSemanticViewRequest {
-	s := DescribeSemanticViewRequest{}
-	s.name = name
-	return &s
-}
-
-func NewShowSemanticViewRequest() *ShowSemanticViewRequest {
-	return &ShowSemanticViewRequest{}
-}
-
-func (s *ShowSemanticViewRequest) WithTerse(Terse bool) *ShowSemanticViewRequest {
-	s.Terse = &Terse
-	return s
-}
-
-func (s *ShowSemanticViewRequest) WithLike(Like Like) *ShowSemanticViewRequest {
-	s.Like = &Like
-	return s
-}
-
-func (s *ShowSemanticViewRequest) WithIn(In In) *ShowSemanticViewRequest {
-	s.In = &In
-	return s
-}
-
-func (s *ShowSemanticViewRequest) WithStartsWith(StartsWith string) *ShowSemanticViewRequest {
-	s.StartsWith = &StartsWith
-	return s
-}
-
-func (s *ShowSemanticViewRequest) WithLimit(Limit LimitFrom) *ShowSemanticViewRequest {
-	s.Limit = &Limit
-	return s
-}
-
-func NewAlterSemanticViewRequest(
-	name SchemaObjectIdentifier,
-) *AlterSemanticViewRequest {
-	s := AlterSemanticViewRequest{}
-	s.name = name
-	return &s
-}
-
-func (s *AlterSemanticViewRequest) WithIfExists(IfExists bool) *AlterSemanticViewRequest {
-	s.IfExists = &IfExists
-	return s
-}
-
-func (s *AlterSemanticViewRequest) WithSetComment(SetComment string) *AlterSemanticViewRequest {
-	s.SetComment = &SetComment
-	return s
-}
-
-func (s *AlterSemanticViewRequest) WithUnsetComment(UnsetComment bool) *AlterSemanticViewRequest {
-	s.UnsetComment = &UnsetComment
 	return s
 }
