@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strings"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -50,7 +51,7 @@ func GroupGrants(grants []sdk.Grant) map[string][]sdk.Grant {
 	})
 }
 
-func MapGrantToModel(grantGroup []sdk.Grant) config.ResourceModel {
+func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 	// Assuming all grants in the group are the same type and only differ by privileges
 	grant := grantGroup[0]
 	privileges := collections.Map(grantGroup, func(grant sdk.Grant) string { return grant.Privilege })
@@ -59,6 +60,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) config.ResourceModel {
 			return tfconfig.StringVariable(privilege)
 		})...,
 	)
+
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
 		return model.GrantPrivilegesToAccountRole("test_resource_name_on_account", grant.GranteeName.Name()).

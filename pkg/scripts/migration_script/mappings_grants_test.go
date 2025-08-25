@@ -49,16 +49,16 @@ func TestHandleGrants(t *testing.T) {
 		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_SCHEMA_OBJECT"),
 	}
 
-	grantOnAccountResourceModel, err := MapGrantToModel(grantOnAccount)
+	grantOnAccountResourceModels, err := MapGrantToModel([]sdk.Grant{grantOnAccount, grantOnAccount2})
 	assert.NoError(t, err)
 
-	grantOnAccountObjectResourceModel, err := MapGrantToModel(grantOnAccountObject)
+	grantOnAccountObjectResourceModels, err := MapGrantToModel([]sdk.Grant{grantOnAccountObject})
 	assert.NoError(t, err)
 
-	grantOnSchemaResourceModel, err := MapGrantToModel(grantOnSchema)
+	grantOnSchemaResourceModels, err := MapGrantToModel([]sdk.Grant{grantOnSchema})
 	assert.NoError(t, err)
 
-	grantOnSchemaObjectResourceModel, err := MapGrantToModel(grantOnSchemaObject)
+	grantOnSchemaObjectResourceModels, err := MapGrantToModel([]sdk.Grant{grantOnSchemaObject, grantOnSchemaObject2})
 	assert.NoError(t, err)
 
 	assert.Equal(t, strings.TrimLeft(`
@@ -99,10 +99,10 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
 }
 `, "\n"),
 		config.FromModels(t,
-			grantOnAccountResourceModel,
-			grantOnAccountObjectResourceModel,
-			grantOnSchemaResourceModel,
-			grantOnSchemaObjectResourceModel,
+			grantOnAccountResourceModels,
+			grantOnAccountObjectResourceModels,
+			grantOnSchemaResourceModels,
+			grantOnSchemaObjectResourceModels,
 		),
 	)
 }
