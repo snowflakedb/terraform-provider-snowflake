@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"io"
-	"log"
 	"os"
 	"slices"
 	"strings"
@@ -51,12 +50,12 @@ func ToImportStatementType(s string) (ImportStatementType, error) {
 	return "", fmt.Errorf("invalid import statement type: %s", s)
 }
 
-var (
-	objectType ObjectType
-	importFlag ImportStatementType
-)
+type Config struct {
+	ObjectType ObjectType
+	ImportFlag ImportStatementType
+}
 
-func ParseInputArguments() {
+func ParseInputArguments() (*Config, error) {
 	flag.Usage = func() {
 		_, _ = fmt.Fprintln(os.Stderr, "Usage: migration_script [object_type] [flags]")
 		_, _ = fmt.Fprintln(os.Stderr, "")
@@ -73,15 +72,12 @@ func ParseInputArguments() {
 
 	// positional arguments
 	if len(os.Args) < 2 {
-		log.Println("No object type specified. Use -h for help.")
-		os.Exit(1)
+		return nil, fmt.Errorf("no object type specified, use -h for help")
 	}
 	parsedObjectType, err := ToObjectType(os.Args[1])
 	if err != nil {
-		log.Printf("Error parsing object type: %v", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("error parsing object type: %v", err)
 	}
-	objectType = parsedObjectType
 
 	// flags
 	importFlagString := flag.String("import", "statement", collections.JoinStrings([]string{
@@ -95,25 +91,21 @@ func ParseInputArguments() {
 
 	importFlagType, err := ToImportStatementType(*importFlagString)
 	if err != nil {
-		log.Printf("Error parsing import flag: %v", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("error parsing import flag: %v", err)
 	}
-	importFlag = importFlagType
+
+	return &Config{
+		ObjectType: parsedObjectType,
+		ImportFlag: importFlagType,
+	}, nil
 }
 
-func ReadCsvFromStdin() [][]string {
+func ReadCsvFromStdin() ([][]string, error) {
 	inputBytes, err := io.ReadAll(bufio.NewReader(os.Stdin))
 	if err != nil {
-		log.Printf("Error reading input: %v", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("error reading STDIN input: %v", err)
 	}
 
 	csvReader := csv.NewReader(bytes.NewBuffer(inputBytes))
-	csvInputFormat, err := csvReader.ReadAll()
-	if err != nil {
-		log.Printf("Error reading CSV input: %v", err)
-		os.Exit(1)
-	}
-
-	return csvInputFormat
+	return csvReader.ReadAll()
 }

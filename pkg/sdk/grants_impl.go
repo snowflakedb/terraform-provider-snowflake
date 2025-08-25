@@ -13,7 +13,7 @@ import (
 
 var (
 	_ Grants                = (*grants)(nil)
-	_ convertibleRow[Grant] = new(GrantRow)
+	_ convertibleRow[Grant] = new(grantRow)
 )
 
 type grants struct {
@@ -251,11 +251,11 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 		opts = &ShowGrantOptions{}
 	}
 
-	dbRows, err := validateAndQuery[GrantRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[grantRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	resultList, err := convertRows[GrantRow, Grant](dbRows)
+	resultList, err := convertRows[grantRow, Grant](dbRows)
 	if err != nil {
 		return nil, err
 	}

@@ -1,20 +1,26 @@
 package main
 
 import (
-	"fmt"
+	"log"
 )
 
 func main() {
-	ParseInputArguments()
+	config, err := ParseInputArguments()
+	if err != nil {
+		log.Fatalf("Error parsing input arguments: %v", err)
+	}
 
-	// Read input from stdin
-	csvInput := ReadCsvFromStdin()
+	csvInput, err := ReadCsvFromStdin()
+	if err != nil {
+		log.Fatalf("Error reading CSV input: %v", err)
+	}
 
-	// Parse the input and transform to objects
-	switch objectType {
+	switch config.ObjectType {
 	case ObjectTypeGrants:
-		HandleGrants(csvInput)
+		if err := HandleGrants(csvInput); err != nil {
+			log.Fatalf("Error handling grants generation: %v", err)
+		}
 	default:
-		panic(fmt.Sprintf("unsupported object type: %s", objectType))
+		log.Fatalf("Unsupported object type: %s. Run -h to get more information on allowed object types.", config.ObjectType)
 	}
 }

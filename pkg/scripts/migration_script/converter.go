@@ -2,55 +2,56 @@ package main
 
 import (
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"log"
-	"os"
 	"reflect"
 	"slices"
 	"strconv"
 )
 
-type ConversionConfig[T, R any] struct {
+type ConvertibleCsvRow[T any] interface {
+	convert() (*T, error)
+}
+
+type Converter[T ConvertibleCsvRow[R], R any] struct {
 	AdditionalConvertMapping func(row T, convertedValue *R)
 }
 
-func NewConversionConfigWithOpts[T, R any](opts ...func(*ConversionConfig[T, R])) *ConversionConfig[T, R] {
-	config := new(ConversionConfig[T, R])
+func NewConversionConfigWithOpts[T ConvertibleCsvRow[R], R any](opts ...func(*Converter[T, R])) *Converter[T, R] {
+	config := new(Converter[T, R])
 	for _, opt := range opts {
 		opt(config)
 	}
 	return config
 }
 
-func WithAdditionalConvertMapping[T, R any](mappingFunc func(row T, convertedValue *R)) func(*ConversionConfig[T, R]) {
-	return func(config *ConversionConfig[T, R]) {
+func WithAdditionalConvertMapping[T ConvertibleCsvRow[R], R any](mappingFunc func(row T, convertedValue *R)) func(*Converter[T, R]) {
+	return func(config *Converter[T, R]) {
 		config.AdditionalConvertMapping = mappingFunc
 	}
 }
 
 type ConvertibleRowStructField struct {
-	Index int
+	Index []int
 	Name  string
 	Tag   string
 	Kind  reflect.Kind
 }
 
-func ConvertCsvInput[T sdk.ConvertibleRowDeprecated[R], R any](csvInputFormat [][]string, opts ...func(*ConversionConfig[T, R])) []R {
+func ConvertCsvInput[T ConvertibleCsvRow[R], R any](csvInputFormat [][]string, opts ...func(*Converter[T, R])) ([]R, error) {
 	if len(csvInputFormat) < 1 {
-		log.Println("CSV input is empty")
-		os.Exit(1)
+		return nil, fmt.Errorf("CSV input is empty")
 	}
 
-	parseConfig := NewConversionConfigWithOpts(opts...)
+	converter := NewConversionConfigWithOpts(opts...)
 	convertibleRowFields := make([]ConvertibleRowStructField, 0)
 	structType := reflect.TypeFor[T]()
 
 	for i := 0; i < structType.NumField(); i++ {
 		convertibleRowFields = append(convertibleRowFields, ConvertibleRowStructField{
-			Index: i,
+			Index: structType.Field(i).Index,
 			Name:  structType.Field(i).Name,
 			Kind:  structType.Field(i).Type.Kind(),
-			Tag:   structType.Field(i).Tag.Get("db"),
+			Tag:   structType.Field(i).Tag.Get("csv"),
 		})
 	}
 
@@ -66,13 +67,22 @@ func ConvertCsvInput[T sdk.ConvertibleRowDeprecated[R], R any](csvInputFormat []
 		return slices.Index(csvHeader, a.Tag) - slices.Index(csvHeader, b.Tag)
 	})
 
-	// TODO: Separate and create another function with below logic?
+	// Based on the headers included for mapping, prepare a list of indices that should be taken into consideration when mapping a CSV row
+	columnIndices := make([]int, 0)
+	for index, headerValue := range csvHeader {
+		if slices.ContainsFunc(convertibleRowFields, func(field ConvertibleRowStructField) bool { return field.Tag == headerValue }) {
+			columnIndices = append(columnIndices, index)
+		}
+	}
 
 	result := make([]R, 0)
+
+csvRowLoop:
 	for _, csvRow := range csvInputFormat[1:] {
 		var row T
-		for i, csvColumnValue := range csvRow {
-			field := reflect.ValueOf(&row).Elem().Field(convertibleRowFields[i].Index)
+		for i := range columnIndices {
+			csvColumnValue := csvRow[columnIndices[i]]
+			field := reflect.ValueOf(&row).Elem().FieldByIndex(convertibleRowFields[i].Index)
 
 			switch convertibleRowFields[i].Kind {
 			case reflect.String:
@@ -80,42 +90,29 @@ func ConvertCsvInput[T sdk.ConvertibleRowDeprecated[R], R any](csvInputFormat []
 			case reflect.Bool:
 				boolValue, err := strconv.ParseBool(csvColumnValue)
 				if err != nil {
-					log.Printf("Error parsing boolean value for field %s: %v", convertibleRowFields[i].Name, err)
+					log.Printf("Error parsing boolean value for field %s: %v. Skipping this row (will not be included in the final generation).", convertibleRowFields[i].Name, err)
+					continue csvRowLoop
 				}
 				field.SetBool(boolValue)
 			default:
-				log.Printf("Unsupported type %s for field %s", convertibleRowFields[i].Kind, convertibleRowFields[i].Name)
+				log.Printf("Unsupported type %s for field %s. Skipping this row (will not be included in the final generation).", convertibleRowFields[i].Kind, convertibleRowFields[i].Name)
+				continue csvRowLoop
 			}
 		}
 
-		// Calling convert option 1 interface conversion (Requires interface to be exposed by the SDK package and objects to expose exported Convert method)
-		//var convertedValue R
-		//if v, ok := any(row).(sdk.ConvertibleRowDeprecated[R]); ok {
-		//	convertedValue = *v.Convert()
-		//}
+		var convertedValue *R
+		if v, err := row.convert(); err != nil {
+			return nil, err
+		} else {
+			convertedValue = v
+		}
 
-		// Calling convert option 2 golinkname
-		convertedValue := convertByGolinkname[T](row)
-
-		// Calling convert option 3 reflection - doesn't work because it doesn't see unexported methods
-
-		// Calling convert option 4 use something proposed in https://github.com/alangpierce/go-forceexport/blob/master/forceexport.go
-		// Ref: https://www.alangpierce.com/blog/2016/03/17/adventures-in-go-accessing-unexported-functions/
-
-		if parseConfig.AdditionalConvertMapping != nil {
-			parseConfig.AdditionalConvertMapping(row, convertedValue)
+		if converter.AdditionalConvertMapping != nil {
+			converter.AdditionalConvertMapping(row, convertedValue)
 		}
 
 		result = append(result, *convertedValue)
 	}
-	return result
-}
 
-// TODO: The correct mapping function could be passed somewhere earlier, e.g., at the ConvertCsvInput level.
-func convertByGolinkname[T sdk.ConvertibleRowDeprecated[R], R any](row T) *R {
-	switch typedRow := any(row).(type) {
-	case sdk.GrantRow:
-		return any(convertGrantRow(&typedRow)).(*R)
-	}
-	panic(fmt.Sprintf("unsupported type for conversion: %T", row))
+	return result, nil
 }
