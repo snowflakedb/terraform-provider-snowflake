@@ -25,9 +25,6 @@ func (opts *CreateSemanticViewOptions) validate() error {
 			if !exactlyOneValueSet(v.tableNameOrAlias.RelationshipTableName, v.tableNameOrAlias.RelationshipTableAlias) {
 				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
 			}
-			if !exactlyOneValueSet(v.refTableNameOrAlias.RelationshipTableName, v.refTableNameOrAlias.RelationshipTableAlias) {
-				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
-			}
 		}
 	}
 	if valueSet(opts.semanticViewMetrics) {

@@ -35,25 +35,23 @@ func TestSemanticViews_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	})
 
-	t.Run("validation: exactly one field for [metricDefinition.semanticExpression metricDefinition.windowFunctionMetricDefinition]", func(t *testing.T) {
+	t.Run("validation: exactly one field for [metricDefinition.semanticExpression metricDefinition.windowFunctionMetricDefinition] none set", func(t *testing.T) {
+		metricsObj := []MetricDefinition{
+			{},
+		}
+		opts := &CreateSemanticViewOptions{
+			name:                id,
+			Comment:             String("comment"),
+			semanticViewMetrics: metricsObj,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
+	})
+
+	t.Run("validation: exactly one field for [metricDefinition.semanticExpression metricDefinition.windowFunctionMetricDefinition] both set", func(t *testing.T) {
 		metricsObj := []MetricDefinition{
 			{
-				semanticExpression: &SemanticExpression{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: "metricName"},
-					sqlExpression:           &SemanticSqlExpression{SqlExpression: "metricExpression"},
-					Comment:                 String("metric_comment"),
-				},
-				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
-					WindowFunction: "metric1",
-					as:             true,
-					Metric:         "SUM(table_1.metric_1)",
-					OverClause: &WindowFunctionOverClause{
-						PartitionBy:       Bool(true),
-						PartitionByClause: String("table_1.dimension_2, table_1.dimension_3"),
-						OrderBy:           Bool(true),
-						OrderByClause:     String("table_1.dimension_2"),
-					},
-				},
+				semanticExpression:             &SemanticExpression{},
+				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{},
 			},
 		}
 		opts := &CreateSemanticViewOptions{
@@ -62,6 +60,33 @@ func TestSemanticViews_Create(t *testing.T) {
 			semanticViewMetrics: metricsObj,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
+	})
+
+	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias RelationshipTableName or RelationshipTableAlias] none set", func(t *testing.T) {
+		opts := &CreateSemanticViewOptions{
+			name: id,
+			semanticViewRelationships: []SemanticViewRelationship{
+				{
+					tableNameOrAlias: &RelationshipTableAlias{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
+	})
+
+	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias RelationshipTableName or RelationshipTableAlias] both set", func(t *testing.T) {
+		opts := &CreateSemanticViewOptions{
+			name: id,
+			semanticViewRelationships: []SemanticViewRelationship{
+				{
+					tableNameOrAlias: &RelationshipTableAlias{
+						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
+						RelationshipTableAlias: String("alias"),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -184,10 +209,8 @@ func TestSemanticViews_Create(t *testing.T) {
 					as:             true,
 					Metric:         "SUM(table_1.metric_1)",
 					OverClause: &WindowFunctionOverClause{
-						PartitionBy:       Bool(true),
-						PartitionByClause: String("table_1.dimension_2, table_1.dimension_3"),
-						OrderBy:           Bool(true),
-						OrderByClause:     String("table_1.dimension_2"),
+						PartitionBy: String("table_1.dimension_2, table_1.dimension_3"),
+						OrderBy:     String("table_1.dimension_2"),
 					},
 				},
 			},
@@ -204,7 +227,7 @@ func TestSemanticViews_Create(t *testing.T) {
 			semanticViewMetrics:       metricsObj,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES (%s AS %s PRIMARY KEY (pk1.1, pk1.2) UNIQUE (uk1.3) UNIQUE (uk1.4) WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', %s AS %s PRIMARY KEY (pk2.1, pk2.2) WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS (%s AS %s (pk1.1, pk1.2) REFERENCES %s (pk2.1, pk2.2)) FACTS (%s AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS (%s AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (%s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
-			id.FullyQualifiedName(), tableAlias1, logicalTableId1.FullyQualifiedName(), *logicalTableComment1, tableAlias2, logicalTableId2.FullyQualifiedName(), *logicalTableComment2, relationshipAlias1, tableAlias1, tableAlias2, factName, factExpression, *factsObj[0].Comment, dimensionName, dimensionExpression, *dimensionsObj[0].Comment, metricName, metricExpression, *metricsObj[0].semanticExpression.Comment, metricsObj[1].windowFunctionMetricDefinition.WindowFunction, metricsObj[1].windowFunctionMetricDefinition.Metric, *metricsObj[1].windowFunctionMetricDefinition.OverClause.PartitionByClause, *metricsObj[1].windowFunctionMetricDefinition.OverClause.OrderByClause, "comment")
+			id.FullyQualifiedName(), tableAlias1, logicalTableId1.FullyQualifiedName(), *logicalTableComment1, tableAlias2, logicalTableId2.FullyQualifiedName(), *logicalTableComment2, relationshipAlias1, tableAlias1, tableAlias2, factName, factExpression, *factsObj[0].Comment, dimensionName, dimensionExpression, *dimensionsObj[0].Comment, metricName, metricExpression, *metricsObj[0].semanticExpression.Comment, metricsObj[1].windowFunctionMetricDefinition.WindowFunction, metricsObj[1].windowFunctionMetricDefinition.Metric, *metricsObj[1].windowFunctionMetricDefinition.OverClause.PartitionBy, *metricsObj[1].windowFunctionMetricDefinition.OverClause.OrderBy, "comment")
 	})
 }
 

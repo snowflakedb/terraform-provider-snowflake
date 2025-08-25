@@ -202,10 +202,8 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 					WindowFunction: v.windowFunctionMetricDefinition.WindowFunction,
 					Metric:         v.windowFunctionMetricDefinition.Metric,
 					OverClause: &WindowFunctionOverClause{
-						PartitionBy:       Bool(v.windowFunctionMetricDefinition.OverClause.PartitionByClause != nil),
-						PartitionByClause: v.windowFunctionMetricDefinition.OverClause.PartitionByClause,
-						OrderBy:           Bool(v.windowFunctionMetricDefinition.OverClause.OrderByClause != nil),
-						OrderByClause:     v.windowFunctionMetricDefinition.OverClause.OrderByClause,
+						PartitionBy:       v.windowFunctionMetricDefinition.OverClause.PartitionBy,
+						OrderBy:           v.windowFunctionMetricDefinition.OverClause.OrderBy,
 						WindowFrameClause: v.windowFunctionMetricDefinition.OverClause.WindowFrameClause,
 					},
 				}
