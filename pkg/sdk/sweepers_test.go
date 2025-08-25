@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -60,6 +61,7 @@ func sweep(client *Client, suffix string) error {
 		return fmt.Errorf("suffix is required to run sweepers")
 	}
 	sweepers := []func() error{
+		nukeIntegrations(client, suffix),
 		getAccountPolicyAttachmentsSweeper(client),
 		getResourceMonitorSweeper(client, suffix),
 		getNetworkPolicySweeper(client, suffix),
@@ -114,6 +116,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 			assert.NoError(t, err)
 
 			err = nukeDatabases(c, acceptanceTestDatabasesPrefix)()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep integrations", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeIntegrations(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -312,6 +321,65 @@ func nukeUsers(client *Client, suffix string) func() error {
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping user %s", user.ID().FullyQualifiedName())
+			}
+		}
+
+		return errors.Join(errs...)
+	}
+}
+
+func nukeIntegrations(client *Client, suffix string) func() error {
+	protectedIntegrations := []string{
+		"S3_STORAGE_INTEGRATION",
+		"GCP_STORAGE_INTEGRATION",
+		"AZURE_STORAGE_INTEGRATION",
+	}
+
+	type Integration struct {
+		Name      string         `db:"name"`
+		Type      string         `db:"type"`
+		Category  string         `db:"category"`
+		Enabled   bool           `db:"enabled"`
+		Comment   sql.NullString `db:"comment"`
+		CreatedOn time.Time      `db:"created_on"`
+	}
+
+	return func() error {
+		ctx := context.Background()
+
+		var integrationDropCondition func(u Integration) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping integrations with suffix %s", suffix)
+			integrationDropCondition = func(u Integration) bool {
+				return strings.HasSuffix(u.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale integrations")
+			integrationDropCondition = func(u Integration) bool {
+				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+			}
+		}
+		var integrations []Integration
+		if err := client.QueryForTests(ctx, &integrations, `SHOW INTEGRATIONS`); err != nil {
+			return fmt.Errorf("SHOW INTEGRATIONS ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d integrations", len(integrations))
+		_ = protectedIntegrations
+
+		var errs []error
+		for idx, integration := range integrations {
+			log.Printf("[DEBUG] Processing integration [%d/%d]: %s...", idx+1, len(integrations), integration.Name)
+
+			if !slices.Contains(protectedIntegrations, integration.Name) && integrationDropCondition(integration) {
+				log.Printf("[DEBUG] Dropping integration %s", integration.Name)
+				// Commented out intentionally, uncomment after review
+
+				// if _, err := client.ExecForTests(ctx, fmt.Sprintf(`DROP INTEGRATION "%s"`, integration.Name)); err != nil {
+				//	errs = append(errs, fmt.Errorf("sweeping integration %s ended with error, err = %w", integration.Name, err))
+				// }
+			} else {
+				log.Printf("[DEBUG] Skipping integration %s", integration.Name)
 			}
 		}
 
