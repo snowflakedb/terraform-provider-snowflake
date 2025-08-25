@@ -129,7 +129,7 @@ func StringAttributeUpdate(planned types.String, inState types.String, setField 
 	return nil
 }
 
-// TODO [mux-PR]: test and adjust when adding identifier suppression
+// TODO [SNOW-2296366]: test and adjust when adding identifier suppression
 func IdAttributeUpdate(planned types.String, inState types.String, setField *sdk.AccountObjectIdentifier, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() || planned.IsUnknown() {
