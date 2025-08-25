@@ -189,7 +189,7 @@ func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, 
 
 func (p *pluginFrameworkPocProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		// TODO [SNOW-2234579]: add example
+		// TODO [SNOW-2296379]: add example
 	}
 }
 
