@@ -39,7 +39,7 @@ func (v *semanticViews) Describe(ctx context.Context, id SchemaObjectIdentifier)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[semanticViewDetailsRow, SemanticViewDetails](rows), nil
+	return convertRows[semanticViewDetailsRow, SemanticViewDetails](rows)
 }
 
 func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error) {
@@ -48,8 +48,7 @@ func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewReque
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[semanticViewDBRow, SemanticView](dbRows)
-	return resultList, nil
+	return convertRows[semanticViewDBRow, SemanticView](dbRows)
 }
 
 func (v *semanticViews) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error) {
@@ -229,14 +228,14 @@ func (r *DescribeSemanticViewRequest) toOpts() *DescribeSemanticViewOptions {
 	return opts
 }
 
-func (r semanticViewDetailsRow) convert() *SemanticViewDetails {
+func (r semanticViewDetailsRow) convert() (*SemanticViewDetails, error) {
 	return &SemanticViewDetails{
 		ObjectKind:    r.ObjectKind,
 		ObjectName:    r.ObjectName,
 		ParentEntity:  r.ParentEntity,
 		Property:      r.Property,
 		PropertyValue: r.PropertyValue,
-	}
+	}, nil
 }
 
 func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
@@ -250,7 +249,7 @@ func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
 	return opts
 }
 
-func (r semanticViewDBRow) convert() *SemanticView {
+func (r semanticViewDBRow) convert() (*SemanticView, error) {
 	semanticViewShow := &SemanticView{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -268,7 +267,7 @@ func (r semanticViewDBRow) convert() *SemanticView {
 		semanticViewShow.Extension = String(r.Extension.String)
 	}
 
-	return semanticViewShow
+	return semanticViewShow, nil
 }
 
 func (r *AlterSemanticViewRequest) toOpts() *AlterSemanticViewOptions {
