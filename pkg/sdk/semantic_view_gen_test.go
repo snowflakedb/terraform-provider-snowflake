@@ -59,7 +59,6 @@ func TestSemanticViews_Create(t *testing.T) {
 		opts := &CreateSemanticViewOptions{
 			name:                id,
 			Comment:             String("comment"),
-			Metrics:             Bool(true),
 			semanticViewMetrics: metricsObj,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
@@ -199,13 +198,9 @@ func TestSemanticViews_Create(t *testing.T) {
 			Comment:                   String("comment"),
 			IfNotExists:               Bool(true),
 			logicalTables:             tablesObj,
-			Relationships:             Bool(true),
 			semanticViewRelationships: relationshipsObj,
-			Facts:                     Bool(true),
 			semanticViewFacts:         factsObj,
-			Dimensions:                Bool(true),
 			semanticViewDimensions:    dimensionsObj,
-			Metrics:                   Bool(true),
 			semanticViewMetrics:       metricsObj,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES (%s AS %s PRIMARY KEY (pk1.1, pk1.2) UNIQUE (uk1.3) UNIQUE (uk1.4) WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', %s AS %s PRIMARY KEY (pk2.1, pk2.2) WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS (%s AS %s (pk1.1, pk1.2) REFERENCES %s (pk2.1, pk2.2)) FACTS (%s AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS (%s AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (%s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,

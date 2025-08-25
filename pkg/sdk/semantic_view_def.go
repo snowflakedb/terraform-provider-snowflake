@@ -42,90 +42,91 @@ var SemanticViewsDef = g.NewInterface(
 	"SemanticViews",
 	"SemanticView",
 	g.KindOfT[SchemaObjectIdentifier](),
-).CreateOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view",
-	g.NewQueryStruct("CreateSemanticView").
-		Create().
-		OrReplace().
-		SQL("SEMANTIC VIEW").
-		IfNotExists().
-		Name().
-		SQL("TABLES").
-		ListQueryStructField("logicalTables", logicalTable, g.ListOptions().Required().Parentheses()).
-		OptionalSQL("RELATIONSHIPS").
-		ListQueryStructField("semanticViewRelationships", semanticViewRelationship, g.ListOptions().Parentheses()).
-		OptionalSQL("FACTS").
-		ListQueryStructField("semanticViewFacts", semanticExpression, g.ListOptions().Parentheses()).
-		OptionalSQL("DIMENSIONS").
-		ListQueryStructField("semanticViewDimensions", semanticExpression, g.ListOptions().Parentheses()).
-		OptionalSQL("METRICS").
-		ListQueryStructField("semanticViewMetrics", metricDefinition, g.ListOptions().Parentheses()).
-		OptionalComment().
-		OptionalCopyGrants().
-		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"), // both can't be used at the same time
-	logicalTable,
-	synonym,
-	semanticViewRelationship,
-	semanticExpression,
-	metricDefinition,
-).DropOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
-	g.NewQueryStruct("DropSemanticView").
-		Drop().
-		SQL("SEMANTIC VIEW").
-		IfExists().
-		Name().
-		WithValidation(g.ValidIdentifier, "name"),
-).DescribeOperation(
-	g.DescriptionMappingKindSlice,
-	"https://docs.snowflake.com/en/sql-reference/sql/desc-semantic-view",
-	semanticViewDetailsDbRow,
-	semanticViewDetails,
-	g.NewQueryStruct("DescribeSemanticView").
-		Describe().
-		SQL("SEMANTIC VIEW").
-		Name().
-		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views",
-	semanticViewDbRow,
-	semanticView,
-	g.NewQueryStruct("ShowSemanticViews").
-		Show().
-		Terse().
-		SQL("SEMANTIC VIEWS").
-		OptionalLike().
-		OptionalIn().
-		OptionalStartsWith().
-		OptionalLimitFrom(),
-).AlterOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view",
-	g.NewQueryStruct("AlterSemanticView").
-		Alter().
-		SQL("SEMANTIC VIEW").
-		IfExists().
-		Name().
-		OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
-		OptionalSQL("UNSET COMMENT").
-		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment"), // both can't be done at the same time
-)
+).
+	CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view",
+		g.NewQueryStruct("CreateSemanticView").
+			Create().
+			OrReplace().
+			SQL("SEMANTIC VIEW").
+			IfNotExists().
+			Name().
+			QueryStructField("logicalTables", logicalTable, g.ParameterOptions().Parentheses().NoEquals().Required().SQL("TABLES")).
+			OptionalQueryStructField("semanticViewRelationships", semanticViewRelationship, g.ParameterOptions().Parentheses().NoEquals().SQL("RELATIONSHIPS")).
+			OptionalQueryStructField("semanticViewFacts", semanticExpression, g.ParameterOptions().Parentheses().NoEquals().SQL("FACTS")).
+			OptionalQueryStructField("semanticViewDimensions", semanticExpression, g.ParameterOptions().Parentheses().NoEquals().SQL("DIMENSIONS")).
+			OptionalQueryStructField("semanticViewMetrics", metricDefinition, g.ParameterOptions().Parentheses().NoEquals().SQL("METRICS")).
+			OptionalComment().
+			OptionalCopyGrants().
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"),
+		logicalTable,
+		synonym,
+		semanticViewRelationship,
+		semanticExpression,
+		metricDefinition,
+	).
+	AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view",
+		g.NewQueryStruct("AlterSemanticView").
+			Alter().
+			SQL("SEMANTIC VIEW").
+			IfExists().
+			Name().
+			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
+			OptionalSQL("UNSET COMMENT").
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment"),
+	).
+	DropOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
+		g.NewQueryStruct("DropSemanticView").
+			Drop().
+			SQL("SEMANTIC VIEW").
+			IfExists().
+			Name().
+			WithValidation(g.ValidIdentifier, "name"),
+	).
+	DescribeOperation(
+		g.DescriptionMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/sql/desc-semantic-view",
+		semanticViewDetailsDbRow,
+		semanticViewDetails,
+		g.NewQueryStruct("DescribeSemanticView").
+			Describe().
+			SQL("SEMANTIC VIEW").
+			Name().
+			WithValidation(g.ValidIdentifier, "name"),
+	).
+	ShowOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views",
+		semanticViewDbRow,
+		semanticView,
+		g.NewQueryStruct("ShowSemanticViews").
+			Show().
+			Terse().
+			SQL("SEMANTIC VIEWS").
+			OptionalLike().
+			OptionalIn().
+			OptionalStartsWith().
+			OptionalLimitFrom(),
+	).
+	ShowByIdOperationWithFiltering(g.ShowByIDInFiltering, g.ShowByIDLikeFiltering)
 
 var primaryKey = g.NewQueryStruct("PrimaryKeys").
-	ListAssignment("PRIMARY KEY", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals())
+	ListAssignment("PRIMARY KEY", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals().Required())
 
 var uniqueKey = g.NewQueryStruct("UniqueKeys").
-	ListAssignment("UNIQUE", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals())
+	ListAssignment("UNIQUE", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals().Required())
 
 var synonym = g.NewQueryStruct("Synonym").
 	Text("Synonym", g.KeywordOptions().SingleQuotes().Required())
 
 var synonyms = g.NewQueryStruct("Synonyms").
-	ListAssignment("WITH SYNONYMS", "Synonym", g.ParameterOptions().NoEquals().Parentheses())
+	ListAssignment("WITH SYNONYMS", "Synonym", g.ParameterOptions().NoEquals().Parentheses().Required())
 
 var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
-	Text("LogicalTableAlias", g.KeywordOptions()).
+	Text("LogicalTableAlias", g.KeywordOptions().Required()).
 	SQL("AS")
 
 var semanticViewColumn = g.NewQueryStruct("SemanticViewColumn").
@@ -140,7 +141,7 @@ var logicalTable = g.NewQueryStruct("LogicalTable").
 	OptionalComment()
 
 var relationshipAlias = g.NewQueryStruct("RelationshipAlias").
-	Text("RelationshipAlias", g.KeywordOptions()).
+	Text("RelationshipAlias", g.KeywordOptions().Required()).
 	SQL("AS")
 
 var relationshipTableNameOrAlias = g.NewQueryStruct("RelationshipTableAlias").
@@ -157,10 +158,10 @@ var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
 	ListQueryStructField("relationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())
 
 var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
-	Text("QualifiedExpressionName", g.KeywordOptions())
+	Text("QualifiedExpressionName", g.KeywordOptions().Required())
 
 var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
-	Text("SqlExpression", g.KeywordOptions().NoQuotes())
+	Text("SqlExpression", g.KeywordOptions().NoQuotes().Required())
 
 var semanticExpression = g.NewQueryStruct("SemanticExpression").
 	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).

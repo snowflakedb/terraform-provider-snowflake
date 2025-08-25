@@ -24,14 +24,10 @@ type CreateSemanticViewOptions struct {
 	name                      SchemaObjectIdentifier     `ddl:"identifier"`
 	tables                    bool                       `ddl:"static" sql:"TABLES"`
 	logicalTables             []LogicalTable             `ddl:"list,parentheses"`
-	Relationships             *bool                      `ddl:"keyword" sql:"RELATIONSHIPS"`
-	semanticViewRelationships []SemanticViewRelationship `ddl:"list,parentheses"`
-	Facts                     *bool                      `ddl:"keyword" sql:"FACTS"`
-	semanticViewFacts         []SemanticExpression       `ddl:"list,parentheses"`
-	Dimensions                *bool                      `ddl:"keyword" sql:"DIMENSIONS"`
-	semanticViewDimensions    []SemanticExpression       `ddl:"list,parentheses"`
-	Metrics                   *bool                      `ddl:"keyword" sql:"METRICS"`
-	semanticViewMetrics       []MetricDefinition         `ddl:"list,parentheses"`
+	semanticViewRelationships []SemanticViewRelationship `ddl:"parameter,no_equals,parentheses" sql:"RELATIONSHIPS"`
+	semanticViewFacts         []SemanticExpression       `ddl:"parameter,no_equals,parentheses" sql:"FACTS"`
+	semanticViewDimensions    []SemanticExpression       `ddl:"parameter,no_equals,parentheses" sql:"DIMENSIONS"`
+	semanticViewMetrics       []MetricDefinition         `ddl:"parameter,no_equals,parentheses" sql:"METRICS"`
 	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
 }
