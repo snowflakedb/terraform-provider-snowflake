@@ -71,6 +71,11 @@ func (s *S3StorageParamsRequest) WithStorageAwsObjectAcl(StorageAwsObjectAcl str
 	return s
 }
 
+func (s *S3StorageParamsRequest) WithUsePrivateLinkEndpoint(UsePrivateLinkEndpoint bool) *S3StorageParamsRequest {
+	s.UsePrivateLinkEndpoint = &UsePrivateLinkEndpoint
+	return s
+}
+
 func NewGCSStorageParamsRequest() *GCSStorageParamsRequest {
 	return &GCSStorageParamsRequest{}
 }
@@ -81,6 +86,11 @@ func NewAzureStorageParamsRequest(
 	s := AzureStorageParamsRequest{}
 	s.AzureTenantId = AzureTenantId
 	return &s
+}
+
+func (s *AzureStorageParamsRequest) WithUsePrivateLinkEndpoint(UsePrivateLinkEndpoint bool) *AzureStorageParamsRequest {
+	s.UsePrivateLinkEndpoint = &UsePrivateLinkEndpoint
+	return s
 }
 
 func NewAlterStorageIntegrationRequest(
@@ -168,12 +178,22 @@ func (s *SetS3StorageParamsRequest) WithStorageAwsObjectAcl(StorageAwsObjectAcl 
 	return s
 }
 
+func (s *SetS3StorageParamsRequest) WithUsePrivateLinkEndpoint(UsePrivateLinkEndpoint bool) *SetS3StorageParamsRequest {
+	s.UsePrivateLinkEndpoint = &UsePrivateLinkEndpoint
+	return s
+}
+
 func NewSetAzureStorageParamsRequest(
 	AzureTenantId string,
 ) *SetAzureStorageParamsRequest {
 	s := SetAzureStorageParamsRequest{}
 	s.AzureTenantId = AzureTenantId
 	return &s
+}
+
+func (s *SetAzureStorageParamsRequest) WithUsePrivateLinkEndpoint(UsePrivateLinkEndpoint bool) *SetAzureStorageParamsRequest {
+	s.UsePrivateLinkEndpoint = &UsePrivateLinkEndpoint
+	return s
 }
 
 func NewStorageIntegrationUnsetRequest() *StorageIntegrationUnsetRequest {
@@ -202,6 +222,11 @@ func (s *StorageIntegrationUnsetRequest) WithStorageBlockedLocations(StorageBloc
 
 func (s *StorageIntegrationUnsetRequest) WithComment(Comment bool) *StorageIntegrationUnsetRequest {
 	s.Comment = &Comment
+	return s
+}
+
+func (s *StorageIntegrationUnsetRequest) WithUsePrivateLinkEndpoint(UsePrivateLinkEndpoint bool) *StorageIntegrationUnsetRequest {
+	s.UsePrivateLinkEndpoint = &UsePrivateLinkEndpoint
 	return s
 }
 
