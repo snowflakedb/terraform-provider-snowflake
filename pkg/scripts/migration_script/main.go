@@ -7,7 +7,7 @@ import (
 func main() {
 	config, err := ParseInputArguments()
 	if err != nil {
-		log.Fatalf("Error parsing input arguments: %v", err)
+		log.Fatalf("Error parsing input arguments: %v, run -h to get more information on running the script.", err)
 	}
 
 	csvInput, err := ReadCsvFromStdin()
