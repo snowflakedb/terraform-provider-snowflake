@@ -36,7 +36,7 @@ func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 	return nil
 }
 
-// TODO [mux-PR]: add functional test for this variant
+// TODO [SNOW-2296391]: add functional test for this variant
 func BooleanAttributeUpdateSetDefaultInsteadOfUnset(planned types.Bool, inState types.Bool, setField **bool, defaultValue bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -80,7 +80,7 @@ func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 	return nil
 }
 
-// TODO [mux-PR]: add functional test for this variant
+// TODO [SNOW-2296391]: add functional test for this variant
 func Int64AttributeUpdateSetDefaultInsteadOfUnset(planned types.Int64, inState types.Int64, setField **int, defaultValue int) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
