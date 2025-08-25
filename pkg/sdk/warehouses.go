@@ -504,7 +504,7 @@ type warehouseDBRow struct {
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
 }
 
-func (row warehouseDBRow) convertErr() (*Warehouse, error) {
+func (row warehouseDBRow) convert() (*Warehouse, error) {
 	wh := &Warehouse{
 		Name:                            row.Name,
 		State:                           WarehouseState(row.State),
@@ -577,7 +577,7 @@ func (c *warehouses) Show(ctx context.Context, opts *ShowWarehouseOptions) ([]Wa
 	if err != nil {
 		return nil, err
 	}
-	return convertRowsErr[warehouseDBRow, Warehouse](dbRows)
+	return convertRows[warehouseDBRow, Warehouse](dbRows)
 }
 
 func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {

@@ -76,14 +76,11 @@ func (d *DatabaseAssert) HasIsCurrent(expected bool) *DatabaseAssert {
 	return d
 }
 
-func (d *DatabaseAssert) HasOrigin(expected sdk.ExternalObjectIdentifier) *DatabaseAssert {
+func (d *DatabaseAssert) HasOrigin(expected sdk.ObjectIdentifier) *DatabaseAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
 		t.Helper()
-		if o.Origin == nil {
-			return fmt.Errorf("expected origin to have value; got: nil")
-		}
-		if *o.Origin != expected {
-			return fmt.Errorf("expected origin: %v; got: %v", expected, *o.Origin)
+		if o.Origin != expected {
+			return fmt.Errorf("expected origin: %v; got: %v", expected, o.Origin)
 		}
 		return nil
 	})

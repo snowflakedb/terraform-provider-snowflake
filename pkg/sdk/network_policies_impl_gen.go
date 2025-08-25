@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NetworkPolicies = (*networkPolicies)(nil)
+var (
+	_ NetworkPolicies                       = (*networkPolicies)(nil)
+	_ convertibleRow[NetworkPolicyProperty] = new(describeNetworkPolicyDBRow)
+	_ convertibleRow[NetworkPolicy]         = new(showNetworkPolicyDBRow)
+)
 
 type networkPolicies struct {
 	client *Client
@@ -37,8 +41,7 @@ func (v *networkPolicies) Show(ctx context.Context, request *ShowNetworkPolicyRe
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showNetworkPolicyDBRow, NetworkPolicy](dbRows)
-	return resultList, nil
+	return convertRows[showNetworkPolicyDBRow, NetworkPolicy](dbRows)
 }
 
 func (v *networkPolicies) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*NetworkPolicy, error) {
@@ -64,7 +67,7 @@ func (v *networkPolicies) Describe(ctx context.Context, id AccountObjectIdentifi
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[describeNetworkPolicyDBRow, NetworkPolicyProperty](rows), nil
+	return convertRows[describeNetworkPolicyDBRow, NetworkPolicyProperty](rows)
 }
 
 func (r *CreateNetworkPolicyRequest) toOpts() *CreateNetworkPolicyOptions {
@@ -174,7 +177,7 @@ func (r *ShowNetworkPolicyRequest) toOpts() *ShowNetworkPolicyOptions {
 	return opts
 }
 
-func (r showNetworkPolicyDBRow) convert() *NetworkPolicy {
+func (r showNetworkPolicyDBRow) convert() (*NetworkPolicy, error) {
 	return &NetworkPolicy{
 		CreatedOn:                    r.CreatedOn,
 		Name:                         r.Name,
@@ -183,7 +186,7 @@ func (r showNetworkPolicyDBRow) convert() *NetworkPolicy {
 		EntriesInBlockedIpList:       r.EntriesInBlockedIpList,
 		EntriesInAllowedNetworkRules: r.EntriesInAllowedNetworkRules,
 		EntriesInBlockedNetworkRules: r.EntriesInBlockedNetworkRules,
-	}
+	}, nil
 }
 
 func (r *DescribeNetworkPolicyRequest) toOpts() *DescribeNetworkPolicyOptions {
@@ -193,9 +196,9 @@ func (r *DescribeNetworkPolicyRequest) toOpts() *DescribeNetworkPolicyOptions {
 	return opts
 }
 
-func (r describeNetworkPolicyDBRow) convert() *NetworkPolicyProperty {
+func (r describeNetworkPolicyDBRow) convert() (*NetworkPolicyProperty, error) {
 	return &NetworkPolicyProperty{
 		Name:  r.Name,
 		Value: r.Value,
-	}
+	}, nil
 }

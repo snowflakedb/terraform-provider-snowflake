@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NotificationIntegrations = (*notificationIntegrations)(nil)
+var (
+	_ NotificationIntegrations                        = (*notificationIntegrations)(nil)
+	_ convertibleRow[NotificationIntegrationProperty] = new(descNotificationIntegrationsDbRow)
+	_ convertibleRow[NotificationIntegration]         = new(showNotificationIntegrationsDbRow)
+)
 
 type notificationIntegrations struct {
 	client *Client
@@ -37,8 +41,7 @@ func (v *notificationIntegrations) Show(ctx context.Context, request *ShowNotifi
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showNotificationIntegrationsDbRow, NotificationIntegration](dbRows)
-	return resultList, nil
+	return convertRows[showNotificationIntegrationsDbRow, NotificationIntegration](dbRows)
 }
 
 func (v *notificationIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*NotificationIntegration, error) {
@@ -63,7 +66,7 @@ func (v *notificationIntegrations) Describe(ctx context.Context, id AccountObjec
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[descNotificationIntegrationsDbRow, NotificationIntegrationProperty](rows), nil
+	return convertRows[descNotificationIntegrationsDbRow, NotificationIntegrationProperty](rows)
 }
 
 func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationIntegrationOptions {
@@ -181,7 +184,7 @@ func (r *ShowNotificationIntegrationRequest) toOpts() *ShowNotificationIntegrati
 	return opts
 }
 
-func (r showNotificationIntegrationsDbRow) convert() *NotificationIntegration {
+func (r showNotificationIntegrationsDbRow) convert() (*NotificationIntegration, error) {
 	s := &NotificationIntegration{
 		Name:             r.Name,
 		NotificationType: r.Type,
@@ -192,7 +195,7 @@ func (r showNotificationIntegrationsDbRow) convert() *NotificationIntegration {
 	if r.Comment.Valid {
 		s.Comment = r.Comment.String
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeNotificationIntegrationRequest) toOpts() *DescribeNotificationIntegrationOptions {
@@ -202,11 +205,11 @@ func (r *DescribeNotificationIntegrationRequest) toOpts() *DescribeNotificationI
 	return opts
 }
 
-func (r descNotificationIntegrationsDbRow) convert() *NotificationIntegrationProperty {
+func (r descNotificationIntegrationsDbRow) convert() (*NotificationIntegrationProperty, error) {
 	return &NotificationIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }

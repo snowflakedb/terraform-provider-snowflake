@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Sequences = (*sequences)(nil)
+var (
+	_ Sequences                      = (*sequences)(nil)
+	_ convertibleRow[Sequence]       = new(sequenceRow)
+	_ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
+)
 
 type sequences struct {
 	client *Client
@@ -28,8 +32,7 @@ func (v *sequences) Show(ctx context.Context, request *ShowSequenceRequest) ([]S
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[sequenceRow, Sequence](dbRows)
-	return resultList, nil
+	return convertRows[sequenceRow, Sequence](dbRows)
 }
 
 func (v *sequences) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Sequence, error) {
@@ -55,7 +58,7 @@ func (v *sequences) Describe(ctx context.Context, id SchemaObjectIdentifier) (*S
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *sequences) Drop(ctx context.Context, request *DropSequenceRequest) error {
@@ -106,7 +109,7 @@ func (r *ShowSequenceRequest) toOpts() *ShowSequenceOptions {
 	return opts
 }
 
-func (r sequenceRow) convert() *Sequence {
+func (r sequenceRow) convert() (*Sequence, error) {
 	return &Sequence{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -118,7 +121,7 @@ func (r sequenceRow) convert() *Sequence {
 		OwnerRoleType: r.OwnerRoleType,
 		Comment:       r.Comment,
 		Ordered:       r.Ordered == "Y",
-	}
+	}, nil
 }
 
 func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
@@ -128,7 +131,7 @@ func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
 	return opts
 }
 
-func (r sequenceDetailRow) convert() *SequenceDetail {
+func (r sequenceDetailRow) convert() (*SequenceDetail, error) {
 	return &SequenceDetail{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -140,7 +143,7 @@ func (r sequenceDetailRow) convert() *SequenceDetail {
 		OwnerRoleType: r.OwnerRoleType,
 		Comment:       r.Comment,
 		Ordered:       r.Ordered == "Y",
-	}
+	}, nil
 }
 
 func (r *DropSequenceRequest) toOpts() *DropSequenceOptions {

@@ -67,28 +67,14 @@ func createIfNil[T any](t *T) *T {
 	return t
 }
 
-type convertibleRowDeprecated[T any] interface {
-	convert() *T
-}
-
-func convertRows[T convertibleRowDeprecated[U], U any](dbRows []T) []U {
-	resultList := make([]U, len(dbRows))
-	for i, row := range dbRows {
-		resultList[i] = *(row.convert())
-	}
-	return resultList
-}
-
 type convertibleRow[T any] interface {
-	// TODO [SNOW-2259477]: rename to convert
-	convertErr() (*T, error)
+	convert() (*T, error)
 }
 
-// TODO [SNOW-2259477]: rename to convertRows
-func convertRowsErr[T convertibleRow[U], U any](dbRows []T) ([]U, error) {
+func convertRows[T convertibleRow[U], U any](dbRows []T) ([]U, error) {
 	resultList := make([]U, len(dbRows))
 	for i, row := range dbRows {
-		converted, err := conversionErrorWrapped(row.convertErr())
+		converted, err := conversionErrorWrapped(row.convert())
 		if err != nil {
 			return nil, err
 		}

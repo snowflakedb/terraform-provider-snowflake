@@ -55,18 +55,11 @@ var primaryConnectionSchema = map[string]*schema.Schema{
 }
 
 func PrimaryConnection() *schema.Resource {
-	deleteFunc := ResourceDeleteContextFunc(
-		sdk.ParseAccountObjectIdentifier,
-		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-			return client.Connections.DropSafely
-		},
-	)
-
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.PrimaryConnection, CreateContextPrimaryConnection),
 		ReadContext:   TrackingReadWrapper(resources.PrimaryConnection, ReadContextPrimaryConnection),
 		UpdateContext: TrackingUpdateWrapper(resources.PrimaryConnection, UpdateContextPrimaryConnection),
-		DeleteContext: TrackingDeleteWrapper(resources.PrimaryConnection, deleteFunc),
+		DeleteContext: TrackingDeleteWrapper(resources.PrimaryConnection, DeleteConnection),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.PrimaryConnection, customdiff.All(
 			ComputedIfAnyAttributeChanged(primaryConnectionSchema, ShowOutputAttributeName, "comment", "is_primary", "enable_failover_to_accounts"),
@@ -131,7 +124,7 @@ func ReadContextPrimaryConnection(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	connection, err := client.Connections.ShowByID(ctx, id)
+	connection, err := client.Connections.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
