@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"log"
 	"slices"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
 func HandleGrants(csvInput [][]string) error {
@@ -62,7 +62,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 	)
 
 	switch {
-	// TODO: Check how it's returned for SHOW GRANTS OF DATABASE ROLE
+	//// TODO: Check how it's returned for SHOW GRANTS OF DATABASE ROLE
 	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeUser)):
 		return MapToGrantAccountRole(grant)
 	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeDatabaseRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole)):
@@ -71,7 +71,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 		return MapToGrantPrivilegesToAccountRole(grant, privilegeListVariable)
 	case grant.GrantedOn == sdk.ObjectTypeDatabaseRole:
 		return MapToGrantPrivilegesToDatabaseRole(grant, privilegeListVariable)
-		// TODO: To share and To application role
+	//	// TODO: To share and To application role
 	default:
 		return nil, fmt.Errorf("skipping unsupported grant: %+v", grant)
 	}
@@ -105,12 +105,13 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privilegeListVariable tf
 			nil
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
 		return model.GrantPrivilegesToAccountRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
-			WithPrivilegesValue(privilegeListVariable).
-			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
-				"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
-			})).
-			WithWithGrantOption(grant.GrantOption), nil
+				WithPrivilegesValue(privilegeListVariable).
+				WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
+					"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
+				})).
+				WithWithGrantOption(grant.GrantOption),
+			nil
 	default:
 		return nil, fmt.Errorf("unsupported grant mapping")
 	}

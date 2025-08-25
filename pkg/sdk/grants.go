@@ -195,7 +195,7 @@ type ShowGrantsOf struct {
 	Share           AccountObjectIdentifier  `ddl:"identifier" sql:"SHARE"`
 }
 
-type GrantRow struct {
+type grantRow struct {
 	CreatedOn   time.Time      `db:"created_on"`
 	Privilege   string         `db:"privilege"`
 	GrantedOn   string         `db:"granted_on"`
