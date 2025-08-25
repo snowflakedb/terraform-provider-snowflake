@@ -105,14 +105,19 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.Equal(t, &sdk.CSVEncodingGB18030, describeResult.Options.CSVEncoding)
 	})
 
-	// Check that field_optionally_enclosed_by can take the value NONE
-	t.Run("CSV", func(t *testing.T) {
+	t.Run("CSV_NULL_IF_Empty_Array", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCSV,
 			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
-				CSVFieldOptionallyEnclosedBy: sdk.String("NONE"),
+				CSVNullIf:                     &[]sdk.NullString{},
+				CSVErrorOnColumnCountMismatch: sdk.Bool(true),
+				CSVReplaceInvalidCharacters:   sdk.Bool(true),
+				CSVEmptyFieldAsNull:           sdk.Bool(true),
+				CSVSkipByteOrderMark:          sdk.Bool(true),
+				CSVEncoding:                   &sdk.CSVEncodingGB18030,
 			},
+			Comment: sdk.String("test comment"),
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
@@ -123,8 +128,45 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, "NONE", *result.Options.CSVFieldOptionallyEnclosedBy)
+		assert.Equal(t, id, result.Name)
+		assert.Equal(t, &[]sdk.NullString{}, result.Options.CSVNullIf)
+
+		describeResult, err := client.FileFormats.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, &[]sdk.NullString{}, describeResult.Options.CSVNullIf)
 	})
+
+	t.Run("CSV_NULL_IF_Empty_String", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
+			Type: sdk.FileFormatTypeCSV,
+			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+				CSVNullIf:                     &[]sdk.NullString{{S:""}},
+				CSVErrorOnColumnCountMismatch: sdk.Bool(true),
+				CSVReplaceInvalidCharacters:   sdk.Bool(true),
+				CSVEmptyFieldAsNull:           sdk.Bool(true),
+				CSVSkipByteOrderMark:          sdk.Bool(true),
+				CSVEncoding:                   &sdk.CSVEncodingGB18030,
+			},
+			Comment: sdk.String("test comment"),
+		})
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.FileFormats.Drop(ctx, id, nil)
+			require.NoError(t, err)
+		})
+
+		result, err := client.FileFormats.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assert.Equal(t, id, result.Name)
+		assert.Equal(t, &[]sdk.NullString{{S:""}}, result.Options.CSVNullIf)
+
+		describeResult, err := client.FileFormats.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, &[]sdk.NullString{{S:""}}, describeResult.Options.CSVNullIf)
+	})
+
 	t.Run("JSON", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
@@ -196,6 +238,40 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *describeResult.Options.JSONIgnoreUTF8Errors)
 		assert.True(t, *describeResult.Options.JSONSkipByteOrderMark)
 	})
+
+	// check that empty array is correctly read for JSON
+	t.Run("JSON", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
+			Type: sdk.FileFormatTypeJSON,
+			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+				JSONNullIf: []sdk.NullString{},
+			},
+			Comment: sdk.String("test comment"),
+		})
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.FileFormats.Drop(ctx, id, nil)
+			require.NoError(t, err)
+		})
+
+		result, err := client.FileFormats.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assert.Equal(t, id, result.Name)
+		assert.WithinDuration(t, time.Now(), result.CreatedOn, 5*time.Second)
+		assert.Equal(t, sdk.FileFormatTypeJSON, result.Type)
+		assert.Equal(t, client.GetConfig().Role, result.Owner)
+		assert.Equal(t, "test comment", result.Comment)
+		assert.Equal(t, "ROLE", result.OwnerRoleType)
+		assert.Equal(t, []sdk.NullString{}, result.Options.JSONNullIf)
+
+		describeResult, err := client.FileFormats.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, sdk.FileFormatTypeJSON, describeResult.Type)
+		assert.Equal(t, []sdk.NullString{}, describeResult.Options.JSONNullIf)
+	})
+
 	t.Run("AVRO", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
@@ -237,6 +313,40 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *describeResult.Options.AvroReplaceInvalidCharacters)
 		assert.Equal(t, []sdk.NullString{{S: "a"}, {S: "b"}}, *describeResult.Options.AvroNullIf)
 	})
+
+	// check that empty array is correctly read for AVRO
+	t.Run("AVRO", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
+			Type: sdk.FileFormatTypeAvro,
+			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+				AvroNullIf: &[]sdk.NullString{},
+			},
+			Comment: sdk.String("test comment"),
+		})
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.FileFormats.Drop(ctx, id, nil)
+			require.NoError(t, err)
+		})
+
+		result, err := client.FileFormats.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assert.Equal(t, id, result.Name)
+		assert.WithinDuration(t, time.Now(), result.CreatedOn, 5*time.Second)
+		assert.Equal(t, sdk.FileFormatTypeAvro, result.Type)
+		assert.Equal(t, client.GetConfig().Role, result.Owner)
+		assert.Equal(t, "test comment", result.Comment)
+		assert.Equal(t, "ROLE", result.OwnerRoleType)
+		assert.Equal(t, []sdk.NullString{}, *result.Options.AvroNullIf)
+
+		describeResult, err := client.FileFormats.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, sdk.FileFormatTypeAvro, describeResult.Type)
+		assert.Equal(t, []sdk.NullString{}, *describeResult.Options.AvroNullIf)
+	})
+
 	t.Run("ORC", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
@@ -275,6 +385,40 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *describeResult.Options.ORCReplaceInvalidCharacters)
 		assert.Equal(t, []sdk.NullString{{S: "a"}, {S: "b"}}, *describeResult.Options.ORCNullIf)
 	})
+
+	// check that empty array is correctly read for ORC
+	t.Run("ORC", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
+			Type: sdk.FileFormatTypeORC,
+			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+				ORCNullIf: &[]sdk.NullString{},
+			},
+			Comment: sdk.String("test comment"),
+		})
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.FileFormats.Drop(ctx, id, nil)
+			require.NoError(t, err)
+		})
+
+		result, err := client.FileFormats.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assert.Equal(t, id, result.Name)
+		assert.WithinDuration(t, time.Now(), result.CreatedOn, 5*time.Second)
+		assert.Equal(t, sdk.FileFormatTypeORC, result.Type)
+		assert.Equal(t, client.GetConfig().Role, result.Owner)
+		assert.Equal(t, "test comment", result.Comment)
+		assert.Equal(t, "ROLE", result.OwnerRoleType)
+		assert.Equal(t, []sdk.NullString{}, *result.Options.ORCNullIf)
+
+		describeResult, err := client.FileFormats.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, sdk.FileFormatTypeORC, describeResult.Type)
+		assert.Equal(t, []sdk.NullString{}, *describeResult.Options.ORCNullIf)
+	})
+
 	t.Run("PARQUET", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
@@ -319,6 +463,40 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *describeResult.Options.ParquetReplaceInvalidCharacters)
 		assert.Equal(t, []sdk.NullString{{S: "a"}, {S: "b"}}, *describeResult.Options.ParquetNullIf)
 	})
+
+	// check that empty array is correctly read for PARQUET
+	t.Run("PARQUET", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
+			Type: sdk.FileFormatTypeParquet,
+			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+				ParquetNullIf: &[]sdk.NullString{},
+			},
+			Comment: sdk.String("test comment"),
+		})
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.FileFormats.Drop(ctx, id, nil)
+			require.NoError(t, err)
+		})
+
+		result, err := client.FileFormats.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assert.Equal(t, id, result.Name)
+		assert.WithinDuration(t, time.Now(), result.CreatedOn, 5*time.Second)
+		assert.Equal(t, sdk.FileFormatTypeParquet, result.Type)
+		assert.Equal(t, client.GetConfig().Role, result.Owner)
+		assert.Equal(t, "test comment", result.Comment)
+		assert.Equal(t, "ROLE", result.OwnerRoleType)
+		assert.Equal(t, []sdk.NullString{}, *result.Options.ParquetNullIf)
+
+		describeResult, err := client.FileFormats.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, sdk.FileFormatTypeParquet, describeResult.Type)
+		assert.Equal(t, []sdk.NullString{}, *describeResult.Options.ParquetNullIf)
+	})
+
 	t.Run("XML", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
