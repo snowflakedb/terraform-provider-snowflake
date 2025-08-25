@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"reflect"
 	"strings"
 	"testing"
@@ -24,8 +25,7 @@ func ResourceFromModel(t *testing.T, model ResourceModel) string {
 	hcl, err := DefaultHclConfigProvider.HclFromJson(resourceJson)
 	require.NoError(t, err)
 
-	// TODO: Uncomment or change to log.Println as it breaks migration script due to incorrectly set up testing.T
-	//t.Logf("Generated config:\n%s", hcl)
+	log.Printf("Generated config:\n%s", hcl)
 
 	return hcl
 }
@@ -43,7 +43,7 @@ func DatasourceFromModel(t *testing.T, model DatasourceModel) string {
 
 	hcl, err := DefaultHclConfigProvider.HclFromJson(datasourceJson)
 	require.NoError(t, err)
-	t.Logf("Generated config:\n%s", hcl)
+	log.Printf("Generated config:\n%s", hcl)
 
 	return hcl
 }
@@ -80,7 +80,7 @@ func VariableFromModel(t *testing.T, model TerraformBlockModel) string {
 
 	hcl, err := DefaultHclConfigProvider.HclFromJson(variableJson)
 	require.NoError(t, err)
-	t.Logf("Generated config:\n%s", hcl)
+	log.Printf("Generated config:\n%s", hcl)
 
 	return hcl
 }

@@ -7,9 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-var (
-	_ ConvertibleCsvRow[sdk.Grant] = new(GrantCsvRow)
-)
+var _ ConvertibleCsvRow[sdk.Grant] = new(GrantCsvRow)
 
 type GrantCsvRow struct {
 	Privilege   string `csv:"privilege"`

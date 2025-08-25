@@ -292,7 +292,7 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 Required:
 
 - `object_name` (String) The fully qualified name of the object on which privileges will be granted.
-- `object_type` (String) The object type of the account object on which privileges will be granted. Valid values are: USER | RESOURCE MONITOR | WAREHOUSE | COMPUTE POOL | DATABASE | INTEGRATION | FAILOVER GROUP | REPLICATION GROUP | EXTERNAL VOLUME
+- `object_type` (String) The object type of the account object on which privileges will be granted. Valid values are: `USER` | `RESOURCE MONITOR` | `WAREHOUSE` | `COMPUTE POOL` | `DATABASE` | `INTEGRATION` | `FAILOVER GROUP` | `REPLICATION GROUP` | `EXTERNAL VOLUME`
 
 
 <a id="nestedblock--on_schema"></a>

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
@@ -104,7 +105,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:         schema.TypeString,
 					Required:     true,
 					ForceNew:     true,
-					Description:  "The object type of the account object on which privileges will be granted. Valid values are: USER | RESOURCE MONITOR | WAREHOUSE | COMPUTE POOL | DATABASE | INTEGRATION | FAILOVER GROUP | REPLICATION GROUP | EXTERNAL VOLUME",
+					Description:  fmt.Sprintf("The object type of the account object on which privileges will be granted. Valid values are: %s", docs.PossibleValuesListed(sdk.ValidGrantToAccountObjectTypesString)),
 					ValidateFunc: validation.StringInSlice(sdk.ValidGrantToAccountObjectTypesString, true),
 				},
 				"object_name": {

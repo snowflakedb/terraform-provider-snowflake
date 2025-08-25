@@ -25,7 +25,7 @@ func HandleGrants(csvInput [][]string) error {
 	for _, grant := range grants {
 		mappedModel, err := MapGrantToModel(grant)
 		if err != nil {
-			log.Fatalf("Error converting grant %+v to model: %v. Skipping grant and continuing with other mappings.", grant, err)
+			log.Printf("Error converting grant %+v to model: %v. Skipping grant and continuing with other mappings.", grant, err)
 		} else {
 			resourceModels = append(resourceModels, mappedModel)
 		}

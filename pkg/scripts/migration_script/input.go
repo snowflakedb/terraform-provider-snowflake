@@ -77,7 +77,7 @@ func ParseInputArguments() (*Config, error) {
 	}
 	parsedObjectType, err := ToObjectType(os.Args[1])
 	if err != nil {
-		return nil, fmt.Errorf("error parsing object type: %v", err)
+		return nil, fmt.Errorf("error parsing object type: %w", err)
 	}
 
 	// flags
@@ -92,7 +92,7 @@ func ParseInputArguments() (*Config, error) {
 
 	importFlagType, err := ToImportStatementType(*importFlagString)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing import flag: %v", err)
+		return nil, fmt.Errorf("error parsing import flag: %w", err)
 	}
 
 	return &Config{
@@ -104,7 +104,7 @@ func ParseInputArguments() (*Config, error) {
 func ReadCsvFromStdin() ([][]string, error) {
 	inputBytes, err := io.ReadAll(bufio.NewReader(os.Stdin))
 	if err != nil {
-		return nil, fmt.Errorf("error reading STDIN input: %v", err)
+		return nil, fmt.Errorf("error reading STDIN input: %w", err)
 	}
 
 	csvReader := csv.NewReader(bytes.NewBuffer(inputBytes))
