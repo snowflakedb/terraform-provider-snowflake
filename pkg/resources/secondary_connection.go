@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -94,8 +98,15 @@ func CreateContextSecondaryConnection(ctx context.Context, d *schema.ResourceDat
 		request.WithComment(v.(string))
 	}
 
-	err = client.Connections.Create(ctx, request)
-	if err != nil {
+	if err := util.Retry(5, 2*time.Second, func() (error, bool) {
+		if err := client.Connections.Create(ctx, request); err != nil {
+			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) || strings.Contains(err.Error(), "This account is not authorized to create a secondary connection of this primary connection.") {
+				return nil, false
+			}
+			return err, true
+		}
+		return nil, true
+	}); err != nil {
 		return diag.FromErr(err)
 	}
 
