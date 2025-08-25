@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"slices"
+	"testing"
+
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
-	"log"
-	"slices"
-	"testing"
-	_ "unsafe"
 )
 
 func HandleGrants(csvInput [][]string) error {

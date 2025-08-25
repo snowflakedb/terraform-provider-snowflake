@@ -1,11 +1,12 @@
 package main
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 // TODO: More tests
@@ -35,6 +36,18 @@ func TestHandleGrants(t *testing.T) {
 		Name:        sdk.NewSchemaObjectIdentifier("TEST_DATABASE", "TEST_SCHEMA", "TEST_TABLE"),
 		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_SCHEMA_OBJECT"),
 	}
+
+	grantOnAccountResourceModel, err := MapGrantToModel(grantOnAccount)
+	assert.NoError(t, err)
+
+	grantOnAccountObjectResourceModel, err := MapGrantToModel(grantOnAccountObject)
+	assert.NoError(t, err)
+
+	grantOnSchemaResourceModel, err := MapGrantToModel(grantOnSchema)
+	assert.NoError(t, err)
+
+	grantOnSchemaObjectResourceModel, err := MapGrantToModel(grantOnSchemaObject)
+	assert.NoError(t, err)
 
 	assert.Equal(t, strings.TrimLeft(`
 resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account" {
@@ -74,10 +87,10 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
 }
 `, "\n"),
 		config.FromModels(t,
-			MapGrantToModel(grantOnAccount),
-			MapGrantToModel(grantOnAccountObject),
-			MapGrantToModel(grantOnSchema),
-			MapGrantToModel(grantOnSchemaObject),
+			grantOnAccountResourceModel,
+			grantOnAccountObjectResourceModel,
+			grantOnSchemaResourceModel,
+			grantOnSchemaObjectResourceModel,
 		),
 	)
 }
