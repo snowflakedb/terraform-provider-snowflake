@@ -85,6 +85,7 @@ const (
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
 	ObjectTypeListing                 ObjectType = "LISTING"
+	ObjectTypeSemanticView            ObjectType = "SEMANTIC VIEW"
 )
 
 func (o ObjectType) String() string {
