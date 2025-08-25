@@ -11,7 +11,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Grants = (*grants)(nil)
+var (
+	_ Grants                = (*grants)(nil)
+	_ convertibleRow[Grant] = new(GrantRow)
+)
 
 type grants struct {
 	client *Client
@@ -252,7 +255,10 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[GrantRow, Grant](dbRows)
+	resultList, err := convertRows[GrantRow, Grant](dbRows)
+	if err != nil {
+		return nil, err
+	}
 	for i, grant := range resultList {
 		// SHOW GRANTS of DATABASE ROLE requires a special handling:
 		// - it returns no account name, so for other SHOW GRANTS types it needs to be skipped

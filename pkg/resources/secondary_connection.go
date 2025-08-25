@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -53,18 +52,11 @@ var secondaryConnectionSchema = map[string]*schema.Schema{
 }
 
 func SecondaryConnection() *schema.Resource {
-	deleteFunc := ResourceDeleteContextFunc(
-		sdk.ParseAccountObjectIdentifier,
-		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-			return client.Connections.DropSafely
-		},
-	)
-
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.SecondaryConnection, CreateContextSecondaryConnection),
 		ReadContext:   TrackingReadWrapper(resources.SecondaryConnection, ReadContextSecondaryConnection),
 		UpdateContext: TrackingUpdateWrapper(resources.SecondaryConnection, UpdateContextSecondaryConnection),
-		DeleteContext: TrackingDeleteWrapper(resources.SecondaryConnection, deleteFunc),
+		DeleteContext: TrackingDeleteWrapper(resources.SecondaryConnection, DeleteConnection),
 		Description:   "Resource used to manage secondary (replicated) connections. To manage primary connection check resource [snowflake_primary_connection](./primary_connection). For more information, check [connection documentation](https://docs.snowflake.com/en/sql-reference/sql/create-connection.html).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SecondaryConnection, customdiff.All(

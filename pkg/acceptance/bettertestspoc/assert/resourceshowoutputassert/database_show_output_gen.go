@@ -61,7 +61,7 @@ func (d *DatabaseShowOutputAssert) HasIsCurrent(expected bool) *DatabaseShowOutp
 	return d
 }
 
-func (d *DatabaseShowOutputAssert) HasOrigin(expected sdk.ExternalObjectIdentifier) *DatabaseShowOutputAssert {
+func (d *DatabaseShowOutputAssert) HasOrigin(expected sdk.ObjectIdentifier) *DatabaseShowOutputAssert {
 	d.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("origin", expected.FullyQualifiedName()))
 	return d
 }

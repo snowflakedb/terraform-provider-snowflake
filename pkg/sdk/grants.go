@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-var _ convertibleRowDeprecated[Grant] = new(GrantRow)
-
 type Grants interface {
 	GrantPrivilegesToAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *GrantPrivilegesToAccountRoleOptions) error
 	RevokePrivilegesFromAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error
@@ -227,12 +225,12 @@ func (v *Grant) ID() ObjectIdentifier {
 }
 
 // TODO: Remove if option 1 for convert is not chosen
-func (row GrantRow) Convert() *Grant {
+func (row GrantRow) Convert() (*Grant, error) {
 	return row.convert()
 }
 
 // TODO(SNOW-2097063): Improve SHOW GRANTS implementation
-func (row GrantRow) convert() *Grant {
+func (row GrantRow) convert() (*Grant, error) {
 	grantedTo := ObjectType(strings.ReplaceAll(row.GrantedTo, "_", " "))
 	grantTo := ObjectType(strings.ReplaceAll(row.GrantTo, "_", " "))
 	var grantedOn ObjectType
@@ -283,7 +281,7 @@ func (row GrantRow) convert() *Grant {
 		// GranteeName is computed in Show operation. Its format is depending on the grant request options.
 		GrantOption: row.GrantOption,
 		GrantedBy:   NewAccountObjectIdentifier(row.GrantedBy),
-	}
+	}, nil
 }
 
 // GrantOwnershipOptions is based on https://docs.snowflake.com/en/sql-reference/sql/grant-ownership#syntax.

@@ -4,6 +4,9 @@ package testacc
 
 import (
 	"testing"
+	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -12,12 +15,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/assert"
 )
+
+// Recreation when promoting secondary to primary cannot be tested, because of the Terraform testing framework limitations.
+// For the test that checks behavior for promoting secondary to primary, see `secondary_connection_promotion` manual test.
 
 func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed; also, different regions needed
@@ -28,14 +34,26 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 	t.Cleanup(connectionCleanup)
 
 	accountId := testClient().Account.GetAccountIdentifier(t)
-	secondaryTestClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).WithEnableConnectionFailover(*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{accountId})))
+	secondaryTestClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).
+		WithEnableConnectionFailover(
+			*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{accountId}),
+		),
+	)
 
-	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(accountId, connection.ID())
+	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(secondaryTestClient().Account.GetAccountIdentifier(t), connection.ID())
 	comment := random.Comment()
 
 	secondaryConnectionModel := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName())
 	secondaryConnectionModelWithComment := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName()).
 		WithComment(comment)
+
+	assert.Eventually(t, func() bool {
+		if _, err := testClient().Connection.CreateReplication(t, connection.ID(), primaryConnectionAsExternalId); err == nil {
+			testClient().Connection.DropFunc(t, connection.ID())()
+			return true
+		}
+		return false
+	}, 10*time.Second, time.Second)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -55,20 +73,17 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 							HasAsReplicaOfIdentifier(primaryConnectionAsExternalId).
 							HasIsPrimaryString("false").
 							HasCommentString(""),
-
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModel.ResourceReference()).
 							HasName(connection.ID().Name()).
-							HasSnowflakeRegion(secondaryTestClient().Context.CurrentRegion(t)).
-							HasAccountLocator(secondaryTestClient().GetAccountLocator()).
+							HasSnowflakeRegion(testClient().Context.CurrentRegion(t)).
+							HasAccountLocator(testClient().GetAccountLocator()).
 							HasAccountName(accountId.AccountName()).
 							HasOrganizationName(accountId.OrganizationName()).
 							HasComment("").
 							HasIsPrimary(false).
 							HasPrimaryIdentifier(primaryConnectionAsExternalId).
-							HasFailoverAllowedToAccounts(accountId).
-							HasConnectionUrl(
-								secondaryTestClient().Connection.GetConnectionUrl(accountId.OrganizationName(), connection.ID().Name()),
-							),
+							HasFailoverAllowedToAccounts().
+							HasConnectionUrl(secondaryTestClient().Connection.GetConnectionUrl(accountId.OrganizationName(), connection.ID().Name())),
 					),
 				),
 			},
@@ -81,7 +96,6 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 							HasNameString(connection.ID().Name()).
 							HasFullyQualifiedNameString(connection.ID().FullyQualifiedName()).
 							HasCommentString(comment),
-
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModelWithComment.ResourceReference()).
 							HasComment(comment),
 					),
@@ -104,30 +118,27 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 					assertThat(t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModel.ResourceReference()).
 							HasCommentString(""),
-
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModel.ResourceReference()).
 							HasComment(""),
 					),
 				),
 			},
-			// recreate when externally promoted to primary
 			{
 				PreConfig: func() {
-					testClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).WithPrimary(true))
+					testClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).WithSet(*sdk.NewConnectionSetRequest().WithComment(comment)))
 				},
 				Config: config.FromModels(t, secondaryConnectionModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(secondaryConnectionModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(secondaryConnectionModel.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
 					assertThat(t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModel.ResourceReference()).
-							HasIsPrimaryString("false"),
-
+							HasCommentString(""),
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModel.ResourceReference()).
-							HasIsPrimary(false),
+							HasComment(""),
 					),
 				),
 			},
