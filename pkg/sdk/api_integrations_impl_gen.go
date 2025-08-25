@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ApiIntegrations = (*apiIntegrations)(nil)
+var (
+	_ ApiIntegrations                        = (*apiIntegrations)(nil)
+	_ convertibleRow[ApiIntegration]         = new(showApiIntegrationsDbRow)
+	_ convertibleRow[ApiIntegrationProperty] = new(descApiIntegrationsDbRow)
+)
 
 type apiIntegrations struct {
 	client *Client
@@ -37,8 +41,7 @@ func (v *apiIntegrations) Show(ctx context.Context, request *ShowApiIntegrationR
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showApiIntegrationsDbRow, ApiIntegration](dbRows)
-	return resultList, nil
+	return convertRows[showApiIntegrationsDbRow, ApiIntegration](dbRows)
 }
 
 func (v *apiIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegration, error) {
@@ -63,7 +66,7 @@ func (v *apiIntegrations) Describe(ctx context.Context, id AccountObjectIdentifi
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[descApiIntegrationsDbRow, ApiIntegrationProperty](rows), nil
+	return convertRows[descApiIntegrationsDbRow, ApiIntegrationProperty](rows)
 }
 
 func (r *CreateApiIntegrationRequest) toOpts() *CreateApiIntegrationOptions {
@@ -159,7 +162,7 @@ func (r *ShowApiIntegrationRequest) toOpts() *ShowApiIntegrationOptions {
 	return opts
 }
 
-func (r showApiIntegrationsDbRow) convert() *ApiIntegration {
+func (r showApiIntegrationsDbRow) convert() (*ApiIntegration, error) {
 	s := &ApiIntegration{
 		Name:      r.Name,
 		ApiType:   r.Type,
@@ -170,7 +173,7 @@ func (r showApiIntegrationsDbRow) convert() *ApiIntegration {
 	if r.Comment.Valid {
 		s.Comment = r.Comment.String
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions {
@@ -180,11 +183,11 @@ func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions 
 	return opts
 }
 
-func (r descApiIntegrationsDbRow) convert() *ApiIntegrationProperty {
+func (r descApiIntegrationsDbRow) convert() (*ApiIntegrationProperty, error) {
 	return &ApiIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }

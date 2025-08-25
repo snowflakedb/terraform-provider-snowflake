@@ -2,13 +2,17 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Functions = (*functions)(nil)
+var (
+	_ Functions                      = (*functions)(nil)
+	_ convertibleRow[FunctionDetail] = new(functionDetailRow)
+	_ convertibleRow[Function]       = new(functionRow)
+)
 
 type functions struct {
 	client *Client
@@ -59,8 +63,7 @@ func (v *functions) Show(ctx context.Context, request *ShowFunctionRequest) ([]F
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[functionRow, Function](dbRows)
-	return resultList, nil
+	return convertRows[functionRow, Function](dbRows)
 }
 
 func (v *functions) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Function, error) {
@@ -86,7 +89,7 @@ func (v *functions) Describe(ctx context.Context, id SchemaObjectIdentifierWithA
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[functionDetailRow, FunctionDetail](rows), nil
+	return convertRows[functionDetailRow, FunctionDetail](rows)
 }
 
 func (r *CreateForJavaFunctionRequest) toOpts() *CreateForJavaFunctionOptions {
@@ -474,7 +477,7 @@ func (r *ShowFunctionRequest) toOpts() *ShowFunctionOptions {
 	return opts
 }
 
-func (r functionRow) convert() *Function {
+func (r functionRow) convert() (*Function, error) {
 	e := &Function{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -497,7 +500,7 @@ func (r functionRow) convert() *Function {
 	e.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
 	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
 	if err != nil {
-		log.Printf("[DEBUG] failed to parse function arguments, err = %s", err)
+		return nil, fmt.Errorf("failed to parse function arguments: %w", err)
 	} else {
 		e.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
 			return DataType(a.ArgType)
@@ -519,7 +522,7 @@ func (r functionRow) convert() *Function {
 	if r.IsDataMetric.Valid {
 		e.IsDataMetric = r.IsDataMetric.String == "Y"
 	}
-	return e
+	return e, nil
 }
 
 func (r *DescribeFunctionRequest) toOpts() *DescribeFunctionOptions {
@@ -529,12 +532,12 @@ func (r *DescribeFunctionRequest) toOpts() *DescribeFunctionOptions {
 	return opts
 }
 
-func (r functionDetailRow) convert() *FunctionDetail {
+func (r functionDetailRow) convert() (*FunctionDetail, error) {
 	e := &FunctionDetail{
 		Property: r.Property,
 	}
 	if r.Value.Valid && r.Value.String != "null" {
 		e.Value = String(r.Value.String)
 	}
-	return e
+	return e, nil
 }

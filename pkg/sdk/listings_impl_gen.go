@@ -6,7 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Listings = (*listings)(nil)
+var (
+	_ Listings                       = (*listings)(nil)
+	_ convertibleRow[Listing]        = new(listingDBRow)
+	_ convertibleRow[ListingDetails] = new(listingDetailsDBRow)
+	_ convertibleRow[ListingVersion] = new(listingVersionDBRow)
+)
 
 type listings struct {
 	client *Client
@@ -45,8 +50,7 @@ func (v *listings) Show(ctx context.Context, request *ShowListingRequest) ([]Lis
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[listingDBRow, Listing](dbRows)
-	return resultList, nil
+	return convertRows[listingDBRow, Listing](dbRows)
 }
 
 func (v *listings) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error) {
@@ -69,7 +73,7 @@ func (v *listings) Describe(ctx context.Context, request *DescribeListingRequest
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error) {
@@ -78,8 +82,7 @@ func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListin
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[listingVersionDBRow, ListingVersion](dbRows)
-	return resultList, nil
+	return convertRows[listingVersionDBRow, ListingVersion](dbRows)
 }
 
 func (r *CreateListingRequest) toOpts() *CreateListingOptions {
@@ -158,7 +161,7 @@ func (r *ShowListingRequest) toOpts() *ShowListingOptions {
 	return opts
 }
 
-func (r listingDBRow) convert() *Listing {
+func (r listingDBRow) convert() (*Listing, error) {
 	l := &Listing{
 		GlobalName:     r.GlobalName,
 		Name:           r.Name,
@@ -190,7 +193,7 @@ func (r listingDBRow) convert() *Listing {
 	mapNullString(&l.UniformListingLocator, r.UniformListingLocator)
 	mapNullString(&l.DetailedTargetAccounts, r.DetailedTargetAccounts)
 
-	return l
+	return l, nil
 }
 
 func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
@@ -201,7 +204,7 @@ func (r *DescribeListingRequest) toOpts() *DescribeListingOptions {
 	return opts
 }
 
-func (r listingDetailsDBRow) convert() *ListingDetails {
+func (r listingDetailsDBRow) convert() (*ListingDetails, error) {
 	ld := &ListingDetails{
 		GlobalName:    r.GlobalName,
 		Name:          r.Name,
@@ -265,7 +268,7 @@ func (r listingDetailsDBRow) convert() *ListingDetails {
 	mapNullString(&ld.MonetizationDisplayOrder, r.MonetizationDisplayOrder)
 	mapNullString(&ld.LegacyUniformListingLocators, r.LegacyUniformListingLocators)
 
-	return ld
+	return ld, nil
 }
 
 func (r *ShowVersionsListingRequest) toOpts() *ShowVersionsListingOptions {
@@ -276,21 +279,21 @@ func (r *ShowVersionsListingRequest) toOpts() *ShowVersionsListingOptions {
 	return opts
 }
 
-func (r listingVersionDBRow) convert() *ListingVersion {
+func (r listingVersionDBRow) convert() (*ListingVersion, error) {
 	lv := &ListingVersion{
 		CreatedOn:         r.CreatedOn,
 		Name:              r.Name,
-		Alias:             r.Alias,
 		LocationUrl:       r.LocationUrl,
 		IsDefault:         r.IsDefault,
 		IsLive:            r.IsLive,
 		IsFirst:           r.IsFirst,
 		IsLast:            r.IsLast,
-		Comment:           r.Comment,
 		SourceLocationUrl: r.SourceLocationUrl,
 	}
 
+	mapNullString(&lv.Alias, r.Alias)
+	mapNullString(&lv.Comment, r.Comment)
 	mapNullString(&lv.GitCommitHash, r.GitCommitHash)
 
-	return lv
+	return lv, nil
 }

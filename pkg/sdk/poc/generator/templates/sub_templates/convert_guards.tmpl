@@ -1,0 +1,12 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.Interface*/ -}}
+
+{{ range .Operations }}
+    {{- if .OptsField -}}
+        {{- if .ShowMapping -}}
+            {{- template "convertGuard" .ShowMapping -}}
+        {{- end }}
+        {{- if .DescribeMapping -}}
+            {{- template "convertGuard" .DescribeMapping -}}
+        {{- end }}
+    {{ end -}}
+{{- end }}

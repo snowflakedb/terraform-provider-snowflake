@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,6 +38,44 @@ func TestSweepAll(t *testing.T) {
 		err = SweepAfterAcceptanceTests(secondaryClient, acceptancetests.ObjectsSuffix)
 		assert.NoError(t, err)
 	})
+}
+
+func SweepAfterIntegrationTests(client *Client, suffix string) error {
+	return sweep(client, suffix)
+}
+
+func SweepAfterAcceptanceTests(client *Client, suffix string) error {
+	return sweep(client, suffix)
+}
+
+// TODO [SNOW-867247]: use if exists/use method from helper for dropping
+// TODO [SNOW-867247]: sweep all missing account-level objects (like users, integrations, replication groups, network policies, ...)
+// TODO [SNOW-867247]: extract sweepers to a separate dir
+// TODO [SNOW-867247]: rework the sweepers (funcs -> objects)
+// TODO [SNOW-867247]: consider generalization (almost all the sweepers follow the same pattern: show, drop if matches)
+// TODO [SNOW-867247]: consider failing after all sweepers and not with the first error
+// TODO [SNOW-867247]: consider showing only objects with the given suffix (in almost every sweeper)
+func sweep(client *Client, suffix string) error {
+	if suffix == "" {
+		return fmt.Errorf("suffix is required to run sweepers")
+	}
+	sweepers := []func() error{
+		getAccountPolicyAttachmentsSweeper(client),
+		getResourceMonitorSweeper(client, suffix),
+		getNetworkPolicySweeper(client, suffix),
+		nukeUsers(client, suffix),
+		getFailoverGroupSweeper(client, suffix),
+		getShareSweeper(client, suffix),
+		getDatabaseSweeper(client, suffix),
+		getWarehouseSweeper(client, suffix),
+		getRoleSweeper(client, suffix),
+	}
+	for _, sweeper := range sweepers {
+		if err := sweeper(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func Test_Sweeper_NukeStaleObjects(t *testing.T) {
@@ -81,7 +120,7 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 
 	t.Run("sweep users", func(t *testing.T) {
 		for _, c := range allClients {
-			err := nukeUsers(c)()
+			err := nukeUsers(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -172,6 +211,7 @@ func nukeDatabases(client *Client, prefix string) func() error {
 	protectedDatabases := []string{
 		"SNOWFLAKE",
 		"MFA_ENFORCEMENT_POLICY",
+		"TERRAFORM_TEST_SETUP_OBJECTS",
 	}
 
 	return func() error {
@@ -223,7 +263,7 @@ func nukeDatabases(client *Client, prefix string) func() error {
 	}
 }
 
-func nukeUsers(client *Client) func() error {
+func nukeUsers(client *Client, suffix string) func() error {
 	protectedUsers := []string{
 		"SNOWFLAKE",
 		"ARTUR_SAWICKI",
@@ -239,27 +279,42 @@ func nukeUsers(client *Client) func() error {
 	}
 
 	return func() error {
-		log.Println("[DEBUG] Nuking users")
 		ctx := context.Background()
 
-		users, err := client.Users.Show(ctx, &ShowUserOptions{})
-		if err != nil {
-			return fmt.Errorf("sweeping users ended with error, err = %w", err)
+		var userDropCondition func(u User) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping users with suffix %s", suffix)
+			userDropCondition = func(u User) bool {
+				return strings.HasSuffix(u.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale users")
+			userDropCondition = func(u User) bool {
+				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+			}
 		}
+
+		urs, err := client.Users.Show(ctx, new(ShowUserOptions))
+		if err != nil {
+			return fmt.Errorf("SHOW USERS ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d users", len(urs))
+
 		var errs []error
-		log.Printf("[DEBUG] Found %d users", len(users))
-		for idx, user := range users {
-			log.Printf("[DEBUG] Processing user [%d/%d]: %s...", idx+1, len(users), user.ID().FullyQualifiedName())
-			if !slices.Contains(protectedUsers, user.Name) && user.CreatedOn.Before(time.Now().Add(-15*time.Minute)) {
+		for idx, user := range urs {
+			log.Printf("[DEBUG] Processing user [%d/%d]: %s...", idx+1, len(urs), user.ID().FullyQualifiedName())
+
+			if !slices.Contains(protectedUsers, user.Name) && userDropCondition(user) {
 				log.Printf("[DEBUG] Dropping user %s", user.ID().FullyQualifiedName())
 				if err := client.Users.Drop(ctx, user.ID(), &DropUserOptions{IfExists: Bool(true)}); err != nil {
-					log.Printf("[DEBUG] Dropping user %s, resulted in error %v", user.ID().FullyQualifiedName(), err)
 					errs = append(errs, fmt.Errorf("sweeping user %s ended with error, err = %w", user.ID().FullyQualifiedName(), err))
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping user %s", user.ID().FullyQualifiedName())
 			}
 		}
+
 		return errors.Join(errs...)
 	}
 }

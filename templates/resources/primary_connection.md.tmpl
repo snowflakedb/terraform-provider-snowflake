@@ -20,6 +20,8 @@ description: |-
 
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 
+-> **Note** This resource cannot be dropped when it has any dependent secondary connections. If you want to drop the primary connection, you must first drop all secondary connections that depend on it or promote other connection to be primary. The first option may need to be done in two steps (terraform applies): first remove all secondary connections, then primary ones. Snowflake needs some time to register the primary connection doesn't have any dependent connections and is safe for removal. The second option may require removing the resource from the state and removing it manually from Snowflake.
+
 -> **Note** To demote `snowflake_primary_connection` to [`snowflake_secondary_connection`](./secondary_connection), resources need to be migrated manually. For guidance on removing and importing resources into the state check [resource migration](../guides/resource_migration). Remove the resource from the state with [terraform state rm](https://developer.hashicorp.com/terraform/cli/commands/state/rm), then recreate it in manually using:
     ```
     CREATE CONNECTION <name> AS REPLICA OF <organization_name>.<account_name>.<connection_name>;

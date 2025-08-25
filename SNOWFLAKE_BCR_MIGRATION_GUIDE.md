@@ -32,6 +32,28 @@ To use the provider with the bundles containing this change:
 
 Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
 
+### `MFA_AUTHENTICATION_METHODS` property in authentication policies is now deprecated
+<!-- TODO(SNOW-2187814): Update this entry. -->
+
+> [!IMPORTANT]
+> This change has been rolled back from the BCR 2025_04.
+
+> [!IMPORTANT]
+> This change has not been addressed in the provider yet. This will be addressed in the next versions of the provider.
+
+The `MFA_AUTHENTICATION_METHODS` property is deprecated. Setting the `MFA_AUTHENTICATION_METHODS` property returns an error. If you use the [authentication_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) resource with `mfa_authentication_methods` field
+and have this bundle enabled, the provider will return an error.
+
+Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
+
+## [Bundle 2025_04](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04_bundle)
+
+### Primary role requires stage access during `CREATE EXTERNAL TABLE` command
+
+Creating an external table succeeds only if a user’s primary role has the `USAGE` privilege on the stage referenced in the `snowflake_external_table` resource. If you manage external tables in the provider, please grant the `USAGE` privilege on the relevant stages to the connection role.
+
+Reference: [BCR-1993](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1993)
+
 ## [Bundle 2025_03](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle)
 
 ### The `CREATE DATA EXCHANGE LISTING` privilege rename

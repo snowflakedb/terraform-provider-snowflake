@@ -85,10 +85,6 @@ type Client struct {
 	Warehouses                   Warehouses
 }
 
-func (c *Client) SetAccountLocatorForTests(accountLocator string) {
-	c.accountLocator = accountLocator
-}
-
 func (c *Client) GetAccountLocator() string {
 	return c.accountLocator
 }
@@ -110,6 +106,11 @@ func NewClient(cfg *gosnowflake.Config, opts ...func(*FileReaderConfig)) (*Clien
 	if cfg == nil {
 		log.Printf("[DEBUG] Searching for default config in credentials chain...")
 		cfg = DefaultConfig(opts...)
+	}
+
+	// If authenticator was not set on any level we use the driver's default.
+	if cfg.Authenticator == GosnowflakeAuthTypeEmpty {
+		cfg.Authenticator = gosnowflake.AuthTypeSnowflake
 	}
 
 	dsn, err := gosnowflake.DSN(cfg)

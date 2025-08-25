@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ SecurityIntegrations = (*securityIntegrations)(nil)
+var (
+	_ SecurityIntegrations                        = (*securityIntegrations)(nil)
+	_ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
+	_ convertibleRow[SecurityIntegration]         = new(securityIntegrationShowRow)
+)
 
 type securityIntegrations struct {
 	client *Client
@@ -109,7 +113,7 @@ func (v *securityIntegrations) Describe(ctx context.Context, id AccountObjectIde
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[securityIntegrationDescRow, SecurityIntegrationProperty](rows), nil
+	return convertRows[securityIntegrationDescRow, SecurityIntegrationProperty](rows)
 }
 
 func (v *securityIntegrations) Show(ctx context.Context, request *ShowSecurityIntegrationRequest) ([]SecurityIntegration, error) {
@@ -118,8 +122,7 @@ func (v *securityIntegrations) Show(ctx context.Context, request *ShowSecurityIn
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[securityIntegrationShowRow, SecurityIntegration](dbRows)
-	return resultList, nil
+	return convertRows[securityIntegrationShowRow, SecurityIntegration](dbRows)
 }
 
 func (v *securityIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*SecurityIntegration, error) {
@@ -631,13 +634,13 @@ func (r *DescribeSecurityIntegrationRequest) toOpts() *DescribeSecurityIntegrati
 	return opts
 }
 
-func (r securityIntegrationDescRow) convert() *SecurityIntegrationProperty {
+func (r securityIntegrationDescRow) convert() (*SecurityIntegrationProperty, error) {
 	return &SecurityIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }
 
 func (r *ShowSecurityIntegrationRequest) toOpts() *ShowSecurityIntegrationOptions {
@@ -647,7 +650,7 @@ func (r *ShowSecurityIntegrationRequest) toOpts() *ShowSecurityIntegrationOption
 	return opts
 }
 
-func (r securityIntegrationShowRow) convert() *SecurityIntegration {
+func (r securityIntegrationShowRow) convert() (*SecurityIntegration, error) {
 	s := &SecurityIntegration{
 		Name:            r.Name,
 		IntegrationType: r.Type,
@@ -658,5 +661,5 @@ func (r securityIntegrationShowRow) convert() *SecurityIntegration {
 	if r.Comment.Valid {
 		s.Comment = r.Comment.String
 	}
-	return s
+	return s, nil
 }

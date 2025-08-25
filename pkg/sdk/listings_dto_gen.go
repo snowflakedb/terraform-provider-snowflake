@@ -49,7 +49,7 @@ type AlterListingAsRequest struct {
 
 type AddListingVersionRequest struct {
 	IfNotExists *bool
-	VersionName string   // required
+	VersionName string
 	From        Location // required
 	Comment     *string
 }

@@ -20,6 +20,8 @@ var (
 	_ validatable = new(DropWarehouseOptions)
 	_ validatable = new(ShowWarehouseOptions)
 	_ validatable = new(describeWarehouseOptions)
+
+	_ convertibleRow[Warehouse] = new(warehouseDBRow)
 )
 
 type Warehouses interface {
@@ -502,16 +504,11 @@ type warehouseDBRow struct {
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
 }
 
-func (row warehouseDBRow) convert() *Warehouse {
-	size, err := ToWarehouseSize(row.Size)
-	if err != nil {
-		size = WarehouseSize(strings.ToUpper(row.Size))
-	}
+func (row warehouseDBRow) convert() (*Warehouse, error) {
 	wh := &Warehouse{
 		Name:                            row.Name,
 		State:                           WarehouseState(row.State),
 		Type:                            WarehouseType(row.Type),
-		Size:                            size,
 		MinClusterCount:                 row.MinClusterCount,
 		MaxClusterCount:                 row.MaxClusterCount,
 		StartedClusters:                 row.StartedClusters,
@@ -529,17 +526,38 @@ func (row warehouseDBRow) convert() *Warehouse {
 		QueryAccelerationMaxScaleFactor: row.QueryAccelerationMaxScaleFactor,
 		ScalingPolicy:                   ScalingPolicy(row.ScalingPolicy),
 	}
-	if val, err := strconv.ParseFloat(row.Available, 64); err != nil {
-		wh.Available = val
+	if size, err := ToWarehouseSize(row.Size); err != nil {
+		return nil, err
+	} else {
+		wh.Size = size
 	}
-	if val, err := strconv.ParseFloat(row.Provisioning, 64); err != nil {
-		wh.Provisioning = val
+	if available := strings.TrimSpace(row.Available); available != "" {
+		if val, err := strconv.ParseFloat(available, 64); err != nil {
+			return nil, fmt.Errorf(`row 'available' has incorrect value '%s', %w`, available, err)
+		} else {
+			wh.Available = val
+		}
 	}
-	if val, err := strconv.ParseFloat(row.Quiescing, 64); err != nil {
-		wh.Quiescing = val
+	if provisioning := strings.TrimSpace(row.Provisioning); provisioning != "" {
+		if val, err := strconv.ParseFloat(provisioning, 64); err != nil {
+			return nil, fmt.Errorf(`row 'provisioning' has incorrect value '%s', %w`, provisioning, err)
+		} else {
+			wh.Provisioning = val
+		}
 	}
-	if val, err := strconv.ParseFloat(row.Other, 64); err != nil {
-		wh.Other = val
+	if quiescing := strings.TrimSpace(row.Quiescing); quiescing != "" {
+		if val, err := strconv.ParseFloat(quiescing, 64); err != nil {
+			return nil, fmt.Errorf(`row 'quiescing' has incorrect value '%s', %w`, quiescing, err)
+		} else {
+			wh.Quiescing = val
+		}
+	}
+	if other := strings.TrimSpace(row.Other); other != "" {
+		if val, err := strconv.ParseFloat(other, 64); err != nil {
+			return nil, fmt.Errorf(`row 'other' has incorrect value '%s', %w`, other, err)
+		} else {
+			wh.Other = val
+		}
 	}
 	if row.AutoSuspend.Valid {
 		wh.AutoSuspend = int(row.AutoSuspend.Int64)
@@ -550,7 +568,7 @@ func (row warehouseDBRow) convert() *Warehouse {
 	if row.ResourceMonitor != "null" {
 		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
 	}
-	return wh
+	return wh, nil
 }
 
 func (c *warehouses) Show(ctx context.Context, opts *ShowWarehouseOptions) ([]Warehouse, error) {
@@ -559,8 +577,7 @@ func (c *warehouses) Show(ctx context.Context, opts *ShowWarehouseOptions) ([]Wa
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[warehouseDBRow, Warehouse](dbRows)
-	return resultList, nil
+	return convertRows[warehouseDBRow, Warehouse](dbRows)
 }
 
 func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {

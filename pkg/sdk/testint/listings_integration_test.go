@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -34,14 +35,11 @@ func TestInt_Listings(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	accountId := testClientHelper().Context.CurrentAccountId(t)
-	targetAccount := fmt.Sprintf("%s.%s", accountId.OrganizationName(), accountId.AccountName())
-
 	basicManifest, basicManifestTitle := testClientHelper().Listing.BasicManifest(t)
 	_ = testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/basic", "manifest.yml", basicManifest)
 	basicManifestStageLocation := sdk.NewStageLocation(stage.ID(), "basic")
 
-	basicManifestWithTarget, basicManifestWithTargetTitle := testClientHelper().Listing.BasicManifestWithTargetAccount(t, accountId)
+	basicManifestWithTarget, basicManifestWithTargetTitle := testClientHelper().Listing.BasicManifestWithTargetAccounts(t)
 	testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/with_target", "manifest.yml", basicManifestWithTarget)
 	basicManifestWithTargetStageLocation := sdk.NewStageLocation(stage.ID(), "with_target")
 
@@ -123,7 +121,7 @@ func TestInt_Listings(t *testing.T) {
 				HasNoReviewState().
 				HasComment(comment).
 				HasNoRegions().
-				HasTargetAccounts(targetAccount).
+				HasTargetAccounts("").
 				HasIsMonetized(false).
 				HasIsApplication(false).
 				HasIsTargeted(true).
@@ -133,7 +131,7 @@ func TestInt_Listings(t *testing.T) {
 				HasIsMountlessQueryable(false).
 				HasOrganizationProfileName("").
 				HasNoUniformListingLocator().
-				HasDetailedTargetAccountsNotEmpty(),
+				HasNoDetailedTargetAccounts(),
 		)
 	}
 
@@ -188,7 +186,7 @@ func TestInt_Listings(t *testing.T) {
 				HasNoReviewState().
 				HasComment(comment).
 				HasNoRegions().
-				HasTargetAccounts(targetAccount).
+				HasTargetAccounts("").
 				HasIsMonetized(false).
 				HasIsApplication(true).
 				HasIsTargeted(true).
@@ -198,7 +196,7 @@ func TestInt_Listings(t *testing.T) {
 				HasIsMountlessQueryable(false).
 				HasOrganizationProfileName("").
 				HasNoUniformListingLocator().
-				HasDetailedTargetAccountsNotEmpty(),
+				HasNoDetailedTargetAccounts(),
 		)
 	}
 
@@ -280,6 +278,26 @@ func TestInt_Listings(t *testing.T) {
 				HasState(sdk.ListingStateUnpublished).
 				HasNoReviewState(),
 		)
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true))
+		assert.NoError(t, err)
+
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasTitle(basicManifestWithTargetTitle).
+				HasState(sdk.ListingStateUnpublished).
+				HasNoReviewState(),
+		)
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true))
+		assert.NoError(t, err)
+
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasTitle(basicManifestWithTargetTitle).
+				HasState(sdk.ListingStatePublished).
+				HasNoReviewState(),
+		)
 	})
 
 	t.Run("alter: change manifest with optional values", func(t *testing.T) {
@@ -326,7 +344,8 @@ func TestInt_Listings(t *testing.T) {
 		)
 
 		err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).
-			WithAddVersion(*sdk.NewAddListingVersionRequest("v2", basicManifestWithDifferentSubtitleStageLocation).
+			WithAddVersion(*sdk.NewAddListingVersionRequest(basicManifestWithDifferentSubtitleStageLocation).
+				WithVersionName("v2").
 				WithIfNotExists(true).
 				WithComment(comment)))
 		assert.NoError(t, err)
@@ -343,14 +362,61 @@ func TestInt_Listings(t *testing.T) {
 		assert.Len(t, versions, 1)
 		assert.NotEmpty(t, versions[0].CreatedOn)
 		assert.NotEmpty(t, versions[0].Name)
-		assert.Equal(t, "v2", versions[0].Alias)
+		assert.Equal(t, "v2", *versions[0].Alias)
 		assert.Empty(t, versions[0].LocationUrl)
 		assert.True(t, versions[0].IsDefault)
 		assert.False(t, versions[0].IsLive)
 		assert.True(t, versions[0].IsFirst)
 		assert.True(t, versions[0].IsLast)
-		assert.Equal(t, comment, versions[0].Comment)
+		assert.Equal(t, comment, *versions[0].Comment)
 		assert.Nil(t, versions[0].GitCommitHash)
+	})
+
+	t.Run("alter: add version with inlined manifest", func(t *testing.T) {
+		versionStage, versionStageCleanup := testClientHelper().Stage.CreateStage(t)
+		t.Cleanup(versionStageCleanup)
+
+		_ = testClientHelper().Stage.PutInLocationWithContent(t, versionStage.Location(), "manifest.yml", basicManifest)
+		manifestLocation := sdk.NewStageLocation(versionStage.ID(), "")
+
+		listing, listingCleanup := testClientHelper().Listing.Create(t)
+		t.Cleanup(listingCleanup)
+
+		// Versions can be only added whenever listing was using manifest sourced from stage at any point
+		_, err := client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.ErrorContains(t, err, "Attached stage not exists")
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithAddVersion(*sdk.NewAddListingVersionRequest(manifestLocation).WithVersionName("v1")))
+		assert.NoError(t, err)
+
+		versions, err := client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.NoError(t, err)
+		require.Len(t, versions, 1)
+		require.NotNil(t, versions[0].Alias)
+		assert.Equal(t, "v1", *versions[0].Alias)
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithAlterListingAs(*sdk.NewAlterListingAsRequest(basicManifest).WithReview(false).WithPublish(false)))
+		assert.NoError(t, err)
+
+		versions, err = client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.NoError(t, err)
+		require.Len(t, versions, 2)
+
+		inlineVersion, err := collections.FindFirst(versions, func(v sdk.ListingVersion) bool { return v.Name == "VERSION$2" })
+		assert.NoError(t, err)
+		require.Nil(t, inlineVersion.Alias)
+		require.NotNil(t, inlineVersion.Comment)
+		assert.Equal(t, "Inline update", *inlineVersion.Comment) // This is the default comment for inline updates
+
+		// Removing referenced stage doesn't seem to break the listing's versioning
+		versionStageCleanup()
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithAlterListingAs(*sdk.NewAlterListingAsRequest(basicManifest).WithReview(false).WithPublish(false)))
+		assert.NoError(t, err)
+
+		versions, err = client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
+		assert.NoError(t, err)
+		require.Len(t, versions, 3)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
@@ -439,17 +505,25 @@ func TestInt_Listings(t *testing.T) {
 	})
 
 	t.Run("describe: default", func(t *testing.T) {
-		listing, listingCleanup := testClientHelper().Listing.Create(t)
-		t.Cleanup(listingCleanup)
+		accountId := testClientHelper().Context.CurrentAccountId(t)
+		manifest, title := testClientHelper().Listing.BasicManifestWithTargetAccounts(t, accountId)
 
-		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(listing.ID()))
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
+			WithAs(manifest).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
 		require.NoError(t, err)
 		require.NotNil(t, listingDetails)
 
-		manifest, title := testClientHelper().Listing.BasicManifest(t)
-
 		assert.NotEmpty(t, listingDetails.GlobalName)
-		assert.Equal(t, listing.ID().Name(), listingDetails.Name)
+		assert.Equal(t, id.Name(), listingDetails.Name)
 		assert.NotEmpty(t, listingDetails.Owner)
 		assert.NotEmpty(t, listingDetails.OwnerRoleType)
 		assert.NotEmpty(t, listingDetails.CreatedOn)
@@ -462,7 +536,7 @@ func TestInt_Listings(t *testing.T) {
 "type" : "OFFLINE"
 }`, *listingDetails.ListingTerms)
 		assert.Equal(t, sdk.ListingStateDraft, listingDetails.State)
-		assert.Nil(t, listingDetails.Share)
+		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
 		assert.Empty(t, listingDetails.ApplicationPackage.Name()) // Application package is returned even if listing is not associated with one, but it is empty in that case
 		assert.Nil(t, listingDetails.BusinessNeeds)
 		assert.Nil(t, listingDetails.UsageExamples)
@@ -475,22 +549,22 @@ func TestInt_Listings(t *testing.T) {
 		assert.Nil(t, listingDetails.DataPreview)
 		assert.Nil(t, listingDetails.Comment)
 		assert.Equal(t, "DRAFT", listingDetails.Revisions)
-		assert.Nil(t, listingDetails.TargetAccounts)
+		assert.Equal(t, fmt.Sprintf("%s.%s", accountId.OrganizationName(), accountId.AccountName()), *listingDetails.TargetAccounts)
 		assert.Nil(t, listingDetails.Regions)
 		assert.Nil(t, listingDetails.RefreshSchedule)
 		assert.Nil(t, listingDetails.RefreshType)
-		assert.Equal(t, "UNSENT", *listingDetails.ReviewState)
+		assert.Nil(t, listingDetails.ReviewState)
 		assert.Nil(t, listingDetails.RejectionReason)
 		assert.Nil(t, listingDetails.UnpublishedByAdminReasons)
 		assert.False(t, listingDetails.IsMonetized)
 		assert.False(t, listingDetails.IsApplication)
-		assert.False(t, listingDetails.IsTargeted)
+		assert.True(t, listingDetails.IsTargeted)
 		assert.False(t, *listingDetails.IsLimitedTrial)
 		assert.False(t, *listingDetails.IsByRequest)
 		assert.Nil(t, listingDetails.LimitedTrialPlan)
 		assert.Nil(t, listingDetails.RetriedOn)
 		assert.Nil(t, listingDetails.ScheduledDropTime)
-		assert.Equal(t, manifest, listingDetails.ManifestYaml)
+		assert.NotEmpty(t, listingDetails.ManifestYaml)
 		assert.Equal(t, "EXTERNAL", *listingDetails.Distribution)
 		assert.False(t, *listingDetails.IsMountlessQueryable)
 		assert.Nil(t, listingDetails.OrganizationProfileName)
@@ -505,7 +579,7 @@ func TestInt_Listings(t *testing.T) {
 		assert.Nil(t, listingDetails.PublishedVersionUri)
 		assert.Nil(t, listingDetails.PublishedVersionName)
 		assert.Nil(t, listingDetails.PublishedVersionAlias)
-		assert.False(t, *listingDetails.IsShare)
+		assert.True(t, *listingDetails.IsShare)
 		assert.Nil(t, listingDetails.RequestApprovalType)
 		assert.Empty(t, *listingDetails.MonetizationDisplayOrder)
 		assert.Nil(t, listingDetails.LegacyUniformListingLocators)
