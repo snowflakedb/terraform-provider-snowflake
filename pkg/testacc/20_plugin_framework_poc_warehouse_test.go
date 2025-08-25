@@ -47,7 +47,7 @@ type warehousePocModelV0 struct {
 	AutoSuspend                     types.Int64                              `tfsdk:"auto_suspend"`
 	AutoResume                      types.Bool                               `tfsdk:"auto_resume"`
 	InitiallySuspended              types.Bool                               `tfsdk:"initially_suspended"`
-	ResourceMonitor                 types.String                             `tfsdk:"resource_monitor"` // TODO [mux-PR]: identifier type?
+	ResourceMonitor                 types.String                             `tfsdk:"resource_monitor"` // TODO [SNOW-2296366]: identifier type?
 	Comment                         types.String                             `tfsdk:"comment"`
 	EnableQueryAcceleration         types.Bool                               `tfsdk:"enable_query_acceleration"`
 	QueryAccelerationMaxScaleFactor types.Int64                              `tfsdk:"query_acceleration_max_scale_factor"`
@@ -162,8 +162,8 @@ func (r *WarehouseResource) Metadata(_ context.Context, request resource.Metadat
 	response.TypeName = request.ProviderTypeName + "_warehouse_poc"
 }
 
-// TODO [mux-PR]: suppress identifier quoting
-// TODO [mux-PR]: support all identifier types
+// TODO [SNOW-2296366]: suppress identifier quoting
+// TODO [SNOW-2296366]: support all identifier types
 // TODO [mux-PR]: show_output and parameters
 func warehousePocAttributes() map[string]schema.Attribute {
 	existingWarehouseSchema := resources.Warehouse().Schema
@@ -228,7 +228,7 @@ func warehousePocAttributes() map[string]schema.Attribute {
 		"resource_monitor": schema.StringAttribute{
 			Description: existingWarehouseSchema["resource_monitor"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: identifier validation
+			// TODO [SNOW-2296366]: identifier validation
 		},
 		"comment": schema.StringAttribute{
 			Description: existingWarehouseSchema["comment"].Description,

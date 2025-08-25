@@ -99,7 +99,7 @@ func StringAttributeCreate(stringAttribute types.String, createField **string) e
 	return nil
 }
 
-// TODO [mux-PR]: test and adjust when adding identifier suppression
+// TODO [SNOW-2296366]: test and adjust when adding identifier suppression
 func IdAttributeCreate(stringAttribute types.String, createField **sdk.AccountObjectIdentifier) error {
 	if !stringAttribute.IsNull() {
 		*createField = sdk.Pointer(sdk.NewAccountObjectIdentifier(stringAttribute.ValueString()))

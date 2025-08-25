@@ -347,7 +347,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasQueryAccelerationMaxScaleFactor(4),
 				),
 			},
-			// TODO [mux-PR]: expect no changes with identifier suppression (using plancheck.ExpectNonEmptyPlan() temporarily)
+			// TODO [SNOW-2296366]: expect no changes with identifier suppression (using plancheck.ExpectNonEmptyPlan() temporarily)
 			// change resource monitor - wrap in quotes (no change expected)
 			{
 				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFullResourceMonitorInQuotes)),
