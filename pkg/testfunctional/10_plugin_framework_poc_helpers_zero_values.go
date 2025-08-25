@@ -57,7 +57,7 @@ func Int64AttributeCreate(int64Attribute types.Int64, createField **int) error {
 
 // For now, we use here two same set/unset pointers as the test server handles a single HTTP call.
 // It should be altered when working on the server improvement.
-// TODO [mux-PRs]: Handle set/unset instead just single opts
+// TODO [SNOW-2296350]: Handle set/unset instead just single opts
 func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **int) {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
