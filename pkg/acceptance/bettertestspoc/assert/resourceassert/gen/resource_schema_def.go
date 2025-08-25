@@ -270,4 +270,16 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "GrantPrivilegesToAccountRole",
 		schema: resources.GrantPrivilegesToAccountRole().Schema,
 	},
+	{
+		name:   "GrantAccountRole",
+		schema: resources.GrantAccountRole().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToDatabaseRole",
+		schema: resources.GrantPrivilegesToDatabaseRole().Schema,
+	},
+	{
+		name:   "GrantDatabaseRole",
+		schema: resources.GrantDatabaseRole().Schema,
+	},
 }
