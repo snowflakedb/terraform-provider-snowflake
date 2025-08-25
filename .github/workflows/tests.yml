@@ -113,10 +113,6 @@ jobs:
         run: make test-unit
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
 
-      - name: Run functional tests of the underlying terraform libraries
-        run: make test-functional
-        if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
-
       - name: Run integration tests
         run: make test-integration
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
@@ -138,6 +134,10 @@ jobs:
         with:
           terraform_version: 1.7.4
           terraform_wrapper: false
+
+      - name: Run functional tests of the underlying terraform libraries
+        run: make test-functional
+        if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
 
       - name: Run acceptance tests
         run: make test-acceptance
