@@ -114,9 +114,9 @@ var warehouseSchema = map[string]*schema.Schema{
 	"resource_constraint": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		ValidateDiagFunc: sdkValidation(sdk.ToResourceConstraint),
-		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToResourceConstraint), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
-		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.ValidResourceConstraintsString)),
+		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraintAllowedInput),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraint), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
+		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraints)),
 	},
 	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
 		Type:             schema.TypeInt,
@@ -365,7 +365,7 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		createOptions.QueryAccelerationMaxScaleFactor = sdk.Int(v)
 	}
 	if v := d.Get("resource_constraint").(string); v != "" {
-		resourceConstraint, err := sdk.ToResourceConstraint(v)
+		resourceConstraint, err := sdk.ToWarehouseResourceConstraintAllowedInput(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -606,7 +606,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 	}
 	if d.HasChange("resource_constraint") {
 		if v := d.Get("resource_constraint").(string); v != "" {
-			resourceConstraint, err := sdk.ToResourceConstraint(v)
+			resourceConstraint, err := sdk.ToWarehouseResourceConstraintAllowedInput(v)
 			if err != nil {
 				return diag.FromErr(err)
 			}
