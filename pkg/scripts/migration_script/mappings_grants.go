@@ -62,7 +62,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 	)
 
 	switch {
-	//// TODO: Check how it's returned for SHOW GRANTS OF DATABASE ROLE
+	// TODO: Check how it's returned for SHOW GRANTS OF DATABASE ROLE
 	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeUser)):
 		return MapToGrantAccountRole(grant)
 	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeDatabaseRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole)):
@@ -71,7 +71,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 		return MapToGrantPrivilegesToAccountRole(grant, privilegeListVariable)
 	case grant.GrantedOn == sdk.ObjectTypeDatabaseRole:
 		return MapToGrantPrivilegesToDatabaseRole(grant, privilegeListVariable)
-	//	// TODO: To share and To application role
+	// TODO: To share and To application role
 	default:
 		return nil, fmt.Errorf("skipping unsupported grant: %+v", grant)
 	}
