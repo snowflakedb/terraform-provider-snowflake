@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -116,7 +117,7 @@ var warehouseSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraintAllowedInput),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraint), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
-		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraints)),
+		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraints)),
 	},
 	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
 		Type:             schema.TypeInt,
@@ -419,6 +420,14 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 		}
 
 		if withExternalChangesMarking {
+			resourceConstraint := ""
+			if w.ResourceConstraint != nil {
+				if v, err := sdk.ToWarehouseResourceConstraintAllowedInput(string(*w.ResourceConstraint)); err != nil {
+					log.Printf("[DEBUG] resource constraint is not supported for %s warehouses, ignoring", sdk.WarehouseTypeStandard)
+				} else {
+					resourceConstraint = string(v)
+				}
+			}
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"type", "warehouse_type", string(w.Type), w.Type, nil},
 				outputMapping{"size", "warehouse_size", string(w.Size), w.Size, nil},
@@ -430,7 +439,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 				outputMapping{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
 				outputMapping{"enable_query_acceleration", "enable_query_acceleration", w.EnableQueryAcceleration, fmt.Sprintf("%t", w.EnableQueryAcceleration), nil},
 				outputMapping{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor, w.QueryAccelerationMaxScaleFactor, nil},
-				outputMapping{"resource_constraint", "resource_constraint", w.ResourceConstraint, w.ResourceConstraint, nil},
+				outputMapping{"resource_constraint", "resource_constraint", resourceConstraint, resourceConstraint, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -605,14 +614,29 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		}
 	}
 	if d.HasChange("resource_constraint") {
-		if v := d.Get("resource_constraint").(string); v != "" {
-			resourceConstraint, err := sdk.ToWarehouseResourceConstraintAllowedInput(v)
+		warehouseTypeRaw := d.Get("warehouse_type").(string)
+		// Resource constraint is only supported for SNOWPARK-OPTIMIZED warehouses.
+		// Ignore the resource constraint if the warehouse type is standard or is not set.
+		if warehouseTypeRaw != "" {
+			warehouseType, err := sdk.ToWarehouseType(warehouseTypeRaw)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			set.ResourceConstraint = &resourceConstraint
-		} else {
-			unset.ResourceConstraint = sdk.Bool(true)
+			if warehouseType == sdk.WarehouseTypeSnowparkOptimized {
+				if v := d.Get("resource_constraint").(string); v != "" {
+					resourceConstraint, err := sdk.ToWarehouseResourceConstraintAllowedInput(v)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					set.ResourceConstraint = &resourceConstraint
+				} else {
+					// TODO [SNOW-1473453]: UNSET of resource constraint does not work
+					// unset.ResourceConstraint = sdk.Bool(true)
+					set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintMemory16X)
+				}
+			} else {
+				log.Printf("[DEBUG] resource constraint is not supported for %s warehouses, ignoring", warehouseType)
+			}
 		}
 	}
 
