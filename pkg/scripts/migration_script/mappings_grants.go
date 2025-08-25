@@ -61,9 +61,6 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 		})...,
 	)
 
-// TODO: it should receive []sdk.Grant because there may be a few rows for the same type but different privileges
-// TODO: there should be a grouping step before this function.
-func MapGrantToModel(grant sdk.Grant) config.ResourceModel {
 	switch {
 	// TODO: Check how it's returned for SHOW GRANTS OF DATABASE ROLE
 	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeUser)):
@@ -71,59 +68,16 @@ func MapGrantToModel(grant sdk.Grant) config.ResourceModel {
 	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeDatabaseRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole)):
 		return MapToGrantDatabaseRole(grant)
 	case grant.GrantedOn == sdk.ObjectTypeRole:
-		return MapToGrantPrivilegesToAccountRole(grant)
+		return MapToGrantPrivilegesToAccountRole(grant, privilegeListVariable)
 	case grant.GrantedOn == sdk.ObjectTypeDatabaseRole:
-		return MapToGrantPrivilegesToDatabaseRole(grant)
+		return MapToGrantPrivilegesToDatabaseRole(grant, privilegeListVariable)
 		// TODO: To share and To application role
 	default:
-		log.Printf("[DEBUG] Skipping unsupported grant: %+v", grant)
-		return nil
+		return nil, fmt.Errorf("skipping unsupported grant: %+v", grant)
 	}
 }
 
-func MapToGrantAccountRole(grant sdk.Grant) config.ResourceModel {
-	var result *model.GrantAccountRoleModel
-
-	if grant.Role != nil {
-		// Handle SHOW GRANTS OF ROLE output
-		result = model.GrantAccountRole("test_resource_grant_account_role", grant.Role.Name())
-	} else {
-		// Handle SHOW GRANTS TO X
-		result = model.GrantAccountRole("test_resource_grant_account_role", grant.Name.Name())
-	}
-
-	if grant.GrantedTo == sdk.ObjectTypeUser {
-		result.WithUserName(grant.GranteeName.Name())
-	} else if grant.GrantedTo == sdk.ObjectTypeRole {
-		result.WithParentRoleName(grant.GranteeName.Name())
-	}
-
-	// TODO: Check other outputs
-	return result
-}
-
-func MapToGrantDatabaseRole(grant sdk.Grant) config.ResourceModel {
-	var result *model.GrantDatabaseRoleModel
-
-	if grant.Role != nil {
-		// Handle SHOW GRANTS OF ROLE output
-		result = model.GrantDatabaseRole("test_resource_grant_database_role", grant.Role.FullyQualifiedName())
-	} else {
-		// Handle SHOW GRANTS TO X
-		result = model.GrantDatabaseRole("test_resource_grant_database_role", grant.Name.FullyQualifiedName())
-	}
-
-	if grant.GrantedTo == sdk.ObjectTypeDatabaseRole {
-		result.WithDatabaseRoleName(grant.GranteeName.Name())
-	} else if grant.GrantedTo == sdk.ObjectTypeRole {
-		result.WithParentRoleName(grant.GranteeName.Name())
-	}
-
-	// TODO: Check other outputs
-	return result
-}
-
-func MapToGrantPrivilegesToAccountRole(grant sdk.Grant) config.ResourceModel {
+func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privilegeListVariable tfconfig.Variable) (accconfig.ResourceModel, error) {
 	// TODO: Check other outputs
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
@@ -159,65 +113,47 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant) config.ResourceModel {
 			WithWithGrantOption(grant.GrantOption), nil
 	default:
 		return nil, fmt.Errorf("unsupported grant mapping")
+	}
 }
 
-func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant) config.ResourceModel {
+func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privilegeListVariable tfconfig.Variable) (accconfig.ResourceModel, error) {
 	// TODO: Check other outputs
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeDatabase:
 		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema", grant.GranteeName.Name()).
-			WithPrivilegesValue(tfconfig.ListVariable(
-				tfconfig.StringVariable(grant.Privilege),
-			)).
-			WithOnDatabase(grant.Name.Name()).
-			WithWithGrantOption(grant.GrantOption)
+				WithPrivilegesValue(tfconfig.ListVariable(
+					tfconfig.StringVariable(grant.Privilege),
+				)).
+				WithOnDatabase(grant.Name.Name()).
+				WithWithGrantOption(grant.GrantOption),
+			nil
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
 		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema", grant.GranteeName.Name()).
-			WithPrivilegesValue(tfconfig.ListVariable(
-				tfconfig.StringVariable(grant.Privilege),
-			)).
-			WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
-			})).
-			WithWithGrantOption(grant.GrantOption)
+				WithPrivilegesValue(tfconfig.ListVariable(
+					tfconfig.StringVariable(grant.Privilege),
+				)).
+				WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
+				})).
+				WithWithGrantOption(grant.GrantOption),
+			nil
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
 		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
-			WithPrivilegesValue(tfconfig.ListVariable(
-				tfconfig.StringVariable(grant.Privilege),
-			)).
-			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
-				"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
-			})).
-			WithWithGrantOption(grant.GrantOption)
+				WithPrivilegesValue(tfconfig.ListVariable(
+					tfconfig.StringVariable(grant.Privilege),
+				)).
+				WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
+					"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
+				})).
+				WithWithGrantOption(grant.GrantOption),
+			nil
 	default:
-		log.Printf("[DEBUG] Skipping unsupported grant: %+v", grant)
-		return nil
+		return nil, fmt.Errorf("skipping unsupported grant: %+v", grant)
 	}
 }
 
-
-// TODO: it should receive []sdk.Grant because there may be a few rows for the same type but different privileges
-// TODO: there should be a grouping step before this function.
-func MapGrantToModel(grant sdk.Grant) config.ResourceModel {
-	switch {
-	// TODO: Check how it's returned for SHOW GRANTS OF DATABASE ROLE
-	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeUser)):
-		return MapToGrantAccountRole(grant)
-	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeDatabaseRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole)):
-		return MapToGrantDatabaseRole(grant)
-	case grant.GrantedOn == sdk.ObjectTypeRole:
-		return MapToGrantPrivilegesToAccountRole(grant)
-	case grant.GrantedOn == sdk.ObjectTypeDatabaseRole:
-		return MapToGrantPrivilegesToDatabaseRole(grant)
-		// TODO: To share and To application role
-	default:
-		log.Printf("[DEBUG] Skipping unsupported grant: %+v", grant)
-		return nil
-	}
-}
-
-func MapToGrantAccountRole(grant sdk.Grant) config.ResourceModel {
+func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, error) {
 	var result *model.GrantAccountRoleModel
 
 	if grant.Role != nil {
@@ -235,10 +171,10 @@ func MapToGrantAccountRole(grant sdk.Grant) config.ResourceModel {
 	}
 
 	// TODO: Check other outputs
-	return result
+	return result, nil
 }
 
-func MapToGrantDatabaseRole(grant sdk.Grant) config.ResourceModel {
+func MapToGrantDatabaseRole(grant sdk.Grant) (accconfig.ResourceModel, error) {
 	var result *model.GrantDatabaseRoleModel
 
 	if grant.Role != nil {
@@ -256,9 +192,5 @@ func MapToGrantDatabaseRole(grant sdk.Grant) config.ResourceModel {
 	}
 
 	// TODO: Check other outputs
-	return result
+	return result, nil
 }
-
-func MapToGrantPrivilegesToAccountRole(grant sdk.Grant) config.ResourceModel {
-	// TODO: Check other outputs
-
