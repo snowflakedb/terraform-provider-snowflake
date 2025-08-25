@@ -12,20 +12,20 @@ type ConvertibleCsvRow[T any] interface {
 	convert() (*T, error)
 }
 
-type Converter[T ConvertibleCsvRow[R], R any] struct {
+type ConverterConfig[T ConvertibleCsvRow[R], R any] struct {
 	AdditionalConvertMapping func(row T, convertedValue *R)
 }
 
-func NewConversionConfigWithOpts[T ConvertibleCsvRow[R], R any](opts ...func(*Converter[T, R])) *Converter[T, R] {
-	config := new(Converter[T, R])
+func NewConversionConfigWithOpts[T ConvertibleCsvRow[R], R any](opts ...func(*ConverterConfig[T, R])) *ConverterConfig[T, R] {
+	config := new(ConverterConfig[T, R])
 	for _, opt := range opts {
 		opt(config)
 	}
 	return config
 }
 
-func WithAdditionalConvertMapping[T ConvertibleCsvRow[R], R any](mappingFunc func(row T, convertedValue *R)) func(*Converter[T, R]) {
-	return func(config *Converter[T, R]) {
+func WithAdditionalConvertMapping[T ConvertibleCsvRow[R], R any](mappingFunc func(row T, convertedValue *R)) func(*ConverterConfig[T, R]) {
+	return func(config *ConverterConfig[T, R]) {
 		config.AdditionalConvertMapping = mappingFunc
 	}
 }
@@ -37,12 +37,12 @@ type ConvertibleRowStructField struct {
 	Kind  reflect.Kind
 }
 
-func ConvertCsvInput[T ConvertibleCsvRow[R], R any](csvInputFormat [][]string, opts ...func(*Converter[T, R])) ([]R, error) {
+func ConvertCsvInput[T ConvertibleCsvRow[R], R any](csvInputFormat [][]string, opts ...func(*ConverterConfig[T, R])) ([]R, error) {
 	if len(csvInputFormat) < 1 {
 		return nil, fmt.Errorf("CSV input is empty")
 	}
 
-	converter := NewConversionConfigWithOpts(opts...)
+	converterConfig := NewConversionConfigWithOpts(opts...)
 	convertibleRowFields := make([]ConvertibleRowStructField, 0)
 	structType := reflect.TypeFor[T]()
 
@@ -107,8 +107,8 @@ csvRowLoop:
 			convertedValue = v
 		}
 
-		if converter.AdditionalConvertMapping != nil {
-			converter.AdditionalConvertMapping(row, convertedValue)
+		if converterConfig.AdditionalConvertMapping != nil {
+			converterConfig.AdditionalConvertMapping(row, convertedValue)
 		}
 
 		result = append(result, *convertedValue)
