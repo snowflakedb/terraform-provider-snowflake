@@ -540,7 +540,7 @@ type Warehouse struct {
 	ResourceMonitor                 AccountObjectIdentifier
 	ScalingPolicy                   ScalingPolicy
 	OwnerRoleType                   string
-	ResourceConstraint              WarehouseResourceConstraint
+	ResourceConstraint              *WarehouseResourceConstraint
 }
 
 type warehouseDBRow struct {
@@ -576,7 +576,7 @@ type warehouseDBRow struct {
 	UUID                            string         `db:"uuid"`
 	ScalingPolicy                   string         `db:"scaling_policy"`
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
-	ResourceConstraint              string         `db:"resource_constraint"`
+	ResourceConstraint              sql.NullString `db:"resource_constraint"`
 }
 
 func (row warehouseDBRow) convertErr() (*Warehouse, error) {
@@ -643,11 +643,13 @@ func (row warehouseDBRow) convertErr() (*Warehouse, error) {
 	if row.ResourceMonitor != "null" {
 		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
 	}
-	resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint)
-	if err != nil {
-		return nil, err
+	if row.ResourceConstraint.Valid {
+		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+		if err != nil {
+			return nil, err
+		}
+		wh.ResourceConstraint = &resourceConstraint
 	}
-	wh.ResourceConstraint = resourceConstraint
 	return wh, nil
 }
 

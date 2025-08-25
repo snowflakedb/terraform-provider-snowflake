@@ -332,8 +332,11 @@ func (w *WarehouseAssert) HasOwnerRoleType(expected string) *WarehouseAssert {
 func (w *WarehouseAssert) HasResourceConstraint(expected sdk.WarehouseResourceConstraint) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.ResourceConstraint != expected {
-			return fmt.Errorf("expected resource constraint: %v; got: %v", expected, o.ResourceConstraint)
+		if o.ResourceConstraint == nil {
+			return fmt.Errorf("expected resource constraint to have value; got: nil")
+		}
+		if *o.ResourceConstraint != expected {
+			return fmt.Errorf("expected resource constraint: %v; got: %v", expected, *o.ResourceConstraint)
 		}
 		return nil
 	})
