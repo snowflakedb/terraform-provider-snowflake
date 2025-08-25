@@ -2,10 +2,10 @@ package sdk
 
 var (
 	_ validatable = new(CreateSemanticViewOptions)
+	_ validatable = new(AlterSemanticViewOptions)
 	_ validatable = new(DropSemanticViewOptions)
 	_ validatable = new(DescribeSemanticViewOptions)
 	_ validatable = new(ShowSemanticViewOptions)
-	_ validatable = new(AlterSemanticViewOptions)
 )
 
 func (opts *CreateSemanticViewOptions) validate() error {
@@ -19,6 +19,7 @@ func (opts *CreateSemanticViewOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	}
+	// Adjusted manually
 	if valueSet(opts.semanticViewRelationships) {
 		for _, v := range opts.semanticViewRelationships {
 			if !exactlyOneValueSet(v.tableNameOrAlias.RelationshipTableName, v.tableNameOrAlias.RelationshipTableAlias) {
@@ -35,6 +36,20 @@ func (opts *CreateSemanticViewOptions) validate() error {
 				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
 			}
 		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterSemanticViewOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.SetComment, opts.UnsetComment) {
+		errs = append(errs, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment"))
 	}
 	return JoinErrors(errs...)
 }
@@ -66,19 +81,5 @@ func (opts *ShowSemanticViewOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	return JoinErrors(errs...)
-}
-
-func (opts *AlterSemanticViewOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if !exactlyOneValueSet(opts.SetComment, opts.UnsetComment) {
-		errs = append(errs, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment"))
-	}
 	return JoinErrors(errs...)
 }

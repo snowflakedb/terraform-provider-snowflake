@@ -8,11 +8,13 @@ import (
 
 type SemanticViews interface {
 	Create(ctx context.Context, request *CreateSemanticViewRequest) error
+	Alter(ctx context.Context, request *AlterSemanticViewRequest) error
 	Drop(ctx context.Context, request *DropSemanticViewRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SemanticViewDetails, error)
 	Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error)
-	Alter(ctx context.Context, request *AlterSemanticViewRequest) error
+	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
+	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
 }
 
 // CreateSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view.
@@ -22,12 +24,11 @@ type CreateSemanticViewOptions struct {
 	semanticView              bool                       `ddl:"static" sql:"SEMANTIC VIEW"`
 	IfNotExists               *bool                      `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                      SchemaObjectIdentifier     `ddl:"identifier"`
-	tables                    bool                       `ddl:"static" sql:"TABLES"`
-	logicalTables             []LogicalTable             `ddl:"list,parentheses"`
-	semanticViewRelationships []SemanticViewRelationship `ddl:"parameter,no_equals,parentheses" sql:"RELATIONSHIPS"`
-	semanticViewFacts         []SemanticExpression       `ddl:"parameter,no_equals,parentheses" sql:"FACTS"`
-	semanticViewDimensions    []SemanticExpression       `ddl:"parameter,no_equals,parentheses" sql:"DIMENSIONS"`
-	semanticViewMetrics       []MetricDefinition         `ddl:"parameter,no_equals,parentheses" sql:"METRICS"`
+	logicalTables             []LogicalTable             `ddl:"parameter,parentheses,no_equals" sql:"TABLES"`
+	semanticViewRelationships []SemanticViewRelationship `ddl:"parameter,parentheses,no_equals" sql:"RELATIONSHIPS"`
+	semanticViewFacts         []SemanticExpression       `ddl:"parameter,parentheses,no_equals" sql:"FACTS"`
+	semanticViewDimensions    []SemanticExpression       `ddl:"parameter,parentheses,no_equals" sql:"DIMENSIONS"`
+	semanticViewMetrics       []MetricDefinition         `ddl:"parameter,parentheses,no_equals" sql:"METRICS"`
 	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
 }
@@ -121,6 +122,16 @@ type WindowFunctionOverClause struct {
 	WindowFrameClause *string `ddl:"keyword"`
 }
 
+// AlterSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view.
+type AlterSemanticViewOptions struct {
+	alter        bool                   `ddl:"static" sql:"ALTER"`
+	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
+	IfExists     *bool                  `ddl:"keyword" sql:"IF EXISTS"`
+	name         SchemaObjectIdentifier `ddl:"identifier"`
+	SetComment   *string                `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
+	UnsetComment *bool                  `ddl:"keyword" sql:"UNSET COMMENT"`
+}
+
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.
 type DropSemanticViewOptions struct {
 	drop         bool                   `ddl:"static" sql:"DROP"`
@@ -190,14 +201,4 @@ func (v *SemanticView) ID() SchemaObjectIdentifier {
 }
 func (v *SemanticView) ObjectType() ObjectType {
 	return ObjectTypeSemanticView
-}
-
-// AlterSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view.
-type AlterSemanticViewOptions struct {
-	alter        bool                   `ddl:"static" sql:"ALTER"`
-	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
-	IfExists     *bool                  `ddl:"keyword" sql:"IF EXISTS"`
-	name         SchemaObjectIdentifier `ddl:"identifier"`
-	SetComment   *string                `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
-	UnsetComment *bool                  `ddl:"keyword" sql:"UNSET COMMENT"`
 }

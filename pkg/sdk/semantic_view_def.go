@@ -51,11 +51,11 @@ var SemanticViewsDef = g.NewInterface(
 			SQL("SEMANTIC VIEW").
 			IfNotExists().
 			Name().
-			QueryStructField("logicalTables", logicalTable, g.ParameterOptions().Parentheses().NoEquals().Required().SQL("TABLES")).
-			OptionalQueryStructField("semanticViewRelationships", semanticViewRelationship, g.ParameterOptions().Parentheses().NoEquals().SQL("RELATIONSHIPS")).
-			OptionalQueryStructField("semanticViewFacts", semanticExpression, g.ParameterOptions().Parentheses().NoEquals().SQL("FACTS")).
-			OptionalQueryStructField("semanticViewDimensions", semanticExpression, g.ParameterOptions().Parentheses().NoEquals().SQL("DIMENSIONS")).
-			OptionalQueryStructField("semanticViewMetrics", metricDefinition, g.ParameterOptions().Parentheses().NoEquals().SQL("METRICS")).
+			PredefinedQueryStructField("logicalTables", "[]LogicalTable", g.ParameterOptions().Required().Parentheses().NoEquals().SQL("TABLES")).
+			PredefinedQueryStructField("semanticViewRelationships", "[]SemanticViewRelationship", g.ParameterOptions().Parentheses().NoEquals().SQL("RELATIONSHIPS")).
+			PredefinedQueryStructField("semanticViewFacts", "[]SemanticExpression", g.ParameterOptions().Parentheses().NoEquals().SQL("FACTS")).
+			PredefinedQueryStructField("semanticViewDimensions", "[]SemanticExpression", g.ParameterOptions().Parentheses().NoEquals().SQL("DIMENSIONS")).
+			PredefinedQueryStructField("semanticViewMetrics", "[]MetricDefinition", g.ParameterOptions().Parentheses().NoEquals().SQL("METRICS")).
 			OptionalComment().
 			OptionalCopyGrants().
 			WithValidation(g.ValidIdentifier, "name").
