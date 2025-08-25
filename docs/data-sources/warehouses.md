@@ -179,6 +179,7 @@ Read-Only:
 - `query_acceleration_max_scale_factor` (Number)
 - `queued` (Number)
 - `quiescing` (Number)
+- `resource_constraint` (String)
 - `resource_monitor` (String)
 - `resumed_on` (String)
 - `running` (Number)

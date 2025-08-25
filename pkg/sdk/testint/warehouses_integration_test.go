@@ -83,6 +83,25 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Len(t, warehouses, 0)
 	})
 
+	t.Run("create: with resource constraint", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
+			ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintMemory1X),
+			WarehouseType:      sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized),
+			WarehouseSize:      sdk.Pointer(sdk.WarehouseSizeMedium),
+		})
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
+
+		result, err := client.Warehouses.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.WarehouseFromObject(t, result).
+			HasResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
+			HasType(sdk.WarehouseTypeSnowparkOptimized).
+			HasSize(sdk.WarehouseSizeMedium),
+		)
+	})
+
 	t.Run("create: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
@@ -130,7 +149,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasResourceMonitor(resourceMonitor.ID()).
 			HasComment("comment").
 			HasEnableQueryAcceleration(true).
-			HasQueryAccelerationMaxScaleFactor(90))
+			HasQueryAccelerationMaxScaleFactor(90).
+			HasResourceConstraint(sdk.WarehouseResourceConstraintStandardGen1))
 
 		warehouse, err := client.Warehouses.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -147,6 +167,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "comment", warehouse.Comment)
 		assert.Equal(t, true, warehouse.EnableQueryAcceleration)
 		assert.Equal(t, 90, warehouse.QueryAccelerationMaxScaleFactor)
+		assert.NotNil(t, warehouse.ResourceConstraint)
+		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *warehouse.ResourceConstraint)
 
 		// we can also use the read object to initialize:
 		assertThatObject(t, objectassert.WarehouseFromObject(t, warehouse).
@@ -162,7 +184,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasResourceMonitor(resourceMonitor.ID()).
 			HasComment("comment").
 			HasEnableQueryAcceleration(true).
-			HasQueryAccelerationMaxScaleFactor(90))
+			HasQueryAccelerationMaxScaleFactor(90).
+			HasResourceConstraint(sdk.WarehouseResourceConstraintStandardGen1))
 
 		tag1Value, err := client.SystemFunctions.GetTag(ctx, tag.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
 		require.NoError(t, err)
@@ -192,6 +215,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "", result.Comment)
 		assert.Equal(t, false, result.EnableQueryAcceleration)
 		assert.Equal(t, 8, result.QueryAccelerationMaxScaleFactor)
+		assert.NotNil(t, result.ResourceConstraint)
+		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *result.ResourceConstraint)
 	})
 
 	t.Run("create: empty comment", func(t *testing.T) {
@@ -220,9 +245,12 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "", warehouse.Comment)
 		assert.Equal(t, false, warehouse.EnableQueryAcceleration)
 		assert.Equal(t, 8, warehouse.QueryAccelerationMaxScaleFactor)
+		assert.NotNil(t, warehouse.ResourceConstraint)
+		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *warehouse.ResourceConstraint)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
 			// WarehouseType omitted on purpose - it requires suspending the warehouse (separate test cases)
+			// ResourceConstraint omitted on purpose - it requires setting WarehouseType to SNOWPARK_OPTIMIZED (separate test cases)
 			Set: &sdk.WarehouseSet{
 				WarehouseSize:                   sdk.Pointer(sdk.WarehouseSizeMedium),
 				WaitForCompletion:               sdk.Bool(true),
@@ -252,6 +280,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "new comment", warehouseAfterSet.Comment)
 		assert.Equal(t, true, warehouseAfterSet.EnableQueryAcceleration)
 		assert.Equal(t, 2, warehouseAfterSet.QueryAccelerationMaxScaleFactor)
+		assert.NotNil(t, warehouseAfterSet.ResourceConstraint)
+		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *warehouseAfterSet.ResourceConstraint)
 
 		alterOptions = &sdk.AlterWarehouseOptions{
 			// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
@@ -277,6 +307,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "", warehouseAfterUnset.Comment)
 		assert.Equal(t, false, warehouseAfterUnset.EnableQueryAcceleration)
 		assert.Equal(t, 8, warehouseAfterUnset.QueryAccelerationMaxScaleFactor)
+		assert.NotNil(t, warehouseAfterUnset.ResourceConstraint)
+		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *warehouseAfterUnset.ResourceConstraint)
 	})
 
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
@@ -399,6 +431,46 @@ func TestInt_Warehouses(t *testing.T) {
 		// assert.Equal(t, sdk.WarehouseStateStarted, returnedWarehouse.State)
 	})
 
+	t.Run("alter: set and unset resource constraint", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		// new warehouse created on purpose - we need medium to be able to use snowpark-optimized type
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{
+			WarehouseType: sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized),
+			WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
+		})
+		t.Cleanup(warehouseCleanup)
+
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
+		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
+
+		alterOptions := &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintMemory1X)},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+			HasResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
+			HasType(sdk.WarehouseTypeSnowparkOptimized).
+			HasSize(sdk.WarehouseSizeMedium),
+		)
+
+		// TODO [SNOW-1473453]: uncomment and test when UNSET starts working correctly (expecting to unset to default MEMORY_16X)
+		// alterOptions = &sdk.AlterWarehouseOptions{
+		//	Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
+		// }
+		// err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		// require.NoError(t, err)
+		//
+		// returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		// require.NoError(t, err)
+		// assert.Equal(t, *sdk.WarehouseResourceConstraintMemory1X, returnedWarehouse.ResourceConstraint)
+	})
+
 	t.Run("alter: prove problems with unset auto suspend", func(t *testing.T) {
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
@@ -461,6 +533,32 @@ func TestInt_Warehouses(t *testing.T) {
 		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default auto resume TRUE)
 		// assert.Equal(t, true, returnedWarehouse.AutoResume)
 		assert.Equal(t, false, returnedWarehouse.AutoResume)
+	})
+
+	t.Run("alter: prove problems with unset resource constraint", func(t *testing.T) {
+		// new warehouse created on purpose
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{
+			WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
+		})
+		t.Cleanup(warehouseCleanup)
+
+		alterOptions := &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
+		}
+		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.ErrorContains(t, err, "invalid type of property 'null' for 'RESOURCE_CONSTRAINT'")
+
+		// The same happens for SNOWPARK_OPTIMIZED type
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{
+				WarehouseType: sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized),
+			},
+		})
+		require.NoError(t, err)
+
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.ErrorContains(t, err, "invalid type of property 'null' for 'RESOURCE_CONSTRAINT'")
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {

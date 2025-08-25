@@ -274,6 +274,48 @@ func TestWarehouseDescribe(t *testing.T) {
 	})
 }
 
+func TestToResourceConstraint(t *testing.T) {
+	type test struct {
+		input string
+		want  WarehouseResourceConstraint
+	}
+
+	valid := []test{
+		// Case insensitive.
+		{input: "standard_gen_1", want: WarehouseResourceConstraintStandardGen1},
+
+		// Supported Values.
+		{input: "STANDARD_GEN_1", want: WarehouseResourceConstraintStandardGen1},
+		{input: "STANDARD_GEN_2", want: WarehouseResourceConstraintStandardGen2},
+		{input: "MEMORY_1X", want: WarehouseResourceConstraintMemory1X},
+		{input: "MEMORY_1X_X86", want: WarehouseResourceConstraintMemory1Xx86},
+		{input: "MEMORY_16X", want: WarehouseResourceConstraintMemory16X},
+		{input: "MEMORY_16X_X86", want: WarehouseResourceConstraintMemory16Xx86},
+		{input: "MEMORY_64X", want: WarehouseResourceConstraintMemory64X},
+		{input: "MEMORY_64X_X86", want: WarehouseResourceConstraintMemory64Xx86},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToWarehouseResourceConstraint(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToWarehouseResourceConstraint(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
 func Test_Warehouse_ToWarehouseSize(t *testing.T) {
 	type test struct {
 		input string
