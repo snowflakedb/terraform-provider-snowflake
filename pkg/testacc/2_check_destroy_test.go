@@ -54,10 +54,15 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 			if !ok {
 				return fmt.Errorf("unsupported show by id in cleanup for %s, with id %v", resource, id.FullyQualifiedName())
 			}
-			if showById(ctx, client, id) == nil {
+			if err := showById(ctx, client, id); err == nil {
 				return fmt.Errorf("%s %v still exists", resource, id.FullyQualifiedName())
 			} else {
-				t.Logf("resource %s (%v) was dropped successfully in Snowflake", resource, id.FullyQualifiedName())
+				var incorrectIdentifierError *IncorrectIdentifierError
+				if errors.As(err, &incorrectIdentifierError) {
+					return err
+				} else {
+					t.Logf("resource %s (%v) was dropped successfully in Snowflake", resource, id.FullyQualifiedName())
+				}
 			}
 		}
 		return nil
@@ -85,9 +90,40 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 	}
 }
 
-type showByIdFunc func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
+type supportedIdentifierTypes interface {
+	sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments
+}
 
-var showByIdFunctions = map[resources.Resource]showByIdFunc{
+type runShowByIdFunc func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
+type showByIdFunc[T supportedIdentifierTypes, U any] func(context.Context, T) (U, error)
+
+func runShowById[T supportedIdentifierTypes, U any](ctx context.Context, id sdk.ObjectIdentifier, show showByIdFunc[T, U]) error {
+	idCast, err := asId[T](id)
+	if err != nil {
+		return err
+	}
+	_, err = show(ctx, *idCast)
+	return err
+}
+
+type IncorrectIdentifierError struct {
+	expectedType string
+	id           sdk.ObjectIdentifier
+}
+
+func (e *IncorrectIdentifierError) Error() string {
+	return fmt.Sprintf("expected %s identifier type, but got: %T", e.expectedType, e.id)
+}
+
+func asId[T supportedIdentifierTypes](id sdk.ObjectIdentifier) (*T, error) {
+	if idCast, ok := id.(T); !ok {
+		return nil, &IncorrectIdentifierError{reflect.TypeOf(new(T)).Elem().Name(), id}
+	} else {
+		return &idCast, nil
+	}
+}
+
+var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.Account: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Accounts.ShowByID)
 	},
@@ -313,23 +349,6 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.Warehouse: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Warehouses.ShowByID)
 	},
-}
-
-func runShowById[T any, U sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments](ctx context.Context, id sdk.ObjectIdentifier, show func(ctx context.Context, id U) (T, error)) error {
-	idCast, err := asId[U](id)
-	if err != nil {
-		return err
-	}
-	_, err = show(ctx, *idCast)
-	return err
-}
-
-func asId[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments](id sdk.ObjectIdentifier) (*T, error) {
-	if idCast, ok := id.(T); !ok {
-		return nil, fmt.Errorf("expected %s identifier type, but got: %T", reflect.TypeOf(new(T)).Elem().Name(), id)
-	} else {
-		return &idCast, nil
-	}
 }
 
 // CheckGrantAccountRoleDestroy is a custom checks that should be later incorporated into generic CheckDestroy
