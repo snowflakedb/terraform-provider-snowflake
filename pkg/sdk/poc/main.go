@@ -56,6 +56,7 @@ var definitionMapping = map[string]*generator.Interface{
 	"user_programmatic_access_tokens_def.go": sdk.UserProgrammaticAccessTokensDef,
 	"listings_def.go":                        sdk.ListingsDef,
 	"organization_accounts_def.go":           sdk.OrganizationAccountsDef,
+	"semantic_view_def.go":                   sdk.SemanticViewsDef,
 }
 
 func main() {
@@ -63,7 +64,7 @@ func main() {
 	fmt.Printf("Running generator on %s with args %#v\n", file, os.Args[1:])
 	definition := getDefinition(file)
 
-	// runAllTemplatesToStdOut(definition)
+	//runAllTemplatesToStdOut(definition)
 	runAllTemplatesAndSave(definition, file)
 	fmt.Println("Integration tests should be added manually to the pkg/sdk/testint/ directory")
 }

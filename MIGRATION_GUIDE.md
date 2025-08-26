@@ -24,6 +24,30 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.5.0 ➞ v2.5.1
+
+### *(improvement)* Handling conversion-based errors
+
+Previously, when an error occurred during the conversion from Snowflake data to the SDK object, the error would be printed as a debug log.
+We would then proceed with the conversion and later handle the standard operations within the resource or data source with potentially incorrectly converted data.
+
+This could result in errors at the resource or data source level, sometimes causing undefined behavior.
+Ideally, these errors should be detected and addressed at the conversion level.
+
+Let's say we got an error in one of our conversion functions that transfers a text column containing JSON to a Go structure.
+Before the change, on failure, we would print something similar to:
+```text
+[DEBUG] Failed to convert X, err: <error from JSON mapping>
+```
+
+After implementing these improvements, any such failure will be propagated and acknowledged by the resources and data sources.
+This will result in operations reporting failures, as in the following example:
+```text
+conversion from Snowflake failed with error: failed to convert X, err: <error from JSON mapping>
+```
+
+If you encounter any errors of this kind, we encourage you to report them. Your feedback helps us improve the provider stability.
+
 ## v2.4.x ➞ v2.5.0
 
 ### *(bugfix)* Fixed incorrect authenticator when using the `token` field
