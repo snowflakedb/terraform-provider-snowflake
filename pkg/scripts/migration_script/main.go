@@ -17,7 +17,7 @@ func main() {
 
 	switch config.ObjectType {
 	case ObjectTypeGrants:
-		if err := HandleGrants(csvInput); err != nil {
+		if err := HandleGrants(config, csvInput); err != nil {
 			log.Fatalf("Error handling grants generation: %v", err)
 		}
 	default:

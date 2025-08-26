@@ -25,7 +25,7 @@ func ResourceFromModel(t *testing.T, model ResourceModel) string {
 	hcl, err := DefaultHclConfigProvider.HclFromJson(resourceJson)
 	require.NoError(t, err)
 
-	log.Printf("Generated config:\n%s", hcl)
+	//log.Printf("Generated config:\n%s", hcl)
 
 	return hcl
 }

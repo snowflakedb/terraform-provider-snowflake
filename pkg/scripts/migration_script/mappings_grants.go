@@ -14,7 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func HandleGrants(csvInput [][]string) error {
+func HandleGrants(config *Config, csvInput [][]string) error {
 	grants, err := ConvertCsvInput[GrantCsvRow, sdk.Grant](csvInput)
 	if err != nil {
 		return err
@@ -23,19 +23,31 @@ func HandleGrants(csvInput [][]string) error {
 	groupedGrants := GroupGrants(grants)
 
 	resourceModels := make([]accconfig.ResourceModel, 0)
+	importModels := make([]ImportModel, 0)
+
 	for _, grantGroup := range groupedGrants {
-		mappedModel, err := MapGrantToModel(grantGroup)
+		mappedModel, importModel, err := MapGrantToModel(grantGroup)
 		if err != nil {
 			log.Printf("Error converting grant group: %+v to model: %v. Skipping grant and continuing with other mappings.", grantGroup, err)
 		} else {
 			resourceModels = append(resourceModels, mappedModel)
+			importModels = append(importModels, *importModel)
 		}
 	}
 
 	mappedModels := collections.Map(resourceModels, func(resourceModel accconfig.ResourceModel) string {
 		return accconfig.ResourceFromModel(&testing.T{}, resourceModel)
 	})
+
+	mappedImports, err := collections.MapErr(importModels, func(importModel ImportModel) (string, error) {
+		return TransformImportModel(config, importModel)
+	})
+	if err != nil {
+		log.Printf("Errors during import transformations: %v", err)
+	}
+
 	fmt.Println(collections.JoinStrings(mappedModels, "\n"))
+	fmt.Println(collections.JoinStrings(mappedImports, ""))
 
 	return nil
 }
@@ -51,7 +63,7 @@ func GroupGrants(grants []sdk.Grant) map[string][]sdk.Grant {
 	})
 }
 
-func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
+func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportModel, error) {
 	// Assuming all grants in the group are the same type and only differ by privileges
 	grant := grantGroup[0]
 	privileges := collections.Map(grantGroup, func(grant sdk.Grant) string { return grant.Privilege })
@@ -67,88 +79,160 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 		return MapToGrantAccountRole(grant)
 	case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeDatabaseRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole)):
 		return MapToGrantDatabaseRole(grant)
-	case grant.GrantedOn == sdk.ObjectTypeRole:
-		return MapToGrantPrivilegesToAccountRole(grant, privilegeListVariable)
-	case grant.GrantedOn == sdk.ObjectTypeDatabaseRole:
-		return MapToGrantPrivilegesToDatabaseRole(grant, privilegeListVariable)
+	case grant.GrantedTo == sdk.ObjectTypeRole:
+		return MapToGrantPrivilegesToAccountRole(grant, privileges, privilegeListVariable)
+	case grant.GrantedTo == sdk.ObjectTypeDatabaseRole:
+		return MapToGrantPrivilegesToDatabaseRole(grant, privileges, privilegeListVariable)
 	// TODO: To share and To application role
 	default:
-		return nil, fmt.Errorf("skipping unsupported grant: %+v", grant)
+		return nil, nil, fmt.Errorf("skipping unsupported grant: %+v", grant)
 	}
 }
 
-func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privilegeListVariable tfconfig.Variable) (accconfig.ResourceModel, error) {
+func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string, privilegeListVariable tfconfig.Variable) (accconfig.ResourceModel, *ImportModel, error) {
 	// TODO: Check other outputs
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
-		return model.GrantPrivilegesToAccountRole("test_resource_name_on_account", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
-				WithOnAccount(true).
-				WithWithGrantOption(grant.GrantOption),
-			nil
+		resourceModel := model.GrantPrivilegesToAccountRole("test_resource_name_on_account", grant.GranteeName.Name()).
+			WithPrivilegesValue(privilegeListVariable).
+			WithOnAccount(true).
+			WithWithGrantOption(grant.GrantOption)
+
+		return resourceModel, &ImportModel{
+			ResourceAddress: resourceModel.ResourceReference(),
+			Id: fmt.Sprintf(
+				`"%s"|%t|false|%s|OnAccount`,
+				grant.GranteeName.Name(),
+				grant.GrantOption,
+				collections.JoinStrings(privileges, ","),
+			),
+		}, nil
 	case slices.Contains(sdk.ValidGrantToAccountObjectTypesString, string(grant.GrantedOn)):
-		return model.GrantPrivilegesToAccountRole("test_resource_name_on_account_object", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
-				WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
-					"object_name": tfconfig.StringVariable(grant.Name.Name()),
-				})).
-				WithWithGrantOption(grant.GrantOption),
-			nil
+		resourceModel := model.GrantPrivilegesToAccountRole("test_resource_name_on_account_object", grant.GranteeName.Name()).
+			WithPrivilegesValue(privilegeListVariable).
+			WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
+				"object_name": tfconfig.StringVariable(grant.Name.Name()),
+			})).
+			WithWithGrantOption(grant.GrantOption)
+
+		return resourceModel, &ImportModel{
+			ResourceAddress: resourceModel.ResourceReference(),
+			Id: fmt.Sprintf(
+				`"%s"|%t|false|%s|OnAccountObject|%s|"%s"`,
+				grant.GranteeName.Name(),
+				grant.GrantOption,
+				collections.JoinStrings(privileges, ","),
+				grant.GrantedOn.String(),
+				grant.Name.Name(),
+			),
+		}, nil
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
-		return model.GrantPrivilegesToAccountRole("test_resource_name_on_schema", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
-				WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
-				})).
-				WithWithGrantOption(grant.GrantOption),
-			nil
+		resourceModel := model.GrantPrivilegesToAccountRole("test_resource_name_on_schema", grant.GranteeName.Name()).
+			WithPrivilegesValue(privilegeListVariable).
+			WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
+			})).
+			WithWithGrantOption(grant.GrantOption)
+
+		return resourceModel, &ImportModel{
+			ResourceAddress: resourceModel.ResourceReference(),
+			Id: fmt.Sprintf(
+				`"%s"|%t|false|%s|OnSchema|OnSchema|%s`,
+				grant.GranteeName.Name(),
+				grant.GrantOption,
+				collections.JoinStrings(privileges, ","),
+				grant.Name.FullyQualifiedName(),
+			),
+		}, nil
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
-		return model.GrantPrivilegesToAccountRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
-				WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
-					"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
-				})).
-				WithWithGrantOption(grant.GrantOption),
-			nil
+		resourceModel := model.GrantPrivilegesToAccountRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
+			WithPrivilegesValue(privilegeListVariable).
+			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
+				"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
+			})).
+			WithWithGrantOption(grant.GrantOption)
+
+		return resourceModel, &ImportModel{
+			ResourceAddress: resourceModel.ResourceReference(),
+			Id: fmt.Sprintf(
+				`"%s"|%t|false|%s|OnSchemaObject|OnObject|%s|%s`,
+				grant.GranteeName.Name(),
+				grant.GrantOption,
+				collections.JoinStrings(privileges, ","),
+				grant.GrantedOn.String(),
+				grant.Name.FullyQualifiedName(),
+			),
+		}, nil
 	default:
-		return nil, fmt.Errorf("unsupported grant mapping")
+		return nil, nil, fmt.Errorf("unsupported grant mapping")
 	}
 }
 
-func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privilegeListVariable tfconfig.Variable) (accconfig.ResourceModel, error) {
+func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string, privilegeListVariable tfconfig.Variable) (accconfig.ResourceModel, *ImportModel, error) {
 	// TODO: Check other outputs
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeDatabase:
-		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
-				WithOnDatabase(grant.Name.Name()).
-				WithWithGrantOption(grant.GrantOption),
-			nil
+		resourceModel := model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema", grant.GranteeName.Name()).
+			WithPrivilegesValue(privilegeListVariable).
+			WithOnDatabase(grant.Name.Name()).
+			WithWithGrantOption(grant.GrantOption)
+
+		return resourceModel, &ImportModel{
+			ResourceAddress: resourceModel.ResourceReference(),
+			Id: fmt.Sprintf(
+				"%s|%t|false|%s|OnDatabase|%s",
+				grant.GranteeName.FullyQualifiedName(),
+				grant.GrantOption,
+				collections.JoinStrings(privileges, ","),
+				grant.Name.FullyQualifiedName(),
+			),
+		}, nil
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
-		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
-				WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
-				})).
-				WithWithGrantOption(grant.GrantOption),
-			nil
+		resourceModel := model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema", grant.GranteeName.Name()).
+			WithPrivilegesValue(privilegeListVariable).
+			WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
+			})).
+			WithWithGrantOption(grant.GrantOption)
+
+		return resourceModel, &ImportModel{
+			ResourceAddress: resourceModel.ResourceReference(),
+			Id: fmt.Sprintf(
+				"%s|%t|false|%s|OnSchema|OnSchema|%s",
+				grant.GranteeName.FullyQualifiedName(),
+				grant.GrantOption,
+				collections.JoinStrings(privileges, ","),
+				grant.Name.FullyQualifiedName(),
+			),
+		}, nil
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
-		return model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
-				WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
-					"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
-				})).
-				WithWithGrantOption(grant.GrantOption),
-			nil
+		resourceModel := model.GrantPrivilegesToDatabaseRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
+			WithPrivilegesValue(privilegeListVariable).
+			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
+				"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
+			})).
+			WithWithGrantOption(grant.GrantOption)
+
+		return resourceModel, &ImportModel{
+			ResourceAddress: resourceModel.ResourceReference(),
+			Id: fmt.Sprintf(
+				"%s|%t|false|%s|OnSchemaObject|OnObject|%s|%s",
+				grant.GranteeName.FullyQualifiedName(),
+				grant.GrantOption,
+				collections.JoinStrings(privileges, ","),
+				grant.GrantedOn.String(),
+				grant.Name.FullyQualifiedName(),
+			),
+		}, nil
 	default:
-		return nil, fmt.Errorf("skipping unsupported grant: %+v", grant)
+		return nil, nil, fmt.Errorf("skipping unsupported grant: %+v", grant)
 	}
 }
 
-func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, error) {
+func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportModel, error) {
 	var result *model.GrantAccountRoleModel
 
 	if grant.Role != nil {
@@ -166,10 +250,14 @@ func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, error) {
 	}
 
 	// TODO: Check other outputs
-	return result, nil
+	return result, &ImportModel{
+		ResourceAddress: result.ResourceReference(),
+		// role_name (string) | grantee_object_type (ROLE|USER) | grantee_name (string)
+		Id: fmt.Sprintf(`"%s"|%s|"%s"`, grant.Name.Name(), grant.GrantedTo.String(), grant.GranteeName.Name()),
+	}, nil
 }
 
-func MapToGrantDatabaseRole(grant sdk.Grant) (accconfig.ResourceModel, error) {
+func MapToGrantDatabaseRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportModel, error) {
 	var result *model.GrantDatabaseRoleModel
 
 	if grant.Role != nil {
@@ -187,5 +275,9 @@ func MapToGrantDatabaseRole(grant sdk.Grant) (accconfig.ResourceModel, error) {
 	}
 
 	// TODO: Check other outputs
-	return result, nil
+	return result, &ImportModel{
+		ResourceAddress: result.ResourceReference(),
+		// TODO: <database_role_identifier>|<object_type (ROLE|DATABASE ROLE|SHARE)>|<object_name>
+		Id: fmt.Sprintf("%s|%s|%s", grant.Name.FullyQualifiedName(), grant.GrantedTo.String(), grant.GranteeName.FullyQualifiedName()),
+	}, nil
 }

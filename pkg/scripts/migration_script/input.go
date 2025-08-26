@@ -58,7 +58,7 @@ type Config struct {
 
 func ParseInputArguments() (*Config, error) {
 	flag.Usage = func() {
-		_, _ = fmt.Fprintln(os.Stderr, "Usage: migration_script [object_type] [flags]")
+		_, _ = fmt.Fprintln(os.Stderr, "Usage: migration_script [flags] [object_type]")
 		_, _ = fmt.Fprintln(os.Stderr, "")
 
 		_, _ = fmt.Fprintln(os.Stderr, "Object types:")
@@ -71,15 +71,6 @@ func ParseInputArguments() (*Config, error) {
 		flag.PrintDefaults()
 	}
 
-	// positional arguments
-	if len(os.Args) < 2 {
-		return nil, fmt.Errorf("no object type specified, use -h for help")
-	}
-	parsedObjectType, err := ToObjectType(os.Args[1])
-	if err != nil {
-		return nil, fmt.Errorf("error parsing object type: %w", err)
-	}
-
 	// flags
 	importFlagString := flag.String("import", "statement", collections.JoinStrings([]string{
 		"Determines the output format for import statements.",
@@ -88,11 +79,24 @@ func ParseInputArguments() (*Config, error) {
 		"	- \"block\" will generate import block next to every generated resource",
 		"", // required for default value formatting
 	}, "\n"))
+
 	flag.Parse()
 
 	importFlagType, err := ToImportStatementType(*importFlagString)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing import flag: %w", err)
+	}
+
+	// positional arguments
+	positionalArguments := flag.Args()
+
+	if len(positionalArguments) != 1 {
+		return nil, fmt.Errorf("no object type specified, use -h for help")
+	}
+
+	parsedObjectType, err := ToObjectType(positionalArguments[0])
+	if err != nil {
+		return nil, fmt.Errorf("error parsing object type: %w", err)
 	}
 
 	return &Config{
