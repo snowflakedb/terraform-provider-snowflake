@@ -61,7 +61,7 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 				if errors.As(err, &incorrectIdentifierError) {
 					return err
 				} else {
-					t.Logf("resource %s (%v) was dropped successfully in Snowflake", resource, id.FullyQualifiedName())
+					t.Logf("resource %s (%v) was dropped successfully in Snowflake, err: %v", resource, id.FullyQualifiedName(), err)
 				}
 			}
 		}
@@ -85,8 +85,11 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.ProcedureScala,
 		resources.ProcedureSql:
 		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
-	default:
+	// TODO: list here all legacy resource ids
+	case resources.Pipe:
 		return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
+	default:
+		return sdk.ParseObjectIdentifierString(rs.Primary.ID)
 	}
 }
 
