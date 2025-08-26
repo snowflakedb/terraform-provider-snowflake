@@ -19,7 +19,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehouseInitialCheck(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		PreCheck: func() { TestAccPreCheck(t) },
-		// TODO [mux-PR]: fill check destroy; the protected enum is used now and this test is for a PoC resource
+		// TODO [SNOW-2298171]: fill check destroy; the protected enum is used now and this test is for a PoC resource
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{

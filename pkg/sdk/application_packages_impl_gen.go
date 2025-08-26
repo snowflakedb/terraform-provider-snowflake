@@ -6,7 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ApplicationPackages = (*applicationPackages)(nil)
+var (
+	_ ApplicationPackages                = (*applicationPackages)(nil)
+	_ convertibleRow[ApplicationPackage] = new(applicationPackageRow)
+)
 
 type applicationPackages struct {
 	client *Client
@@ -37,8 +40,7 @@ func (v *applicationPackages) Show(ctx context.Context, request *ShowApplication
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[applicationPackageRow, ApplicationPackage](dbRows)
-	return resultList, nil
+	return convertRows[applicationPackageRow, ApplicationPackage](dbRows)
 }
 
 func (v *applicationPackages) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ApplicationPackage, error) {
@@ -160,7 +162,7 @@ func (r *ShowApplicationPackageRequest) toOpts() *ShowApplicationPackageOptions 
 	return opts
 }
 
-func (r applicationPackageRow) convert() *ApplicationPackage {
+func (r applicationPackageRow) convert() (*ApplicationPackage, error) {
 	e := &ApplicationPackage{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -178,5 +180,5 @@ func (r applicationPackageRow) convert() *ApplicationPackage {
 	if r.ApplicationClass.Valid {
 		e.ApplicationClass = r.ApplicationClass.String
 	}
-	return e
+	return e, nil
 }

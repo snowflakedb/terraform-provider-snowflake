@@ -37,7 +37,7 @@ func RestApiPocConfigFromDriverConfig(driverConfig *gosnowflake.Config) (*RestAp
 	return res, nil
 }
 
-// TODO [mux-PR]: verify connection after creation
+// TODO [SNOW-2234579]: verify connection after creation
 func NewRestApiPocClient(config *RestApiPocConfig) (*RestApiPocClient, error) {
 	c := &RestApiPocClient{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
@@ -90,8 +90,8 @@ func put[T any](ctx context.Context, client *RestApiPocClient, path string, obje
 	return postOrPut(ctx, client, http.MethodPut, path, object)
 }
 
-// TODO [mux-PR]: potentially merge postOrPut, get, and handleDelete
-// TODO [mux-PR]: improve status codes handling
+// TODO [SNOW-2296350]: potentially merge postOrPut, get, and handleDelete
+// TODO [SNOW-2296350]: improve status codes handling
 func postOrPut[T any](ctx context.Context, client *RestApiPocClient, method string, path string, object T) (*Response, error) {
 	body, err := json.Marshal(object)
 	if err != nil {
@@ -127,7 +127,7 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-// TODO [mux-PR]: improve status codes handling
+// TODO [SNOW-2296350]: improve status codes handling
 func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T, error) {
 	method := http.MethodGet
 	resp, err := client.doRequest(ctx, method, path, nil, map[string]string{})
@@ -157,7 +157,7 @@ func get[T any](ctx context.Context, client *RestApiPocClient, path string) (*T,
 	return &response, nil
 }
 
-// TODO [mux-PR]: improve status codes handling
+// TODO [SNOW-2296350]: improve status codes handling
 func handleDelete(ctx context.Context, client *RestApiPocClient, path string, queryParams map[string]string) (*Response, error) {
 	method := http.MethodDelete
 	resp, err := client.doRequest(ctx, method, path, nil, queryParams)

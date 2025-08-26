@@ -7,7 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ CortexSearchServices = (*cortexSearchServices)(nil)
+var (
+	_ CortexSearchServices                       = (*cortexSearchServices)(nil)
+	_ convertibleRow[CortexSearchService]        = new(cortexSearchServiceRow)
+	_ convertibleRow[CortexSearchServiceDetails] = new(cortexSearchServiceDetailsRow)
+)
 
 type cortexSearchServices struct {
 	client *Client
@@ -29,8 +33,7 @@ func (v *cortexSearchServices) Show(ctx context.Context, request *ShowCortexSear
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[cortexSearchServiceRow, CortexSearchService](dbRows)
-	return resultList, nil
+	return convertRows[cortexSearchServiceRow, CortexSearchService](dbRows)
 }
 
 func (v *cortexSearchServices) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*CortexSearchService, error) {
@@ -56,7 +59,7 @@ func (v *cortexSearchServices) Describe(ctx context.Context, id SchemaObjectIden
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *cortexSearchServices) Drop(ctx context.Context, request *DropCortexSearchServiceRequest) error {
@@ -118,7 +121,7 @@ func (r *ShowCortexSearchServiceRequest) toOpts() *ShowCortexSearchServiceOption
 	return opts
 }
 
-func (r cortexSearchServiceRow) convert() *CortexSearchService {
+func (r cortexSearchServiceRow) convert() (*CortexSearchService, error) {
 	cortexSearchService := &CortexSearchService{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -128,7 +131,7 @@ func (r cortexSearchServiceRow) convert() *CortexSearchService {
 	if r.Comment.Valid {
 		cortexSearchService.Comment = r.Comment.String
 	}
-	return cortexSearchService
+	return cortexSearchService, nil
 }
 
 func (r *DescribeCortexSearchServiceRequest) toOpts() *DescribeCortexSearchServiceOptions {
@@ -138,7 +141,7 @@ func (r *DescribeCortexSearchServiceRequest) toOpts() *DescribeCortexSearchServi
 	return opts
 }
 
-func (r cortexSearchServiceDetailsRow) convert() *CortexSearchServiceDetails {
+func (r cortexSearchServiceDetailsRow) convert() (*CortexSearchServiceDetails, error) {
 	row := &CortexSearchServiceDetails{
 		CreatedOn:         r.CreatedOn,
 		Name:              r.Name,
@@ -173,7 +176,7 @@ func (r cortexSearchServiceDetailsRow) convert() *CortexSearchServiceDetails {
 		row.EmbeddingModel = String(r.EmbeddingModel.String)
 	}
 
-	return row
+	return row, nil
 }
 
 func (r *DropCortexSearchServiceRequest) toOpts() *DropCortexSearchServiceOptions {
