@@ -13,9 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [next PRs]: this file contains all the convenience methods from testing.go from acceptance package
-
-// TODO [next PRs]: function acceptance.TestAccPreCheck was needed for the database, schema, and warehouse creation; it's not needed when TestMain is used; it was left for now, as we may want to do other validations here (and not to do a big revolution in all the acceptance tests that will be copied)
+// TODO [SNOW-2298287]: function acceptance.TestAccPreCheck was needed for the database, schema, and warehouse creation; it's not needed when TestMain is used; it was left for now, as we may want to do other validations here (and not to do a big revolution in all the acceptance tests that will be copied)
 func TestAccPreCheck(t *testing.T) {
 	t.Helper()
 }

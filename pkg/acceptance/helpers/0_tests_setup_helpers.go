@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// TODO [next PRs]: Use DropSafely
+// TODO [SNOW-2298254]: Use DropSafely
 func (c *TestClient) CreateTestDatabase(ctx context.Context, ifNotExists bool) (*sdk.Database, func(), error) {
 	id := c.Ids.DatabaseId()
 	cleanup := func() {
