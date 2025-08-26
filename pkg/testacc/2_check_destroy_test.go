@@ -116,8 +116,10 @@ type supportedIdentifierTypes interface {
 	sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments
 }
 
-type runShowByIdFunc func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
-type showByIdFunc[T supportedIdentifierTypes, U any] func(context.Context, T) (U, error)
+type (
+	runShowByIdFunc                                 func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
+	showByIdFunc[T supportedIdentifierTypes, U any] func(context.Context, T) (U, error)
+)
 
 func runShowById[T supportedIdentifierTypes, U any](ctx context.Context, id sdk.ObjectIdentifier, show showByIdFunc[T, U]) error {
 	idCast, err := asId[T](id)
