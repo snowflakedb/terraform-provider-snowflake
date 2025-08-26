@@ -321,7 +321,6 @@ func TestSemanticViews_Show(t *testing.T) {
 }
 
 func TestSemanticViews_Alter(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid AlterSemanticViewOptions
 	defaultOpts := func() *AlterSemanticViewOptions {

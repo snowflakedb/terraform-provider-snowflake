@@ -16,11 +16,11 @@ func TestAcc_TerraformPluginFrameworkPoc_InitialSetup(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			// TODO [mux-PR]: 1.6?
+			// TODO [SNOW-2234579]: 1.6?
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		PreCheck: func() { TestAccPreCheck(t) },
-		// TODO [mux-PR]: fill check destroy
+		// TODO [SNOW-2298171]: fill check destroy
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
