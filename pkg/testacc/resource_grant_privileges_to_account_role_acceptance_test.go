@@ -1303,7 +1303,7 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 
 	externalShareId := createSharedDatabaseOnSecondaryAccount(t)
 
-	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShareSkipWaitingForOrigin(t, externalShareId)
+	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShare(t, externalShareId)
 	t.Cleanup(databaseFromShareCleanup)
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1312,11 +1312,11 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
+				Config: grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -1328,11 +1328,10 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
-				ResourceName:             resourceName,
-				ImportState:              true,
-				ImportStateVerify:        true,
+				Config:            grantPrivilegesToAccountObjectConfig(role.ID(), databaseFromShare.ID(), sdk.AccountObjectPrivilegeImportedPrivileges.String()),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -1345,7 +1344,7 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges_issue2803(t *testin
 
 	externalShareId := createSharedDatabaseOnSecondaryAccount(t)
 
-	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShareSkipWaitingForOrigin(t, externalShareId)
+	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShare(t, externalShareId)
 	t.Cleanup(databaseFromShareCleanup)
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
