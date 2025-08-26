@@ -164,7 +164,7 @@ func (r *WarehouseResource) Metadata(_ context.Context, request resource.Metadat
 
 // TODO [SNOW-2296366]: suppress identifier quoting
 // TODO [SNOW-2296366]: support all identifier types
-// TODO [mux-PR]: show_output and parameters
+// TODO [SNOW-2298113]: show_output and parameters
 func warehousePocAttributes() map[string]schema.Attribute {
 	existingWarehouseSchema := resources.Warehouse().Schema
 	attrs := map[string]schema.Attribute{
@@ -377,7 +377,7 @@ func (r *WarehouseResource) simulateOldIgnoreChangeToCurrentSnowflakeValueInShow
 	}
 }
 
-// TODO [mux-PR]: from the docs https://developer.hashicorp.com/terraform/plugin/framework/resources/import
+// From the docs https://developer.hashicorp.com/terraform/plugin/framework/resources/import
 // (...) which must either specify enough Terraform state for the Read method to refresh [resource] or return an error.
 func (r *WarehouseResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
 	id, err := sdk.ParseAccountObjectIdentifier(request.ID)
@@ -597,7 +597,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 			return diags
 		}
 
-		// TODO [mux-PR]: introduce function like handleExternalChangesToObjectInShow or something similar
+		// TODO [SNOW-2298113]: introduce function like handleExternalChangesToObjectInShow or something similar
 		if warehouse.Type != prevValue.WarehouseType {
 			data.WarehouseType = customtypes.NewEnumValue(warehouse.Type)
 		}
@@ -667,7 +667,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 	}
 	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, bytes)...)
 
-	// TODO [mux-PR]: show_output and parameters
+	// TODO [SNOW-2298113]: show_output and parameters
 
 	return diags
 }
