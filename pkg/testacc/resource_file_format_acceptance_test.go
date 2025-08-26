@@ -537,13 +537,14 @@ func TestAcc_FileFormat_NullIfHandling(t *testing.T) {
 		formatType    string
 		nullIfConfig  string
 		expectedCount string
+		expectedValues []string
 	}{
-		{"EmptyString_CSV", "CSV", `null_if = [""]`, "1"},
-		{"EmptyString_JSON", "JSON", `null_if = [""]`, "1"},
-		{"EmptyString_AVRO", "AVRO", `null_if = [""]`, "1"},
-		{"EmptyString_ORC", "ORC", `null_if = [""]`, "1"},
-		{"EmptyString_PARQUET", "PARQUET", `null_if = [""]`, "1"},
-		{"MixedValues_CSV", "CSV", `null_if = ["NULL", ""]`, "2"},
+		{"EmptyString_CSV", "CSV", `null_if = [""]`, "1", []string{""}},
+		{"EmptyString_JSON", "JSON", `null_if = [""]`, "1", []string{""}},
+		{"EmptyString_AVRO", "AVRO", `null_if = [""]`, "1", []string{""}},
+		{"EmptyString_ORC", "ORC", `null_if = [""]`, "1", []string{""}},
+		{"EmptyString_PARQUET", "PARQUET", `null_if = [""]`, "1", []string{""}},
+		{"MixedValues_CSV", "CSV", `null_if = ["NULL", ""]`, "2", []string{"NULL", ""}},
 	}
 
 	for _, tc := range testCases {
@@ -569,6 +570,13 @@ func TestAcc_FileFormat_NullIfHandling(t *testing.T) {
 							resource.TestCheckResourceAttr("snowflake_file_format.test", "name", id.Name()),
 							resource.TestCheckResourceAttr("snowflake_file_format.test", "format_type", tc.formatType),
 							resource.TestCheckResourceAttr("snowflake_file_format.test", "null_if.#", tc.expectedCount),
+							func() resource.TestCheckFunc {
+								checks := []resource.TestCheckFunc{}
+								for i, expectedValue := range tc.expectedValues {
+									checks = append(checks, resource.TestCheckResourceAttr("snowflake_file_format.test", fmt.Sprintf("null_if.%d", i), expectedValue))
+								}
+								return resource.ComposeTestCheckFunc(checks...)
+							}(),
 						),
 					},
 				},
