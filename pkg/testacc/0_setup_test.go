@@ -81,8 +81,8 @@ func setup() {
 	}
 }
 
-// TODO [next PRs]: extract more convenience methods for reuse
-// TODO [next PRs]: potentially extract test context logic into separate directory
+// TODO [SNOW-2298294]: extract more convenience methods for reuse
+// TODO [SNOW-2298294]: potentially extract test context logic into separate directory
 func (atc *acceptanceTestContext) initialize() error {
 	accTestLog.Printf("[INFO] Initializing acceptance test context")
 
