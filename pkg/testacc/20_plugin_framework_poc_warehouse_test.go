@@ -223,7 +223,7 @@ func warehousePocAttributes() map[string]schema.Attribute {
 		"initially_suspended": schema.BoolAttribute{
 			Description: existingWarehouseSchema["initially_suspended"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: IgnoreAfterCreation
+			// TODO [SNOW-2298083]: IgnoreAfterCreation
 		},
 		"resource_monitor": schema.StringAttribute{
 			Description: existingWarehouseSchema["resource_monitor"].Description,
@@ -301,13 +301,13 @@ func (r *WarehouseResource) ModifyPlan(ctx context.Context, request resource.Mod
 		return
 	}
 
-	// TODO [mux-PR]: we can extract modifiers like earlier we had ComputedIfAnyAttributeChanged)
+	// TODO [SNOW-2298083]: we can extract modifiers like earlier we had ComputedIfAnyAttributeChanged)
 	if !plan.Name.Equal(state.Name) {
 		plan.FullyQualifiedName = types.StringUnknown()
 		plan.Id = types.StringUnknown()
 	}
 
-	// TODO [mux-PR]: add a functional test documenting that IgnoreChangeToCurrentSnowflakeValueInShow cannot be achieved that way.
+	// TODO [SNOW-2296391]: add a functional test documenting that IgnoreChangeToCurrentSnowflakeValueInShow cannot be achieved that way.
 	// Commented out on purpose for now.
 	// r.simulateOldIgnoreChangeToCurrentSnowflakeValueInShow(ctx, request, response, plan, state)
 	// if response.Diagnostics.HasError() {
