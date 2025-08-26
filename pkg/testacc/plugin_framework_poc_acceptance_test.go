@@ -19,7 +19,6 @@ func TestAcc_TerraformPluginFrameworkPoc_InitialSetup(t *testing.T) {
 			// TODO [SNOW-2234579]: 1.6?
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck: func() { TestAccPreCheck(t) },
 		// TODO [SNOW-2298171]: fill check destroy
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{

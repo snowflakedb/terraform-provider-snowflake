@@ -88,7 +88,6 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters

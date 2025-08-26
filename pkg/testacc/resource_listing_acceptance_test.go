@@ -62,7 +62,6 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -264,7 +263,6 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -453,7 +451,6 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -530,7 +527,6 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -608,7 +604,6 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -727,7 +722,6 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -877,7 +871,6 @@ func TestAcc_Listing_Validations(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

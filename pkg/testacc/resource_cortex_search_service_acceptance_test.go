@@ -39,7 +39,6 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 	resourceName := "snowflake_cortex_search_service.css"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

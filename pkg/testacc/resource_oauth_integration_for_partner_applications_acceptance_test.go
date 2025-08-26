@@ -42,7 +42,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_Basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -296,7 +295,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -545,7 +543,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -622,7 +619,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_Invalid(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -650,7 +646,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_migrateFromV0941_ensureSmoot
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -686,7 +681,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithQuotedName(t *testing.T)
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -735,7 +729,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_DetectExternalChangesForOaut
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

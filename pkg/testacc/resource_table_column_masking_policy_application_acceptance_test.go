@@ -20,7 +20,6 @@ func TestAcc_TableColumnMaskingPolicyApplication(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
