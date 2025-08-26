@@ -138,12 +138,11 @@ In this version, this behavior is fixed. The provider always uses the mixed `'"n
 References: [#3229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3229)
 
 
-### *(bugfix)* Fix file format `null_if` empty array and empty string handling
-Fixed permadiff issues with file format `null_if` parameter in two scenarios:
-- Empty arrays `null_if = []` were causing persistent differences in Terraform state
+### *(bugfix)* Fix file format `null_if` empty string handling
+Fixed permadiff issue with file format `null_if` parameter:
 - Empty strings `null_if = [""]` were not handled correctly, causing state mismatches when Snowflake interprets empty strings as valid NULL replacement values
 
-This fix ensures that both empty arrays and arrays containing empty strings are properly handled across all file format types (CSV, JSON, AVRO, ORC, PARQUET).
+This fix ensures that arrays containing empty strings are properly handled across all file format types (CSV, JSON, AVRO, ORC, PARQUET).
 
 References: [#3325](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3325), [#1609](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1609)
 

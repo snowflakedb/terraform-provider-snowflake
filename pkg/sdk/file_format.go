@@ -163,7 +163,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		ff.Options.JSONTimestampFormat = &inputOptions.TimestampFormat
 		ff.Options.JSONBinaryFormat = (*BinaryFormat)(&inputOptions.BinaryFormat)
 		ff.Options.JSONTrimSpace = &inputOptions.TrimSpace
-		ff.Options.JSONNullIf = newNullIf
+		ff.Options.JSONNullIf = &newNullIf
 		ff.Options.JSONFileExtension = &inputOptions.FileExtension
 		ff.Options.JSONEnableOctal = &inputOptions.EnableOctal
 		ff.Options.JSONAllowDuplicate = &inputOptions.AllowDuplicate
@@ -419,7 +419,7 @@ type FileFormatTypeOptions struct {
 	CSVEscapeUnenclosedField      *string         `ddl:"parameter,single_quotes" sql:"ESCAPE_UNENCLOSED_FIELD"`
 	CSVTrimSpace                  *bool           `ddl:"parameter" sql:"TRIM_SPACE"`
 	CSVFieldOptionallyEnclosedBy  *string         `ddl:"parameter,single_quotes" sql:"FIELD_OPTIONALLY_ENCLOSED_BY"`
-	CSVNullIf                     *[]NullString   `ddl:"parameter,must_parentheses" sql:"NULL_IF"`
+	CSVNullIf                     *[]NullString   `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	CSVErrorOnColumnCountMismatch *bool           `ddl:"parameter" sql:"ERROR_ON_COLUMN_COUNT_MISMATCH"`
 	CSVReplaceInvalidCharacters   *bool           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	CSVEmptyFieldAsNull           *bool           `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
@@ -433,7 +433,7 @@ type FileFormatTypeOptions struct {
 	JSONTimestampFormat          *string          `ddl:"parameter,single_quotes" sql:"TIMESTAMP_FORMAT"`
 	JSONBinaryFormat             *BinaryFormat    `ddl:"parameter" sql:"BINARY_FORMAT"`
 	JSONTrimSpace                *bool            `ddl:"parameter" sql:"TRIM_SPACE"`
-	JSONNullIf                   []NullString     `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	JSONNullIf                   *[]NullString     `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	JSONFileExtension            *string          `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
 	JSONEnableOctal              *bool            `ddl:"parameter" sql:"ENABLE_OCTAL"`
 	JSONAllowDuplicate           *bool            `ddl:"parameter" sql:"ALLOW_DUPLICATE"`
@@ -771,10 +771,9 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 			case "NULL_IF":
 				newNullIf := []NullString{}
 				for _, s := range ParseCommaSeparatedStringArray(v, false) {
-					if s != "" {
-						newNullIf = append(newNullIf, NullString{s})
-					}
+					newNullIf = append(newNullIf, NullString{s})
 				}
+
 				details.Options.CSVNullIf = &newNullIf
 			case "COMPRESSION":
 				comp := CSVCompression(v)
@@ -845,7 +844,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				for _, s := range ParseCommaSeparatedStringArray(v, false) {
 					newNullIf = append(newNullIf, NullString{s})
 				}
-				details.Options.JSONNullIf = newNullIf
+				details.Options.JSONNullIf = &newNullIf
 			case "COMPRESSION":
 				comp := JSONCompression(v)
 				details.Options.JSONCompression = &comp

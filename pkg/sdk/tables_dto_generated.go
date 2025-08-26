@@ -896,7 +896,7 @@ func (s *FileFormatTypeOptionsRequest) WithJSONTrimSpace(jsonTrimSpace *bool) *F
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONNullIf(jsonNullIf []NullString) *FileFormatTypeOptionsRequest {
+func (s *FileFormatTypeOptionsRequest) WithJSONNullIf(jsonNullIf *[]NullString) *FileFormatTypeOptionsRequest {
 	s.JSONNullIf = jsonNullIf
 	return s
 }
