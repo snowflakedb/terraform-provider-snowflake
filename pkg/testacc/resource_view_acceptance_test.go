@@ -434,7 +434,7 @@ func TestAcc_View_recursive(t *testing.T) {
 	})
 }
 
-// TODO [next PR]: currently this test is always skipped, try to fix the set up
+// TODO [SNOW-2298268]: currently, this test is always skipped, try to fix the set up
 func TestAcc_View_temporary(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	// we use one configured client, so a temporary view should be visible after creation
