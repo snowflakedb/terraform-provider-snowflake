@@ -486,7 +486,7 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		return
 	}
 
-	// TODO [mux-PR]: Adjust fully_qualified_name logic
+	// TODO [SNOW-2298108]: Adjust fully_qualified_name logic
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	// we can use the existing encoder
@@ -581,7 +581,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		return diags
 	}
 
-	// TODO [mux-PR]: Adjust fully_qualified_name logic
+	// TODO [SNOW-2298108]: Adjust fully_qualified_name logic
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	prevValueBytes, d := request.Private.GetKey(ctx, privateStateSnowflakeObjectsStateKey)
@@ -757,7 +757,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		}
 	}
 
-	// TODO [mux-PR]: Adjust fully_qualified_name logic
+	// TODO [SNOW-2298108]: Adjust fully_qualified_name logic
 	plan.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
