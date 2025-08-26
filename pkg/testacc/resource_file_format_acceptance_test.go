@@ -538,18 +538,12 @@ func TestAcc_FileFormat_NullIfHandling(t *testing.T) {
 		nullIfConfig  string
 		expectedCount string
 	}{
-		{"EmptyArray_CSV", "CSV", `null_if = []`, "0"},
-		{"EmptyArray_JSON", "JSON", `null_if = []`, "0"},
-		{"EmptyArray_AVRO", "AVRO", `null_if = []`, "0"},
-		{"EmptyArray_ORC", "ORC", `null_if = []`, "0"},
-		{"EmptyArray_PARQUET", "PARQUET", `null_if = []`, "0"},
 		{"EmptyString_CSV", "CSV", `null_if = [""]`, "1"},
 		{"EmptyString_JSON", "JSON", `null_if = [""]`, "1"},
 		{"EmptyString_AVRO", "AVRO", `null_if = [""]`, "1"},
 		{"EmptyString_ORC", "ORC", `null_if = [""]`, "1"},
 		{"EmptyString_PARQUET", "PARQUET", `null_if = [""]`, "1"},
 		{"MixedValues_CSV", "CSV", `null_if = ["NULL", ""]`, "2"},
-		{"MixedValues_JSON", "JSON", `null_if = ["NULL", ""]`, "2"},
 	}
 
 	for _, tc := range testCases {

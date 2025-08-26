@@ -433,7 +433,7 @@ type FileFormatTypeOptions struct {
 	JSONTimestampFormat          *string          `ddl:"parameter,single_quotes" sql:"TIMESTAMP_FORMAT"`
 	JSONBinaryFormat             *BinaryFormat    `ddl:"parameter" sql:"BINARY_FORMAT"`
 	JSONTrimSpace                *bool            `ddl:"parameter" sql:"TRIM_SPACE"`
-	JSONNullIf                   *[]NullString     `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	JSONNullIf                   *[]NullString    `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	JSONFileExtension            *string          `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
 	JSONEnableOctal              *bool            `ddl:"parameter" sql:"ENABLE_OCTAL"`
 	JSONAllowDuplicate           *bool            `ddl:"parameter" sql:"ALLOW_DUPLICATE"`

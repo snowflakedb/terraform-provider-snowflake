@@ -455,7 +455,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 				nullIf = append(nullIf, sdk.NullString{S: s.(string)})
 			}
 		}
-		opts.JSONNullIf = nullIf
+		opts.JSONNullIf = &nullIf
 		if v, ok := d.GetOk("file_extension"); ok {
 			opts.JSONFileExtension = sdk.String(v.(string))
 		}
@@ -687,7 +687,7 @@ func ReadFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.FromErr(err)
 		}
 		nullIf := []string{}
-		for _, s := range fileFormat.Options.JSONNullIf {
+		for _, s := range *fileFormat.Options.JSONNullIf {
 			nullIf = append(nullIf, s.S)
 		}
 		if err := d.Set("null_if", nullIf); err != nil {
@@ -978,7 +978,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 				}
 				nullIf = append(nullIf, sdk.NullString{S: s.(string)})
 			}
-			opts.Set.JSONNullIf = nullIf
+			opts.Set.JSONNullIf = &nullIf
 			runSet = true
 		}
 		if d.HasChange("file_extension") {
