@@ -85,8 +85,27 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.ProcedureScala,
 		resources.ProcedureSql:
 		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
-	// TODO: list here all legacy resource ids
-	case resources.Pipe:
+	// resources using legacy identifier encoding (with pipes)
+	case resources.AccountAuthenticationPolicyAttachment,
+		resources.AccountPasswordPolicyAttachment,
+		resources.Alert,
+		resources.ApiIntegration,
+		resources.CortexSearchService,
+		resources.DynamicTable,
+		resources.EmailNotificationIntegration,
+		resources.ExternalTable,
+		resources.FailoverGroup,
+		resources.FileFormat,
+		resources.ManagedAccount,
+		resources.MaterializedView,
+		resources.NetworkRule,
+		resources.NotificationIntegration,
+		resources.PasswordPolicy,
+		resources.Pipe,
+		resources.Sequence,
+		resources.Share,
+		resources.Stage,
+		resources.Table:
 		return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
 	default:
 		return sdk.ParseObjectIdentifierString(rs.Primary.ID)
