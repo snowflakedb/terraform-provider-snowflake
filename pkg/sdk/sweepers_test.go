@@ -1,4 +1,4 @@
-package sdk
+package sdk_test
 
 import (
 	"context"
@@ -13,11 +13,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/acceptancetests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO [SNOW-867247]: move the sweepers outside of the sdk package
+// TODO [SNOW-867247]: move the sweepers outside of the sdk (and sdk_test) package
 // TODO [SNOW-867247]: use test client helpers in sweepers?
 func TestSweepAll(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableSweep)
@@ -41,11 +43,11 @@ func TestSweepAll(t *testing.T) {
 	})
 }
 
-func SweepAfterIntegrationTests(client *Client, suffix string) error {
+func SweepAfterIntegrationTests(client *sdk.Client, suffix string) error {
 	return sweep(client, suffix)
 }
 
-func SweepAfterAcceptanceTests(client *Client, suffix string) error {
+func SweepAfterAcceptanceTests(client *sdk.Client, suffix string) error {
 	return sweep(client, suffix)
 }
 
@@ -56,7 +58,7 @@ func SweepAfterAcceptanceTests(client *Client, suffix string) error {
 // TODO [SNOW-867247]: consider generalization (almost all the sweepers follow the same pattern: show, drop if matches)
 // TODO [SNOW-867247]: consider failing after all sweepers and not with the first error
 // TODO [SNOW-867247]: consider showing only objects with the given suffix (in almost every sweeper)
-func sweep(client *Client, suffix string) error {
+func sweep(client *sdk.Client, suffix string) error {
 	if suffix == "" {
 		return fmt.Errorf("suffix is required to run sweepers")
 	}
@@ -87,7 +89,7 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	thirdClient := thirdTestClient(t)
 	fourthClient := fourthTestClient(t)
 
-	allClients := []*Client{client, secondaryClient, thirdClient, fourthClient}
+	allClients := []*sdk.Client{client, secondaryClient, thirdClient, fourthClient}
 
 	// can't use extracted IntegrationTestPrefix and AcceptanceTestPrefix until sweepers reside in the SDK package (cyclic)
 	const integrationTestPrefix = "int_test_"
@@ -155,7 +157,7 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 
 // TODO [SNOW-867247]: generalize nuke methods (sweepers too)
 // TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
-func nukeWarehouses(client *Client, prefix string, suffix string) func() error {
+func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() error {
 	protectedWarehouses := []string{
 		"SNOWFLAKE",
 		"SYSTEM$STREAMLIT_NOTEBOOK_WH",
@@ -164,26 +166,27 @@ func nukeWarehouses(client *Client, prefix string, suffix string) func() error {
 	return func() error {
 		ctx := context.Background()
 
-		var whDropCondition func(wh Warehouse) bool
-		if prefix != "" {
+		var whDropCondition func(wh sdk.Warehouse) bool
+		switch {
+		case prefix != "":
 			log.Printf("[DEBUG] Sweeping warehouses with prefix %s", prefix)
-			whDropCondition = func(wh Warehouse) bool {
+			whDropCondition = func(wh sdk.Warehouse) bool {
 				return strings.HasPrefix(wh.Name, prefix)
 			}
-		} else if suffix != "" {
+		case suffix != "":
 			log.Printf("[DEBUG] Sweeping warehouses with suffix %s", suffix)
-			whDropCondition = func(wh Warehouse) bool {
+			whDropCondition = func(wh sdk.Warehouse) bool {
 				return strings.HasSuffix(wh.Name, suffix)
 			}
-		} else {
+		default:
 			log.Println("[DEBUG] Sweeping stale warehouses")
 			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
-			whDropCondition = func(wh Warehouse) bool {
+			whDropCondition = func(wh sdk.Warehouse) bool {
 				return wh.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
 			}
 		}
 
-		whs, err := client.Warehouses.Show(ctx, new(ShowWarehouseOptions))
+		whs, err := client.Warehouses.Show(ctx, new(sdk.ShowWarehouseOptions))
 		if err != nil {
 			return fmt.Errorf("SHOW WAREHOUSES ended with error, err = %w", err)
 		}
@@ -194,16 +197,16 @@ func nukeWarehouses(client *Client, prefix string, suffix string) func() error {
 		for idx, wh := range whs {
 			log.Printf("[DEBUG] Processing warehouse [%d/%d]: %s...", idx+1, len(whs), wh.ID().FullyQualifiedName())
 			if !slices.Contains(protectedWarehouses, wh.Name) && whDropCondition(wh) {
-				if wh.Owner != "ACCOUNTADMIN" {
+				if wh.Owner != snowflakeroles.Accountadmin.Name() {
 					log.Printf("[DEBUG] Granting ownership on warehouse %s, to ACCOUNTADMIN", wh.ID().FullyQualifiedName())
 					err := client.Grants.GrantOwnership(
 						ctx,
-						OwnershipGrantOn{Object: &Object{
-							ObjectType: ObjectTypeWarehouse,
+						sdk.OwnershipGrantOn{Object: &sdk.Object{
+							ObjectType: sdk.ObjectTypeWarehouse,
 							Name:       wh.ID(),
 						}},
-						OwnershipGrantTo{
-							AccountRoleName: Pointer(NewAccountObjectIdentifier("ACCOUNTADMIN")),
+						sdk.OwnershipGrantTo{
+							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -227,7 +230,7 @@ func nukeWarehouses(client *Client, prefix string, suffix string) func() error {
 	}
 }
 
-func nukeDatabases(client *Client, prefix string, suffix string) func() error {
+func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() error {
 	protectedDatabases := []string{
 		"SNOWFLAKE",
 		"MFA_ENFORCEMENT_POLICY",
@@ -237,26 +240,27 @@ func nukeDatabases(client *Client, prefix string, suffix string) func() error {
 	return func() error {
 		ctx := context.Background()
 
-		var dbDropCondition func(db Database) bool
-		if prefix != "" {
+		var dbDropCondition func(db sdk.Database) bool
+		switch {
+		case prefix != "":
 			log.Printf("[DEBUG] Sweeping databases with prefix %s", prefix)
-			dbDropCondition = func(db Database) bool {
+			dbDropCondition = func(db sdk.Database) bool {
 				return strings.HasPrefix(db.Name, prefix)
 			}
-		} else if suffix != "" {
+		case suffix != "":
 			log.Printf("[DEBUG] Sweeping databases with suffix %s", suffix)
-			dbDropCondition = func(db Database) bool {
+			dbDropCondition = func(db sdk.Database) bool {
 				return strings.HasSuffix(db.Name, suffix)
 			}
-		} else {
+		default:
 			log.Println("[DEBUG] Sweeping stale databases")
 			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
-			dbDropCondition = func(db Database) bool {
+			dbDropCondition = func(db sdk.Database) bool {
 				return db.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
 			}
 		}
 
-		dbs, err := client.Databases.Show(ctx, new(ShowDatabasesOptions))
+		dbs, err := client.Databases.Show(ctx, new(sdk.ShowDatabasesOptions))
 		if err != nil {
 			return fmt.Errorf("SHOW DATABASES ended with error, err = %w", err)
 		}
@@ -267,16 +271,16 @@ func nukeDatabases(client *Client, prefix string, suffix string) func() error {
 		for idx, db := range dbs {
 			log.Printf("[DEBUG] Processing database [%d/%d]: %s...", idx+1, len(dbs), db.ID().FullyQualifiedName())
 			if !slices.Contains(protectedDatabases, db.Name) && dbDropCondition(db) {
-				if db.Owner != "ACCOUNTADMIN" {
+				if db.Owner != snowflakeroles.Accountadmin.Name() {
 					log.Printf("[DEBUG] Granting ownership on database %s, to ACCOUNTADMIN", db.ID().FullyQualifiedName())
 					err := client.Grants.GrantOwnership(
 						ctx,
-						OwnershipGrantOn{Object: &Object{
-							ObjectType: ObjectTypeDatabase,
+						sdk.OwnershipGrantOn{Object: &sdk.Object{
+							ObjectType: sdk.ObjectTypeDatabase,
 							Name:       db.ID(),
 						}},
-						OwnershipGrantTo{
-							AccountRoleName: Pointer(NewAccountObjectIdentifier("ACCOUNTADMIN")),
+						sdk.OwnershipGrantTo{
+							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -304,7 +308,7 @@ func nukeDatabases(client *Client, prefix string, suffix string) func() error {
 	}
 }
 
-func nukeUsers(client *Client, suffix string) func() error {
+func nukeUsers(client *sdk.Client, suffix string) func() error {
 	protectedUsers := []string{
 		"SNOWFLAKE",
 		"ARTUR_SAWICKI",
@@ -322,20 +326,20 @@ func nukeUsers(client *Client, suffix string) func() error {
 	return func() error {
 		ctx := context.Background()
 
-		var userDropCondition func(u User) bool
+		var userDropCondition func(u sdk.User) bool
 		if suffix != "" {
 			log.Printf("[DEBUG] Sweeping users with suffix %s", suffix)
-			userDropCondition = func(u User) bool {
+			userDropCondition = func(u sdk.User) bool {
 				return strings.HasSuffix(u.Name, suffix)
 			}
 		} else {
 			log.Println("[DEBUG] Sweeping stale users")
-			userDropCondition = func(u User) bool {
+			userDropCondition = func(u sdk.User) bool {
 				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
 			}
 		}
 
-		urs, err := client.Users.Show(ctx, new(ShowUserOptions))
+		urs, err := client.Users.Show(ctx, new(sdk.ShowUserOptions))
 		if err != nil {
 			return fmt.Errorf("SHOW USERS ended with error, err = %w", err)
 		}
@@ -348,7 +352,7 @@ func nukeUsers(client *Client, suffix string) func() error {
 
 			if !slices.Contains(protectedUsers, user.Name) && userDropCondition(user) {
 				log.Printf("[DEBUG] Dropping user %s", user.ID().FullyQualifiedName())
-				if err := client.Users.Drop(ctx, user.ID(), &DropUserOptions{IfExists: Bool(true)}); err != nil {
+				if err := client.Users.Drop(ctx, user.ID(), &sdk.DropUserOptions{IfExists: sdk.Bool(true)}); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping user %s ended with error, err = %w", user.ID().FullyQualifiedName(), err))
 				}
 			} else {
@@ -360,8 +364,8 @@ func nukeUsers(client *Client, suffix string) func() error {
 	}
 }
 
-func nukeRoles(client *Client, suffix string) func() error {
-	protectedRoles := []AccountObjectIdentifier{
+func nukeRoles(client *sdk.Client, suffix string) func() error {
+	protectedRoles := []sdk.AccountObjectIdentifier{
 		snowflakeroles.GlobalOrgAdmin,
 		snowflakeroles.Orgadmin,
 		snowflakeroles.Accountadmin,
@@ -378,20 +382,20 @@ func nukeRoles(client *Client, suffix string) func() error {
 	return func() error {
 		ctx := context.Background()
 
-		var roleDropCondition func(r Role) bool
+		var roleDropCondition func(r sdk.Role) bool
 		if suffix != "" {
 			log.Printf("[DEBUG] Sweeping roles with suffix %s", suffix)
-			roleDropCondition = func(r Role) bool {
+			roleDropCondition = func(r sdk.Role) bool {
 				return strings.HasSuffix(r.Name, suffix)
 			}
 		} else {
 			log.Println("[DEBUG] Sweeping stale roles")
-			roleDropCondition = func(r Role) bool {
+			roleDropCondition = func(r sdk.Role) bool {
 				return r.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
 			}
 		}
 
-		rs, err := client.Roles.Show(ctx, NewShowRoleRequest())
+		rs, err := client.Roles.Show(ctx, sdk.NewShowRoleRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW ROLES ended with error, err = %w", err)
 		}
@@ -415,4 +419,39 @@ func nukeRoles(client *Client, suffix string) func() error {
 
 		return errors.Join(errs...)
 	}
+}
+
+func defaultTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.Default)
+}
+
+func secondaryTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.Secondary)
+}
+
+func thirdTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.Third)
+}
+
+func fourthTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.Fourth)
+}
+
+func testClient(t *testing.T, profile string) *sdk.Client {
+	t.Helper()
+
+	config, err := sdk.ProfileConfig(profile)
+	if err != nil {
+		t.Skipf("Snowflake %s profile not configured. Must be set in ~/.snowflake/config", profile)
+	}
+	client, err := sdk.NewClient(config)
+	if err != nil {
+		t.Skipf("Snowflake %s profile not configured. Must be set in ~/.snowflake/config", profile)
+	}
+
+	return client
 }

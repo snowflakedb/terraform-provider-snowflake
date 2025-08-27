@@ -1,23 +1,25 @@
-package sdk
+package sdk_test
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func getAccountPolicyAttachmentsSweeper(client *Client) func() error {
+func getAccountPolicyAttachmentsSweeper(client *sdk.Client) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Unsetting password and session policies set on the account level")
 		ctx := context.Background()
-		_ = client.Accounts.UnsetPolicySafely(ctx, PolicyKindPasswordPolicy)
-		_ = client.Accounts.UnsetPolicySafely(ctx, PolicyKindSessionPolicy)
+		_ = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindPasswordPolicy)
+		_ = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindSessionPolicy)
 		return nil
 	}
 }
 
-func getResourceMonitorSweeper(client *Client, suffix string) func() error {
+func getResourceMonitorSweeper(client *sdk.Client, suffix string) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Sweeping resource monitors with suffix %s", suffix)
 		ctx := context.Background()
@@ -29,7 +31,7 @@ func getResourceMonitorSweeper(client *Client, suffix string) func() error {
 		for _, rm := range rms {
 			if strings.HasSuffix(rm.Name, suffix) {
 				log.Printf("[DEBUG] Dropping resource monitor %s", rm.ID().FullyQualifiedName())
-				if err := client.ResourceMonitors.Drop(ctx, rm.ID(), &DropResourceMonitorOptions{IfExists: Bool(true)}); err != nil {
+				if err := client.ResourceMonitors.Drop(ctx, rm.ID(), &sdk.DropResourceMonitorOptions{IfExists: sdk.Bool(true)}); err != nil {
 					return fmt.Errorf("sweeping resource monitor %s ended with error, err = %w", rm.ID().FullyQualifiedName(), err)
 				}
 			} else {
@@ -43,12 +45,12 @@ func getResourceMonitorSweeper(client *Client, suffix string) func() error {
 // getNetworkPolicySweeper was introduced to make sure that network policies created during tests are cleaned up.
 // It's required as network policies that have connections to the network rules within databases, block their deletion.
 // In Snowflake, the network policies can be removed without unsetting network rules, but the network rules cannot be removed without unsetting network policies.
-func getNetworkPolicySweeper(client *Client, suffix string) func() error {
+func getNetworkPolicySweeper(client *sdk.Client, suffix string) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Sweeping network policies with suffix %s", suffix)
 		ctx := context.Background()
 
-		nps, err := client.NetworkPolicies.Show(ctx, NewShowNetworkPolicyRequest())
+		nps, err := client.NetworkPolicies.Show(ctx, sdk.NewShowNetworkPolicyRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW NETWORK POLICIES ended with error, err = %w", err)
 		}
@@ -56,7 +58,7 @@ func getNetworkPolicySweeper(client *Client, suffix string) func() error {
 		for _, np := range nps {
 			if strings.HasSuffix(np.Name, suffix) && strings.ToUpper(np.Name) != "RESTRICTED_ACCESS" {
 				log.Printf("[DEBUG] Dropping network policy %s", np.ID().FullyQualifiedName())
-				if err := client.NetworkPolicies.Drop(ctx, NewDropNetworkPolicyRequest(np.ID()).WithIfExists(true)); err != nil {
+				if err := client.NetworkPolicies.Drop(ctx, sdk.NewDropNetworkPolicyRequest(np.ID()).WithIfExists(true)); err != nil {
 					return fmt.Errorf("DROP NETWORK POLICY for %s, ended with error, err = %w", np.ID().FullyQualifiedName(), err)
 				}
 			} else {
@@ -68,7 +70,7 @@ func getNetworkPolicySweeper(client *Client, suffix string) func() error {
 	}
 }
 
-func getFailoverGroupSweeper(client *Client, suffix string) func() error {
+func getFailoverGroupSweeper(client *sdk.Client, suffix string) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Sweeping failover groups with suffix %s", suffix)
 		ctx := context.Background()
@@ -77,8 +79,8 @@ func getFailoverGroupSweeper(client *Client, suffix string) func() error {
 		if err != nil {
 			return fmt.Errorf("sweeping failover groups ended with error, err = %w", err)
 		}
-		opts := &ShowFailoverGroupOptions{
-			InAccount: NewAccountIdentifierFromAccountLocator(currentAccount),
+		opts := &sdk.ShowFailoverGroupOptions{
+			InAccount: sdk.NewAccountIdentifierFromAccountLocator(currentAccount),
 		}
 		fgs, err := client.FailoverGroups.Show(ctx, opts)
 		if err != nil {
@@ -98,7 +100,7 @@ func getFailoverGroupSweeper(client *Client, suffix string) func() error {
 	}
 }
 
-func getShareSweeper(client *Client, suffix string) func() error {
+func getShareSweeper(client *sdk.Client, suffix string) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Sweeping shares with suffix %s", suffix)
 		ctx := context.Background()
@@ -108,9 +110,9 @@ func getShareSweeper(client *Client, suffix string) func() error {
 			return fmt.Errorf("sweeping shares ended with error, err = %w", err)
 		}
 		for _, share := range shares {
-			if share.Kind == ShareKindOutbound && strings.HasSuffix(share.Name.Name(), suffix) {
+			if share.Kind == sdk.ShareKindOutbound && strings.HasSuffix(share.Name.Name(), suffix) {
 				log.Printf("[DEBUG] Dropping share %s", share.ID().FullyQualifiedName())
-				if err := client.Shares.Drop(ctx, share.ID(), &DropShareOptions{IfExists: Bool(true)}); err != nil {
+				if err := client.Shares.Drop(ctx, share.ID(), &sdk.DropShareOptions{IfExists: sdk.Bool(true)}); err != nil {
 					return fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err)
 				}
 			} else {
