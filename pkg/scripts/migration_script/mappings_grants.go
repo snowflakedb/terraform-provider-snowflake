@@ -5,7 +5,6 @@ import (
 	"log"
 	"slices"
 	"strings"
-	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -32,9 +31,10 @@ func HandleGrants(csvInput [][]string) error {
 		}
 	}
 
-	mappedModels := collections.Map(resourceModels, func(resourceModel accconfig.ResourceModel) string {
-		return accconfig.ResourceFromModel(&testing.T{}, resourceModel)
-	})
+	mappedModels, err := collections.MapErr(resourceModels, ResourceFromModel)
+	if err != nil {
+		return fmt.Errorf("errors from resource model to HCL conversion: %w", err)
+	}
 	fmt.Println(collections.JoinStrings(mappedModels, "\n"))
 
 	return nil
