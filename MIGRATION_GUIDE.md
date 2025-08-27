@@ -29,7 +29,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ### *(bugfix)* Fixed `snowflake_primary_connection` or `snowflake_secondary_connection` reading and improved creation and deletion operations
 
 When configuring `snowflake_primary_connection` or `snowflake_secondary_connection` resources, previous issues could lead to failures or incorrect planning.
-These problems arose because the shared connections appear in the `SHOW CONNECTIONS` command, and if a primary and secondary connection had the same name,
+These problems arose because the shared connections appear in the `SHOW CONNECTIONS` command, and because Snowflake requires primary and secondary connections to have the same name,
 they were not distinguished correctly; the first appearing one was chosen. We have now resolved this by fixing the function that retrieves the connection by ID, ensuring such issues do not occur.
 
 Additionally, we have made adjustments to the create operation for `snowflake_secondary_connection` and the delete operations for both `snowflake_primary_connection` and `snowflake_secondary_connection`.
