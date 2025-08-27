@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO: More tests
+// TODO(SNOW-2277608): More tests
 
 func TestHandleGrants(t *testing.T) {
 	grantOnAccount := sdk.Grant{

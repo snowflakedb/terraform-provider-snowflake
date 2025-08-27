@@ -2,16 +2,20 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"slices"
-	"testing"
-
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+	"log"
+	"slices"
+	"testing"
 )
+
+type MockTestingT testing.T
+
+func (c *MockTestingT) Logf(format string, args ...any) {
+}
 
 func HandleGrants(csvInput [][]string) error {
 	grants, err := ConvertCsvInput[GrantCsvRow, sdk.Grant](csvInput)
@@ -19,7 +23,7 @@ func HandleGrants(csvInput [][]string) error {
 		return err
 	}
 
-	// TODO(next pr): Group same grants with different privileges
+	// TODO(SNOW-2277608): Group same grants with different privileges
 
 	resourceModels := make([]accconfig.ResourceModel, 0)
 	for _, grant := range grants {
@@ -31,16 +35,17 @@ func HandleGrants(csvInput [][]string) error {
 		}
 	}
 
-	mappedModels := collections.Map(resourceModels, func(resourceModel accconfig.ResourceModel) string {
-		return accconfig.ResourceFromModel(&testing.T{}, resourceModel)
-	})
+	mappedModels, err := collections.MapErr(resourceModels, ResourceFromModel)
+	if err != nil {
+		return fmt.Errorf("errors from resource model to HCL conversion: %w", err)
+	}
 	fmt.Println(collections.JoinStrings(mappedModels, "\n"))
 
 	return nil
 }
 
-// TODO(next pr): it should receive []sdk.Grant because there may be a few rows for the same type but different privileges
-// TODO(next pr): there should be a grouping step before this function.
+// TODO(SNOW-2277608): it should receive []sdk.Grant because there may be a few rows for the same type but different privileges
+// TODO(SNOW-2277608): there should be a grouping step before this function.
 func MapGrantToModel(grant sdk.Grant) (accconfig.ResourceModel, error) {
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:

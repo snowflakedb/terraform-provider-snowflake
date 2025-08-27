@@ -21,6 +21,7 @@ type GrantCsvRow struct {
 	GrantedBy   string `csv:"granted_by"`
 }
 
+// convert is a copy-paste of the sdk.grantRow convert implementation
 func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 	grantedTo := sdk.ObjectType(strings.ReplaceAll(row.GrantedTo, "_", " "))
 	grantTo := sdk.ObjectType(strings.ReplaceAll(row.GrantTo, "_", " "))
