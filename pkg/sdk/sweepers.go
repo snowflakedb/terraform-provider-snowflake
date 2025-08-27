@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"slices"
 	"strings"
 )
 
@@ -166,29 +165,6 @@ func getWarehouseSweeper(client *Client, suffix string) func() error {
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping warehouse %s", wh.ID().FullyQualifiedName())
-			}
-		}
-		return nil
-	}
-}
-
-func getRoleSweeper(client *Client, suffix string) func() error {
-	return func() error {
-		log.Printf("[DEBUG] Sweeping roles with suffix %s", suffix)
-		ctx := context.Background()
-
-		roles, err := client.Roles.Show(ctx, NewShowRoleRequest())
-		if err != nil {
-			return fmt.Errorf("sweeping roles ended with error, err = %w", err)
-		}
-		for _, role := range roles {
-			if strings.HasSuffix(role.Name, suffix) && !slices.Contains([]string{"ACCOUNTADMIN", "SECURITYADMIN", "SYSADMIN", "ORGADMIN", "USERADMIN", "PUBLIC", "PENTESTING_ROLE"}, role.Name) {
-				log.Printf("[DEBUG] Dropping role %s", role.ID().FullyQualifiedName())
-				if err := client.Roles.Drop(ctx, NewDropRoleRequest(role.ID())); err != nil {
-					return fmt.Errorf("sweeping role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err)
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping role %s", role.ID().FullyQualifiedName())
 			}
 		}
 		return nil

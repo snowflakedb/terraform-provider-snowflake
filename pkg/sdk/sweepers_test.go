@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/acceptancetests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -68,7 +69,7 @@ func sweep(client *Client, suffix string) error {
 		getShareSweeper(client, suffix),
 		getDatabaseSweeper(client, suffix),
 		getWarehouseSweeper(client, suffix),
-		getRoleSweeper(client, suffix),
+		nukeRoles(client, suffix),
 	}
 	for _, sweeper := range sweepers {
 		if err := sweeper(); err != nil {
@@ -121,6 +122,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("sweep users", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeUsers(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep roles", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeRoles(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -312,6 +320,63 @@ func nukeUsers(client *Client, suffix string) func() error {
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping user %s", user.ID().FullyQualifiedName())
+			}
+		}
+
+		return errors.Join(errs...)
+	}
+}
+
+func nukeRoles(client *Client, suffix string) func() error {
+	protectedRoles := []AccountObjectIdentifier{
+		snowflakeroles.GlobalOrgAdmin,
+		snowflakeroles.Orgadmin,
+		snowflakeroles.Accountadmin,
+		snowflakeroles.SecurityAdmin,
+		snowflakeroles.SysAdmin,
+		snowflakeroles.UserAdmin,
+		snowflakeroles.Public,
+		snowflakeroles.PentestingRole,
+		snowflakeroles.OktaProvisioner,
+		snowflakeroles.AadProvisioner,
+		snowflakeroles.GenericScimProvisioner,
+	}
+
+	return func() error {
+		ctx := context.Background()
+
+		var roleDropCondition func(r Role) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping roles with suffix %s", suffix)
+			roleDropCondition = func(r Role) bool {
+				return strings.HasSuffix(r.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale roles")
+			roleDropCondition = func(r Role) bool {
+				return r.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+			}
+		}
+
+		rs, err := client.Roles.Show(ctx, NewShowRoleRequest())
+		if err != nil {
+			return fmt.Errorf("SHOW ROLES ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d roles", len(rs))
+
+		var errs []error
+		for idx, role := range rs {
+			log.Printf("[DEBUG] Processing role [%d/%d]: %s...", idx+1, len(rs), role.ID().FullyQualifiedName())
+
+			if !slices.Contains(protectedRoles, role.ID()) && roleDropCondition(role) {
+				log.Printf("[DEBUG] Dropping role %s", role.ID().FullyQualifiedName())
+				// will be uncommented after review
+				// if err := client.Roles.Drop(ctx, NewDropRoleRequest(role.ID()).WithIfExists(true)); err != nil {
+				//	errs = append(errs, fmt.Errorf("sweeping role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
+				// }
+			} else {
+				log.Printf("[DEBUG] Skipping role %s", role.ID().FullyQualifiedName())
 			}
 		}
 
