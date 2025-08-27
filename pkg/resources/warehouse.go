@@ -115,9 +115,9 @@ var warehouseSchema = map[string]*schema.Schema{
 	"resource_constraint": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraintAllowedInput),
-		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraint), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
-		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraints)),
+		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraintWithoutGeneration),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraintWithoutGeneration), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
+		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraintsWithoutGenerations)),
 	},
 	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
 		Type:             schema.TypeInt,
@@ -294,8 +294,14 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	if err = d.Set("query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor); err != nil {
 		return nil, err
 	}
-	if err = d.Set("resource_constraint", w.ResourceConstraint); err != nil {
-		return nil, err
+	// Handle resource_constraint
+	switch w.Type {
+	case sdk.WarehouseTypeSnowparkOptimized:
+		if err = d.Set("resource_constraint", w.ResourceConstraint); err != nil {
+			return nil, err
+		}
+	default:
+		log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", w.Type)
 	}
 
 	return []*schema.ResourceData{d}, nil
@@ -366,7 +372,7 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		createOptions.QueryAccelerationMaxScaleFactor = sdk.Int(v)
 	}
 	if v := d.Get("resource_constraint").(string); v != "" {
-		resourceConstraint, err := sdk.ToWarehouseResourceConstraintAllowedInput(v)
+		resourceConstraint, err := sdk.ToWarehouseResourceConstraintWithoutGeneration(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -422,10 +428,15 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 		if withExternalChangesMarking {
 			resourceConstraint := ""
 			if w.ResourceConstraint != nil {
-				if v, err := sdk.ToWarehouseResourceConstraintAllowedInput(string(*w.ResourceConstraint)); err != nil {
-					log.Printf("[DEBUG] resource constraint is not supported for %s warehouses, ignoring", sdk.WarehouseTypeStandard)
-				} else {
-					resourceConstraint = string(v)
+				switch w.Type {
+				case sdk.WarehouseTypeSnowparkOptimized:
+					if !sdk.IsWarehouseResourceConstraintForSnowparkOptimized(*w.ResourceConstraint) {
+						return diag.FromErr(fmt.Errorf("resource constraint %s is not supported for snowpark-optimized warehouses", *w.ResourceConstraint))
+					} else {
+						resourceConstraint = string(*w.ResourceConstraint)
+					}
+				default:
+					log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", w.Type)
 				}
 			}
 			if err = handleExternalChangesToObjectInShow(d,
@@ -624,7 +635,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			if warehouseType == sdk.WarehouseTypeSnowparkOptimized {
 				if v := d.Get("resource_constraint").(string); v != "" {
-					resourceConstraint, err := sdk.ToWarehouseResourceConstraintAllowedInput(v)
+					resourceConstraint, err := sdk.ToWarehouseResourceConstraintWithoutGeneration(v)
 					if err != nil {
 						return diag.FromErr(err)
 					}

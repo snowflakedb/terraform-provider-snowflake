@@ -274,7 +274,7 @@ func TestWarehouseDescribe(t *testing.T) {
 	})
 }
 
-func TestToResourceConstraint(t *testing.T) {
+func TestWarehouseToResourceConstraint(t *testing.T) {
 	type test struct {
 		input string
 		want  WarehouseResourceConstraint
@@ -311,6 +311,47 @@ func TestToResourceConstraint(t *testing.T) {
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToWarehouseResourceConstraint(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func TestWarehouseToResourceConstraintWithoutGeneration(t *testing.T) {
+	type test struct {
+		input string
+		want  WarehouseResourceConstraint
+	}
+
+	valid := []test{
+		// Case insensitive.
+		{input: "memory_1x", want: WarehouseResourceConstraintMemory1X},
+		// Supported Values.
+		{input: "MEMORY_1X", want: WarehouseResourceConstraintMemory1X},
+		{input: "MEMORY_1X_X86", want: WarehouseResourceConstraintMemory1Xx86},
+		{input: "MEMORY_16X", want: WarehouseResourceConstraintMemory16X},
+		{input: "MEMORY_16X_X86", want: WarehouseResourceConstraintMemory16Xx86},
+		{input: "MEMORY_64X", want: WarehouseResourceConstraintMemory64X},
+		{input: "MEMORY_64X_X86", want: WarehouseResourceConstraintMemory64Xx86},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+		{input: "STANDARD_GEN_1"},
+		{input: "STANDARD_GEN_2"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToWarehouseResourceConstraintWithoutGeneration(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToWarehouseResourceConstraintWithoutGeneration(tc.input)
 			require.Error(t, err)
 		})
 	}
@@ -506,4 +547,33 @@ func Test_Warehouse_Convert(t *testing.T) {
 		require.NotNil(t, wh)
 		assert.InDelta(t, 0.0, wh.Available, testvars.FloatEpsilon)
 	})
+}
+
+func TestIsWarehouseResourceConstraintForSnowparkOptimized(t *testing.T) {
+	trueCases := []WarehouseResourceConstraint{
+		WarehouseResourceConstraintMemory1X,
+		WarehouseResourceConstraintMemory1Xx86,
+		WarehouseResourceConstraintMemory16X,
+		WarehouseResourceConstraintMemory16Xx86,
+		WarehouseResourceConstraintMemory64X,
+		WarehouseResourceConstraintMemory64Xx86,
+	}
+
+	falseCases := []WarehouseResourceConstraint{
+		WarehouseResourceConstraintStandardGen1,
+		WarehouseResourceConstraintStandardGen2,
+		WarehouseResourceConstraint("UNKNOWN"),
+	}
+
+	for _, c := range trueCases {
+		t.Run(string(c), func(t *testing.T) {
+			assert.True(t, IsWarehouseResourceConstraintForSnowparkOptimized(c))
+		})
+	}
+
+	for _, c := range falseCases {
+		t.Run(string(c), func(t *testing.T) {
+			assert.False(t, IsWarehouseResourceConstraintForSnowparkOptimized(c))
+		})
+	}
 }

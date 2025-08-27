@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -148,9 +149,7 @@ const (
 func ToWarehouseResourceConstraint(s string) (WarehouseResourceConstraint, error) {
 	// Handle case-insensitive comparison for resource constraints
 	// The x86 variants should keep x86 lowercase
-	upperS := strings.ToUpper(s)
-
-	switch upperS {
+	switch strings.ToUpper(s) {
 	case "STANDARD_GEN_1":
 		return WarehouseResourceConstraintStandardGen1, nil
 	case "STANDARD_GEN_2":
@@ -172,10 +171,8 @@ func ToWarehouseResourceConstraint(s string) (WarehouseResourceConstraint, error
 	}
 }
 
-func ToWarehouseResourceConstraintAllowedInput(s string) (WarehouseResourceConstraint, error) {
-	upperS := strings.ToUpper(s)
-
-	switch upperS {
+func ToWarehouseResourceConstraintWithoutGeneration(s string) (WarehouseResourceConstraint, error) {
+	switch strings.ToUpper(s) {
 	case "MEMORY_1X":
 		return WarehouseResourceConstraintMemory1X, nil
 	case "MEMORY_1X_X86":
@@ -193,7 +190,11 @@ func ToWarehouseResourceConstraintAllowedInput(s string) (WarehouseResourceConst
 	}
 }
 
-var AllWarehouseResourceConstraints = []string{
+func IsWarehouseResourceConstraintForSnowparkOptimized(s WarehouseResourceConstraint) bool {
+	return slices.Contains(AllWarehouseResourceConstraintsWithoutGenerations, string(s))
+}
+
+var AllWarehouseResourceConstraintsWithoutGenerations = []string{
 	string(WarehouseResourceConstraintMemory1X),
 	string(WarehouseResourceConstraintMemory1Xx86),
 	string(WarehouseResourceConstraintMemory16X),
