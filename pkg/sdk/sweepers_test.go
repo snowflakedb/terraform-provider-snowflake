@@ -68,7 +68,7 @@ func sweep(client *Client, suffix string) error {
 		getFailoverGroupSweeper(client, suffix),
 		getShareSweeper(client, suffix),
 		nukeDatabases(client, "", suffix),
-		getWarehouseSweeper(client, suffix),
+		nukeWarehouses(client, "", suffix),
 		nukeRoles(client, suffix),
 	}
 	for _, sweeper := range sweepers {
@@ -98,7 +98,7 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		integrationTestDatabasesPrefix := fmt.Sprintf("%sdb_%%", integrationTestPrefix)
 
 		for _, c := range allClients {
-			err := nukeWarehouses(c, integrationTestWarehousesPrefix)()
+			err := nukeWarehouses(c, integrationTestWarehousesPrefix, "")()
 			assert.NoError(t, err)
 
 			err = nukeDatabases(c, integrationTestDatabasesPrefix, "")()
@@ -111,7 +111,7 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		acceptanceTestDatabasesPrefix := fmt.Sprintf("%sdb_%%", acceptanceTestPrefix)
 
 		for _, c := range allClients {
-			err := nukeWarehouses(c, acceptanceTestWarehousesPrefix)()
+			err := nukeWarehouses(c, acceptanceTestWarehousesPrefix, "")()
 			assert.NoError(t, err)
 
 			err = nukeDatabases(c, acceptanceTestDatabasesPrefix, "")()
@@ -140,11 +140,9 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
-	// TODO [SNOW-867247]: unskip
 	t.Run("sweep warehouses", func(t *testing.T) {
-		t.Skipf("Used for manual sweeping; will be addressed during SNOW-867247")
 		for _, c := range allClients {
-			err := nukeWarehouses(c, "")()
+			err := nukeWarehouses(c, "", "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -157,30 +155,45 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 
 // TODO [SNOW-867247]: generalize nuke methods (sweepers too)
 // TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
-func nukeWarehouses(client *Client, prefix string) func() error {
+func nukeWarehouses(client *Client, prefix string, suffix string) func() error {
 	protectedWarehouses := []string{
 		"SNOWFLAKE",
 		"SYSTEM$STREAMLIT_NOTEBOOK_WH",
 	}
 
 	return func() error {
-		log.Printf("[DEBUG] Nuking warehouses with prefix %s", prefix)
 		ctx := context.Background()
 
-		var like *Like = nil
+		var whDropCondition func(wh Warehouse) bool
 		if prefix != "" {
-			like = &Like{Pattern: String(prefix)}
+			log.Printf("[DEBUG] Sweeping warehouses with prefix %s", prefix)
+			whDropCondition = func(wh Warehouse) bool {
+				return strings.HasPrefix(wh.Name, prefix)
+			}
+		} else if suffix != "" {
+			log.Printf("[DEBUG] Sweeping warehouses with suffix %s", suffix)
+			whDropCondition = func(wh Warehouse) bool {
+				return strings.HasSuffix(wh.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale warehouses")
+			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
+			whDropCondition = func(wh Warehouse) bool {
+				return wh.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
+			}
 		}
 
-		whs, err := client.Warehouses.Show(ctx, &ShowWarehouseOptions{Like: like})
+		whs, err := client.Warehouses.Show(ctx, new(ShowWarehouseOptions))
 		if err != nil {
-			return fmt.Errorf("sweeping warehouses ended with error, err = %w", err)
+			return fmt.Errorf("SHOW WAREHOUSES ended with error, err = %w", err)
 		}
+
+		log.Printf("[DEBUG] Found %d warehouses", len(whs))
+
 		var errs []error
-		log.Printf("[DEBUG] Found %d warehouses matching search criteria", len(whs))
 		for idx, wh := range whs {
 			log.Printf("[DEBUG] Processing warehouse [%d/%d]: %s...", idx+1, len(whs), wh.ID().FullyQualifiedName())
-			if !slices.Contains(protectedWarehouses, wh.Name) && wh.CreatedOn.Before(time.Now().Add(-8*time.Hour)) {
+			if !slices.Contains(protectedWarehouses, wh.Name) && whDropCondition(wh) {
 				if wh.Owner != "ACCOUNTADMIN" {
 					log.Printf("[DEBUG] Granting ownership on warehouse %s, to ACCOUNTADMIN", wh.ID().FullyQualifiedName())
 					err := client.Grants.GrantOwnership(
@@ -201,10 +214,11 @@ func nukeWarehouses(client *Client, prefix string) func() error {
 				}
 
 				log.Printf("[DEBUG] Dropping warehouse %s, created at: %s", wh.ID().FullyQualifiedName(), wh.CreatedOn.String())
-				if err := client.Warehouses.Drop(ctx, wh.ID(), &DropWarehouseOptions{IfExists: Bool(true)}); err != nil {
-					log.Printf("[DEBUG] Dropping warehouse %s, resulted in error %v", wh.ID().FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping warehouse %s ended with error, err = %w", wh.ID().FullyQualifiedName(), err))
-				}
+				// will be uncommented after review
+				// if err := client.Warehouses.Drop(ctx, wh.ID(), &DropWarehouseOptions{IfExists: Bool(true)}); err != nil {
+				//	log.Printf("[DEBUG] Dropping warehouse %s, resulted in error %v", wh.ID().FullyQualifiedName(), err)
+				//	errs = append(errs, fmt.Errorf("sweeping warehouse %s ended with error, err = %w", wh.ID().FullyQualifiedName(), err))
+				// }
 			} else {
 				log.Printf("[DEBUG] Skipping warehouse %s, created at: %s", wh.ID().FullyQualifiedName(), wh.CreatedOn.String())
 			}

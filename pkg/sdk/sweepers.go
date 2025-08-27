@@ -120,26 +120,3 @@ func getShareSweeper(client *Client, suffix string) func() error {
 		return nil
 	}
 }
-
-func getWarehouseSweeper(client *Client, suffix string) func() error {
-	return func() error {
-		log.Printf("[DEBUG] Sweeping warehouses with suffix %s", suffix)
-		ctx := context.Background()
-
-		whs, err := client.Warehouses.Show(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("sweeping warehouses ended with error, err = %w", err)
-		}
-		for _, wh := range whs {
-			if strings.HasSuffix(wh.Name, suffix) && wh.Name != "SNOWFLAKE" {
-				log.Printf("[DEBUG] Dropping warehouse %s", wh.ID().FullyQualifiedName())
-				if err := client.Warehouses.Drop(ctx, wh.ID(), nil); err != nil {
-					return fmt.Errorf("sweeping warehouse %s ended with error, err = %w", wh.ID().FullyQualifiedName(), err)
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping warehouse %s", wh.ID().FullyQualifiedName())
-			}
-		}
-		return nil
-	}
-}
