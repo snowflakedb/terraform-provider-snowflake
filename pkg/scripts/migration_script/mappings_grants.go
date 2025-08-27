@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strconv"
 	"strings"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -41,12 +42,13 @@ func HandleGrants(csvInput [][]string) error {
 }
 
 func GroupGrants(grants []sdk.Grant) map[string][]sdk.Grant {
-	return GroupByProperty(grants, func(grant sdk.Grant) string {
+	return collections.GroupByProperty(grants, func(grant sdk.Grant) string {
 		return strings.Join([]string{
 			grant.GrantOn.String(),
 			grant.Name.FullyQualifiedName(),
 			grant.GrantedTo.String(),
 			grant.GranteeName.FullyQualifiedName(),
+			strconv.FormatBool(grant.GrantOption),
 		}, "_")
 	})
 }
@@ -55,22 +57,17 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 	// Assuming all grants in the group are the same type and only differ by privileges
 	grant := grantGroup[0]
 	privileges := collections.Map(grantGroup, func(grant sdk.Grant) string { return grant.Privilege })
-	privilegeListVariable := tfconfig.ListVariable(
-		collections.Map(privileges, func(privilege string) tfconfig.Variable {
-			return tfconfig.StringVariable(privilege)
-		})...,
-	)
 
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
 		return model.GrantPrivilegesToAccountRole("test_resource_name_on_account", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
+				WithPrivileges(privileges).
 				WithOnAccount(true).
 				WithWithGrantOption(grant.GrantOption),
 			nil
 	case slices.Contains(sdk.ValidGrantToAccountObjectTypesString, string(grant.GrantedOn)):
 		return model.GrantPrivilegesToAccountRole("test_resource_name_on_account_object", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
+				WithPrivileges(privileges).
 				WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 					"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
 					"object_name": tfconfig.StringVariable(grant.Name.Name()),
@@ -79,7 +76,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 			nil
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
 		return model.GrantPrivilegesToAccountRole("test_resource_name_on_schema", grant.GranteeName.Name()).
-				WithPrivilegesValue(privilegeListVariable).
+				WithPrivileges(privileges).
 				WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 					"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
 				})).
@@ -87,7 +84,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 			nil
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
 		return model.GrantPrivilegesToAccountRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
-			WithPrivilegesValue(privilegeListVariable).
+			WithPrivileges(privileges).
 			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
 				"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
