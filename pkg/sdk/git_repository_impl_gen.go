@@ -2,12 +2,17 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ GitRepositories = (*gitRepositories)(nil)
+var (
+	_ GitRepositories               = (*gitRepositories)(nil)
+	_ convertibleRow[GitRepository] = new(gitRepositoriesRow)
+	_ convertibleRow[GitBranch]     = new(gitBranchesRow)
+	_ convertibleRow[GitTag]        = new(gitTagsRow)
+)
 
 type gitRepositories struct {
 	client *Client
@@ -40,7 +45,7 @@ func (v *gitRepositories) Describe(ctx context.Context, id SchemaObjectIdentifie
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *gitRepositories) Show(ctx context.Context, request *ShowGitRepositoryRequest) ([]GitRepository, error) {
@@ -49,8 +54,7 @@ func (v *gitRepositories) Show(ctx context.Context, request *ShowGitRepositoryRe
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[gitRepositoriesRow, GitRepository](dbRows)
-	return resultList, nil
+	return convertRows[gitRepositoriesRow, GitRepository](dbRows)
 }
 
 func (v *gitRepositories) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*GitRepository, error) {
@@ -74,8 +78,7 @@ func (v *gitRepositories) ShowGitBranches(ctx context.Context, request *ShowGitB
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[gitBranchesRow, GitBranch](dbRows)
-	return resultList, nil
+	return convertRows[gitBranchesRow, GitBranch](dbRows)
 }
 
 func (v *gitRepositories) ShowGitTags(ctx context.Context, request *ShowGitTagsGitRepositoryRequest) ([]GitTag, error) {
@@ -84,8 +87,7 @@ func (v *gitRepositories) ShowGitTags(ctx context.Context, request *ShowGitTagsG
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[gitTagsRow, GitTag](dbRows)
-	return resultList, nil
+	return convertRows[gitTagsRow, GitTag](dbRows)
 }
 
 func (r *CreateGitRepositoryRequest) toOpts() *CreateGitRepositoryOptions {
@@ -142,7 +144,7 @@ func (r *DescribeGitRepositoryRequest) toOpts() *DescribeGitRepositoryOptions {
 	return opts
 }
 
-func (r gitRepositoriesRow) convert() *GitRepository {
+func (r gitRepositoriesRow) convert() (*GitRepository, error) {
 	gitRepository := &GitRepository{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -154,7 +156,7 @@ func (r gitRepositoriesRow) convert() *GitRepository {
 	}
 	id, err := ParseAccountObjectIdentifier(r.ApiIntegration)
 	if err != nil {
-		log.Printf("[DEBUG] failed to parse api integration in git repository: %v", err)
+		return nil, fmt.Errorf("failed to parse api integration in git repository: %w", err)
 	} else {
 		gitRepository.ApiIntegration = &id
 	}
@@ -162,7 +164,7 @@ func (r gitRepositoriesRow) convert() *GitRepository {
 	if r.GitCredentials.Valid {
 		id, err := ParseSchemaObjectIdentifier(r.GitCredentials.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse git credentials in git repository: %v", err)
+			return nil, fmt.Errorf("failed to parse git credentials in git repository: %w", err)
 		} else {
 			gitRepository.GitCredentials = &id
 		}
@@ -176,7 +178,7 @@ func (r gitRepositoriesRow) convert() *GitRepository {
 		gitRepository.LastFetchedAt = &r.LastFetchedAt.Time
 	}
 
-	return gitRepository
+	return gitRepository, nil
 }
 
 func (r *ShowGitRepositoryRequest) toOpts() *ShowGitRepositoryOptions {
@@ -197,13 +199,13 @@ func (r *ShowGitBranchesGitRepositoryRequest) toOpts() *ShowGitBranchesGitReposi
 	return opts
 }
 
-func (r gitBranchesRow) convert() *GitBranch {
+func (r gitBranchesRow) convert() (*GitBranch, error) {
 	return &GitBranch{
 		Name:       r.Name,
 		Path:       r.Path,
 		Checkouts:  r.Checkouts,
 		CommitHash: r.CommitHash,
-	}
+	}, nil
 }
 
 func (r *ShowGitTagsGitRepositoryRequest) toOpts() *ShowGitTagsGitRepositoryOptions {
@@ -215,12 +217,12 @@ func (r *ShowGitTagsGitRepositoryRequest) toOpts() *ShowGitTagsGitRepositoryOpti
 	return opts
 }
 
-func (r gitTagsRow) convert() *GitTag {
+func (r gitTagsRow) convert() (*GitTag, error) {
 	return &GitTag{
 		Name:       r.Name,
 		Path:       r.Path,
 		CommitHash: r.CommitHash,
 		Author:     r.Author,
 		Message:    r.Message,
-	}
+	}, nil
 }

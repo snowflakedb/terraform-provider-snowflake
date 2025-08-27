@@ -74,7 +74,7 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 	switch concreteTypeWithoutPtr {
 	case "sdk.AccountObjectIdentifier":
 		mapper = genhelpers.Name
-	case "sdk.AccountIdentifier", "sdk.DatabaseObjectIdentifier", "sdk.SchemaObjectIdentifier", "sdk.SchemaObjectIdentifierWithArguments", "sdk.ExternalObjectIdentifier":
+	case "sdk.ObjectIdentifier", "sdk.AccountIdentifier", "sdk.DatabaseObjectIdentifier", "sdk.SchemaObjectIdentifier", "sdk.SchemaObjectIdentifierWithArguments", "sdk.ExternalObjectIdentifier":
 		mapper = genhelpers.FullyQualifiedName
 	case "time.Time":
 		mapper = genhelpers.ToString

@@ -11,7 +11,7 @@ import (
 var (
 	ShowAccountParametersSchema = make(map[string]*schema.Schema)
 	accountParameters           = []sdk.AccountParameter{
-		// TODO(SNOW-1348092 - next prs): Add parameters
+		// TODO [SNOW-2298247]: Only session parameters are present here; add the missing ones while adding them to the accounts data source.
 		// session parameters
 		sdk.AccountParameterAbortDetachedQuery,
 		sdk.AccountParameterAutocommit,

@@ -110,7 +110,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -324,7 +323,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasScalingPolicyString(string(sdk.ScalingPolicyEconomy)).
 						HasAutoSuspendString("1200").
 						HasAutoResumeString("false").
-						// TODO [mux-PR]: change after IgnoreAfterCreation is added
+						// TODO [SNOW-2298083]: change after IgnoreAfterCreation is added
 						HasInitiallySuspendedString("false").
 						HasResourceMonitorString(resourceMonitor.ID().Name()).
 						HasCommentString(newComment).
@@ -347,7 +346,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasQueryAccelerationMaxScaleFactor(4),
 				),
 			},
-			// TODO [mux-PR]: expect no changes with identifier suppression (using plancheck.ExpectNonEmptyPlan() temporarily)
+			// TODO [SNOW-2296366]: expect no changes with identifier suppression (using plancheck.ExpectNonEmptyPlan() temporarily)
 			// change resource monitor - wrap in quotes (no change expected)
 			{
 				Config: replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelRenamedFullResourceMonitorInQuotes)),
@@ -377,7 +376,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 				ResourceName:      replaceResourceReference(warehouseModelRenamedFull.ResourceReference()),
 				ImportState:       true,
 				ImportStateVerify: true,
-				// TODO[mux-PR]: adjust when handling IgnoreAfterCreate
+				// TODO[SNOW-2298083]: adjust when handling IgnoreAfterCreate
 				ImportStateVerifyIgnore: []string{"initially_suspended"},
 			},
 		},
@@ -401,7 +400,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -538,7 +536,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -682,7 +679,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Validations(t *testing.T) 
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -737,7 +733,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -838,7 +833,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -941,7 +935,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1053,7 +1046,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1303,7 +1295,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 	})
 }
 
-// TODO [mux-PR]: address with IgnoreAfterCreate
+// TODO [SNOW-2298083]: address with IgnoreAfterCreate
 func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_InitiallySuspendedChangesPostCreation(t *testing.T) {
 	t.Skip("IgnoreAfterCreate not supported yet")
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -1314,7 +1306,6 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_InitiallySuspendedChangesP
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -2,13 +2,17 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ExternalFunctions = (*externalFunctions)(nil)
+var (
+	_ ExternalFunctions                        = (*externalFunctions)(nil)
+	_ convertibleRow[ExternalFunctionProperty] = new(externalFunctionPropertyRow)
+	_ convertibleRow[ExternalFunction]         = new(externalFunctionRow)
+)
 
 type externalFunctions struct {
 	client *Client
@@ -30,8 +34,7 @@ func (v *externalFunctions) Show(ctx context.Context, request *ShowExternalFunct
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[externalFunctionRow, ExternalFunction](dbRows)
-	return resultList, nil
+	return convertRows[externalFunctionRow, ExternalFunction](dbRows)
 }
 
 func (v *externalFunctions) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ExternalFunction, error) {
@@ -57,7 +60,7 @@ func (v *externalFunctions) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalFunctionPropertyRow, ExternalFunctionProperty](rows), nil
+	return convertRows[externalFunctionPropertyRow, ExternalFunctionProperty](rows)
 }
 
 func (r *CreateExternalFunctionRequest) toOpts() *CreateExternalFunctionOptions {
@@ -153,7 +156,7 @@ func (r *ShowExternalFunctionRequest) toOpts() *ShowExternalFunctionOptions {
 	return opts
 }
 
-func (r externalFunctionRow) convert() *ExternalFunction {
+func (r externalFunctionRow) convert() (*ExternalFunction, error) {
 	e := &ExternalFunction{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -173,7 +176,7 @@ func (r externalFunctionRow) convert() *ExternalFunction {
 	returnIndex := strings.Index(arguments, ") RETURN ")
 	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
 	if err != nil {
-		log.Printf("[DEBUG] failed to parse external function arguments, err = %s", err)
+		return nil, fmt.Errorf("failed to parse external function arguments: %w", err)
 	} else {
 		e.Arguments = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
 			return DataType(a.ArgType)
@@ -194,7 +197,7 @@ func (r externalFunctionRow) convert() *ExternalFunction {
 	if r.IsDataMetric.Valid {
 		e.IsDataMetric = r.IsDataMetric.String == "Y"
 	}
-	return e
+	return e, nil
 }
 
 func (r *DescribeExternalFunctionRequest) toOpts() *DescribeExternalFunctionOptions {
@@ -204,9 +207,9 @@ func (r *DescribeExternalFunctionRequest) toOpts() *DescribeExternalFunctionOpti
 	return opts
 }
 
-func (r externalFunctionPropertyRow) convert() *ExternalFunctionProperty {
+func (r externalFunctionPropertyRow) convert() (*ExternalFunctionProperty, error) {
 	return &ExternalFunctionProperty{
 		Property: r.Property,
 		Value:    r.Value,
-	}
+	}, nil
 }

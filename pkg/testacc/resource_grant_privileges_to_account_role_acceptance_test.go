@@ -36,7 +36,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -81,7 +80,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_gh3153(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -119,7 +117,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_gh3507(t *testing.T) {
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -197,7 +194,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_ErrorOnPrivilegesNotGranted(
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -240,7 +236,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_ChangeListOfPrivilegesToAllP
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -282,7 +277,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_PrivilegesReversed(t *testin
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -331,7 +325,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -387,7 +380,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_gh2717(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -420,7 +412,6 @@ func TestAcc_GrantPrivilegesToApplicationRole_OnAccountObject_InfinitePlan(t *te
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -462,7 +453,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -496,7 +486,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema(t *testing.T) {
 func TestAcc_GrantPrivilegesToAccountRole_OnSchema_ExactlyOneOf(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -530,7 +519,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAllSchemasInDatabase(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -580,7 +568,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnFutureSchemasInDatabase(t *testing.T
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -632,7 +619,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnObject(t *testing.T) 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -771,7 +757,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFunctionWithoutArgume
 func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnObject_OwnershipPrivilege(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -806,7 +791,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnAll_InDatabase(t *tes
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -857,7 +841,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnAllPipes(t *testing.T
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -909,7 +892,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_InDatabase(t *
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -963,7 +945,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Streamlits_InD
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -997,7 +978,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnAll_Streamlits_InData
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1049,7 +1029,6 @@ func TestAcc_GrantPrivilegesToAccountRole_UpdatePrivileges(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1142,7 +1121,6 @@ func TestAcc_GrantPrivilegesToAccountRole_UpdatePrivileges_SnowflakeChecked(t *t
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1222,7 +1200,6 @@ func TestAcc_GrantPrivilegesToAccountRole_AlwaysApply(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1315,7 +1292,6 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1361,7 +1337,6 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivilegesOnSnowflakeDatabase(
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1413,7 +1388,6 @@ func TestAcc_GrantPrivilegesToAccountRole_MultiplePartsInRoleName(t *testing.T) 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1449,7 +1423,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnExternalVolume(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1494,7 +1467,6 @@ func TestAcc_GrantPrivilegesToAccountRole_MLPrivileges(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1544,7 +1516,6 @@ func TestAcc_GrantPrivilegesToAccountRole_ChangeWithGrantOptionsOutsideOfTerrafo
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1602,7 +1573,6 @@ func TestAcc_GrantPrivilegesToAccountRole_ChangeWithGrantOptionsOutsideOfTerrafo
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1676,7 +1646,6 @@ func TestAcc_GrantPrivilegesToAccountRole_RemoveGrantedObjectOutsideTerraform(t 
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1716,7 +1685,6 @@ func TestAcc_GrantPrivilegesToAccountRole_RemoveAccountRoleOutsideTerraform(t *t
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1756,7 +1724,6 @@ func TestAcc_GrantPrivilegesToAccountRole_AlwaysApply_SetAfterCreate(t *testing.
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1823,7 +1790,6 @@ func TestAcc_GrantPrivilegesToAccountRole_migrateFromV0941_ensureSmoothUpgradeWi
 	quotedSchemaId := fmt.Sprintf(`\"%s\".\"%s\"`, schemaId.DatabaseName(), schemaId.Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1877,7 +1843,6 @@ func TestAcc_GrantPrivilegesToAccountRole_IdentifierQuotingDiffSuppression(t *te
 	unquotedSchemaId := fmt.Sprintf(`%s.%s`, schemaId.DatabaseName(), schemaId.Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1934,7 +1899,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnDataset_issue2807(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1975,7 +1939,6 @@ func TestAcc_GrantPrivilegesToAccountRole_OnFutureModels_issue3050(t *testing.T)
 	databaseName := testClient().Ids.DatabaseId().Name()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

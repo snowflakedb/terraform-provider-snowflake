@@ -33,7 +33,6 @@ func TestAcc_GrantPrivilegesToShare_OnDatabase(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -89,7 +88,6 @@ func TestAcc_GrantPrivilegesToShare_OnSchema(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -149,7 +147,6 @@ func TestAcc_GrantPrivilegesToShare_OnTable(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -207,7 +204,6 @@ func TestAcc_GrantPrivilegesToShare_OnDynamicTable(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -255,7 +251,6 @@ func TestAcc_GrantPrivilegesToShare_OnAllTablesInSchema(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -319,7 +314,6 @@ func TestAcc_GrantPrivilegesToShare_OnView(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -379,7 +373,6 @@ func TestAcc_GrantPrivilegesToShare_OnTag(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -529,7 +522,6 @@ func TestAcc_GrantPrivilegesToShare_OnPrivilegeUpdate(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -593,7 +585,6 @@ func TestAcc_GrantPrivilegesToShare_OnDatabaseWithReferenceUsagePrivilege(t *tes
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -626,7 +617,6 @@ func TestAcc_GrantPrivilegesToShare_OnDatabaseWithReferenceUsagePrivilege(t *tes
 func TestAcc_GrantPrivilegesToShare_NoPrivileges(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -643,7 +633,6 @@ func TestAcc_GrantPrivilegesToShare_NoPrivileges(t *testing.T) {
 func TestAcc_GrantPrivilegesToShare_NoOnOption(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -677,7 +666,6 @@ func TestAcc_GrantPrivilegesToShare_RemoveShareOutsideTerraform(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -726,7 +714,6 @@ func TestAcc_GrantPrivilegesToShareWithNameContainingDots_OnTable(t *testing.T) 
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

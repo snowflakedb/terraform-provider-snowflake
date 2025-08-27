@@ -510,7 +510,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 		row := correctRow()
 		row.Size = "INCORRECT_SIZE"
 
-		wh, err := row.convertErr()
+		wh, err := row.convert()
 
 		require.ErrorContains(t, err, "invalid warehouse size: INCORRECT_SIZE")
 		require.Nil(t, wh)
@@ -520,7 +520,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 		row := correctRow()
 		row.Available = "not a number"
 
-		wh, err := row.convertErr()
+		wh, err := row.convert()
 
 		require.ErrorContains(t, err, "row 'available' has incorrect value 'not a number'")
 		require.Nil(t, wh)
@@ -529,7 +529,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 	t.Run("convert correct", func(t *testing.T) {
 		row := correctRow()
 
-		wh, err := row.convertErr()
+		wh, err := row.convert()
 
 		require.NoError(t, err)
 		require.NotNil(t, wh)
@@ -541,7 +541,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 		row := correctRow()
 		row.Available = " "
 
-		wh, err := row.convertErr()
+		wh, err := row.convert()
 
 		require.NoError(t, err)
 		require.NotNil(t, wh)

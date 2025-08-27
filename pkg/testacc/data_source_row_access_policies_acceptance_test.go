@@ -40,7 +40,6 @@ func TestAcc_RowAccessPolicies(t *testing.T) {
 	dsName := "data.snowflake_row_access_policies.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -135,7 +134,6 @@ func TestAcc_RowAccessPolicies_Filtering(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.RowAccessPolicy),
-		PreCheck:     func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicies/like"),
@@ -158,7 +156,6 @@ func TestAcc_RowAccessPolicies_Filtering(t *testing.T) {
 func TestAcc_RowAccessPolicies_emptyIn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

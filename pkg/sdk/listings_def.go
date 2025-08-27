@@ -366,8 +366,8 @@ var ListingsDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name"),
 	)
 
-	// TODO(next prs): Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface
-	// TODO(next prs): Show available listings
-	// TODO(next prs): Describe available listing
-	// TODO(next prs): Listing manifest builder - https://docs.snowflake.com/en/progaccess/listing-manifest-reference
-	// TODO(next prs): Test mapping functions (ToListingRevision and ToListingState)
+	// TODO [SNOW-2236968]: Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface
+	// TODO [SNOW-2236968]: Show available listings
+	// TODO [SNOW-2236968]: Describe available listing
+	// TODO [SNOW-2236968]: Listing manifest builder - https://docs.snowflake.com/en/progaccess/listing-manifest-reference
+	// TODO [SNOW-2236968]: Test mapping functions (ToListingRevision and ToListingState)

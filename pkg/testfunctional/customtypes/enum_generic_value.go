@@ -40,14 +40,14 @@ func (v EnumValue[T]) StringSemanticEquals(_ context.Context, newValuable basety
 
 	newValue, ok := newValuable.(EnumValue[T])
 	if !ok {
-		// TODO [mux-PRs]: better diags later
+		// TODO [SNOW-2298131]: better diags later
 		diags.AddError("Incomparable types", newValuable.String())
 		return false, diags
 	}
 
 	result, err := v.sameAfterNormalization(newValue.ValueString(), v.ValueString())
 	if err != nil {
-		// TODO [mux-PRs]: better diags later
+		// TODO [SNOW-2298131]: better diags later
 		diags.AddError("Normalization failed", err.Error())
 		return false, diags
 	}
@@ -75,7 +75,7 @@ func (v EnumValue[T]) ValidateAttribute(_ context.Context, req xattr.ValidateAtt
 
 	_, err := v.et.FromString(v.ValueString())
 	if err != nil {
-		// TODO [mux-PRs]: better diags later
+		// TODO [SNOW-2298131]: better diags later
 		resp.Diagnostics.AddAttributeError(req.Path, "Incorrect value for attribute", err.Error())
 		return
 	}

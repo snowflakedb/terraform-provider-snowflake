@@ -85,7 +85,6 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -378,7 +377,6 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -539,7 +537,6 @@ func TestAcc_Warehouse_WarehouseSizes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -707,7 +704,6 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -764,7 +760,6 @@ func TestAcc_Warehouse_ValidateDriftForCurrentWarehouse(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -821,7 +816,6 @@ func TestAcc_Warehouse_AutoResume(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -939,7 +933,6 @@ func TestAcc_Warehouse_AutoSuspend(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1059,7 +1052,6 @@ func TestAcc_Warehouse_ZeroValues(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1192,7 +1184,6 @@ func TestAcc_Warehouse_Parameter(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1488,7 +1479,6 @@ func TestAcc_Warehouse_InitiallySuspendedChangesPostCreation(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1554,7 +1544,6 @@ func TestAcc_Warehouse_migrateFromVersion092_withWarehouseSize(t *testing.T) {
 		WithStatementTimeoutInSeconds(172800)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1604,7 +1593,6 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration(t *t
 		WithStatementTimeoutInSeconds(172800)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1667,7 +1655,6 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration_bool
 		WithStatementTimeoutInSeconds(172800)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1717,7 +1704,6 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_sam
 		WithStatementTimeoutInSeconds(172800)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1773,7 +1759,6 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_noI
 		WithQueryAccelerationMaxScaleFactorValue(nil)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1829,7 +1814,6 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_dif
 		WithStatementTimeoutInSeconds(172800)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1882,7 +1866,6 @@ func TestAcc_Warehouse_migrateFromVersion092_noConfigToFullConfig(t *testing.T) 
 		WithStatementTimeoutInSeconds(172800)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1936,7 +1919,6 @@ func TestAcc_Warehouse_migrateFromVersion092_defaultsRemoved(t *testing.T) {
 	warehouseModel := model.Warehouse("test", id.Name()).WithWarehouseSizeEnum(sdk.WarehouseSizeXSmall)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2003,7 +1985,6 @@ func TestAcc_Warehouse_migrateFromVersion092_warehouseSizeCausingForceNew(t *tes
 	warehouseModel := model.Warehouse("test", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2041,7 +2022,6 @@ func TestAcc_Warehouse_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *
 	warehouseModel := model.Warehouse("test", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2074,7 +2054,6 @@ func TestAcc_Warehouse_IdentifierQuotingDiffSuppression(t *testing.T) {
 	warehouseModel := model.Warehouse("test", quotedId)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

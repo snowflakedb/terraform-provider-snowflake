@@ -25,7 +25,7 @@ func (r *HttpServerEmbeddable[T]) Configure(_ context.Context, request resource.
 	r.serverUrl = providerContext.ServerUrl()
 }
 
-// TODO [mux-PRs]: add common `create` and `update` helpers to resources; update all existing test resources
+// TODO [SNOW-2296350]: add common `create` and `update` helpers to resources; update all existing test resources
 func NewHttpServerEmbeddable[T any](path string) *HttpServerEmbeddable[T] {
 	return &HttpServerEmbeddable[T]{
 		path: path,

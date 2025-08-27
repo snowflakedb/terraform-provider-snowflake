@@ -7,14 +7,14 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
 	"github.com/stretchr/testify/require"
 )
 
 func TestReadFileSafeFailsForFileThatIsTooBig(t *testing.T) {
 	c := make([]byte, 11*1024*1024)
-	configPath := testhelpers.TestFile(t, "config", c)
+	configPath := testfiles.TestFile(t, "config", c)
 
 	_, err := oswrapper.ReadFileSafe(configPath, false)
 	require.ErrorContains(t, err, fmt.Sprintf("config file %s is too big - maximum allowed size is 10MB", configPath))
@@ -22,7 +22,7 @@ func TestReadFileSafeFailsForFileThatIsTooBig(t *testing.T) {
 
 func TestReadFileSafeCanSkipPermissionVerification(t *testing.T) {
 	exp := random.Bytes()
-	path := testhelpers.TestFileWithCustomPermissions(t, "config", exp, 0o755)
+	path := testfiles.TestFileWithCustomPermissions(t, "config", exp, 0o755)
 	act, err := oswrapper.ReadFileSafe(path, false)
 	require.NoError(t, err)
 	require.Equal(t, exp, act)
@@ -30,7 +30,7 @@ func TestReadFileSafeCanSkipPermissionVerification(t *testing.T) {
 
 func TestReadFileSafeWithPermissionVerificationFailsForFileThatIsTooBig(t *testing.T) {
 	c := make([]byte, 11*1024*1024)
-	configPath := testhelpers.TestFile(t, "config", c)
+	configPath := testfiles.TestFile(t, "config", c)
 
 	_, err := oswrapper.ReadFileSafe(configPath, true)
 	require.ErrorContains(t, err, fmt.Sprintf("config file %s is too big - maximum allowed size is 10MB", configPath))
@@ -67,7 +67,7 @@ func TestReadFileSafeFailsForFileWithTooWidePermissions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("reading file with too wide permissions %#o", tt.permissions), func(t *testing.T) {
-			path := testhelpers.TestFileWithCustomPermissions(t, "config", random.Bytes(), tt.permissions)
+			path := testfiles.TestFileWithCustomPermissions(t, "config", random.Bytes(), tt.permissions)
 			_, err := oswrapper.ReadFileSafe(path, true)
 			require.ErrorContains(t, err, fmt.Sprintf("config file %s has unsafe permissions", path))
 		})
@@ -88,7 +88,7 @@ func TestReadFileSafeFailsForFileWithTooRestrictivePermissions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("reading file with too restrictive permissions %#o", tt.permissions), func(t *testing.T) {
-			path := testhelpers.TestFileWithCustomPermissions(t, "config", random.Bytes(), tt.permissions)
+			path := testfiles.TestFileWithCustomPermissions(t, "config", random.Bytes(), tt.permissions)
 			_, err := oswrapper.ReadFileSafe(path, true)
 			require.ErrorContains(t, err, fmt.Sprintf("open %s: permission denied", path))
 		})
@@ -110,7 +110,7 @@ func TestReadFileSafeReadsFileWithCorrectPermissions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("reading file with correct permissions %#o", tt.permissions), func(t *testing.T) {
-			path := testhelpers.TestFileWithCustomPermissions(t, "config", random.Bytes(), tt.permissions)
+			path := testfiles.TestFileWithCustomPermissions(t, "config", random.Bytes(), tt.permissions)
 			_, err := oswrapper.ReadFileSafe(path, true)
 			require.NoError(t, err)
 		})

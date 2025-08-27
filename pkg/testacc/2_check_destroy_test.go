@@ -17,10 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-// TODO [next PRs]: this file is currently almost exact copy of check_destroy file in old acceptance package:
-// 	- the package name was changed
-//  - TestClient() -> testClient()
-
 func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*terraform.State) error {
 	t.Helper()
 

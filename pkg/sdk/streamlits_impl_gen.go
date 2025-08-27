@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Streamlits = (*streamlits)(nil)
+var (
+	_ Streamlits                      = (*streamlits)(nil)
+	_ convertibleRow[Streamlit]       = new(streamlitsRow)
+	_ convertibleRow[StreamlitDetail] = new(streamlitsDetailRow)
+)
 
 type streamlits struct {
 	client *Client
@@ -37,8 +41,7 @@ func (v *streamlits) Show(ctx context.Context, request *ShowStreamlitRequest) ([
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[streamlitsRow, Streamlit](dbRows)
-	return resultList, nil
+	return convertRows[streamlitsRow, Streamlit](dbRows)
 }
 
 func (v *streamlits) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Streamlit, error) {
@@ -64,7 +67,7 @@ func (v *streamlits) Describe(ctx context.Context, id SchemaObjectIdentifier) (*
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateStreamlitRequest) toOpts() *CreateStreamlitOptions {
@@ -142,7 +145,7 @@ func (r *ShowStreamlitRequest) toOpts() *ShowStreamlitOptions {
 	return opts
 }
 
-func (r streamlitsRow) convert() *Streamlit {
+func (r streamlitsRow) convert() (*Streamlit, error) {
 	e := &Streamlit{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -161,7 +164,7 @@ func (r streamlitsRow) convert() *Streamlit {
 	if r.QueryWarehouse.Valid {
 		e.QueryWarehouse = r.QueryWarehouse.String
 	}
-	return e
+	return e, nil
 }
 
 func (r *DescribeStreamlitRequest) toOpts() *DescribeStreamlitOptions {
@@ -171,7 +174,7 @@ func (r *DescribeStreamlitRequest) toOpts() *DescribeStreamlitOptions {
 	return opts
 }
 
-func (r streamlitsDetailRow) convert() *StreamlitDetail {
+func (r streamlitsDetailRow) convert() (*StreamlitDetail, error) {
 	e := &StreamlitDetail{
 		Name:                       r.Name,
 		RootLocation:               r.RootLocation,
@@ -195,5 +198,5 @@ func (r streamlitsDetailRow) convert() *StreamlitDetail {
 		externalAccessIntegrations[i] = NewObjectIdentifierFromFullyQualifiedName(v).Name()
 	}
 	e.ExternalAccessIntegrations = externalAccessIntegrations
-	return e
+	return e, nil
 }
