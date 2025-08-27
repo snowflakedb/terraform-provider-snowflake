@@ -2137,7 +2137,6 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2318,7 +2317,6 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 		WithResourceConstraintEnum(sdk.WarehouseResourceConstraintMemory1X)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2493,7 +2491,6 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateManuallySetResourceConstraint(t
 		WithWarehouseTypeEnum(sdk.WarehouseTypeSnowparkOptimized)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2543,7 +2540,6 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 		WithWarehouseTypeEnum(sdk.WarehouseTypeSnowparkOptimized)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2592,7 +2588,6 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateStandardWithoutResourceConstrai
 		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
