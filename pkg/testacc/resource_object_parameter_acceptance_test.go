@@ -48,8 +48,8 @@ resource "snowflake_object_parameter" "p" {
 }
 
 func TestAcc_ObjectParameterAccount(t *testing.T) {
-	// TODO [SNOW-2010844]: unskip
-	t.Skip("Skipping temporarily as it messes with the account level setting.")
+	// TODO [SNOW-1348325]: Unskip during resource stabilization.
+	t.Skip("Skipping temporarily as it messes with the account level setting. The current cleanup is incorrect, so we shouldn't run it even on the account level tests.")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
