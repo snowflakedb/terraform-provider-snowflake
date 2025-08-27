@@ -146,17 +146,17 @@ type DescribeSemanticViewOptions struct {
 }
 
 type semanticViewDetailsRow struct {
-	ObjectKind    string `db:"object_kind"`
-	ObjectName    string `db:"object_name"`
-	ParentEntity  string `db:"parent_entity"`
-	Property      string `db:"property"`
-	PropertyValue string `db:"property_value"`
+	ObjectKind    string         `db:"object_kind"`
+	ObjectName    string         `db:"object_name"`
+	ParentEntity  sql.NullString `db:"parent_entity"`
+	Property      string         `db:"property"`
+	PropertyValue string         `db:"property_value"`
 }
 
 type SemanticViewDetails struct {
 	ObjectKind    string
 	ObjectName    string
-	ParentEntity  string
+	ParentEntity  *string
 	Property      string
 	PropertyValue string
 }
