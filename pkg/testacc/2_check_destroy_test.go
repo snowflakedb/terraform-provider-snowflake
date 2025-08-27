@@ -71,20 +71,19 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 
 func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource) (sdk.ObjectIdentifier, error) {
 	switch resource {
-	case resources.ExternalFunction:
-		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
-	case resources.FunctionJava,
+	// resources using schema object identifier with arguments
+	case resources.ExternalFunction,
+		resources.FunctionJava,
 		resources.FunctionJavascript,
 		resources.FunctionPython,
 		resources.FunctionScala,
-		resources.FunctionSql:
-		return sdk.ParseSchemaObjectIdentifierWithArguments(rs.Primary.ID)
-	case resources.ProcedureJava,
+		resources.FunctionSql,
+		resources.ProcedureJava,
 		resources.ProcedureJavascript,
 		resources.ProcedurePython,
 		resources.ProcedureScala,
 		resources.ProcedureSql:
-		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
+		return sdk.ParseSchemaObjectIdentifierWithArguments(rs.Primary.ID)
 	// resources using legacy identifier encoding (with pipes)
 	case resources.AccountAuthenticationPolicyAttachment,
 		resources.AccountPasswordPolicyAttachment,
@@ -107,6 +106,9 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.Stage,
 		resources.Table:
 		return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
+	// Handling user separately, due to existing test with "." as part of the identifier.
+	case resources.User:
+		return sdk.ParseAccountObjectIdentifier(rs.Primary.ID)
 	default:
 		return sdk.ParseObjectIdentifierString(rs.Primary.ID)
 	}
