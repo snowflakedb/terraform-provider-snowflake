@@ -121,33 +121,6 @@ func getShareSweeper(client *Client, suffix string) func() error {
 	}
 }
 
-func getDatabaseSweeper(client *Client, suffix string) func() error {
-	return func() error {
-		log.Printf("[DEBUG] Sweeping databases with suffix %s", suffix)
-		ctx := context.Background()
-
-		dbs, err := client.Databases.Show(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("sweeping databases ended with error, err = %w", err)
-		}
-		for _, db := range dbs {
-			if strings.HasSuffix(db.Name, suffix) && db.Name != "SNOWFLAKE" {
-				log.Printf("[DEBUG] Dropping database %s", db.ID().FullyQualifiedName())
-				if err := client.Databases.Drop(ctx, db.ID(), nil); err != nil {
-					if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
-						log.Printf("[DEBUG] Skipping database %s", db.ID().FullyQualifiedName())
-					} else {
-						return fmt.Errorf("sweeping database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err)
-					}
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping database %s", db.ID().FullyQualifiedName())
-			}
-		}
-		return nil
-	}
-}
-
 func getWarehouseSweeper(client *Client, suffix string) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Sweeping warehouses with suffix %s", suffix)

@@ -67,7 +67,7 @@ func sweep(client *Client, suffix string) error {
 		nukeUsers(client, suffix),
 		getFailoverGroupSweeper(client, suffix),
 		getShareSweeper(client, suffix),
-		getDatabaseSweeper(client, suffix),
+		nukeDatabases(client, "", suffix),
 		getWarehouseSweeper(client, suffix),
 		nukeRoles(client, suffix),
 	}
@@ -101,7 +101,7 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 			err := nukeWarehouses(c, integrationTestWarehousesPrefix)()
 			assert.NoError(t, err)
 
-			err = nukeDatabases(c, integrationTestDatabasesPrefix)()
+			err = nukeDatabases(c, integrationTestDatabasesPrefix, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -114,7 +114,7 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 			err := nukeWarehouses(c, acceptanceTestWarehousesPrefix)()
 			assert.NoError(t, err)
 
-			err = nukeDatabases(c, acceptanceTestDatabasesPrefix)()
+			err = nukeDatabases(c, acceptanceTestDatabasesPrefix, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -133,11 +133,9 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
-	// TODO [SNOW-867247]: unskip
 	t.Run("sweep databases", func(t *testing.T) {
-		t.Skipf("Used for manual sweeping; will be addressed during SNOW-867247")
 		for _, c := range allClients {
-			err := nukeDatabases(c, "")()
+			err := nukeDatabases(c, "", "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -215,7 +213,7 @@ func nukeWarehouses(client *Client, prefix string) func() error {
 	}
 }
 
-func nukeDatabases(client *Client, prefix string) func() error {
+func nukeDatabases(client *Client, prefix string, suffix string) func() error {
 	protectedDatabases := []string{
 		"SNOWFLAKE",
 		"MFA_ENFORCEMENT_POLICY",
@@ -223,46 +221,67 @@ func nukeDatabases(client *Client, prefix string) func() error {
 	}
 
 	return func() error {
-		log.Printf("[DEBUG] Nuking databases with prefix %s", prefix)
 		ctx := context.Background()
 
-		var like *Like = nil
+		var dbDropCondition func(db Database) bool
 		if prefix != "" {
-			like = &Like{Pattern: String(prefix)}
-		}
-		dbs, err := client.Databases.Show(ctx, &ShowDatabasesOptions{Like: like})
-		if err != nil {
-			return fmt.Errorf("sweeping databases ended with error, err = %w", err)
-		}
-		var errs []error
-		log.Printf("[DEBUG] Found %d databases matching search criteria", len(dbs))
-		for idx, db := range dbs {
-			if db.Owner != "ACCOUNTADMIN" {
-				log.Printf("[DEBUG] Granting ownership on database %s, to ACCOUNTADMIN", db.ID().FullyQualifiedName())
-				err := client.Grants.GrantOwnership(
-					ctx,
-					OwnershipGrantOn{Object: &Object{
-						ObjectType: ObjectTypeDatabase,
-						Name:       db.ID(),
-					}},
-					OwnershipGrantTo{
-						AccountRoleName: Pointer(NewAccountObjectIdentifier("ACCOUNTADMIN")),
-					},
-					nil,
-				)
-				if err != nil {
-					errs = append(errs, fmt.Errorf("granting ownership on database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
-					continue
-				}
+			log.Printf("[DEBUG] Sweeping databases with prefix %s", prefix)
+			dbDropCondition = func(db Database) bool {
+				return strings.HasPrefix(db.Name, prefix)
 			}
+		} else if suffix != "" {
+			log.Printf("[DEBUG] Sweeping databases with suffix %s", suffix)
+			dbDropCondition = func(db Database) bool {
+				return strings.HasSuffix(db.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale databases")
+			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
+			dbDropCondition = func(db Database) bool {
+				return db.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
+			}
+		}
 
+		dbs, err := client.Databases.Show(ctx, new(ShowDatabasesOptions))
+		if err != nil {
+			return fmt.Errorf("SHOW DATABASES ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d databases", len(dbs))
+
+		var errs []error
+		for idx, db := range dbs {
 			log.Printf("[DEBUG] Processing database [%d/%d]: %s...", idx+1, len(dbs), db.ID().FullyQualifiedName())
-			if !slices.Contains(protectedDatabases, db.Name) && db.CreatedOn.Before(time.Now().Add(-8*time.Hour)) {
-				log.Printf("[DEBUG] Dropping database %s, created at: %s", db.ID().FullyQualifiedName(), db.CreatedOn.String())
-				if err := client.Databases.Drop(ctx, db.ID(), &DropDatabaseOptions{IfExists: Bool(true)}); err != nil {
-					log.Printf("[DEBUG] Dropping database %s, resulted in error %v", db.ID().FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
+			if !slices.Contains(protectedDatabases, db.Name) && dbDropCondition(db) {
+				if db.Owner != "ACCOUNTADMIN" {
+					log.Printf("[DEBUG] Granting ownership on database %s, to ACCOUNTADMIN", db.ID().FullyQualifiedName())
+					err := client.Grants.GrantOwnership(
+						ctx,
+						OwnershipGrantOn{Object: &Object{
+							ObjectType: ObjectTypeDatabase,
+							Name:       db.ID(),
+						}},
+						OwnershipGrantTo{
+							AccountRoleName: Pointer(NewAccountObjectIdentifier("ACCOUNTADMIN")),
+						},
+						nil,
+					)
+					if err != nil {
+						errs = append(errs, fmt.Errorf("granting ownership on database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
+						continue
+					}
 				}
+
+				log.Printf("[DEBUG] Dropping database %s, created at: %s", db.ID().FullyQualifiedName(), db.CreatedOn.String())
+				// will be uncommented after review
+				// if err := client.Databases.Drop(ctx, db.ID(), &DropDatabaseOptions{IfExists: Bool(true)}); err != nil {
+				//	if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
+				//		log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", db.ID().FullyQualifiedName(), err)
+				//		continue
+				//	}
+				//	log.Printf("[DEBUG] Dropping database %s, resulted in error %v", db.ID().FullyQualifiedName(), err)
+				//	errs = append(errs, fmt.Errorf("sweeping database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
+				// }
 			} else {
 				log.Printf("[DEBUG] Skipping database %s, created at: %s", db.ID().FullyQualifiedName(), db.CreatedOn.String())
 			}
