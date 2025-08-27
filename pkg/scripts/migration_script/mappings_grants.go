@@ -9,13 +9,7 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"log"
 	"slices"
-	"testing"
 )
-
-type MockTestingT testing.T
-
-func (c *MockTestingT) Logf(format string, args ...any) {
-}
 
 func HandleGrants(csvInput [][]string) error {
 	grants, err := ConvertCsvInput[GrantCsvRow, sdk.Grant](csvInput)
