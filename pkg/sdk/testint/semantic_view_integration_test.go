@@ -16,12 +16,15 @@ func TestInt_SemanticView(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
+	// create a database and add it to the cleanup queue
 	db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(dbCleanup)
 
+	// create a schema and add it to the cleanup queue
 	schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
 	t.Cleanup(schemaCleanup)
 
+	// create 2 tables and add them to the cleanup queue
 	columns1 := []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("FIRST_A", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
 		*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
@@ -39,6 +42,7 @@ func TestInt_SemanticView(t *testing.T) {
 	table2ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 	table2, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2ID, columns2))
 	t.Cleanup(table2Cleanup)
+
 	alias1 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table1")
 	logicalTable1 := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(*alias1)
 	alias2 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table2")
@@ -48,6 +52,7 @@ func TestInt_SemanticView(t *testing.T) {
 		*logicalTable1,
 		*logicalTable2,
 	}
+
 	semanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.metric1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "SUM(table1.FIRST_A)"})
 	metric := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*semanticExpression)
 	metrics := []sdk.MetricDefinitionRequest{
@@ -58,13 +63,16 @@ func TestInt_SemanticView(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
 
+		// create the semantic view with logical tables and a metric
 		err := client.SemanticViews.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
 
+		// check that the semantic view was created
 		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
 		require.NoError(t, err)
 
+		// check that the semantic view's properties match our settings
 		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
@@ -159,14 +167,82 @@ func TestInt_SemanticView(t *testing.T) {
 				PropertyValue: table2.Name,
 			},
 		}
-
-		_ = expectedDescription
-		//assert.Equal(t, "TABLE", semanticViewDetails[0].ObjectKind)
-		//assert.Equal(t, "TABLE1", semanticViewDetails[0].ObjectName)
-		//assert.Equal(t, nil, semanticViewDetails[0].ParentEntity)
-		//assert.Equal(t, "BASE_TABLE_DATABASE_NAME", semanticViewDetails[0].Property)
-		//assert.Equal(t, table1.DatabaseName, semanticViewDetails[0].PropertyValue)
-
+		// confirm the semantic view details match
 		assert.Equal(t, expectedDescription, semanticViewDetails)
+	})
+
+	t.Run("alter semantic view", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// check that the semantic view was created with a comment
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasComment("comment"),
+		)
+
+		// alter the semantic view to unset the comment
+		alterRequest := sdk.NewAlterSemanticViewRequest(id).WithIfExists(true).WithUnsetComment(true)
+		err = client.SemanticViews.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+
+		// semantic view should still exist
+		semanticView, err = client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// check that the semantic view no longer has a comment
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasNoComment(),
+		)
+
+		// add a new comment to the semantic view
+		alterRequest = sdk.NewAlterSemanticViewRequest(id).WithSetComment("updated comment")
+		err = client.SemanticViews.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+
+		// semantic view should still exist
+		semanticView, err = client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// semantic view should now have the new comment
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasComment("updated comment"),
+		)
+	})
+
+	t.Run("drop semantic view", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		// confirm the semantic view exists
+		_, err = client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		dropRequest := sdk.NewDropSemanticViewRequest(id).WithIfExists(true)
+		err = client.SemanticViews.Drop(ctx, dropRequest)
+		require.NoError(t, err)
+
+		// confirm the semantic view no longer exists
+		_, err = client.SemanticViews.ShowByID(ctx, id)
+		require.Error(t, err)
+
+		// with if exists set to true, calling Drop again should not return an error
+		err = client.SemanticViews.Drop(ctx, dropRequest)
+		require.NoError(t, err)
+
+		// with if exists set to false, Drop should fail with an error if the semantic view does not exist
+		failingDropRequest := sdk.NewDropSemanticViewRequest(id).WithIfExists(false)
+		err = client.SemanticViews.Drop(ctx, failingDropRequest)
+		require.Error(t, err)
 	})
 }
