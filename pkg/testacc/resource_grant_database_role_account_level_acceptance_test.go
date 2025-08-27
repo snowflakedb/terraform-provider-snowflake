@@ -29,7 +29,6 @@ func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
 	testConfig := grantDatabaseRoleIssue3629Config(databaseRole.ID(), accountRole.ID())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -99,7 +99,6 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// CREATE WITHOUT ATTRIBUTES
@@ -295,7 +294,6 @@ func TestAcc_User_RemovedOutsideOfTerraform(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -345,7 +343,6 @@ func TestAcc_User_issue2058(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -430,7 +427,6 @@ func TestAcc_User_AllParameters(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters
@@ -671,7 +667,6 @@ func TestAcc_User_issue2836(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -712,7 +707,6 @@ func TestAcc_User_issue2970(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -761,7 +755,6 @@ func TestAcc_User_issue1572(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -809,7 +802,6 @@ func TestAcc_User_issue1535_withNullPassword(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -849,7 +841,6 @@ func TestAcc_User_issue1535_withRemovedPassword(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -888,7 +879,6 @@ func TestAcc_User_issue1155_handleChangesToDaysToExpiry(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// 1. create without days_to_expiry
@@ -984,7 +974,6 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1066,7 +1055,6 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// 1. create without default secondary roles option set (DEFAULT will be used)
@@ -1213,7 +1201,6 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles_bcr202408(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// 1. create without default secondary roles option set (DEFAULT will be used)
@@ -1345,7 +1332,6 @@ func TestAcc_User_migrateFromVersion094_defaultSecondaryRolesSet(t *testing.T) {
 	userModelWithOptionAll := model.UserWithDefaultMeta(id.Name()).WithDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1403,7 +1389,6 @@ func TestAcc_User_ParameterValidationsAndDiffSuppressions(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1437,7 +1422,6 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// Create without both set
@@ -1551,7 +1535,6 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_gh3125(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1584,7 +1567,6 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1624,7 +1606,6 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1664,7 +1645,6 @@ func TestAcc_User_importPassword(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// IMPORT
@@ -1721,7 +1701,6 @@ func TestAcc_User_gh3522_proof(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1762,7 +1741,6 @@ func TestAcc_User_gh3522_fix(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1816,7 +1794,6 @@ func TestAcc_User_gh3655(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
