@@ -32,6 +32,17 @@ func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*te
 
 func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.State) error {
 	t.Helper()
+	return checkDestroy(t, resource, decodeSnowflakeId)
+}
+
+// CheckDestroyUsingLegacyIdParsing is meant to be used in tests checking older provider versions with the legacy identifier logic.
+func CheckDestroyUsingLegacyIdParsing(t *testing.T, resource resources.Resource) func(*terraform.State) error {
+	t.Helper()
+	return checkDestroy(t, resource, decodeSnowflakeIdLegacy)
+}
+
+func checkDestroy(t *testing.T, resource resources.Resource, decodeSnowflakeIdFunc decodeSnowflakeIdFunc) func(*terraform.State) error {
+	t.Helper()
 	// TODO [SNOW-1653619]: use TestClient() here
 	client := atc.client
 	t.Logf("running check destroy for resource %s", resource)
@@ -43,7 +54,7 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 			}
 			t.Logf("found resource %s in state", resource)
 			ctx := context.Background()
-			id, err := decodeSnowflakeId(rs, resource)
+			id, err := decodeSnowflakeIdFunc(rs, resource)
 			if err != nil {
 				return err
 			}
@@ -105,13 +116,17 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.Share,
 		resources.Stage,
 		resources.Table:
-		return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
+		return decodeSnowflakeIdLegacy(rs, resource)
 	// Handling user separately, due to existing test with "." as part of the identifier.
 	case resources.User:
 		return sdk.ParseAccountObjectIdentifier(rs.Primary.ID)
 	default:
 		return sdk.ParseObjectIdentifierString(rs.Primary.ID)
 	}
+}
+
+func decodeSnowflakeIdLegacy(rs *terraform.ResourceState, _ resources.Resource) (sdk.ObjectIdentifier, error) {
+	return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
 }
 
 type supportedIdentifierTypes interface {
@@ -121,6 +136,7 @@ type supportedIdentifierTypes interface {
 type (
 	runShowByIdFunc                                 func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
 	showByIdFunc[T supportedIdentifierTypes, U any] func(context.Context, T) (U, error)
+	decodeSnowflakeIdFunc                           func(rs *terraform.ResourceState, resource resources.Resource) (sdk.ObjectIdentifier, error)
 )
 
 func runShowById[T supportedIdentifierTypes, U any](ctx context.Context, id sdk.ObjectIdentifier, show showByIdFunc[T, U]) error {

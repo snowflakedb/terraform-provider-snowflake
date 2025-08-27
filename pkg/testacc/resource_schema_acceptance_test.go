@@ -433,7 +433,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.Schema),
+		CheckDestroy: CheckDestroyUsingLegacyIdParsing(t, resources.Schema),
 		Steps: []resource.TestStep{
 			// PUBLIC can not be created in v0.93
 			{
