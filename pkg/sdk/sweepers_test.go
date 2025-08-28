@@ -431,7 +431,10 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeShares(client *sdk.Client, suffix string) func() error {
-	var protectedShares []string
+	protectedShares := []string{
+		// this one is INBOUND but putting it here either way
+		"ACCOUNT_USAGE",
+	}
 
 	return func() error {
 		ctx := context.Background()
@@ -456,15 +459,17 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 
 		log.Printf("[DEBUG] Found %d shares", len(shares))
 
-		var errs []error
+		// will be uncommented after review
+		// var errs []error
 		for idx, share := range shares {
 			log.Printf("[DEBUG] Processing share [%d/%d]: %s...", idx+1, len(shares), share.ID().FullyQualifiedName())
 
 			if !slices.Contains(protectedShares, share.Name.Name()) && shareDropCondition(share) && share.Kind == sdk.ShareKindOutbound {
 				log.Printf("[DEBUG] Dropping share %s", share.ID().FullyQualifiedName())
-				if err := client.Shares.DropSafely(ctx, share.ID()); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err))
-				}
+				// will be uncommented after review
+				// if err := client.Shares.DropSafely(ctx, share.ID()); err != nil {
+				//	errs = append(errs, fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err))
+				// }
 			} else {
 				log.Printf("[DEBUG] Skipping share %s", share.ID().FullyQualifiedName())
 			}
