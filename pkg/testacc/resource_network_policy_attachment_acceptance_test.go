@@ -59,8 +59,7 @@ func TestAcc_NetworkPolicyAttachmentUser(t *testing.T) {
 }
 
 func TestAcc_NetworkPolicyAttachmentAccount(t *testing.T) {
-	// TODO [SNOW-2010844]: unskip
-	t.Skip("Skipping as it messes with the account level setting. Should be moved to manual tests and later invoked on a brand new account.")
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	policyNameAccount := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlpha))
 
