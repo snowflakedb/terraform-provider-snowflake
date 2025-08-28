@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -39,38 +38,6 @@ func getResourceMonitorSweeper(client *sdk.Client, suffix string) func() error {
 				log.Printf("[DEBUG] Skipping resource monitor %s", rm.ID().FullyQualifiedName())
 			}
 		}
-		return nil
-	}
-}
-
-// getNetworkPolicySweeper was introduced to make sure that network policies created during tests are cleaned up.
-// It's required as network policies that have connections to the network rules within databases, block their deletion.
-// In Snowflake, the network policies can be removed without unsetting network rules, but the network rules cannot be removed without unsetting network policies.
-func getNetworkPolicySweeper(client *sdk.Client, suffix string) func() error {
-	protectedNetworkPolicies := []string{
-		"RESTRICTED_ACCESS",
-	}
-
-	return func() error {
-		log.Printf("[DEBUG] Sweeping network policies with suffix %s", suffix)
-		ctx := context.Background()
-
-		nps, err := client.NetworkPolicies.Show(ctx, sdk.NewShowNetworkPolicyRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW NETWORK POLICIES ended with error, err = %w", err)
-		}
-
-		for _, np := range nps {
-			if strings.HasSuffix(np.Name, suffix) && !slices.Contains(protectedNetworkPolicies, strings.ToUpper(np.Name)) {
-				log.Printf("[DEBUG] Dropping network policy %s", np.ID().FullyQualifiedName())
-				if err := client.NetworkPolicies.Drop(ctx, sdk.NewDropNetworkPolicyRequest(np.ID()).WithIfExists(true)); err != nil {
-					return fmt.Errorf("DROP NETWORK POLICY for %s, ended with error, err = %w", np.ID().FullyQualifiedName(), err)
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping network policy %s", np.ID().FullyQualifiedName())
-			}
-		}
-
 		return nil
 	}
 }

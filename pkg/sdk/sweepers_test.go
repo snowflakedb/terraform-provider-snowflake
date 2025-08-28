@@ -65,7 +65,7 @@ func sweep(client *sdk.Client, suffix string) error {
 	sweepers := []func() error{
 		getAccountPolicyAttachmentsSweeper(client),
 		getResourceMonitorSweeper(client, suffix),
-		getNetworkPolicySweeper(client, suffix),
+		nukeNetworkPolicies(client, suffix),
 		nukeUsers(client, suffix),
 		getFailoverGroupSweeper(client, suffix),
 		nukeShares(client, suffix),
@@ -117,6 +117,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 			assert.NoError(t, err)
 
 			err = nukeDatabases(c, acceptanceTestDatabasesPrefix, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep network policies", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeNetworkPolicies(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -474,6 +481,63 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 				log.Printf("[DEBUG] Skipping share %s", share.ID().FullyQualifiedName())
 			}
 		}
+		return nil
+	}
+}
+
+// nukeNetworkPolicies was introduced to make sure that network policies created during tests are cleaned up.
+// It's required as network policies that have connections to the network rules within databases, block their deletion.
+// In Snowflake, the network policies can be removed without unsetting network rules, but the network rules cannot be removed without unsetting network policies.
+func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
+	protectedNetworkPolicies := []string{
+		"RESTRICTED_ACCESS",
+	}
+
+	return func() error {
+		ctx := context.Background()
+
+		var networkPolicyDropCondition func(n sdk.NetworkPolicy) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping network policies with suffix %s", suffix)
+			networkPolicyDropCondition = func(n sdk.NetworkPolicy) bool {
+				return strings.HasSuffix(n.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale network policies")
+			networkPolicyDropCondition = func(n sdk.NetworkPolicy) bool {
+				// CreatedOn in network policy is string and not time
+				format := fmt.Sprintf("%s -0700", time.DateTime)
+				createdOn, err := time.Parse(format, n.CreatedOn)
+				if err != nil {
+					log.Printf("[DEBUG] Could not parse created on: '%s' for network policy %s", n.CreatedOn, n.ID().FullyQualifiedName())
+					return false
+				}
+				return createdOn.Before(time.Now().Add(-15 * time.Minute))
+			}
+		}
+
+		nps, err := client.NetworkPolicies.Show(ctx, sdk.NewShowNetworkPolicyRequest())
+		if err != nil {
+			return fmt.Errorf("SHOW NETWORK POLICIES ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d network policies", len(nps))
+
+		// will be uncommented after review
+		// var errs []error
+		for idx, np := range nps {
+			log.Printf("[DEBUG] Processing network policy [%d/%d]: %s...", idx+1, len(nps), np.ID().FullyQualifiedName())
+			if !slices.Contains(protectedNetworkPolicies, strings.ToUpper(np.Name)) && networkPolicyDropCondition(np) {
+				log.Printf("[DEBUG] Dropping network policy %s", np.ID().FullyQualifiedName())
+				// will be uncommented after review
+				// if err := client.NetworkPolicies.DropSafely(ctx, np.ID()); err != nil {
+				//   errs = append(errs, fmt.Errorf("sweeping network policy %s ended with error, err = %w", np.ID().FullyQualifiedName(), err))
+				// }
+			} else {
+				log.Printf("[DEBUG] Skipping network policy %s", np.ID().FullyQualifiedName())
+			}
+		}
+
 		return nil
 	}
 }
