@@ -83,6 +83,8 @@ func TestInt_SemanticView(t *testing.T) {
 
 	t.Run("create - all fields", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		// relationships
 		tableAlias := sdk.NewRelationshipTableAliasRequest().WithRelationshipTableAlias("table2")
 		relCol := sdk.NewSemanticViewColumnRequest("SECOND_C")
 		relColumnNames := []sdk.SemanticViewColumnRequest{
@@ -98,10 +100,24 @@ func TestInt_SemanticView(t *testing.T) {
 			refTableAlias,
 		).WithRelationshipAlias(*relAliasRequest).WithRelationshipRefColumnNames([]sdk.SemanticViewColumnRequest{*relRefCol})
 
+		// facts
+		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{"F1"}})
+		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.fact1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "FIRST_C"}).
+			WithSynonyms(*factSynonymRequest).
+			WithComment("fact comment")
+
+		// dimensions
+		dimensionSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{"D1"}})
+		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.FIRST_C"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "table1.FIRST_C"}).
+			WithSynonyms(*dimensionSynonymRequest).
+			WithComment("dimension comment")
+
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).
 			WithSemanticViewMetrics(metrics).
 			WithComment("comment").
-			WithSemanticViewRelationships([]sdk.SemanticViewRelationshipRequest{*relationships})
+			WithSemanticViewRelationships([]sdk.SemanticViewRelationshipRequest{*relationships}).
+			WithSemanticViewFacts([]sdk.SemanticExpressionRequest{*factSemanticExpression}).
+			WithSemanticViewDimensions([]sdk.SemanticExpressionRequest{*dimensionSemanticExpression})
 
 		// create the semantic view with logical tables and a metric
 		err := client.SemanticViews.Create(ctx, request)
