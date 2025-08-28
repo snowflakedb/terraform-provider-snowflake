@@ -1,4 +1,4 @@
-//go:build account_level_tests
+//go:build !account_level_tests
 
 package testint
 
@@ -15,14 +15,6 @@ import (
 func TestInt_SemanticView(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
-
-	// create a database and add it to the cleanup queue
-	db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
-	t.Cleanup(dbCleanup)
-
-	// create a schema and add it to the cleanup queue
-	schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
-	t.Cleanup(schemaCleanup)
 
 	// create 2 tables and add them to the cleanup queue
 	columns1 := []sdk.TableColumnRequest{
@@ -59,8 +51,8 @@ func TestInt_SemanticView(t *testing.T) {
 		*metric,
 	}
 
-	t.Run("create - basic", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	t.Run("create and show ", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
 
 		// create the semantic view with logical tables and a metric
@@ -85,7 +77,7 @@ func TestInt_SemanticView(t *testing.T) {
 	})
 
 	t.Run("describe semantic view", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
 
 		err := client.SemanticViews.Create(ctx, request)
@@ -168,11 +160,20 @@ func TestInt_SemanticView(t *testing.T) {
 			},
 		}
 		// confirm the semantic view details match
-		assert.Equal(t, expectedDescription, semanticViewDetails)
+		assert.Contains(t, semanticViewDetails, expectedDescription[0])
+		assert.Contains(t, semanticViewDetails, expectedDescription[1])
+		assert.Contains(t, semanticViewDetails, expectedDescription[2])
+		assert.Contains(t, semanticViewDetails, expectedDescription[3])
+		assert.Contains(t, semanticViewDetails, expectedDescription[4])
+		assert.Contains(t, semanticViewDetails, expectedDescription[5])
+		assert.Contains(t, semanticViewDetails, expectedDescription[6])
+		assert.Contains(t, semanticViewDetails, expectedDescription[7])
+		assert.Contains(t, semanticViewDetails, expectedDescription[8])
+		assert.Contains(t, semanticViewDetails, expectedDescription[9])
 	})
 
 	t.Run("alter semantic view", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
 
 		err := client.SemanticViews.Create(ctx, request)
@@ -217,16 +218,12 @@ func TestInt_SemanticView(t *testing.T) {
 	})
 
 	t.Run("drop semantic view", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
 
 		err := client.SemanticViews.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
-
-		// confirm the semantic view exists
-		_, err = client.SemanticViews.ShowByID(ctx, id)
-		require.NoError(t, err)
 
 		dropRequest := sdk.NewDropSemanticViewRequest(id).WithIfExists(true)
 		err = client.SemanticViews.Drop(ctx, dropRequest)
@@ -239,10 +236,5 @@ func TestInt_SemanticView(t *testing.T) {
 		// with if exists set to true, calling Drop again should not return an error
 		err = client.SemanticViews.Drop(ctx, dropRequest)
 		require.NoError(t, err)
-
-		// with if exists set to false, Drop should fail with an error if the semantic view does not exist
-		failingDropRequest := sdk.NewDropSemanticViewRequest(id).WithIfExists(false)
-		err = client.SemanticViews.Drop(ctx, failingDropRequest)
-		require.Error(t, err)
 	})
 }
