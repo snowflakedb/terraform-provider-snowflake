@@ -81,7 +81,7 @@ func (c *ConnectionClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier
 				return false
 			}
 			return true
-		}, 10*time.Second, time.Second)
+		}, 20*time.Second, 2*time.Second)
 	}
 }
 
