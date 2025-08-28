@@ -535,17 +535,15 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 
 		log.Printf("[DEBUG] Found %d shares", len(shares))
 
-		// will be uncommented after review
-		// var errs []error
+		var errs []error
 		for idx, share := range shares {
 			log.Printf("[DEBUG] Processing share [%d/%d]: %s...", idx+1, len(shares), share.ID().FullyQualifiedName())
 
 			if !slices.Contains(protectedShares, share.Name.Name()) && shareDropCondition(share) && share.Kind == sdk.ShareKindOutbound {
 				log.Printf("[DEBUG] Dropping share %s", share.ID().FullyQualifiedName())
-				// will be uncommented after review
-				// if err := client.Shares.DropSafely(ctx, share.ID()); err != nil {
-				//	errs = append(errs, fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err))
-				// }
+				if err := client.Shares.DropSafely(ctx, share.ID()); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err))
+				}
 			} else {
 				log.Printf("[DEBUG] Skipping share %s", share.ID().FullyQualifiedName())
 			}
@@ -591,16 +589,14 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 
 		log.Printf("[DEBUG] Found %d network policies", len(nps))
 
-		// will be uncommented after review
-		// var errs []error
+		var errs []error
 		for idx, np := range nps {
 			log.Printf("[DEBUG] Processing network policy [%d/%d]: %s...", idx+1, len(nps), np.ID().FullyQualifiedName())
 			if !slices.Contains(protectedNetworkPolicies, strings.ToUpper(np.Name)) && networkPolicyDropCondition(np) {
 				log.Printf("[DEBUG] Dropping network policy %s", np.ID().FullyQualifiedName())
-				// will be uncommented after review
-				// if err := client.NetworkPolicies.DropSafely(ctx, np.ID()); err != nil {
-				//   errs = append(errs, fmt.Errorf("sweeping network policy %s ended with error, err = %w", np.ID().FullyQualifiedName(), err))
-				// }
+				if err := client.NetworkPolicies.DropSafely(ctx, np.ID()); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping network policy %s ended with error, err = %w", np.ID().FullyQualifiedName(), err))
+				}
 			} else {
 				log.Printf("[DEBUG] Skipping network policy %s", np.ID().FullyQualifiedName())
 			}
