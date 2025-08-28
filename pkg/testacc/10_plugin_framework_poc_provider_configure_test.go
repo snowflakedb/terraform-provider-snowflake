@@ -13,7 +13,7 @@ import (
 	"github.com/snowflakedb/gosnowflake"
 )
 
-// TODO [mux-PR]: populate all the remaining fields of gosnowflake.Config
+// TODO [SNOW-2234579]: populate all the remaining fields of gosnowflake.Config
 //   - validate_default_parameters
 //   - params
 //   - client_ip

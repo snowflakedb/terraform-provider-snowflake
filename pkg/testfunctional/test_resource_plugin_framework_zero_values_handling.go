@@ -55,7 +55,7 @@ func (r *ZeroValuesResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description: "Name for this resource.",
 				Required:    true,
 			},
-			// TODO [mux-PRs]: another setup for Optional+Computed combo
+			// TODO [SNOW-2296391]: another setup for Optional+Computed combo
 			"bool_value": schema.BoolAttribute{
 				Description: "Boolean value.",
 				Optional:    true,

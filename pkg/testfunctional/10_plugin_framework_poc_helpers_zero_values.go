@@ -24,7 +24,7 @@ func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 	}
 }
 
-// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [SNOW-2296350]: add functional test for this variant (with unset) to be closer to our implementation
 func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **bool, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -36,7 +36,7 @@ func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 	return nil
 }
 
-// TODO [mux-PR]: add functional test for this variant
+// TODO [SNOW-2296391]: add functional test for this variant
 func BooleanAttributeUpdateSetDefaultInsteadOfUnset(planned types.Bool, inState types.Bool, setField **bool, defaultValue bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -57,7 +57,7 @@ func Int64AttributeCreate(int64Attribute types.Int64, createField **int) error {
 
 // For now, we use here two same set/unset pointers as the test server handles a single HTTP call.
 // It should be altered when working on the server improvement.
-// TODO [mux-PRs]: Handle set/unset instead just single opts
+// TODO [SNOW-2296350]: Handle set/unset instead just single opts
 func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **int) {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -68,7 +68,7 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 	}
 }
 
-// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [SNOW-2296350]: add functional test for this variant (with unset) to be closer to our implementation
 func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -80,7 +80,7 @@ func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 	return nil
 }
 
-// TODO [mux-PR]: add functional test for this variant
+// TODO [SNOW-2296391]: add functional test for this variant
 func Int64AttributeUpdateSetDefaultInsteadOfUnset(planned types.Int64, inState types.Int64, setField **int, defaultValue int) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
@@ -99,7 +99,7 @@ func StringAttributeCreate(stringAttribute types.String, createField **string) e
 	return nil
 }
 
-// TODO [mux-PR]: test and adjust when adding identifier suppression
+// TODO [SNOW-2296366]: test and adjust when adding identifier suppression
 func IdAttributeCreate(stringAttribute types.String, createField **sdk.AccountObjectIdentifier) error {
 	if !stringAttribute.IsNull() {
 		*createField = sdk.Pointer(sdk.NewAccountObjectIdentifier(stringAttribute.ValueString()))
@@ -117,7 +117,7 @@ func stringAttributeUpdate(planned types.String, inState types.String, setField 
 	}
 }
 
-// TODO [mux-PR]: add functional test for this variant (with unset) to be closer to our implementation
+// TODO [SNOW-2296350]: add functional test for this variant (with unset) to be closer to our implementation
 func StringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() || planned.IsUnknown() {
@@ -129,7 +129,7 @@ func StringAttributeUpdate(planned types.String, inState types.String, setField 
 	return nil
 }
 
-// TODO [mux-PR]: test and adjust when adding identifier suppression
+// TODO [SNOW-2296366]: test and adjust when adding identifier suppression
 func IdAttributeUpdate(planned types.String, inState types.String, setField *sdk.AccountObjectIdentifier, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() || planned.IsUnknown() {
