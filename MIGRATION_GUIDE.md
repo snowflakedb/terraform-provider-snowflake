@@ -26,6 +26,39 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.5.0 ➞ v2.5.1
 
+### *(bugfix)* Fixed handling `IMPORTED PRIVILEGES` grant in the `grant_privileges_to_account_role` resource
+In Snowflake, `WITH GRANT OPTION` is not supported when granting or revoking the `IMPORTED PRIVILEGES` privilege. In previous versions, in handling resource updates, the provider revoked `IMPORTED PRIVILEGES` with `WITH GRANT OPTION`, even for cases when this option was not set in the resource. It resulted in errors like
+```
+│ Error: Failed to revoke privileges to add
+│
+│   with module.roles.module.roles["data_engineer"].module.databases.snowflake_grant_privileges_to_account_role.grant["snowflake"],
+│   on ../../modules/role/privileges/account/database/main.tf line 32, in resource "snowflake_grant_privileges_to_account_role" "grant":
+│   32: resource "snowflake_grant_privileges_to_account_role" "grant" {
+│
+│ Id: "DATA_ENGINEER"|false|false|IMPORTED
+│ PRIVILEGES|OnAccountObject|DATABASE|"SNOWFLAKE"
+│ Privileges to add: [IMPORTED PRIVILEGES]
+│ Error: 001003 (42000): SQL compilation error:
+│ syntax error line 1 at position 24 unexpected 'IMPORTED'.
+```
+This behavior has been fixed. No state or configuration update is necessary.
+
+Additionally, when `IMPORTED PRIVILEGES` is granted with other privileges in one resource, the provider now validates that and fails with the following error:
+```
+  | exit status 1
+  |
+  | Error: Invalid privileges
+  |
+  |   with snowflake_grant_privileges_to_account_role.test,
+  |   on terraform_plugin_test.tf line 12, in resource "snowflake_grant_privileges_to_account_role" "test":
+  |   12: resource "snowflake_grant_privileges_to_account_role" "test" {
+  |
+  | IMPORTED PRIVILEGES cannot be used with other privileges
+```
+Before, this was not validated, but it failed in Snowflake.
+
+References: https://github.com/snowflakedb/terraform-provider-snowflake/issues/2803#issuecomment-3152992005
+
 ### *(improvement)* Handling conversion-based errors
 
 Previously, when an error occurred during the conversion from Snowflake data to the SDK object, the error would be printed as a debug log.
