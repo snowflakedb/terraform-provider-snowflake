@@ -575,8 +575,7 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 			log.Println("[DEBUG] Sweeping stale network policies")
 			networkPolicyDropCondition = func(n sdk.NetworkPolicy) bool {
 				// CreatedOn in network policy is string and not time
-				format := fmt.Sprintf("%s -0700", time.DateTime)
-				createdOn, err := time.Parse(format, n.CreatedOn)
+				createdOn, err := time.Parse(time.RFC3339, n.CreatedOn)
 				if err != nil {
 					log.Printf("[DEBUG] Could not parse created on: '%s' for network policy %s", n.CreatedOn, n.ID().FullyQualifiedName())
 					return false
