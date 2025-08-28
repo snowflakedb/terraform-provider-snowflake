@@ -43,6 +43,20 @@ In Snowflake, `WITH GRANT OPTION` is not supported when granting or revoking the
 ```
 This behavior has been fixed. No state or configuration update is necessary.
 
+Additionally, when `IMPORTED PRIVILEGES` is granted with other privileges in one resource, the provider now validates that and fails with the following error:
+```
+  | exit status 1
+  |
+  | Error: Invalid privileges
+  |
+  |   with snowflake_grant_privileges_to_account_role.test,
+  |   on terraform_plugin_test.tf line 12, in resource "snowflake_grant_privileges_to_account_role" "test":
+  |   12: resource "snowflake_grant_privileges_to_account_role" "test" {
+  |
+  | IMPORTED PRIVILEGES cannot be used with other privileges
+```
+Before, this was not validated, but it failed in Snowflake.
+
 References: https://github.com/snowflakedb/terraform-provider-snowflake/issues/2803#issuecomment-3152992005
 
 ### *(improvement)* Handling conversion-based errors

@@ -306,6 +306,26 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole()),
 		},
 		Timeouts: defaultTimeouts,
+		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
+			func(ctx context.Context, req schema.ValidateResourceConfigFuncRequest, resp *schema.ValidateResourceConfigFuncResponse) {
+				rawPrivileges := req.RawConfig.GetAttr("privileges")
+				if rawPrivileges.IsNull() || !rawPrivileges.IsKnown() {
+					return
+				}
+				privilegesCty := rawPrivileges.AsValueSet().Values()
+				privileges := make([]string, 0, len(privilegesCty))
+				for _, privilegeCty := range privilegesCty {
+					privileges = append(privileges, privilegeCty.AsString())
+				}
+				if slices.Contains(privileges, string(sdk.AccountObjectPrivilegeImportedPrivileges)) && len(privileges) > 1 {
+					resp.Diagnostics = append(resp.Diagnostics, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Invalid privileges",
+						Detail:   fmt.Sprintf("%s cannot be used with other privileges", sdk.AccountObjectPrivilegeImportedPrivileges),
+					})
+				}
+			},
+		},
 	}
 }
 
