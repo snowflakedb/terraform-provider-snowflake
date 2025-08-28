@@ -18,6 +18,12 @@ func TestHandleGrants(t *testing.T) {
 		Name:        sdk.NewAccountObjectIdentifier("TEST_ACCOUNT"),
 		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_ACCOUNT"),
 	}
+	grantOnAccount2 := sdk.Grant{
+		Privilege:   "APPLY MASKING POLICY",
+		GrantedOn:   sdk.ObjectTypeAccount,
+		Name:        sdk.NewAccountObjectIdentifier("TEST_ACCOUNT"),
+		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_ACCOUNT"),
+	}
 	grantOnAccountObject := sdk.Grant{
 		Privilege:   "USAGE",
 		GrantedOn:   sdk.ObjectTypeDatabase,
@@ -36,24 +42,30 @@ func TestHandleGrants(t *testing.T) {
 		Name:        sdk.NewSchemaObjectIdentifier("TEST_DATABASE", "TEST_SCHEMA", "TEST_TABLE"),
 		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_SCHEMA_OBJECT"),
 	}
+	grantOnSchemaObject2 := sdk.Grant{
+		Privilege:   "INSERT",
+		GrantedOn:   sdk.ObjectTypeTable,
+		Name:        sdk.NewSchemaObjectIdentifier("TEST_DATABASE", "TEST_SCHEMA", "TEST_TABLE"),
+		GranteeName: sdk.NewAccountObjectIdentifier("TEST_ROLE_ON_SCHEMA_OBJECT"),
+	}
 
-	grantOnAccountResourceModel, err := MapGrantToModel(grantOnAccount)
+	grantOnAccountResourceModels, err := MapGrantToModel([]sdk.Grant{grantOnAccount, grantOnAccount2})
 	assert.NoError(t, err)
 
-	grantOnAccountObjectResourceModel, err := MapGrantToModel(grantOnAccountObject)
+	grantOnAccountObjectResourceModels, err := MapGrantToModel([]sdk.Grant{grantOnAccountObject})
 	assert.NoError(t, err)
 
-	grantOnSchemaResourceModel, err := MapGrantToModel(grantOnSchema)
+	grantOnSchemaResourceModels, err := MapGrantToModel([]sdk.Grant{grantOnSchema})
 	assert.NoError(t, err)
 
-	grantOnSchemaObjectResourceModel, err := MapGrantToModel(grantOnSchemaObject)
+	grantOnSchemaObjectResourceModels, err := MapGrantToModel([]sdk.Grant{grantOnSchemaObject, grantOnSchemaObject2})
 	assert.NoError(t, err)
 
 	assert.Equal(t, strings.TrimLeft(`
 resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account" {
   account_role_name = "TEST_ROLE_ON_ACCOUNT"
   on_account = true
-  privileges = ["CREATE DATABASE"]
+  privileges = ["CREATE DATABASE", "APPLY MASKING POLICY"]
   with_grant_option = false
 }
 
@@ -82,15 +94,15 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
     object_name = "\"TEST_DATABASE\".\"TEST_SCHEMA\".\"TEST_TABLE\""
     object_type = "TABLE"
   }
-  privileges = ["SELECT"]
+  privileges = ["SELECT", "INSERT"]
   with_grant_option = false
 }
 `, "\n"),
 		config.FromModels(t,
-			grantOnAccountResourceModel,
-			grantOnAccountObjectResourceModel,
-			grantOnSchemaResourceModel,
-			grantOnSchemaObjectResourceModel,
+			grantOnAccountResourceModels,
+			grantOnAccountObjectResourceModels,
+			grantOnSchemaResourceModels,
+			grantOnSchemaObjectResourceModels,
 		),
 	)
 }
