@@ -4,7 +4,6 @@ package testacc
 
 import (
 	"testing"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
@@ -19,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/stretchr/testify/assert"
 )
 
 // Recreation when promoting secondary to primary cannot be tested, because of the Terraform testing framework limitations.
@@ -46,14 +44,6 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 	secondaryConnectionModel := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName())
 	secondaryConnectionModelWithComment := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName()).
 		WithComment(comment)
-
-	assert.Eventually(t, func() bool {
-		if _, err := testClient().Connection.CreateReplication(t, connection.ID(), primaryConnectionAsExternalId); err == nil {
-			testClient().Connection.DropFunc(t, connection.ID())()
-			return true
-		}
-		return false
-	}, 10*time.Second, time.Second)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

@@ -63,6 +63,7 @@ func sweep(client *sdk.Client, suffix string) error {
 		return fmt.Errorf("suffix is required to run sweepers")
 	}
 	sweepers := []func() error{
+		nukeSecurityIntegrations(client, suffix),
 		getAccountPolicyAttachmentsSweeper(client),
 		getResourceMonitorSweeper(client, suffix),
 		nukeNetworkPolicies(client, suffix),
@@ -117,6 +118,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 			assert.NoError(t, err)
 
 			err = nukeDatabases(c, acceptanceTestDatabasesPrefix, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep security integrations", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeSecurityIntegrations(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -375,6 +383,47 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping user %s", user.ID().FullyQualifiedName())
+			}
+		}
+
+		return errors.Join(errs...)
+	}
+}
+
+func nukeSecurityIntegrations(client *sdk.Client, suffix string) func() error {
+	return func() error {
+		ctx := context.Background()
+
+		var integrationDropCondition func(u sdk.SecurityIntegration) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping security integrations with suffix %s", suffix)
+			integrationDropCondition = func(u sdk.SecurityIntegration) bool {
+				return strings.HasSuffix(u.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale security integrations")
+			integrationDropCondition = func(u sdk.SecurityIntegration) bool {
+				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+			}
+		}
+		integrations, err := client.SecurityIntegrations.Show(ctx, sdk.NewShowSecurityIntegrationRequest())
+		if err != nil {
+			return err
+		}
+
+		log.Printf("[DEBUG] Found %d security integrations", len(integrations))
+
+		var errs []error
+		for idx, integration := range integrations {
+			log.Printf("[DEBUG] Processing security integration [%d/%d]: %s...", idx+1, len(integrations), integration.Name)
+
+			if integrationDropCondition(integration) {
+				log.Printf("[DEBUG] Dropping security integration %s", integration.Name)
+				if err := client.SecurityIntegrations.DropSafely(ctx, integration.ID()); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping security integration %s ended with an error, err = %w", integration.Name, err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping security integration %s", integration.Name)
 			}
 		}
 
