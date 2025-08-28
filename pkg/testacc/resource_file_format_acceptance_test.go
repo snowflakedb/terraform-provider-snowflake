@@ -479,6 +479,98 @@ func TestAcc_FileFormat_Rename(t *testing.T) {
 	})
 }
 
+func TestAcc_FileFormat_NullIfHandling_UpgradeFromPreviousVersion(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck:     func() { TestAccPreCheck(t) },
+		CheckDestroy: CheckDestroy(t, resources.FileFormat),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"snowflake": {
+						VersionConstraint: "=0.98.0",
+						Source:            "Snowflake-Labs/snowflake",
+					},
+				},
+				Config: fileFormatConfigWithNullIf(id, "CSV", `null_if = [""]`),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   fileFormatConfigWithNullIf(id, "CSV", `null_if = [""]`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_file_format.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_file_format.test", "format_type", "CSV"),
+					resource.TestCheckResourceAttr("snowflake_file_format.test", "null_if.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_file_format.test", "null_if.0", ""),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_FileFormat_NullIfHandling(t *testing.T) {
+	testCases := []struct {
+		name          string
+		formatType    string
+		nullIfConfig  string
+		expectedCount string
+		expectedValues []string
+	}{
+		{"EmptyString_CSV", "CSV", `null_if = [""]`, "1", []string{""}},
+		{"EmptyString_JSON", "JSON", `null_if = [""]`, "1", []string{""}},
+		{"EmptyString_AVRO", "AVRO", `null_if = [""]`, "1", []string{""}},
+		{"EmptyString_ORC", "ORC", `null_if = [""]`, "1", []string{""}},
+		{"EmptyString_PARQUET", "PARQUET", `null_if = [""]`, "1", []string{""}},
+		{"MixedValues_CSV", "CSV", `null_if = ["NULL", ""]`, "2", []string{"NULL", ""}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+					tfversion.RequireAbove(tfversion.Version1_5_0),
+				},
+				PreCheck:     func() { TestAccPreCheck(t) },
+				CheckDestroy: CheckDestroy(t, resources.FileFormat),
+				Steps: []resource.TestStep{
+					{
+						Config: fileFormatConfigWithNullIf(id, tc.formatType, tc.nullIfConfig),
+						ConfigPlanChecks: resource.ConfigPlanChecks{
+							PostApplyPostRefresh: []plancheck.PlanCheck{
+								plancheck.ExpectEmptyPlan(),
+							},
+						},
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttr("snowflake_file_format.test", "name", id.Name()),
+							resource.TestCheckResourceAttr("snowflake_file_format.test", "format_type", tc.formatType),
+							resource.TestCheckResourceAttr("snowflake_file_format.test", "null_if.#", tc.expectedCount),
+							func() resource.TestCheckFunc {
+								checks := []resource.TestCheckFunc{}
+								for i, expectedValue := range tc.expectedValues {
+									checks = append(checks, resource.TestCheckResourceAttr("snowflake_file_format.test", fmt.Sprintf("null_if.%d", i), expectedValue))
+								}
+								return resource.ComposeTestCheckFunc(checks...)
+							}(),
+						),
+					},
+				},
+			})
+		})
+	}
+}
+
 func fileFormatConfigCSV(id sdk.SchemaObjectIdentifier, fieldDelimiter string, fieldOptionallyEnclosedBy string, comment string) string {
 	return fmt.Sprintf(`
 resource "snowflake_file_format" "test" {
@@ -634,4 +726,16 @@ resource "snowflake_file_format" "test" {
     encoding = "UTF-16"
 }
 `, id.Name(), id.DatabaseName(), id.SchemaName(), formatType)
+}
+
+func fileFormatConfigWithNullIf(id sdk.SchemaObjectIdentifier, formatType string, nullIfConfig string) string {
+	return fmt.Sprintf(`
+resource "snowflake_file_format" "test" {
+  name        = "%s"
+  database    = "%s"
+  schema      = "%s"
+  format_type = "%s"
+  %s
+}
+`, id.Name(), id.DatabaseName(), id.SchemaName(), formatType, nullIfConfig)
 }
