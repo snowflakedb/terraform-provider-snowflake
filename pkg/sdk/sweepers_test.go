@@ -425,6 +425,25 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 			log.Printf("[DEBUG] Processing role [%d/%d]: %s...", idx+1, len(rs), role.ID().FullyQualifiedName())
 
 			if !slices.Contains(protectedRoles, role.ID()) && roleDropCondition(role) {
+				if role.Owner != snowflakeroles.Accountadmin.Name() {
+					log.Printf("[DEBUG] Granting ownership on role %s, to ACCOUNTADMIN", role.ID().FullyQualifiedName())
+					err := client.Grants.GrantOwnership(
+						ctx,
+						sdk.OwnershipGrantOn{Object: &sdk.Object{
+							ObjectType: sdk.ObjectTypeRole,
+							Name:       role.ID(),
+						}},
+						sdk.OwnershipGrantTo{
+							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+						},
+						nil,
+					)
+					if err != nil {
+						errs = append(errs, fmt.Errorf("granting ownership on role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
+						continue
+					}
+				}
+
 				log.Printf("[DEBUG] Dropping role %s", role.ID().FullyQualifiedName())
 				if err := client.Roles.DropSafely(ctx, role.ID()); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
