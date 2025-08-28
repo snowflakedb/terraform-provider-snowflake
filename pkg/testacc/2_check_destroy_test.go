@@ -32,6 +32,17 @@ func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*te
 
 func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.State) error {
 	t.Helper()
+	return checkDestroy(t, resource, decodeSnowflakeId)
+}
+
+// CheckDestroyUsingLegacyIdParsing is meant to be used in tests checking older provider versions with the legacy identifier logic.
+func CheckDestroyUsingLegacyIdParsing(t *testing.T, resource resources.Resource) func(*terraform.State) error {
+	t.Helper()
+	return checkDestroy(t, resource, decodeSnowflakeIdLegacy)
+}
+
+func checkDestroy(t *testing.T, resource resources.Resource, decodeSnowflakeIdFunc decodeSnowflakeIdFunc) func(*terraform.State) error {
+	t.Helper()
 	// TODO [SNOW-1653619]: use TestClient() here
 	client := atc.client
 	t.Logf("running check destroy for resource %s", resource)
@@ -43,7 +54,7 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 			}
 			t.Logf("found resource %s in state", resource)
 			ctx := context.Background()
-			id, err := decodeSnowflakeId(rs, resource)
+			id, err := decodeSnowflakeIdFunc(rs, resource)
 			if err != nil {
 				return err
 			}
@@ -54,10 +65,15 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 			if !ok {
 				return fmt.Errorf("unsupported show by id in cleanup for %s, with id %v", resource, id.FullyQualifiedName())
 			}
-			if showById(ctx, client, id) == nil {
+			if err := showById(ctx, client, id); err == nil {
 				return fmt.Errorf("%s %v still exists", resource, id.FullyQualifiedName())
 			} else {
-				t.Logf("resource %s (%v) was dropped successfully in Snowflake", resource, id.FullyQualifiedName())
+				var incorrectIdentifierError *IncorrectIdentifierError
+				if errors.As(err, &incorrectIdentifierError) {
+					return err
+				} else {
+					t.Logf("resource %s (%v) was dropped successfully in Snowflake, err: %v", resource, id.FullyQualifiedName(), err)
+				}
 			}
 		}
 		return nil
@@ -66,28 +82,90 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 
 func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource) (sdk.ObjectIdentifier, error) {
 	switch resource {
-	case resources.ExternalFunction:
-		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
-	case resources.FunctionJava,
+	// resources using schema object identifier with arguments
+	case resources.ExternalFunction,
+		resources.FunctionJava,
 		resources.FunctionJavascript,
 		resources.FunctionPython,
 		resources.FunctionScala,
-		resources.FunctionSql:
-		return sdk.ParseSchemaObjectIdentifierWithArguments(rs.Primary.ID)
-	case resources.ProcedureJava,
+		resources.FunctionSql,
+		resources.ProcedureJava,
 		resources.ProcedureJavascript,
 		resources.ProcedurePython,
 		resources.ProcedureScala,
 		resources.ProcedureSql:
-		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
+		return sdk.ParseSchemaObjectIdentifierWithArguments(rs.Primary.ID)
+	// resources using legacy identifier encoding (with pipes)
+	case resources.AccountAuthenticationPolicyAttachment,
+		resources.AccountPasswordPolicyAttachment,
+		resources.Alert,
+		resources.ApiIntegration,
+		resources.CortexSearchService,
+		resources.DynamicTable,
+		resources.EmailNotificationIntegration,
+		resources.ExternalTable,
+		resources.FailoverGroup,
+		resources.FileFormat,
+		resources.ManagedAccount,
+		resources.MaterializedView,
+		resources.NetworkRule,
+		resources.NotificationIntegration,
+		resources.PasswordPolicy,
+		resources.Pipe,
+		resources.Sequence,
+		resources.Share,
+		resources.Stage,
+		resources.Table:
+		return decodeSnowflakeIdLegacy(rs, resource)
+	// Handling user separately, due to existing test with "." as part of the identifier.
+	case resources.User:
+		return sdk.ParseAccountObjectIdentifier(rs.Primary.ID)
 	default:
-		return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
+		return sdk.ParseObjectIdentifierString(rs.Primary.ID)
 	}
 }
 
-type showByIdFunc func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
+func decodeSnowflakeIdLegacy(rs *terraform.ResourceState, _ resources.Resource) (sdk.ObjectIdentifier, error) {
+	return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
+}
 
-var showByIdFunctions = map[resources.Resource]showByIdFunc{
+type supportedIdentifierTypes interface {
+	sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments
+}
+
+type (
+	runShowByIdFunc                                 func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
+	showByIdFunc[T supportedIdentifierTypes, U any] func(context.Context, T) (U, error)
+	decodeSnowflakeIdFunc                           func(rs *terraform.ResourceState, resource resources.Resource) (sdk.ObjectIdentifier, error)
+)
+
+func runShowById[T supportedIdentifierTypes, U any](ctx context.Context, id sdk.ObjectIdentifier, show showByIdFunc[T, U]) error {
+	idCast, err := asId[T](id)
+	if err != nil {
+		return err
+	}
+	_, err = show(ctx, *idCast)
+	return err
+}
+
+type IncorrectIdentifierError struct {
+	expectedType string
+	id           sdk.ObjectIdentifier
+}
+
+func (e *IncorrectIdentifierError) Error() string {
+	return fmt.Sprintf("expected %s identifier type, but got: %T", e.expectedType, e.id)
+}
+
+func asId[T supportedIdentifierTypes](id sdk.ObjectIdentifier) (*T, error) {
+	if idCast, ok := id.(T); !ok {
+		return nil, &IncorrectIdentifierError{reflect.TypeOf(new(T)).Elem().Name(), id}
+	} else {
+		return &idCast, nil
+	}
+}
+
+var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.Account: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Accounts.ShowByID)
 	},
@@ -313,23 +391,6 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.Warehouse: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Warehouses.ShowByID)
 	},
-}
-
-func runShowById[T any, U sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments](ctx context.Context, id sdk.ObjectIdentifier, show func(ctx context.Context, id U) (T, error)) error {
-	idCast, err := asId[U](id)
-	if err != nil {
-		return err
-	}
-	_, err = show(ctx, *idCast)
-	return err
-}
-
-func asId[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments](id sdk.ObjectIdentifier) (*T, error) {
-	if idCast, ok := id.(T); !ok {
-		return nil, fmt.Errorf("expected %s identifier type, but got: %T", reflect.TypeOf(new(T)).Elem().Name(), id)
-	} else {
-		return &idCast, nil
-	}
 }
 
 // CheckGrantAccountRoleDestroy is a custom checks that should be later incorporated into generic CheckDestroy

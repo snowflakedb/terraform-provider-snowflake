@@ -6,13 +6,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/architest"
 )
 
-func TestArchCheck_AcceptanceTests_DataSources(t *testing.T) {
-	datasourcesFiles := architest.Directory("../datasources/").AllFiles()
-	acceptanceTestFiles := datasourcesFiles.Filter(architest.FileNameRegexFilterProvider(architest.AcceptanceTestFileRegex))
+func TestArchCheck_AcceptanceTests(t *testing.T) {
+	testAccPackageFiles := architest.Directory("../testacc/").AllFiles()
+	acceptanceTestFiles := testAccPackageFiles.Filter(architest.FileNameRegexFilterProvider(architest.AcceptanceTestFileRegex))
+	otherTestFiles := testAccPackageFiles.Filter(architest.FileNameFilterWithExclusionsProvider(
+		architest.TestFileRegex,
+		architest.AcceptanceTestFileRegex,
+	))
 
 	t.Run("acceptance tests files have the right package", func(t *testing.T) {
 		acceptanceTestFiles.All(func(file *architest.File) {
-			file.AssertHasPackage(t, "datasources_test")
+			file.AssertHasPackage(t, "testacc")
 		})
 	})
 
@@ -25,22 +29,20 @@ func TestArchCheck_AcceptanceTests_DataSources(t *testing.T) {
 	})
 
 	t.Run("there are no acceptance tests in other test files in the directory", func(t *testing.T) {
-		otherTestFiles := datasourcesFiles.Filter(architest.FileNameFilterWithExclusionsProvider(architest.TestFileRegex, architest.AcceptanceTestFileRegex))
-
 		otherTestFiles.All(func(file *architest.File) {
 			file.ExportedMethods().All(func(method *architest.Method) {
 				method.AssertNameDoesNotMatch(t, architest.AcceptanceTestNameRegex)
-				method.AssertTestNamedCorrectly(t)
 			})
 		})
 	})
 
-	t.Run("there are only acceptance tests in package datasources_test", func(t *testing.T) {
-		packageFiles := datasourcesFiles.Filter(architest.PackageFilterProvider("datasources_test"))
-
-		packageFiles.All(func(file *architest.File) {
+	t.Run("there are no non-acceptance tests in other test files in the directory", func(t *testing.T) {
+		otherTestFiles.All(func(file *architest.File) {
 			file.ExportedMethods().All(func(method *architest.Method) {
-				method.AssertAcceptanceTestNamedCorrectly(t)
+				// our acceptance tests have TestMain, let's filter it out now (maybe later we can support it in architest)
+				if method.Name() != "TestMain" {
+					method.AssertNameDoesNotMatch(t, architest.TestNameRegex)
+				}
 			})
 		})
 	})
