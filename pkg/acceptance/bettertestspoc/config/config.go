@@ -23,6 +23,7 @@ func ResourceFromModel(t *testing.T, model ResourceModel) string {
 
 	hcl, err := DefaultHclConfigProvider.HclFromJson(resourceJson)
 	require.NoError(t, err)
+
 	t.Logf("Generated config:\n%s", hcl)
 
 	return hcl
@@ -41,6 +42,7 @@ func DatasourceFromModel(t *testing.T, model DatasourceModel) string {
 
 	hcl, err := DefaultHclConfigProvider.HclFromJson(datasourceJson)
 	require.NoError(t, err)
+
 	t.Logf("Generated config:\n%s", hcl)
 
 	return hcl
@@ -59,6 +61,7 @@ func ProviderFromModel(t *testing.T, model ProviderModel) string {
 
 	hcl, err := DefaultHclConfigProvider.HclFromJson(providerJson)
 	require.NoError(t, err)
+
 	hcl, err = revertEqualSignForMapTypeAttributes(hcl)
 	require.NoError(t, err)
 
@@ -78,6 +81,7 @@ func VariableFromModel(t *testing.T, model TerraformBlockModel) string {
 
 	hcl, err := DefaultHclConfigProvider.HclFromJson(variableJson)
 	require.NoError(t, err)
+
 	t.Logf("Generated config:\n%s", hcl)
 
 	return hcl

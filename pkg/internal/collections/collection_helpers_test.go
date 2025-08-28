@@ -107,3 +107,52 @@ func Test_MapErr(t *testing.T) {
 		})
 	})
 }
+
+func Test_GroupByProperty(t *testing.T) {
+	type Item struct {
+		Name     string
+		Category string
+		Number   int
+	}
+
+	t.Run("basic grouping", func(t *testing.T) {
+		items := []Item{
+			{Name: "Item1", Category: "A", Number: 1},
+			{Name: "Item2", Category: "B", Number: 2},
+			{Name: "Item3", Category: "B", Number: 3},
+			{Name: "Item4", Category: "A", Number: 4},
+		}
+
+		groups := GroupByProperty(items, func(item Item) string {
+			return item.Category
+		})
+		require.Len(t, groups, 2)
+
+		assert.Len(t, groups["A"], 2)
+		assert.Contains(t, groups["A"], items[0])
+		assert.Contains(t, groups["A"], items[3])
+
+		assert.Len(t, groups["B"], 2)
+		assert.Contains(t, groups["B"], items[1])
+		assert.Contains(t, groups["B"], items[2])
+	})
+
+	t.Run("multi property grouping", func(t *testing.T) {
+		items := []Item{
+			{Name: "Item1", Category: "A", Number: 1},
+			{Name: "Item2", Category: "B", Number: 2},
+			{Name: "Item3", Category: "B", Number: 3},
+			{Name: "Item4", Category: "A", Number: 4},
+			{Name: "Item5", Category: "A", Number: 1},
+		}
+
+		groups := GroupByProperty(items, func(item Item) string {
+			return fmt.Sprintf("%s_%d", item.Category, item.Number)
+		})
+		require.Len(t, groups, 4)
+
+		assert.Len(t, groups["A_1"], 2)
+		assert.Contains(t, groups["A_1"], items[0])
+		assert.Contains(t, groups["A_1"], items[4])
+	})
+}
