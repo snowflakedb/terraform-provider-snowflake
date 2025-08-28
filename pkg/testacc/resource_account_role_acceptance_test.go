@@ -32,7 +32,6 @@ func TestAcc_AccountRole_Basic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.AccountRole),
 		Steps: []resource.TestStep{
 			// create with empty optionals
@@ -149,7 +148,6 @@ func TestAcc_AccountRole_Complete(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.AccountRole),
 		Steps: []resource.TestStep{
 			{
@@ -215,7 +213,6 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -250,7 +247,6 @@ func TestAcc_AccountRole_WithQuotedName(t *testing.T) {
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

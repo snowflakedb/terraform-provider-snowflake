@@ -6,11 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// TODO [SNOW-2298254]: Use DropSafely
 func (c *TestClient) CreateTestDatabase(ctx context.Context, ifNotExists bool) (*sdk.Database, func(), error) {
 	id := c.Ids.DatabaseId()
 	cleanup := func() {
-		_ = c.context.client.Databases.Drop(ctx, id, &sdk.DropDatabaseOptions{IfExists: sdk.Bool(true)})
+		_ = c.context.client.Databases.DropSafely(ctx, id)
 	}
 	opts := c.Database.TestParametersSet()
 	opts.IfNotExists = sdk.Bool(ifNotExists)
@@ -25,7 +24,7 @@ func (c *TestClient) CreateTestDatabase(ctx context.Context, ifNotExists bool) (
 func (c *TestClient) CreateTestSchema(ctx context.Context, ifNotExists bool) (*sdk.Schema, func(), error) {
 	id := c.Ids.SchemaId()
 	cleanup := func() {
-		_ = c.context.client.Schemas.Drop(ctx, id, &sdk.DropSchemaOptions{IfExists: sdk.Bool(true)})
+		_ = c.context.client.Schemas.DropSafely(ctx, id)
 	}
 	err := c.context.client.Schemas.Create(ctx, id, &sdk.CreateSchemaOptions{IfNotExists: sdk.Bool(ifNotExists)})
 	if err != nil {
@@ -38,7 +37,7 @@ func (c *TestClient) CreateTestSchema(ctx context.Context, ifNotExists bool) (*s
 func (c *TestClient) CreateTestWarehouse(ctx context.Context, ifNotExists bool) (*sdk.Warehouse, func(), error) {
 	id := c.Ids.WarehouseId()
 	cleanup := func() {
-		_ = c.context.client.Warehouses.Drop(ctx, id, &sdk.DropWarehouseOptions{IfExists: sdk.Bool(true)})
+		_ = c.context.client.Warehouses.DropSafely(ctx, id)
 	}
 	err := c.context.client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{IfNotExists: sdk.Bool(ifNotExists)})
 	if err != nil {

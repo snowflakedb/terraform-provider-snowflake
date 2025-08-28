@@ -52,7 +52,6 @@ func TestAcc_ProcedureJava_InlineBasic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureJava),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -136,7 +135,6 @@ func TestAcc_ProcedureJava_InlineEmptyArgs(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureJava),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -174,7 +172,6 @@ func TestAcc_ProcedureJava_InlineBasicDefaultArg(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureJava),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -276,7 +273,6 @@ func TestAcc_ProcedureJava_InlineFull(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureJava),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -372,7 +368,6 @@ func TestAcc_ProcedureJava_StagedBasic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureJava),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -421,7 +416,6 @@ func TestAcc_ProcedureJava_AllParameters(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureJava),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters
@@ -525,7 +519,6 @@ func TestAcc_ProcedureJava_handleExternalLanguageChange(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureJava),
 		Steps: []resource.TestStep{
 			{

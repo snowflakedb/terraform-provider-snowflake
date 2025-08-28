@@ -29,7 +29,6 @@ func TestAcc_UserAuthenticationPolicyAttachment(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		CheckDestroy:             CheckUserAuthenticationPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
 			// CREATE
@@ -84,7 +83,6 @@ func TestAcc_UserAuthenticationPolicyAttachment_MissingUser(t *testing.T) {
 	t.Cleanup(authPolicyCleanup)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
@@ -129,7 +127,6 @@ func TestAcc_UserAuthenticationPolicyAttachment_MissingAuthPolicy(t *testing.T) 
 	t.Cleanup(authPolicyCleanup)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),

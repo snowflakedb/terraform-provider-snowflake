@@ -67,6 +67,18 @@ conversion from Snowflake failed with error: failed to convert X, err: <error fr
 
 If you encounter any errors of this kind, we encourage you to report them. Your feedback helps us improve the provider stability.
 
+### *(bugfix)* Fixed `snowflake_primary_connection` or `snowflake_secondary_connection` reading and improved creation and deletion operations
+
+When configuring `snowflake_primary_connection` or `snowflake_secondary_connection` resources, previous issues could lead to failures or incorrect planning.
+These problems arose because the shared connections appear in the `SHOW CONNECTIONS` command, and because Snowflake requires primary and secondary connections to have the same name,
+they were not distinguished correctly; the first appearing one was chosen. We have now resolved this by fixing the function that retrieves the connection by ID, ensuring such issues do not occur.
+
+Additionally, we have made adjustments to the create operation for `snowflake_secondary_connection` and the delete operations for both `snowflake_primary_connection` and `snowflake_secondary_connection`.
+These adjustments aim to prevent issues that could arise from Snowflake systems registering or unregistering connections asynchronously to the create/delete operations.
+However, these issues may still occur depending on system latencies. If you encounter errors from the provider when creating or deleting both in the same `terraform apply`, please report them.
+
+We generally recommend splitting the creation and deletion of both resources into two steps to allow Snowflake's background systems sufficient time to process these operations efficiently.
+
 ## v2.4.x ➞ v2.5.0
 
 ### *(bugfix)* Fixed incorrect authenticator when using the `token` field
