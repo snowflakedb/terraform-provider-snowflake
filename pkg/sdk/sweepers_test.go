@@ -355,11 +355,9 @@ func nukeSecurityIntegrations(client *Client, suffix string) func() error {
 
 			if integrationDropCondition(integration) {
 				log.Printf("[DEBUG] Dropping security integration %s", integration.Name)
-				// Commented out intentionally, uncomment after review
-
-				// if _, err := client.ExecForTests(ctx, fmt.Sprintf(`DROP INTEGRATION "%s"`, integration.Name)); err != nil {
-				//	errs = append(errs, fmt.Errorf("sweeping integration %s ended with error, err = %w", integration.Name, err))
-				// }
+				if err := client.SecurityIntegrations.DropSafely(ctx, integration.ID()); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping security integration %s ended with an error, err = %w", integration.Name, err))
+				}
 			} else {
 				log.Printf("[DEBUG] Skipping security integration %s", integration.Name)
 			}
