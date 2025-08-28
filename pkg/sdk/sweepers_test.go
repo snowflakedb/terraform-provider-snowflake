@@ -217,11 +217,10 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 				}
 
 				log.Printf("[DEBUG] Dropping warehouse %s, created at: %s", wh.ID().FullyQualifiedName(), wh.CreatedOn.String())
-				// will be uncommented after review
-				// if err := client.Warehouses.Drop(ctx, wh.ID(), &DropWarehouseOptions{IfExists: Bool(true)}); err != nil {
-				//	log.Printf("[DEBUG] Dropping warehouse %s, resulted in error %v", wh.ID().FullyQualifiedName(), err)
-				//	errs = append(errs, fmt.Errorf("sweeping warehouse %s ended with error, err = %w", wh.ID().FullyQualifiedName(), err))
-				// }
+				if err := client.Warehouses.Drop(ctx, wh.ID(), &sdk.DropWarehouseOptions{IfExists: sdk.Bool(true)}); err != nil {
+					log.Printf("[DEBUG] Dropping warehouse %s, resulted in error %v", wh.ID().FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping warehouse %s ended with error, err = %w", wh.ID().FullyQualifiedName(), err))
+				}
 			} else {
 				log.Printf("[DEBUG] Skipping warehouse %s, created at: %s", wh.ID().FullyQualifiedName(), wh.CreatedOn.String())
 			}
@@ -291,15 +290,14 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 				}
 
 				log.Printf("[DEBUG] Dropping database %s, created at: %s", db.ID().FullyQualifiedName(), db.CreatedOn.String())
-				// will be uncommented after review
-				// if err := client.Databases.Drop(ctx, db.ID(), &DropDatabaseOptions{IfExists: Bool(true)}); err != nil {
-				//	if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
-				//		log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", db.ID().FullyQualifiedName(), err)
-				//		continue
-				//	}
-				//	log.Printf("[DEBUG] Dropping database %s, resulted in error %v", db.ID().FullyQualifiedName(), err)
-				//	errs = append(errs, fmt.Errorf("sweeping database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
-				// }
+				if err := client.Databases.Drop(ctx, db.ID(), &sdk.DropDatabaseOptions{IfExists: sdk.Bool(true)}); err != nil {
+					if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
+						log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", db.ID().FullyQualifiedName(), err)
+						continue
+					}
+					log.Printf("[DEBUG] Dropping database %s, resulted in error %v", db.ID().FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
+				}
 			} else {
 				log.Printf("[DEBUG] Skipping database %s, created at: %s", db.ID().FullyQualifiedName(), db.CreatedOn.String())
 			}
@@ -408,10 +406,9 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 
 			if !slices.Contains(protectedRoles, role.ID()) && roleDropCondition(role) {
 				log.Printf("[DEBUG] Dropping role %s", role.ID().FullyQualifiedName())
-				// will be uncommented after review
-				// if err := client.Roles.Drop(ctx, NewDropRoleRequest(role.ID()).WithIfExists(true)); err != nil {
-				//	errs = append(errs, fmt.Errorf("sweeping role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
-				// }
+				if err := client.Roles.Drop(ctx, sdk.NewDropRoleRequest(role.ID()).WithIfExists(true)); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
+				}
 			} else {
 				log.Printf("[DEBUG] Skipping role %s", role.ID().FullyQualifiedName())
 			}
