@@ -104,26 +104,3 @@ func getFailoverGroupSweeper(client *sdk.Client, suffix string) func() error {
 		return nil
 	}
 }
-
-func getShareSweeper(client *sdk.Client, suffix string) func() error {
-	return func() error {
-		log.Printf("[DEBUG] Sweeping shares with suffix %s", suffix)
-		ctx := context.Background()
-
-		shares, err := client.Shares.Show(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("sweeping shares ended with error, err = %w", err)
-		}
-		for _, share := range shares {
-			if share.Kind == sdk.ShareKindOutbound && strings.HasSuffix(share.Name.Name(), suffix) {
-				log.Printf("[DEBUG] Dropping share %s", share.ID().FullyQualifiedName())
-				if err := client.Shares.Drop(ctx, share.ID(), &sdk.DropShareOptions{IfExists: sdk.Bool(true)}); err != nil {
-					return fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err)
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping share %s", share.ID().FullyQualifiedName())
-			}
-		}
-		return nil
-	}
-}

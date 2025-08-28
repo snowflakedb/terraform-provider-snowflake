@@ -68,7 +68,7 @@ func sweep(client *sdk.Client, suffix string) error {
 		getNetworkPolicySweeper(client, suffix),
 		nukeUsers(client, suffix),
 		getFailoverGroupSweeper(client, suffix),
-		getShareSweeper(client, suffix),
+		nukeShares(client, suffix),
 		nukeDatabases(client, "", suffix),
 		nukeWarehouses(client, "", suffix),
 		nukeRoles(client, suffix),
@@ -131,6 +131,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("sweep roles", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeRoles(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep shares", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeShares(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -420,6 +427,49 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 		}
 
 		return errors.Join(errs...)
+	}
+}
+
+func nukeShares(client *sdk.Client, suffix string) func() error {
+	var protectedShares []string
+
+	return func() error {
+		ctx := context.Background()
+
+		var shareDropCondition func(s sdk.Share) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping shares with suffix %s", suffix)
+			shareDropCondition = func(s sdk.Share) bool {
+				return strings.HasSuffix(s.Name.Name(), suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale shares")
+			shareDropCondition = func(s sdk.Share) bool {
+				return s.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+			}
+		}
+
+		shares, err := client.Shares.Show(ctx, new(sdk.ShowShareOptions))
+		if err != nil {
+			return fmt.Errorf("SHOW SHARES ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d shares", len(shares))
+
+		var errs []error
+		for idx, share := range shares {
+			log.Printf("[DEBUG] Processing share [%d/%d]: %s...", idx+1, len(shares), share.ID().FullyQualifiedName())
+
+			if !slices.Contains(protectedShares, share.Name.Name()) && shareDropCondition(share) && share.Kind == sdk.ShareKindOutbound {
+				log.Printf("[DEBUG] Dropping share %s", share.ID().FullyQualifiedName())
+				if err := client.Shares.DropSafely(ctx, share.ID()); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping share %s", share.ID().FullyQualifiedName())
+			}
+		}
+		return nil
 	}
 }
 
