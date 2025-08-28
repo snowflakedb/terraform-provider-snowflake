@@ -36,7 +36,12 @@ func TestInt_SemanticView(t *testing.T) {
 	t.Cleanup(table2Cleanup)
 
 	alias1 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table1")
-	logicalTable1 := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(*alias1)
+	pk1 := sdk.NewPrimaryKeysRequest().WithPrimaryKey([]sdk.SemanticViewColumn{
+		{
+			Name: "FIRST_C",
+		},
+	})
+	logicalTable1 := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(*alias1).WithPrimaryKeys(*pk1)
 	alias2 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table2")
 	logicalTable2 := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(*alias2)
 
@@ -51,9 +56,52 @@ func TestInt_SemanticView(t *testing.T) {
 		*metric,
 	}
 
-	t.Run("create and show ", func(t *testing.T) {
+	t.Run("create and show", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
+
+		// create the semantic view with logical tables and a metric
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		// check that the semantic view was created
+		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// check that the semantic view's properties match our settings
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasName(id.Name()).
+			HasCreatedOnNotEmpty().
+			HasOwner("ACCOUNTADMIN").
+			HasOwnerRoleType("ROLE").
+			HasComment("comment"),
+		)
+	})
+
+	t.Run("create - all fields", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		tableAlias := sdk.NewRelationshipTableAliasRequest().WithRelationshipTableAlias("table2")
+		relCol := sdk.NewSemanticViewColumnRequest("SECOND_C")
+		relColumnNames := []sdk.SemanticViewColumnRequest{
+			*relCol,
+		}
+		refTableAlias := sdk.NewRelationshipTableAliasRequest().WithRelationshipTableAlias("table1")
+		relAliasRequest := sdk.NewRelationshipAliasRequest().WithRelationshipAlias("rel1")
+		relRefCol := sdk.NewSemanticViewColumnRequest("FIRST_C")
+
+		relationships := sdk.NewSemanticViewRelationshipRequest(
+			tableAlias,
+			relColumnNames,
+			refTableAlias,
+		).WithRelationshipAlias(*relAliasRequest).WithRelationshipRefColumnNames([]sdk.SemanticViewColumnRequest{*relRefCol})
+
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).
+			WithSemanticViewMetrics(metrics).
+			WithComment("comment").
+			WithSemanticViewRelationships([]sdk.SemanticViewRelationshipRequest{*relationships})
 
 		// create the semantic view with logical tables and a metric
 		err := client.SemanticViews.Create(ctx, request)
@@ -109,6 +157,13 @@ func TestInt_SemanticView(t *testing.T) {
 				ParentEntity:  nil,
 				Property:      "BASE_TABLE_NAME",
 				PropertyValue: table1.Name,
+			},
+			{
+				ObjectKind:    "TABLE",
+				ObjectName:    "TABLE1",
+				ParentEntity:  nil,
+				Property:      "PRIMARY_KEY",
+				PropertyValue: "[\"FIRST_C\"]",
 			},
 			{
 				ObjectKind:    "METRIC",
@@ -170,6 +225,7 @@ func TestInt_SemanticView(t *testing.T) {
 		assert.Contains(t, semanticViewDetails, expectedDescription[7])
 		assert.Contains(t, semanticViewDetails, expectedDescription[8])
 		assert.Contains(t, semanticViewDetails, expectedDescription[9])
+		assert.Contains(t, semanticViewDetails, expectedDescription[10])
 	})
 
 	t.Run("alter semantic view", func(t *testing.T) {
