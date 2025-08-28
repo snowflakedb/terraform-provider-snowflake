@@ -548,7 +548,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 				log.Printf("[DEBUG] Skipping share %s", share.ID().FullyQualifiedName())
 			}
 		}
-		return nil
+		return errors.Join(errs...)
 	}
 }
 
@@ -602,7 +602,7 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
-		return nil
+		return errors.Join(errs...)
 	}
 }
 
