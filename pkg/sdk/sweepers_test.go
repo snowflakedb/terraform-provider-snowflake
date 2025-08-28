@@ -217,7 +217,12 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 				}
 
 				log.Printf("[DEBUG] Dropping warehouse %s, created at: %s", wh.ID().FullyQualifiedName(), wh.CreatedOn.String())
-				if err := client.Warehouses.DropSafely(ctx, wh.ID()); err != nil {
+				// to handle identifiers with containing `"` - we do not escape them currently in the SDK SQL generation
+				whId := wh.ID()
+				if strings.Contains(whId.Name(), `"`) {
+					whId = sdk.NewAccountObjectIdentifier(strings.ReplaceAll(whId.Name(), `"`, `""`))
+				}
+				if err := client.Warehouses.DropSafely(ctx, whId); err != nil {
 					log.Printf("[DEBUG] Dropping warehouse %s, resulted in error %v", wh.ID().FullyQualifiedName(), err)
 					errs = append(errs, fmt.Errorf("sweeping warehouse %s ended with error, err = %w", wh.ID().FullyQualifiedName(), err))
 				}
