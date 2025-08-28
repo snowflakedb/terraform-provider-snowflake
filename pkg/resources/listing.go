@@ -233,7 +233,7 @@ func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 			return diag.FromErr(err)
 		}
 
-		d.SetId(helpers.EncodeSnowflakeID(newId))
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
 
