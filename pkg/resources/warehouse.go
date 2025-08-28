@@ -204,7 +204,7 @@ func Warehouse() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 
 		CreateContext: TrackingCreateWrapper(resources.Warehouse, CreateWarehouse),
 		UpdateContext: TrackingUpdateWrapper(resources.Warehouse, UpdateWarehouse),
@@ -239,6 +239,12 @@ func Warehouse() *schema.Resource {
 				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
 				Type:    cty.EmptyObject,
 				Upgrade: v092WarehouseSizeStateUpgrader,
+			},
+			{
+				Version: 1,
+				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+				Type:    cty.EmptyObject,
+				Upgrade: v2_6_0_WarehouseResourceConstraintUpgrader,
 			},
 		},
 		Timeouts: defaultTimeouts,

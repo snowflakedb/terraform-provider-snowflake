@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -87,6 +88,45 @@ func v092WarehouseSizeStateUpgrader(ctx context.Context, rawState map[string]any
 	if !previousEnableQueryAcceleration {
 		rawState["query_acceleration_max_scale_factor"] = w.QueryAccelerationMaxScaleFactor
 	}
+
+	return rawState, nil
+}
+
+// v2_6_0_WarehouseResourceConstraintUpgrader is needed because:
+// - we are adding resource_constraint to the show output and to the config
+// - this means that the old output in handleExternalChangesToObject would be empty after migration
+// - that caused the plan to show a diff for resource_constraint
+// - this upgrade fixes that by setting the default value for resource_constraint
+func v2_6_0_WarehouseResourceConstraintUpgrader(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
+	if rawState == nil {
+		return rawState, nil
+	}
+
+	warehouseTypeRaw, ok := rawState["warehouse_type"].(string)
+	if !ok {
+		return nil, fmt.Errorf("cannot read warehouse_type from the state")
+	}
+	warehouseType, err := sdk.ToWarehouseType(warehouseTypeRaw)
+	if err != nil {
+		return nil, err
+	}
+
+	oldShowOutputRaw, ok := rawState[ShowOutputAttributeName].([]any)
+	if !ok || len(oldShowOutputRaw) != 1 {
+		return nil, fmt.Errorf("expected exactly one warehouse show output; got %d", len(oldShowOutputRaw))
+	}
+	oldShowOutput, ok := oldShowOutputRaw[0].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cannot read warehouse show output from the state")
+	}
+
+	switch warehouseType {
+	case sdk.WarehouseTypeSnowparkOptimized:
+		oldShowOutput["resource_constraint"] = string(sdk.WarehouseResourceConstraintMemory16X)
+	default:
+		log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", warehouseType)
+	}
+	rawState[ShowOutputAttributeName] = []any{oldShowOutput}
 
 	return rawState, nil
 }

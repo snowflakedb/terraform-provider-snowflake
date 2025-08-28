@@ -2509,9 +2509,6 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateManuallySetResourceConstraint(t
 				),
 			},
 			{
-				PreConfig: func() {
-					testClient().Warehouse.UpdateResourceConstraint(t, id, sdk.WarehouseResourceConstraintMemory16X)
-				},
 				Config:                   config.FromModels(t, warehouseModelSnowparkOptimizedAndResourceConstraint),
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -2522,7 +2519,7 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateManuallySetResourceConstraint(t
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
-						HasResourceConstraintString(string(sdk.WarehouseResourceConstraintMemory16X)),
+						HasNoResourceConstraint(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference()).
 						HasType(sdk.WarehouseTypeSnowparkOptimized).
 						HasResourceConstraint(sdk.WarehouseResourceConstraintMemory16X),
@@ -2562,15 +2559,13 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(warehouseModelSnowparkOptimized.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(warehouseModelSnowparkOptimized.ResourceReference(), "resource_constraint", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseResourceConstraintMemory16X)), nil),
-						planchecks.ExpectComputed(warehouseModelSnowparkOptimized.ResourceReference(), r.ShowOutputAttributeName, true),
+						plancheck.ExpectResourceAction(warehouseModelSnowparkOptimized.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
-						HasResourceConstraintEmpty(),
+						HasNoResourceConstraint(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasType(sdk.WarehouseTypeSnowparkOptimized).
 						HasResourceConstraint(sdk.WarehouseResourceConstraintMemory16X),
