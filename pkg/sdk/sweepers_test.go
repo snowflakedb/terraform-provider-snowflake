@@ -253,6 +253,7 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 		"SNOWFLAKE",
 		"MFA_ENFORCEMENT_POLICY",
 		"TERRAFORM_TEST_SETUP_OBJECTS",
+		"TEST_RESULTS_DATABASE",
 	}
 
 	return func() error {
