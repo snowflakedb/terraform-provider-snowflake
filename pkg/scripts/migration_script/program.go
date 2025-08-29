@@ -51,6 +51,15 @@ func ToImportStatementType(s string) (ImportStatementType, error) {
 	return "", fmt.Errorf("invalid import statement type: %s", s)
 }
 
+type ExitCode int
+
+const (
+	ExitCodeSuccess ExitCode = iota
+	ExitCodeFailedInputArgumentParsing
+	ExitCodeFailedCsvInputParsing
+	ExitCodeFailedGeneratingTerraformOutput
+)
+
 type Config struct {
 	ObjectType ObjectType
 	ImportFlag ImportStatementType
@@ -63,7 +72,7 @@ type Program struct {
 	Config         *Config
 }
 
-func NewProgram() *Program {
+func NewDefaultProgram() *Program {
 	return &Program{
 		Args:   os.Args,
 		StdOut: os.Stdout,
@@ -72,7 +81,7 @@ func NewProgram() *Program {
 	}
 }
 
-func (p *Program) Run() int {
+func (p *Program) Run() ExitCode {
 	config, err := p.parseInputArguments()
 	if err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -80,24 +89,24 @@ func (p *Program) Run() int {
 		}
 
 		_, _ = fmt.Fprintf(p.StdErr, "Error parsing input arguments: %v, run -h to get more information on running the script", err)
-		return 1
+		return ExitCodeFailedInputArgumentParsing
 	}
 	p.Config = config
 
 	input, err := readAllAsCsv(p.StdIn)
 	if err != nil {
 		_, _ = fmt.Fprintf(p.StdErr, "Error reading CSV input: %v", err)
-		return 2
+		return ExitCodeFailedCsvInputParsing
 	}
 
 	output, err := p.generateOutput(input)
 	if err != nil {
 		_, _ = fmt.Fprintf(p.StdErr, "Error generating output: %v", err)
-		return 3
+		return ExitCodeFailedGeneratingTerraformOutput
 	}
 	_, _ = fmt.Fprint(p.StdOut, output)
 
-	return 0
+	return ExitCodeSuccess
 }
 
 func (p *Program) parseInputArguments() (*Config, error) {

@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-func TestCli(t *testing.T) {
+func TestProgram(t *testing.T) {
 	testCases := []struct {
 		name   string
 		args   []string
 		input  string
 		config *Config
 
-		expectedExitCode  int
+		expectedExitCode  ExitCode
 		expectedErrOutput string
 		expectedOutput    string
 	}{
@@ -38,25 +38,33 @@ Flags:
 			name:              "validation: missing object type",
 			args:              []string{"cmd"},
 			expectedErrOutput: `Error parsing input arguments: no object type specified, use -h for help, run -h to get more information on running the script`,
-			expectedExitCode:  1,
+			expectedExitCode:  ExitCodeFailedInputArgumentParsing,
 		},
 		{
 			name:              "validation: invalid object type",
 			args:              []string{"cmd", "invalid-object-type"},
 			expectedErrOutput: `Error parsing input arguments: error parsing object type: unsupported object type: invalid-object-type, run -h to get more information on running the script`,
-			expectedExitCode:  1,
+			expectedExitCode:  ExitCodeFailedInputArgumentParsing,
 		},
 		{
 			name:              "validation: invalid import format",
 			args:              []string{"cmd", "-import=invalid_import_format", "grants"},
 			expectedErrOutput: `Error parsing input arguments: error parsing import flag: invalid import statement type: invalid_import_format, run -h to get more information on running the script`,
-			expectedExitCode:  1,
+			expectedExitCode:  ExitCodeFailedInputArgumentParsing,
 		},
 		{
 			name:              "validation: invalid arg order",
 			args:              []string{"cmd", "grants", "-import=invalid_import_format"},
 			expectedErrOutput: `Error parsing input arguments: no object type specified, use -h for help, run -h to get more information on running the script`,
-			expectedExitCode:  1,
+			expectedExitCode:  ExitCodeFailedInputArgumentParsing,
+		},
+		{
+			name: "validation: invalid csv input",
+			args: []string{"cmd", "grants"},
+			input: `privilege,granted_on
+CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
+			expectedErrOutput: `Error reading CSV input: record on line 2: wrong number of fields`,
+			expectedExitCode:  ExitCodeFailedCsvInputParsing,
 		},
 		{
 			name: "basic usage",
