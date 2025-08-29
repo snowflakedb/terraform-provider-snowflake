@@ -145,7 +145,6 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_acc
 			name: "grants on schema",
 			inputRows: [][]string{
 				{"privilege", "granted_on", "name", "granted_to", "grantee_name", "grant_option"},
-				{"privilege", "granted_on", "name", "granted_to", "grantee_name", "grant_option"},
 				{"CREATE TABLE", "SCHEMA", "TEST_DATABASE.TEST_SCHEMA", "ROLE", "TEST_ROLE", "false"},
 				{"CREATE VIEW", "SCHEMA", "TEST_DATABASE.TEST_SCHEMA", "ROLE", "TEST_ROLE", "false"},
 			},

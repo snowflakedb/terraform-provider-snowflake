@@ -20,7 +20,7 @@ func TestProgram(t *testing.T) {
 		{
 			name: "help flag",
 			args: []string{"cmd", "-h"},
-			expectedErrOutput: `Usage: migration_script [flags] [object_type]
+			expectedErrOutput: `Usage: migration_script [flags] <object_type>
 
 Object types:
 	- grants

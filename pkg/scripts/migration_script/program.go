@@ -113,7 +113,7 @@ func (p *Program) parseInputArguments() (*Config, error) {
 	commandLine := flag.NewFlagSet(p.Args[0], flag.ContinueOnError)
 	commandLine.SetOutput(p.StdErr)
 	commandLine.Usage = func() {
-		_, _ = fmt.Fprintln(p.StdErr, "Usage: migration_script [flags] [object_type]")
+		_, _ = fmt.Fprintln(p.StdErr, "Usage: migration_script [flags] <object_type>")
 		_, _ = fmt.Fprintln(p.StdErr, "")
 
 		_, _ = fmt.Fprintln(p.StdErr, "Object types:")
