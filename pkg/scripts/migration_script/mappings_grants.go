@@ -14,10 +14,10 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-func HandleGrants(csvInput [][]string) error {
+func HandleGrants(csvInput [][]string) (string, error) {
 	grants, err := ConvertCsvInput[GrantCsvRow, sdk.Grant](csvInput)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	groupedGrants := GroupGrants(grants)
@@ -34,17 +34,16 @@ func HandleGrants(csvInput [][]string) error {
 
 	mappedModels, err := collections.MapErr(resourceModels, ResourceFromModel)
 	if err != nil {
-		return fmt.Errorf("errors from resource model to HCL conversion: %w", err)
+		return "", fmt.Errorf("errors from resource model to HCL conversion: %w", err)
 	}
-	fmt.Println(collections.JoinStrings(mappedModels, "\n"))
 
-	return nil
+	return collections.JoinStrings(mappedModels, "\n"), nil
 }
 
 func GroupGrants(grants []sdk.Grant) map[string][]sdk.Grant {
 	return collections.GroupByProperty(grants, func(grant sdk.Grant) string {
 		return strings.Join([]string{
-			grant.GrantOn.String(),
+			grant.GrantedOn.String(),
 			grant.Name.FullyQualifiedName(),
 			grant.GrantedTo.String(),
 			grant.GranteeName.FullyQualifiedName(),
@@ -57,6 +56,10 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, error) {
 	// Assuming all grants in the group are the same type and only differ by privileges
 	grant := grantGroup[0]
 	privileges := collections.Map(grantGroup, func(grant sdk.Grant) string { return grant.Privilege })
+
+	// Remove duplicates
+	slices.Sort(privileges)
+	privileges = slices.Compact(privileges)
 
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
