@@ -64,7 +64,6 @@ func TestAcc_ExternalTable_basic(t *testing.T) {
 	resourceName := "snowflake_external_table.test_table"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -150,7 +149,6 @@ func TestAcc_ExternalTable_CorrectDataTypes(t *testing.T) {
 	resourceName := "snowflake_external_table.test_table"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -209,7 +207,6 @@ func TestAcc_ExternalTable_CanCreateWithPartitions(t *testing.T) {
 	resourceName := "snowflake_external_table.test_table"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -269,7 +266,6 @@ func TestAcc_ExternalTable_DeltaLake(t *testing.T) {
 	resourceName := "snowflake_external_table.test_table"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

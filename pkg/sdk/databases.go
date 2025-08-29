@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +23,8 @@ var (
 	_ validatable = new(undropDatabaseOptions)
 	_ validatable = new(ShowDatabasesOptions)
 	_ validatable = new(describeDatabaseOptions)
+
+	_ convertibleRow[Database] = new(databaseRow)
 )
 
 type Databases interface {
@@ -55,7 +56,7 @@ type Database struct {
 	Name          string
 	IsDefault     bool
 	IsCurrent     bool
-	Origin        *ExternalObjectIdentifier
+	Origin        ObjectIdentifier
 	Owner         string
 	Comment       string
 	Options       string
@@ -91,7 +92,7 @@ type databaseRow struct {
 	OwnerRoleType sql.NullString `db:"owner_role_type"`
 }
 
-func (row databaseRow) convert() *Database {
+func (row databaseRow) convert() (*Database, error) {
 	database := &Database{
 		CreatedOn: row.CreatedOn,
 		Name:      row.Name,
@@ -102,13 +103,12 @@ func (row databaseRow) convert() *Database {
 	if row.IsCurrent.Valid {
 		database.IsCurrent = row.IsCurrent.String == "Y"
 	}
-	if row.Origin.Valid && row.Origin.String != "" {
-		originId, err := ParseExternalObjectIdentifier(row.Origin.String)
+	if row.Origin.Valid && row.Origin.String != "" && row.Origin.String != "<revoked>" {
+		originId, err := ParseObjectIdentifierString(row.Origin.String)
 		if err != nil {
-			// TODO(SNOW-1561641): Return error
-			log.Printf("[DEBUG] unable to parse origin ID: %v", row.Origin.String)
+			return nil, fmt.Errorf("unable to parse origin ID: %w", err)
 		} else {
-			database.Origin = &originId
+			database.Origin = originId
 		}
 	}
 	if row.Owner.Valid {
@@ -123,7 +123,7 @@ func (row databaseRow) convert() *Database {
 	if row.RetentionTime.Valid {
 		retentionTimeInt, err := strconv.Atoi(row.RetentionTime.String)
 		if err != nil {
-			database.RetentionTime = 0
+			return nil, fmt.Errorf("unable to parse retention time: %w", err)
 		}
 		database.RetentionTime = retentionTimeInt
 	}
@@ -147,7 +147,7 @@ func (row databaseRow) convert() *Database {
 	if row.OwnerRoleType.Valid {
 		database.OwnerRoleType = row.OwnerRoleType.String
 	}
-	return database
+	return database, nil
 }
 
 type StorageSerializationPolicy string
@@ -786,8 +786,7 @@ func (v *databases) Show(ctx context.Context, opts *ShowDatabasesOptions) ([]Dat
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[databaseRow, Database](dbRows)
-	return resultList, nil
+	return convertRows[databaseRow, Database](dbRows)
 }
 
 func (v *databases) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Database, error) {

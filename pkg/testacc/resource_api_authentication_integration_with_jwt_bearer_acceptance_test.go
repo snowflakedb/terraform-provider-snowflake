@@ -41,7 +41,6 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_basic(t *testing.T) {
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -157,7 +156,6 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_complete(t *testing.T) {
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -200,7 +198,6 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_invalidIncomplete(t *test
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -227,7 +224,6 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_migrateFromV0941_ensureSm
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -261,7 +257,6 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_IdentifierQuotingDiffSupp
 	quotedId := fmt.Sprintf(`\"%s\"`, id.Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
