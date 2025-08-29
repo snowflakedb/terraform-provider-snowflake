@@ -229,13 +229,18 @@ func (r *DescribeSemanticViewRequest) toOpts() *DescribeSemanticViewOptions {
 }
 
 func (r semanticViewDetailsRow) convert() (*SemanticViewDetails, error) {
-	return &SemanticViewDetails{
+	semanticViewDescribe := &SemanticViewDetails{
 		ObjectKind:    r.ObjectKind,
 		ObjectName:    r.ObjectName,
-		ParentEntity:  r.ParentEntity,
 		Property:      r.Property,
 		PropertyValue: r.PropertyValue,
-	}, nil
+	}
+
+	if r.ParentEntity.Valid {
+		semanticViewDescribe.ParentEntity = String(r.ParentEntity.String)
+	}
+
+	return semanticViewDescribe, nil
 }
 
 func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
