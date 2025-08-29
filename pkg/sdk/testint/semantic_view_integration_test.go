@@ -35,6 +35,7 @@ func TestInt_SemanticView(t *testing.T) {
 	table2, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2ID, columns2))
 	t.Cleanup(table2Cleanup)
 
+	// create logical table entities using the 2 tables created above
 	alias1 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table1")
 	pk1 := sdk.NewPrimaryKeysRequest().WithPrimaryKey([]sdk.SemanticViewColumn{
 		{
@@ -50,8 +51,9 @@ func TestInt_SemanticView(t *testing.T) {
 		*logicalTable2,
 	}
 
-	semanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.metric1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "SUM(table1.FIRST_A)"})
-	metric := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*semanticExpression)
+	// create a simple metric to be used in the semantic view definition
+	metricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.metric1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "SUM(table1.FIRST_A)"})
+	metric := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*metricSemanticExpression)
 	metrics := []sdk.MetricDefinitionRequest{
 		*metric,
 	}
@@ -152,96 +154,32 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		parentEntity := "TABLE1"
-		expectedDescription := []sdk.SemanticViewDetails{
-			{
-				ObjectKind:    "TABLE",
-				ObjectName:    "TABLE1",
-				ParentEntity:  nil,
-				Property:      "BASE_TABLE_DATABASE_NAME",
-				PropertyValue: table1.DatabaseName,
-			},
-			{
-				ObjectKind:    "TABLE",
-				ObjectName:    "TABLE1",
-				ParentEntity:  nil,
-				Property:      "BASE_TABLE_SCHEMA_NAME",
-				PropertyValue: table1.SchemaName,
-			},
-			{
-				ObjectKind:    "TABLE",
-				ObjectName:    "TABLE1",
-				ParentEntity:  nil,
-				Property:      "BASE_TABLE_NAME",
-				PropertyValue: table1.Name,
-			},
-			{
-				ObjectKind:    "TABLE",
-				ObjectName:    "TABLE1",
-				ParentEntity:  nil,
-				Property:      "PRIMARY_KEY",
-				PropertyValue: "[\"FIRST_C\"]",
-			},
-			{
-				ObjectKind:    "METRIC",
-				ObjectName:    "METRIC1",
-				ParentEntity:  &parentEntity,
-				Property:      "TABLE",
-				PropertyValue: "TABLE1",
-			},
-			{
-				ObjectKind:    "METRIC",
-				ObjectName:    "METRIC1",
-				ParentEntity:  &parentEntity,
-				Property:      "EXPRESSION",
-				PropertyValue: "SUM(table1.FIRST_A)",
-			},
-			{
-				ObjectKind:    "METRIC",
-				ObjectName:    "METRIC1",
-				ParentEntity:  &parentEntity,
-				Property:      "DATA_TYPE",
-				PropertyValue: "NUMBER(38,0)",
-			},
-			{
-				ObjectKind:    "METRIC",
-				ObjectName:    "METRIC1",
-				ParentEntity:  &parentEntity,
-				Property:      "ACCESS_MODIFIER",
-				PropertyValue: "PUBLIC",
-			}, {
-				ObjectKind:    "TABLE",
-				ObjectName:    "TABLE2",
-				ParentEntity:  nil,
-				Property:      "BASE_TABLE_DATABASE_NAME",
-				PropertyValue: table2.DatabaseName,
-			},
-			{
-				ObjectKind:    "TABLE",
-				ObjectName:    "TABLE2",
-				ParentEntity:  nil,
-				Property:      "BASE_TABLE_SCHEMA_NAME",
-				PropertyValue: table2.SchemaName,
-			},
-			{
-				ObjectKind:    "TABLE",
-				ObjectName:    "TABLE2",
-				ParentEntity:  nil,
-				Property:      "BASE_TABLE_NAME",
-				PropertyValue: table2.Name,
-			},
-		}
-		// confirm the semantic view details match
-		assert.Contains(t, semanticViewDetails, expectedDescription[0])
-		assert.Contains(t, semanticViewDetails, expectedDescription[1])
-		assert.Contains(t, semanticViewDetails, expectedDescription[2])
-		assert.Contains(t, semanticViewDetails, expectedDescription[3])
-		assert.Contains(t, semanticViewDetails, expectedDescription[4])
-		assert.Contains(t, semanticViewDetails, expectedDescription[5])
-		assert.Contains(t, semanticViewDetails, expectedDescription[6])
-		assert.Contains(t, semanticViewDetails, expectedDescription[7])
-		assert.Contains(t, semanticViewDetails, expectedDescription[8])
-		assert.Contains(t, semanticViewDetails, expectedDescription[9])
-		assert.Contains(t, semanticViewDetails, expectedDescription[10])
+		tableDatabaseName1 := sdk.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
+		tableSchemaName1 := sdk.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
+		tableName1 := sdk.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_NAME", table1.Name)
+		pk := sdk.NewSemanticViewDetails("TABLE", "TABLE1", nil, "PRIMARY_KEY", "[\"FIRST_C\"]")
+		metricTable := sdk.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "TABLE", "TABLE1")
+		metricExpression := sdk.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "EXPRESSION", "SUM(table1.FIRST_A)")
+		metricDataType := sdk.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "DATA_TYPE", "NUMBER(38,0)")
+		metricAccessModifier := sdk.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "ACCESS_MODIFIER", "PUBLIC")
+		tableDatabaseName2 := sdk.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_DATABASE_NAME", table2.DatabaseName)
+		tableSchemaName2 := sdk.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_SCHEMA_NAME", table2.SchemaName)
+		tableName2 := sdk.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_NAME", table2.Name)
+
+		// confirm the semantic view details are correct
+		assert.Len(t, semanticViewDetails, 11)
+
+		assert.Contains(t, semanticViewDetails, tableDatabaseName1)
+		assert.Contains(t, semanticViewDetails, tableSchemaName1)
+		assert.Contains(t, semanticViewDetails, tableName1)
+		assert.Contains(t, semanticViewDetails, pk)
+		assert.Contains(t, semanticViewDetails, metricTable)
+		assert.Contains(t, semanticViewDetails, metricExpression)
+		assert.Contains(t, semanticViewDetails, metricDataType)
+		assert.Contains(t, semanticViewDetails, metricAccessModifier)
+		assert.Contains(t, semanticViewDetails, tableDatabaseName2)
+		assert.Contains(t, semanticViewDetails, tableSchemaName2)
+		assert.Contains(t, semanticViewDetails, tableName2)
 	})
 
 	t.Run("alter semantic view", func(t *testing.T) {
