@@ -926,10 +926,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_InDatabase(t *
 	})
 }
 
-// TODO [SNOW-1272222]: fix the test when it starts working on Snowflake side
 func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Streamlits_InDatabase(t *testing.T) {
-	t.Skip("Fix after it starts working on Snowflake side, reference: SNOW-1272222")
-
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -944,6 +941,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Streamlits_InD
 		"object_type_plural": config.StringVariable(sdk.PluralObjectTypeStreamlits.String()),
 		"with_grant_option":  config.BoolVariable(false),
 	}
+	resourceName := "snowflake_grant_privileges_to_account_role.test"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -955,7 +953,17 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Streamlits_InD
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnSchemaObject_OnFuture_InDatabase"),
 				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile("Unsupported feature 'STREAMLIT'"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", roleFullyQualifiedName),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.SchemaObjectPrivilegeUsage)),
+					resource.TestCheckResourceAttr(resourceName, "on_schema_object.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "on_schema_object.0.future.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "on_schema_object.0.future.0.object_type_plural", string(sdk.PluralObjectTypeStreamlits)),
+					resource.TestCheckResourceAttr(resourceName, "on_schema_object.0.future.0.in_database", databaseName),
+					resource.TestCheckResourceAttr(resourceName, "with_grant_option", "false"),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|USAGE|OnSchemaObject|OnFuture|STREAMLITS|InDatabase|%s", roleFullyQualifiedName, databaseName)),
+				),
 			},
 		},
 	})
