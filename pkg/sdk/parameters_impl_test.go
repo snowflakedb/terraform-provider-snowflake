@@ -245,7 +245,7 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 
 			err, matched := legacyAccountParameters.setParam(AccountParameter(tt.parameter), tt.value)
 
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.False(t, matched)
 			require.Equal(t, LegacyAccountParameters{}, *legacyAccountParameters)
 		})
