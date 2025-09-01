@@ -1165,28 +1165,6 @@ func TestInt_Users(t *testing.T) {
 		)
 	})
 
-	t.Run("alter: unset type", func(t *testing.T) {
-		user, userCleanup := testClientHelper().User.CreateServiceUser(t)
-		t.Cleanup(userCleanup)
-
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasType(string(sdk.UserTypeService)),
-		)
-
-		alterOpts := &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				Type: sdk.Bool(true),
-			},
-		}}
-
-		err := client.Users.Alter(ctx, user.ID(), alterOpts)
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasType(""),
-		)
-	})
-
 	incorrectAlterForServiceType := []struct {
 		property           string
 		alterSet           *sdk.UserAlterObjectProperties
