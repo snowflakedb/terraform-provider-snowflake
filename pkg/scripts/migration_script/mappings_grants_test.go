@@ -90,7 +90,10 @@ func TestHandleGrantValidations(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			output, err := HandleGrants(tc.inputRows)
+			output, err := HandleGrants(&Config{
+				ObjectType: ObjectTypeGrants,
+				ImportFlag: ImportStatementTypeStatement,
+			}, tc.inputRows)
 
 			assert.NoError(t, err)
 			for _, expectedOutput := range tc.outputContains {
@@ -120,6 +123,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_acc
   privileges = ["CREATE DATABASE", "CREATE ROLE"]
   with_grant_option = true
 }
+# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_account '"TEST_ROLE"|true|false|CREATE DATABASE,CREATE ROLE|OnAccount'
 `,
 		},
 		{
@@ -139,6 +143,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_acc
   privileges = ["CREATE DATABASE ROLE", "CREATE SCHEMA"]
   with_grant_option = false
 }
+# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_account_object '"TEST_ROLE"|false|false|CREATE DATABASE ROLE,CREATE SCHEMA|OnAccountObject|DATABASE|"TEST_DATABASE"'
 `,
 		},
 		{
@@ -157,6 +162,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
   privileges = ["CREATE TABLE", "CREATE VIEW"]
   with_grant_option = false
 }
+# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_schema '"TEST_ROLE"|false|false|CREATE TABLE,CREATE VIEW|OnSchema|OnSchema|"TEST_DATABASE"."TEST_SCHEMA"'
 `,
 		},
 		{
@@ -176,13 +182,17 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
   privileges = ["INSERT", "SELECT"]
   with_grant_option = false
 }
+# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_schema_object '"TEST_ROLE"|false|false|INSERT,SELECT|OnSchemaObject|OnObject|TABLE|"TEST_DATABASE"."TEST_SCHEMA"."TEST_TABLE"'
 `,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			output, err := HandleGrants(tc.inputRows)
+			output, err := HandleGrants(&Config{
+				ObjectType: ObjectTypeGrants,
+				ImportFlag: ImportStatementTypeStatement,
+			}, tc.inputRows)
 
 			assert.NoError(t, err)
 			assert.Equal(t, strings.TrimLeft(tc.expectedOutput, "\n"), output)

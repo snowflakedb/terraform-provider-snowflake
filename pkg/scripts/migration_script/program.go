@@ -173,7 +173,7 @@ func readAllAsCsv(reader io.Reader) ([][]string, error) {
 func (p *Program) generateOutput(input [][]string) (string, error) {
 	switch p.Config.ObjectType {
 	case ObjectTypeGrants:
-		return HandleGrants(input)
+		return HandleGrants(p.Config, input)
 	default:
 		return "", fmt.Errorf("unsupported object type: %s, run -h to get more information on allowed object types", p.Config.ObjectType)
 	}
