@@ -27,14 +27,23 @@ var (
 	configureClientErrorDiag diag.Diagnostics
 	configureProviderCtx     *internalprovider.Context
 
+	providerInitializationCache map[string]cacheEntry
+
 	// temporary unsafe way to get the last configuration for the provider (to verify in tests);
 	// should be used with caution as it is not prepared for the parallel tests
 	// should be replaced in the future (e.g. map with test name as key)
 	lastConfiguredProviderContext *internalprovider.Context
 )
 
+type cacheEntry struct {
+	clientErrorDiag diag.Diagnostics
+	providerCtx     *internalprovider.Context
+}
+
 // TODO [SNOW-2298291]: rework this when working on terraform plugin framework PoC
 func setUpProvider() error {
+	providerInitializationCache = make(map[string]cacheEntry)
+
 	TestAccProvider = provider.Provider()
 	TestAccProvider.ConfigureContextFunc = configureProviderWithConfigCache
 
@@ -120,4 +129,46 @@ func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 	}
 
 	return providerCtx, nil
+}
+
+func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
+	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
+		// TODO [this PR]: do we still keep this guard if this configure func override is only used in the acceptance tests already?
+		accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
+		if err != nil {
+			accTestEnabled = false
+			accTestLog.Printf("[ERROR] TF_ACC environmental variable has incorrect format: %v, using %v as a default value", err, accTestEnabled)
+		}
+
+		// check if we cached initialized provider context with the key already
+		if cached, ok := providerInitializationCache[key]; accTestEnabled && ok {
+			accTestLog.Printf("[DEBUG] Returning cached provider configuration result for key %s", key)
+			if cached.providerCtx != nil {
+				accTestLog.Printf("[DEBUG] Returning cached provider configuration context")
+				return cached.providerCtx, nil
+			} else if cached.clientErrorDiag.HasError() {
+				accTestLog.Printf("[DEBUG] Returning cached provider configuration error")
+				return nil, cached.clientErrorDiag
+			}
+		}
+		accTestLog.Printf("[DEBUG] No cached provider configuration found for key %s or caching is not enabled; configuring a new provider", key)
+
+		providerCtx, clientErrorDiag := provider.ConfigureProvider(ctx, d)
+
+		if providerCtx != nil && accTestEnabled && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
+			providerCtx.(*internalprovider.Context).EnabledFeatures = previewfeatures.AllPreviewFeatures
+		}
+
+		providerInitializationCache[key] = cacheEntry{
+			providerCtx:     providerCtx.(*internalprovider.Context),
+			clientErrorDiag: clientErrorDiag,
+		}
+
+		// TODO [this PR]: what do we want to do with this?
+		if v, ok := providerCtx.(*internalprovider.Context); ok {
+			lastConfiguredProviderContext = v
+		}
+
+		return providerCtx, clientErrorDiag
+	}
 }
