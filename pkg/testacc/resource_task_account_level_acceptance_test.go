@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"fmt"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -14,13 +15,73 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+func TestAcc_Task_VerifySettingParameterInProviderConfigWithAccountChanges(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	// TODO [this PR]: do not use the profile to have more than one attribute but the trick used in some resources
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Default).WithParamsValue(
+		configvariable.ObjectVariable(
+			map[string]configvariable.Variable{
+				"statement_timeout_in_seconds": configvariable.IntegerVariable(12345),
+			},
+		),
+	)
+	taskModel := model.TaskWithId("test", id, false, statement)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: taskDedicatedProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModel, taskModel) + executeShowSessionParameter() + executeShowParameterForTask(id, taskModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.0.value", "12345"),
+					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.0.level", string(sdk.ParameterTypeSession)),
+
+					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.#", "1"),
+					// TODO [this PR]: failing as the session value is not used for task creation?
+					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.0.value", "12345"),
+					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.0.level", string(sdk.ParameterTypeSession)),
+				),
+			},
+		},
+	})
+}
+
+func executeShowSessionParameter() string {
+	return `
+resource snowflake_execute "t1" {
+    execute = "SELECT 1"
+    query = "SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN SESSION"
+    revert        = "SELECT 1"
+}`
+}
+
+func executeShowParameterForTask(id sdk.SchemaObjectIdentifier, taskModel *model.TaskModel) string {
+	return fmt.Sprintf(`
+resource snowflake_execute "t2" {
+    execute = "SELECT 1"
+    revert  = "SELECT 1"
+    query   = "SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN TASK \"%s\".\"%s\".\"%s\""
+
+    depends_on = [%s]
+}`, id.DatabaseName(), id.SchemaName(), id.Name(), taskModel.ResourceReference())
+}
 
 // All tests in this file are temporarily moved to account level tests due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results.
 
