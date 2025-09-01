@@ -20,7 +20,7 @@ func TestHandleGrantValidations(t *testing.T) {
 				{"CREATE ROLE", "ACCOUNT", "ACC_NAME", "ROLE", "TEST_ROLE", "true"},
 				{"CREATE ROLE", "ACCOUNT", "ACC_NAME", "ROLE", "TEST_ROLE", "true"},
 			},
-			outputContains: []string{`resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account" {
+			outputContains: []string{`resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_TEST_ROLE_with_grant_option" {
   account_role_name = "TEST_ROLE"
   on_account = true
   privileges = ["CREATE ROLE"]
@@ -39,7 +39,7 @@ func TestHandleGrantValidations(t *testing.T) {
 				{"CREATE ROLE", "DATABASE", "TEST_DATABASE", "ROLE", "TEST_ROLE", "false"},    // different grant option
 			},
 			outputContains: []string{
-				`resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account_object" {
+				`resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_DATABASE_TEST_DATABASE_to_TEST_ROLE_with_grant_option" {
   account_role_name = "TEST_ROLE"
   on_account_object {
     object_name = "TEST_DATABASE"
@@ -48,7 +48,7 @@ func TestHandleGrantValidations(t *testing.T) {
   privileges = ["CREATE ROLE"]
   with_grant_option = true
 }`,
-				`resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account_object" {
+				`resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_USER_TEST_DATABASE_to_TEST_ROLE_with_grant_option" {
   account_role_name = "TEST_ROLE"
   on_account_object {
     object_name = "TEST_DATABASE"
@@ -57,7 +57,7 @@ func TestHandleGrantValidations(t *testing.T) {
   privileges = ["CREATE ROLE"]
   with_grant_option = true
 }`,
-				`resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account_object" {
+				`resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_DATABASE_TEST_DATABASE_2_to_TEST_ROLE_with_grant_option" {
   account_role_name = "TEST_ROLE"
   on_account_object {
     object_name = "TEST_DATABASE_2"
@@ -66,7 +66,7 @@ func TestHandleGrantValidations(t *testing.T) {
   privileges = ["CREATE ROLE"]
   with_grant_option = true
 }`,
-				`resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account_object" {
+				`resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_DATABASE_TEST_DATABASE_to_TEST_ROLE_2_with_grant_option" {
   account_role_name = "TEST_ROLE_2"
   on_account_object {
     object_name = "TEST_DATABASE"
@@ -75,7 +75,7 @@ func TestHandleGrantValidations(t *testing.T) {
   privileges = ["CREATE ROLE"]
   with_grant_option = true
 }`,
-				`resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account_object" {
+				`resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_DATABASE_TEST_DATABASE_to_TEST_ROLE_without_grant_option" {
   account_role_name = "TEST_ROLE"
   on_account_object {
     object_name = "TEST_DATABASE"
@@ -117,13 +117,13 @@ func TestHandleGrantPrivilegeToAccountRoleMappings(t *testing.T) {
 				{"CREATE ROLE", "ACCOUNT", "ACC_NAME", "ROLE", "TEST_ROLE", "true"},
 			},
 			expectedOutput: `
-resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account" {
+resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_TEST_ROLE_with_grant_option" {
   account_role_name = "TEST_ROLE"
   on_account = true
   privileges = ["CREATE DATABASE", "CREATE ROLE"]
   with_grant_option = true
 }
-# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_account '"TEST_ROLE"|true|false|CREATE DATABASE,CREATE ROLE|OnAccount'
+# terraform import snowflake_grant_privileges_to_account_role.snowflake_generated_grant_on_account_to_TEST_ROLE_with_grant_option '"TEST_ROLE"|true|false|CREATE DATABASE,CREATE ROLE|OnAccount'
 `,
 		},
 		{
@@ -134,7 +134,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_acc
 				{"CREATE SCHEMA", "DATABASE", "TEST_DATABASE", "ROLE", "TEST_ROLE", "false"},
 			},
 			expectedOutput: `
-resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account_object" {
+resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_DATABASE_TEST_DATABASE_to_TEST_ROLE_without_grant_option" {
   account_role_name = "TEST_ROLE"
   on_account_object {
     object_name = "TEST_DATABASE"
@@ -143,7 +143,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_acc
   privileges = ["CREATE DATABASE ROLE", "CREATE SCHEMA"]
   with_grant_option = false
 }
-# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_account_object '"TEST_ROLE"|false|false|CREATE DATABASE ROLE,CREATE SCHEMA|OnAccountObject|DATABASE|"TEST_DATABASE"'
+# terraform import snowflake_grant_privileges_to_account_role.snowflake_generated_grant_on_DATABASE_TEST_DATABASE_to_TEST_ROLE_without_grant_option '"TEST_ROLE"|false|false|CREATE DATABASE ROLE,CREATE SCHEMA|OnAccountObject|DATABASE|"TEST_DATABASE"'
 `,
 		},
 		{
@@ -154,7 +154,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_acc
 				{"CREATE VIEW", "SCHEMA", "TEST_DATABASE.TEST_SCHEMA", "ROLE", "TEST_ROLE", "false"},
 			},
 			expectedOutput: `
-resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_schema" {
+resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_schema_TEST_DATABASE_TEST_SCHEMA_to_TEST_ROLE_without_grant_option" {
   account_role_name = "TEST_ROLE"
   on_schema {
     schema_name = "\"TEST_DATABASE\".\"TEST_SCHEMA\""
@@ -162,7 +162,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
   privileges = ["CREATE TABLE", "CREATE VIEW"]
   with_grant_option = false
 }
-# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_schema '"TEST_ROLE"|false|false|CREATE TABLE,CREATE VIEW|OnSchema|OnSchema|"TEST_DATABASE"."TEST_SCHEMA"'
+# terraform import snowflake_grant_privileges_to_account_role.snowflake_generated_grant_on_schema_TEST_DATABASE_TEST_SCHEMA_to_TEST_ROLE_without_grant_option '"TEST_ROLE"|false|false|CREATE TABLE,CREATE VIEW|OnSchema|OnSchema|"TEST_DATABASE"."TEST_SCHEMA"'
 `,
 		},
 		{
@@ -173,7 +173,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
 				{"SELECT", "TABLE", "TEST_DATABASE.TEST_SCHEMA.TEST_TABLE", "ROLE", "TEST_ROLE", "false"},
 			},
 			expectedOutput: `
-resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_schema_object" {
+resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_TABLE_TEST_DATABASE_TEST_SCHEMA_TEST_TABLE_to_TEST_ROLE_without_grant_option" {
   account_role_name = "TEST_ROLE"
   on_schema_object {
     object_name = "\"TEST_DATABASE\".\"TEST_SCHEMA\".\"TEST_TABLE\""
@@ -182,7 +182,7 @@ resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_sch
   privileges = ["INSERT", "SELECT"]
   with_grant_option = false
 }
-# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_schema_object '"TEST_ROLE"|false|false|INSERT,SELECT|OnSchemaObject|OnObject|TABLE|"TEST_DATABASE"."TEST_SCHEMA"."TEST_TABLE"'
+# terraform import snowflake_grant_privileges_to_account_role.snowflake_generated_grant_on_TABLE_TEST_DATABASE_TEST_SCHEMA_TEST_TABLE_to_TEST_ROLE_without_grant_option '"TEST_ROLE"|false|false|INSERT,SELECT|OnSchemaObject|OnObject|TABLE|"TEST_DATABASE"."TEST_SCHEMA"."TEST_TABLE"'
 `,
 		},
 	}
