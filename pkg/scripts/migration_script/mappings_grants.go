@@ -83,9 +83,16 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 		Privileges:      privileges,
 	}
 
+	withGrantOption := "without"
+	if grant.GrantOption {
+		withGrantOption = "with"
+	}
+
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
-		resourceModel = model.GrantPrivilegesToAccountRole("test_resource_name_on_account", grant.GranteeName.Name()).
+		resourceId := MapResourceId(fmt.Sprintf("grant_on_account_to_%s_%s_grant_option", grant.GranteeName.Name(), withGrantOption))
+
+		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
 			WithOnAccount(true).
 			WithWithGrantOption(grant.GrantOption)
@@ -93,7 +100,9 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 		resourceId.Kind = resources.OnAccountAccountRoleGrantKind
 		resourceId.Data = new(resources.OnAccountGrantData)
 	case slices.Contains(sdk.ValidGrantToAccountObjectTypesString, string(grant.GrantedOn)):
-		resourceModel = model.GrantPrivilegesToAccountRole("test_resource_name_on_account_object", grant.GranteeName.Name()).
+		id := MapResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.Name(), grant.GranteeName.Name(), withGrantOption))
+
+		resourceModel = model.GrantPrivilegesToAccountRole(id, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
 			WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
@@ -107,7 +116,9 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 			ObjectName: grant.Name.(sdk.AccountObjectIdentifier),
 		}
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
-		resourceModel = model.GrantPrivilegesToAccountRole("test_resource_name_on_schema", grant.GranteeName.Name()).
+		resourceId := MapResourceId(fmt.Sprintf("grant_on_schema_%s_to_%s_%s_grant_option", grant.Name.FullyQualifiedName(), grant.GranteeName.Name(), withGrantOption))
+
+		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
 			WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
@@ -120,7 +131,9 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 			SchemaName: sdk.Pointer(grant.Name.(sdk.DatabaseObjectIdentifier)),
 		}
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
-		resourceModel = model.GrantPrivilegesToAccountRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
+		resourceId := MapResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.FullyQualifiedName(), grant.GranteeName.Name(), withGrantOption))
+
+		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
 			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
