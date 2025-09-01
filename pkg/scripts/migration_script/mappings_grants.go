@@ -45,7 +45,7 @@ func HandleGrants(config *Config, csvInput [][]string) (string, error) {
 		return TransformImportModel(config, importModel)
 	})
 	if err != nil {
-		log.Printf("Errors during import transformations: %v", err)
+		return "", fmt.Errorf("errors during import transformations: %v", err)
 	}
 
 	outputBuilder := new(strings.Builder)
