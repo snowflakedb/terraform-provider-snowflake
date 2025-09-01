@@ -200,6 +200,82 @@ resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant
 	}
 }
 
+func TestHandleGrantPrivilegeToDatabaseRoleMappings(t *testing.T) {
+	testCases := []struct {
+		name           string
+		inputRows      [][]string
+		expectedOutput string
+	}{
+		{
+			name: "grants on database",
+			inputRows: [][]string{
+				{"privilege", "granted_on", "name", "granted_to", "grantee_name", "grant_option"},
+				{"CREATE SCHEMA", "DATABASE", "TEST_DATABASE", "DATABASE_ROLE", "TEST_ROLE", "true"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_privileges_to_database_role" "snowflake_generated_grant_on_database_TEST_DATABASE_to_TEST_DATABASE_TEST_ROLE_with_grant_option" {
+  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
+  on_database = "TEST_DATABASE"
+  privileges = ["CREATE SCHEMA"]
+  with_grant_option = true
+}
+# terraform import snowflake_grant_privileges_to_database_role.snowflake_generated_grant_on_database_TEST_DATABASE_to_TEST_DATABASE_TEST_ROLE_with_grant_option '"TEST_DATABASE"."TEST_ROLE"|true|false|CREATE SCHEMA|OnDatabase|"TEST_DATABASE"'
+`,
+		},
+		{
+			name: "grants on schema",
+			inputRows: [][]string{
+				{"privilege", "granted_on", "name", "granted_to", "grantee_name", "grant_option"},
+				{"CREATE TABLE", "SCHEMA", "TEST_DATABASE.TEST_SCHEMA", "DATABASE_ROLE", "TEST_ROLE", "false"},
+				{"CREATE VIEW", "SCHEMA", "TEST_DATABASE.TEST_SCHEMA", "DATABASE_ROLE", "TEST_ROLE", "false"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_privileges_to_database_role" "snowflake_generated_grant_on_schema_TEST_DATABASE_TEST_SCHEMA_to_TEST_DATABASE_TEST_ROLE_without_grant_option" {
+  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
+  on_schema {
+    schema_name = "\"TEST_DATABASE\".\"TEST_SCHEMA\""
+  }
+  privileges = ["CREATE TABLE", "CREATE VIEW"]
+  with_grant_option = false
+}
+# terraform import snowflake_grant_privileges_to_database_role.snowflake_generated_grant_on_schema_TEST_DATABASE_TEST_SCHEMA_to_TEST_DATABASE_TEST_ROLE_without_grant_option '"TEST_DATABASE"."TEST_ROLE"|false|false|CREATE TABLE,CREATE VIEW|OnSchema|OnSchema|"TEST_DATABASE"."TEST_SCHEMA"'
+`,
+		},
+		{
+			name: "grants on schema",
+			inputRows: [][]string{
+				{"privilege", "granted_on", "name", "granted_to", "grantee_name", "grant_option"},
+				{"INSERT", "TABLE", "TEST_DATABASE.TEST_SCHEMA.TEST_TABLE", "DATABASE_ROLE", "TEST_ROLE", "false"},
+				{"SELECT", "TABLE", "TEST_DATABASE.TEST_SCHEMA.TEST_TABLE", "DATABASE_ROLE", "TEST_ROLE", "false"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_privileges_to_database_role" "snowflake_generated_grant_on_TABLE_TEST_DATABASE_TEST_SCHEMA_TEST_TABLE_to_TEST_DATABASE_TEST_ROLE_without_grant_option" {
+  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
+  on_schema_object {
+    object_name = "\"TEST_DATABASE\".\"TEST_SCHEMA\".\"TEST_TABLE\""
+    object_type = "TABLE"
+  }
+  privileges = ["INSERT", "SELECT"]
+  with_grant_option = false
+}
+# terraform import snowflake_grant_privileges_to_database_role.snowflake_generated_grant_on_TABLE_TEST_DATABASE_TEST_SCHEMA_TEST_TABLE_to_TEST_DATABASE_TEST_ROLE_without_grant_option '"TEST_DATABASE"."TEST_ROLE"|false|false|INSERT,SELECT|OnSchemaObject|OnObject|TABLE|"TEST_DATABASE"."TEST_SCHEMA"."TEST_TABLE"'
+`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output, err := HandleGrants(&Config{
+				ObjectType: ObjectTypeGrants,
+				ImportFlag: ImportStatementTypeStatement,
+			}, tc.inputRows)
+
+			assert.NoError(t, err)
+			assert.Equal(t, strings.TrimLeft(tc.expectedOutput, "\n"), output)
+		})
+	}
+}
+
 func TestHandleGrantAccountRoleMappings(t *testing.T) {
 	testCases := []struct {
 		name           string
@@ -246,6 +322,97 @@ resource "snowflake_grant_account_role" "snowflake_generated_grant_TEST_ROLE_to_
   role_name = "TEST_ROLE"
 }
 # terraform import snowflake_grant_account_role.snowflake_generated_grant_TEST_ROLE_to_role_PARENT_TEST_ROLE '"TEST_ROLE"|ROLE|"PARENT_TEST_ROLE"'
+`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output, err := HandleGrants(&Config{
+				ObjectType: ObjectTypeGrants,
+				ImportFlag: ImportStatementTypeStatement,
+			}, tc.inputRows)
+
+			assert.NoError(t, err)
+			assert.Equal(t, strings.TrimLeft(tc.expectedOutput, "\n"), output)
+		})
+	}
+}
+
+func TestHandleGrantDatabaseRoleMappings(t *testing.T) {
+	testCases := []struct {
+		name           string
+		inputRows      [][]string
+		expectedOutput string
+	}{
+		{
+			name: "grant database role to role (SHOW GRANTS TO DATABASE ROLE output)",
+			inputRows: [][]string{
+				{"privilege", "granted_on", "name", "granted_to", "grantee_name", "grant_option"},
+				{"USAGE", "DATABASE_ROLE", "TEST_DATABASE.TEST_ROLE", "ROLE", "PARENT_TEST_ROLE", "false"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_role_PARENT_TEST_ROLE" {
+  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
+  parent_role_name = "PARENT_TEST_ROLE"
+}
+# terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_role_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|ROLE|"PARENT_TEST_ROLE"'
+`,
+		},
+		{
+			name: "grant database role to database role (SHOW GRANTS TO DATABASE ROLE output)",
+			inputRows: [][]string{
+				{"privilege", "granted_on", "name", "granted_to", "grantee_name", "grant_option"},
+				{"USAGE", "DATABASE_ROLE", "TEST_DATABASE.TEST_ROLE", "DATABASE_ROLE", "PARENT_TEST_ROLE", "false"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE" {
+  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
+  parent_database_role_name = "\"TEST_DATABASE\".\"PARENT_TEST_ROLE\""
+}
+# terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|DATABASE ROLE|"TEST_DATABASE"."PARENT_TEST_ROLE"'
+`,
+		},
+		{
+			name: "grant database role to database role (SHOW GRANTS OF DATABASE ROLE output)",
+			inputRows: [][]string{
+				{"name", "granted_to", "grantee_name", "grant_option"},
+				{"TEST_DATABASE.TEST_ROLE", "DATABASE_ROLE", "PARENT_TEST_ROLE", "false"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE" {
+  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
+  parent_database_role_name = "\"TEST_DATABASE\".\"PARENT_TEST_ROLE\""
+}
+# terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|DATABASE ROLE|"TEST_DATABASE"."PARENT_TEST_ROLE"'
+`,
+		},
+		{
+			name: "grant database role to database role (SHOW GRANTS OF ROLE output)",
+			inputRows: [][]string{
+				{"role", "granted_to", "grantee_name"},
+				{"TEST_DATABASE.TEST_ROLE", "DATABASE_ROLE", "TEST_DATABASE.PARENT_TEST_ROLE"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE" {
+  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
+  parent_database_role_name = "\"TEST_DATABASE\".\"PARENT_TEST_ROLE\""
+}
+# terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|DATABASE ROLE|"TEST_DATABASE"."PARENT_TEST_ROLE"'
+`,
+		},
+		{
+			name: "grant database role to role (SHOW GRANTS OF ROLE output)",
+			inputRows: [][]string{
+				{"role", "granted_to", "grantee_name"},
+				{"TEST_DATABASE.TEST_ROLE", "ROLE", "PARENT_TEST_ROLE"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_role_PARENT_TEST_ROLE" {
+  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
+  parent_role_name = "PARENT_TEST_ROLE"
+}
+# terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_role_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|ROLE|"PARENT_TEST_ROLE"'
 `,
 		},
 	}
