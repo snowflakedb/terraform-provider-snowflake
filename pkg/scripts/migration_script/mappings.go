@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"regexp"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 )
 
 var resourceIdAllowedCharacters = regexp.MustCompile("[a-zA-Z0-9\\-_]+")
