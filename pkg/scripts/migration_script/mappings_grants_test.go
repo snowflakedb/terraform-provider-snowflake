@@ -199,3 +199,66 @@ resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant
 		})
 	}
 }
+
+func TestHandleGrantAccountRoleMappings(t *testing.T) {
+	testCases := []struct {
+		name           string
+		inputRows      [][]string
+		expectedOutput string
+	}{
+		{
+			name: "grant role to role (SHOW GRANTS TO ROLE output)",
+			inputRows: [][]string{
+				{"privilege", "granted_on", "name", "granted_to", "grantee_name", "grant_option"},
+				{"USAGE", "ROLE", "TEST_ROLE", "ROLE", "PARENT_TEST_ROLE", "false"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_account_role" "snowflake_generated_grant_TEST_ROLE_to_role_PARENT_TEST_ROLE" {
+  parent_role_name = "PARENT_TEST_ROLE"
+  role_name = "TEST_ROLE"
+}
+# terraform import snowflake_grant_account_role.snowflake_generated_grant_TEST_ROLE_to_role_PARENT_TEST_ROLE '"TEST_ROLE"|ROLE|"PARENT_TEST_ROLE"'
+`,
+		},
+		{
+			name: "grant role to user (SHOW GRANTS TO ROLE output)",
+			inputRows: [][]string{
+				{"privilege", "granted_on", "name", "role", "granted_to", "grantee_name", "grant_option"},
+				{"USAGE", "ROLE", "TEST_ROLE", "TEST_ROLE", "USER", "TEST_USER", "false"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_account_role" "snowflake_generated_grant_TEST_ROLE_to_user_TEST_USER" {
+  role_name = "TEST_ROLE"
+  user_name = "TEST_USER"
+}
+# terraform import snowflake_grant_account_role.snowflake_generated_grant_TEST_ROLE_to_user_TEST_USER '"TEST_ROLE"|USER|"TEST_USER"'
+`,
+		},
+		{
+			name: "grant role to role (SHOW GRANTS OF ROLE output)",
+			inputRows: [][]string{
+				{"role", "granted_to", "grantee_name"},
+				{"TEST_ROLE", "ROLE", "PARENT_TEST_ROLE"},
+			},
+			expectedOutput: `
+resource "snowflake_grant_account_role" "snowflake_generated_grant_TEST_ROLE_to_role_PARENT_TEST_ROLE" {
+  parent_role_name = "PARENT_TEST_ROLE"
+  role_name = "TEST_ROLE"
+}
+# terraform import snowflake_grant_account_role.snowflake_generated_grant_TEST_ROLE_to_role_PARENT_TEST_ROLE '"TEST_ROLE"|ROLE|"PARENT_TEST_ROLE"'
+`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output, err := HandleGrants(&Config{
+				ObjectType: ObjectTypeGrants,
+				ImportFlag: ImportStatementTypeStatement,
+			}, tc.inputRows)
+
+			assert.NoError(t, err)
+			assert.Equal(t, strings.TrimLeft(tc.expectedOutput, "\n"), output)
+		})
+	}
+}

@@ -70,12 +70,68 @@ func GroupGrants(grants []sdk.Grant) map[string][]sdk.Grant {
 func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportModel, error) {
 	// Assuming all grants in the group are the same type and only differ by privileges
 	grant := grantGroup[0]
+
 	privileges := collections.Map(grantGroup, func(grant sdk.Grant) string { return grant.Privilege })
+	privileges = slices.DeleteFunc(privileges, func(s string) bool { return s == "" })
 
 	// Remove duplicates
 	slices.Sort(privileges)
 	privileges = slices.Compact(privileges)
 
+	switch {
+	// Granting a role to a role or user
+	// When calling SHOW GRANTS TO ROLE / USER, the USAGE privilege should be shown with the ROLE granted_on field.
+	// When calling SHOW GRANTS OF ROLE, the Role field should be populated.
+	// The granted_to field should always point to either ROLE or USER.
+	case (grant.Role != nil || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil) &&
+		(grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeUser):
+		return MapToGrantAccountRole(grant)
+	//case grant.Role != nil || (grant.GrantedOn == sdk.ObjectTypeDatabaseRole && (grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole)):
+	//	return MapToGrantDatabaseRole(grant)
+	case len(privileges) > 0 && grant.GrantedTo == sdk.ObjectTypeRole:
+		return MapToGrantPrivilegesToAccountRole(grant, privileges)
+	//case grant.GrantedOn == sdk.ObjectTypeDatabaseRole:
+	//	return MapToGrantPrivilegesToDatabaseRole(grant, privilegeListVariable)
+	//// TODO: To share and To application role
+	default:
+		return nil, nil, fmt.Errorf("unsupported grant mapping")
+	}
+
+}
+
+func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportModel, error) {
+	var roleIdentifier sdk.AccountObjectIdentifier
+
+	switch {
+	case grant.Role != nil:
+		roleIdentifier = grant.Role.(sdk.AccountObjectIdentifier)
+	case grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil:
+		roleIdentifier = grant.Name.(sdk.AccountObjectIdentifier)
+	default:
+		return nil, nil, fmt.Errorf("invalid grant account role mapping: missing role information")
+	}
+
+	switch {
+	case grant.GrantedTo == sdk.ObjectTypeRole:
+		resourceId := MapResourceId(fmt.Sprintf("grant_%s_to_role_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
+		resourceModel := model.GrantAccountRole(resourceId, roleIdentifier.Name()).WithParentRoleName(grant.GranteeName.Name())
+
+		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), grant.GranteeName.FullyQualifiedName())
+
+		return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId), nil
+	case grant.GrantedTo == sdk.ObjectTypeUser:
+		resourceId := MapResourceId(fmt.Sprintf("grant_%s_to_user_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
+		resourceModel := model.GrantAccountRole(resourceId, roleIdentifier.Name()).WithUserName(grant.GranteeName.Name())
+
+		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), grant.GranteeName.FullyQualifiedName())
+
+		return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId), nil
+	default:
+		return nil, nil, fmt.Errorf("unsupported grant account role mapping")
+	}
+}
+
+func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (accconfig.ResourceModel, *ImportModel, error) {
 	var resourceModel accconfig.ResourceModel
 	stateResourceId := resources.GrantPrivilegesToAccountRoleId{
 		RoleName:        grant.GranteeName.(sdk.AccountObjectIdentifier),
@@ -150,7 +206,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 			},
 		}
 	default:
-		return nil, nil, fmt.Errorf("unsupported grant mapping")
+		return nil, nil, fmt.Errorf("unsupported grant privileges to account role mapping")
 	}
 
 	return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId.String()), nil
