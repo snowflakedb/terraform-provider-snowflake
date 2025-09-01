@@ -16,8 +16,10 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -2171,16 +2173,7 @@ func TestAcc_GrantPrivilegesToAccountRole_issue3992(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
-	t.Cleanup(databaseCleanup)
-
-	roleFullyQualifiedName := role.ID().FullyQualifiedName()
-
-	configVariables := config.Variables{
-		"name":              config.StringVariable(roleFullyQualifiedName),
-		"database":          config.StringVariable(database.ID().Name()),
-		"with_grant_option": config.BoolVariable(true),
-	}
+	databaseId := testClient().Ids.DatabaseId()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2190,13 +2183,23 @@ func TestAcc_GrantPrivilegesToAccountRole_issue3992(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
-				Config:            configIssue3992(role.ID(), database.ID()),
-				ExpectError:       regexp.MustCompile("issleges to account role"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("snowflake_grant_privileges_to_account_role.test", tfjsonpath.New("privileges").AtSliceIndex(0), knownvalue.StringExact("USAGE")),
+					},
+				},
+				Config: configIssue3992(role.ID(), databaseId),
+				// It fails, even though the plan says it's known.
+				ExpectError: regexp.MustCompile("panic: value is unknown"),
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject2"),
-				ConfigVariables:          configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("snowflake_grant_privileges_to_account_role.test", tfjsonpath.New("privileges").AtSliceIndex(0), knownvalue.StringExact("USAGE")),
+					},
+				},
+				Config: configIssue3992(role.ID(), databaseId),
 			},
 		},
 	})
@@ -2204,47 +2207,18 @@ func TestAcc_GrantPrivilegesToAccountRole_issue3992(t *testing.T) {
 
 func configIssue3992(roleId sdk.AccountObjectIdentifier, dbId sdk.AccountObjectIdentifier) string {
 	return fmt.Sprintf(`
-resource "snowflake_grant_privileges_to_account_role" "direct" {
-  for_each = local.direct_grants
-
+resource "snowflake_grant_privileges_to_account_role" "test" {
   account_role_name = "%[1]s"
-  privileges        = [each.value.privilege]
-  with_grant_option = each.value.with_grant_option
+  privileges        = [var.privilege]
 
-  # Account-level objects (DATABASE, WAREHOUSE, etc.)
-  dynamic "on_account_object" {
-    for_each = [1]
-    content {
+  on_account_object {
       object_type = "DATABASE"
       object_name = "%[2]s"
-    }
-  }
-
-}
-
-locals {
-  flattened_grants = flatten([
-    for grant in var.grants : [
-      for role in grant.roles : {
-        # Remove spaces from privilege and child object type as it causes invalid Terraform key
-        key               = "ASDF"
-        privilege         = grant.privilege
-      }
-    ]
-  ])
-	  # Separate grant types
-  direct_grants = {
-    for grant in local.flattened_grants : grant.key => grant
   }
 }
-
-variable "grants" {
-  type = list(object({
-    privilege         = string
-  }))
-  default = [{
-    privilege         = "USAGE"
-  }]
+variable "privilege" {
+  type = string
+  default = "USAGE"
 }
 `, roleId.Name(), dbId.Name())
 }
