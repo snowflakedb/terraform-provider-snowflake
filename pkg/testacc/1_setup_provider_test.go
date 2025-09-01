@@ -3,6 +3,7 @@ package testacc
 import (
 	"context"
 	"fmt"
+	"testing"
 
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 
@@ -129,6 +130,23 @@ func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 	}
 
 	return providerCtx, nil
+}
+
+// TODO [this PR]: we could keep the cache of provider per cache key
+func providerFactoryUsingCache(t *testing.T, key string) map[string]func() (tfprotov6.ProviderServer, error) {
+	t.Helper()
+
+	p := provider.Provider()
+	p.ConfigureContextFunc = configureProviderWithConfigCacheFunc(key)
+
+	return map[string]func() (tfprotov6.ProviderServer, error){
+		"snowflake": func() (tfprotov6.ProviderServer, error) {
+			return tf5to6server.UpgradeServer(
+				context.Background(),
+				p.GRPCProvider,
+			)
+		},
+	}
 }
 
 func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
