@@ -102,15 +102,6 @@ func v2_6_0_WarehouseResourceConstraintUpgrader(ctx context.Context, rawState ma
 		return rawState, nil
 	}
 
-	warehouseTypeRaw, ok := rawState["warehouse_type"].(string)
-	if !ok {
-		return nil, fmt.Errorf("cannot read warehouse_type from the state")
-	}
-	warehouseType, err := sdk.ToWarehouseType(warehouseTypeRaw)
-	if err != nil {
-		return nil, err
-	}
-
 	oldShowOutputRaw, ok := rawState[ShowOutputAttributeName].([]any)
 	if !ok || len(oldShowOutputRaw) != 1 {
 		return nil, fmt.Errorf("expected exactly one warehouse show output; got %d", len(oldShowOutputRaw))
@@ -120,11 +111,24 @@ func v2_6_0_WarehouseResourceConstraintUpgrader(ctx context.Context, rawState ma
 		return nil, fmt.Errorf("cannot read warehouse show output from the state")
 	}
 
-	switch warehouseType {
-	case sdk.WarehouseTypeSnowparkOptimized:
-		oldShowOutput["resource_constraint"] = string(sdk.WarehouseResourceConstraintMemory16X)
-	default:
-		log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", warehouseType)
+	warehouseName, ok := rawState["name"].(string)
+	if !ok {
+		return nil, fmt.Errorf("cannot read warehouse name from the state")
+	}
+
+	client := meta.(*provider.Context).Client
+	warehouseInSnowflake, err := client.Warehouses.ShowByIDSafely(ctx, sdk.NewAccountObjectIdentifier(warehouseName))
+	if err != nil {
+		return nil, err
+	}
+
+	if warehouseInSnowflake.ResourceConstraint != nil {
+		switch warehouseInSnowflake.Type {
+		case sdk.WarehouseTypeSnowparkOptimized:
+			oldShowOutput["resource_constraint"] = string(*warehouseInSnowflake.ResourceConstraint)
+		default:
+			log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", warehouseInSnowflake.Type)
+		}
 	}
 	rawState[ShowOutputAttributeName] = []any{oldShowOutput}
 
