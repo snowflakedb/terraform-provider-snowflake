@@ -509,9 +509,3 @@ which means that the resources have been successfully imported into the state.
 Remember that, if you chose to use the import block approach, [after importing you can remove the import blocks from the configuration file](https://developer.hashicorp.com/terraform/language/import#plan-and-apply-an-impor).
 
 By following the above steps, you can migrate other existing Snowflake objects into Terraform and start managing them!
-
-## Limitations
-
-### Generated resource names
-
-## Contributing
