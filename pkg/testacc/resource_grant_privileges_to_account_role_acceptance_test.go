@@ -2166,3 +2166,85 @@ func queriedPrivilegesDoNotContain(query func() ([]sdk.Grant, error), privileges
 		return nil
 	}
 }
+
+func TestAcc_GrantPrivilegesToAccountRole_issue3992(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(databaseCleanup)
+
+	roleFullyQualifiedName := role.ID().FullyQualifiedName()
+
+	configVariables := config.Variables{
+		"name":              config.StringVariable(roleFullyQualifiedName),
+		"database":          config.StringVariable(database.ID().Name()),
+		"with_grant_option": config.BoolVariable(true),
+	}
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
+				Config:            configIssue3992(role.ID(), database.ID()),
+				ExpectError:       regexp.MustCompile("issleges to account role"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject2"),
+				ConfigVariables:          configVariables,
+			},
+		},
+	})
+}
+
+func configIssue3992(roleId sdk.AccountObjectIdentifier, dbId sdk.AccountObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_grant_privileges_to_account_role" "direct" {
+  for_each = local.direct_grants
+
+  account_role_name = "%[1]s"
+  privileges        = [each.value.privilege]
+  with_grant_option = each.value.with_grant_option
+
+  # Account-level objects (DATABASE, WAREHOUSE, etc.)
+  dynamic "on_account_object" {
+    for_each = [1]
+    content {
+      object_type = "DATABASE"
+      object_name = "%[2]s"
+    }
+  }
+
+}
+
+locals {
+  flattened_grants = flatten([
+    for grant in var.grants : [
+      for role in grant.roles : {
+        # Remove spaces from privilege and child object type as it causes invalid Terraform key
+        key               = "ASDF"
+        privilege         = grant.privilege
+      }
+    ]
+  ])
+	  # Separate grant types
+  direct_grants = {
+    for grant in local.flattened_grants : grant.key => grant
+  }
+}
+
+variable "grants" {
+  type = list(object({
+    privilege         = string
+  }))
+  default = [{
+    privilege         = "USAGE"
+  }]
+}
+`, roleId.Name(), dbId.Name())
+}
