@@ -115,6 +115,14 @@ func Test_GroupByProperty(t *testing.T) {
 		Number   int
 	}
 
+	t.Run("validation: empty list", func(t *testing.T) {
+		var items []Item
+		groups := GroupByProperty(items, func(item Item) string {
+			return item.Category
+		})
+		require.Len(t, groups, 0)
+	})
+
 	t.Run("basic grouping", func(t *testing.T) {
 		items := []Item{
 			{Name: "Item1", Category: "A", Number: 1},
