@@ -23,9 +23,16 @@ type ImportModel struct {
 	Id              string
 }
 
+func NewImportModel(resourceAddress, id string) *ImportModel {
+	return &ImportModel{
+		ResourceAddress: resourceAddress,
+		Id:              id,
+	}
+}
+
 // IdEscaped returns the ID with escaped quotes for use in Terraform import blocks.
 func (im ImportModel) IdEscaped() string {
-	return strings.ReplaceAll(im.Id, "\"", "\\\"")
+	return strings.ReplaceAll(im.Id, `"`, `\"`)
 }
 
 func TransformImportModel(config *Config, importModel ImportModel) (string, error) {
