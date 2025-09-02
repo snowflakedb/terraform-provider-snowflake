@@ -78,11 +78,9 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 	slices.Sort(privileges)
 	privileges = slices.Compact(privileges)
 
-	isDatabaseRole := func(role sdk.ObjectIdentifier) bool {
-		if _, ok := role.(sdk.DatabaseObjectIdentifier); ok {
-			return true
-		}
-		return false
+	isRoleDatabaseObjectIdentifier := func(role sdk.ObjectIdentifier) bool {
+		_, ok := role.(sdk.DatabaseObjectIdentifier)
+		return ok
 	}
 
 	switch {
@@ -90,23 +88,20 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 	// When calling SHOW GRANTS TO ROLE / USER, the USAGE privilege should be shown with the ROLE granted_on field.
 	// When calling SHOW GRANTS OF ROLE, the Role field should be populated.
 	// The granted_to field should always point to either ROLE or USER.
-	case (grant.Role != nil && !isDatabaseRole(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil) &&
+	case (grant.Role != nil && !isRoleDatabaseObjectIdentifier(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil) &&
 		(grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeUser):
 		return MapToGrantAccountRole(grant)
 	// Granting a database role (cases similar to the above; different handling for different SHOW GRANTS calls)
-	case (grant.Role != nil && isDatabaseRole(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeDatabaseRole && grant.Name != nil) &&
+	case (grant.Role != nil && isRoleDatabaseObjectIdentifier(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeDatabaseRole && grant.Name != nil) &&
 		(grant.GrantedTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeRole):
 		return MapToGrantDatabaseRole(grant)
-	// TODO: Check other SHOW GRANTS calls here
 	case len(privileges) > 0 && grant.GrantedTo == sdk.ObjectTypeRole:
 		return MapToGrantPrivilegesToAccountRole(grant, privileges)
 	case len(privileges) > 0 && grant.GrantedTo == sdk.ObjectTypeDatabaseRole:
 		return MapToGrantPrivilegesToDatabaseRole(grant, privileges)
-	// TODO: To share and To application role
 	default:
 		return nil, nil, fmt.Errorf("unsupported grant mapping")
 	}
-
 }
 
 func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportModel, error) {
