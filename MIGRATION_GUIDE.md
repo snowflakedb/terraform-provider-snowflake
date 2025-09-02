@@ -24,6 +24,49 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.6.0 ➞ v2.6.1
+
+### *(bugfix)* Fixed privileges validation in `grant_privileges_to_account_role` resource
+In [v2.6.0](#bugfix-fixed-privileges-validation-in-grant_privileges_to_account_role-resource), we added a validation for using the `IMPORTED PRIVILEGES` grant. The validator contained a bug, causing the provider to panic in situations with privileges set by a reference, like this one:
+```terraform
+resource "snowflake_grant_privileges_to_account_role" "direct" {
+  account_role_name = "ROLE"
+  privileges        = [var.privilege]
+
+  on_account_object {
+    object_type = "DATABASE"
+    object_name = "DB"
+  }
+
+}
+
+variable "privilege" {
+  type = string
+  default = "USAGE"
+}
+```
+
+The provider panicked with the following message:
+```
+│ Error: Plugin did not respond
+│
+│ The plugin encountered an error, and failed to respond to the plugin6.(*GRPCProvider).ValidateResourceConfig call. The plugin logs may contain more details.
+╵
+
+Stack trace from the terraform-provider-snowflake_v2.6.0 plugin:
+
+panic: value is unknown
+
+goroutine 23 [running]:
+github.com/hashicorp/go-cty/cty.Value.AsString({{{0x1029376c8?, 0x14000011051?}}, {0x1025b2060?, 0x103b04ec0?}})
+        github.com/hashicorp/go-cty@v1.5.0/cty/value_ops.go:1187 +0x100
+<...>
+```
+
+Now, this behavior is fixed, and the provider will not panic. No changes in configuration and state are required.
+
+References: [#3992](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3992)
+
 ## v2.5.0 ➞ v2.6.0
 
 ### *(improvement)* Handling conversion-based errors
