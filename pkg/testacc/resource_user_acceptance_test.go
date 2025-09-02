@@ -23,7 +23,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -1823,8 +1822,7 @@ func TestAcc_User_BCR_2025_05(t *testing.T) {
 
 	userModel := model.User("test", userId.Name())
 
-	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionsDatasource))
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
