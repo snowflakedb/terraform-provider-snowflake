@@ -40,7 +40,7 @@ type cacheEntry struct {
 	providerCtx     *internalprovider.Context
 }
 
-// TODO [SNOW-2298291]: rework this when working on terraform plugin framework PoC
+// TODO [SNOW-2312385]: rework this when improving the caching logic
 func setUpProvider() error {
 	providerInitializationCache = make(map[string]cacheEntry)
 
@@ -81,6 +81,7 @@ var testAccProtoV6ProviderFactoriesNew = map[string]func() (tfprotov6.ProviderSe
 	},
 }
 
+// TODO [SNOW-2312385]: remove this function and use configureProviderWithConfigCacheFunc
 func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
 	if err != nil {
@@ -133,7 +134,7 @@ func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 
 var taskDedicatedProviderFactory = providerFactoryUsingCache("task")
 
-// TODO [this PR]: we could keep the cache of provider per cache key
+// TODO [SNOW-2312385]: we could keep the cache of provider per cache key
 func providerFactoryUsingCache(key string) map[string]func() (tfprotov6.ProviderServer, error) {
 	p := provider.Provider()
 	p.ConfigureContextFunc = configureProviderWithConfigCacheFunc(key)
@@ -150,7 +151,7 @@ func providerFactoryUsingCache(key string) map[string]func() (tfprotov6.Provider
 
 func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
-		// TODO [this PR]: do we still keep this guard if this configure func override is only used in the acceptance tests already?
+		// TODO [SNOW-2312385]: do we still keep this guard if this configure func override is only used in the acceptance tests already?
 		accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
 		if err != nil {
 			accTestEnabled = false
@@ -181,7 +182,7 @@ func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, 
 			clientErrorDiag: clientErrorDiag,
 		}
 
-		// TODO [this PR]: what do we want to do with this?
+		// TODO [SNOW-2312385]: what do we want to do with this?
 		if v, ok := providerCtx.(*internalprovider.Context); ok {
 			lastConfiguredProviderContext = v
 		}
