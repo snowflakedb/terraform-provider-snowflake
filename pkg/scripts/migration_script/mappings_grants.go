@@ -147,11 +147,7 @@ func MapToGrantDatabaseRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportMo
 
 func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (accconfig.ResourceModel, *ImportModel, error) {
 	var resourceModel accconfig.ResourceModel
-	stateResourceId := resources.GrantPrivilegesToAccountRoleId{
-		RoleName:        grant.GranteeName.(sdk.AccountObjectIdentifier),
-		WithGrantOption: grant.GrantOption,
-		Privileges:      privileges,
-	}
+	var stateResourceId resources.GrantPrivilegesToAccountRoleId
 
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
@@ -162,8 +158,13 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 			WithOnAccount(true).
 			WithWithGrantOption(grant.GrantOption)
 
-		stateResourceId.Kind = resources.OnAccountAccountRoleGrantKind
-		stateResourceId.Data = new(resources.OnAccountGrantData)
+		stateResourceId = resources.NewGrantPrivilegesToAccountRoleIdOnAccount(
+			grant.GranteeName.(sdk.AccountObjectIdentifier),
+			grant.GrantOption,
+			false,
+			false,
+			privileges...,
+		)
 	case slices.Contains(sdk.ValidGrantToAccountObjectTypesString, string(grant.GrantedOn)):
 		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnAccountObject(grant)
 
@@ -175,11 +176,15 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 			})).
 			WithWithGrantOption(grant.GrantOption)
 
-		stateResourceId.Kind = resources.OnAccountObjectAccountRoleGrantKind
-		stateResourceId.Data = &resources.OnAccountObjectGrantData{
-			ObjectType: grant.GrantedOn,
-			ObjectName: grant.Name.(sdk.AccountObjectIdentifier),
-		}
+		stateResourceId = resources.NewGrantPrivilegesToAccountRoleIdOnAccountObject(
+			grant.GranteeName.(sdk.AccountObjectIdentifier),
+			grant.GrantOption,
+			false,
+			false,
+			grant.GrantedOn,
+			grant.Name.(sdk.AccountObjectIdentifier),
+			privileges...,
+		)
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
 		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnSchema(grant)
 
@@ -190,11 +195,14 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 			})).
 			WithWithGrantOption(grant.GrantOption)
 
-		stateResourceId.Kind = resources.OnSchemaAccountRoleGrantKind
-		stateResourceId.Data = &resources.OnSchemaGrantData{
-			Kind:       resources.OnSchemaSchemaGrantKind,
-			SchemaName: sdk.Pointer(grant.Name.(sdk.DatabaseObjectIdentifier)),
-		}
+		stateResourceId = resources.NewGrantPrivilegesToAccountRoleIdOnSchemaOnSchema(
+			grant.GranteeName.(sdk.AccountObjectIdentifier),
+			grant.GrantOption,
+			false,
+			false,
+			grant.Name.(sdk.DatabaseObjectIdentifier),
+			privileges...,
+		)
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
 		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnSchemaObject(grant)
 
@@ -206,14 +214,15 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 			})).
 			WithWithGrantOption(grant.GrantOption)
 
-		stateResourceId.Kind = resources.OnSchemaObjectAccountRoleGrantKind
-		stateResourceId.Data = &resources.OnSchemaObjectGrantData{
-			Kind: resources.OnObjectSchemaObjectGrantKind,
-			Object: &sdk.Object{
-				ObjectType: grant.GrantedOn,
-				Name:       grant.Name.(sdk.SchemaObjectIdentifier),
-			},
-		}
+		stateResourceId = resources.NewGrantPrivilegesToAccountRoleIdOnSchemaObjectOnObject(
+			grant.GranteeName.(sdk.AccountObjectIdentifier),
+			grant.GrantOption,
+			false,
+			false,
+			grant.GrantedOn,
+			grant.Name.(sdk.SchemaObjectIdentifier),
+			privileges...,
+		)
 	default:
 		return nil, nil, fmt.Errorf("unsupported grant privileges to account role mapping")
 	}
@@ -223,10 +232,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 
 func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string) (accconfig.ResourceModel, *ImportModel, error) {
 	var resourceModel accconfig.ResourceModel
-	stateResourceId := resources.GrantPrivilegesToDatabaseRoleId{
-		WithGrantOption: grant.GrantOption,
-		Privileges:      privileges,
-	}
+	var stateResourceId resources.GrantPrivilegesToDatabaseRoleId
 
 	withGrantOption := "without"
 	if grant.GrantOption {
@@ -245,11 +251,14 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string) (a
 			WithOnDatabase(grant.Name.Name()).
 			WithWithGrantOption(grant.GrantOption)
 
-		stateResourceId.DatabaseRoleName = granteeName
-		stateResourceId.Kind = resources.OnDatabaseDatabaseRoleGrantKind
-		stateResourceId.Data = &resources.OnDatabaseGrantData{
-			DatabaseName: grant.Name.(sdk.AccountObjectIdentifier),
-		}
+		stateResourceId = resources.NewGrantPrivilegesToDatabaseRoleIdOnDatabase(
+			granteeName,
+			grant.GrantOption,
+			false,
+			false,
+			grant.Name.(sdk.AccountObjectIdentifier),
+			privileges...,
+		)
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
 		databaseRoleName := grant.GranteeName.Name()
 		granteeName := sdk.NewDatabaseObjectIdentifier(grant.Name.(sdk.DatabaseObjectIdentifier).DatabaseName(), databaseRoleName)
@@ -263,12 +272,14 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string) (a
 			})).
 			WithWithGrantOption(grant.GrantOption)
 
-		stateResourceId.DatabaseRoleName = granteeName
-		stateResourceId.Kind = resources.OnSchemaDatabaseRoleGrantKind
-		stateResourceId.Data = &resources.OnSchemaGrantData{
-			Kind:       resources.OnSchemaSchemaGrantKind,
-			SchemaName: sdk.Pointer(grant.Name.(sdk.DatabaseObjectIdentifier)),
-		}
+		stateResourceId = resources.NewGrantPrivilegesToDatabaseRoleIdOnSchemaOnSchema(
+			granteeName,
+			grant.GrantOption,
+			false,
+			false,
+			grant.Name.(sdk.DatabaseObjectIdentifier),
+			privileges...,
+		)
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
 		databaseRoleName := grant.GranteeName.Name()
 		granteeName := sdk.NewDatabaseObjectIdentifier(grant.Name.(sdk.SchemaObjectIdentifier).DatabaseName(), databaseRoleName)
@@ -283,15 +294,15 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string) (a
 			})).
 			WithWithGrantOption(grant.GrantOption)
 
-		stateResourceId.DatabaseRoleName = granteeName
-		stateResourceId.Kind = resources.OnSchemaObjectDatabaseRoleGrantKind
-		stateResourceId.Data = &resources.OnSchemaObjectGrantData{
-			Kind: resources.OnObjectSchemaObjectGrantKind,
-			Object: &sdk.Object{
-				ObjectType: grant.GrantedOn,
-				Name:       grant.Name.(sdk.SchemaObjectIdentifier),
-			},
-		}
+		stateResourceId = resources.NewGrantPrivilegesToDatabaseRoleIdOnSchemaObjectOnObject(
+			granteeName,
+			grant.GrantOption,
+			false,
+			false,
+			grant.GrantedOn,
+			grant.Name.(sdk.SchemaObjectIdentifier),
+			privileges...,
+		)
 	default:
 		return nil, nil, fmt.Errorf("unsupported grant privileges to database role mapping")
 	}

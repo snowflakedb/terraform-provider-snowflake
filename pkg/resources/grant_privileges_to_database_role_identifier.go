@@ -27,6 +27,53 @@ type GrantPrivilegesToDatabaseRoleId struct {
 	Data             fmt.Stringer
 }
 
+func NewGrantPrivilegesToDatabaseRoleIdOnDatabase(databaseRoleName sdk.DatabaseObjectIdentifier, withGrantOption bool, alwaysApply bool, allPrivileges bool, databaseName sdk.AccountObjectIdentifier, privileges ...string) GrantPrivilegesToDatabaseRoleId {
+	return GrantPrivilegesToDatabaseRoleId{
+		DatabaseRoleName: databaseRoleName,
+		WithGrantOption:  withGrantOption,
+		AlwaysApply:      alwaysApply,
+		AllPrivileges:    allPrivileges,
+		Privileges:       privileges,
+		Kind:             OnDatabaseDatabaseRoleGrantKind,
+		Data: &OnDatabaseGrantData{
+			DatabaseName: databaseName,
+		},
+	}
+}
+
+func NewGrantPrivilegesToDatabaseRoleIdOnSchemaOnSchema(databaseRoleName sdk.DatabaseObjectIdentifier, withGrantOption bool, alwaysApply bool, allPrivileges bool, schemaName sdk.DatabaseObjectIdentifier, privileges ...string) GrantPrivilegesToDatabaseRoleId {
+	return GrantPrivilegesToDatabaseRoleId{
+		DatabaseRoleName: databaseRoleName,
+		WithGrantOption:  withGrantOption,
+		AlwaysApply:      alwaysApply,
+		AllPrivileges:    allPrivileges,
+		Privileges:       privileges,
+		Kind:             OnSchemaDatabaseRoleGrantKind,
+		Data: &OnSchemaGrantData{
+			Kind:       OnSchemaSchemaGrantKind,
+			SchemaName: &schemaName,
+		},
+	}
+}
+
+func NewGrantPrivilegesToDatabaseRoleIdOnSchemaObjectOnObject(databaseRoleName sdk.DatabaseObjectIdentifier, withGrantOption bool, alwaysApply bool, allPrivileges bool, objectType sdk.ObjectType, objectName sdk.SchemaObjectIdentifier, privileges ...string) GrantPrivilegesToDatabaseRoleId {
+	return GrantPrivilegesToDatabaseRoleId{
+		DatabaseRoleName: databaseRoleName,
+		WithGrantOption:  withGrantOption,
+		AlwaysApply:      alwaysApply,
+		AllPrivileges:    allPrivileges,
+		Privileges:       privileges,
+		Kind:             OnSchemaObjectDatabaseRoleGrantKind,
+		Data: &OnSchemaObjectGrantData{
+			Kind: OnObjectSchemaObjectGrantKind,
+			Object: &sdk.Object{
+				ObjectType: objectType,
+				Name:       objectName,
+			},
+		},
+	}
+}
+
 func (g *GrantPrivilegesToDatabaseRoleId) String() string {
 	var parts []string
 	parts = append(parts, g.DatabaseRoleName.FullyQualifiedName())
