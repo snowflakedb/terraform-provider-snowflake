@@ -51,15 +51,17 @@ func TestAcc_Task_VerifySettingParameterInProviderConfigWithAccountChanges(t *te
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, providerModel, taskModel, executeCheckOnSession, executeCheckOnTask),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.0.value", "12345"),
-					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.0.level", string(sdk.ParameterTypeSession)),
+				Check: assertThat(t,
+					resourceassert.ExecuteResource(t, executeCheckOnSession.ResourceReference()).
+						HasQueryResultsLength(1).
+						HasKeyValueOnIdx("value", "12345", 0).
+						HasKeyValueOnIdx("level", string(sdk.ParameterTypeSession), 0),
 
 					// the parameter set on session is not used in object creation
-					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.0.value", "172800"),
-					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.0.level", ""),
+					resourceassert.ExecuteResource(t, executeCheckOnTask.ResourceReference()).
+						HasQueryResultsLength(1).
+						HasKeyValueOnIdx("value", "172800", 0).
+						HasKeyValueOnIdx("level", "", 0),
 				),
 			},
 		},
