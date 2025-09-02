@@ -17,7 +17,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -29,8 +28,7 @@ func TestAcc_Task_VerifySettingParameterInProviderConfigWithAccountChanges(t *te
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"
 
-	// TODO [this PR]: do not use the profile to have more than one attribute but the trick used in some resources
-	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Default).WithParamsValue(
+	providerModel := providermodel.SnowflakeProvider().WithParamsValue(
 		configvariable.ObjectVariable(
 			map[string]configvariable.Variable{
 				"statement_timeout_in_seconds": configvariable.IntegerVariable(12345),
@@ -53,10 +51,10 @@ func TestAcc_Task_VerifySettingParameterInProviderConfigWithAccountChanges(t *te
 					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.0.value", "12345"),
 					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.0.level", string(sdk.ParameterTypeSession)),
 
+					// the parameter set on session is not used in object creation
 					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.#", "1"),
-					// TODO [this PR]: failing as the session value is not used for task creation?
-					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.0.value", "12345"),
-					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.0.level", string(sdk.ParameterTypeSession)),
+					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.0.value", "172800"),
+					resource.TestCheckResourceAttr("snowflake_execute.t2", "query_results.0.level", ""),
 				),
 			},
 		},
