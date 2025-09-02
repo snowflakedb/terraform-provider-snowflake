@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Task_VerifySettingParameterInProviderConfigWithAccountChanges(t *testing.T) {
+func TestAcc_Task_ProveSessionParameterBehavior(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"
 
