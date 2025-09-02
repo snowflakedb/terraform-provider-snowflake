@@ -1,4 +1,7 @@
-//go:build !account_level_tests
+//go:build account_level_tests
+
+// Tests for OAuth integration for partner applications are marked as account_level_tests,
+// because only one integration of this type can exist in the account.
 
 package testacc
 
