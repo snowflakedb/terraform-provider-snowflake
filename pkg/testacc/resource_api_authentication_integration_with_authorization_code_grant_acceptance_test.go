@@ -40,7 +40,6 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_basic(t *tes
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -196,7 +195,6 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_complete(t *
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -242,7 +240,6 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_invalidIncom
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -264,7 +261,6 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_migrateFromV
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -295,7 +291,6 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_WithQuotedNa
 	quotedId := fmt.Sprintf(`\"%s\"`, id.Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

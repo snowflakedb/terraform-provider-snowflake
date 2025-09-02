@@ -19,7 +19,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -28,195 +27,6 @@ import (
 )
 
 // TODO(SNOW-1822118): Create more complicated tests for task
-
-func TestAcc_Task_Basic(t *testing.T) {
-	currentRole := testClient().Context.CurrentRole(t)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	statement := "SELECT 1"
-
-	configModel := model.TaskWithId("test", id, false, statement)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Task),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, configModel),
-				Check: assertThat(t,
-					resourceassert.TaskResource(t, configModel.ResourceReference()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasNameString(id.Name()).
-						HasStartedString(r.BooleanFalse).
-						HasWarehouseString("").
-						HasNoScheduleSet().
-						HasConfigString("").
-						HasAllowOverlappingExecutionString(r.BooleanDefault).
-						HasErrorIntegrationString("").
-						HasCommentString("").
-						HasFinalizeString("").
-						HasAfter().
-						HasWhenString("").
-						HasSqlStatementString(statement),
-					resourceshowoutputassert.TaskShowOutput(t, configModel.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasIdNotEmpty().
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(currentRole.Name()).
-						HasComment("").
-						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasScheduleEmpty().
-						HasPredecessors().
-						HasState(sdk.TaskStateSuspended).
-						HasDefinition(statement).
-						HasCondition("").
-						HasAllowOverlappingExecution(false).
-						HasErrorIntegration(sdk.NewAccountObjectIdentifier("")).
-						HasLastCommittedOn("").
-						HasLastSuspendedOn("").
-						HasOwnerRoleType("ROLE").
-						HasConfig("").
-						HasBudget("").
-						HasTaskRelations(sdk.TaskRelations{}),
-					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
-						HasAllDefaults(),
-				),
-			},
-			{
-				ResourceName: configModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasNameString(id.Name()).
-						HasStartedString(r.BooleanFalse).
-						HasWarehouseString("").
-						HasNoScheduleSet().
-						HasConfigString("").
-						HasAllowOverlappingExecutionString(r.BooleanFalse).
-						HasErrorIntegrationString("").
-						HasCommentString("").
-						HasFinalizeString("").
-						HasAfterEmpty().
-						HasWhenString("").
-						HasSqlStatementString(statement),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Task_Complete(t *testing.T) {
-	currentRole := testClient().Context.CurrentRole(t)
-
-	errorNotificationIntegration, errorNotificationIntegrationCleanup := testClient().NotificationIntegration.CreateWithGcpPubSub(t)
-	t.Cleanup(errorNotificationIntegrationCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	statement := "SELECT 1"
-	taskConfig := `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`
-	comment := random.Comment()
-	condition := `SYSTEM$STREAM_HAS_DATA('MYSTREAM')`
-	configModel := model.TaskWithId("test", id, true, statement).
-		WithWarehouse(testClient().Ids.WarehouseId().Name()).
-		WithScheduleMinutes(10).
-		WithConfigValue(configvariable.StringVariable(taskConfig)).
-		WithAllowOverlappingExecution(r.BooleanTrue).
-		WithErrorIntegration(errorNotificationIntegration.ID().Name()).
-		WithComment(comment).
-		WithWhen(condition)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Task),
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				Check: assertThat(t,
-					resourceassert.TaskResource(t, configModel.ResourceReference()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasNameString(id.Name()).
-						HasStartedString(r.BooleanTrue).
-						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
-						HasScheduleMinutes(10).
-						HasConfigString(taskConfig).
-						HasAllowOverlappingExecutionString(r.BooleanTrue).
-						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
-						HasCommentString(comment).
-						HasFinalizeString("").
-						HasAfterEmpty().
-						HasWhenString(condition).
-						HasSqlStatementString(statement),
-					resourceshowoutputassert.TaskShowOutput(t, configModel.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasIdNotEmpty().
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(currentRole.Name()).
-						HasComment(comment).
-						HasWarehouse(testClient().Ids.WarehouseId()).
-						HasScheduleMinutes(10).
-						HasPredecessors().
-						HasState(sdk.TaskStateStarted).
-						HasDefinition(statement).
-						HasCondition(condition).
-						HasAllowOverlappingExecution(true).
-						HasErrorIntegration(errorNotificationIntegration.ID()).
-						HasLastCommittedOnNotEmpty().
-						HasLastSuspendedOn("").
-						HasOwnerRoleType("ROLE").
-						HasConfig(taskConfig).
-						HasBudget("").
-						HasTaskRelations(sdk.TaskRelations{}),
-					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
-						HasAllDefaults(),
-				),
-			},
-			{
-				ResourceName:    configModel.ResourceReference(),
-				ImportState:     true,
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasNameString(id.Name()).
-						HasStartedString(r.BooleanTrue).
-						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
-						HasScheduleMinutes(10).
-						HasConfigString(taskConfig).
-						HasAllowOverlappingExecutionString(r.BooleanTrue).
-						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
-						HasCommentString(comment).
-						HasFinalizeString("").
-						HasAfterEmpty().
-						HasWhenString(condition).
-						HasSqlStatementString(statement),
-				),
-			},
-		},
-	})
-}
 
 func TestAcc_Task_Updates(t *testing.T) {
 	currentRole := testClient().Context.CurrentRole(t)
@@ -247,7 +57,6 @@ func TestAcc_Task_Updates(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -440,7 +249,6 @@ func TestAcc_Task_UpdatesInComplexDAG(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -505,7 +313,6 @@ func TestAcc_Task_StatementSpaces(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -579,7 +386,6 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -813,7 +619,6 @@ func TestAcc_Task_CallingProcedure(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -856,7 +661,6 @@ func TestAcc_Task_CronAndMinutes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -991,7 +795,6 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1134,7 +937,6 @@ func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1186,7 +988,6 @@ func TestAcc_Task_Enabled(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1252,7 +1053,6 @@ func TestAcc_Task_ConvertStandaloneTaskToSubtask(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1348,7 +1148,6 @@ func TestAcc_Task_ConvertStandaloneTaskToFinalizer(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1449,7 +1248,6 @@ func TestAcc_Task_SwitchScheduledWithAfter(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1542,7 +1340,6 @@ func TestAcc_Task_WithAfter(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1599,7 +1396,6 @@ func TestAcc_Task_WithFinalizer(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1658,7 +1454,6 @@ func TestAcc_Task_UpdateFinalizerExternally(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1769,7 +1564,6 @@ func TestAcc_Task_UpdateAfterExternally(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1880,7 +1674,6 @@ func TestAcc_Task_issue2207(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1939,7 +1732,6 @@ func TestAcc_Task_issue2036(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1992,7 +1784,6 @@ func TestAcc_Task_issue3113(t *testing.T) {
 		WithErrorIntegration(errorNotificationIntegration.ID().Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2027,7 +1818,6 @@ func TestAcc_Task_StateUpgrade_NoOptionalFields(t *testing.T) {
 	configModel := model.TaskWithId("test", id, false, statement)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2073,7 +1863,6 @@ func TestAcc_Task_StateUpgrade(t *testing.T) {
 		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeXSmall)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2132,7 +1921,6 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 		WithJsonIndent(4)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

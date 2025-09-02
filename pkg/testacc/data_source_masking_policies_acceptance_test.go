@@ -40,7 +40,6 @@ func TestAcc_MaskingPolicies(t *testing.T) {
 	dsName := "data.snowflake_masking_policies.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -130,7 +129,6 @@ func TestAcc_MaskingPolicies_Filtering(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.MaskingPolicy),
-		PreCheck:     func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config:          accconfig.FromModels(t, variableModel, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, maskingPoliciesModelLikeFirstOne),
@@ -153,7 +151,6 @@ func TestAcc_MaskingPolicies_Filtering(t *testing.T) {
 func TestAcc_MaskingPolicies_emptyIn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
