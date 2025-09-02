@@ -36,6 +36,11 @@ func TestAcc_Task_VerifySettingParameterInProviderConfigWithAccountChanges(t *te
 		),
 	)
 	taskModel := model.TaskWithId("test", id, false, statement)
+	executeCheckOnSession := model.ExecuteWithNoOpActions("t1").
+		WithQuery("SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN SESSION")
+	executeCheckOnTask := model.ExecuteWithNoOpActions("t2").
+		WithQuery(fmt.Sprintf(`SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN TASK %s`, id.FullyQualifiedName())).
+		WithDependsOn(taskModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: taskDedicatedProviderFactory,
@@ -45,7 +50,7 @@ func TestAcc_Task_VerifySettingParameterInProviderConfigWithAccountChanges(t *te
 		CheckDestroy: CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, providerModel, taskModel) + executeShowSessionParameter() + executeShowParameterForTask(id, taskModel),
+				Config: config.FromModels(t, providerModel, taskModel, executeCheckOnSession, executeCheckOnTask),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_execute.t1", "query_results.0.value", "12345"),
@@ -61,27 +66,7 @@ func TestAcc_Task_VerifySettingParameterInProviderConfigWithAccountChanges(t *te
 	})
 }
 
-func executeShowSessionParameter() string {
-	return `
-resource snowflake_execute "t1" {
-    execute = "SELECT 1"
-    query = "SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN SESSION"
-    revert        = "SELECT 1"
-}`
-}
-
-func executeShowParameterForTask(id sdk.SchemaObjectIdentifier, taskModel *model.TaskModel) string {
-	return fmt.Sprintf(`
-resource snowflake_execute "t2" {
-    execute = "SELECT 1"
-    revert  = "SELECT 1"
-    query   = "SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN TASK \"%s\".\"%s\".\"%s\""
-
-    depends_on = [%s]
-}`, id.DatabaseName(), id.SchemaName(), id.Name(), taskModel.ResourceReference())
-}
-
-// All tests in this file are temporarily moved to account level tests due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results.
+// All below tests in this file are temporarily moved to account level tests due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results.
 
 func TestAcc_Task_Basic(t *testing.T) {
 	currentRole := testClient().Context.CurrentRole(t)
