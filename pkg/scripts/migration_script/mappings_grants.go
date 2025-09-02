@@ -79,9 +79,6 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 	privileges = slices.Compact(privileges)
 
 	isDatabaseRole := func(role sdk.ObjectIdentifier) bool {
-		if role == nil {
-			return false
-		}
 		if _, ok := role.(sdk.DatabaseObjectIdentifier); ok {
 			return true
 		}
@@ -93,11 +90,11 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 	// When calling SHOW GRANTS TO ROLE / USER, the USAGE privilege should be shown with the ROLE granted_on field.
 	// When calling SHOW GRANTS OF ROLE, the Role field should be populated.
 	// The granted_to field should always point to either ROLE or USER.
-	case (!isDatabaseRole(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil) &&
+	case (grant.Role != nil && !isDatabaseRole(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil) &&
 		(grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeUser):
 		return MapToGrantAccountRole(grant)
 	// Granting a database role (cases similar to the above; different handling for different SHOW GRANTS calls)
-	case (isDatabaseRole(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeDatabaseRole && grant.Name != nil) &&
+	case (grant.Role != nil && isDatabaseRole(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeDatabaseRole && grant.Name != nil) &&
 		(grant.GrantedTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeRole):
 		return MapToGrantDatabaseRole(grant)
 	// TODO: Check other SHOW GRANTS calls here

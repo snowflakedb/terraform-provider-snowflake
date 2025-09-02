@@ -376,8 +376,8 @@ resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABAS
 		{
 			name: "grant database role to database role (SHOW GRANTS OF DATABASE ROLE output)",
 			inputRows: [][]string{
-				{"name", "granted_to", "grantee_name", "grant_option"},
-				{"TEST_DATABASE.TEST_ROLE", "DATABASE_ROLE", "PARENT_TEST_ROLE", "false"},
+				{"role", "granted_to", "grantee_name"},
+				{"TEST_DATABASE.TEST_ROLE", "DATABASE_ROLE", "PARENT_TEST_ROLE"},
 			},
 			expectedOutput: `
 resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE" {

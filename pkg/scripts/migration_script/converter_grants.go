@@ -65,18 +65,10 @@ func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 
 	var role sdk.ObjectIdentifier
 	if row.Role != "" {
-		if grantedTo == sdk.ObjectTypeRole {
-			role, err = sdk.ParseAccountObjectIdentifier(row.Role)
-			if err != nil {
-				log.Printf("[DEBUG] Failed to parse identifier [%s], err = \"%s\"; falling back to fully qualified name conversion", row.Name, err)
-				role = sdk.NewObjectIdentifierFromFullyQualifiedName(row.Role)
-			}
-		} else if grantedTo == sdk.ObjectTypeDatabaseRole {
-			role, err = sdk.ParseDatabaseObjectIdentifier(row.Role)
-			if err != nil {
-				log.Printf("[DEBUG] Failed to parse identifier [%s], err = \"%s\"; falling back to fully qualified name conversion", row.Name, err)
-				role = sdk.NewObjectIdentifierFromFullyQualifiedName(row.Role)
-			}
+		role, err = sdk.ParseDatabaseObjectIdentifier(row.Role)
+		if err != nil {
+			log.Printf("[DEBUG] Failed to parse identifier [%s], err = \"%s\"; falling back to fully qualified name conversion", row.Name, err)
+			role = sdk.NewObjectIdentifierFromFullyQualifiedName(row.Role)
 		}
 	}
 
