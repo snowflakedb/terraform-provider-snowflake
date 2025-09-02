@@ -297,6 +297,26 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole()),
 		},
 		Timeouts: defaultTimeouts,
+		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
+			func(ctx context.Context, req schema.ValidateResourceConfigFuncRequest, resp *schema.ValidateResourceConfigFuncResponse) {
+				rawPrivileges := req.RawConfig.GetAttr("privileges")
+				if rawPrivileges.IsNull() || !rawPrivileges.IsKnown() {
+					return
+				}
+				privilegesCty := rawPrivileges.AsValueSet().Values()
+				privileges := make([]string, 0, len(privilegesCty))
+				for _, privilegeCty := range privilegesCty {
+					privileges = append(privileges, privilegeCty.AsString())
+				}
+				if slices.Contains(privileges, string(sdk.AccountObjectPrivilegeImportedPrivileges)) && len(privileges) > 1 {
+					resp.Diagnostics = append(resp.Diagnostics, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Invalid privileges",
+						Detail:   fmt.Sprintf("%s cannot be used with other privileges", sdk.AccountObjectPrivilegeImportedPrivileges),
+					})
+				}
+			},
+		},
 	}
 }
 
@@ -536,17 +556,25 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 					id.Kind == OnSchemaObjectAccountRoleGrantKind,
 				)
 
+				// To simplify the logic in Read, when the grant option is not set, we revoke the GRANT OPTION FOR privileges just in case.
+				// In case this option is set in the config, it is re-granted below.
 				if !id.WithGrantOption {
-					if err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privilegesToGrant, grantOn, id.RoleName, &sdk.RevokePrivilegesFromAccountRoleOptions{
-						GrantOptionFor: sdk.Bool(true),
-					}); err != nil {
-						return diag.Diagnostics{
-							diag.Diagnostic{
-								Severity: diag.Error,
-								Summary:  "Failed to revoke privileges to add",
-								Detail:   fmt.Sprintf("Id: %s\nPrivileges to add: %v\nError: %s", d.Id(), privilegesToAdd, err.Error()),
-							},
+					// If IMPORTED PRIVILEGES is set, do not revoke its privilege, because `GRANT OPTION FOR` option is not supported for this privilege.
+					// We can use a simple `contains` check because IMPORTED PRIVILEGES cannot be used with any other privilege.
+					if !slices.Contains(privilegesToGrant.AccountObjectPrivileges, sdk.AccountObjectPrivilegeImportedPrivileges) {
+						if err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privilegesToGrant, grantOn, id.RoleName, &sdk.RevokePrivilegesFromAccountRoleOptions{
+							GrantOptionFor: sdk.Bool(true),
+						}); err != nil {
+							return diag.Diagnostics{
+								diag.Diagnostic{
+									Severity: diag.Error,
+									Summary:  "Failed to revoke privileges with GrantOptionFor",
+									Detail:   fmt.Sprintf("Id: %s\nPrivileges to revoke with GrantOptionFor: %v\nError: %s", d.Id(), privilegesToGrant, err.Error()),
+								},
+							}
 						}
+					} else {
+						log.Printf("[DEBUG] Skipping revoking privileges with GrantOptionFor for IMPORTED PRIVILEGES")
 					}
 				}
 

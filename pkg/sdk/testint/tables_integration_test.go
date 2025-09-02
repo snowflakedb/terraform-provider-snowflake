@@ -11,11 +11,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -209,7 +209,7 @@ func TestInt_Table(t *testing.T) {
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
-		filePath := testhelpers.TestFile(t, "data.csv", []byte(` [{"name": "column1", "type" "INTEGER"},
+		filePath := testfiles.TestFile(t, "data.csv", []byte(` [{"name": "column1", "type" "INTEGER"},
 									 {"name": "column2", "type" "INTEGER"} ]`))
 
 		_, err := client.ExecForTests(ctx, fmt.Sprintf("PUT file://%s @%s", filePath, stage.ID().FullyQualifiedName()))

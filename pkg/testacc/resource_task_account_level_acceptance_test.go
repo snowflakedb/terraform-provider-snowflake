@@ -5,10 +5,16 @@ package testacc
 import (
 	"testing"
 
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	configvariable "github.com/hashicorp/terraform-plugin-testing/config"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -16,7 +22,195 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// temporarily moved to account level tests due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results
+// All tests in this file are temporarily moved to account level tests due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results.
+
+func TestAcc_Task_Basic(t *testing.T) {
+	currentRole := testClient().Context.CurrentRole(t)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	configModel := model.TaskWithId("test", id, false, statement)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasWarehouseString("").
+						HasNoScheduleSet().
+						HasConfigString("").
+						HasAllowOverlappingExecutionString(r.BooleanDefault).
+						HasErrorIntegrationString("").
+						HasCommentString("").
+						HasFinalizeString("").
+						HasAfter().
+						HasWhenString("").
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, configModel.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasIdNotEmpty().
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasOwner(currentRole.Name()).
+						HasComment("").
+						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
+						HasScheduleEmpty().
+						HasPredecessors().
+						HasState(sdk.TaskStateSuspended).
+						HasDefinition(statement).
+						HasCondition("").
+						HasAllowOverlappingExecution(false).
+						HasErrorIntegration(sdk.NewAccountObjectIdentifier("")).
+						HasLastCommittedOn("").
+						HasLastSuspendedOn("").
+						HasOwnerRoleType("ROLE").
+						HasConfig("").
+						HasBudget("").
+						HasTaskRelations(sdk.TaskRelations{}),
+					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
+						HasAllDefaults(),
+				),
+			},
+			{
+				ResourceName: configModel.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasWarehouseString("").
+						HasNoScheduleSet().
+						HasConfigString("").
+						HasAllowOverlappingExecutionString(r.BooleanFalse).
+						HasErrorIntegrationString("").
+						HasCommentString("").
+						HasFinalizeString("").
+						HasAfterEmpty().
+						HasWhenString("").
+						HasSqlStatementString(statement),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_Complete(t *testing.T) {
+	currentRole := testClient().Context.CurrentRole(t)
+
+	errorNotificationIntegration, errorNotificationIntegrationCleanup := testClient().NotificationIntegration.CreateWithGcpPubSub(t)
+	t.Cleanup(errorNotificationIntegrationCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+	taskConfig := `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`
+	comment := random.Comment()
+	condition := `SYSTEM$STREAM_HAS_DATA('MYSTREAM')`
+	configModel := model.TaskWithId("test", id, true, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name()).
+		WithScheduleMinutes(10).
+		WithConfigValue(configvariable.StringVariable(taskConfig)).
+		WithAllowOverlappingExecution(r.BooleanTrue).
+		WithErrorIntegration(errorNotificationIntegration.ID().Name()).
+		WithComment(comment).
+		WithWhen(condition)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
+				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasScheduleMinutes(10).
+						HasConfigString(taskConfig).
+						HasAllowOverlappingExecutionString(r.BooleanTrue).
+						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
+						HasCommentString(comment).
+						HasFinalizeString("").
+						HasAfterEmpty().
+						HasWhenString(condition).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, configModel.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasIdNotEmpty().
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasOwner(currentRole.Name()).
+						HasComment(comment).
+						HasWarehouse(testClient().Ids.WarehouseId()).
+						HasScheduleMinutes(10).
+						HasPredecessors().
+						HasState(sdk.TaskStateStarted).
+						HasDefinition(statement).
+						HasCondition(condition).
+						HasAllowOverlappingExecution(true).
+						HasErrorIntegration(errorNotificationIntegration.ID()).
+						HasLastCommittedOnNotEmpty().
+						HasLastSuspendedOn("").
+						HasOwnerRoleType("ROLE").
+						HasConfig(taskConfig).
+						HasBudget("").
+						HasTaskRelations(sdk.TaskRelations{}),
+					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
+						HasAllDefaults(),
+				),
+			},
+			{
+				ResourceName:    configModel.ResourceReference(),
+				ImportState:     true,
+				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
+				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasScheduleMinutes(10).
+						HasConfigString(taskConfig).
+						HasAllowOverlappingExecutionString(r.BooleanTrue).
+						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
+						HasCommentString(comment).
+						HasFinalizeString("").
+						HasAfterEmpty().
+						HasWhenString(condition).
+						HasSqlStatementString(statement),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Task_AllParameters(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"
@@ -88,7 +282,6 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters

@@ -33,7 +33,6 @@ func TestAcc_Functions_gh3822_bcr2025_03(t *testing.T) {
 	functionsModel := datasourcemodel.Functions("test", schema.ID().DatabaseName(), schema.ID().Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

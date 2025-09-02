@@ -71,7 +71,21 @@ CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
 			args: []string{"cmd", "grants"},
 			input: `privilege,granted_on,name,granted_to,grantee_name,with_grant_option
 CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
-			expectedOutput: `resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account" {
+			expectedOutput: `resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_ROLE_NAME_without_grant_option" {
+  account_role_name = "ROLE_NAME"
+  on_account = true
+  privileges = ["CREATE DATABASE"]
+  with_grant_option = false
+}
+# terraform import snowflake_grant_privileges_to_account_role.snowflake_generated_grant_on_account_to_ROLE_NAME_without_grant_option '"ROLE_NAME"|false|false|CREATE DATABASE|OnAccount'
+`,
+		},
+		{
+			name: "basic usage - explicit statement import format",
+			args: []string{"cmd", "-import=statement", "grants"},
+			input: `privilege,granted_on,name,granted_to,grantee_name,with_grant_option
+CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
+			expectedOutput: `resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_ROLE_NAME_without_grant_option" {
   account_role_name = "ROLE_NAME"
   on_account = true
   privileges = ["CREATE DATABASE"]
@@ -99,7 +113,7 @@ CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
 			args: []string{"cmd", "-import=block", "grants"},
 			input: `privilege,granted_on,name,granted_to,grantee_name,with_grant_option
 CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
-			expectedOutput: `resource "snowflake_grant_privileges_to_account_role" "test_resource_name_on_account" {
+			expectedOutput: `resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_ROLE_NAME_without_grant_option" {
   account_role_name = "ROLE_NAME"
   on_account = true
   privileges = ["CREATE DATABASE"]
