@@ -9,7 +9,7 @@ import (
 
 var resourceIdAllowedCharacters = regexp.MustCompile("[a-zA-Z0-9\\-_]+")
 
-func MapResourceId(resourceId string) string {
+func NormalizeResourceId(resourceId string) string {
 	mappedResourceId := strings.Map(func(r rune) rune {
 		switch r {
 		case '.':

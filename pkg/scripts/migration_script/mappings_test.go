@@ -19,7 +19,7 @@ func TestMapResourceId(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.input, func(t *testing.T) {
-			result := MapResourceId(tc.input)
+			result := NormalizeResourceId(tc.input)
 			assert.Equal(t, tc.expected, result)
 		})
 	}
