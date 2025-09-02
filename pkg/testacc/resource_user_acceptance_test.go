@@ -1814,3 +1814,36 @@ func TestAcc_User_gh3655(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_User_BCR_2025_05(t *testing.T) {
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	userModel := model.User("test", userId.Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.User),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, userModel),
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNameString(userId.Name()).
+					HasUserTypeEmpty(),
+				),
+			},
+			{
+				PreConfig: func() {
+					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2025_05")
+				},
+				Config: config.FromModels(t, userModel),
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNameString(userId.Name()).
+					HasUserTypeEmpty(),
+				),
+			},
+		},
+	})
+}
