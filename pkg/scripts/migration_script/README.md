@@ -7,9 +7,14 @@
   * [Usage](#usage)
     * [Prerequisites](#prerequisites)
     * [Use case: Migrate deprecated grants to new ones](#use-case-migrate-deprecated-grants-to-new-ones)
-    * [Use case: Migrate existing grants to Terraform](#use-case-migrate-existing-grants-to-terraform)
       * [1. Query Snowflake and save the output](#1-query-snowflake-and-save-the-output)
       * [2. Generate resources and import statements based on the Snowflake output](#2-generate-resources-and-import-statements-based-on-the-snowflake-output)
+      * [4. Importing auto-generated resources to the state](#4-importing-auto-generated-resources-to-the-state)
+      * [5. Removing old grant resources](#5-removing-old-grant-resources)
+      * [6. Update generated resources](#6-update-generated-resources)
+    * [Use case: Migrate existing grants to Terraform](#use-case-migrate-existing-grants-to-terraform)
+      * [1. Query Snowflake and save the output](#1-query-snowflake-and-save-the-output-1)
+      * [2. Generate resources and import statements based on the Snowflake output](#2-generate-resources-and-import-statements-based-on-the-snowflake-output-1)
       * [3. Get the generated resources and import them to the state](#3-get-the-generated-resources-and-import-them-to-the-state)
 <!-- TOC -->
 
@@ -28,7 +33,7 @@ We are open to contributions to enhance its functionality.
 The script is designed to work with the latest version of the provider.
 However, if you're using an older version, you can still utilize the script as long as the object types you need are supported and haven't undergone major changes.
 For instance, with grants, you can use the script to transition from [old to new grants](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#mapping-from-old-grant-resources-to-the-new-ones)
-since they haven't significantly changed from the current provider version.
+since they haven't significantly changed from the current provider version, but there may be minor differences like quotes handling in identifiers.
 
 ## Syntax
 
@@ -202,6 +207,7 @@ resource "snowflake_account_grant" "other_grant" {
 }
 
 resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_TEST_ROLE_without_grant_option" {
+  # Adjused manually due to planned changes, because of old quotes handling in identifiers (fixed in later versions of the provider)
   account_role_name = "\"TEST_ROLE\""
   on_account = true
   privileges = ["CREATE ROLE"]
@@ -209,6 +215,7 @@ resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant
 }
 
 resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_OTHER_TEST_ROLE_with_grant_option" {
+  # Adjused manually due to planned changes, because of old quotes handling in identifiers (fixed in later versions of the provider)
   account_role_name = "\"OTHER_TEST_ROLE\""
   on_account = true
   privileges = ["CREATE DATABASE"]
@@ -296,6 +303,7 @@ resource "snowflake_role" "other_test_role" {
 }
 
 resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_TEST_ROLE_without_grant_option" {
+  # We still need to keep the identifier in quotes, because of old quotes handling in identifiers (fixed in later versions of the provider)
   account_role_name = "\"${snowflake_role.test_role.name}\""
   on_account = true
   privileges = ["CREATE ROLE"]
@@ -303,6 +311,7 @@ resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant
 }
 
 resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_OTHER_TEST_ROLE_with_grant_option" {
+  # We still need to keep the identifier in quotes, because of old quotes handling in identifiers (fixed in later versions of the provider)
   account_role_name = "\"${snowflake_role.other_test_role.name}\""
   on_account = true
   privileges = ["CREATE DATABASE"]
