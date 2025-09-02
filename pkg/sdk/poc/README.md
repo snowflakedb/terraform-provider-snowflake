@@ -143,6 +143,7 @@ find a better solution to solve the issue (add more logic to the templates ?)
 - improve handling operations that return one row
 - add more context to validated identifiers, so that error contains the affected field
 - add custom identifier wrapping, like it's used in security integrations' network policies
+- Generate nested Request structs for fields that use slices of Opt objects (see the following fields Create operation in semantic_view.def: LogicalTables, semanticViewRelationships, etc.)
 
 ##### Known issues
 - generating two converts when Show and Desc use the same data structure

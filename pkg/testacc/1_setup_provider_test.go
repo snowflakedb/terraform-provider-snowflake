@@ -33,7 +33,7 @@ var (
 	lastConfiguredProviderContext *internalprovider.Context
 )
 
-// TODO [next PRs]: rework this when working on terraform plugin framework PoC
+// TODO [SNOW-2298291]: rework this when working on terraform plugin framework PoC
 func setUpProvider() error {
 	TestAccProvider = provider.Provider()
 	TestAccProvider.ConfigureContextFunc = configureProviderWithConfigCache
@@ -60,7 +60,7 @@ func setUpProvider() error {
 	return nil
 }
 
-// TODO [next PRs]: investigate this (it was moved from the old testing.go file)
+// TODO [SNOW-2298291]: investigate this (it was moved from the old testing.go file)
 // if we do not reuse the created objects there is no `Previously configured provider being re-configured.` warning
 // currently left for possible usage after other improvements
 var testAccProtoV6ProviderFactoriesNew = map[string]func() (tfprotov6.ProviderServer, error){
@@ -72,7 +72,6 @@ var testAccProtoV6ProviderFactoriesNew = map[string]func() (tfprotov6.ProviderSe
 	},
 }
 
-// TODO [next PRs]: it's currently an exact copy of acceptance.ConfigureProviderWithConfigCache; adjust after moving the tests
 func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
 	if err != nil {

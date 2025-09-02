@@ -64,7 +64,6 @@ func TestAcc_CreateSecondaryDatabase_Basic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -238,7 +237,6 @@ func TestAcc_CreateSecondaryDatabase_complete(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SecondaryDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -428,7 +426,6 @@ func TestAcc_CreateSecondaryDatabase_DataRetentionTimeInDays(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SecondaryDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -498,7 +495,6 @@ func TestAcc_SecondaryDatabase_migrateFromV0941_ensureSmoothUpgradeWithNewResour
 	secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -540,7 +536,6 @@ func TestAcc_SecondaryDatabase_IdentifierQuotingDiffSuppression(t *testing.T) {
 	secondaryDatabaseModel := model.SecondaryDatabase("test", quotedId, unquotedExternalPrimaryId)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

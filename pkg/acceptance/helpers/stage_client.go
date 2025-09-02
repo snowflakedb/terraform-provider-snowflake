@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -104,7 +104,7 @@ func (c *StageClient) PutOnUserStageWithContent(t *testing.T, filename string, c
 	t.Helper()
 	ctx := context.Background()
 
-	path := testhelpers.TestFile(t, filename, []byte(content))
+	path := testfiles.TestFile(t, filename, []byte(content))
 
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s @~/ AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, path))
 	require.NoError(t, err)
@@ -118,7 +118,7 @@ func (c *StageClient) PutInLocationWithContent(t *testing.T, stageLocation strin
 	t.Helper()
 	ctx := context.Background()
 
-	filePath := testhelpers.TestFile(t, filename, []byte(content))
+	filePath := testfiles.TestFile(t, filename, []byte(content))
 
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s %s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, stageLocation))
 	require.NoError(t, err)
@@ -167,7 +167,7 @@ func (c *StageClient) PutOnStageWithContent(t *testing.T, id sdk.SchemaObjectIde
 	t.Helper()
 	ctx := context.Background()
 
-	filePath := testhelpers.TestFile(t, filename, []byte(content))
+	filePath := testfiles.TestFile(t, filename, []byte(content))
 
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s @%s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, id.FullyQualifiedName()))
 	require.NoError(t, err)

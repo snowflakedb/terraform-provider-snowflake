@@ -26,7 +26,6 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnDatabase_WithPrivilegesGrantedOnDat
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

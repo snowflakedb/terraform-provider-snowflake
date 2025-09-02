@@ -61,7 +61,6 @@ func TestAcc_CompleteUsageTracking_Resource(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
 			// Create

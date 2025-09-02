@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.5.0 ➞ v2.5.1
+## v2.5.0 ➞ v2.6.0
 
 ### *(improvement)* Handling conversion-based errors
 
@@ -47,6 +47,51 @@ conversion from Snowflake failed with error: failed to convert X, err: <error fr
 ```
 
 If you encounter any errors of this kind, we encourage you to report them. Your feedback helps us improve the provider stability.
+
+### *(bugfix)* Fixed handling `IMPORTED PRIVILEGES` grant in the `grant_privileges_to_account_role` resource
+In Snowflake, `WITH GRANT OPTION` is not supported when granting or revoking the `IMPORTED PRIVILEGES` privilege. In previous versions, in handling resource updates, the provider revoked `IMPORTED PRIVILEGES` with `WITH GRANT OPTION`, even for cases when this option was not set in the resource. It resulted in errors like
+```
+│ Error: Failed to revoke privileges to add
+│
+│   with module.roles.module.roles["data_engineer"].module.databases.snowflake_grant_privileges_to_account_role.grant["snowflake"],
+│   on ../../modules/role/privileges/account/database/main.tf line 32, in resource "snowflake_grant_privileges_to_account_role" "grant":
+│   32: resource "snowflake_grant_privileges_to_account_role" "grant" {
+│
+│ Id: "DATA_ENGINEER"|false|false|IMPORTED
+│ PRIVILEGES|OnAccountObject|DATABASE|"SNOWFLAKE"
+│ Privileges to add: [IMPORTED PRIVILEGES]
+│ Error: 001003 (42000): SQL compilation error:
+│ syntax error line 1 at position 24 unexpected 'IMPORTED'.
+```
+This behavior has been fixed. No state or configuration update is necessary.
+
+Additionally, when `IMPORTED PRIVILEGES` is granted with other privileges in one resource, the provider now validates that and fails with the following error:
+```
+  | exit status 1
+  |
+  | Error: Invalid privileges
+  |
+  |   with snowflake_grant_privileges_to_account_role.test,
+  |   on terraform_plugin_test.tf line 12, in resource "snowflake_grant_privileges_to_account_role" "test":
+  |   12: resource "snowflake_grant_privileges_to_account_role" "test" {
+  |
+  | IMPORTED PRIVILEGES cannot be used with other privileges
+```
+Before, this was not validated, but it failed in Snowflake.
+
+References: https://github.com/snowflakedb/terraform-provider-snowflake/issues/2803#issuecomment-3152992005
+
+### *(bugfix)* Fixed `snowflake_primary_connection` or `snowflake_secondary_connection` reading and improved creation and deletion operations
+
+When configuring `snowflake_primary_connection` or `snowflake_secondary_connection` resources, previous issues could lead to failures or incorrect planning.
+These problems arose because the shared connections appear in the `SHOW CONNECTIONS` command, and because Snowflake requires primary and secondary connections to have the same name,
+they were not distinguished correctly; the first appearing one was chosen. We have now resolved this by fixing the function that retrieves the connection by ID, ensuring such issues do not occur.
+
+Additionally, we have made adjustments to the create operation for `snowflake_secondary_connection` and the delete operations for both `snowflake_primary_connection` and `snowflake_secondary_connection`.
+These adjustments aim to prevent issues that could arise from Snowflake systems registering or unregistering connections asynchronously to the create/delete operations.
+However, these issues may still occur depending on system latencies. If you encounter errors from the provider when creating or deleting both in the same `terraform apply`, please report them.
+
+We generally recommend splitting the creation and deletion of both resources into two steps to allow Snowflake's background systems sufficient time to process these operations efficiently.
 
 ## v2.4.x ➞ v2.5.0
 

@@ -32,7 +32,6 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {

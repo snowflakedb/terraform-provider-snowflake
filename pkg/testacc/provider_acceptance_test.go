@@ -21,13 +21,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -46,7 +46,6 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -186,7 +185,6 @@ func TestAcc_Provider_configureClientOnceSwitching(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -228,7 +226,6 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -298,7 +295,6 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -372,7 +368,6 @@ func TestAcc_Provider_TomlConfigFailsIfFormatsMismatch(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -436,7 +431,7 @@ func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
 
 	permissions := fs.FileMode(0o755)
 
-	configPath := testhelpers.TestFileWithCustomPermissions(t, random.AlphaN(10), random.Bytes(), permissions)
+	configPath := testfiles.TestFileWithCustomPermissions(t, random.AlphaN(10), random.Bytes(), permissions)
 	providerModel := providermodel.SnowflakeProvider().WithProfile(configPath)
 
 	resource.Test(t, resource.TestCase{
@@ -603,7 +598,6 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -710,7 +704,6 @@ func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
@@ -746,7 +739,6 @@ func TestAcc_Provider_triValueBoolean(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -828,7 +820,6 @@ func TestAcc_Provider_triValueBooleanTransitions(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -854,7 +845,6 @@ func TestAcc_Provider_sessionParameters(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -895,7 +885,6 @@ func TestAcc_Provider_JwtAuth(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			TestAccPreCheck(t)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
 		},
@@ -1157,7 +1146,6 @@ func TestAcc_Provider_PreviewFeaturesDisabled(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -32,7 +32,7 @@ var (
 var _ provider.Provider = &pluginFrameworkPocProvider{}
 
 type pluginFrameworkPocProvider struct {
-	// TODO [mux-PR]: fill version automatically like tracking
+	// TODO [SNOW-2234579]: fill version automatically like tracking
 	version string
 }
 
@@ -153,7 +153,7 @@ func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, 
 		return nil, diags
 	}
 
-	// TODO [mux-PR]: handle skip_toml_file_permission_verification and use_legacy_toml_file
+	// TODO [SNOW-2234579]: handle skip_toml_file_permission_verification and use_legacy_toml_file
 	if profile := getProfile(configModel); profile != "" {
 		tomlConfig, err := sdkV2Provider.GetDriverConfigFromTOML(profile, false, false)
 		if err != nil {
@@ -180,7 +180,7 @@ func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, 
 		providerCtx.RestApiPocClient = restApiPocClient
 	}
 
-	// TODO [mux-PR]: set preview_features_enabled
+	// TODO [SNOW-2234579]: set preview_features_enabled
 	response.DataSourceData = providerCtx
 	response.ResourceData = providerCtx
 
@@ -189,7 +189,7 @@ func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, 
 
 func (p *pluginFrameworkPocProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		// TODO [mux-PR]: implement
+		// TODO [SNOW-2296379]: add example
 	}
 }
 
