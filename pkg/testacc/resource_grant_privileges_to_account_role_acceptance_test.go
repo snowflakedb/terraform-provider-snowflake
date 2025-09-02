@@ -16,8 +16,10 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -2165,4 +2167,58 @@ func queriedPrivilegesDoNotContain(query func() ([]sdk.Grant, error), privileges
 
 		return nil
 	}
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_issue3992(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	databaseId := testClient().Ids.DatabaseId()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("snowflake_grant_privileges_to_account_role.test", tfjsonpath.New("privileges").AtSliceIndex(0), knownvalue.StringExact("USAGE")),
+					},
+				},
+				Config: configIssue3992(role.ID(), databaseId),
+				// It fails, even though the plan says it's known.
+				ExpectError: regexp.MustCompile("panic: value is unknown"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("snowflake_grant_privileges_to_account_role.test", tfjsonpath.New("privileges").AtSliceIndex(0), knownvalue.StringExact("USAGE")),
+					},
+				},
+				Config: configIssue3992(role.ID(), databaseId),
+			},
+		},
+	})
+}
+
+func configIssue3992(roleId sdk.AccountObjectIdentifier, dbId sdk.AccountObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_grant_privileges_to_account_role" "test" {
+  account_role_name = "%[1]s"
+  privileges        = [var.privilege]
+
+  on_account_object {
+      object_type = "DATABASE"
+      object_name = "%[2]s"
+  }
+}
+variable "privilege" {
+  type = string
+  default = "USAGE"
+}
+`, roleId.Name(), dbId.Name())
 }
