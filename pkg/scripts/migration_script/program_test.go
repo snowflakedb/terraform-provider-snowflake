@@ -91,7 +91,7 @@ CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
   privileges = ["CREATE DATABASE"]
   with_grant_option = false
 }
-# terraform import snowflake_grant_privileges_to_account_role.test_resource_name_on_account '"ROLE_NAME"|false|false|CREATE DATABASE|OnAccount'
+# terraform import snowflake_grant_privileges_to_account_role.snowflake_generated_grant_on_account_to_ROLE_NAME_without_grant_option '"ROLE_NAME"|false|false|CREATE DATABASE|OnAccount'
 `,
 		},
 		{
@@ -106,7 +106,7 @@ CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
   with_grant_option = false
 }
 import {
-  to = snowflake_grant_privileges_to_account_role.test_resource_name_on_account
+  to = snowflake_grant_privileges_to_account_role.snowflake_generated_grant_on_account_to_ROLE_NAME_without_grant_option
   id = "\"ROLE_NAME\"|false|false|CREATE DATABASE|OnAccount"
 }
 `,
