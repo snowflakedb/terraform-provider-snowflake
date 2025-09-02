@@ -104,7 +104,7 @@ func v2_6_0_WarehouseResourceConstraintUpgrader(ctx context.Context, rawState ma
 
 	oldShowOutputRaw, ok := rawState[ShowOutputAttributeName].([]any)
 	if !ok || len(oldShowOutputRaw) != 1 {
-		return nil, fmt.Errorf("expected exactly one warehouse show output; got %d", len(oldShowOutputRaw))
+		return rawState, nil
 	}
 	oldShowOutput, ok := oldShowOutputRaw[0].(map[string]any)
 	if !ok {
