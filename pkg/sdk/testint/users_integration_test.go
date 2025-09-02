@@ -3,10 +3,17 @@
 package testint
 
 import (
+	"fmt"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/!snowflake-!labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
+	"github.com/!snowflake-!labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +31,7 @@ func TestInt_Users(t *testing.T) {
 	warehouseId := testClientHelper().Ids.WarehouseId()
 	schemaId := testClientHelper().Ids.SchemaId()
 	var schemaIdObjectIdentifier sdk.ObjectIdentifier = schemaId
-	does not have to exist
+	// does not have to exist
 	roleId := testClientHelper().Ids.RandomAccountObjectIdentifier()
 	key, hash := random.GenerateRSAPublicKey(t)
 	key2, hash2 := random.GenerateRSAPublicKey(t)
