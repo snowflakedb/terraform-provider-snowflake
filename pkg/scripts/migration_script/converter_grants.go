@@ -67,7 +67,7 @@ func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 	if row.Role != "" {
 		role, err = sdk.ParseDatabaseObjectIdentifier(row.Role)
 		if err != nil {
-			log.Printf("[DEBUG] Failed to parse identifier [%s], err = \"%s\"; falling back to fully qualified name conversion", row.Name, err)
+			log.Printf("[DEBUG] Failed to parse identifier [%s], err = \"%s\"; falling back to fully qualified name conversion", row.Role, err)
 			role = sdk.NewObjectIdentifierFromFullyQualifiedName(row.Role)
 		}
 	}
