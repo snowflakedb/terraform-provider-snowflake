@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"strings"
 	"time"
@@ -196,17 +195,16 @@ type ShowGrantsOf struct {
 }
 
 type grantRow struct {
-	CreatedOn   time.Time      `db:"created_on"`
-	Privilege   string         `db:"privilege"`
-	GrantedOn   string         `db:"granted_on"`
-	GrantOn     string         `db:"grant_on"`
-	Name        string         `db:"name"`
-	Role        sql.NullString `db:"role"`
-	GrantedTo   string         `db:"granted_to"`
-	GrantTo     string         `db:"grant_to"`
-	GranteeName string         `db:"grantee_name"`
-	GrantOption bool           `db:"grant_option"`
-	GrantedBy   string         `db:"granted_by"`
+	CreatedOn   time.Time `db:"created_on"`
+	Privilege   string    `db:"privilege"`
+	GrantedOn   string    `db:"granted_on"`
+	GrantOn     string    `db:"grant_on"`
+	Name        string    `db:"name"`
+	GrantedTo   string    `db:"granted_to"`
+	GrantTo     string    `db:"grant_to"`
+	GranteeName string    `db:"grantee_name"`
+	GrantOption bool      `db:"grant_option"`
+	GrantedBy   string    `db:"granted_by"`
 }
 
 type Grant struct {
@@ -268,23 +266,6 @@ func (row grantRow) convert() (*Grant, error) {
 		name = NewObjectIdentifierFromFullyQualifiedName(row.Name)
 	}
 
-	var role ObjectIdentifier
-	if row.Role.Valid {
-		if grantedTo == ObjectTypeRole {
-			role, err = ParseAccountObjectIdentifier(row.Role.String)
-			if err != nil {
-				log.Printf("[DEBUG] Failed to parse identifier [%s], err = \"%s\"; falling back to fully qualified name conversion", row.Name, err)
-				role = NewObjectIdentifierFromFullyQualifiedName(row.Role.String)
-			}
-		} else if grantedTo == ObjectTypeDatabaseRole {
-			role, err = ParseDatabaseObjectIdentifier(row.Role.String)
-			if err != nil {
-				log.Printf("[DEBUG] Failed to parse identifier [%s], err = \"%s\"; falling back to fully qualified name conversion", row.Name, err)
-				role = NewObjectIdentifierFromFullyQualifiedName(row.Role.String)
-			}
-		}
-	}
-
 	return &Grant{
 		CreatedOn: row.CreatedOn,
 		Privilege: row.Privilege,
@@ -293,7 +274,6 @@ func (row grantRow) convert() (*Grant, error) {
 		GrantedTo: grantedTo,
 		GrantTo:   grantTo,
 		Name:      name,
-		Role:      role,
 		// GranteeName is computed in Show operation. Its format is depending on the grant request options.
 		GrantOption: row.GrantOption,
 		GrantedBy:   NewAccountObjectIdentifier(row.GrantedBy),

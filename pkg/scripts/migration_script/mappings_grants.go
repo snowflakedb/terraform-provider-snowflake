@@ -123,14 +123,14 @@ func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportMod
 
 	switch {
 	case grant.GrantedTo == sdk.ObjectTypeRole:
-		resourceId := MapResourceId(fmt.Sprintf("grant_%s_to_role_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_role_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
 		resourceModel := model.GrantAccountRole(resourceId, roleIdentifier.Name()).WithParentRoleName(grant.GranteeName.Name())
 
 		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), grant.GranteeName.FullyQualifiedName())
 
 		return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId), nil
 	case grant.GrantedTo == sdk.ObjectTypeUser:
-		resourceId := MapResourceId(fmt.Sprintf("grant_%s_to_user_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_user_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
 		resourceModel := model.GrantAccountRole(resourceId, roleIdentifier.Name()).WithUserName(grant.GranteeName.Name())
 
 		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), grant.GranteeName.FullyQualifiedName())
@@ -163,14 +163,14 @@ func MapToGrantDatabaseRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportMo
 			granteeName = id
 		}
 
-		resourceId := MapResourceId(fmt.Sprintf("grant_%s_to_database_role_%s", roleIdentifier.FullyQualifiedName(), granteeName.FullyQualifiedName()))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_database_role_%s", roleIdentifier.FullyQualifiedName(), granteeName.FullyQualifiedName()))
 		resourceModel := model.GrantDatabaseRole(resourceId, roleIdentifier.FullyQualifiedName()).WithParentDatabaseRoleName(granteeName.FullyQualifiedName())
 
 		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeDatabaseRole.String(), granteeName.FullyQualifiedName())
 
 		return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId), nil
 	case grant.GrantedTo == sdk.ObjectTypeRole:
-		resourceId := MapResourceId(fmt.Sprintf("grant_%s_to_role_%s", roleIdentifier.FullyQualifiedName(), grant.GranteeName.Name()))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_role_%s", roleIdentifier.FullyQualifiedName(), grant.GranteeName.Name()))
 		resourceModel := model.GrantDatabaseRole(resourceId, roleIdentifier.FullyQualifiedName()).WithParentRoleName(grant.GranteeName.Name())
 
 		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), grant.GranteeName.FullyQualifiedName())
@@ -196,7 +196,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
-		resourceId := MapResourceId(fmt.Sprintf("grant_on_account_to_%s_%s_grant_option", grant.GranteeName.Name(), withGrantOption))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_account_to_%s_%s_grant_option", grant.GranteeName.Name(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
@@ -206,7 +206,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 		stateResourceId.Kind = resources.OnAccountAccountRoleGrantKind
 		stateResourceId.Data = new(resources.OnAccountGrantData)
 	case slices.Contains(sdk.ValidGrantToAccountObjectTypesString, string(grant.GrantedOn)):
-		resourceId := MapResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.Name(), grant.GranteeName.Name(), withGrantOption))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.Name(), grant.GranteeName.Name(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
@@ -222,7 +222,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 			ObjectName: grant.Name.(sdk.AccountObjectIdentifier),
 		}
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
-		resourceId := MapResourceId(fmt.Sprintf("grant_on_schema_%s_to_%s_%s_grant_option", grant.Name.FullyQualifiedName(), grant.GranteeName.Name(), withGrantOption))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_schema_%s_to_%s_%s_grant_option", grant.Name.FullyQualifiedName(), grant.GranteeName.Name(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
@@ -237,7 +237,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 			SchemaName: sdk.Pointer(grant.Name.(sdk.DatabaseObjectIdentifier)),
 		}
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
-		resourceId := MapResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.FullyQualifiedName(), grant.GranteeName.Name(), withGrantOption))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.FullyQualifiedName(), grant.GranteeName.Name(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
@@ -279,7 +279,7 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string) (a
 		databaseRoleName := grant.GranteeName.Name()
 		granteeName := sdk.NewDatabaseObjectIdentifier(grant.Name.Name(), databaseRoleName)
 
-		resourceId := MapResourceId(fmt.Sprintf("grant_on_database_%s_to_%s_%s_grant_option", grant.Name.Name(), granteeName.FullyQualifiedName(), withGrantOption))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_database_%s_to_%s_%s_grant_option", grant.Name.Name(), granteeName.FullyQualifiedName(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToDatabaseRole(resourceId, granteeName.FullyQualifiedName()).
 			WithPrivileges(privileges).
@@ -295,7 +295,7 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string) (a
 		databaseRoleName := grant.GranteeName.Name()
 		granteeName := sdk.NewDatabaseObjectIdentifier(grant.Name.(sdk.DatabaseObjectIdentifier).DatabaseName(), databaseRoleName)
 
-		resourceId := MapResourceId(fmt.Sprintf("grant_on_schema_%s_to_%s_%s_grant_option", grant.Name.FullyQualifiedName(), granteeName.FullyQualifiedName(), withGrantOption))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_schema_%s_to_%s_%s_grant_option", grant.Name.FullyQualifiedName(), granteeName.FullyQualifiedName(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToDatabaseRole(resourceId, granteeName.FullyQualifiedName()).
 			WithPrivileges(privileges).
@@ -314,7 +314,7 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string) (a
 		databaseRoleName := grant.GranteeName.Name()
 		granteeName := sdk.NewDatabaseObjectIdentifier(grant.Name.(sdk.SchemaObjectIdentifier).DatabaseName(), databaseRoleName)
 
-		resourceId := MapResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.FullyQualifiedName(), granteeName.FullyQualifiedName(), withGrantOption))
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.FullyQualifiedName(), granteeName.FullyQualifiedName(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToDatabaseRole(resourceId, granteeName.FullyQualifiedName()).
 			WithPrivileges(privileges).
