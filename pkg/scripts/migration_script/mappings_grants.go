@@ -77,7 +77,7 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 	privileges = slices.Compact(privileges)
 
 	var resourceModel accconfig.ResourceModel
-	resourceId := resources.GrantPrivilegesToAccountRoleId{
+	stateResourceId := resources.GrantPrivilegesToAccountRoleId{
 		RoleName:        grant.GranteeName.(sdk.AccountObjectIdentifier),
 		WithGrantOption: grant.GrantOption,
 		Privileges:      privileges,
@@ -85,15 +85,19 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
-		resourceModel = model.GrantPrivilegesToAccountRole("test_resource_name_on_account", grant.GranteeName.Name()).
+		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnAccount(grant)
+
+		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
 			WithOnAccount(true).
 			WithWithGrantOption(grant.GrantOption)
 
-		resourceId.Kind = resources.OnAccountAccountRoleGrantKind
-		resourceId.Data = new(resources.OnAccountGrantData)
+		stateResourceId.Kind = resources.OnAccountAccountRoleGrantKind
+		stateResourceId.Data = new(resources.OnAccountGrantData)
 	case slices.Contains(sdk.ValidGrantToAccountObjectTypesString, string(grant.GrantedOn)):
-		resourceModel = model.GrantPrivilegesToAccountRole("test_resource_name_on_account_object", grant.GranteeName.Name()).
+		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnAccountObject(grant)
+
+		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
 			WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
@@ -101,26 +105,30 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 			})).
 			WithWithGrantOption(grant.GrantOption)
 
-		resourceId.Kind = resources.OnAccountObjectAccountRoleGrantKind
-		resourceId.Data = &resources.OnAccountObjectGrantData{
+		stateResourceId.Kind = resources.OnAccountObjectAccountRoleGrantKind
+		stateResourceId.Data = &resources.OnAccountObjectGrantData{
 			ObjectType: grant.GrantedOn,
 			ObjectName: grant.Name.(sdk.AccountObjectIdentifier),
 		}
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
-		resourceModel = model.GrantPrivilegesToAccountRole("test_resource_name_on_schema", grant.GranteeName.Name()).
+		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnSchema(grant)
+
+		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
 			WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
 			})).
 			WithWithGrantOption(grant.GrantOption)
 
-		resourceId.Kind = resources.OnSchemaAccountRoleGrantKind
-		resourceId.Data = &resources.OnSchemaGrantData{
+		stateResourceId.Kind = resources.OnSchemaAccountRoleGrantKind
+		stateResourceId.Data = &resources.OnSchemaGrantData{
 			Kind:       resources.OnSchemaSchemaGrantKind,
 			SchemaName: sdk.Pointer(grant.Name.(sdk.DatabaseObjectIdentifier)),
 		}
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
-		resourceModel = model.GrantPrivilegesToAccountRole("test_resource_name_on_schema_object", grant.GranteeName.Name()).
+		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnSchemaObject(grant)
+
+		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
 			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
@@ -128,8 +136,8 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 			})).
 			WithWithGrantOption(grant.GrantOption)
 
-		resourceId.Kind = resources.OnSchemaObjectAccountRoleGrantKind
-		resourceId.Data = &resources.OnSchemaObjectGrantData{
+		stateResourceId.Kind = resources.OnSchemaObjectAccountRoleGrantKind
+		stateResourceId.Data = &resources.OnSchemaObjectGrantData{
 			Kind: resources.OnObjectSchemaObjectGrantKind,
 			Object: &sdk.Object{
 				ObjectType: grant.GrantedOn,
@@ -140,5 +148,5 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 		return nil, nil, fmt.Errorf("unsupported grant mapping")
 	}
 
-	return resourceModel, NewImportModel(resourceModel.ResourceReference(), resourceId.String()), nil
+	return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId.String()), nil
 }
