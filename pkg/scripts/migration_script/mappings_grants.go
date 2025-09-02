@@ -184,14 +184,9 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 		Privileges:      privileges,
 	}
 
-	withGrantOption := "without"
-	if grant.GrantOption {
-		withGrantOption = "with"
-	}
-
 	switch {
 	case grant.GrantedOn == sdk.ObjectTypeAccount:
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_account_to_%s_%s_grant_option", grant.GranteeName.Name(), withGrantOption))
+		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnAccount(grant)
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
@@ -201,7 +196,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 		stateResourceId.Kind = resources.OnAccountAccountRoleGrantKind
 		stateResourceId.Data = new(resources.OnAccountGrantData)
 	case slices.Contains(sdk.ValidGrantToAccountObjectTypesString, string(grant.GrantedOn)):
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.Name(), grant.GranteeName.Name(), withGrantOption))
+		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnAccountObject(grant)
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
@@ -217,7 +212,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 			ObjectName: grant.Name.(sdk.AccountObjectIdentifier),
 		}
 	case grant.GrantedOn == sdk.ObjectTypeSchema:
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_schema_%s_to_%s_%s_grant_option", grant.Name.FullyQualifiedName(), grant.GranteeName.Name(), withGrantOption))
+		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnSchema(grant)
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
@@ -232,7 +227,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 			SchemaName: sdk.Pointer(grant.Name.(sdk.DatabaseObjectIdentifier)),
 		}
 	case slices.Contains(sdk.ValidGrantToSchemaObjectTypesString, string(grant.GrantedOn)):
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.FullyQualifiedName(), grant.GranteeName.Name(), withGrantOption))
+		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnSchemaObject(grant)
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
 			WithPrivileges(privileges).
