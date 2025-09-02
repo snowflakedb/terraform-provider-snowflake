@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -123,14 +122,9 @@ func v2_6_0_WarehouseResourceConstraintUpgrader(ctx context.Context, rawState ma
 	}
 
 	if warehouseInSnowflake.ResourceConstraint != nil {
-		switch warehouseInSnowflake.Type {
-		case sdk.WarehouseTypeSnowparkOptimized:
-			oldShowOutput["resource_constraint"] = string(*warehouseInSnowflake.ResourceConstraint)
-		default:
-			log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", warehouseInSnowflake.Type)
-		}
+		oldShowOutput["resource_constraint"] = string(*warehouseInSnowflake.ResourceConstraint)
+		rawState[ShowOutputAttributeName] = []any{oldShowOutput}
 	}
-	rawState[ShowOutputAttributeName] = []any{oldShowOutput}
 
 	return rawState, nil
 }

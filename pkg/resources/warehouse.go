@@ -432,32 +432,31 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 		}
 
 		if withExternalChangesMarking {
-			resourceConstraint := ""
+			outputMappings := []outputMapping{
+				{"type", "warehouse_type", string(w.Type), w.Type, nil},
+				{"size", "warehouse_size", string(w.Size), w.Size, nil},
+				{"max_cluster_count", "max_cluster_count", w.MaxClusterCount, w.MaxClusterCount, nil},
+				{"min_cluster_count", "min_cluster_count", w.MinClusterCount, w.MinClusterCount, nil},
+				{"scaling_policy", "scaling_policy", string(w.ScalingPolicy), w.ScalingPolicy, nil},
+				{"auto_suspend", "auto_suspend", w.AutoSuspend, w.AutoSuspend, nil},
+				{"auto_resume", "auto_resume", w.AutoResume, fmt.Sprintf("%t", w.AutoResume), nil},
+				{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
+				{"enable_query_acceleration", "enable_query_acceleration", w.EnableQueryAcceleration, fmt.Sprintf("%t", w.EnableQueryAcceleration), nil},
+				{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor, w.QueryAccelerationMaxScaleFactor, nil},
+			}
 			if w.ResourceConstraint != nil {
 				switch w.Type {
 				case sdk.WarehouseTypeSnowparkOptimized:
 					if !sdk.IsWarehouseResourceConstraintForSnowparkOptimized(*w.ResourceConstraint) {
 						return diag.FromErr(fmt.Errorf("resource constraint %s is not supported for snowpark-optimized warehouses", *w.ResourceConstraint))
 					} else {
-						resourceConstraint = string(*w.ResourceConstraint)
+						outputMappings = append(outputMappings, outputMapping{"resource_constraint", "resource_constraint", string(*w.ResourceConstraint), string(*w.ResourceConstraint), nil})
 					}
 				default:
 					log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", w.Type)
 				}
 			}
-			if err = handleExternalChangesToObjectInShow(d,
-				outputMapping{"type", "warehouse_type", string(w.Type), w.Type, nil},
-				outputMapping{"size", "warehouse_size", string(w.Size), w.Size, nil},
-				outputMapping{"max_cluster_count", "max_cluster_count", w.MaxClusterCount, w.MaxClusterCount, nil},
-				outputMapping{"min_cluster_count", "min_cluster_count", w.MinClusterCount, w.MinClusterCount, nil},
-				outputMapping{"scaling_policy", "scaling_policy", string(w.ScalingPolicy), w.ScalingPolicy, nil},
-				outputMapping{"auto_suspend", "auto_suspend", w.AutoSuspend, w.AutoSuspend, nil},
-				outputMapping{"auto_resume", "auto_resume", w.AutoResume, fmt.Sprintf("%t", w.AutoResume), nil},
-				outputMapping{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
-				outputMapping{"enable_query_acceleration", "enable_query_acceleration", w.EnableQueryAcceleration, fmt.Sprintf("%t", w.EnableQueryAcceleration), nil},
-				outputMapping{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor, w.QueryAccelerationMaxScaleFactor, nil},
-				outputMapping{"resource_constraint", "resource_constraint", resourceConstraint, resourceConstraint, nil},
-			); err != nil {
+			if err = handleExternalChangesToObjectInShow(d, outputMappings...); err != nil {
 				return diag.FromErr(err)
 			}
 		}
