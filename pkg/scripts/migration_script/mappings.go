@@ -7,22 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 )
 
-var resourceIdAllowedCharacters = regexp.MustCompile("[a-zA-Z0-9\\-_]+")
+var resourceIdAllowedCharacters = regexp.MustCompile("[^a-zA-Z0-9\\-_]")
 
 func NormalizeResourceId(resourceId string) string {
-	mappedResourceId := strings.Map(func(r rune) rune {
-		switch r {
-		case '.':
-			return '_'
-		default:
-			if resourceIdAllowedCharacters.MatchString(string(r)) {
-				return r
-			}
-			return -1
-		}
-	}, resourceId)
-
-	return "snowflake_generated_" + mappedResourceId
+	resourceId = strings.ReplaceAll(resourceId, `.`, "_")
+	return "snowflake_generated_" + string(resourceIdAllowedCharacters.ReplaceAll([]byte(resourceId), []byte("")))
 }
 
 // ResourceFromModel is a copy of config.ResourceFromModel function, but it doesn't use testing.T internally.
