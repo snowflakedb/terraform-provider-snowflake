@@ -72,7 +72,6 @@ func TestAcc_Task_ProveSessionParameterBehavior(t *testing.T) {
 }
 
 func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
-	testClient().Parameter.UnsetAccountParameter(t, sdk.AccountParameterStatementTimeoutInSeconds)
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"
 
