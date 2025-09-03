@@ -536,18 +536,14 @@ but because of the [Terraform limitations of the characters in the resource name
 unallowed characters are not included in the name. This means that `!test!` and `@test@` would both be converted to `test`, leading to a name collision.
 If you encounter such a situation, you will need to manually rename the resources to ensure uniqueness before proceeding with resource importing.
 
-The exception to this rule are dots, which are replaced with underscores, so `test.name` would become `test_name`.
+The exception to this rule are dots, which we are replaced instead of removed. They're replaced with underscores, so `test.name` would become `test_name`.
 This is only to ensure clarity in the generated names that contain identifiers which are separated by dots, e.g.,
 instead of removing the dots in `DATABASE.SCHEMA` (resulting in `DATABASESCHEMA`), we transfer them to `DATABASE_SCHEMA`.
-
-### Single input
-
-Currently, the script only accepts a single CSV input. If an object type requires data from multiple commands,
-you must manually merge the outputs into one CSV file with the schema supporting combined output before running the script.
-As a future improvement, we may consider adding support for multiple inputs.
 
 ### No dependencies handling
 
 The script does not handle dependencies between resources. If the generated resources depend on other resources,
 you will need to manually add the necessary dependencies using `depends_on` argument or implicit dependencies
-by referring to the existing resources in the generated resource configuration.
+by referring to the existing resources in the generated resource configuration. It's important to ensure
+that all dependent resources are linked to avoid common issues like race conditions (e.g., creating a table on schema that does not exist yet).
+To learn more about dependencies, check out the official [Terraform documentation](https://developer.hashicorp.com/terraform/tutorials/configuration-language/dependencies).

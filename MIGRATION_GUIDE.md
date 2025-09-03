@@ -38,9 +38,24 @@ It is not officially supported, and we do not prioritize fixes for it.
 Feel free to use it as a starting point and modify it to fit your specific needs.
 We are open to contributions to enhance its functionality.
 
+The tool turned out to be a bit different from what we announced in our [roadmap entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#grants-migration),
+but the main idea is the same: simplifying migration of existing grants to the new resources that replace deprecated ones.
+This should streamline your grants' migration process and support upgrades to newer provider versions,
+as we focus on increasing adoption of GA+ releases (`>= v2.0.0`).
+
+Currently, the script supports only a few grant resources, namely:
+- `snowflake_grant_privileges_to_account_role`
+- `snowflake_grant_privileges_to_database_role`
+- `snowflake_grant_account_role`
+- `snowflake_grant_database_role`
+
+With the following limitations:
+- grants on `future` or on `all` objects are not supported
+- `all_privileges` and `always_apply` fields are not supported
+
 You can find the script and its documentation in our [repository](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/scripts/migration_script).
 
-References: [#2707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2707)
+References: [#2707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2707), [#3335](https://github.com/snowflakedb/terraform-provider-snowflake/discussions/3335)
 
 ## v2.5.0 ➞ v2.6.0
 
