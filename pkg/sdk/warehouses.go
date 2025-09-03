@@ -203,6 +203,44 @@ var AllWarehouseResourceConstraintsWithoutGenerations = []string{
 	string(WarehouseResourceConstraintMemory64Xx86),
 }
 
+type WarehouseGeneration string
+
+const (
+	WarehouseGenerationStandardGen1 WarehouseGeneration = "1"
+	WarehouseGenerationStandardGen2 WarehouseGeneration = "2"
+)
+
+func ToWarehouseGeneration(s string) (WarehouseResourceConstraint, error) {
+	switch s {
+	case "1":
+		return WarehouseResourceConstraintStandardGen1, nil
+	case "2":
+		return WarehouseResourceConstraintStandardGen2, nil
+	default:
+		return "", fmt.Errorf("invalid generation: %s", s)
+	}
+}
+
+var AllWarehouseGenerations = []string{
+	string(WarehouseGenerationStandardGen1),
+	string(WarehouseGenerationStandardGen2),
+}
+
+func IsWarehouseResourceConstraintForStandard(s WarehouseResourceConstraint) bool {
+	return slices.Contains([]string{string(WarehouseResourceConstraintStandardGen1), string(WarehouseResourceConstraintStandardGen2)}, string(s))
+}
+
+func WarehouseResourceConstraintToWarehouseGeneration(s WarehouseResourceConstraint) (WarehouseGeneration, error) {
+	switch s {
+	case WarehouseResourceConstraintStandardGen1:
+		return WarehouseGenerationStandardGen1, nil
+	case WarehouseResourceConstraintStandardGen2:
+		return WarehouseGenerationStandardGen2, nil
+	default:
+		return "", fmt.Errorf("invalid resource constraint for generation: %s", s)
+	}
+}
+
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
 type CreateWarehouseOptions struct {
 	create      bool                    `ddl:"static" sql:"CREATE"`

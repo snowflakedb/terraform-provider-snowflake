@@ -577,3 +577,36 @@ func TestIsWarehouseResourceConstraintForSnowparkOptimized(t *testing.T) {
 		})
 	}
 }
+
+func Test_Warehouse_ToWarehouseGeneration(t *testing.T) {
+	type test struct {
+		input string
+		want  WarehouseResourceConstraint
+	}
+
+	valid := []test{
+		{input: "1", want: WarehouseResourceConstraintStandardGen1},
+		{input: "2", want: WarehouseResourceConstraintStandardGen2},
+	}
+
+	invalid := []string{
+		"",
+		"0",
+		"GEN_1",
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToWarehouseGeneration(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, in := range invalid {
+		t.Run(in, func(t *testing.T) {
+			_, err := ToWarehouseGeneration(in)
+			require.Error(t, err)
+		})
+	}
+}

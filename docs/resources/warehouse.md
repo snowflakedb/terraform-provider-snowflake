@@ -20,7 +20,7 @@ resource "snowflake_warehouse" "warehouse" {
   name = "WAREHOUSE"
 }
 
-# Resource with all fields
+# Resource with SNOWPARK-OPTIMIZED warehouse type and all fields
 resource "snowflake_warehouse" "warehouse" {
   name                                = "WAREHOUSE"
   warehouse_type                      = "SNOWPARK-OPTIMIZED"
@@ -41,6 +41,14 @@ resource "snowflake_warehouse" "warehouse" {
   statement_queued_timeout_in_seconds = 5
   statement_timeout_in_seconds        = 86400
 }
+
+# Resource with STANDARD warehouse type
+resource "snowflake_warehouse" "warehouse" {
+  name           = "WAREHOUSE"
+  warehouse_type = "STANDARD"
+  warehouse_size = "MEDIUM"
+  generation     = "2"
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
@@ -60,6 +68,7 @@ resource "snowflake_warehouse" "warehouse" {
 - `auto_suspend` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the number of seconds of inactivity after which a warehouse is automatically suspended.
 - `comment` (String) Specifies a comment for the warehouse.
 - `enable_query_acceleration` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to enable the query acceleration service for queries that rely on this warehouse for compute resources. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `generation` (String) Specifies the generation for the warehouse. Valid values are (case-insensitive): `1` | `2`.
 - `initially_suspended` (Boolean) Specifies whether the warehouse is created initially in the ‘Suspended’ state.
 - `max_cluster_count` (Number) Specifies the maximum number of server clusters for the warehouse.
 - `max_concurrency_level` (Number) Object parameter that specifies the concurrency level for SQL statements (i.e. queries and DML) executed by a warehouse.
