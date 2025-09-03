@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/customassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 // ServicesDatasourceShowOutput is a temporary workaround to have better show output assertions in data source acceptance tests.
@@ -75,4 +77,14 @@ func (s *ServiceShowOutputAssert) HasQueryWarehouseEmpty() *ServiceShowOutputAss
 func (s *ServiceShowOutputAssert) HasCommentEmpty() *ServiceShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", ""))
 	return s
+}
+
+// CheckCurrentInstancesBetween returns a TestCheckFuncProvider that validates current_instances is within the specified range (inclusive)
+func CheckCurrentInstancesBetween(resourceName string, min, max int) assert.TestCheckFuncProvider {
+	return assert.Check(resource.TestCheckResourceAttrWith(resourceName, "show_output.0.current_instances", customassert.BetweenFunc(min, max)))
+}
+
+// CheckTargetInstancesBetween returns a TestCheckFuncProvider that validates target_instances is within the specified range (inclusive)
+func CheckTargetInstancesBetween(resourceName string, min, max int) assert.TestCheckFuncProvider {
+	return assert.Check(resource.TestCheckResourceAttrWith(resourceName, "show_output.0.target_instances", customassert.BetweenFunc(min, max)))
 }
