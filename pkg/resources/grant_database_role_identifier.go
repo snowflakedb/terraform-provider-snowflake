@@ -36,7 +36,7 @@ func NewGrantDatabaseRoleIdToRole(databaseRoleName sdk.DatabaseObjectIdentifier,
 func NewGrantDatabaseRoleIdToUser(databaseRoleName sdk.DatabaseObjectIdentifier, userName sdk.AccountObjectIdentifier) GrantDatabaseRoleId {
 	return GrantDatabaseRoleId{
 		DatabaseRoleName: databaseRoleName,
-		ObjectType:       sdk.ObjectTypeRole,
+		ObjectType:       sdk.ObjectTypeUser,
 		TargetIdentifier: userName,
 	}
 }
@@ -44,7 +44,7 @@ func NewGrantDatabaseRoleIdToUser(databaseRoleName sdk.DatabaseObjectIdentifier,
 func NewGrantDatabaseRoleIdToShare(databaseRoleName sdk.DatabaseObjectIdentifier, shareName sdk.AccountObjectIdentifier) GrantDatabaseRoleId {
 	return GrantDatabaseRoleId{
 		DatabaseRoleName: databaseRoleName,
-		ObjectType:       sdk.ObjectTypeRole,
+		ObjectType:       sdk.ObjectTypeShare,
 		TargetIdentifier: shareName,
 	}
 }
