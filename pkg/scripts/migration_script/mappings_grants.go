@@ -78,26 +78,18 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 	slices.Sort(privileges)
 	privileges = slices.Compact(privileges)
 
-	isRoleDatabaseObjectIdentifier := func(role sdk.ObjectIdentifier) bool {
-		_, ok := role.(sdk.DatabaseObjectIdentifier)
-		return ok
-	}
-
 	switch {
-	// Granting an account role
-	// When calling SHOW GRANTS TO ROLE / USER, the USAGE privilege should be shown with the ROLE granted_on field.
-	// When calling SHOW GRANTS OF ROLE, the Role field should be populated.
-	// The granted_to field should always point to either ROLE or USER.
-	case (grant.Role != nil && !isRoleDatabaseObjectIdentifier(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil) &&
+	case grant.Privilege == "USAGE" &&
+		grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil &&
 		(grant.GrantedTo == sdk.ObjectTypeRole || grant.GrantedTo == sdk.ObjectTypeUser):
 		return MapToGrantAccountRole(grant)
-	// Granting a database role (cases similar to the above; different handling for different SHOW GRANTS calls)
-	case (grant.Role != nil && isRoleDatabaseObjectIdentifier(grant.Role) || grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeDatabaseRole && grant.Name != nil) &&
+	case grant.Privilege == "USAGE" &&
+		grant.GrantedOn == sdk.ObjectTypeDatabaseRole && grant.Name != nil &&
 		(grant.GrantedTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeRole):
 		return MapToGrantDatabaseRole(grant)
-	case len(privileges) > 0 && grant.GrantedTo == sdk.ObjectTypeRole:
+	case grant.GrantedTo == sdk.ObjectTypeRole:
 		return MapToGrantPrivilegesToAccountRole(grant, privileges)
-	case len(privileges) > 0 && grant.GrantedTo == sdk.ObjectTypeDatabaseRole:
+	case grant.GrantedTo == sdk.ObjectTypeDatabaseRole:
 		return MapToGrantPrivilegesToDatabaseRole(grant, privileges)
 	default:
 		return nil, nil, fmt.Errorf("unsupported grant mapping")
@@ -105,30 +97,19 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 }
 
 func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportModel, error) {
-	var roleIdentifier sdk.AccountObjectIdentifier
+	switch grant.GrantedTo {
+	case sdk.ObjectTypeRole:
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_role_%s", grant.Name.Name(), grant.GranteeName.Name()))
+		resourceModel := model.GrantAccountRole(resourceId, grant.Name.Name()).WithParentRoleName(grant.GranteeName.Name())
 
-	switch {
-	case grant.Role != nil:
-		roleIdentifier = grant.Role.(sdk.AccountObjectIdentifier)
-	case grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeRole && grant.Name != nil:
-		roleIdentifier = grant.Name.(sdk.AccountObjectIdentifier)
-	default:
-		return nil, nil, fmt.Errorf("invalid grant account role mapping: missing role information")
-	}
-
-	switch {
-	case grant.GrantedTo == sdk.ObjectTypeRole:
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_role_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
-		resourceModel := model.GrantAccountRole(resourceId, roleIdentifier.Name()).WithParentRoleName(grant.GranteeName.Name())
-
-		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), grant.GranteeName.FullyQualifiedName())
+		stateResourceId := fmt.Sprintf("%s|%s|%s", grant.Name.FullyQualifiedName(), sdk.ObjectTypeRole.String(), grant.GranteeName.FullyQualifiedName())
 
 		return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId), nil
-	case grant.GrantedTo == sdk.ObjectTypeUser:
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_user_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
-		resourceModel := model.GrantAccountRole(resourceId, roleIdentifier.Name()).WithUserName(grant.GranteeName.Name())
+	case sdk.ObjectTypeUser:
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_user_%s", grant.Name.Name(), grant.GranteeName.Name()))
+		resourceModel := model.GrantAccountRole(resourceId, grant.Name.Name()).WithUserName(grant.GranteeName.Name())
 
-		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), grant.GranteeName.FullyQualifiedName())
+		stateResourceId := fmt.Sprintf("%s|%s|%s", grant.Name.FullyQualifiedName(), sdk.ObjectTypeUser.String(), grant.GranteeName.FullyQualifiedName())
 
 		return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId), nil
 	default:
@@ -137,38 +118,26 @@ func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportMod
 }
 
 func MapToGrantDatabaseRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportModel, error) {
-	var roleIdentifier sdk.DatabaseObjectIdentifier
-
-	switch {
-	case grant.Role != nil:
-		roleIdentifier = grant.Role.(sdk.DatabaseObjectIdentifier)
-	case grant.Privilege == "USAGE" && grant.GrantedOn == sdk.ObjectTypeDatabaseRole && grant.Name != nil:
-		roleIdentifier = grant.Name.(sdk.DatabaseObjectIdentifier)
-	default:
-		return nil, nil, fmt.Errorf("invalid grant database role mapping: missing role information")
+	databaseRoleName, err := sdk.ParseDatabaseObjectIdentifier(grant.Name.FullyQualifiedName())
+	if err != nil {
+		return nil, nil, fmt.Errorf("error parsing database object identifier from grant name %s: %w", grant.Name.FullyQualifiedName(), err)
 	}
 
-	switch {
-	case grant.GrantedTo == sdk.ObjectTypeDatabaseRole:
-		databaseRoleName := grant.GranteeName.Name()
-		granteeName := sdk.NewDatabaseObjectIdentifier(roleIdentifier.DatabaseName(), databaseRoleName)
+	switch grant.GrantedTo {
+	case sdk.ObjectTypeDatabaseRole:
+		granteeName := sdk.NewDatabaseObjectIdentifier(databaseRoleName.DatabaseName(), grant.GranteeName.Name())
 
-		// Depending on the SHOW GRANTS command options, we can either get AccountObjectIdentifier or DatabaseObjectIdentifier in granteeName column
-		if id, err := sdk.ParseDatabaseObjectIdentifier(grant.GranteeName.Name()); err == nil {
-			granteeName = id
-		}
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_database_role_%s", databaseRoleName.FullyQualifiedName(), granteeName.FullyQualifiedName()))
+		resourceModel := model.GrantDatabaseRole(resourceId, databaseRoleName.FullyQualifiedName()).WithParentDatabaseRoleName(granteeName.FullyQualifiedName())
 
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_database_role_%s", roleIdentifier.FullyQualifiedName(), granteeName.FullyQualifiedName()))
-		resourceModel := model.GrantDatabaseRole(resourceId, roleIdentifier.FullyQualifiedName()).WithParentDatabaseRoleName(granteeName.FullyQualifiedName())
-
-		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeDatabaseRole.String(), granteeName.FullyQualifiedName())
+		stateResourceId := fmt.Sprintf("%s|%s|%s", databaseRoleName.FullyQualifiedName(), sdk.ObjectTypeDatabaseRole.String(), granteeName.FullyQualifiedName())
 
 		return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId), nil
-	case grant.GrantedTo == sdk.ObjectTypeRole:
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_role_%s", roleIdentifier.FullyQualifiedName(), grant.GranteeName.Name()))
-		resourceModel := model.GrantDatabaseRole(resourceId, roleIdentifier.FullyQualifiedName()).WithParentRoleName(grant.GranteeName.Name())
+	case sdk.ObjectTypeRole:
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_role_%s", databaseRoleName.FullyQualifiedName(), grant.GranteeName.Name()))
+		resourceModel := model.GrantDatabaseRole(resourceId, databaseRoleName.FullyQualifiedName()).WithParentRoleName(grant.GranteeName.Name())
 
-		stateResourceId := fmt.Sprintf("%s|%s|%s", roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), grant.GranteeName.FullyQualifiedName())
+		stateResourceId := fmt.Sprintf("%s|%s|%s", databaseRoleName.FullyQualifiedName(), sdk.ObjectTypeRole.String(), grant.GranteeName.FullyQualifiedName())
 
 		return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId), nil
 	default:

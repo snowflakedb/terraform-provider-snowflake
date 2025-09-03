@@ -213,7 +213,6 @@ type Grant struct {
 	GrantedOn   ObjectType
 	GrantOn     ObjectType
 	Name        ObjectIdentifier
-	Role        ObjectIdentifier
 	GrantedTo   ObjectType
 	GrantTo     ObjectType
 	GranteeName ObjectIdentifier

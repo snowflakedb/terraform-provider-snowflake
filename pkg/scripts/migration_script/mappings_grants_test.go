@@ -310,20 +310,6 @@ resource "snowflake_grant_account_role" "snowflake_generated_grant_TEST_ROLE_to_
 # terraform import snowflake_grant_account_role.snowflake_generated_grant_TEST_ROLE_to_user_TEST_USER '"TEST_ROLE"|USER|"TEST_USER"'
 `,
 		},
-		{
-			name: "grant role to role (SHOW GRANTS OF ROLE output)",
-			inputRows: [][]string{
-				{"role", "granted_to", "grantee_name"},
-				{"TEST_ROLE", "ROLE", "PARENT_TEST_ROLE"},
-			},
-			expectedOutput: `
-resource "snowflake_grant_account_role" "snowflake_generated_grant_TEST_ROLE_to_role_PARENT_TEST_ROLE" {
-  parent_role_name = "PARENT_TEST_ROLE"
-  role_name = "TEST_ROLE"
-}
-# terraform import snowflake_grant_account_role.snowflake_generated_grant_TEST_ROLE_to_role_PARENT_TEST_ROLE '"TEST_ROLE"|ROLE|"PARENT_TEST_ROLE"'
-`,
-		},
 	}
 
 	for _, tc := range testCases {
@@ -371,48 +357,6 @@ resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABAS
   parent_database_role_name = "\"TEST_DATABASE\".\"PARENT_TEST_ROLE\""
 }
 # terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|DATABASE ROLE|"TEST_DATABASE"."PARENT_TEST_ROLE"'
-`,
-		},
-		{
-			name: "grant database role to database role (SHOW GRANTS OF DATABASE ROLE output)",
-			inputRows: [][]string{
-				{"role", "granted_to", "grantee_name"},
-				{"TEST_DATABASE.TEST_ROLE", "DATABASE_ROLE", "PARENT_TEST_ROLE"},
-			},
-			expectedOutput: `
-resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE" {
-  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
-  parent_database_role_name = "\"TEST_DATABASE\".\"PARENT_TEST_ROLE\""
-}
-# terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|DATABASE ROLE|"TEST_DATABASE"."PARENT_TEST_ROLE"'
-`,
-		},
-		{
-			name: "grant database role to database role (SHOW GRANTS OF ROLE output)",
-			inputRows: [][]string{
-				{"role", "granted_to", "grantee_name"},
-				{"TEST_DATABASE.TEST_ROLE", "DATABASE_ROLE", "TEST_DATABASE.PARENT_TEST_ROLE"},
-			},
-			expectedOutput: `
-resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE" {
-  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
-  parent_database_role_name = "\"TEST_DATABASE\".\"PARENT_TEST_ROLE\""
-}
-# terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_database_role_TEST_DATABASE_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|DATABASE ROLE|"TEST_DATABASE"."PARENT_TEST_ROLE"'
-`,
-		},
-		{
-			name: "grant database role to role (SHOW GRANTS OF ROLE output)",
-			inputRows: [][]string{
-				{"role", "granted_to", "grantee_name"},
-				{"TEST_DATABASE.TEST_ROLE", "ROLE", "PARENT_TEST_ROLE"},
-			},
-			expectedOutput: `
-resource "snowflake_grant_database_role" "snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_role_PARENT_TEST_ROLE" {
-  database_role_name = "\"TEST_DATABASE\".\"TEST_ROLE\""
-  parent_role_name = "PARENT_TEST_ROLE"
-}
-# terraform import snowflake_grant_database_role.snowflake_generated_grant_TEST_DATABASE_TEST_ROLE_to_role_PARENT_TEST_ROLE '"TEST_DATABASE"."TEST_ROLE"|ROLE|"PARENT_TEST_ROLE"'
 `,
 		},
 	}

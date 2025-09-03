@@ -14,7 +14,6 @@ type GrantCsvRow struct {
 	GrantedOn   string `csv:"granted_on"`
 	GrantOn     string `csv:"grant_on"`
 	Name        string `csv:"name"`
-	Role        string `csv:"role"`
 	GrantedTo   string `csv:"granted_to"`
 	GrantTo     string `csv:"grant_to"`
 	GranteeName string `csv:"grantee_name"`
@@ -63,15 +62,6 @@ func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 		name = sdk.NewObjectIdentifierFromFullyQualifiedName(row.Name)
 	}
 
-	var role sdk.ObjectIdentifier
-	if row.Role != "" {
-		role, err = sdk.ParseDatabaseObjectIdentifier(row.Role)
-		if err != nil {
-			log.Printf("[DEBUG] Failed to parse identifier [%s], err = \"%s\"; falling back to fully qualified name conversion", row.Role, err)
-			role = sdk.NewObjectIdentifierFromFullyQualifiedName(row.Role)
-		}
-	}
-
 	return &sdk.Grant{
 		Privilege:   row.Privilege,
 		GrantedOn:   grantedOn,
@@ -79,7 +69,6 @@ func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 		GrantedTo:   grantedTo,
 		GrantTo:     grantTo,
 		Name:        name,
-		Role:        role,
 		GranteeName: sdk.NewAccountObjectIdentifier(row.GranteeName),
 		GrantOption: row.GrantOption,
 		GrantedBy:   sdk.NewAccountObjectIdentifier(row.GrantedBy),
