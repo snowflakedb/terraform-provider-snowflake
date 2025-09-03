@@ -9,13 +9,15 @@
     * [Use case: Migrate deprecated grants to new ones](#use-case-migrate-deprecated-grants-to-new-ones)
       * [1. Query Snowflake and save the output](#1-query-snowflake-and-save-the-output)
       * [2. Generate resources and import statements based on the Snowflake output](#2-generate-resources-and-import-statements-based-on-the-snowflake-output)
-      * [4. Importing auto-generated resources to the state](#4-importing-auto-generated-resources-to-the-state)
-      * [5. Removing old grant resources](#5-removing-old-grant-resources)
-      * [6. Update generated resources](#6-update-generated-resources)
+      * [3. Importing auto-generated resources to the state](#3-importing-auto-generated-resources-to-the-state)
+      * [4. Removing old grant resources](#4-removing-old-grant-resources)
+      * [5. Update generated resources](#5-update-generated-resources)
     * [Use case: Migrate existing grants to Terraform](#use-case-migrate-existing-grants-to-terraform)
       * [1. Query Snowflake and save the output](#1-query-snowflake-and-save-the-output-1)
       * [2. Generate resources and import statements based on the Snowflake output](#2-generate-resources-and-import-statements-based-on-the-snowflake-output-1)
       * [3. Get the generated resources and import them to the state](#3-get-the-generated-resources-and-import-them-to-the-state)
+  * [Limitations](#limitations)
+    * [Generated resource names](#generated-resource-names)
 <!-- TOC -->
 
 This script is designed to assist in migrating existing Snowflake objects into Terraform management
@@ -52,7 +54,11 @@ where script options are:
     - `block`: Generates [import blocks](https://developer.hashicorp.com/terraform/language/import) at the bottom of the generated Terraform configuration.
     - `statement`: Generates commented [import commands](https://developer.hashicorp.com/terraform/cli/commands/import) at the bottom of the generated Terraform configuration.
 - **OBJECT_TYPES**:
-  - `grants`: Generates resources and import statements for Snowflake grants. The expected input is in the form of [`SHOW GRANTS`](https://docs.snowflake.com/en/sql-reference/sql/show-grants) output (any filtering option).
+  - `grants`: Generates resources and import statements for Snowflake grants. The expected input is in the form of [`SHOW GRANTS`](https://docs.snowflake.com/en/sql-reference/sql/show-grants) output. The allowed SHOW GRANTS commands are:
+    - `SHOW GRANTS ON ACCOUNT`
+    - `SHOW GRANTS ON <object_type>`
+    - `SHOW GRANTS TO ROLE <role_name>`
+    - `SHOW GRANTS TO DATABASE ROLE <database_role_name>`
 - **INPUT**:
   - Migration script operates on STDIN input in CSV format. You can redirect the input from a file or pipe it from another command.
 - **OUTPUT**:
@@ -102,7 +108,7 @@ resource "snowflake_role" "test_role" {
 }
 
 resource "snowflake_role" "other_test_role" {
-  name = "OTEHR_TEST_ROLE"
+  name = "OTHER_TEST_ROLE"
 }
 
 resource "snowflake_account_grant" "grant" {
@@ -191,7 +197,7 @@ resource "snowflake_role" "test_role" {
 }
 
 resource "snowflake_role" "other_test_role" {
-  name = "OTEHR_TEST_ROLE"
+  name = "OTHER_TEST_ROLE"
 }
 
 resource "snowflake_account_grant" "grant" {
@@ -231,7 +237,7 @@ import {
 }
 ```
 
-#### 4. Importing auto-generated resources to the state
+#### 3. Importing auto-generated resources to the state
 
 Now that we have the generated resources and import blocks, we can proceed to replace the deprecated resources with the new ones.
 First, we need to import the new resources into the state. Run `terraform plan`, to see if there are any issues with the configuration.
@@ -250,7 +256,7 @@ Apply complete! Resources: 2 imported, 0 added, 0 changed, 0 destroyed.
 which means that the resources have been successfully imported into the state.
 Remember that, if you chose to use the import block approach, [after importing you can remove the import blocks from the configuration file](https://developer.hashicorp.com/terraform/language/import#plan-and-apply-an-impor).
 
-#### 5. Removing old grant resources
+#### 4. Removing old grant resources
 
 Now that we have the new resources imported into the state, we can proceed to remove the old deprecated resources from the configuration.
 To do that, you can either use the [removed blocks](https://support.hashicorp.com/hc/en-us/articles/33229234219411-Terraform-Enterprise-on-Replicated-March-2025-Final-Release) or [state commands](https://developer.hashicorp.com/terraform/cli/commands/state).
@@ -269,7 +275,7 @@ This time it should output:
 No changes. Your infrastructure matches the configuration.
 ```
 
-#### 6. Update generated resources
+#### 5. Update generated resources
 
 The last step is optional, but highly recommended. The generated resources have generic names, which are not very user-friendly,
 and they do not depend on the existing role resources which they refer to in their configuration. 
@@ -303,7 +309,7 @@ resource "snowflake_role" "test_role" {
 }
 
 resource "snowflake_role" "other_test_role" {
-  name = "OTEHR_TEST_ROLE"
+  name = "OTHER_TEST_ROLE"
 }
 
 resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_TEST_ROLE_without_grant_option" {
@@ -509,3 +515,16 @@ which means that the resources have been successfully imported into the state.
 Remember that, if you chose to use the import block approach, [after importing you can remove the import blocks from the configuration file](https://developer.hashicorp.com/terraform/language/import#plan-and-apply-an-impor).
 
 By following the above steps, you can migrate other existing Snowflake objects into Terraform and start managing them!
+
+## Limitations
+
+### Generated resource names
+
+The resource name generation does not guarantee uniqueness. It bases its parts on the object's state identifier, which is unique,
+but because of the [Terraform limitations of the characters in the resource names](https://developer.hashicorp.com/terraform/language/resources/syntax#resource-syntax),
+unallowed characters are not included in the name. This means that `!test!` and `@test@` would both be converted to `test`, leading to a name collision.
+If you encounter such a situation, you will need to manually rename the resources to ensure uniqueness before proceeding with resource importing.
+
+The exception to this rule are dots, which are replaced with underscores, so `test.name` would become `test_name`.
+This is only to ensure clarity in the generated names that contain identifiers which are separated by dots, e.g.,
+instead of removing the dots in `DATABASE.SCHEMA` (resulting in `DATABASESCHEMA`), we transfer them to `DATABASE_SCHEMA`.

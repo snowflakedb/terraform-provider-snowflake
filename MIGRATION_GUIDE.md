@@ -24,6 +24,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.6.0 ➞ v2.7.0
+
+### *(tool)* Adding migration script
+
+This script is designed to assist in migrating existing Snowflake objects into Terraform management
+by generating the necessary Terraform resources and import statements based on the Snowflake output.
+It can be used for both one-time migrations from deprecated resources to the new ones,
+as well as importing existing objects into Terraform state.
+
+The script was provided to give an idea how the migration process can be automated.
+It is not officially supported, and we do not prioritize fixes for it.
+Feel free to use it as a starting point and modify it to fit your specific needs.
+We are open to contributions to enhance its functionality.
+
+You can find the script and its documentation in our [repository](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/scripts/migration_script).
+
+References: [#2707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2707)
+
 ## v2.5.0 ➞ v2.6.0
 
 ### *(improvement)* Handling conversion-based errors
