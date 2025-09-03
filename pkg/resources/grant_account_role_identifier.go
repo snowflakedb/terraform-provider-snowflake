@@ -5,7 +5,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// TODO(): Use in resource
+// TODO(SNOW-2314062): Use in resource
 
 type GrantAccountRoleId struct {
 	AccountRoleName  sdk.AccountObjectIdentifier

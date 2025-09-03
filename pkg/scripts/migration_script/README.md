@@ -6,7 +6,7 @@
   * [Syntax](#syntax)
   * [Usage](#usage)
     * [Prerequisites](#prerequisites)
-    * [Use case: Migrate deprecated grants to new ones](#use-case-migrate-deprecated-grants-to-new-ones)
+    * [Use case: Migrate deprecated resources to new ones](#use-case-migrate-deprecated-resources-to-new-ones)
       * [1. Query Snowflake and save the output](#1-query-snowflake-and-save-the-output)
       * [2. Generate resources and import statements based on the Snowflake output](#2-generate-resources-and-import-statements-based-on-the-snowflake-output)
       * [3. Importing auto-generated resources to the state](#3-importing-auto-generated-resources-to-the-state)
@@ -29,6 +29,7 @@ The script was provided to give an idea how the migration process can be automat
 It is not officially supported, and we do not prioritize fixes for it.
 Feel free to use it as a starting point and modify it to fit your specific needs.
 We are open to contributions to enhance its functionality.
+If you are planning to contribute, please check out our [contributing guide](./CONTRIBUTING.md).
 
 ### Compatibility with Provider Versions
 
@@ -81,7 +82,7 @@ There are a few things needed before you can proceed further:
   - Snowflake account with an ability to create sample roles and grant privileges (for simplicity, a user with ACCOUNTADMIN role would be the best choice).
   - Knowledge how to configure Snowflake connection using Terraform Provider, see [Terraforming Snowflake](https://quickstarts.snowflake.com/guide/terraforming_snowflake/index.html#0) guide for more details.
 
-### Use case: Migrate deprecated grants to new ones
+### Use case: Migrate deprecated resources to new ones
 
 In this example, we will focus on migrating from the removed `snowflake_account_grant` resource to the new `snowflake_grant_privileges_to_account_role` resource.
 Check [mapping old grant resources to the new ones](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#mapping-from-old-grant-resources-to-the-new-ones)
@@ -446,14 +447,14 @@ provider "snowflake" {
 
 resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_TEST_OTHER_ROLE_without_grant_option" {
   account_role_name = "TEST_OTHER_ROLE"
-  on_account = true
+  on_account        = true
   privileges = ["CREATE DATABASE", "CREATE ROLE", "CREATE USER"]
   with_grant_option = false
 }
 
 resource "snowflake_grant_privileges_to_account_role" "snowflake_generated_grant_on_account_to_TEST_ROLE_without_grant_option" {
   account_role_name = "TEST_ROLE"
-  on_account = true
+  on_account        = true
   privileges = ["CREATE DATABASE", "CREATE ROLE"]
   with_grant_option = false
 }
@@ -528,3 +529,15 @@ If you encounter such a situation, you will need to manually rename the resource
 The exception to this rule are dots, which are replaced with underscores, so `test.name` would become `test_name`.
 This is only to ensure clarity in the generated names that contain identifiers which are separated by dots, e.g.,
 instead of removing the dots in `DATABASE.SCHEMA` (resulting in `DATABASESCHEMA`), we transfer them to `DATABASE_SCHEMA`.
+
+### Single input
+
+Currently, the script only accepts a single CSV input. If an object type requires data from multiple commands,
+you must manually merge the outputs into one CSV file with the schema supporting combined output before running the script.
+As a future improvement, we may consider adding support for multiple inputs.
+
+### No dependencies handling
+
+The script does not handle dependencies between resources. If the generated resources depend on other resources,
+you will need to manually add the necessary dependencies using `depends_on` argument or implicit dependencies
+by referring to the existing resources in the generated resource configuration.

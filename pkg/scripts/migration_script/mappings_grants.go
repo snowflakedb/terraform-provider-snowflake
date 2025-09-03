@@ -105,12 +105,12 @@ func MapToGrantAccountRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportMod
 		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_role_%s", grant.Name.Name(), grant.GranteeName.Name()))
 		resourceModel = model.GrantAccountRole(resourceId, grant.Name.Name()).WithParentRoleName(grant.GranteeName.Name())
 
-		stateResourceId = resources.NewGrantAccountRoleIdToRole(grant.Name, grant.GranteeName.(sdk.AccountObjectIdentifier))
+		stateResourceId = resources.NewGrantAccountRoleIdToRole(grant.Name.(sdk.AccountObjectIdentifier), grant.GranteeName.(sdk.AccountObjectIdentifier))
 	case sdk.ObjectTypeUser:
-		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_user_%s", roleIdentifier.Name(), grant.GranteeName.Name()))
-		resourceModel = model.GrantAccountRole(resourceId, roleIdentifier.Name()).WithUserName(grant.GranteeName.Name())
+		resourceId := NormalizeResourceId(fmt.Sprintf("grant_%s_to_user_%s", grant.Name.Name(), grant.GranteeName.Name()))
+		resourceModel = model.GrantAccountRole(resourceId, grant.Name.Name()).WithUserName(grant.GranteeName.Name())
 
-		stateResourceId = resources.NewGrantAccountRoleIdToUser(grant.Name, grant.GranteeName.(sdk.AccountObjectIdentifier))
+		stateResourceId = resources.NewGrantAccountRoleIdToUser(grant.Name.(sdk.AccountObjectIdentifier), grant.GranteeName.(sdk.AccountObjectIdentifier))
 	default:
 		return nil, nil, fmt.Errorf("unsupported grant account role mapping")
 	}

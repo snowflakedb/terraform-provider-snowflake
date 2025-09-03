@@ -43,6 +43,8 @@ type GrantPrivilegesToAccountRoleId struct {
 	Data            fmt.Stringer
 }
 
+// TODO(SNOW-2314062): Use in resource
+
 func NewGrantPrivilegesToAccountRoleIdOnAccount(roleName sdk.AccountObjectIdentifier, grantOption bool, alwaysApply bool, allPrivileges bool, privileges ...string) GrantPrivilegesToAccountRoleId {
 	return GrantPrivilegesToAccountRoleId{
 		RoleName:        roleName,

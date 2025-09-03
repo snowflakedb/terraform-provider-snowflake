@@ -27,6 +27,8 @@ type GrantPrivilegesToDatabaseRoleId struct {
 	Data             fmt.Stringer
 }
 
+// TODO(SNOW-2314062): Use in resource
+
 func NewGrantPrivilegesToDatabaseRoleIdOnDatabase(databaseRoleName sdk.DatabaseObjectIdentifier, withGrantOption bool, alwaysApply bool, allPrivileges bool, databaseName sdk.AccountObjectIdentifier, privileges ...string) GrantPrivilegesToDatabaseRoleId {
 	return GrantPrivilegesToDatabaseRoleId{
 		DatabaseRoleName: databaseRoleName,
