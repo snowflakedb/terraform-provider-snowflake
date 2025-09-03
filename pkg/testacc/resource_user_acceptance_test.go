@@ -22,6 +22,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -1818,6 +1819,7 @@ func TestAcc_User_gh3655(t *testing.T) {
 }
 
 func TestAcc_User_BCR_2025_05(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModel := model.User("test", userId.Name())
