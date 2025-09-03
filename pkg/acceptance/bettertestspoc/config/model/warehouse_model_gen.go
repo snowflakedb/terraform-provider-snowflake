@@ -23,6 +23,7 @@ type WarehouseModel struct {
 	MaxConcurrencyLevel             tfconfig.Variable `json:"max_concurrency_level,omitempty"`
 	MinClusterCount                 tfconfig.Variable `json:"min_cluster_count,omitempty"`
 	QueryAccelerationMaxScaleFactor tfconfig.Variable `json:"query_acceleration_max_scale_factor,omitempty"`
+	ResourceConstraint              tfconfig.Variable `json:"resource_constraint,omitempty"`
 	ResourceMonitor                 tfconfig.Variable `json:"resource_monitor,omitempty"`
 	ScalingPolicy                   tfconfig.Variable `json:"scaling_policy,omitempty"`
 	StatementQueuedTimeoutInSeconds tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
@@ -140,6 +141,11 @@ func (w *WarehouseModel) WithQueryAccelerationMaxScaleFactor(queryAccelerationMa
 	return w
 }
 
+func (w *WarehouseModel) WithResourceConstraint(resourceConstraint string) *WarehouseModel {
+	w.ResourceConstraint = tfconfig.StringVariable(resourceConstraint)
+	return w
+}
+
 func (w *WarehouseModel) WithResourceMonitor(resourceMonitor string) *WarehouseModel {
 	w.ResourceMonitor = tfconfig.StringVariable(resourceMonitor)
 	return w
@@ -226,6 +232,11 @@ func (w *WarehouseModel) WithMinClusterCountValue(value tfconfig.Variable) *Ware
 
 func (w *WarehouseModel) WithQueryAccelerationMaxScaleFactorValue(value tfconfig.Variable) *WarehouseModel {
 	w.QueryAccelerationMaxScaleFactor = value
+	return w
+}
+
+func (w *WarehouseModel) WithResourceConstraintValue(value tfconfig.Variable) *WarehouseModel {
+	w.ResourceConstraint = value
 	return w
 }
 
