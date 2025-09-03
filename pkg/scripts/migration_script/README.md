@@ -278,6 +278,10 @@ To rename the resources, you can use the [terraform state mv](https://developer.
 
 To properly link the resources, you either use the explicit dependency with `depends_on` argument,
 or you can use implicit dependency by referring to the existing role resources in the `snowflake_grant_privileges_to_account_role`.
+
+There's also an alternative, which is changing both of those things before importing the resources into the state.
+That way, the resources would be imported with the desired names and dependencies from the start.
+
 An example of the updated configuration is shown below:
 
 ```hcl
