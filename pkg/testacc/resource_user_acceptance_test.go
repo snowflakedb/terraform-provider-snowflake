@@ -1691,6 +1691,9 @@ func TestAcc_User_BCR_2025_05(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
+				PreConfig: func() {
+					secondaryTestClient().BcrBundles.DisableBcrBundle(t, "2025_05")
+				},
 				Config: config.FromModels(t, providerModel, userModel),
 				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
 					HasNameString(userId.Name()).
