@@ -7,7 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 )
 
-var resourceIdDisallowedCharacters = regexp.MustCompile("[a-zA-Z0-9\\-_]")
+var resourceIdDisallowedCharacters = regexp.MustCompile("[^a-zA-Z0-9\\-_]")
 
 func NormalizeResourceId(resourceId string) string {
 	resourceId = strings.ReplaceAll(resourceId, `.`, "_")
