@@ -11,6 +11,7 @@ import (
 	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -1511,7 +1512,7 @@ func TestAcc_View_Issue3676_fix(t *testing.T) {
 					HasStatementString(otherStatement),
 					objectassert.View(t, newId).HasName(newId.Name()),
 					// view with the old id does not exist
-					objectassert.ViewDoesNotExist(t, id),
+					invokeactionassert.ViewDoesNotExist(t, id),
 				),
 			},
 		},
