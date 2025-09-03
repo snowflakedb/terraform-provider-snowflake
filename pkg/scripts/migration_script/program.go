@@ -131,10 +131,18 @@ object_type represents the type of Snowflake object you want to generate terrafo
 	Currently supported object types are:
 		- "grants" which expects output from SHOW GRANTS command (see https://docs.snowflake.com/en/sql-reference/sql/show-grants) to generate new grant resources (see https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#mapping-from-old-grant-resources-to-the-new-ones).
 			The allowed SHOW GRANTS commands are:
-			- 'SHOW GRANTS ON ACCOUNT'
-			- 'SHOW GRANTS ON <object_type>'
-			- 'SHOW GRANTS TO ROLE <role_name>'
-			- 'SHOW GRANTS TO DATABASE ROLE <database_role_name>'
+				- 'SHOW GRANTS ON ACCOUNT'
+				- 'SHOW GRANTS ON <object_type>'
+				- 'SHOW GRANTS TO ROLE <role_name>'
+				- 'SHOW GRANTS TO DATABASE ROLE <database_role_name>'
+			Supported resources:
+				- snowflake_grant_privileges_to_account_role
+				- snowflake_grant_privileges_to_database_role
+				- snowflake_grant_account_role
+				- snowflake_grant_database_role
+			Limitations:
+				- grants on 'future' or on 'all' objects are not supported
+				- all_privileges and always_apply fields are not supported
 		
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf

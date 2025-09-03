@@ -18,6 +18,8 @@
       * [3. Get the generated resources and import them to the state](#3-get-the-generated-resources-and-import-them-to-the-state)
   * [Limitations](#limitations)
     * [Generated resource names](#generated-resource-names)
+    * [Single input](#single-input)
+    * [No dependencies handling](#no-dependencies-handling)
 <!-- TOC -->
 
 This script is designed to assist in migrating existing Snowflake objects into Terraform management
@@ -56,10 +58,18 @@ where script options are:
     - `statement`: Generates commented [import commands](https://developer.hashicorp.com/terraform/cli/commands/import) at the bottom of the generated Terraform configuration.
 - **OBJECT_TYPES**:
   - `grants`: Generates resources and import statements for Snowflake grants. The expected input is in the form of [`SHOW GRANTS`](https://docs.snowflake.com/en/sql-reference/sql/show-grants) output. The allowed SHOW GRANTS commands are:
-    - `SHOW GRANTS ON ACCOUNT`
-    - `SHOW GRANTS ON <object_type>`
-    - `SHOW GRANTS TO ROLE <role_name>`
-    - `SHOW GRANTS TO DATABASE ROLE <database_role_name>`
+      - `SHOW GRANTS ON ACCOUNT`
+      - `SHOW GRANTS ON <object_type>`
+      - `SHOW GRANTS TO ROLE <role_name>`
+      - `SHOW GRANTS TO DATABASE ROLE <database_role_name>`
+    Supported resources:
+      - snowflake_grant_privileges_to_account_role
+      - snowflake_grant_privileges_to_database_role
+      - snowflake_grant_account_role
+      - snowflake_grant_database_role
+    Limitations:
+      - grants on 'future' or on 'all' objects are not supported
+      - all_privileges and always_apply fields are not supported
 - **INPUT**:
   - Migration script operates on STDIN input in CSV format. You can redirect the input from a file or pipe it from another command.
 - **OUTPUT**:
