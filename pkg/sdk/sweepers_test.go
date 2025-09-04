@@ -726,6 +726,11 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 		for idx, fg := range fgs {
 			log.Printf("[DEBUG] Processing failover group [%d/%d]: %s...", idx+1, len(fgs), fg.ID().FullyQualifiedName())
 
+			if fg.AccountLocator != accountLocator {
+				log.Printf("[DEBUG] Skipping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
+				continue
+			}
+
 			if fg.Owner != snowflakeroles.Accountadmin.Name() {
 				log.Printf("[DEBUG] Granting ownership on failover group %s, to ACCOUNTADMIN", fg.ID().FullyQualifiedName())
 				err := client.Grants.GrantOwnership(
@@ -745,7 +750,7 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 				}
 			}
 
-			if !slices.Contains(protectedFailoverGroups, fg.Name) && fgDropCondition(fg) && fg.AccountLocator == accountLocator {
+			if !slices.Contains(protectedFailoverGroups, fg.Name) && fgDropCondition(fg) {
 				log.Printf("[DEBUG] Dropping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
 				if err := client.FailoverGroups.DropSafely(ctx, fg.ID()); err != nil {
 					log.Printf("[DEBUG] Dropping failover group %s, resulted in error %v", fg.ID().FullyQualifiedName(), err)
