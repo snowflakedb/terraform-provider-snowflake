@@ -4,8 +4,6 @@
 
 package testacc
 
-package testacc
-
 import (
 	"regexp"
 	"testing"
