@@ -3,26 +3,120 @@
 package testacc
 
 import (
+	"fmt"
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	configvariable "github.com/hashicorp/terraform-plugin-testing/config"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// All tests in this file are temporarily moved to account level tests due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results.
+func TestAcc_Task_ProveSessionParameterBehavior(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	providerModel := providermodel.SnowflakeProvider().WithParamsValue(
+		configvariable.ObjectVariable(
+			map[string]configvariable.Variable{
+				"statement_timeout_in_seconds": configvariable.IntegerVariable(12345),
+			},
+		),
+	)
+	taskModel := model.TaskWithId("test", id, false, statement)
+	executeCheckOnSession := model.ExecuteWithNoOpActions("t1").
+		WithQuery("SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN SESSION")
+	executeCheckOnTask := model.ExecuteWithNoOpActions("t2").
+		WithQuery(fmt.Sprintf(`SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN TASK %s`, id.FullyQualifiedName())).
+		WithDependsOn(taskModel.ResourceReference())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: taskDedicatedProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModel, taskModel, executeCheckOnSession, executeCheckOnTask),
+				Check: assertThat(t,
+					resourceassert.ExecuteResource(t, executeCheckOnSession.ResourceReference()).
+						HasQueryResultsLength(1).
+						HasKeyValueOnIdx("value", "12345", 0).
+						HasKeyValueOnIdx("level", string(sdk.ParameterTypeSession), 0),
+
+					// the parameter set on session is not used in object creation
+					resourceassert.ExecuteResource(t, executeCheckOnTask.ResourceReference()).
+						HasQueryResultsLength(1).
+						HasKeyValueOnIdx("value", "172800", 0).
+						HasKeyValueOnIdx("level", "", 0),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	taskModel := model.TaskWithId("test", id, false, statement)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactoryUsingCache("default"),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, taskModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, taskModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStatementTimeoutInSecondsString("172800"),
+				),
+			},
+			{
+				PreConfig: func() {
+					revertParameter := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "43200")
+					t.Cleanup(revertParameter)
+				},
+				Config: config.FromModels(t, taskModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(taskModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, taskModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStatementTimeoutInSecondsString("43200"),
+					// modifying the account-level parameter one more time as assertion, as this is the moment in-between apply and refresh
+					invokeactionassert.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "43201"),
+				),
+				ExpectError: regexp.MustCompile(`(?s)After applying this test step, the non-refresh plan was not empty.*~ update in-place.*# snowflake_task.test will be updated in-place.*~ statement_timeout_in_seconds\s+=\s+43200 -> \(known after apply\)`),
+			},
+		},
+	})
+}
+
+// All below tests in this file are temporarily moved to account level tests due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results.
 
 func TestAcc_Task_Basic(t *testing.T) {
 	currentRole := testClient().Context.CurrentRole(t)
