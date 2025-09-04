@@ -184,6 +184,9 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	// Error: 003524 (22023): SQL execution error: An integration with the given issuer already exists for this account
 }
 
+// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
+var stalePeriod = -12 * time.Hour
+
 // TODO [SNOW-867247]: generalize nuke methods (sweepers too)
 // TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
 func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() error {
@@ -209,9 +212,8 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 			}
 		default:
 			log.Println("[DEBUG] Sweeping stale warehouses")
-			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
 			whDropCondition = func(wh sdk.Warehouse) bool {
-				return wh.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
+				return wh.CreatedOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
@@ -288,9 +290,8 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 			}
 		default:
 			log.Println("[DEBUG] Sweeping stale databases")
-			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
 			dbDropCondition = func(db sdk.Database) bool {
-				return db.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
+				return db.CreatedOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
@@ -531,7 +532,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 		} else {
 			log.Println("[DEBUG] Sweeping stale shares")
 			shareDropCondition = func(s sdk.Share) bool {
-				return s.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+				return s.CreatedOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
@@ -585,7 +586,7 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 					log.Printf("[DEBUG] Could not parse created on: '%s' for network policy %s", n.CreatedOn, n.ID().FullyQualifiedName())
 					return false
 				}
-				return createdOn.Before(time.Now().Add(-15 * time.Minute))
+				return createdOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
@@ -628,9 +629,8 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 			}
 		default:
 			log.Println("[DEBUG] Sweeping stale resource monitors")
-			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
 			rmDropCondition = func(rm sdk.ResourceMonitor) bool {
-				return rm.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
+				return rm.CreatedOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
