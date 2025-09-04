@@ -714,7 +714,12 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, result.Running)
 		assert.Equal(t, 0, result.Queued)
-		assert.Eventually(t, func() bool { return sdk.WarehouseStateSuspended == result.State }, 10*time.Second, time.Second)
+
+		warehouseSuspended := func() bool {
+			r, e := client.Warehouses.ShowByID(ctx, warehouse.ID())
+			return e == nil && r.State == sdk.WarehouseStateSuspended
+		}
+		assert.Eventually(t, warehouseSuspended, 10*time.Second, time.Second)
 	})
 
 	t.Run("alter: resize with a long running-query", func(t *testing.T) {
