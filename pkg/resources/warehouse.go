@@ -428,7 +428,11 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.ResourceConstraint = &generation
+		resourceConstraint, err := sdk.WarehouseGenerationToWarehouseResourceConstraint(generation)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createOptions.ResourceConstraint = &resourceConstraint
 	}
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
 		createOptions.MaxConcurrencyLevel = v
@@ -734,7 +738,11 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				set.ResourceConstraint = &generation
+				resourceConstraint, err := sdk.WarehouseGenerationToWarehouseResourceConstraint(generation)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				set.ResourceConstraint = &resourceConstraint
 			} else {
 				// TODO [SNOW-1473453]: UNSET of resource constraint does not work
 				// unset.ResourceConstraint = sdk.Bool(true)

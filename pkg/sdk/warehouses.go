@@ -210,12 +210,12 @@ const (
 	WarehouseGenerationStandardGen2 WarehouseGeneration = "2"
 )
 
-func ToWarehouseGeneration(s string) (WarehouseResourceConstraint, error) {
+func ToWarehouseGeneration(s string) (WarehouseGeneration, error) {
 	switch s {
 	case "1":
-		return WarehouseResourceConstraintStandardGen1, nil
+		return WarehouseGenerationStandardGen1, nil
 	case "2":
-		return WarehouseResourceConstraintStandardGen2, nil
+		return WarehouseGenerationStandardGen2, nil
 	default:
 		return "", fmt.Errorf("invalid generation: %s", s)
 	}
@@ -238,6 +238,17 @@ func WarehouseResourceConstraintToWarehouseGeneration(s WarehouseResourceConstra
 		return WarehouseGenerationStandardGen2, nil
 	default:
 		return "", fmt.Errorf("invalid resource constraint for generation: %s", s)
+	}
+}
+
+func WarehouseGenerationToWarehouseResourceConstraint(s WarehouseGeneration) (WarehouseResourceConstraint, error) {
+	switch s {
+	case WarehouseGenerationStandardGen1:
+		return WarehouseResourceConstraintStandardGen1, nil
+	case WarehouseGenerationStandardGen2:
+		return WarehouseResourceConstraintStandardGen2, nil
+	default:
+		return "", fmt.Errorf("invalid generation for resource constraint: %s", s)
 	}
 }
 
