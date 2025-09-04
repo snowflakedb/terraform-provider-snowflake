@@ -68,7 +68,7 @@ func sweep(client *sdk.Client, suffix string) error {
 		nukeResourceMonitors(client, suffix),
 		nukeNetworkPolicies(client, suffix),
 		nukeUsers(client, suffix),
-		getFailoverGroupSweeper(client, suffix),
+		nukeFailoverGroups(client, suffix),
 		nukeShares(client, suffix),
 		nukeDatabases(client, "", suffix),
 		nukeWarehouses(client, "", suffix),
@@ -131,7 +131,7 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 
 	t.Run("sweep resource monitors", func(t *testing.T) {
 		for _, c := range allClients {
-			err := nukeNetworkPolicies(c, "")()
+			err := nukeResourceMonitors(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -146,6 +146,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("sweep users", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeUsers(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep failover groups", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeFailoverGroups(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -677,6 +684,75 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping resource monitor %s, created at: %s", rm.ID().FullyQualifiedName(), rm.CreatedOn.String())
+			}
+		}
+		return errors.Join(errs...)
+	}
+}
+
+func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
+	var protectedFailoverGroups []string
+
+	return func() error {
+		ctx := context.Background()
+
+		var fgDropCondition func(fg sdk.FailoverGroup) bool
+		switch {
+		case suffix != "":
+			log.Printf("[DEBUG] Sweeping failover groups with suffix %s", suffix)
+			fgDropCondition = func(fg sdk.FailoverGroup) bool {
+				return strings.HasSuffix(fg.Name, suffix)
+			}
+		default:
+			log.Println("[DEBUG] Sweeping stale failover groups")
+			fgDropCondition = func(fg sdk.FailoverGroup) bool {
+				return fg.CreatedOn.Before(time.Now().Add(stalePeriod))
+			}
+		}
+
+		accountLocator := client.GetAccountLocator()
+		opts := &sdk.ShowFailoverGroupOptions{
+			InAccount: sdk.NewAccountIdentifierFromAccountLocator(accountLocator),
+		}
+
+		fgs, err := client.FailoverGroups.Show(ctx, opts)
+		if err != nil {
+			return fmt.Errorf("SHOW FAILOVER GROUPS ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d failover groups", len(fgs))
+
+		var errs []error
+		for idx, fg := range fgs {
+			log.Printf("[DEBUG] Processing failover group [%d/%d]: %s...", idx+1, len(fgs), fg.ID().FullyQualifiedName())
+
+			if fg.Owner != snowflakeroles.Accountadmin.Name() {
+				log.Printf("[DEBUG] Granting ownership on failover group %s, to ACCOUNTADMIN", fg.ID().FullyQualifiedName())
+				err := client.Grants.GrantOwnership(
+					ctx,
+					sdk.OwnershipGrantOn{Object: &sdk.Object{
+						ObjectType: sdk.ObjectTypeFailoverGroup,
+						Name:       fg.ID(),
+					}},
+					sdk.OwnershipGrantTo{
+						AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+					},
+					nil,
+				)
+				if err != nil {
+					errs = append(errs, fmt.Errorf("granting ownership on failover group %s ended with error, err = %w", fg.ID().FullyQualifiedName(), err))
+					continue
+				}
+			}
+
+			if !slices.Contains(protectedFailoverGroups, fg.Name) && fgDropCondition(fg) && fg.AccountLocator == accountLocator {
+				log.Printf("[DEBUG] Dropping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
+				if err := client.FailoverGroups.DropSafely(ctx, fg.ID()); err != nil {
+					log.Printf("[DEBUG] Dropping failover group %s, resulted in error %v", fg.ID().FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping failover group %s ended with error, err = %w", fg.ID().FullyQualifiedName(), err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
 			}
 		}
 		return errors.Join(errs...)
