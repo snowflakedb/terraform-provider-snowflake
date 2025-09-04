@@ -19,29 +19,6 @@ func getAccountPolicyAttachmentsSweeper(client *sdk.Client) func() error {
 	}
 }
 
-func getResourceMonitorSweeper(client *sdk.Client, suffix string) func() error {
-	return func() error {
-		log.Printf("[DEBUG] Sweeping resource monitors with suffix %s", suffix)
-		ctx := context.Background()
-
-		rms, err := client.ResourceMonitors.Show(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("sweeping resource monitor ended with error, err = %w", err)
-		}
-		for _, rm := range rms {
-			if strings.HasSuffix(rm.Name, suffix) {
-				log.Printf("[DEBUG] Dropping resource monitor %s", rm.ID().FullyQualifiedName())
-				if err := client.ResourceMonitors.Drop(ctx, rm.ID(), &sdk.DropResourceMonitorOptions{IfExists: sdk.Bool(true)}); err != nil {
-					return fmt.Errorf("sweeping resource monitor %s ended with error, err = %w", rm.ID().FullyQualifiedName(), err)
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping resource monitor %s", rm.ID().FullyQualifiedName())
-			}
-		}
-		return nil
-	}
-}
-
 func getFailoverGroupSweeper(client *sdk.Client, suffix string) func() error {
 	return func() error {
 		log.Printf("[DEBUG] Sweeping failover groups with suffix %s", suffix)

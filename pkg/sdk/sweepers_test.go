@@ -65,7 +65,7 @@ func sweep(client *sdk.Client, suffix string) error {
 	sweepers := []func() error{
 		nukeSecurityIntegrations(client, suffix),
 		getAccountPolicyAttachmentsSweeper(client),
-		getResourceMonitorSweeper(client, suffix),
+		nukeResourceMonitors(client, suffix),
 		nukeNetworkPolicies(client, suffix),
 		nukeUsers(client, suffix),
 		getFailoverGroupSweeper(client, suffix),
@@ -125,6 +125,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("sweep security integrations", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeSecurityIntegrations(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep resource monitors", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeNetworkPolicies(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -602,6 +609,76 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
+		return errors.Join(errs...)
+	}
+}
+
+func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
+	var protectedResourceMonitors []string
+
+	return func() error {
+		ctx := context.Background()
+
+		var rmDropCondition func(rm sdk.ResourceMonitor) bool
+		switch {
+		case suffix != "":
+			log.Printf("[DEBUG] Sweeping resource monitors with suffix %s", suffix)
+			rmDropCondition = func(rm sdk.ResourceMonitor) bool {
+				return strings.HasSuffix(rm.Name, suffix)
+			}
+		default:
+			log.Println("[DEBUG] Sweeping stale resource monitors")
+			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
+			rmDropCondition = func(rm sdk.ResourceMonitor) bool {
+				return rm.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
+			}
+		}
+
+		rms, err := client.ResourceMonitors.Show(ctx, new(sdk.ShowResourceMonitorOptions))
+		if err != nil {
+			return fmt.Errorf("SHOW RESOURCE MONITORS ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d resource monitors", len(rms))
+
+		var errs []error
+		for idx, rm := range rms {
+			log.Printf("[DEBUG] Processing resurce monitor [%d/%d]: %s...", idx+1, len(rms), rm.ID().FullyQualifiedName())
+
+			if !slices.Contains(protectedResourceMonitors, rm.Name) && rmDropCondition(rm) {
+				if rm.Owner != snowflakeroles.Accountadmin.Name() {
+					log.Printf("[DEBUG] Granting ownership on resource monitor %s, to ACCOUNTADMIN", rm.ID().FullyQualifiedName())
+					err := client.Grants.GrantOwnership(
+						ctx,
+						sdk.OwnershipGrantOn{Object: &sdk.Object{
+							ObjectType: sdk.ObjectTypeResourceMonitor,
+							Name:       rm.ID(),
+						}},
+						sdk.OwnershipGrantTo{
+							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+						},
+						nil,
+					)
+					if err != nil {
+						errs = append(errs, fmt.Errorf("granting ownership on resource monitor %s ended with error, err = %w", rm.ID().FullyQualifiedName(), err))
+						continue
+					}
+				}
+
+				log.Printf("[DEBUG] Dropping resource monitor %s, created at: %s", rm.ID().FullyQualifiedName(), rm.CreatedOn.String())
+				// to handle identifiers with containing `"` - we do not escape them currently in the SDK SQL generation
+				rmId := rm.ID()
+				if strings.Contains(rmId.Name(), `"`) {
+					rmId = sdk.NewAccountObjectIdentifier(strings.ReplaceAll(rmId.Name(), `"`, `""`))
+				}
+				if err := client.ResourceMonitors.DropSafely(ctx, rmId); err != nil {
+					log.Printf("[DEBUG] Dropping resource monitor %s, resulted in error %v", rm.ID().FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping resource monitor %s ended with error, err = %w", rm.ID().FullyQualifiedName(), err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping resource monitor %s, created at: %s", rm.ID().FullyQualifiedName(), rm.CreatedOn.String())
+			}
+		}
 		return errors.Join(errs...)
 	}
 }
