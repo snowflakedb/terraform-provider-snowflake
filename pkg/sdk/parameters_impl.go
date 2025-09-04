@@ -304,7 +304,7 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 	return nil
 }
 
-func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter AccountParameter, value string) (err error, matched bool) {
+func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter AccountParameter, value string) (matched bool, err error) {
 	matched = true
 	switch parameter {
 	case AccountParameterAllowClientMFACaching:
@@ -324,7 +324,7 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 	case AccountParameterClientEncryptionKeySize:
 		v, err := strconv.Atoi(value)
 		if err != nil {
-			return fmt.Errorf("CLIENT_ENCRYPTION_KEY_SIZE session parameter is an integer, got %v", value), matched
+			return matched, fmt.Errorf("CLIENT_ENCRYPTION_KEY_SIZE session parameter is an integer, got %v", value)
 		}
 		legacyAccountParameters.ClientEncryptionKeySize = Pointer(v)
 	case AccountParameterCortexEnabledCrossRegion:
@@ -408,7 +408,7 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 	case AccountParameterMinDataRetentionTimeInDays:
 		v, err := strconv.Atoi(value)
 		if err != nil {
-			return fmt.Errorf("MIN_DATA_RETENTION_TIME_IN_DAYS session parameter is an integer, got %v", value), matched
+			return matched, fmt.Errorf("MIN_DATA_RETENTION_TIME_IN_DAYS session parameter is an integer, got %v", value)
 		}
 		legacyAccountParameters.MinDataRetentionTimeInDays = Pointer(v)
 	case AccountParameterNetworkPolicy:
@@ -472,5 +472,5 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 	default:
 		matched = false
 	}
-	return nil, matched
+	return matched, nil
 }

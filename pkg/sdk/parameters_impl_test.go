@@ -182,7 +182,7 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 		t.Run(fmt.Sprintf("test valid value '%s' for account parameter %s", tt.value, tt.parameter), func(t *testing.T) {
 			legacyAccountParameters := &LegacyAccountParameters{}
 
-			err, matched := legacyAccountParameters.setParam(tt.parameter, tt.value)
+			matched, err := legacyAccountParameters.setParam(tt.parameter, tt.value)
 
 			require.NoError(t, err)
 			require.True(t, matched)
@@ -227,7 +227,7 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 		t.Run(fmt.Sprintf("test invalid value '%s' for account parameter %s", tt.value, tt.parameter), func(t *testing.T) {
 			legacyAccountParameters := &LegacyAccountParameters{}
 
-			err, matched := legacyAccountParameters.setParam(tt.parameter, tt.value)
+			matched, err := legacyAccountParameters.setParam(tt.parameter, tt.value)
 
 			require.Error(t, err)
 			require.True(t, matched)
@@ -245,7 +245,7 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 		t.Run(fmt.Sprintf("test non-account level parameter %s", tt.parameter), func(t *testing.T) {
 			legacyAccountParameters := &LegacyAccountParameters{}
 
-			err, matched := legacyAccountParameters.setParam(AccountParameter(tt.parameter), tt.value)
+			matched, err := legacyAccountParameters.setParam(AccountParameter(tt.parameter), tt.value)
 
 			require.NoError(t, err)
 			require.False(t, matched)

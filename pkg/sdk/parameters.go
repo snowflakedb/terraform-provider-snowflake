@@ -41,7 +41,7 @@ type parameters struct {
 
 func (v *parameters) SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error {
 	legacyAccountParameters := &LegacyAccountParameters{}
-	err, matched := legacyAccountParameters.setParam(parameter, value)
+	matched, err := legacyAccountParameters.setParam(parameter, value)
 	if err != nil {
 		return err
 	}
