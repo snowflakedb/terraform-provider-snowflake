@@ -18,6 +18,7 @@ resource "snowflake_warehouse" "warehouse" {
   comment                             = "An example warehouse."
   enable_query_acceleration           = true
   query_acceleration_max_scale_factor = 4
+  resource_constraint                 = "MEMORY_16X"
 
   max_concurrency_level               = 4
   statement_queued_timeout_in_seconds = 5

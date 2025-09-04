@@ -46,6 +46,22 @@ and have this bundle enabled, the provider will return an error.
 
 Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
 
+## [Bundle 2025_05](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05_bundle)
+
+### Key-pair authentication for Google Cloud accounts in the us-central1 region
+
+Previously, when you used key-pair authentication from a Snowflake account in the Google Cloud us-central1 region, specifying the account by using an account locator with additional segments was supported.
+
+Now, when you use key-pair authentication across all cloud platforms and regions, you must specify the account by using only the account locator without additional segments. See our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide for authentication overview in the provider.
+
+Reference: [BCR-2055](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05/bcr-2055)
+
+### File formats and stages: Enforce dependency checks
+
+You can't drop or recreate a file format or stage that has dependent external tables. You also can't alter the location of a stage with dependent external tables. To perform these operations, first drop the dependent external tables manually.
+
+Reference: [BCR-1989](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05/bcr-1989)
+
 ## [Bundle 2025_04](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04_bundle)
 
 ### Primary role requires stage access during `CREATE EXTERNAL TABLE` command

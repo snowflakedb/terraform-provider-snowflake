@@ -1,5 +1,48 @@
 # Changelog
 
+## [2.6.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.5.0...v2.6.0) (2025-08-29)
+
+
+### 🎉 **What's new:**
+
+* Add semantic view definition ([#3925](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3925)) ([0b1b68d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0b1b68d466aebbc27bc459a235d3c1dca8b3d8c6))
+
+
+### 🔧 **Misc**
+
+* Add manual test for consumption billing entity ([#3918](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3918)) ([321852d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/321852d7b4860fcd199583d28f0c733ebb679af7))
+* Add new database to the protected databases in sweepers ([#3927](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3927)) ([50fc2dd](https://github.com/snowflakedb/terraform-provider-snowflake/commit/50fc2dddb8a72af640501cd76bc57ea2015a86d7))
+* Add new roadmap entry ([#3935](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3935)) ([6bfb929](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6bfb92999ba9ece400991feede9c7ad41f0ea899))
+* Address skipped tests (SNOW-2010844) ([#3972](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3972)) ([dbad401](https://github.com/snowflakedb/terraform-provider-snowflake/commit/dbad4013fe2bb254dbeb3ddc2a03588df6912502))
+* Adjust architests after moving acceptance tests to a separate package ([#3970](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3970)) ([1379449](https://github.com/snowflakedb/terraform-provider-snowflake/commit/13794492985c1e4a855abb0f654219f4d72f3c6f))
+* Adjust PAT alter after fixes in snowflake ([#3922](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3922)) ([b76a0ea](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b76a0eadbc1c1d77d0604fb6466baa8d99cd4590))
+* Adjust security integration tests ([#3975](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3975)) ([6067d97](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6067d97721869d156693b7c587159a78a68c7de7))
+* Change convert signature in all other resources ([#3940](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3940)) ([962e0a4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/962e0a4176c8bfadb5b5e4468b29f78b527b8c35))
+* Clean up all TODOs created during Terraform Plugin Framework and RestAPI research ([#3963](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3963)) ([4ea4e8b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4ea4e8b87225d983ac6b7e1e3c5630b0256c0ef9))
+* Clean up TODO comments left with "next PR" without issue number ([#3964](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3964)) ([3d7b7bf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3d7b7bf6419c0f245d3e86b4901473f44e054a36))
+* Convert function adjustments follow-up ([#3955](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3955)) ([ce144b1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ce144b12c724cec725cc3fd84e62baf365e62383))
+* Find versions of provider in gh organization ([#3932](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3932)) ([c3e6051](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c3e6051a4dacfb75a544089a0030af1c5f0fc1a9))
+* Fix check destroy logic ([#3967](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3967)) ([2ca61f0](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2ca61f0f24b2730f679e646521882be7c0d32e87))
+* Fix unsafe query integration test ([#3968](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3968)) ([07e3924](https://github.com/snowflakedb/terraform-provider-snowflake/commit/07e392441e8fce1149df8ce2edfbff910263f642))
+* Move more task tests to account level ([#3971](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3971)) ([74f781e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/74f781e1bc1994da60fd22d2aeedb40ef7592beb))
+* Nuke roles, databases, warehouses, shares, and network policies ([#3976](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3976)) ([678de64](https://github.com/snowflakedb/terraform-provider-snowflake/commit/678de64fa96c50170737208a4712668c0c2c88c4))
+* Remove unnecessary TestAccPreCheck ([#3966](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3966)) ([279b622](https://github.com/snowflakedb/terraform-provider-snowflake/commit/279b622d27d3740557fab6dbc2ebf317f988de36))
+* Run functional tests after setting up Terraform ([#3962](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3962)) ([3e186e7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3e186e7dbd7903852492d0078620c5e06d2bc363))
+* Small failover group fixes ([#3947](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3947)) ([cebfca6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/cebfca6f4170901bc8259aa0efd0dc8466b400e0))
+* Sweep security integrations ([#3950](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3950)) ([62f79db](https://github.com/snowflakedb/terraform-provider-snowflake/commit/62f79dbe33f2d3ae28b2728982dfaf975c72e129))
+* Update failover group docs ([#3949](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3949)) ([12dc244](https://github.com/snowflakedb/terraform-provider-snowflake/commit/12dc24414c96b9f65d22d65e7f16a2ed9be41b4b))
+* Upgrade go Snowflake driver ([#3980](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3980)) ([0ed3c60](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0ed3c607af36d19dfb3801b39285b4aedfd50a77))
+* Use DropSafely in test setup helpers ([#3969](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3969)) ([7f5d4ca](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7f5d4ca7ba600d1f015d026b1cc5ccb34b205d5b))
+
+
+### 🐛 **Bug fixes:**
+
+* Change convert signature for a single object ([#3926](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3926)) ([edec510](https://github.com/snowflakedb/terraform-provider-snowflake/commit/edec5107cb87ece817e4ba9076db4aaa2455a085))
+* Connection fixes follow-up ([#3957](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3957)) ([5647304](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5647304b65d31c8bcd699ec2fcf4b8157ed35aa6))
+* Enhance connection management and logging for secondary connections ([#3937](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3937)) ([8fbcc85](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8fbcc856c0843a7d79142f790e441aa96fdb5000))
+* Fix updating privileges in grant_privileges_to_account_role ([#3953](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3953)) ([70136ea](https://github.com/snowflakedb/terraform-provider-snowflake/commit/70136ea7bfb6b9251d9b93620edeadc29f218b3b))
+* Update migration guide, import docs, and task tests ([#3933](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3933)) ([ca1568d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ca1568d5aa88f429a438307151cbd29b215d9ef2))
+
 ## [2.5.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.4.0...v2.5.0) (2025-08-07)
 
 

@@ -16,10 +16,12 @@ func (m *SnowflakeModel) MarshalJSON() ([]byte, error) {
 	type AliasModelType SnowflakeModel
 	return json.Marshal(&struct {
 		*AliasModelType
-		Alias string `json:"alias,omitempty"`
+		Alias                     string                        `json:"alias,omitempty"`
+		SingleAttributeWorkaround config.ReplacementPlaceholder `json:"single_attribute_workaround,omitempty"`
 	}{
-		AliasModelType: (*AliasModelType)(m),
-		Alias:          m.Alias(),
+		AliasModelType:            (*AliasModelType)(m),
+		Alias:                     m.Alias(),
+		SingleAttributeWorkaround: config.SnowflakeProviderConfigSingleAttributeWorkaround,
 	})
 }
 
