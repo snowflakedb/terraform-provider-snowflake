@@ -117,7 +117,7 @@ var warehouseSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraintWithoutGeneration),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraintWithoutGeneration), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
-		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraintsWithoutGenerations)),
+		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Only available for snowpark-optimized warehouses. For setting generation please use the `generation` field. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraintsWithoutGenerations)),
 		ConflictsWith:    []string{"generation"},
 	},
 	"generation": {
@@ -145,7 +145,7 @@ var warehouseSchema = map[string]*schema.Schema{
 			}
 			return string(generation)
 		})),
-		Description:   fmt.Sprintf("Specifies the generation for the warehouse. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseGenerations)),
+		Description:   fmt.Sprintf("Specifies the generation for the warehouse. Only available for standard warehouses. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseGenerations)),
 		ConflictsWith: []string{"resource_constraint"},
 	},
 	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
