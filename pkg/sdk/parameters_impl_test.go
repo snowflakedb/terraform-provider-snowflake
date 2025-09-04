@@ -89,6 +89,7 @@ func TestSessionParameters_setParam(t *testing.T) {
 		})
 	}
 
+	// TODO [SNOW-2316589]: add validation to string type
 	invalidCases := []struct {
 		parameter SessionParameter
 		value     string
@@ -189,6 +190,7 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 		})
 	}
 
+	// TODO [SNOW-2316589]: add validation to string type
 	invalidCases := []struct {
 		parameter AccountParameter
 		value     string
