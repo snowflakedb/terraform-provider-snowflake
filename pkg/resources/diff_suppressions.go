@@ -52,14 +52,22 @@ func NormalizeAndCompareIdentifiersInSet(key string) schema.SchemaDiffSuppressFu
 		}
 
 		if oldValue == "" && !d.GetRawState().IsNull() {
-			if helpers.ContainsIdentifierIgnoringQuotes(ctyValToSliceString(d.GetRawState().AsValueMap()[key].AsValueSet().Values()), newValue) {
-				return true
+			stateRaw, ok := d.GetRawState().AsValueMap()[key]
+			if ok && !stateRaw.IsNull() && stateRaw.Type().IsCollectionType() {
+				if helpers.ContainsIdentifierIgnoringQuotes(ctyValToSliceString(stateRaw.AsValueSet().Values()), newValue) {
+					return true
+				}
+			} else {
+				log.Printf("[DEBUG] NormalizeAndCompareIdentifiersInSet: state raw for key %s is not found or is not a collection type", key)
 			}
 		}
 
 		if newValue == "" {
-			if helpers.ContainsIdentifierIgnoringQuotes(expandStringList(d.Get(key).(*schema.Set).List()), oldValue) {
+			oldRaw, ok := d.Get(key).(*schema.Set)
+			if ok && helpers.ContainsIdentifierIgnoringQuotes(expandStringList(oldRaw.List()), oldValue) {
 				return true
+			} else {
+				log.Printf("[DEBUG] NormalizeAndCompareIdentifiersInSet: old raw for key %s is not found or is not a collection type", key)
 			}
 		}
 

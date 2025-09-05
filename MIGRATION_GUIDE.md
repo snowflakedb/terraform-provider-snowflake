@@ -26,6 +26,55 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.6.0 ➞ v2.6.1
 
+### *(bugfix)* Fixed diff suppress for sets of identifiers
+A number of resources, have fields, like the `after` field in `snowflake_task`, containing a set of references to other objects (their identifiers). These fields run a custom function to correctly suppress diffs for quoting, and case. Before, when the set in state was `null`, this function could panic
+
+For example, in the following configuration:
+```terraform
+resource "snowflake_task" "parent" {
+  database      = "DB"
+  schema        = "PUBLIC"
+  warehouse     = "SNOWFLAKE"
+  name          = "TERRAFORM_PARENT_TASK"
+  sql_statement = "select 1"
+  started       = false
+  schedule {
+    using_cron = "0 9 * * * UTC"
+  }
+}
+
+resource "snowflake_task" "child" {
+  database      = "DB"
+  schema        = "PUBLIC"
+  warehouse     = "SNOWFLAKE"
+  name          = "TERRAFORM_CHILD_TASK"
+  sql_statement = "select 1"
+  started       = false
+
+  #   after = [snowflake_task.parent.fully_qualified_name] #<-------------------------- this is commented
+}
+```
+After uncommenting the `after` field in the child resource and running `terraform plan -refresh=false`, the provider panicked with the following message:
+```
+Planning failed. Terraform encountered an error while generating this plan.
+╷
+│ Error: Plugin did not respond
+│
+│ The plugin encountered an error, and failed to respond to the plugin6.(*GRPCProvider).PlanResourceChange call. The plugin logs may contain more details.
+╵
+Stack trace from the terraform-provider-snowflake_v2.6.0 plugin:
+panic: can't use ElementIterator on null value
+goroutine 44 [running]:
+github.com/hashicorp/go-cty/cty.Value.ElementIterator({{{0x10315eff0?, 0x1400119eb50?}}, {0x0?, 0x0?}})
+        github.com/hashicorp/go-cty@v1.5.0/cty/value_ops.go:1046 +0xb8
+<...>
+```
+This was not happening when `refresh` was set to true or was not set at all. This behavior may have appeared in other resources with sets of identifiers.
+
+Now, this behavior is fixed, and the provider will not panic. No changes in configuration and state are required.
+
+References: [#4001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4001)
+
 ### *(bugfix)* Fixed privileges validation in `grant_privileges_to_account_role` resource
 In [v2.6.0](#bugfix-fixed-privileges-validation-in-grant_privileges_to_account_role-resource), we added a validation for using the `IMPORTED PRIVILEGES` grant. The validator contained a bug, causing the provider to panic in situations with privileges set by a reference, like this one:
 ```terraform
@@ -1320,7 +1369,7 @@ resource "snowflake_tag_association" "table_association" {
   tag_value   = "engineering"
 }
 ```
-- `tag_id`  has now suppressed identifier quoting to prevent issues with Terraform showing permament differences, like [this one](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2982)
+- `tag_id`  has now suppressed identifier quoting to prevent issues with Terraform showing permanent differences, like [this one](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2982)
 - `object_type` and `tag_id` are now marked as ForceNew
 
 The state is migrated automatically. Please adjust your configuration files.
@@ -1999,7 +2048,7 @@ Argument names are now case sensitive. All policies created previously in the pr
 Previously, after changing `name` field, the resource was recreated. Now, the object is renamed with `RENAME TO`.
 
 #### *(breaking change)* Mitigating permadiff on `body`
-Previously, `body` of a policy was compared as a raw string. This led to permament diff because of leading newlines (see https://github.com/snowflakedb/terraform-provider-snowflake/issues/2053).
+Previously, `body` of a policy was compared as a raw string. This led to permanent diff because of leading newlines (see https://github.com/snowflakedb/terraform-provider-snowflake/issues/2053).
 
 Now, similarly to handling statements in other resources, we replace blank characters with a space. The provider can cause false positives in cases where a change in case or run of whitespace is semantically significant.
 
@@ -2359,7 +2408,7 @@ resource "snowflake_user" "example_user" {
 ## v0.94.0 ➞ v0.94.1
 ### changes in snowflake_schema
 
-In order to avoid dropping `PUBLIC` schemas, we have decided to use `ALTER` instead of `OR REPLACE` during creation. In the future we are planning to use `CREATE OR ALTER` when it becomes available for schems.
+In order to avoid dropping `PUBLIC` schemas, we have decided to use `ALTER` instead of `OR REPLACE` during creation. In the future we are planning to use `CREATE OR ALTER` when it becomes available for schemas.
 
 ## v0.93.0 ➞ v0.94.0
 ### *(breaking change)* changes in snowflake_scim_integration
@@ -2438,7 +2487,7 @@ Changes:
 Added a new resource for managing streamlits. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-streamlit). In this resource, we decided to split `ROOT_LOCATION` in Snowflake to two fields: `stage` representing stage fully qualified name and `directory_location` containing a path within this stage to root location.
 
 ### *(new feature)* snowflake_streamlits datasource
-Added a new datasource enabling querying and filtering stremlits. Notes:
+Added a new datasource enabling querying and filtering streamlits. Notes:
 - all results are stored in `streamlits` field.
 - `like`, `in`, and `limit` fields enable streamlits filtering.
 - SHOW STREAMLITS output is enclosed in `show_output` field inside `streamlits`.
@@ -2714,7 +2763,7 @@ When upgrading to the 0.93.0 version, the automatic state upgrader should cover 
 - `from_replica` (now, the new `snowflake_secondary_database` should be used instead)
 - `replication_configuration`
 
-For configurations containing `replication_configuraiton` like this one:
+For configurations containing `replication_configuration` like this one:
 ```terraform
 resource "snowflake_database" "test" {
   name = "<name>"
