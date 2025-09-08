@@ -154,7 +154,7 @@ jobs:
             Account-level tests ${{ job.status }} for [${{ github.event.client_payload.slash_command.args.named.sha || github.event.pull_request.head.sha }}](https://github.com/snowflakedb/terraform-provider-snowflake/actions/runs/${{ github.run_id }})
 
       - name: Set fork job status
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         if: ${{ always() }}
         id: update_check_run
         env:

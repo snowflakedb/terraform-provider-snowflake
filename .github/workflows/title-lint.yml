@@ -14,7 +14,7 @@ jobs:
     name: Conventional Commit Title
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v8
         with:
           script: |
             const validator = /^(chore|feat|fix|revert|docs|style)(\([a-z ]+\))?(!)?: (.)+$/
