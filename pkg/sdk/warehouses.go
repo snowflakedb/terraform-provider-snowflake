@@ -226,11 +226,16 @@ var AllWarehouseGenerations = []string{
 	string(WarehouseGenerationStandardGen2),
 }
 
-func IsWarehouseResourceConstraintForStandard(s WarehouseResourceConstraint) bool {
-	return slices.Contains([]string{string(WarehouseResourceConstraintStandardGen1), string(WarehouseResourceConstraintStandardGen2)}, string(s))
+var AllWarehouseResourceConstraintsForStandardWarehouses = []string{
+	string(WarehouseResourceConstraintStandardGen1),
+	string(WarehouseResourceConstraintStandardGen2),
 }
 
-func WarehouseResourceConstraintToWarehouseGeneration(s WarehouseResourceConstraint) (WarehouseGeneration, error) {
+func IsWarehouseResourceConstraintForStandard(s WarehouseResourceConstraint) bool {
+	return slices.Contains(AllWarehouseResourceConstraintsForStandardWarehouses, string(s))
+}
+
+func (s WarehouseResourceConstraint) ToWarehouseGeneration() (WarehouseGeneration, error) {
 	switch s {
 	case WarehouseResourceConstraintStandardGen1:
 		return WarehouseGenerationStandardGen1, nil
@@ -241,7 +246,7 @@ func WarehouseResourceConstraintToWarehouseGeneration(s WarehouseResourceConstra
 	}
 }
 
-func WarehouseGenerationToWarehouseResourceConstraint(s WarehouseGeneration) (WarehouseResourceConstraint, error) {
+func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceConstraint, error) {
 	switch s {
 	case WarehouseGenerationStandardGen1:
 		return WarehouseResourceConstraintStandardGen1, nil
@@ -591,6 +596,7 @@ type Warehouse struct {
 	ScalingPolicy                   ScalingPolicy
 	OwnerRoleType                   string
 	ResourceConstraint              *WarehouseResourceConstraint
+	Generation                      *WarehouseGeneration
 }
 
 type warehouseDBRow struct {
@@ -694,11 +700,26 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
 	}
 	if row.ResourceConstraint.Valid {
-		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
-		if err != nil {
-			return nil, err
+		switch wh.Type {
+		case WarehouseTypeStandard:
+			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+			if err != nil {
+				return nil, err
+			}
+			generation, err := resourceConstraint.ToWarehouseGeneration()
+			if err != nil {
+				return nil, err
+			}
+			wh.Generation = &generation
+		case WarehouseTypeSnowparkOptimized:
+			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+			if err != nil {
+				return nil, err
+			}
+			wh.ResourceConstraint = &resourceConstraint
+		default:
+			return nil, fmt.Errorf("invalid warehouse type: %s", wh.Type)
 		}
-		wh.ResourceConstraint = &resourceConstraint
 	}
 	return wh, nil
 }

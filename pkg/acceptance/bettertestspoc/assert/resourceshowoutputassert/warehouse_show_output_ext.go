@@ -6,3 +6,8 @@ func (w *WarehouseShowOutputAssert) HasResourceConstraintEmpty() *WarehouseShowO
 	w.AddAssertion(assert.ResourceShowOutputValueSet("resource_constraint", ""))
 	return w
 }
+
+func (w *WarehouseShowOutputAssert) HasGenerationEmpty() *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputValueSet("generation", ""))
+	return w
+}

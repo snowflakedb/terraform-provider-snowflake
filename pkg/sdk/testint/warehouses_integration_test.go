@@ -97,6 +97,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.WarehouseFromObject(t, result).
 			HasResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
+			HasNoGeneration().
 			HasType(sdk.WarehouseTypeSnowparkOptimized).
 			HasSize(sdk.WarehouseSizeMedium),
 		)
@@ -150,7 +151,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasComment("comment").
 			HasEnableQueryAcceleration(true).
 			HasQueryAccelerationMaxScaleFactor(90).
-			HasResourceConstraint(sdk.WarehouseResourceConstraintStandardGen1))
+			HasGeneration(sdk.WarehouseGenerationStandardGen1).
+			HasNoResourceConstraint())
 
 		warehouse, err := client.Warehouses.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -167,8 +169,9 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "comment", warehouse.Comment)
 		assert.Equal(t, true, warehouse.EnableQueryAcceleration)
 		assert.Equal(t, 90, warehouse.QueryAccelerationMaxScaleFactor)
-		assert.NotNil(t, warehouse.ResourceConstraint)
-		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *warehouse.ResourceConstraint)
+		assert.Nil(t, warehouse.ResourceConstraint)
+		assert.NotNil(t, warehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouse.Generation)
 
 		// we can also use the read object to initialize:
 		assertThatObject(t, objectassert.WarehouseFromObject(t, warehouse).
@@ -185,7 +188,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasComment("comment").
 			HasEnableQueryAcceleration(true).
 			HasQueryAccelerationMaxScaleFactor(90).
-			HasResourceConstraint(sdk.WarehouseResourceConstraintStandardGen1))
+			HasNoResourceConstraint().
+			HasGeneration(sdk.WarehouseGenerationStandardGen1))
 
 		tag1Value, err := client.SystemFunctions.GetTag(ctx, tag.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
 		require.NoError(t, err)
@@ -215,8 +219,9 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "", result.Comment)
 		assert.Equal(t, false, result.EnableQueryAcceleration)
 		assert.Equal(t, 8, result.QueryAccelerationMaxScaleFactor)
-		assert.NotNil(t, result.ResourceConstraint)
-		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *result.ResourceConstraint)
+		assert.Nil(t, result.ResourceConstraint)
+		assert.NotNil(t, result.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *result.Generation)
 	})
 
 	t.Run("create: empty comment", func(t *testing.T) {
@@ -245,8 +250,9 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "", warehouse.Comment)
 		assert.Equal(t, false, warehouse.EnableQueryAcceleration)
 		assert.Equal(t, 8, warehouse.QueryAccelerationMaxScaleFactor)
-		assert.NotNil(t, warehouse.ResourceConstraint)
-		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *warehouse.ResourceConstraint)
+		assert.Nil(t, warehouse.ResourceConstraint)
+		assert.NotNil(t, warehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouse.Generation)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
 			// WarehouseType omitted on purpose - it requires suspending the warehouse (separate test cases)
@@ -280,8 +286,9 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "new comment", warehouseAfterSet.Comment)
 		assert.Equal(t, true, warehouseAfterSet.EnableQueryAcceleration)
 		assert.Equal(t, 2, warehouseAfterSet.QueryAccelerationMaxScaleFactor)
-		assert.NotNil(t, warehouseAfterSet.ResourceConstraint)
-		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *warehouseAfterSet.ResourceConstraint)
+		assert.Nil(t, warehouseAfterSet.ResourceConstraint)
+		assert.NotNil(t, warehouseAfterSet.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterSet.Generation)
 
 		alterOptions = &sdk.AlterWarehouseOptions{
 			// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
@@ -307,8 +314,9 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "", warehouseAfterUnset.Comment)
 		assert.Equal(t, false, warehouseAfterUnset.EnableQueryAcceleration)
 		assert.Equal(t, 8, warehouseAfterUnset.QueryAccelerationMaxScaleFactor)
-		assert.NotNil(t, warehouseAfterUnset.ResourceConstraint)
-		assert.Equal(t, sdk.WarehouseResourceConstraintStandardGen1, *warehouseAfterUnset.ResourceConstraint)
+		assert.Nil(t, warehouseAfterUnset.ResourceConstraint)
+		assert.NotNil(t, warehouseAfterUnset.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterUnset.Generation)
 	})
 
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
@@ -443,6 +451,8 @@ func TestInt_Warehouses(t *testing.T) {
 		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
 		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
+		assert.Nil(t, returnedWarehouse.Generation)
+		assert.NotNil(t, returnedWarehouse.ResourceConstraint)
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
@@ -455,6 +465,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
 			HasResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
+			HasNoGeneration().
 			HasType(sdk.WarehouseTypeSnowparkOptimized).
 			HasSize(sdk.WarehouseSizeMedium),
 		)
@@ -469,6 +480,45 @@ func TestInt_Warehouses(t *testing.T) {
 		// returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		// require.NoError(t, err)
 		// assert.Equal(t, *sdk.WarehouseResourceConstraintMemory1X, returnedWarehouse.ResourceConstraint)
+	})
+
+	t.Run("alter: set and unset generation", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		// new warehouse created on purpose
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
+		t.Cleanup(warehouseCleanup)
+
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
+		assert.Nil(t, returnedWarehouse.ResourceConstraint)
+		assert.NotNil(t, returnedWarehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
+
+		alterOptions := &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen2)},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+			HasGeneration(sdk.WarehouseGenerationStandardGen2).
+			HasNoResourceConstraint().
+			HasType(sdk.WarehouseTypeStandard),
+		)
+
+		// TODO [SNOW-1473453]: uncomment and test when UNSET starts working correctly (expecting to unset to default STANDARD_GEN_1)
+		// alterOptions = &sdk.AlterWarehouseOptions{
+		//	Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
+		// }
+		// err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		// require.NoError(t, err)
+		//
+		// returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		// require.NoError(t, err)
+		// assert.Equal(t, *sdk.WarehouseResourceConstraintStandardGen1, returnedWarehouse.Generation)
 	})
 
 	t.Run("alter: prove problems with unset auto suspend", func(t *testing.T) {
