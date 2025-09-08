@@ -63,7 +63,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         if: ${{ steps.release.outputs.releases_created }}
         with:
           go-version-file: ./go.mod

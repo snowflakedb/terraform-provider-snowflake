@@ -78,7 +78,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v6
         id: setup_go
         if: ${{ !cancelled() && (steps.checkout_pr.conclusion == 'success' || steps.checkout_dispatch.conclusion == 'success') }}
         with:
