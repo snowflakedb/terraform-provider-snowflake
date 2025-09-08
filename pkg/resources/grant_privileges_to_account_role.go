@@ -306,6 +306,11 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 				privilegesCty := rawPrivileges.AsValueSet().Values()
 				privileges := make([]string, 0, len(privilegesCty))
 				for _, privilegeCty := range privilegesCty {
+					// Even though we check it for the whole list, we still need to check it for each privilege.
+					// See issue 3992
+					if privilegeCty.IsNull() || !privilegeCty.IsKnown() {
+						continue
+					}
 					privileges = append(privileges, privilegeCty.AsString())
 				}
 				if slices.Contains(privileges, string(sdk.AccountObjectPrivilegeImportedPrivileges)) && len(privileges) > 1 {

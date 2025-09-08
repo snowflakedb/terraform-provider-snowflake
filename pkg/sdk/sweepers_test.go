@@ -65,10 +65,10 @@ func sweep(client *sdk.Client, suffix string) error {
 	sweepers := []func() error{
 		nukeSecurityIntegrations(client, suffix),
 		getAccountPolicyAttachmentsSweeper(client),
-		getResourceMonitorSweeper(client, suffix),
+		nukeResourceMonitors(client, suffix),
 		nukeNetworkPolicies(client, suffix),
 		nukeUsers(client, suffix),
-		getFailoverGroupSweeper(client, suffix),
+		nukeFailoverGroups(client, suffix),
 		nukeShares(client, suffix),
 		nukeDatabases(client, "", suffix),
 		nukeWarehouses(client, "", suffix),
@@ -129,6 +129,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
+	t.Run("sweep resource monitors", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeResourceMonitors(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
 	t.Run("sweep network policies", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeNetworkPolicies(c, "")()
@@ -139,6 +146,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("sweep users", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeUsers(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep failover groups", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeFailoverGroups(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -177,6 +191,9 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	// Error: 003524 (22023): SQL execution error: An integration with the given issuer already exists for this account
 }
 
+// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
+var stalePeriod = -12 * time.Hour
+
 // TODO [SNOW-867247]: generalize nuke methods (sweepers too)
 // TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
 func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() error {
@@ -202,9 +219,8 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 			}
 		default:
 			log.Println("[DEBUG] Sweeping stale warehouses")
-			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
 			whDropCondition = func(wh sdk.Warehouse) bool {
-				return wh.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
+				return wh.CreatedOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
@@ -281,9 +297,8 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 			}
 		default:
 			log.Println("[DEBUG] Sweeping stale databases")
-			// TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
 			dbDropCondition = func(db sdk.Database) bool {
-				return db.CreatedOn.Before(time.Now().Add(-12 * time.Hour))
+				return db.CreatedOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
@@ -524,7 +539,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 		} else {
 			log.Println("[DEBUG] Sweeping stale shares")
 			shareDropCondition = func(s sdk.Share) bool {
-				return s.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+				return s.CreatedOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
@@ -578,7 +593,7 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 					log.Printf("[DEBUG] Could not parse created on: '%s' for network policy %s", n.CreatedOn, n.ID().FullyQualifiedName())
 					return false
 				}
-				return createdOn.Before(time.Now().Add(-15 * time.Minute))
+				return createdOn.Before(time.Now().Add(stalePeriod))
 			}
 		}
 
@@ -602,6 +617,149 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
+		return errors.Join(errs...)
+	}
+}
+
+func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
+	var protectedResourceMonitors []string
+
+	return func() error {
+		ctx := context.Background()
+
+		var rmDropCondition func(rm sdk.ResourceMonitor) bool
+		switch {
+		case suffix != "":
+			log.Printf("[DEBUG] Sweeping resource monitors with suffix %s", suffix)
+			rmDropCondition = func(rm sdk.ResourceMonitor) bool {
+				return strings.HasSuffix(rm.Name, suffix)
+			}
+		default:
+			log.Println("[DEBUG] Sweeping stale resource monitors")
+			rmDropCondition = func(rm sdk.ResourceMonitor) bool {
+				return rm.CreatedOn.Before(time.Now().Add(stalePeriod))
+			}
+		}
+
+		rms, err := client.ResourceMonitors.Show(ctx, new(sdk.ShowResourceMonitorOptions))
+		if err != nil {
+			return fmt.Errorf("SHOW RESOURCE MONITORS ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d resource monitors", len(rms))
+
+		var errs []error
+		for idx, rm := range rms {
+			log.Printf("[DEBUG] Processing resurce monitor [%d/%d]: %s...", idx+1, len(rms), rm.ID().FullyQualifiedName())
+
+			if !slices.Contains(protectedResourceMonitors, rm.Name) && rmDropCondition(rm) {
+				if rm.Owner != snowflakeroles.Accountadmin.Name() {
+					log.Printf("[DEBUG] Granting ownership on resource monitor %s, to ACCOUNTADMIN", rm.ID().FullyQualifiedName())
+					err := client.Grants.GrantOwnership(
+						ctx,
+						sdk.OwnershipGrantOn{Object: &sdk.Object{
+							ObjectType: sdk.ObjectTypeResourceMonitor,
+							Name:       rm.ID(),
+						}},
+						sdk.OwnershipGrantTo{
+							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+						},
+						nil,
+					)
+					if err != nil {
+						errs = append(errs, fmt.Errorf("granting ownership on resource monitor %s ended with error, err = %w", rm.ID().FullyQualifiedName(), err))
+						continue
+					}
+				}
+
+				log.Printf("[DEBUG] Dropping resource monitor %s, created at: %s", rm.ID().FullyQualifiedName(), rm.CreatedOn.String())
+				// to handle identifiers with containing `"` - we do not escape them currently in the SDK SQL generation
+				rmId := rm.ID()
+				if strings.Contains(rmId.Name(), `"`) {
+					rmId = sdk.NewAccountObjectIdentifier(strings.ReplaceAll(rmId.Name(), `"`, `""`))
+				}
+				if err := client.ResourceMonitors.DropSafely(ctx, rmId); err != nil {
+					log.Printf("[DEBUG] Dropping resource monitor %s, resulted in error %v", rm.ID().FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping resource monitor %s ended with error, err = %w", rm.ID().FullyQualifiedName(), err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping resource monitor %s, created at: %s", rm.ID().FullyQualifiedName(), rm.CreatedOn.String())
+			}
+		}
+		return errors.Join(errs...)
+	}
+}
+
+func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
+	var protectedFailoverGroups []string
+
+	return func() error {
+		ctx := context.Background()
+
+		var fgDropCondition func(fg sdk.FailoverGroup) bool
+		switch {
+		case suffix != "":
+			log.Printf("[DEBUG] Sweeping failover groups with suffix %s", suffix)
+			fgDropCondition = func(fg sdk.FailoverGroup) bool {
+				return strings.HasSuffix(fg.Name, suffix)
+			}
+		default:
+			log.Println("[DEBUG] Sweeping stale failover groups")
+			fgDropCondition = func(fg sdk.FailoverGroup) bool {
+				return fg.CreatedOn.Before(time.Now().Add(stalePeriod))
+			}
+		}
+
+		accountLocator := client.GetAccountLocator()
+		opts := &sdk.ShowFailoverGroupOptions{
+			InAccount: sdk.NewAccountIdentifierFromAccountLocator(accountLocator),
+		}
+
+		fgs, err := client.FailoverGroups.Show(ctx, opts)
+		if err != nil {
+			return fmt.Errorf("SHOW FAILOVER GROUPS ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d failover groups", len(fgs))
+
+		var errs []error
+		for idx, fg := range fgs {
+			log.Printf("[DEBUG] Processing failover group [%d/%d]: %s...", idx+1, len(fgs), fg.ID().FullyQualifiedName())
+
+			if fg.AccountLocator != accountLocator {
+				log.Printf("[DEBUG] Skipping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
+				continue
+			}
+
+			if fg.Owner != snowflakeroles.Accountadmin.Name() {
+				log.Printf("[DEBUG] Granting ownership on failover group %s, to ACCOUNTADMIN", fg.ID().FullyQualifiedName())
+				err := client.Grants.GrantOwnership(
+					ctx,
+					sdk.OwnershipGrantOn{Object: &sdk.Object{
+						ObjectType: sdk.ObjectTypeFailoverGroup,
+						Name:       fg.ID(),
+					}},
+					sdk.OwnershipGrantTo{
+						AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+					},
+					nil,
+				)
+				if err != nil {
+					errs = append(errs, fmt.Errorf("granting ownership on failover group %s ended with error, err = %w", fg.ID().FullyQualifiedName(), err))
+					continue
+				}
+			}
+
+			if !slices.Contains(protectedFailoverGroups, fg.Name) && fgDropCondition(fg) {
+				log.Printf("[DEBUG] Dropping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
+				if err := client.FailoverGroups.DropSafely(ctx, fg.ID()); err != nil {
+					log.Printf("[DEBUG] Dropping failover group %s, resulted in error %v", fg.ID().FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping failover group %s ended with error, err = %w", fg.ID().FullyQualifiedName(), err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
+			}
+		}
 		return errors.Join(errs...)
 	}
 }
