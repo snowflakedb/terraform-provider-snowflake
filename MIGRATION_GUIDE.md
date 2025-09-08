@@ -24,24 +24,25 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.6.0 ➞ v2.7.0
+## v2.6.x ➞ v2.7.0
 
 ### *(tool)* Adding migration script
 
-This script is designed to assist in migrating existing Snowflake objects into Terraform management
-by generating the necessary Terraform resources and import statements based on the Snowflake output.
-It can be used for both one-time migrations from deprecated resources to the new ones,
-as well as importing existing objects into Terraform state.
-
-The script was provided to give an idea how the migration process can be automated.
-It is not officially supported, and we do not prioritize fixes for it.
-Feel free to use it as a starting point and modify it to fit your specific needs.
-We are open to contributions to enhance its functionality.
-
-The tool turned out to be a bit different from what we announced in our [roadmap entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#grants-migration),
-but the main idea is the same: simplifying migration of existing grants to the new resources that replace deprecated ones.
+As we have recently published in [this section of the new roadmap entry](./ROADMAP.md#migration),
+we have prepared example script that could be used with the grants' migration.
+The tool turned out to be a bit different from what we announced in our [roadmap entry](./ROADMAP.md#grants-migration);
+it generates the necessary Terraform resources and import statements based on the Snowflake output.
+The main idea is the same though: simplify the migration from the deprecated grant resources to the new ones.
 This should streamline your grants' migration process and support upgrades to newer provider versions,
 as we focus on increasing adoption of GA+ releases (`>= v2.0.0`).
+
+The script was provided to give an idea how the migration process can be automated, and, for now, is not meant to be a standalone product.
+It is not officially supported, and we do not prioritize fixes for it.
+Feel free to use it as a starting point and modify it to fit your specific needs.
+
+This script is designed to be extendable and not to be limited to grant-related resources only.
+It can be used for both one-time migrations from deprecated resources to the new ones, but also importing existing objects into Terraform state.
+We are open to contributions to enhance its functionality.
 
 Currently, the script supports only a few grant resources, namely:
 - `snowflake_grant_privileges_to_account_role`

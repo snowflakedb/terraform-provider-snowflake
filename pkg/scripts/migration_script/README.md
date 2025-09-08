@@ -18,7 +18,6 @@
       * [3. Get the generated resources and import them to the state](#3-get-the-generated-resources-and-import-them-to-the-state)
   * [Limitations](#limitations)
     * [Generated resource names](#generated-resource-names)
-    * [Single input](#single-input)
     * [No dependencies handling](#no-dependencies-handling)
 <!-- TOC -->
 
@@ -533,10 +532,10 @@ By following the above steps, you can migrate other existing Snowflake objects i
 
 The resource name generation does not guarantee uniqueness. It bases its parts on the object's state identifier, which is unique,
 but because of the [Terraform limitations of the characters in the resource names](https://developer.hashicorp.com/terraform/language/resources/syntax#resource-syntax),
-unallowed characters are not included in the name. This means that `!test!` and `@test@` would both be converted to `test`, leading to a name collision.
+disallowed characters are not included in the name. This means that `!test!` and `@test@` would both be converted to `test`, leading to a name collision.
 If you encounter such a situation, you will need to manually rename the resources to ensure uniqueness before proceeding with resource importing.
 
-The exception to this rule are dots, which we are replaced instead of removed. They're replaced with underscores, so `test.name` would become `test_name`.
+The exception to this rule are dots which are not removed; they are replaced with underscores, so `test.name` would become `test_name`.
 This is only to ensure clarity in the generated names that contain identifiers which are separated by dots, e.g.,
 instead of removing the dots in `DATABASE.SCHEMA` (resulting in `DATABASESCHEMA`), we transfer them to `DATABASE_SCHEMA`.
 

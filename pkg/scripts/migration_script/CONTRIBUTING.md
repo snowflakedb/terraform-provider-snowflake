@@ -33,7 +33,6 @@ and update any failing tests (you will need to update the help text test).
 
 To define an input schema, you need to first understand the output of the Snowflake command that corresponds to the object type you are working with.
 For almost every object type, you want to focus on SHOW commands. Sometimes the object may need to be constructed from multiple commands (e.g., SHOW + DESC + SHOW PARAMETERS) to be completely generated.
-Unfortunately, we don't support multiple inputs at the moment (see [migration script limitations](./README.md#single-input)).
 
 If you want to add a support for database, you would look at the output of [`SHOW DATABASES`](https://docs.snowflake.com/en/sql-reference/sql/show-databases) command.
 Since all objects supported by the provider have already representation in the underlying SDK, you can look through the SDK code to find the object definition.
