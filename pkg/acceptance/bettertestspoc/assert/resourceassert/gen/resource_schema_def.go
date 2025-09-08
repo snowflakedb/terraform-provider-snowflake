@@ -270,4 +270,28 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "Warehouse",
 		schema: resources.Warehouse().Schema,
 	},
+	{
+		name:   "GrantPrivilegesToAccountRole",
+		schema: resources.GrantPrivilegesToAccountRole().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToDatabaseRole",
+		schema: resources.GrantPrivilegesToDatabaseRole().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToShare",
+		schema: resources.GrantPrivilegesToShare().Schema,
+	},
+	{
+		name:   "GrantAccountRole",
+		schema: resources.GrantAccountRole().Schema,
+	},
+	{
+		name:   "GrantDatabaseRole",
+		schema: resources.GrantDatabaseRole().Schema,
+	},
+	{
+		name:   "GrantApplicationRole",
+		schema: resources.GrantApplicationRole().Schema,
+	},
 }

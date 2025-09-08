@@ -65,8 +65,20 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeWarehouse,
 }
 
+var validGrantToAccountObjectTypes = []ObjectType{
+	ObjectTypeUser,
+	ObjectTypeResourceMonitor,
+	ObjectTypeWarehouse,
+	ObjectTypeComputePool,
+	ObjectTypeDatabase,
+	ObjectTypeIntegration,
+	ObjectTypeFailoverGroup,
+	ObjectTypeReplicationGroup,
+	ObjectTypeExternalVolume,
+}
+
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#required-parameters
-var validGrantToObjectTypes = []ObjectType{
+var validGrantToSchemaObjectTypes = []ObjectType{
 	ObjectTypeAggregationPolicy,
 	ObjectTypeAlert,
 	ObjectTypeAuthenticationPolicy,
@@ -124,8 +136,9 @@ var invalidGrantToFutureObjectTypes = []ObjectType{
 var (
 	ValidGrantOwnershipObjectTypesString       = make([]string, len(validGrantOwnershipObjectTypes))
 	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipObjectTypes))
-	ValidGrantToObjectTypesString              = make([]string, len(validGrantToObjectTypes))
-	ValidGrantToPluralObjectTypesString        = make([]string, len(validGrantToObjectTypes))
+	ValidGrantToAccountObjectTypesString       = make([]string, len(validGrantToAccountObjectTypes))
+	ValidGrantToSchemaObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
+	ValidGrantToPluralObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
 	ValidGrantToFuturePluralObjectTypesString  = make([]string, 0)
 )
 
@@ -134,8 +147,11 @@ func init() {
 		ValidGrantOwnershipObjectTypesString[i] = objectType.String()
 		ValidGrantOwnershipPluralObjectTypesString[i] = objectType.Plural().String()
 	}
-	for i, objectType := range validGrantToObjectTypes {
-		ValidGrantToObjectTypesString[i] = objectType.String()
+	for i, objectType := range validGrantToAccountObjectTypes {
+		ValidGrantToAccountObjectTypesString[i] = objectType.String()
+	}
+	for i, objectType := range validGrantToSchemaObjectTypes {
+		ValidGrantToSchemaObjectTypesString[i] = objectType.String()
 		ValidGrantToPluralObjectTypesString[i] = objectType.Plural().String()
 		if !slices.Contains(invalidGrantToFutureObjectTypes, objectType) {
 			ValidGrantToFuturePluralObjectTypesString = append(ValidGrantToFuturePluralObjectTypesString, objectType.Plural().String())
