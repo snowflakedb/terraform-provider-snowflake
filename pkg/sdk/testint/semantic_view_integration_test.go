@@ -154,17 +154,17 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		parentEntity := "TABLE1"
-		tableDatabaseName1 := sdk.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
-		tableSchemaName1 := sdk.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
-		tableName1 := sdk.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_NAME", table1.Name)
-		pk := sdk.NewSemanticViewDetails("TABLE", "TABLE1", nil, "PRIMARY_KEY", "[\"FIRST_C\"]")
-		metricTable := sdk.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "TABLE", "TABLE1")
-		metricExpression := sdk.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "EXPRESSION", "SUM(table1.FIRST_A)")
-		metricDataType := sdk.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "DATA_TYPE", "NUMBER(38,0)")
-		metricAccessModifier := sdk.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "ACCESS_MODIFIER", "PUBLIC")
-		tableDatabaseName2 := sdk.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_DATABASE_NAME", table2.DatabaseName)
-		tableSchemaName2 := sdk.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_SCHEMA_NAME", table2.SchemaName)
-		tableName2 := sdk.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_NAME", table2.Name)
+		tableDatabaseName1 := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
+		tableSchemaName1 := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
+		tableName1 := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_NAME", table1.Name)
+		pk := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "PRIMARY_KEY", "[\"FIRST_C\"]")
+		metricTable := objectassert.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "TABLE", "TABLE1")
+		metricExpression := objectassert.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "EXPRESSION", "SUM(table1.FIRST_A)")
+		metricDataType := objectassert.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "DATA_TYPE", "NUMBER(38,0)")
+		metricAccessModifier := objectassert.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "ACCESS_MODIFIER", "PUBLIC")
+		tableDatabaseName2 := objectassert.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_DATABASE_NAME", table2.DatabaseName)
+		tableSchemaName2 := objectassert.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_SCHEMA_NAME", table2.SchemaName)
+		tableName2 := objectassert.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_NAME", table2.Name)
 
 		// confirm the semantic view details are correct
 		assert.Len(t, semanticViewDetails, 11)

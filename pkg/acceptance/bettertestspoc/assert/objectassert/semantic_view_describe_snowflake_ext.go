@@ -6,5 +6,25 @@ import (
 )
 
 type SemanticViewDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[[]sdk.SemanticViewDetails, sdk.SchemaObjectIdentifier]
+	*assert.SnowflakeObjectAssert[sdk.SemanticViewDetails, sdk.SchemaObjectIdentifier]
+}
+
+func NewSemanticViewDetails(
+	ObjectKind string,
+	ObjectName string,
+	ParentEntity *string,
+	Property string,
+	PropertyValue string,
+) sdk.SemanticViewDetails {
+	details := sdk.SemanticViewDetails{
+		ObjectKind:    ObjectKind,
+		ObjectName:    ObjectName,
+		Property:      Property,
+		PropertyValue: PropertyValue,
+	}
+	if ParentEntity != nil {
+		details.ParentEntity = ParentEntity
+	}
+
+	return details
 }
