@@ -27,7 +27,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ## v2.6.0 ➞ v2.6.1
 
 ### *(bugfix)* Fixed diff suppress for sets of identifiers
-A number of resources, have fields, like the `after` field in `snowflake_task`, containing a set of references to other objects (their identifiers). These fields run a custom function to correctly suppress diffs for quoting, and case. Before, when the set in state was `null`, this function could panic
+A number of resources have fields, like the `after` field in `snowflake_task`, containing a set of references to other objects (their identifiers). These fields run a custom function to correctly suppress diffs for quoting, and case. Before, when the set in state was `null`, this function could panic.
 
 For example, in the following configuration:
 ```terraform
