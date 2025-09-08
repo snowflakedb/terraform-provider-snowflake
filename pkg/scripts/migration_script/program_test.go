@@ -20,18 +20,39 @@ func TestProgram(t *testing.T) {
 		{
 			name: "help flag",
 			args: []string{"cmd", "-h"},
-			expectedErrOutput: `Usage: migration_script [flags] <object_type>
+			expectedErrOutput: `Migration script's purpose is to generate terraform resources from existing Snowflake objects.
+It operates on STDIN input and expects output from Snowflake commands in the CSV format.
+The script writes generated terraform resources to STDOUT in case you want to redirect it to a file.
+Any logs or errors are written to STDERR. You should separate outputs from STDOUT and STDERR when running the script (e.g. by redirecting STDOUT to a file)
+to clearly see in case of any errors or skipped objects (due to, for example, incorrect or unexpected format).
 
-Object types:
-	- grants
+usage: migration_script [-import=<statement|block>] <object_type>
 
-Flags:
-  -import string
-    	Determines the output format for import statements.
-    	Possible values:
-    		- "statement" will print appropriate terraform import statement at the end of generated content
-    		- "block" will generate import block next to every generated resource
-    	 (default "statement")
+import optional flag determines the output format for import statements. The possible values are:
+	- "statement" will print appropriate terraform import command at the end of generated content (default) (see https://developer.hashicorp.com/terraform/cli/commands/import)
+	- "block" will generate import block at the end of generated content (see https://developer.hashicorp.com/terraform/language/import)
+	
+object_type represents the type of Snowflake object you want to generate terraform resources for.
+	It is a required positional argument and possible values are listed below.
+	A given object_type corresponds to a specific Snowflake output expected as input to the script.
+	Currently supported object types are:
+		- "grants" which expects output from SHOW GRANTS command (see https://docs.snowflake.com/en/sql-reference/sql/show-grants) to generate new grant resources (see https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#mapping-from-old-grant-resources-to-the-new-ones).
+			The allowed SHOW GRANTS commands are:
+				- 'SHOW GRANTS ON ACCOUNT'
+				- 'SHOW GRANTS ON <object_type>'
+				- 'SHOW GRANTS TO ROLE <role_name>'
+				- 'SHOW GRANTS TO DATABASE ROLE <database_role_name>'
+			Supported resources:
+				- snowflake_grant_privileges_to_account_role
+				- snowflake_grant_privileges_to_database_role
+				- snowflake_grant_account_role
+				- snowflake_grant_database_role
+			Limitations:
+				- grants on 'future' or on 'all' objects are not supported
+				- all_privileges and always_apply fields are not supported
+		
+example usage:
+	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
 `,
 		},
 		{
