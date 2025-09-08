@@ -7,11 +7,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"io"
 	"os"
 	"slices"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 type ObjectType string

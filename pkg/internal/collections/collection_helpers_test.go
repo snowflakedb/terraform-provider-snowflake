@@ -120,7 +120,7 @@ func Test_GroupByProperty(t *testing.T) {
 		groups := GroupByProperty(items, func(item Item) string {
 			return item.Category
 		})
-		require.Len(t, groups, 0)
+		require.Empty(t, groups)
 	})
 
 	t.Run("basic grouping", func(t *testing.T) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
