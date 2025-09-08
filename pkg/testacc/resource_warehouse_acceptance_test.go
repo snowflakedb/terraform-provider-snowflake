@@ -2560,7 +2560,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelStandard),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
@@ -2847,7 +2847,7 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateManuallySetResourceConstraint(t
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelSnowparkOptimized),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
@@ -2898,7 +2898,7 @@ func TestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelStandard),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
@@ -2946,7 +2946,7 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelSnowparkOptimized),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
@@ -2994,7 +2994,7 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelSnowparkOptimized),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
@@ -3045,7 +3045,7 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T)
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelStandard),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
@@ -3093,7 +3093,7 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.5.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelStandard),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
