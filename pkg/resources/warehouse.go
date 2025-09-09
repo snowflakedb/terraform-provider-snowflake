@@ -649,32 +649,47 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			unset.QueryAccelerationMaxScaleFactor = sdk.Bool(true)
 		}
 	}
-	warehouseTypeRaw := d.Get("warehouse_type").(string)
-	warehouseType, err := sdk.ToWarehouseType(warehouseTypeRaw)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 	if d.HasChange("resource_constraint") {
+		warehouseTypeRaw := d.Get("warehouse_type").(string)
 		// Resource constraint is only supported for SNOWPARK-OPTIMIZED warehouses.
 		// Ignore the resource constraint if the warehouse type is standard or is not set.
-		if warehouseType == sdk.WarehouseTypeSnowparkOptimized {
-			if v := d.Get("resource_constraint").(string); v != "" {
-				resourceConstraint, err := sdk.ToWarehouseResourceConstraintWithoutGeneration(v)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				set.ResourceConstraint = &resourceConstraint
-			} else {
-				// TODO [SNOW-1473453]: UNSET of resource constraint does not work
-				// unset.ResourceConstraint = sdk.Bool(true)
-				set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintMemory16X)
+		if warehouseTypeRaw != "" {
+			warehouseType, err := sdk.ToWarehouseType(warehouseTypeRaw)
+			if err != nil {
+				return diag.FromErr(err)
 			}
-		} else {
-			log.Printf("[DEBUG] resource constraint is not supported for %s warehouses, ignoring", warehouseType)
+			if warehouseType == sdk.WarehouseTypeSnowparkOptimized {
+				if v := d.Get("resource_constraint").(string); v != "" {
+					resourceConstraint, err := sdk.ToWarehouseResourceConstraintWithoutGeneration(v)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					set.ResourceConstraint = &resourceConstraint
+				} else {
+					// TODO [SNOW-1473453]: UNSET of resource constraint does not work
+					// unset.ResourceConstraint = sdk.Bool(true)
+					set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintMemory16X)
+				}
+			} else {
+				log.Printf("[DEBUG] resource constraint is not supported for %s warehouses, ignoring", warehouseType)
+			}
 		}
 	}
 	if d.HasChange("generation") {
-		if warehouseType == sdk.WarehouseTypeStandard || warehouseTypeRaw == "" {
+		warehouseTypeRaw := d.Get("warehouse_type").(string)
+		var setGeneration bool
+		if warehouseTypeRaw == "" {
+			setGeneration = true
+		} else {
+			warehouseType, err := sdk.ToWarehouseType(warehouseTypeRaw)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			if warehouseType == sdk.WarehouseTypeStandard {
+				setGeneration = true
+			}
+		}
+		if setGeneration {
 			if v := d.Get("generation").(string); v != "" {
 				generation, err := sdk.ToWarehouseGeneration(v)
 				if err != nil {
