@@ -7,6 +7,8 @@ description: |-
 
 # snowflake_account_role (Resource)
 
+-> **Note** Users cannot execute a `DROP ROLE` command that drops the current primary role. An attempt to drop this role returns the following error. This means that before deleting the resource, make sure that you do not attempt to drop the current primary role. See [Usage notes](https://docs.snowflake.com/en/sql-reference/sql/drop-role#usage-notes) for more details.
+
 The resource is used for role management, where roles can be assigned privileges and, in turn, granted to users and other roles. When granted to roles they can create hierarchies of privilege structures. For more details, refer to the [official documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview).
 
 ## Example Usage

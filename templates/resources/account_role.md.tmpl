@@ -11,6 +11,8 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
+-> **Note** Users cannot execute a `DROP ROLE` command that drops the current primary role. An attempt to drop this role returns the following error. This means that before deleting the resource, make sure that you do not attempt to drop the current primary role. See [Usage notes](https://docs.snowflake.com/en/sql-reference/sql/drop-role#usage-notes) for more details.
+
 {{ .Description | trimspace }}
 
 {{ if .HasExample -}}
