@@ -154,20 +154,17 @@ func createExternalTable(t *testing.T) (*sdk.ExternalTable, func()) {
 	return testClientHelper().ExternalTable.CreateWithLocation(t, stage.Location())
 }
 
+// TODO(SNOW-1813223): Move these assertions to a dedicated assertion in objectassert package.
 func assertTagSet(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.ObjectIdentifier, objectType sdk.ObjectType, tagValue string) {
 	t.Helper()
-	client := testClient(t)
-	ctx := testContext(t)
-	returnedTagValue, err := client.SystemFunctions.GetTag(ctx, tagId, objectId, objectType)
+	returnedTagValue, err := testClientHelper().Tag.GetForObject(t, tagId, objectId, objectType)
 	require.NoError(t, err)
 	assert.Equal(t, sdk.Pointer(tagValue), returnedTagValue)
 }
 
 func assertTagUnset(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.ObjectIdentifier, objectType sdk.ObjectType) {
 	t.Helper()
-	client := testClient(t)
-	ctx := testContext(t)
-	returnedTagValue, err := client.SystemFunctions.GetTag(ctx, tagId, objectId, objectType)
+	returnedTagValue, err := testClientHelper().Tag.GetForObject(t, tagId, objectId, objectType)
 	require.NoError(t, err)
 	assert.Nil(t, returnedTagValue)
 }
