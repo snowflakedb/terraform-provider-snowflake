@@ -67,7 +67,7 @@ func TestAcc_Users_PersonUser(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.#", "1")),
 					resourceshowoutputassert.UsersDatasourceShowOutput(t, "snowflake_users.test").
 						HasName(id.Name()).
-						HasType("").
+						HasType(string(sdk.UserTypePerson)).
 						HasCreatedOnNotEmpty().
 						HasLoginName(fmt.Sprintf("%s_LOGIN", id.Name())).
 						HasDisplayName("Display Name").
@@ -129,7 +129,7 @@ func TestAcc_Users_PersonUser(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.#", "1")),
 					resourceshowoutputassert.UsersDatasourceShowOutput(t, "snowflake_users.test").
 						HasName(id.Name()).
-						HasType("").
+						HasType(string(sdk.UserTypePerson)).
 						HasCreatedOnNotEmpty().
 						HasLoginName(strings.ToUpper(id.Name())).
 						HasDisplayName("").

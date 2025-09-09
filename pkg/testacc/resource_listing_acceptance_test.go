@@ -441,7 +441,7 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 	testClient().Stage.PutOnStageWithContent(t, stage.ID(), "setup.sql", "CREATE APPLICATION ROLE IF NOT EXISTS APP_HELLO_SNOWFLAKE;")
 
 	version := "v1"
-	testClient().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), version)
+	testClient().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), version)
 	testClient().ApplicationPackage.SetDefaultReleaseDirective(t, applicationPackage.ID(), version)
 
 	modelComplete := model.ListingWithInlineManifest("test", id.Name(), manifest).
@@ -517,7 +517,7 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 	testClient().Stage.PutOnStageWithContent(t, stage.ID(), "setup.sql", "CREATE APPLICATION ROLE IF NOT EXISTS APP_HELLO_SNOWFLAKE;")
 
 	version := "v1"
-	testClient().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), version)
+	testClient().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), version)
 	testClient().ApplicationPackage.SetDefaultReleaseDirective(t, applicationPackage.ID(), version)
 
 	modelComplete := model.ListingWithStagedManifestWithOptionals("test", id.Name(), stage.ID(), "v0", "", "listing").

@@ -46,17 +46,33 @@ func TestInt_Applications(t *testing.T) {
 		testClientHelper().Stage.PutOnStageWithContent(t, stage.ID(), "manifest.yml", "")
 		testClientHelper().Stage.PutOnStageWithContent(t, stage.ID(), "setup.sql", "CREATE APPLICATION ROLE IF NOT EXISTS APP_HELLO_SNOWFLAKE;")
 
-		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
-		t.Cleanup(cleanupApplicationPackage)
+		var applicationPackage *sdk.ApplicationPackage
 
-		testClientHelper().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), version)
-
-		// set default release directive for application package
+		// handle release directive for application package
 		if defaultReleaseDirective {
-			_, err := client.ExecForTests(ctx, fmt.Sprintf(`ALTER APPLICATION PACKAGE %s SET DEFAULT RELEASE DIRECTIVE VERSION = %s PATCH = %d`, applicationPackage.ID().FullyQualifiedName(), version, patch))
-			require.NoError(t, err)
+			applicationPackage = createApplicationPackageWithReleaseChannelsDisabled(t)
+		} else {
+			applicationPackage = createRegularApplicationPackage(t)
 		}
 		return stage, applicationPackage
+	}
+
+	createRegularApplicationPackage := func(t *testing.T) *sdk.ApplicationPackage {
+		t.Helper()
+		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
+		t.Cleanup(cleanupApplicationPackage)
+		testClientHelper().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), version)
+		return applicationPackage
+	}
+
+	createApplicationPackageWithReleaseChannelsDisabled := func(t *testing.T) *sdk.ApplicationPackage {
+		t.Helper()
+		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackageWithReleaseChannelsDisabled(t)
+		t.Cleanup(cleanupApplicationPackage)
+		testClientHelper().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), version)
+		_, err := client.ExecForTests(ctx, fmt.Sprintf(`ALTER APPLICATION PACKAGE %s SET DEFAULT RELEASE DIRECTIVE VERSION = %s PATCH = %d`, applicationPackage.ID().FullyQualifiedName(), version, patch))
+		require.NoError(t, err)
+		return applicationPackage
 	}
 
 	createApplicationHandle := func(t *testing.T, version string, patch int, versionDirectory bool, debug bool, addPatch bool) (*sdk.Stage, *sdk.Application, *sdk.ApplicationPackage) {
