@@ -43,6 +43,68 @@ type GrantPrivilegesToAccountRoleId struct {
 	Data            fmt.Stringer
 }
 
+// TODO(SNOW-2314062): Use in resource
+
+func NewGrantPrivilegesToAccountRoleIdOnAccount(roleName sdk.AccountObjectIdentifier, grantOption bool, alwaysApply bool, allPrivileges bool, privileges ...string) GrantPrivilegesToAccountRoleId {
+	return GrantPrivilegesToAccountRoleId{
+		RoleName:        roleName,
+		WithGrantOption: grantOption,
+		AlwaysApply:     alwaysApply,
+		AllPrivileges:   allPrivileges,
+		Privileges:      privileges,
+		Kind:            OnAccountAccountRoleGrantKind,
+		Data:            new(OnAccountGrantData),
+	}
+}
+
+func NewGrantPrivilegesToAccountRoleIdOnAccountObject(roleName sdk.AccountObjectIdentifier, grantOption bool, alwaysApply bool, allPrivileges bool, grantedOn sdk.ObjectType, objectName sdk.AccountObjectIdentifier, privileges ...string) GrantPrivilegesToAccountRoleId {
+	return GrantPrivilegesToAccountRoleId{
+		RoleName:        roleName,
+		WithGrantOption: grantOption,
+		AlwaysApply:     alwaysApply,
+		AllPrivileges:   allPrivileges,
+		Privileges:      privileges,
+		Kind:            OnAccountObjectAccountRoleGrantKind,
+		Data: &OnAccountObjectGrantData{
+			ObjectType: grantedOn,
+			ObjectName: objectName,
+		},
+	}
+}
+
+func NewGrantPrivilegesToAccountRoleIdOnSchemaOnSchema(roleName sdk.AccountObjectIdentifier, grantOption bool, alwaysApply bool, allPrivileges bool, schemaName sdk.DatabaseObjectIdentifier, privileges ...string) GrantPrivilegesToAccountRoleId {
+	return GrantPrivilegesToAccountRoleId{
+		RoleName:        roleName,
+		WithGrantOption: grantOption,
+		AlwaysApply:     alwaysApply,
+		AllPrivileges:   allPrivileges,
+		Privileges:      privileges,
+		Kind:            OnSchemaAccountRoleGrantKind,
+		Data: &OnSchemaGrantData{
+			Kind:       OnSchemaSchemaGrantKind,
+			SchemaName: &schemaName,
+		},
+	}
+}
+
+func NewGrantPrivilegesToAccountRoleIdOnSchemaObjectOnObject(roleName sdk.AccountObjectIdentifier, grantOption bool, alwaysApply bool, allPrivileges bool, objectType sdk.ObjectType, objectName sdk.SchemaObjectIdentifier, privileges ...string) GrantPrivilegesToAccountRoleId {
+	return GrantPrivilegesToAccountRoleId{
+		RoleName:        roleName,
+		WithGrantOption: grantOption,
+		AlwaysApply:     alwaysApply,
+		AllPrivileges:   allPrivileges,
+		Privileges:      privileges,
+		Kind:            OnSchemaObjectAccountRoleGrantKind,
+		Data: &OnSchemaObjectGrantData{
+			Kind: OnObjectSchemaObjectGrantKind,
+			Object: &sdk.Object{
+				ObjectType: objectType,
+				Name:       objectName,
+			},
+		},
+	}
+}
+
 func (g *GrantPrivilegesToAccountRoleId) String() string {
 	var parts []string
 	parts = append(parts, g.RoleName.FullyQualifiedName())
