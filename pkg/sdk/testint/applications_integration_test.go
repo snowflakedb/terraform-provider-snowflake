@@ -37,6 +37,24 @@ func TestInt_Applications(t *testing.T) {
 		}
 	}
 
+	createRegularApplicationPackage := func(t *testing.T, stageId sdk.SchemaObjectIdentifier, version string) *sdk.ApplicationPackage {
+		t.Helper()
+		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
+		t.Cleanup(cleanupApplicationPackage)
+		testClientHelper().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stageId, version)
+		return applicationPackage
+	}
+
+	createApplicationPackageWithReleaseChannelsDisabled := func(t *testing.T, stageId sdk.SchemaObjectIdentifier, version string, patch int) *sdk.ApplicationPackage {
+		t.Helper()
+		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackageWithReleaseChannelsDisabled(t)
+		t.Cleanup(cleanupApplicationPackage)
+		testClientHelper().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stageId, version)
+		_, err := client.ExecForTests(ctx, fmt.Sprintf(`ALTER APPLICATION PACKAGE %s SET DEFAULT RELEASE DIRECTIVE VERSION = %s PATCH = %d`, applicationPackage.ID().FullyQualifiedName(), version, patch))
+		require.NoError(t, err)
+		return applicationPackage
+	}
+
 	createApplicationPackageHandle := func(t *testing.T, version string, patch int, defaultReleaseDirective bool) (*sdk.Stage, *sdk.ApplicationPackage) {
 		t.Helper()
 
@@ -50,29 +68,11 @@ func TestInt_Applications(t *testing.T) {
 
 		// handle release directive for application package
 		if defaultReleaseDirective {
-			applicationPackage = createApplicationPackageWithReleaseChannelsDisabled(t)
+			applicationPackage = createApplicationPackageWithReleaseChannelsDisabled(t, stage.ID(), version, patch)
 		} else {
-			applicationPackage = createRegularApplicationPackage(t)
+			applicationPackage = createRegularApplicationPackage(t, stage.ID(), version)
 		}
 		return stage, applicationPackage
-	}
-
-	createRegularApplicationPackage := func(t *testing.T) *sdk.ApplicationPackage {
-		t.Helper()
-		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
-		t.Cleanup(cleanupApplicationPackage)
-		testClientHelper().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), version)
-		return applicationPackage
-	}
-
-	createApplicationPackageWithReleaseChannelsDisabled := func(t *testing.T) *sdk.ApplicationPackage {
-		t.Helper()
-		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackageWithReleaseChannelsDisabled(t)
-		t.Cleanup(cleanupApplicationPackage)
-		testClientHelper().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), version)
-		_, err := client.ExecForTests(ctx, fmt.Sprintf(`ALTER APPLICATION PACKAGE %s SET DEFAULT RELEASE DIRECTIVE VERSION = %s PATCH = %d`, applicationPackage.ID().FullyQualifiedName(), version, patch))
-		require.NoError(t, err)
-		return applicationPackage
 	}
 
 	createApplicationHandle := func(t *testing.T, version string, patch int, versionDirectory bool, debug bool, addPatch bool) (*sdk.Stage, *sdk.Application, *sdk.ApplicationPackage) {
