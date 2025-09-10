@@ -453,7 +453,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 		}
 
 		if withExternalChangesMarking {
-			generation, resourceConstraint := "", ""
+			var generation, resourceConstraint string
 			if w.Generation != nil {
 				generation = string(*w.Generation)
 			}
@@ -666,7 +666,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 					}
 					set.ResourceConstraint = &resourceConstraint
 				} else {
-					// TODO [SNOW-1473453]: UNSET of resource constraint does not work
+					// TODO [SNOW-2330776]: UNSET of resource constraint does not work
 					// unset.ResourceConstraint = sdk.Bool(true)
 					set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintMemory16X)
 				}
@@ -701,7 +701,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 				}
 				set.ResourceConstraint = &resourceConstraint
 			} else {
-				// TODO [SNOW-1473453]: UNSET of resource constraint does not work
+				// TODO [SNOW-2330776]: UNSET of resource constraint does not work
 				// unset.ResourceConstraint = sdk.Bool(true)
 				set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen1)
 			}
