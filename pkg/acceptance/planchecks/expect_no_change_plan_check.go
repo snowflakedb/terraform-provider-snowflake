@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
-var _ plancheck.PlanCheck = expectChangePlanCheck{}
+var _ plancheck.PlanCheck = expectNoChangePlanCheck{}
 
 type expectNoChangePlanCheck struct {
 	resourceAddress string
