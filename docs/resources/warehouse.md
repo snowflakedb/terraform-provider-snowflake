@@ -20,7 +20,7 @@ resource "snowflake_warehouse" "warehouse" {
   name = "WAREHOUSE"
 }
 
-# Resource with all fields
+# Resource with SNOWPARK-OPTIMIZED warehouse type and all fields
 resource "snowflake_warehouse" "warehouse" {
   name                                = "WAREHOUSE"
   warehouse_type                      = "SNOWPARK-OPTIMIZED"
@@ -41,6 +41,14 @@ resource "snowflake_warehouse" "warehouse" {
   statement_queued_timeout_in_seconds = 5
   statement_timeout_in_seconds        = 86400
 }
+
+# Resource with STANDARD warehouse type
+resource "snowflake_warehouse" "warehouse" {
+  name           = "WAREHOUSE"
+  warehouse_type = "STANDARD"
+  warehouse_size = "MEDIUM"
+  generation     = "2"
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
@@ -60,12 +68,13 @@ resource "snowflake_warehouse" "warehouse" {
 - `auto_suspend` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the number of seconds of inactivity after which a warehouse is automatically suspended.
 - `comment` (String) Specifies a comment for the warehouse.
 - `enable_query_acceleration` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to enable the query acceleration service for queries that rely on this warehouse for compute resources. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `generation` (String) Specifies the generation for the warehouse. Only available for standard warehouses. Valid values are (case-insensitive): `1` | `2`.
 - `initially_suspended` (Boolean) Specifies whether the warehouse is created initially in the ‘Suspended’ state.
 - `max_cluster_count` (Number) Specifies the maximum number of server clusters for the warehouse.
 - `max_concurrency_level` (Number) Object parameter that specifies the concurrency level for SQL statements (i.e. queries and DML) executed by a warehouse.
 - `min_cluster_count` (Number) Specifies the minimum number of server clusters for the warehouse (only applies to multi-cluster warehouses).
 - `query_acceleration_max_scale_factor` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size.
-- `resource_constraint` (String) Specifies the resource constraint for the warehouse. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): `MEMORY_1X` | `MEMORY_1X_x86` | `MEMORY_16X` | `MEMORY_16X_x86` | `MEMORY_64X` | `MEMORY_64X_x86`.
+- `resource_constraint` (String) Specifies the resource constraint for the warehouse. Only available for snowpark-optimized warehouses. For setting generation please use the `generation` field. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): `MEMORY_1X` | `MEMORY_1X_x86` | `MEMORY_16X` | `MEMORY_16X_x86` | `MEMORY_64X` | `MEMORY_64X_x86`.
 - `resource_monitor` (String) Specifies the name of a resource monitor that is explicitly assigned to the warehouse. For more information about this resource, see [docs](./resource_monitor).
 - `scaling_policy` (String) Specifies the policy for automatically starting and shutting down clusters in a multi-cluster warehouse running in Auto-scale mode. Valid values are (case-insensitive): `STANDARD` | `ECONOMY`.
 - `statement_queued_timeout_in_seconds` (Number) Object parameter that specifies the time, in seconds, a SQL statement (query, DDL, DML, etc.) can be queued on a warehouse before it is canceled by the system.
@@ -149,6 +158,7 @@ Read-Only:
 - `comment` (String)
 - `created_on` (String)
 - `enable_query_acceleration` (Boolean)
+- `generation` (String)
 - `is_current` (Boolean)
 - `is_default` (Boolean)
 - `max_cluster_count` (Number)

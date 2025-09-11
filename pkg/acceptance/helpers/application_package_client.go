@@ -96,3 +96,11 @@ type ApplicationPackageVersion struct {
 	Version string `json:"version"`
 	Patch   int    `json:"patch"`
 }
+
+func (c *ApplicationPackageClient) RegisterVersion(t *testing.T, id sdk.AccountObjectIdentifier, stageId sdk.SchemaObjectIdentifier, versionName string) {
+	t.Helper()
+	ctx := context.Background()
+
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`ALTER APPLICATION PACKAGE %s REGISTER VERSION %s USING '@%s'`, id.FullyQualifiedName(), versionName, stageId.FullyQualifiedName()))
+	require.NoError(t, err)
+}

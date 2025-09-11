@@ -982,8 +982,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 			{
 				Config: config.FromModels(t, userModel),
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(""),
-					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(""),
+					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
 			},
 			{
@@ -998,8 +998,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(""),
-					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(""),
+					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
 			},
 			// no change should happen if the change is to PERSON explicitly
@@ -1015,8 +1015,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString("PERSON"),
-					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType("PERSON"),
+					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
 			},
 			// no change should happen if we fall back to default
@@ -1032,8 +1032,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(""),
-					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(""),
+					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
 			},
 		},

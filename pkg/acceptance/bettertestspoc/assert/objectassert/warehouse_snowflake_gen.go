@@ -342,3 +342,17 @@ func (w *WarehouseAssert) HasResourceConstraint(expected sdk.WarehouseResourceCo
 	})
 	return w
 }
+
+func (w *WarehouseAssert) HasGeneration(expected sdk.WarehouseGeneration) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Generation == nil {
+			return fmt.Errorf("expected generation to have value; got: nil")
+		}
+		if *o.Generation != expected {
+			return fmt.Errorf("expected generation: %v; got: %v", expected, *o.Generation)
+		}
+		return nil
+	})
+	return w
+}

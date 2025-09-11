@@ -117,7 +117,16 @@ var warehouseSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraintWithoutGeneration),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraintWithoutGeneration), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
-		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraintsWithoutGenerations)),
+		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Only available for snowpark-optimized warehouses. For setting generation please use the `generation` field. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraintsWithoutGenerations)),
+		ConflictsWith:    []string{"generation"},
+	},
+	"generation": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseGeneration),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseGeneration), IgnoreChangeToCurrentSnowflakeValueInShow("generation")),
+		Description:      fmt.Sprintf("Specifies the generation for the warehouse. Only available for standard warehouses. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseGenerations)),
+		ConflictsWith:    []string{"resource_constraint"},
 	},
 	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
 		Type:             schema.TypeInt,
@@ -218,7 +227,7 @@ func Warehouse() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Warehouse, customdiff.All(
-			ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor", "resource_constraint"),
+			ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor", "resource_constraint", "generation"),
 			ComputedIfAnyAttributeChanged(warehouseSchema, ParametersAttributeName, strings.ToLower(string(sdk.ObjectParameterMaxConcurrencyLevel)), strings.ToLower(string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds)), strings.ToLower(string(sdk.ObjectParameterStatementTimeoutInSeconds))),
 			ComputedIfAnyAttributeChanged(warehouseSchema, FullyQualifiedNameAttributeName, "name"),
 
@@ -300,14 +309,15 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	if err = d.Set("query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor); err != nil {
 		return nil, err
 	}
-	// Handle resource_constraint
-	switch w.Type {
-	case sdk.WarehouseTypeSnowparkOptimized:
-		if err = d.Set("resource_constraint", w.ResourceConstraint); err != nil {
+	if w.ResourceConstraint != nil {
+		if err = d.Set("resource_constraint", *w.ResourceConstraint); err != nil {
 			return nil, err
 		}
-	default:
-		log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", w.Type)
+	}
+	if w.Generation != nil {
+		if err = d.Set("generation", *w.Generation); err != nil {
+			return nil, err
+		}
 	}
 
 	return []*schema.ResourceData{d}, nil
@@ -384,6 +394,17 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		}
 		createOptions.ResourceConstraint = &resourceConstraint
 	}
+	if v := d.Get("generation").(string); v != "" {
+		generation, err := sdk.ToWarehouseGeneration(v)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		resourceConstraint, err := generation.ToWarehouseResourceConstraint()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createOptions.ResourceConstraint = &resourceConstraint
+	}
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
 		createOptions.MaxConcurrencyLevel = v
 	}
@@ -432,6 +453,13 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 		}
 
 		if withExternalChangesMarking {
+			var generation, resourceConstraint string
+			if w.Generation != nil {
+				generation = string(*w.Generation)
+			}
+			if w.ResourceConstraint != nil {
+				resourceConstraint = string(*w.ResourceConstraint)
+			}
 			outputMappings := []outputMapping{
 				{"type", "warehouse_type", string(w.Type), w.Type, nil},
 				{"size", "warehouse_size", string(w.Size), w.Size, nil},
@@ -443,19 +471,10 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 				{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
 				{"enable_query_acceleration", "enable_query_acceleration", w.EnableQueryAcceleration, fmt.Sprintf("%t", w.EnableQueryAcceleration), nil},
 				{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor, w.QueryAccelerationMaxScaleFactor, nil},
+				{"generation", "generation", generation, generation, nil},
+				{"resource_constraint", "resource_constraint", resourceConstraint, resourceConstraint, nil},
 			}
-			if w.ResourceConstraint != nil {
-				switch w.Type {
-				case sdk.WarehouseTypeSnowparkOptimized:
-					if !sdk.IsWarehouseResourceConstraintForSnowparkOptimized(*w.ResourceConstraint) {
-						return diag.FromErr(fmt.Errorf("resource constraint %s is not supported for snowpark-optimized warehouses", *w.ResourceConstraint))
-					} else {
-						outputMappings = append(outputMappings, outputMapping{"resource_constraint", "resource_constraint", string(*w.ResourceConstraint), string(*w.ResourceConstraint), nil})
-					}
-				default:
-					log.Printf("[DEBUG] handling resource_constraint for warehouse type %s is not supported, ignoring", w.Type)
-				}
-			}
+
 			if err = handleExternalChangesToObjectInShow(d, outputMappings...); err != nil {
 				return diag.FromErr(err)
 			}
@@ -479,6 +498,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			"enable_query_acceleration",
 			"query_acceleration_max_scale_factor",
 			"resource_constraint",
+			"generation",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -646,7 +666,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 					}
 					set.ResourceConstraint = &resourceConstraint
 				} else {
-					// TODO [SNOW-1473453]: UNSET of resource constraint does not work
+					// TODO [SNOW-2330776]: UNSET of resource constraint does not work
 					// unset.ResourceConstraint = sdk.Bool(true)
 					set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintMemory16X)
 				}
@@ -655,7 +675,40 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 		}
 	}
-
+	if d.HasChange("generation") {
+		warehouseTypeRaw := d.Get("warehouse_type").(string)
+		var setGeneration bool
+		if warehouseTypeRaw == "" {
+			setGeneration = true
+		} else {
+			warehouseType, err := sdk.ToWarehouseType(warehouseTypeRaw)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			if warehouseType == sdk.WarehouseTypeStandard {
+				setGeneration = true
+			}
+		}
+		if setGeneration {
+			if v := d.Get("generation").(string); v != "" {
+				generation, err := sdk.ToWarehouseGeneration(v)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				resourceConstraint, err := generation.ToWarehouseResourceConstraint()
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				set.ResourceConstraint = &resourceConstraint
+			} else {
+				// TODO [SNOW-2330776]: UNSET of resource constraint does not work
+				// unset.ResourceConstraint = sdk.Bool(true)
+				set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen1)
+			}
+		} else {
+			log.Printf("[DEBUG] generation is not supported for %s warehouses, ignoring", warehouseTypeRaw)
+		}
+	}
 	if updateParamDiags := handleWarehouseParametersChanges(d, &set, &unset); len(updateParamDiags) > 0 {
 		return updateParamDiags
 	}

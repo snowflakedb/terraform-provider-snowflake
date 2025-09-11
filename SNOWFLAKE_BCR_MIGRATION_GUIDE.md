@@ -64,6 +64,16 @@ Reference: [BCR-1989](https://docs.snowflake.com/en/release-notes/bcr-bundles/20
 
 ## [Bundle 2025_04](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04_bundle)
 
+### `MFA_AUTHENTICATION_METHODS` in authentication policy now only includes `PASSWORD` by default
+
+Previously, the created authentication policies with default `MFA_AUTHENTICATION_METHODS` had both `[PASSWORD, SAML]` values.
+In this BCR, the default value is changed to only `PASSWORD`. This can cause a permadiff on the optional `mfa_authentication_methods` field in `authentication_policy` resource.
+To address this, you can either specify this attribute in the resource configuration, or use the [ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments#lifecycle) meta argument.
+
+This resource is still in preview, and we are planning to rework it in the near future. Handling of default values will be improved.
+
+Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
+
 ### Primary role requires stage access during `CREATE EXTERNAL TABLE` command
 
 Creating an external table succeeds only if a user’s primary role has the `USAGE` privilege on the stage referenced in the `snowflake_external_table` resource. If you manage external tables in the provider, please grant the `USAGE` privilege on the relevant stages to the connection role.

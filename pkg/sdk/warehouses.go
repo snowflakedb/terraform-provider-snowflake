@@ -203,6 +203,60 @@ var AllWarehouseResourceConstraintsWithoutGenerations = []string{
 	string(WarehouseResourceConstraintMemory64Xx86),
 }
 
+type WarehouseGeneration string
+
+const (
+	WarehouseGenerationStandardGen1 WarehouseGeneration = "1"
+	WarehouseGenerationStandardGen2 WarehouseGeneration = "2"
+)
+
+func ToWarehouseGeneration(s string) (WarehouseGeneration, error) {
+	switch s {
+	case "1":
+		return WarehouseGenerationStandardGen1, nil
+	case "2":
+		return WarehouseGenerationStandardGen2, nil
+	default:
+		return "", fmt.Errorf("invalid generation: %s", s)
+	}
+}
+
+var AllWarehouseGenerations = []string{
+	string(WarehouseGenerationStandardGen1),
+	string(WarehouseGenerationStandardGen2),
+}
+
+var AllWarehouseResourceConstraintsForStandardWarehouses = []string{
+	string(WarehouseResourceConstraintStandardGen1),
+	string(WarehouseResourceConstraintStandardGen2),
+}
+
+func IsWarehouseResourceConstraintForStandard(s WarehouseResourceConstraint) bool {
+	return slices.Contains(AllWarehouseResourceConstraintsForStandardWarehouses, string(s))
+}
+
+func (s WarehouseResourceConstraint) ToWarehouseGeneration() (WarehouseGeneration, error) {
+	switch s {
+	case WarehouseResourceConstraintStandardGen1:
+		return WarehouseGenerationStandardGen1, nil
+	case WarehouseResourceConstraintStandardGen2:
+		return WarehouseGenerationStandardGen2, nil
+	default:
+		return "", fmt.Errorf("invalid resource constraint for generation: %s", s)
+	}
+}
+
+func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceConstraint, error) {
+	switch s {
+	case WarehouseGenerationStandardGen1:
+		return WarehouseResourceConstraintStandardGen1, nil
+	case WarehouseGenerationStandardGen2:
+		return WarehouseResourceConstraintStandardGen2, nil
+	default:
+		return "", fmt.Errorf("invalid generation for resource constraint: %s", s)
+	}
+}
+
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
 type CreateWarehouseOptions struct {
 	create      bool                    `ddl:"static" sql:"CREATE"`
@@ -542,6 +596,7 @@ type Warehouse struct {
 	ScalingPolicy                   ScalingPolicy
 	OwnerRoleType                   string
 	ResourceConstraint              *WarehouseResourceConstraint
+	Generation                      *WarehouseGeneration
 }
 
 type warehouseDBRow struct {
@@ -645,11 +700,26 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
 	}
 	if row.ResourceConstraint.Valid {
-		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
-		if err != nil {
-			return nil, err
+		switch wh.Type {
+		case WarehouseTypeStandard:
+			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+			if err != nil {
+				return nil, err
+			}
+			generation, err := resourceConstraint.ToWarehouseGeneration()
+			if err != nil {
+				return nil, err
+			}
+			wh.Generation = &generation
+		case WarehouseTypeSnowparkOptimized:
+			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+			if err != nil {
+				return nil, err
+			}
+			wh.ResourceConstraint = &resourceConstraint
+		default:
+			return nil, fmt.Errorf("invalid warehouse type: %s", wh.Type)
 		}
-		wh.ResourceConstraint = &resourceConstraint
 	}
 	return wh, nil
 }

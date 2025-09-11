@@ -167,6 +167,7 @@ Read-Only:
 - `comment` (String)
 - `created_on` (String)
 - `enable_query_acceleration` (Boolean)
+- `generation` (String)
 - `is_current` (Boolean)
 - `is_default` (Boolean)
 - `max_cluster_count` (Number)

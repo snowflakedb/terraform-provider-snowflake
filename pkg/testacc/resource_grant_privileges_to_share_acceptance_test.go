@@ -529,18 +529,6 @@ func TestAcc_GrantPrivilegesToShare_OnPrivilegeUpdate(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToShare/OnDatabase"),
 				ConfigVariables: configVariables([]sdk.ObjectPrivilege{
-					sdk.ObjectPrivilegeReferenceUsage,
-				}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "to_share", share.ID().Name()),
-					resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "privileges.0", sdk.ObjectPrivilegeReferenceUsage.String()),
-					resource.TestCheckResourceAttr(resourceName, "on_database", database.ID().Name()),
-				),
-			},
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToShare/OnDatabase"),
-				ConfigVariables: configVariables([]sdk.ObjectPrivilege{
 					sdk.ObjectPrivilegeUsage,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -554,6 +542,21 @@ func TestAcc_GrantPrivilegesToShare_OnPrivilegeUpdate(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToShare/OnDatabase"),
 				ConfigVariables: configVariables([]sdk.ObjectPrivilege{
 					sdk.ObjectPrivilegeUsage,
+					sdk.ObjectPrivilegeReferenceUsage,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "to_share", share.ID().Name()),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", sdk.ObjectPrivilegeReferenceUsage.String()),
+					resource.TestCheckResourceAttr(resourceName, "privileges.1", sdk.ObjectPrivilegeUsage.String()),
+					resource.TestCheckResourceAttr(resourceName, "on_database", database.ID().Name()),
+				),
+			},
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToShare/OnDatabase"),
+				ConfigVariables: configVariables([]sdk.ObjectPrivilege{
+					sdk.ObjectPrivilegeUsage,
+					sdk.ObjectPrivilegeReferenceUsage,
 				}),
 				ResourceName:      resourceName,
 				ImportState:       true,
@@ -578,6 +581,7 @@ func TestAcc_GrantPrivilegesToShare_OnDatabaseWithReferenceUsagePrivilege(t *tes
 		"to_share": config.StringVariable(share.ID().Name()),
 		"database": config.StringVariable(database.ID().Name()),
 		"privileges": config.ListVariable(
+			config.StringVariable(sdk.ObjectPrivilegeUsage.String()),
 			config.StringVariable(sdk.ObjectPrivilegeReferenceUsage.String()),
 		),
 	}
@@ -594,8 +598,9 @@ func TestAcc_GrantPrivilegesToShare_OnDatabaseWithReferenceUsagePrivilege(t *tes
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "to_share", share.ID().Name()),
-					resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "privileges.0", sdk.ObjectPrivilegeReferenceUsage.String()),
+					resource.TestCheckResourceAttr(resourceName, "privileges.1", sdk.ObjectPrivilegeUsage.String()),
 					resource.TestCheckResourceAttr(resourceName, "on_database", database.ID().Name()),
 				),
 			},

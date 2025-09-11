@@ -62,6 +62,11 @@ func (w *WarehouseResourceAssert) HasFullyQualifiedNameString(expected string) *
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasGenerationString(expected string) *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueSet("generation", expected))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasInitiallySuspendedString(expected string) *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("initially_suspended", expected))
 	return w
@@ -156,6 +161,11 @@ func (w *WarehouseResourceAssert) HasNoFullyQualifiedName() *WarehouseResourceAs
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasNoGeneration() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("generation"))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasNoInitiallySuspended() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueNotSet("initially_suspended"))
 	return w
@@ -242,6 +252,11 @@ func (w *WarehouseResourceAssert) HasEnableQueryAccelerationEmpty() *WarehouseRe
 
 func (w *WarehouseResourceAssert) HasFullyQualifiedNameEmpty() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasGenerationEmpty() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueSet("generation", ""))
 	return w
 }
 
@@ -336,6 +351,11 @@ func (w *WarehouseResourceAssert) HasEnableQueryAccelerationNotEmpty() *Warehous
 
 func (w *WarehouseResourceAssert) HasFullyQualifiedNameNotEmpty() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasGenerationNotEmpty() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValuePresent("generation"))
 	return w
 }
 
