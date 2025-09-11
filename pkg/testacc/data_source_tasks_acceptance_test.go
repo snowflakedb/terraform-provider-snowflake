@@ -1,4 +1,7 @@
-//go:build !account_level_tests
+//go:build account_level_tests
+
+// These tests are temporarily moved to account level tests due to flakiness caused by changes in the higher-level parameters.
+// Some tests might be also affected due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results.
 
 package testacc
 

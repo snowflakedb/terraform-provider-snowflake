@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -151,4 +152,36 @@ func createExternalTable(t *testing.T) (*sdk.ExternalTable, func()) {
 	t.Cleanup(stageCleanup)
 
 	return testClientHelper().ExternalTable.CreateWithLocation(t, stage.Location())
+}
+
+// TODO(SNOW-1813223): Move these assertions to a dedicated assertion in objectassert package.
+func assertTagSet(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.ObjectIdentifier, objectType sdk.ObjectType, tagValue string) {
+	t.Helper()
+	returnedTagValue, err := testClientHelper().Tag.GetForObject(t, tagId, objectId, objectType)
+	require.NoError(t, err)
+	assert.Equal(t, sdk.Pointer(tagValue), returnedTagValue)
+}
+
+func assertTagUnset(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.ObjectIdentifier, objectType sdk.ObjectType) {
+	t.Helper()
+	returnedTagValue, err := testClientHelper().Tag.GetForObject(t, tagId, objectId, objectType)
+	require.NoError(t, err)
+	assert.Nil(t, returnedTagValue)
+}
+
+func testSetAndUnsetInTagObject(t *testing.T, tag sdk.TagAssociation, id sdk.ObjectIdentifier, objectType sdk.ObjectType) {
+	t.Helper()
+	client := testClient(t)
+	ctx := testContext(t)
+	require.IsType(t, sdk.SchemaObjectIdentifier{}, tag.Name)
+
+	err := client.Tags.Set(ctx, sdk.NewSetTagRequest(objectType, id).WithSetTags([]sdk.TagAssociation{tag}))
+	require.NoError(t, err)
+
+	assertTagSet(t, tag.Name.(sdk.SchemaObjectIdentifier), id, objectType, tag.Value)
+
+	err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tag.Name}))
+	require.NoError(t, err)
+
+	assertTagUnset(t, tag.Name.(sdk.SchemaObjectIdentifier), id, objectType)
 }
