@@ -50,6 +50,7 @@ func NormalizeAndCompareIdentifiersInSet(key string) schema.SchemaDiffSuppressFu
 			return false
 		}
 
+		// TODO(SNOW-2332640): Research if we can simplify this logic and keep this type safe.
 		if oldValue == "" && !d.GetRawState().IsNull() {
 			stateRaw, ok := d.GetRawState().AsValueMap()[key]
 			if ok && !stateRaw.IsNull() && stateRaw.Type().IsCollectionType() {

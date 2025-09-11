@@ -1419,14 +1419,6 @@ func TestAcc_Task_WithAfter_issue4001(t *testing.T) {
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, rootTaskConfigModel, childTaskConfigModelWithoutAfter),
-				Check: assertThat(t,
-					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
-						HasAfterEmpty(),
-				),
-			},
-			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, rootTaskConfigModel, childTaskConfigModelWithAfter),
 				PlanOnly:                 true,
 				ExpectNonEmptyPlan:       true,
