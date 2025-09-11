@@ -26,7 +26,22 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.6.x ➞ v2.7.0
 
-### *(tool)* Adding migration script
+### *(new feature)* Added support for generation 2 Standard warehouses and resource constraints for Snowpark-optimized warehouses
+
+Snowflake offers support for generation 2 standard warehouses (read [documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2)) and resource constraints for Snowpark-optimized warehouses.
+
+The provider did not support these features in previous versions. In this version, we added two fields: generation and resource_constraint. We decided to split resource_constraint in SHOW into two fields:
+- `resource_constraint` - handling a subset of possible values designated for Snowpark-optimized warehouses,
+- `generation` - handling the warehouse generation-related values for Standard warehouses.
+The split aligns with the current work of making the generation its own first-class property.
+We can't share more details at the moment, and we will add them when the changes are released on the Snowflake side.
+These fields are available as optional configurable attributes and as read-only attributes in `show_output`.
+
+The state is upgraded automatically. You can optionally update your configurations by explicitly setting the warehouse `type`, `generation`, or `resource_constraint`.
+
+References: [#3258](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3258)
+
+### *(tool)* Added a grant migration script
 
 As we have recently published in [this section of the new roadmap entry](./ROADMAP.md#migration),
 we have prepared example script that could be used with the grants' migration.
@@ -56,7 +71,7 @@ With the following limitations:
 
 You can find the script and its documentation in our [repository](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/scripts/migration_script).
 
-References: [#2707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2707),
+References: [#2707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2707)
 
 ### *(bugfix)* Fixed privileges validation in `grant_privileges_to_account_role` resource
 In [v2.6.0](#bugfix-fixed-privileges-validation-in-grant_privileges_to_account_role-resource), we added a validation for using the `IMPORTED PRIVILEGES` grant. The validator contained a bug, causing the provider to panic in situations with privileges set by a reference, like this one:
