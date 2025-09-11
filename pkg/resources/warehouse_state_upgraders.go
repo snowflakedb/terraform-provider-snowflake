@@ -121,8 +121,14 @@ func v2_6_0_WarehouseResourceConstraintUpgrader(ctx context.Context, rawState ma
 		return nil, err
 	}
 
+	// Set the resource constraint and generation fields in the show output. When it is not set here, it is seen as an empty string
+	// when accessed from the state.
 	if warehouseInSnowflake.ResourceConstraint != nil {
 		oldShowOutput["resource_constraint"] = string(*warehouseInSnowflake.ResourceConstraint)
+		rawState[ShowOutputAttributeName] = []any{oldShowOutput}
+	}
+	if warehouseInSnowflake.Generation != nil {
+		oldShowOutput["generation"] = string(*warehouseInSnowflake.Generation)
 		rawState[ShowOutputAttributeName] = []any{oldShowOutput}
 	}
 

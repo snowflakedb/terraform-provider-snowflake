@@ -577,3 +577,131 @@ func TestIsWarehouseResourceConstraintForSnowparkOptimized(t *testing.T) {
 		})
 	}
 }
+
+func TestIsWarehouseResourceConstraintForStandard(t *testing.T) {
+	trueCases := []WarehouseResourceConstraint{
+		WarehouseResourceConstraintStandardGen1,
+		WarehouseResourceConstraintStandardGen2,
+	}
+
+	falseCases := []WarehouseResourceConstraint{
+		WarehouseResourceConstraintMemory1X,
+		WarehouseResourceConstraintMemory1Xx86,
+		WarehouseResourceConstraintMemory16X,
+		WarehouseResourceConstraintMemory16Xx86,
+		WarehouseResourceConstraintMemory64X,
+		WarehouseResourceConstraintMemory64Xx86,
+		WarehouseResourceConstraint("UNKNOWN"),
+	}
+
+	for _, c := range trueCases {
+		t.Run(string(c), func(t *testing.T) {
+			assert.True(t, IsWarehouseResourceConstraintForStandard(c))
+		})
+	}
+
+	for _, c := range falseCases {
+		t.Run(string(c), func(t *testing.T) {
+			assert.False(t, IsWarehouseResourceConstraintForStandard(c))
+		})
+	}
+}
+
+func Test_Warehouse_ToWarehouseGeneration(t *testing.T) {
+	type test struct {
+		input string
+		want  WarehouseGeneration
+	}
+
+	valid := []test{
+		{input: "1", want: WarehouseGenerationStandardGen1},
+		{input: "2", want: WarehouseGenerationStandardGen2},
+	}
+
+	invalid := []string{
+		"",
+		"0",
+		"GEN_1",
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToWarehouseGeneration(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, in := range invalid {
+		t.Run(in, func(t *testing.T) {
+			_, err := ToWarehouseGeneration(in)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_Warehouse_WarehouseGenerationToWarehouseResourceConstraint(t *testing.T) {
+	type test struct {
+		input WarehouseGeneration
+		want  WarehouseResourceConstraint
+	}
+
+	valid := []test{
+		{input: "1", want: WarehouseResourceConstraintStandardGen1},
+		{input: "2", want: WarehouseResourceConstraintStandardGen2},
+	}
+
+	invalid := []string{
+		"",
+		"0",
+		"GEN_1",
+	}
+
+	for _, tc := range valid {
+		t.Run(string(tc.input), func(t *testing.T) {
+			got, err := tc.input.ToWarehouseResourceConstraint()
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, in := range invalid {
+		t.Run(in, func(t *testing.T) {
+			_, err := WarehouseGeneration(in).ToWarehouseResourceConstraint()
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_Warehouse_WarehouseResourceConstraintToWarehouseGeneration(t *testing.T) {
+	type test struct {
+		input WarehouseResourceConstraint
+		want  WarehouseGeneration
+	}
+
+	valid := []test{
+		{input: WarehouseResourceConstraintStandardGen1, want: WarehouseGenerationStandardGen1},
+		{input: WarehouseResourceConstraintStandardGen2, want: WarehouseGenerationStandardGen2},
+	}
+
+	invalid := []string{
+		"",
+		"0",
+		"1",
+	}
+
+	for _, tc := range valid {
+		t.Run(string(tc.input), func(t *testing.T) {
+			got, err := tc.input.ToWarehouseGeneration()
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, in := range invalid {
+		t.Run(in, func(t *testing.T) {
+			_, err := WarehouseResourceConstraint(in).ToWarehouseGeneration()
+			require.Error(t, err)
+		})
+	}
+}

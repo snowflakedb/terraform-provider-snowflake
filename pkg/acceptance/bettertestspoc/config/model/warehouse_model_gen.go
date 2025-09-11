@@ -18,6 +18,7 @@ type WarehouseModel struct {
 	Comment                         tfconfig.Variable `json:"comment,omitempty"`
 	EnableQueryAcceleration         tfconfig.Variable `json:"enable_query_acceleration,omitempty"`
 	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	Generation                      tfconfig.Variable `json:"generation,omitempty"`
 	InitiallySuspended              tfconfig.Variable `json:"initially_suspended,omitempty"`
 	MaxClusterCount                 tfconfig.Variable `json:"max_cluster_count,omitempty"`
 	MaxConcurrencyLevel             tfconfig.Variable `json:"max_concurrency_level,omitempty"`
@@ -116,6 +117,11 @@ func (w *WarehouseModel) WithFullyQualifiedName(fullyQualifiedName string) *Ware
 	return w
 }
 
+func (w *WarehouseModel) WithGeneration(generation string) *WarehouseModel {
+	w.Generation = tfconfig.StringVariable(generation)
+	return w
+}
+
 func (w *WarehouseModel) WithInitiallySuspended(initiallySuspended bool) *WarehouseModel {
 	w.InitiallySuspended = tfconfig.BoolVariable(initiallySuspended)
 	return w
@@ -207,6 +213,11 @@ func (w *WarehouseModel) WithEnableQueryAccelerationValue(value tfconfig.Variabl
 
 func (w *WarehouseModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *WarehouseModel {
 	w.FullyQualifiedName = value
+	return w
+}
+
+func (w *WarehouseModel) WithGenerationValue(value tfconfig.Variable) *WarehouseModel {
+	w.Generation = value
 	return w
 }
 

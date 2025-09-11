@@ -121,6 +121,10 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"generation": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var _ = ShowWarehouseSchema
@@ -157,6 +161,9 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	// Adjusted manually.
 	if warehouse.ResourceConstraint != nil {
 		warehouseSchema["resource_constraint"] = string(*warehouse.ResourceConstraint)
+	}
+	if warehouse.Generation != nil {
+		warehouseSchema["generation"] = string(*warehouse.Generation)
 	}
 	return warehouseSchema
 }
