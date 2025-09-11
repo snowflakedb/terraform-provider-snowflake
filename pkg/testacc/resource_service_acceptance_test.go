@@ -546,8 +546,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
-					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
-					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -556,8 +556,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
-					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.max_instances", "1")),

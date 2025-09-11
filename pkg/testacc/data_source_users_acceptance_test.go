@@ -67,7 +67,7 @@ func TestAcc_Users_PersonUser(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.#", "1")),
 					resourceshowoutputassert.UsersDatasourceShowOutput(t, "snowflake_users.test").
 						HasName(id.Name()).
-						HasType("").
+						HasType(string(sdk.UserTypePerson)).
 						HasCreatedOnNotEmpty().
 						HasLoginName(fmt.Sprintf("%s_LOGIN", id.Name())).
 						HasDisplayName("Display Name").
@@ -90,7 +90,7 @@ func TestAcc_Users_PersonUser(t *testing.T) {
 					resourceparametersassert.UsersDatasourceParameters(t, "snowflake_users.test").
 						HasAllDefaults(),
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.type", "")),
+					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.type", string(sdk.UserTypePerson))),
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.comment", comment)),
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.display_name", "Display Name")),
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.login_name", fmt.Sprintf("%s_LOGIN", id.Name()))),
@@ -129,7 +129,7 @@ func TestAcc_Users_PersonUser(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.#", "1")),
 					resourceshowoutputassert.UsersDatasourceShowOutput(t, "snowflake_users.test").
 						HasName(id.Name()).
-						HasType("").
+						HasType(string(sdk.UserTypePerson)).
 						HasCreatedOnNotEmpty().
 						HasLoginName(strings.ToUpper(id.Name())).
 						HasDisplayName("").
@@ -151,7 +151,7 @@ func TestAcc_Users_PersonUser(t *testing.T) {
 					resourceparametersassert.UsersDatasourceParameters(t, "snowflake_users.test").
 						HasAllDefaults(),
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.type", "")),
+					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.type", string(sdk.UserTypePerson))),
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.comment", "")),
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.display_name", "")),
 					assert.Check(resource.TestCheckResourceAttr(usersModel.DatasourceReference(), "users.0.describe_output.0.login_name", strings.ToUpper(id.Name()))),

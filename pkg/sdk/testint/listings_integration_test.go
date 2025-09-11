@@ -582,7 +582,8 @@ func TestInt_Listings(t *testing.T) {
 		assert.True(t, *listingDetails.IsShare)
 		assert.Nil(t, listingDetails.RequestApprovalType)
 		assert.Empty(t, *listingDetails.MonetizationDisplayOrder)
-		assert.Nil(t, listingDetails.LegacyUniformListingLocators)
+		assert.NotNil(t, listingDetails.LegacyUniformListingLocators)
+		assert.Equal(t, "", *listingDetails.LegacyUniformListingLocators)
 	})
 
 	// TODO(SNOW-2220593): Test describe with revisions

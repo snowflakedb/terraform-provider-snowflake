@@ -94,7 +94,7 @@ func createApplicationPackage(t *testing.T) (*sdk.ApplicationPackage, func()) {
 	applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
 	t.Cleanup(cleanupApplicationPackage)
 
-	testClientHelper().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), "V01")
+	testClientHelper().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), "V01")
 
 	return applicationPackage, cleanupApplicationPackage
 }
