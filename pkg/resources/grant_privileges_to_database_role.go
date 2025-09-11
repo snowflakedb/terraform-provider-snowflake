@@ -157,7 +157,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					ForceNew:    true,
-					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToObjectTypesString, " | ")),
+					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToSchemaObjectTypesString, " | ")),
 					RequiredWith: []string{
 						"on_schema_object.0.object_name",
 					},
@@ -165,7 +165,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
 					},
-					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToObjectTypesString, true),
+					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToSchemaObjectTypesString, true),
 				},
 				"object_name": {
 					Type:        schema.TypeString,

@@ -24,6 +24,145 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.6.x ➞ v2.7.0
+
+### *(new feature)* Added support for generation 2 Standard warehouses and resource constraints for Snowpark-optimized warehouses
+
+Snowflake offers support for generation 2 standard warehouses (read [documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2)) and resource constraints for Snowpark-optimized warehouses.
+
+The provider did not support these features in previous versions. In this version, we added two fields: generation and resource_constraint. We decided to split resource_constraint in SHOW into two fields:
+- `resource_constraint` - handling a subset of possible values designated for Snowpark-optimized warehouses,
+- `generation` - handling the warehouse generation-related values for Standard warehouses.
+The split aligns with the current work of making the generation its own first-class property.
+We can't share more details at the moment, and we will add them when the changes are released on the Snowflake side.
+These fields are available as optional configurable attributes and as read-only attributes in `show_output`.
+
+The state is upgraded automatically. You can optionally update your configurations by explicitly setting the warehouse `type`, `generation`, or `resource_constraint`.
+
+References: [#3258](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3258)
+
+### *(tool)* Added a grant migration script
+
+As we have recently published in [this section of the new roadmap entry](./ROADMAP.md#migration),
+we have prepared example script that could be used with the grants' migration.
+The tool turned out to be a bit different from what we announced in our [roadmap entry](./ROADMAP.md#grants-migration);
+it generates the necessary Terraform resources and import statements based on the Snowflake output.
+The main idea is the same though: simplify the migration from the deprecated grant resources to the new ones.
+This should streamline your grants' migration process and support upgrades to newer provider versions,
+as we focus on increasing adoption of GA+ releases (`>= v2.0.0`).
+
+The script was provided to give an idea how the migration process can be automated, and, for now, is not meant to be a standalone product.
+It is not officially supported, and we do not prioritize fixes for it.
+Feel free to use it as a starting point and modify it to fit your specific needs.
+
+This script is designed to be extendable and not to be limited to grant-related resources only.
+It can be used for both one-time migrations from deprecated resources to the new ones, but also importing existing objects into Terraform state.
+We are open to contributions to enhance its functionality.
+
+Currently, the script supports only a few grant resources, namely:
+- `snowflake_grant_privileges_to_account_role`
+- `snowflake_grant_privileges_to_database_role`
+- `snowflake_grant_account_role`
+- `snowflake_grant_database_role`
+
+With the following limitations:
+- grants on `future` or on `all` objects are not supported
+- `all_privileges` and `always_apply` fields are not supported
+
+You can find the script and its documentation in our [repository](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/scripts/migration_script).
+
+References: [#2707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2707)
+
+### *(bugfix)* Fixed diff suppress for sets of identifiers
+A number of resources have fields, like the `after` field in `snowflake_task`, containing a set of references to other objects (their identifiers). These fields run a custom function to correctly suppress diffs for quoting, and case. Before, when the set in state was `null`, this function could panic.
+
+For example, in the following configuration:
+```terraform
+resource "snowflake_task" "parent" {
+  database      = "DB"
+  schema        = "PUBLIC"
+  warehouse     = "SNOWFLAKE"
+  name          = "TERRAFORM_PARENT_TASK"
+  sql_statement = "select 1"
+  started       = false
+  schedule {
+    using_cron = "0 9 * * * UTC"
+  }
+}
+
+resource "snowflake_task" "child" {
+  database      = "DB"
+  schema        = "PUBLIC"
+  warehouse     = "SNOWFLAKE"
+  name          = "TERRAFORM_CHILD_TASK"
+  sql_statement = "select 1"
+  started       = false
+
+  #   after = [snowflake_task.parent.fully_qualified_name] #<-------------------------- this is commented
+}
+```
+After uncommenting the `after` field in the child resource and running `terraform plan -refresh=false`, the provider panicked with the following message:
+```
+Planning failed. Terraform encountered an error while generating this plan.
+╷
+│ Error: Plugin did not respond
+│
+│ The plugin encountered an error, and failed to respond to the plugin6.(*GRPCProvider).PlanResourceChange call. The plugin logs may contain more details.
+╵
+Stack trace from the terraform-provider-snowflake_v2.6.0 plugin:
+panic: can't use ElementIterator on null value
+goroutine 44 [running]:
+github.com/hashicorp/go-cty/cty.Value.ElementIterator({{{0x10315eff0?, 0x1400119eb50?}}, {0x0?, 0x0?}})
+        github.com/hashicorp/go-cty@v1.5.0/cty/value_ops.go:1046 +0xb8
+<...>
+```
+This was not happening when `refresh` was set to true or was not set at all. This behavior may have appeared in other resources with sets of identifiers.
+
+Now, this behavior is fixed, and the provider will not panic. No changes in configuration and state are required.
+
+References: [#4001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4001)
+
+### *(bugfix)* Fixed privileges validation in `grant_privileges_to_account_role` resource
+In [v2.6.0](#bugfix-fixed-privileges-validation-in-grant_privileges_to_account_role-resource), we added a validation for using the `IMPORTED PRIVILEGES` grant. The validator contained a bug, causing the provider to panic in situations with privileges set by a reference, like this one:
+```terraform
+resource "snowflake_grant_privileges_to_account_role" "direct" {
+  account_role_name = "ROLE"
+  privileges        = [var.privilege]
+
+  on_account_object {
+    object_type = "DATABASE"
+    object_name = "DB"
+  }
+
+}
+
+variable "privilege" {
+  type = string
+  default = "USAGE"
+}
+```
+
+The provider panicked with the following message:
+```
+│ Error: Plugin did not respond
+│
+│ The plugin encountered an error, and failed to respond to the plugin6.(*GRPCProvider).ValidateResourceConfig call. The plugin logs may contain more details.
+╵
+
+Stack trace from the terraform-provider-snowflake_v2.6.0 plugin:
+
+panic: value is unknown
+
+goroutine 23 [running]:
+github.com/hashicorp/go-cty/cty.Value.AsString({{{0x1029376c8?, 0x14000011051?}}, {0x1025b2060?, 0x103b04ec0?}})
+        github.com/hashicorp/go-cty@v1.5.0/cty/value_ops.go:1187 +0x100
+<...>
+```
+
+Now, this behavior is fixed, and the provider will not panic. No changes in configuration and state are required.
+
+References: [#3992](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3992)
+
 ## v2.5.0 ➞ v2.6.0
 
 ### *(improvement)* Handling conversion-based errors
@@ -1277,7 +1416,7 @@ resource "snowflake_tag_association" "table_association" {
   tag_value   = "engineering"
 }
 ```
-- `tag_id`  has now suppressed identifier quoting to prevent issues with Terraform showing permament differences, like [this one](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2982)
+- `tag_id`  has now suppressed identifier quoting to prevent issues with Terraform showing permanent differences, like [this one](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2982)
 - `object_type` and `tag_id` are now marked as ForceNew
 
 The state is migrated automatically. Please adjust your configuration files.
@@ -1956,7 +2095,7 @@ Argument names are now case sensitive. All policies created previously in the pr
 Previously, after changing `name` field, the resource was recreated. Now, the object is renamed with `RENAME TO`.
 
 #### *(breaking change)* Mitigating permadiff on `body`
-Previously, `body` of a policy was compared as a raw string. This led to permament diff because of leading newlines (see https://github.com/snowflakedb/terraform-provider-snowflake/issues/2053).
+Previously, `body` of a policy was compared as a raw string. This led to permanent diff because of leading newlines (see https://github.com/snowflakedb/terraform-provider-snowflake/issues/2053).
 
 Now, similarly to handling statements in other resources, we replace blank characters with a space. The provider can cause false positives in cases where a change in case or run of whitespace is semantically significant.
 
@@ -2316,7 +2455,7 @@ resource "snowflake_user" "example_user" {
 ## v0.94.0 ➞ v0.94.1
 ### changes in snowflake_schema
 
-In order to avoid dropping `PUBLIC` schemas, we have decided to use `ALTER` instead of `OR REPLACE` during creation. In the future we are planning to use `CREATE OR ALTER` when it becomes available for schems.
+In order to avoid dropping `PUBLIC` schemas, we have decided to use `ALTER` instead of `OR REPLACE` during creation. In the future we are planning to use `CREATE OR ALTER` when it becomes available for schemas.
 
 ## v0.93.0 ➞ v0.94.0
 ### *(breaking change)* changes in snowflake_scim_integration
@@ -2395,7 +2534,7 @@ Changes:
 Added a new resource for managing streamlits. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-streamlit). In this resource, we decided to split `ROOT_LOCATION` in Snowflake to two fields: `stage` representing stage fully qualified name and `directory_location` containing a path within this stage to root location.
 
 ### *(new feature)* snowflake_streamlits datasource
-Added a new datasource enabling querying and filtering stremlits. Notes:
+Added a new datasource enabling querying and filtering streamlits. Notes:
 - all results are stored in `streamlits` field.
 - `like`, `in`, and `limit` fields enable streamlits filtering.
 - SHOW STREAMLITS output is enclosed in `show_output` field inside `streamlits`.
@@ -2671,7 +2810,7 @@ When upgrading to the 0.93.0 version, the automatic state upgrader should cover 
 - `from_replica` (now, the new `snowflake_secondary_database` should be used instead)
 - `replication_configuration`
 
-For configurations containing `replication_configuraiton` like this one:
+For configurations containing `replication_configuration` like this one:
 ```terraform
 resource "snowflake_database" "test" {
   name = "<name>"

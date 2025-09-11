@@ -1,4 +1,6 @@
-//go:build !account_level_tests
+//go:build account_level_tests
+
+// These tests are temporarily moved to account level tests due to flakiness caused by changes in the higher-level parameters.
 
 package testacc
 
@@ -71,6 +73,8 @@ func TestAcc_Warehouses_Complete(t *testing.T) {
 					resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.resource_monitor", ""),
 					resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.scaling_policy", string(sdk.ScalingPolicyStandard)),
 					resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.owner_role_type"),
+					resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.resource_constraint", ""),
+					resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.generation"),
 
 					resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.#", "1"),
 					resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.created_on"),
@@ -115,6 +119,8 @@ func TestAcc_Warehouses_Complete(t *testing.T) {
 					resource.TestCheckResourceAttr(warehousesModelOptionalsUnset.DatasourceReference(), "warehouses.0.show_output.0.resource_monitor", ""),
 					resource.TestCheckResourceAttr(warehousesModelOptionalsUnset.DatasourceReference(), "warehouses.0.show_output.0.scaling_policy", string(sdk.ScalingPolicyStandard)),
 					resource.TestCheckResourceAttrSet(warehousesModelOptionalsUnset.DatasourceReference(), "warehouses.0.show_output.0.owner_role_type"),
+					resource.TestCheckResourceAttr(warehousesModelOptionalsUnset.DatasourceReference(), "warehouses.0.show_output.0.resource_constraint", ""),
+					resource.TestCheckResourceAttrSet(warehousesModelOptionalsUnset.DatasourceReference(), "warehouses.0.show_output.0.generation"),
 
 					resource.TestCheckResourceAttr(warehousesModelOptionalsUnset.DatasourceReference(), "warehouses.0.describe_output.#", "0"),
 					resource.TestCheckResourceAttr(warehousesModelOptionalsUnset.DatasourceReference(), "warehouses.0.parameters.#", "0"),

@@ -170,7 +170,8 @@ func Test_ProviderFromModelPoc(t *testing.T) {
 	t.Run("test basic", func(t *testing.T) {
 		providerModel := providermodel.SnowflakeProvider()
 		expectedOutput := strings.TrimPrefix(`
-provider "snowflake" {}
+provider "snowflake" {
+}
 `, "\n")
 		result := config.ProviderFromModel(t, providerModel)
 
@@ -332,7 +333,8 @@ func Test_ConfigFromModelsPoc(t *testing.T) {
 		datasourceModel := datasourcemodel.Databases("test").WithDependsOn(someModel.ResourceReference())
 		someOtherModel := Some("test2", "Some Name 2").WithDependsOn(datasourceModel.DatasourceReference())
 		expectedOutput := strings.TrimPrefix(`
-provider "snowflake" {}
+provider "snowflake" {
+}
 
 resource "snowflake_share" "test" {
   name = "Some Name"

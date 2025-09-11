@@ -3,7 +3,7 @@ resource "snowflake_warehouse" "warehouse" {
   name = "WAREHOUSE"
 }
 
-# Resource with all fields
+# Resource with SNOWPARK-OPTIMIZED warehouse type and all fields
 resource "snowflake_warehouse" "warehouse" {
   name                                = "WAREHOUSE"
   warehouse_type                      = "SNOWPARK-OPTIMIZED"
@@ -18,8 +18,17 @@ resource "snowflake_warehouse" "warehouse" {
   comment                             = "An example warehouse."
   enable_query_acceleration           = true
   query_acceleration_max_scale_factor = 4
+  resource_constraint                 = "MEMORY_16X"
 
   max_concurrency_level               = 4
   statement_queued_timeout_in_seconds = 5
   statement_timeout_in_seconds        = 86400
+}
+
+# Resource with STANDARD warehouse type
+resource "snowflake_warehouse" "warehouse" {
+  name           = "WAREHOUSE"
+  warehouse_type = "STANDARD"
+  warehouse_size = "MEDIUM"
+  generation     = "2"
 }

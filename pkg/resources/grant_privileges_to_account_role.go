@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
@@ -101,21 +102,11 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"object_type": {
-					Type:        schema.TypeString,
-					Required:    true,
-					ForceNew:    true,
-					Description: "The object type of the account object on which privileges will be granted. Valid values are: USER | RESOURCE MONITOR | WAREHOUSE | COMPUTE POOL | DATABASE | INTEGRATION | FAILOVER GROUP | REPLICATION GROUP | EXTERNAL VOLUME",
-					ValidateFunc: validation.StringInSlice([]string{
-						"USER",
-						"RESOURCE MONITOR",
-						"WAREHOUSE",
-						"COMPUTE POOL",
-						"DATABASE",
-						"INTEGRATION",
-						"FAILOVER GROUP",
-						"REPLICATION GROUP",
-						"EXTERNAL VOLUME",
-					}, true),
+					Type:         schema.TypeString,
+					Required:     true,
+					ForceNew:     true,
+					Description:  fmt.Sprintf("The object type of the account object on which privileges will be granted. Valid values are: %s", docs.PossibleValuesListed(sdk.ValidGrantToAccountObjectTypesString)),
+					ValidateFunc: validation.StringInSlice(sdk.ValidGrantToAccountObjectTypesString, true),
 				},
 				"object_name": {
 					Type:             schema.TypeString,
@@ -202,7 +193,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					ForceNew:    true,
-					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToObjectTypesString, " | ")),
+					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToSchemaObjectTypesString, " | ")),
 					RequiredWith: []string{
 						"on_schema_object.0.object_name",
 					},
@@ -210,7 +201,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
 					},
-					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToObjectTypesString, true),
+					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToSchemaObjectTypesString, true),
 				},
 				"object_name": {
 					Type:        schema.TypeString,
@@ -315,6 +306,11 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 				privilegesCty := rawPrivileges.AsValueSet().Values()
 				privileges := make([]string, 0, len(privilegesCty))
 				for _, privilegeCty := range privilegesCty {
+					// Even though we check it for the whole list, we still need to check it for each privilege.
+					// See issue 3992
+					if privilegeCty.IsNull() || !privilegeCty.IsKnown() {
+						continue
+					}
 					privileges = append(privileges, privilegeCty.AsString())
 				}
 				if slices.Contains(privileges, string(sdk.AccountObjectPrivilegeImportedPrivileges)) && len(privileges) > 1 {

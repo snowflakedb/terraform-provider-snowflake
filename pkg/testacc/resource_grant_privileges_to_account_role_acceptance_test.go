@@ -16,8 +16,10 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -926,10 +928,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_InDatabase(t *
 	})
 }
 
-// TODO [SNOW-1272222]: fix the test when it starts working on Snowflake side
 func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Streamlits_InDatabase(t *testing.T) {
-	t.Skip("Fix after it starts working on Snowflake side, reference: SNOW-1272222")
-
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -944,6 +943,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Streamlits_InD
 		"object_type_plural": config.StringVariable(sdk.PluralObjectTypeStreamlits.String()),
 		"with_grant_option":  config.BoolVariable(false),
 	}
+	resourceName := "snowflake_grant_privileges_to_account_role.test"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -955,7 +955,17 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Streamlits_InD
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnSchemaObject_OnFuture_InDatabase"),
 				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile("Unsupported feature 'STREAMLIT'"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", roleFullyQualifiedName),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.SchemaObjectPrivilegeUsage)),
+					resource.TestCheckResourceAttr(resourceName, "on_schema_object.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "on_schema_object.0.future.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "on_schema_object.0.future.0.object_type_plural", string(sdk.PluralObjectTypeStreamlits)),
+					resource.TestCheckResourceAttr(resourceName, "on_schema_object.0.future.0.in_database", databaseName),
+					resource.TestCheckResourceAttr(resourceName, "with_grant_option", "false"),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|USAGE|OnSchemaObject|OnFuture|STREAMLITS|InDatabase|%s", roleFullyQualifiedName, databaseName)),
+				),
 			},
 		},
 	})
@@ -1842,7 +1852,7 @@ func createSharedDatabaseOnSecondaryAccount(t *testing.T) sdk.ExternalObjectIden
 	share, shareCleanup := secondaryTestClient().Share.CreateShare(t)
 	t.Cleanup(shareCleanup)
 
-	_ = secondaryTestClient().Grant.GrantPrivilegeOnDatabaseToShare(t, database.ID(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeReferenceUsage})
+	_ = secondaryTestClient().Grant.GrantPrivilegeOnDatabaseToShare(t, database.ID(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage, sdk.ObjectPrivilegeReferenceUsage})
 
 	accountName := testClient().Context.CurrentAccount(t)
 	accountId := sdk.NewAccountIdentifierFromAccountLocator(accountName)
@@ -2165,4 +2175,58 @@ func queriedPrivilegesDoNotContain(query func() ([]sdk.Grant, error), privileges
 
 		return nil
 	}
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_issue3992(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	databaseId := testClient().Ids.DatabaseId()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("snowflake_grant_privileges_to_account_role.test", tfjsonpath.New("privileges").AtSliceIndex(0), knownvalue.StringExact("USAGE")),
+					},
+				},
+				Config: configIssue3992(role.ID(), databaseId),
+				// It fails, even though the plan says it's known.
+				ExpectError: regexp.MustCompile("panic: value is unknown"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("snowflake_grant_privileges_to_account_role.test", tfjsonpath.New("privileges").AtSliceIndex(0), knownvalue.StringExact("USAGE")),
+					},
+				},
+				Config: configIssue3992(role.ID(), databaseId),
+			},
+		},
+	})
+}
+
+func configIssue3992(roleId sdk.AccountObjectIdentifier, dbId sdk.AccountObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_grant_privileges_to_account_role" "test" {
+  account_role_name = "%[1]s"
+  privileges        = [var.privilege]
+
+  on_account_object {
+      object_type = "DATABASE"
+      object_name = "%[2]s"
+  }
+}
+variable "privilege" {
+  type = string
+  default = "USAGE"
+}
+`, roleId.Name(), dbId.Name())
 }

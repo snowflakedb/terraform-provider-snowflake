@@ -46,7 +46,33 @@ and have this bundle enabled, the provider will return an error.
 
 Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
 
+## [Bundle 2025_05](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05_bundle)
+
+### Key-pair authentication for Google Cloud accounts in the us-central1 region
+
+Previously, when you used key-pair authentication from a Snowflake account in the Google Cloud us-central1 region, specifying the account by using an account locator with additional segments was supported.
+
+Now, when you use key-pair authentication across all cloud platforms and regions, you must specify the account by using only the account locator without additional segments. See our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide for authentication overview in the provider.
+
+Reference: [BCR-2055](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05/bcr-2055)
+
+### File formats and stages: Enforce dependency checks
+
+You can't drop or recreate a file format or stage that has dependent external tables. You also can't alter the location of a stage with dependent external tables. To perform these operations, first drop the dependent external tables manually.
+
+Reference: [BCR-1989](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05/bcr-1989)
+
 ## [Bundle 2025_04](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04_bundle)
+
+### `MFA_AUTHENTICATION_METHODS` in authentication policy now only includes `PASSWORD` by default
+
+Previously, the created authentication policies with default `MFA_AUTHENTICATION_METHODS` had both `[PASSWORD, SAML]` values.
+In this BCR, the default value is changed to only `PASSWORD`. This can cause a permadiff on the optional `mfa_authentication_methods` field in `authentication_policy` resource.
+To address this, you can either specify this attribute in the resource configuration, or use the [ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments#lifecycle) meta argument.
+
+This resource is still in preview, and we are planning to rework it in the near future. Handling of default values will be improved.
+
+Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
 
 ### Primary role requires stage access during `CREATE EXTERNAL TABLE` command
 

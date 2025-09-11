@@ -1,4 +1,6 @@
-//go:build !account_level_tests
+//go:build account_level_tests
+
+// These tests are temporarily moved to account level tests due to flakiness caused by changes in the higher-level parameters.
 
 package testacc
 
@@ -1367,6 +1369,62 @@ func TestAcc_Task_WithAfter(t *testing.T) {
 					resourceassert.TaskResource(t, childTaskConfigModelWithoutAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
 						HasAfter(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_WithAfter_issue4001(t *testing.T) {
+	rootId := testClient().Ids.RandomSchemaObjectIdentifier()
+	childId := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+	schedule := 5
+
+	rootTaskConfigModel := model.TaskWithId("root", rootId, true, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name()).
+		WithScheduleMinutes(schedule).
+		WithSqlStatement(statement)
+
+	childTaskConfigModelWithAfter := model.TaskWithId("child", childId, true, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name()).
+		WithAfterValue(configvariable.SetVariable(configvariable.StringVariable(rootId.FullyQualifiedName()))).
+		WithSqlStatement(statement)
+
+	childTaskConfigModelWithoutAfter := model.TaskWithId("child", childId, true, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name()).
+		WithScheduleMinutes(schedule).
+		WithSqlStatement(statement)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
+				Config:            config.FromModels(t, rootTaskConfigModel, childTaskConfigModelWithoutAfter),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
+						HasAfterEmpty(),
+				),
+			},
+			{
+				ExternalProviders:  ExternalProviderWithExactVersion("2.6.0"),
+				Config:             config.FromModels(t, rootTaskConfigModel, childTaskConfigModelWithAfter),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+				ExpectError:        regexp.MustCompile("can't use ElementIterator on null value"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, rootTaskConfigModel, childTaskConfigModelWithAfter),
+				PlanOnly:                 true,
+				ExpectNonEmptyPlan:       true,
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
+						HasAfter(rootId),
 				),
 			},
 		},

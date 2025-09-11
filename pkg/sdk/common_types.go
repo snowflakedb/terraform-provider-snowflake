@@ -75,6 +75,7 @@ type Like struct {
 }
 
 type TagAssociation struct {
+	// TODO(SNOW-2312025): Change the type to SchemaObjectIdentifier.
 	Name  ObjectIdentifier `ddl:"identifier"`
 	Value string           `ddl:"parameter,single_quotes"`
 }

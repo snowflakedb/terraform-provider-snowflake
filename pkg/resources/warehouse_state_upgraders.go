@@ -90,3 +90,47 @@ func v092WarehouseSizeStateUpgrader(ctx context.Context, rawState map[string]any
 
 	return rawState, nil
 }
+
+// v2_6_0_WarehouseResourceConstraintUpgrader is needed because:
+// - we are adding resource_constraint to the show output and to the config
+// - this means that the old output in handleExternalChangesToObject would be empty after migration
+// - that caused the plan to show a diff for resource_constraint
+// - this upgrade fixes that by setting the default value for resource_constraint
+func v2_6_0_WarehouseResourceConstraintUpgrader(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
+	if rawState == nil {
+		return rawState, nil
+	}
+
+	oldShowOutputRaw, ok := rawState[ShowOutputAttributeName].([]any)
+	if !ok || len(oldShowOutputRaw) != 1 {
+		return rawState, nil
+	}
+	oldShowOutput, ok := oldShowOutputRaw[0].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cannot read warehouse show output from the state")
+	}
+
+	warehouseName, ok := rawState["name"].(string)
+	if !ok {
+		return nil, fmt.Errorf("cannot read warehouse name from the state")
+	}
+
+	client := meta.(*provider.Context).Client
+	warehouseInSnowflake, err := client.Warehouses.ShowByIDSafely(ctx, sdk.NewAccountObjectIdentifier(warehouseName))
+	if err != nil {
+		return nil, err
+	}
+
+	// Set the resource constraint and generation fields in the show output. When it is not set here, it is seen as an empty string
+	// when accessed from the state.
+	if warehouseInSnowflake.ResourceConstraint != nil {
+		oldShowOutput["resource_constraint"] = string(*warehouseInSnowflake.ResourceConstraint)
+		rawState[ShowOutputAttributeName] = []any{oldShowOutput}
+	}
+	if warehouseInSnowflake.Generation != nil {
+		oldShowOutput["generation"] = string(*warehouseInSnowflake.Generation)
+		rawState[ShowOutputAttributeName] = []any{oldShowOutput}
+	}
+
+	return rawState, nil
+}
