@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -150,9 +149,6 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
 
-		semanticViewDetails, err := client.SemanticViews.Describe(ctx, id)
-		require.NoError(t, err)
-
 		parentEntity := "TABLE1"
 		tableDatabaseName1 := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
 		tableSchemaName1 := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
@@ -167,19 +163,20 @@ func TestInt_SemanticView(t *testing.T) {
 		tableName2 := objectassert.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_NAME", table2.Name)
 
 		// confirm the semantic view details are correct
-		assert.Len(t, semanticViewDetails, 11)
-
-		assert.Contains(t, semanticViewDetails, tableDatabaseName1)
-		assert.Contains(t, semanticViewDetails, tableSchemaName1)
-		assert.Contains(t, semanticViewDetails, tableName1)
-		assert.Contains(t, semanticViewDetails, pk)
-		assert.Contains(t, semanticViewDetails, metricTable)
-		assert.Contains(t, semanticViewDetails, metricExpression)
-		assert.Contains(t, semanticViewDetails, metricDataType)
-		assert.Contains(t, semanticViewDetails, metricAccessModifier)
-		assert.Contains(t, semanticViewDetails, tableDatabaseName2)
-		assert.Contains(t, semanticViewDetails, tableSchemaName2)
-		assert.Contains(t, semanticViewDetails, tableName2)
+		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
+			HasDetailsCount(11).
+			ContainsDetail(tableDatabaseName1).
+			ContainsDetail(tableSchemaName1).
+			ContainsDetail(tableName1).
+			ContainsDetail(pk).
+			ContainsDetail(metricTable).
+			ContainsDetail(metricExpression).
+			ContainsDetail(metricDataType).
+			ContainsDetail(metricAccessModifier).
+			ContainsDetail(tableDatabaseName2).
+			ContainsDetail(tableSchemaName2).
+			ContainsDetail(tableName2),
+		)
 	})
 
 	t.Run("alter semantic view", func(t *testing.T) {
