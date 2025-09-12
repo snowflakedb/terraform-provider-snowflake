@@ -1046,7 +1046,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "SAML2_FORCE_AUTHN", Type: "Boolean", Value: "false", Default: "false"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "SAML2_REQUESTED_NAMEID_FORMAT", Type: "String", Value: string(sdk.Saml2SecurityIntegrationSaml2RequestedNameidFormatEmailAddress), Default: string(sdk.Saml2SecurityIntegrationSaml2RequestedNameidFormatEmailAddress)})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "SAML2_POST_LOGOUT_REDIRECT_URL", Type: "String", Value: "", Default: ""})
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "COMMENT_changed", Type: "String", Value: "", Default: ""})
 	})
 
 	t.Run("AlterSAML2Integration - REFRESH SAML2_SNOWFLAKE_PRIVATE_KEY", func(t *testing.T) {
