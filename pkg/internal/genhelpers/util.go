@@ -61,10 +61,17 @@ func WriteCodeToFile(buffer *bytes.Buffer, fileName string) error {
 		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
 	}
 	outputPath := filepath.Join(wd, fileName)
-	src, err := format.Source(buffer.Bytes())
+
+	src, err := AddImports(outputPath, buffer.Bytes())
 	if err != nil {
 		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
 	}
+
+	src, err = format.Source(src)
+	if err != nil {
+		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
+	}
+
 	if err := os.WriteFile(outputPath, src, 0o600); err != nil {
 		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
 	}
