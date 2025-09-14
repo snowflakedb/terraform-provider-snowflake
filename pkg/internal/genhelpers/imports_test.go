@@ -1,0 +1,135 @@
+package genhelpers_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"golang.org/x/tools/imports"
+)
+
+// TODO [this PR]: extract common setup for easier test writing
+func Test_ImportsProcess(t *testing.T) {
+
+	// TODO [this PR]: use these opts in dedicated tests
+	opts := &imports.Options{
+		Fragment:   false,
+		AllErrors:  true,
+		Comments:   true,
+		TabIndent:  true,
+		TabWidth:   4,
+		FormatOnly: false,
+	}
+	_ = opts
+
+	t.Run("add standard imports", func(t *testing.T) {
+		src := []byte(`package somepackagename
+
+func hello() {
+	fmt.Println(time.Now())
+}
+`)
+		expected := `package somepackagename
+
+import (
+	"fmt"
+	"time"
+)
+
+func hello() {
+	fmt.Println(time.Now())
+}
+`
+
+		out, err := imports.Process("", src, nil)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, string(out))
+	})
+
+	t.Run("add sdk import", func(t *testing.T) {
+		src := []byte(`package somepackagename
+
+func hello() {
+	id := sdk.NewAccountObjectIdentifier("test")
+	fmt.Println(id.FullyQualifiedName())
+}
+`)
+		expected := `package somepackagename
+
+import (
+	"fmt"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+)
+
+func hello() {
+	id := sdk.NewAccountObjectIdentifier("test")
+	fmt.Println(id.FullyQualifiedName())
+}
+`
+
+		out, err := imports.Process("", src, nil)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, string(out))
+	})
+
+	t.Run("add ambigous import", func(t *testing.T) {
+		src := []byte(`package somepackagename
+
+func hello() {
+	r := resources.Database
+	fmt.Println(r)
+}
+`)
+		// the second one possible is "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+		expected := `package somepackagename
+
+import (
+	"fmt"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+)
+
+func hello() {
+	r := resources.Database
+	fmt.Println(r)
+}
+`
+
+		out, err := imports.Process("", src, nil)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, string(out))
+	})
+
+	t.Run("add ambigous import - with explicit import", func(t *testing.T) {
+		src := []byte(`package somepackagename
+
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+
+func hello() {
+	r := resources.Database
+	fmt.Println(r)
+}
+`)
+		expected := `package somepackagename
+
+import (
+	"fmt"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+)
+
+func hello() {
+	r := resources.Database
+	fmt.Println(r)
+}
+`
+
+		out, err := imports.Process("", src, nil)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, string(out))
+	})
+}
