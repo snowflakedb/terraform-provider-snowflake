@@ -18,3 +18,6 @@ func NewPreambleModel(name string, version string, imports []string) *PreambleMo
 		ExplicitImports:  imports,
 	}
 }
+
+func (m PreambleModel) SomeFunc() {
+}
