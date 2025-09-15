@@ -74,6 +74,8 @@ const (
 	ShareResource                                 feature = "snowflake_share_resource"
 	SharesDatasource                              feature = "snowflake_shares_datasource"
 	ParametersDatasource                          feature = "snowflake_parameters_datasource"
+	SemanticViewResource                          feature = "snowflake_semantic_view_resource"
+	SemanticViewDatasource                        feature = "snowflake_semantic_view_datasource"
 	StageResource                                 feature = "snowflake_stage_resource"
 	StagesDatasource                              feature = "snowflake_stages_datasource"
 	StorageIntegrationResource                    feature = "snowflake_storage_integration_resource"
