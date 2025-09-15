@@ -194,15 +194,16 @@ func ReadSemanticView(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
-	_ = semanticView
 	semanticViewDetails, err := client.SemanticViews.Describe(ctx, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	errs := errors.Join(
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.SemanticViewToSchema(semanticView)}),
 		d.Set(DescribeOutputAttributeName, [][]map[string]any{schemas.SemanticViewDetailsToSchema(semanticViewDetails)}),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+		d.Set("comment", semanticView.Comment),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
