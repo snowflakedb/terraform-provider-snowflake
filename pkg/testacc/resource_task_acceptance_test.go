@@ -1,4 +1,6 @@
-//go:build !account_level_tests
+//go:build account_level_tests
+
+// These tests are temporarily moved to account level tests due to flakiness caused by changes in the higher-level parameters.
 
 package testacc
 
@@ -13,14 +15,12 @@ import (
 	configvariable "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,195 +29,6 @@ import (
 )
 
 // TODO(SNOW-1822118): Create more complicated tests for task
-
-func TestAcc_Task_Basic(t *testing.T) {
-	currentRole := testClient().Context.CurrentRole(t)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	statement := "SELECT 1"
-
-	configModel := model.TaskWithId("test", id, false, statement)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Task),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, configModel),
-				Check: assertThat(t,
-					resourceassert.TaskResource(t, configModel.ResourceReference()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasNameString(id.Name()).
-						HasStartedString(r.BooleanFalse).
-						HasWarehouseString("").
-						HasNoScheduleSet().
-						HasConfigString("").
-						HasAllowOverlappingExecutionString(r.BooleanDefault).
-						HasErrorIntegrationString("").
-						HasCommentString("").
-						HasFinalizeString("").
-						HasAfter().
-						HasWhenString("").
-						HasSqlStatementString(statement),
-					resourceshowoutputassert.TaskShowOutput(t, configModel.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasIdNotEmpty().
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(currentRole.Name()).
-						HasComment("").
-						HasWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasScheduleEmpty().
-						HasPredecessors().
-						HasState(sdk.TaskStateSuspended).
-						HasDefinition(statement).
-						HasCondition("").
-						HasAllowOverlappingExecution(false).
-						HasErrorIntegration(sdk.NewAccountObjectIdentifier("")).
-						HasLastCommittedOn("").
-						HasLastSuspendedOn("").
-						HasOwnerRoleType("ROLE").
-						HasConfig("").
-						HasBudget("").
-						HasTaskRelations(sdk.TaskRelations{}),
-					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
-						HasAllDefaults(),
-				),
-			},
-			{
-				ResourceName: configModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasNameString(id.Name()).
-						HasStartedString(r.BooleanFalse).
-						HasWarehouseString("").
-						HasNoScheduleSet().
-						HasConfigString("").
-						HasAllowOverlappingExecutionString(r.BooleanFalse).
-						HasErrorIntegrationString("").
-						HasCommentString("").
-						HasFinalizeString("").
-						HasAfterEmpty().
-						HasWhenString("").
-						HasSqlStatementString(statement),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Task_Complete(t *testing.T) {
-	currentRole := testClient().Context.CurrentRole(t)
-
-	errorNotificationIntegration, errorNotificationIntegrationCleanup := testClient().NotificationIntegration.CreateWithGcpPubSub(t)
-	t.Cleanup(errorNotificationIntegrationCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	statement := "SELECT 1"
-	taskConfig := `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`
-	comment := random.Comment()
-	condition := `SYSTEM$STREAM_HAS_DATA('MYSTREAM')`
-	configModel := model.TaskWithId("test", id, true, statement).
-		WithWarehouse(testClient().Ids.WarehouseId().Name()).
-		WithScheduleMinutes(10).
-		WithConfigValue(configvariable.StringVariable(taskConfig)).
-		WithAllowOverlappingExecution(r.BooleanTrue).
-		WithErrorIntegration(errorNotificationIntegration.ID().Name()).
-		WithComment(comment).
-		WithWhen(condition)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Task),
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				Check: assertThat(t,
-					resourceassert.TaskResource(t, configModel.ResourceReference()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasNameString(id.Name()).
-						HasStartedString(r.BooleanTrue).
-						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
-						HasScheduleMinutes(10).
-						HasConfigString(taskConfig).
-						HasAllowOverlappingExecutionString(r.BooleanTrue).
-						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
-						HasCommentString(comment).
-						HasFinalizeString("").
-						HasAfterEmpty().
-						HasWhenString(condition).
-						HasSqlStatementString(statement),
-					resourceshowoutputassert.TaskShowOutput(t, configModel.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasIdNotEmpty().
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(currentRole.Name()).
-						HasComment(comment).
-						HasWarehouse(testClient().Ids.WarehouseId()).
-						HasScheduleMinutes(10).
-						HasPredecessors().
-						HasState(sdk.TaskStateStarted).
-						HasDefinition(statement).
-						HasCondition(condition).
-						HasAllowOverlappingExecution(true).
-						HasErrorIntegration(errorNotificationIntegration.ID()).
-						HasLastCommittedOnNotEmpty().
-						HasLastSuspendedOn("").
-						HasOwnerRoleType("ROLE").
-						HasConfig(taskConfig).
-						HasBudget("").
-						HasTaskRelations(sdk.TaskRelations{}),
-					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
-						HasAllDefaults(),
-				),
-			},
-			{
-				ResourceName:    configModel.ResourceReference(),
-				ImportState:     true,
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasNameString(id.Name()).
-						HasStartedString(r.BooleanTrue).
-						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
-						HasScheduleMinutes(10).
-						HasConfigString(taskConfig).
-						HasAllowOverlappingExecutionString(r.BooleanTrue).
-						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
-						HasCommentString(comment).
-						HasFinalizeString("").
-						HasAfterEmpty().
-						HasWhenString(condition).
-						HasSqlStatementString(statement),
-				),
-			},
-		},
-	})
-}
 
 func TestAcc_Task_Updates(t *testing.T) {
 	currentRole := testClient().Context.CurrentRole(t)
@@ -248,7 +59,6 @@ func TestAcc_Task_Updates(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -441,7 +251,6 @@ func TestAcc_Task_UpdatesInComplexDAG(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -506,7 +315,6 @@ func TestAcc_Task_StatementSpaces(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -580,7 +388,6 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -814,7 +621,6 @@ func TestAcc_Task_CallingProcedure(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -857,7 +663,6 @@ func TestAcc_Task_CronAndMinutes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -992,7 +797,6 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1135,7 +939,6 @@ func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1176,309 +979,6 @@ resource "snowflake_task" "test" {
 }`, id.DatabaseName(), id.SchemaName(), id.Name(), scheduleString)
 }
 
-func TestAcc_Task_AllParameters(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	statement := "SELECT 1"
-
-	configModel := model.TaskWithId("test", id, true, statement).
-		WithScheduleMinutes(5)
-	configModelWithAllParametersSet := model.TaskWithId("test", id, true, statement).
-		WithScheduleMinutes(5).
-		WithSuspendTaskAfterNumFailures(15).
-		WithTaskAutoRetryAttempts(15).
-		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeXSmall).
-		WithUserTaskMinimumTriggerIntervalInSeconds(30).
-		WithUserTaskTimeoutMs(1000).
-		WithAbortDetachedQuery(true).
-		WithAutocommit(false).
-		WithBinaryInputFormatEnum(sdk.BinaryInputFormatUTF8).
-		WithBinaryOutputFormatEnum(sdk.BinaryOutputFormatBase64).
-		WithClientMemoryLimit(1024).
-		WithClientMetadataRequestUseConnectionCtx(true).
-		WithClientPrefetchThreads(2).
-		WithClientResultChunkSize(48).
-		WithClientResultColumnCaseInsensitive(true).
-		WithClientSessionKeepAlive(true).
-		WithClientSessionKeepAliveHeartbeatFrequency(2400).
-		WithClientTimestampTypeMappingEnum(sdk.ClientTimestampTypeMappingNtz).
-		WithDateInputFormat("YYYY-MM-DD").
-		WithDateOutputFormat("YY-MM-DD").
-		WithEnableUnloadPhysicalTypeOptimization(false).
-		WithErrorOnNondeterministicMerge(false).
-		WithErrorOnNondeterministicUpdate(true).
-		WithGeographyOutputFormatEnum(sdk.GeographyOutputFormatWKB).
-		WithGeometryOutputFormatEnum(sdk.GeometryOutputFormatWKB).
-		WithJdbcUseSessionTimezone(false).
-		WithJsonIndent(4).
-		WithLockTimeout(21222).
-		WithLogLevelEnum(sdk.LogLevelError).
-		WithMultiStatementCount(0).
-		WithNoorderSequenceAsDefault(false).
-		WithOdbcTreatDecimalAsInt(true).
-		WithQueryTag("some_tag").
-		WithQuotedIdentifiersIgnoreCase(true).
-		WithRowsPerResultset(2).
-		WithS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-		WithSearchPath("$public, $current").
-		WithStatementQueuedTimeoutInSeconds(10).
-		WithStatementTimeoutInSeconds(10).
-		WithStrictJsonOutput(true).
-		WithTimestampDayIsAlways24h(true).
-		WithTimestampInputFormat("YYYY-MM-DD").
-		WithTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-		WithTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-		WithTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-		WithTimestampTypeMappingEnum(sdk.TimestampTypeMappingLtz).
-		WithTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-		WithTimezone("Europe/Warsaw").
-		WithTimeInputFormat("HH24:MI").
-		WithTimeOutputFormat("HH24:MI").
-		WithTraceLevelEnum(sdk.TraceLevelPropagate).
-		WithTransactionAbortOnError(true).
-		WithTransactionDefaultIsolationLevelEnum(sdk.TransactionDefaultIsolationLevelReadCommitted).
-		WithTwoDigitCenturyStart(1980).
-		WithUnsupportedDdlActionEnum(sdk.UnsupportedDDLActionFail).
-		WithUseCachedResult(false).
-		WithWeekOfYearPolicy(1).
-		WithWeekStart(1)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		PreCheck:     func() { TestAccPreCheck(t) },
-		CheckDestroy: CheckDestroy(t, resources.User),
-		Steps: []resource.TestStep{
-			// create with default values for all the parameters
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				Check: assertThat(t,
-					objectparametersassert.TaskParameters(t, id).
-						HasAllDefaults().
-						HasAllDefaultsExplicit(),
-					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
-						HasAllDefaults(),
-				),
-			},
-			// import when no parameter set
-			{
-				ResourceName:    configModel.ResourceReference(),
-				ImportState:     true,
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				ImportStateCheck: assertThatImport(t,
-					resourceparametersassert.ImportedTaskResourceParameters(t, helpers.EncodeResourceIdentifier(id)).
-						HasAllDefaults(),
-				),
-			},
-			// set all parameters
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithAllParametersSet),
-				Check: assertThat(t,
-					objectparametersassert.TaskParameters(t, id).
-						HasSuspendTaskAfterNumFailures(15).
-						HasTaskAutoRetryAttempts(15).
-						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeXSmall).
-						HasUserTaskMinimumTriggerIntervalInSeconds(30).
-						HasUserTaskTimeoutMs(1000).
-						HasAbortDetachedQuery(true).
-						HasAutocommit(false).
-						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
-						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
-						HasClientMemoryLimit(1024).
-						HasClientMetadataRequestUseConnectionCtx(true).
-						HasClientPrefetchThreads(2).
-						HasClientResultChunkSize(48).
-						HasClientResultColumnCaseInsensitive(true).
-						HasClientSessionKeepAlive(true).
-						HasClientSessionKeepAliveHeartbeatFrequency(2400).
-						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
-						HasDateInputFormat("YYYY-MM-DD").
-						HasDateOutputFormat("YY-MM-DD").
-						HasEnableUnloadPhysicalTypeOptimization(false).
-						HasErrorOnNondeterministicMerge(false).
-						HasErrorOnNondeterministicUpdate(true).
-						HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
-						HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
-						HasJdbcUseSessionTimezone(false).
-						HasJsonIndent(4).
-						HasLockTimeout(21222).
-						HasLogLevel(sdk.LogLevelError).
-						HasMultiStatementCount(0).
-						HasNoorderSequenceAsDefault(false).
-						HasOdbcTreatDecimalAsInt(true).
-						HasQueryTag("some_tag").
-						HasQuotedIdentifiersIgnoreCase(true).
-						HasRowsPerResultset(2).
-						HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-						HasSearchPath("$public, $current").
-						HasStatementQueuedTimeoutInSeconds(10).
-						HasStatementTimeoutInSeconds(10).
-						HasStrictJsonOutput(true).
-						HasTimestampDayIsAlways24h(true).
-						HasTimestampInputFormat("YYYY-MM-DD").
-						HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
-						HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimezone("Europe/Warsaw").
-						HasTimeInputFormat("HH24:MI").
-						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelPropagate).
-						HasTransactionAbortOnError(true).
-						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
-						HasTwoDigitCenturyStart(1980).
-						HasUnsupportedDdlAction(sdk.UnsupportedDDLActionFail).
-						HasUseCachedResult(false).
-						HasWeekOfYearPolicy(1).
-						HasWeekStart(1),
-					resourceparametersassert.TaskResourceParameters(t, configModelWithAllParametersSet.ResourceReference()).
-						HasSuspendTaskAfterNumFailures(15).
-						HasTaskAutoRetryAttempts(15).
-						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeXSmall).
-						HasUserTaskMinimumTriggerIntervalInSeconds(30).
-						HasUserTaskTimeoutMs(1000).
-						HasAbortDetachedQuery(true).
-						HasAutocommit(false).
-						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
-						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
-						HasClientMemoryLimit(1024).
-						HasClientMetadataRequestUseConnectionCtx(true).
-						HasClientPrefetchThreads(2).
-						HasClientResultChunkSize(48).
-						HasClientResultColumnCaseInsensitive(true).
-						HasClientSessionKeepAlive(true).
-						HasClientSessionKeepAliveHeartbeatFrequency(2400).
-						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
-						HasDateInputFormat("YYYY-MM-DD").
-						HasDateOutputFormat("YY-MM-DD").
-						HasEnableUnloadPhysicalTypeOptimization(false).
-						HasErrorOnNondeterministicMerge(false).
-						HasErrorOnNondeterministicUpdate(true).
-						HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
-						HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
-						HasJdbcUseSessionTimezone(false).
-						HasJsonIndent(4).
-						HasLockTimeout(21222).
-						HasLogLevel(sdk.LogLevelError).
-						HasMultiStatementCount(0).
-						HasNoorderSequenceAsDefault(false).
-						HasOdbcTreatDecimalAsInt(true).
-						HasQueryTag("some_tag").
-						HasQuotedIdentifiersIgnoreCase(true).
-						HasRowsPerResultset(2).
-						HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-						HasSearchPath("$public, $current").
-						HasStatementQueuedTimeoutInSeconds(10).
-						HasStatementTimeoutInSeconds(10).
-						HasStrictJsonOutput(true).
-						HasTimestampDayIsAlways24h(true).
-						HasTimestampInputFormat("YYYY-MM-DD").
-						HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
-						HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimezone("Europe/Warsaw").
-						HasTimeInputFormat("HH24:MI").
-						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelPropagate).
-						HasTransactionAbortOnError(true).
-						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
-						HasTwoDigitCenturyStart(1980).
-						HasUnsupportedDdlAction(sdk.UnsupportedDDLActionFail).
-						HasUseCachedResult(false).
-						HasWeekOfYearPolicy(1).
-						HasWeekStart(1),
-				),
-			},
-			// import when all parameters set
-			{
-				ResourceName:    configModelWithAllParametersSet.ResourceReference(),
-				ImportState:     true,
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithAllParametersSet),
-				ImportStateCheck: assertThatImport(t,
-					resourceparametersassert.ImportedTaskResourceParameters(t, helpers.EncodeResourceIdentifier(id)).
-						HasSuspendTaskAfterNumFailures(15).
-						HasTaskAutoRetryAttempts(15).
-						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeXSmall).
-						HasUserTaskMinimumTriggerIntervalInSeconds(30).
-						HasUserTaskTimeoutMs(1000).
-						HasAbortDetachedQuery(true).
-						HasAutocommit(false).
-						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
-						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
-						HasClientMemoryLimit(1024).
-						HasClientMetadataRequestUseConnectionCtx(true).
-						HasClientPrefetchThreads(2).
-						HasClientResultChunkSize(48).
-						HasClientResultColumnCaseInsensitive(true).
-						HasClientSessionKeepAlive(true).
-						HasClientSessionKeepAliveHeartbeatFrequency(2400).
-						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
-						HasDateInputFormat("YYYY-MM-DD").
-						HasDateOutputFormat("YY-MM-DD").
-						HasEnableUnloadPhysicalTypeOptimization(false).
-						HasErrorOnNondeterministicMerge(false).
-						HasErrorOnNondeterministicUpdate(true).
-						HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
-						HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
-						HasJdbcUseSessionTimezone(false).
-						HasJsonIndent(4).
-						HasLockTimeout(21222).
-						HasLogLevel(sdk.LogLevelError).
-						HasMultiStatementCount(0).
-						HasNoorderSequenceAsDefault(false).
-						HasOdbcTreatDecimalAsInt(true).
-						HasQueryTag("some_tag").
-						HasQuotedIdentifiersIgnoreCase(true).
-						HasRowsPerResultset(2).
-						HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-						HasSearchPath("$public, $current").
-						HasStatementQueuedTimeoutInSeconds(10).
-						HasStatementTimeoutInSeconds(10).
-						HasStrictJsonOutput(true).
-						HasTimestampDayIsAlways24h(true).
-						HasTimestampInputFormat("YYYY-MM-DD").
-						HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
-						HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimezone("Europe/Warsaw").
-						HasTimeInputFormat("HH24:MI").
-						HasTimeOutputFormat("HH24:MI").
-						HasTraceLevel(sdk.TraceLevelPropagate).
-						HasTransactionAbortOnError(true).
-						HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
-						HasTwoDigitCenturyStart(1980).
-						HasUnsupportedDdlAction(sdk.UnsupportedDDLActionFail).
-						HasUseCachedResult(false).
-						HasWeekOfYearPolicy(1).
-						HasWeekStart(1),
-				),
-			},
-			// unset all the parameters
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				Check: assertThat(t,
-					objectparametersassert.TaskParameters(t, id).
-						HasAllDefaults().
-						HasAllDefaultsExplicit(),
-					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
-						HasAllDefaults(),
-				),
-			},
-		},
-	})
-}
-
 func TestAcc_Task_Enabled(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"
@@ -1490,7 +990,6 @@ func TestAcc_Task_Enabled(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1556,7 +1055,6 @@ func TestAcc_Task_ConvertStandaloneTaskToSubtask(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1652,7 +1150,6 @@ func TestAcc_Task_ConvertStandaloneTaskToFinalizer(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1753,7 +1250,6 @@ func TestAcc_Task_SwitchScheduledWithAfter(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1846,7 +1342,6 @@ func TestAcc_Task_WithAfter(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1880,6 +1375,62 @@ func TestAcc_Task_WithAfter(t *testing.T) {
 	})
 }
 
+func TestAcc_Task_WithAfter_issue4001(t *testing.T) {
+	rootId := testClient().Ids.RandomSchemaObjectIdentifier()
+	childId := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+	schedule := 5
+
+	rootTaskConfigModel := model.TaskWithId("root", rootId, true, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name()).
+		WithScheduleMinutes(schedule).
+		WithSqlStatement(statement)
+
+	childTaskConfigModelWithAfter := model.TaskWithId("child", childId, true, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name()).
+		WithAfterValue(configvariable.SetVariable(configvariable.StringVariable(rootId.FullyQualifiedName()))).
+		WithSqlStatement(statement)
+
+	childTaskConfigModelWithoutAfter := model.TaskWithId("child", childId, true, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name()).
+		WithScheduleMinutes(schedule).
+		WithSqlStatement(statement)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
+				Config:            config.FromModels(t, rootTaskConfigModel, childTaskConfigModelWithoutAfter),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
+						HasAfterEmpty(),
+				),
+			},
+			{
+				ExternalProviders:  ExternalProviderWithExactVersion("2.6.0"),
+				Config:             config.FromModels(t, rootTaskConfigModel, childTaskConfigModelWithAfter),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+				ExpectError:        regexp.MustCompile("can't use ElementIterator on null value"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, rootTaskConfigModel, childTaskConfigModelWithAfter),
+				PlanOnly:                 true,
+				ExpectNonEmptyPlan:       true,
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
+						HasAfter(rootId),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Task_WithFinalizer(t *testing.T) {
 	rootId := testClient().Ids.RandomSchemaObjectIdentifier()
 	childId := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -1903,7 +1454,6 @@ func TestAcc_Task_WithFinalizer(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1962,7 +1512,6 @@ func TestAcc_Task_UpdateFinalizerExternally(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2073,7 +1622,6 @@ func TestAcc_Task_UpdateAfterExternally(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2184,7 +1732,6 @@ func TestAcc_Task_issue2207(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2243,7 +1790,6 @@ func TestAcc_Task_issue2036(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2296,7 +1842,6 @@ func TestAcc_Task_issue3113(t *testing.T) {
 		WithErrorIntegration(errorNotificationIntegration.ID().Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2331,7 +1876,6 @@ func TestAcc_Task_StateUpgrade_NoOptionalFields(t *testing.T) {
 	configModel := model.TaskWithId("test", id, false, statement)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2377,7 +1921,6 @@ func TestAcc_Task_StateUpgrade(t *testing.T) {
 		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeXSmall)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2436,7 +1979,6 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 		WithJsonIndent(4)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -44,3 +44,11 @@ func (w *WarehouseModel) WithWarehouseTypeEnum(warehouseType sdk.WarehouseType) 
 func (w *WarehouseModel) WithScalingPolicyEnum(scalingPolicy sdk.ScalingPolicy) *WarehouseModel {
 	return w.WithScalingPolicy(string(scalingPolicy))
 }
+
+func (w *WarehouseModel) WithResourceConstraintEnum(resourceConstraint sdk.WarehouseResourceConstraint) *WarehouseModel {
+	return w.WithResourceConstraint(string(resourceConstraint))
+}
+
+func (w *WarehouseModel) WithGenerationEnum(generation sdk.WarehouseGeneration) *WarehouseModel {
+	return w.WithGeneration(string(generation))
+}

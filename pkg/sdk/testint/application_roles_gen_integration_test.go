@@ -38,7 +38,7 @@ func TestInt_ApplicationRoles(t *testing.T) {
 		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
 		t.Cleanup(cleanupApplicationPackage)
 
-		testClientHelper().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), "v1")
+		testClientHelper().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), "v1")
 
 		application, cleanupApplication := testClientHelper().Application.CreateApplication(t, applicationPackage.ID(), "v1")
 		t.Cleanup(cleanupApplication)

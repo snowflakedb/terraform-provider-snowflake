@@ -37,7 +37,6 @@ func TestAcc_GrantAccountRole_accountRole(t *testing.T) {
 	resourceName := "snowflake_grant_account_role.g"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		CheckDestroy:             CheckGrantAccountRoleDestroy(t),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -80,7 +79,6 @@ func TestAcc_GrantAccountRole_user(t *testing.T) {
 	resourceName := "snowflake_grant_account_role.g"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		CheckDestroy:             CheckGrantAccountRoleDestroy(t),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -112,7 +110,6 @@ func TestAcc_GrantAccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 	parentRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -167,7 +164,6 @@ func TestAcc_GrantAccountRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 	parentRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -237,7 +233,6 @@ func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
 	testConfig := accconfig.FromModels(t, providerModel) + grantAccountRoleIssue3629Config(accountRole.ID(), parentAccountRole.ID())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -291,57 +291,27 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 		d.SetId(resourceId.String())
 	}
 
-	// TODO(SNOW-2210280): Call the alters as usual, after the behavior is fixed in Snowflake.
-	if d.HasChange("disabled") {
-		v := d.Get("disabled").(string)
-		if v != BooleanDefault {
-			parsed, err := booleanStringToBool(v)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithDisabled(parsed))); err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
-		} else {
-			if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithDisabled(true))); err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
-		}
+	setRequest := sdk.NewModifyProgrammaticAccessTokenSetRequest()
+	unsetRequest := sdk.NewModifyProgrammaticAccessTokenUnsetRequest()
+	errs := errors.Join(
+		booleanStringAttributeUpdate(d, "disabled", &setRequest.Disabled, &unsetRequest.Disabled),
+		stringAttributeUpdate(d, "comment", &setRequest.Comment, &unsetRequest.Comment),
+		intAttributeUpdate(d, "mins_to_bypass_network_policy_requirement", &setRequest.MinsToBypassNetworkPolicyRequirement, &unsetRequest.MinsToBypassNetworkPolicyRequirement),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
-	if d.HasChange("comment") {
-		comment := d.Get("comment").(string)
-		if comment != "" {
-			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithComment(comment)))
-			if err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
-		} else {
-			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithComment(true)))
-			if err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
+	if (*setRequest != sdk.ModifyProgrammaticAccessTokenSetRequest{}) {
+		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*setRequest)); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
 		}
 	}
-
-	if d.HasChange("mins_to_bypass_network_policy_requirement") {
-		v, ok := d.GetOk("mins_to_bypass_network_policy_requirement")
-		if ok {
-			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().WithMinsToBypassNetworkPolicyRequirement(v.(int))))
-			if err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
-		} else {
-			err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().WithMinsToBypassNetworkPolicyRequirement(true)))
-			if err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
+	if (*unsetRequest != sdk.ModifyProgrammaticAccessTokenUnsetRequest{}) {
+		if err := client.Users.ModifyProgrammaticAccessToken(ctx, sdk.NewModifyUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName).WithUnset(*unsetRequest)); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
 		}
 	}
 

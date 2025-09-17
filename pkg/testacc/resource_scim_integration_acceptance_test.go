@@ -42,7 +42,6 @@ func TestAcc_ScimIntegration_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -167,7 +166,6 @@ func TestAcc_ScimIntegration_complete(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -210,7 +208,6 @@ func TestAcc_ScimIntegration_completeAzure(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -245,7 +242,6 @@ func TestAcc_ScimIntegration_InvalidScimClient(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -266,7 +262,6 @@ func TestAcc_ScimIntegration_InvalidRunAsRole(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -283,7 +278,6 @@ func TestAcc_ScimIntegration_InvalidRunAsRole(t *testing.T) {
 func TestAcc_ScimIntegration_InvalidIncomplete(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -310,7 +304,6 @@ func TestAcc_ScimIntegration_InvalidCreateWithSyncPasswordWithAzure(t *testing.T
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -336,7 +329,6 @@ func TestAcc_ScimIntegration_InvalidUpdateWithSyncPasswordWithAzure(t *testing.T
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -360,7 +352,6 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledTrue(t *testing.T) {
 
 	resourceName := "snowflake_scim_integration.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -406,7 +397,6 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledFalse(t *testing.T) {
 
 	resourceName := "snowflake_scim_integration.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -444,7 +434,6 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 
 	resourceName := "snowflake_scim_integration.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -518,7 +507,6 @@ func TestAcc_ScimIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResource
 	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -551,7 +539,6 @@ func TestAcc_ScimIntegration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	scimModelBasic := model.ScimSecurityIntegration("test", quotedId, false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

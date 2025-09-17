@@ -333,7 +333,7 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(fmt.Errorf("error creating storage integration: %w", err))
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(name))
+	d.SetId(helpers.EncodeResourceIdentifier(name))
 	return GetReadStorageIntegrationFunc(false)(ctx, d, meta)
 }
 

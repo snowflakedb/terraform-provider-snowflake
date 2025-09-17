@@ -85,7 +85,6 @@ func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
 		Steps: []resource.TestStep{
 			// CREATE WITHOUT ATTRIBUTES
@@ -323,7 +322,6 @@ func TestAcc_LegacyServiceUser_AllParameters(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters
@@ -561,7 +559,6 @@ func TestAcc_LegacyServiceUser_handleExternalTypeChange(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
 		Steps: []resource.TestStep{
 			{
@@ -615,7 +612,6 @@ func TestAcc_LegacyServiceUser_setIncompatibleAttributes(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
 		Steps: []resource.TestStep{
 			{

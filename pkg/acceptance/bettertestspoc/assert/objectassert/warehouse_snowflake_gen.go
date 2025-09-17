@@ -328,3 +328,31 @@ func (w *WarehouseAssert) HasOwnerRoleType(expected string) *WarehouseAssert {
 	})
 	return w
 }
+
+func (w *WarehouseAssert) HasResourceConstraint(expected sdk.WarehouseResourceConstraint) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.ResourceConstraint == nil {
+			return fmt.Errorf("expected resource constraint to have value; got: nil")
+		}
+		if *o.ResourceConstraint != expected {
+			return fmt.Errorf("expected resource constraint: %v; got: %v", expected, *o.ResourceConstraint)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasGeneration(expected sdk.WarehouseGeneration) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Generation == nil {
+			return fmt.Errorf("expected generation to have value; got: nil")
+		}
+		if *o.Generation != expected {
+			return fmt.Errorf("expected generation: %v; got: %v", expected, *o.Generation)
+		}
+		return nil
+	})
+	return w
+}

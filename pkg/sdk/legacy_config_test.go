@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
 	"github.com/snowflakedb/gosnowflake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,7 +33,7 @@ func TestLoadConfigFileLegacy(t *testing.T) {
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
-	configPath := testhelpers.TestFile(t, "config", bytes)
+	configPath := testfiles.TestFile(t, "config", bytes)
 
 	m, err := LoadConfigFile[*LegacyConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -55,7 +55,7 @@ func TestLoadConfigFileWithUnknownFieldsLegacy(t *testing.T) {
 	unknown='TEST_ACCOUNT'
 	accountname='TEST_ACCOUNT'
 	`
-	configPath := testhelpers.TestFile(t, "config", []byte(c))
+	configPath := testfiles.TestFile(t, "config", []byte(c))
 
 	m, err := LoadConfigFile[*LegacyConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -109,7 +109,7 @@ func TestLoadConfigFileWithInvalidFieldTypeFailsLegacy(t *testing.T) {
 		[default]
 		%s=42
 		`, tt.fieldName)
-			configPath := testhelpers.TestFile(t, "config", []byte(config))
+			configPath := testfiles.TestFile(t, "config", []byte(config))
 
 			_, err := LoadConfigFile[*LegacyConfigDTO](configPath, true)
 			require.ErrorContains(t, err, fmt.Sprintf("toml: cannot decode TOML integer into struct field sdk.LegacyConfigDTO.%s of type %s", tt.name, tt.wantType))
@@ -137,7 +137,7 @@ func TestLoadConfigFileWithInvalidFieldTypeIntFailsLegacy(t *testing.T) {
 		[default]
 		%s=value
 		`, tt.fieldName)
-			configPath := testhelpers.TestFile(t, "config", []byte(config))
+			configPath := testfiles.TestFile(t, "config", []byte(config))
 
 			_, err := LoadConfigFile[*LegacyConfigDTO](configPath, true)
 			require.ErrorContains(t, err, "toml: incomplete number")
@@ -202,7 +202,7 @@ func TestLoadConfigFileWithInvalidTOMLFailsLegacy(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			configPath := testhelpers.TestFile(t, "config", []byte(tt.config))
+			configPath := testfiles.TestFile(t, "config", []byte(tt.config))
 
 			_, err := LoadConfigFile[*LegacyConfigDTO](configPath, true)
 			require.ErrorContains(t, err, tt.err)
@@ -257,7 +257,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
 	c := string(bytes)
-	configPath := testhelpers.TestFile(t, "config", []byte(c))
+	configPath := testfiles.TestFile(t, "config", []byte(c))
 
 	t.Run("with found profile", func(t *testing.T) {
 		t.Setenv(snowflakeenvs.ConfigPath, configPath)
@@ -337,7 +337,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 		accountname='TEST_ACCOUNT'
 		organizationname='TEST_ORG'
 		`
-		configPath := testhelpers.TestFile(t, "config", []byte(c))
+		configPath := testfiles.TestFile(t, "config", []byte(c))
 
 		t.Setenv(snowflakeenvs.ConfigPath, configPath)
 

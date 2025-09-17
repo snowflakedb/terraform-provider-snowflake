@@ -12,7 +12,7 @@
                     if err != nil {
                         return nil, err
                     }
-                    return result.convert(), nil
+                    return result.convert()
                 }
             {{ else if eq (show_mapping_deref .ShowKind) "slice" }}
                 func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error) {
@@ -21,8 +21,7 @@
                     if err != nil {
                         return nil, err
                     }
-                    resultList := convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
-                    return resultList, nil
+                    return convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
                 }
             {{ end }}
         {{ end }}
@@ -53,7 +52,7 @@
                     if err != nil {
                         return nil, err
                     }
-                    return result.convert(), nil
+                    return result.convert()
                 }
             {{ else if eq (describe_mapping_deref .DescribeKind) "slice" }}
                 func (v *{{ $impl }}) Describe(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) ([]{{ .DescribeMapping.To.Name }}, error) {
@@ -64,7 +63,7 @@
                     if err != nil {
                         return nil, err
                     }
-                    return convertRows[{{ .DescribeMapping.From.Name }}, {{ .DescribeMapping.To.Name }}](rows), nil
+                    return convertRows[{{ .DescribeMapping.From.Name }}, {{ .DescribeMapping.To.Name }}](rows)
                 }
             {{ end }}
         {{ end }}

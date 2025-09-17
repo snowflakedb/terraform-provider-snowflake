@@ -12,7 +12,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
-var _ MaskingPolicies = (*maskingPolicies)(nil)
+var (
+	_ MaskingPolicies               = (*maskingPolicies)(nil)
+	_ convertibleRow[MaskingPolicy] = new(maskingPolicyDBRow)
+)
 
 var (
 	_ validatable = new(CreateMaskingPolicyOptions)
@@ -287,24 +290,27 @@ type maskingPolicyDBRow struct {
 	Options       string    `db:"options"`
 }
 
-func (row maskingPolicyDBRow) convert() *MaskingPolicy {
-	options, err := ParseMaskingPolicyOptions(row.Options)
-	if err != nil {
-		log.Printf("[DEBUG] converting masking policy row: error unmarshaling options: %v", err)
-		log.Printf("[DEBUG] setting exempt_other_policies = false")
-		options.ExemptOtherPolicies = false
+func (row maskingPolicyDBRow) convert() (*MaskingPolicy, error) {
+	maskingPolicy := &MaskingPolicy{
+		CreatedOn:     row.CreatedOn,
+		Name:          row.Name,
+		DatabaseName:  row.DatabaseName,
+		SchemaName:    row.SchemaName,
+		Kind:          row.Kind,
+		Owner:         row.Owner,
+		Comment:       row.Comment,
+		OwnerRoleType: row.OwnerRoleType,
 	}
-	return &MaskingPolicy{
-		CreatedOn:           row.CreatedOn,
-		Name:                row.Name,
-		DatabaseName:        row.DatabaseName,
-		SchemaName:          row.SchemaName,
-		Kind:                row.Kind,
-		Owner:               row.Owner,
-		Comment:             row.Comment,
-		ExemptOtherPolicies: options.ExemptOtherPolicies,
-		OwnerRoleType:       row.OwnerRoleType,
+
+	if row.Options != "" {
+		options, err := ParseMaskingPolicyOptions(row.Options)
+		if err != nil {
+			return nil, fmt.Errorf("converting masking policy row: error unmarshaling options: %w", err)
+		}
+		maskingPolicy.ExemptOtherPolicies = options.ExemptOtherPolicies
 	}
+
+	return maskingPolicy, nil
 }
 
 // List all the masking policies by pattern.
@@ -314,8 +320,7 @@ func (v *maskingPolicies) Show(ctx context.Context, opts *ShowMaskingPolicyOptio
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[maskingPolicyDBRow, MaskingPolicy](dbRows)
-	return resultList, nil
+	return convertRows[maskingPolicyDBRow, MaskingPolicy](dbRows)
 }
 
 func (v *maskingPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicy, error) {

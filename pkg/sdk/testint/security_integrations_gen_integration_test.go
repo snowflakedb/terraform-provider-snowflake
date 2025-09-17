@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO(SNOW-2312051): Set up proper test level for each test.
 func TestInt_SecurityIntegrations(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -192,8 +193,8 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 
 	assertApiAuth := func(details []sdk.SecurityIntegrationProperty, d apiAuthDetails) {
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: d.enabled, Default: "false"})
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_ACCESS_TOKEN_VALIDITY", Type: "Integer", Value: d.oauthAccessTokenValidity, Default: ""})
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Integer", Value: d.oauthRefreshTokenValidity, Default: "7776000"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_ACCESS_TOKEN_VALIDITY", Type: "Long", Value: d.oauthAccessTokenValidity, Default: ""})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Long", Value: d.oauthRefreshTokenValidity, Default: "7776000"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_CLIENT_ID", Type: "String", Value: d.oauthClientId, Default: ""})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_CLIENT_AUTH_METHOD", Type: "String", Value: d.oauthClientAuthMethod, Default: "CLIENT_SECRET_BASIC"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_AUTHORIZATION_ENDPOINT", Type: "String", Value: d.oauthAuthorizationEndpoint, Default: ""})
@@ -254,7 +255,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 	assertOauthPartner := func(details []sdk.SecurityIntegrationProperty, d oauthPartnerDetails) {
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: d.enabled, Default: "false"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_ISSUE_REFRESH_TOKENS", Type: "Boolean", Value: d.oauthIssueRefreshTokens, Default: "true"})
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Integer", Value: d.refreshTokenValidity, Default: "7776000"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Long", Value: d.refreshTokenValidity, Default: "7776000"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_USE_SECONDARY_ROLES", Type: "String", Value: d.useSecondaryRoles, Default: "NONE"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "PRE_AUTHORIZED_ROLES_LIST", Type: "List", Value: d.preAuthorizedRolesList, Default: "[]"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "NETWORK_POLICY", Type: "String", Value: d.networkPolicy, Default: ""})
