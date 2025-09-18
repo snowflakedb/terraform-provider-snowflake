@@ -46,8 +46,6 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		id.Name(),
 	).WithComment(changedComment)
 
-	_, _, _ = modelBasic, modelComplete, modelCompleteWithDifferentValues
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
