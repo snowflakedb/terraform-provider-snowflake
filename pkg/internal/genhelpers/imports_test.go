@@ -157,6 +157,36 @@ func hello() {
 		require.NoError(t, err)
 		require.Equal(t, expected, string(out))
 	})
+
+	t.Run("add explicit named import", func(t *testing.T) {
+		src := []byte(`package somepackagename
+
+import re "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+
+func hello() {
+	r := re.Database
+	fmt.Println(r)
+}
+`)
+		expected := `package somepackagename
+
+import (
+	"fmt"
+
+	re "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+)
+
+func hello() {
+	r := re.Database
+	fmt.Println(r)
+}
+`
+
+		out, err := imports.Process("", src, nil)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, string(out))
+	})
 }
 
 func Test_AddImports(t *testing.T) {
@@ -288,6 +318,36 @@ import "fmt"
 
 func hello() {
 	fmt.Println("not used")
+}
+`
+
+		out, err := genhelpers.AddImports("", src)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, string(out))
+	})
+
+	t.Run("add explicit named import", func(t *testing.T) {
+		src := []byte(`package somepackagename
+
+import re "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+
+func hello() {
+	r := re.Database
+	fmt.Println(r)
+}
+`)
+		expected := `package somepackagename
+
+import (
+	"fmt"
+
+	re "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+)
+
+func hello() {
+	r := re.Database
+	fmt.Println(r)
 }
 `
 
