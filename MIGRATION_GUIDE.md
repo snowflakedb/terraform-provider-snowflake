@@ -406,7 +406,7 @@ Before:
 
 ```terraform
 output "simple_output" {
-  value = data.snowflake_tables.test.roles[0].name
+  value = data.snowflake_tables.test.tables[0].name
 }
 ```
 After:
