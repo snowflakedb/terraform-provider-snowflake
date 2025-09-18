@@ -49,41 +49,29 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Description: blocklistedCharactersFieldDescription("Specifies an alias for a logical table in the semantic view."),
 				},
 				"table_name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies an identifier for the logical table."),
+					Type:             schema.TypeString,
+					Required:         true,
+					Description:      blocklistedCharactersFieldDescription("Specifies an identifier for the logical table."),
+					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+					DiffSuppressFunc: suppressIdentifierQuoting,
 				},
 				"primary_key": {
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Definitions of primary keys in the logical table."),
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"keys": {
-								Type: schema.TypeList,
-								Elem: &schema.Schema{
-									Type: schema.TypeString,
-								},
-								Required:    true,
-								Description: blocklistedCharactersFieldDescription("Columns to use in primary key"),
-							},
-						},
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
 					},
 				},
 				"unique": {
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Definitions of unique key combinations in the logical table."),
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"keys": {
-								Type: schema.TypeList,
-								Elem: &schema.Schema{
-									Type: schema.TypeString,
-								},
-								Required:    true,
-								Description: blocklistedCharactersFieldDescription("Unique key combinations in the logical table"),
-							},
+					Elem: &schema.Schema{
+						Type:        schema.TypeList,
+						Description: blocklistedCharactersFieldDescription("Unique key combinations in the logical table"),
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
 					},
 				},
@@ -91,30 +79,40 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("List of synonyms for the logical table."),
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
 				},
 				"comment": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies a comment for the logical table."),
+					Description: "Specifies a comment for the logical table.",
 				},
 			},
 		},
 	},
-	"relationships": {},
-	"facts":         {},
-	"dimensions":    {},
-	"metrics":       {},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: blocklistedCharactersFieldDescription("Specifies a comment for the semantic view."),
 	},
-	"copy_grants": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Description: blocklistedCharactersFieldDescription("Specifies if the access privileges should be copied when OR REPLACE is used in creation of semantic view"),
-	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
+	ShowOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `SHOW SEMANTIC VIEWS` for the given semantic view.",
+		Elem: &schema.Resource{
+			Schema: schemas.ShowSemanticViewSchema,
+		},
+	},
+	DescribeOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `DESCRIBE SEMANTIC VIEW` for the given semantic view.",
+		Elem: &schema.Resource{
+			Schema: schemas.DescribeSemanticViewSchema,
+		},
+	},
 }
 
 func SemanticView() *schema.Resource {
@@ -126,18 +124,18 @@ func SemanticView() *schema.Resource {
 	)
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingCreateWrapper(resources.SemanticView, CreateSemanticView)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.SemanticViewResource), TrackingReadWrapper(resources.SemanticView, ReadGitRepository)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingUpdateWrapper(resources.SemanticView, UpdateGitRepository)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.SemanticViewResource), TrackingReadWrapper(resources.SemanticView, ReadSemanticView)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingUpdateWrapper(resources.SemanticView, UpdateSemanticView)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.SemanticViewResource), TrackingDeleteWrapper(resources.SemanticView, deleteFunc)),
-		Description:   "Resource used to manage git repositories. For more information, check [git repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository).",
+		Description:   "Resource used to manage semantic views. For more information, check [semantic views documentation](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view).",
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.GitRepository, customdiff.All(
-			ComputedIfAnyAttributeChanged(gitRepositorySchema, ShowOutputAttributeName, "origin", "api_integration", "git_credentials", "comment"),
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.SemanticView, customdiff.All(
+			ComputedIfAnyAttributeChanged(semanticViewsSchema, FullyQualifiedNameAttributeName, "name", "tables"),
 		)),
 
-		Schema: gitRepositorySchema,
+		Schema: semanticViewsSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.GitRepository, ImportName[sdk.SchemaObjectIdentifier]),
+			StateContext: TrackingImportWrapper(resources.SemanticView, ImportName[sdk.SchemaObjectIdentifier]),
 		},
 
 		Timeouts: defaultTimeouts,
@@ -211,21 +209,53 @@ func ReadSemanticView(ctx context.Context, d *schema.ResourceData, meta any) dia
 	return nil
 }
 
-func getLogicalTableRequest(from interface{}) (*sdk.LogicalTableRequest, error) {
-	c := from.(map[string]interface{})
-	name := c["name"].(string)
-	databaseName := c["database"].(string)
-	schemaName := c["schema"].(string)
+func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
 
-	logicalTableName := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
-	logicalTableRequest := sdk.NewLogicalTableRequest(logicalTableName)
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return logicalTableRequest.
-		WithComment(c["comment"].(string)), nil
+	if d.HasChange("comment") {
+		if comment := d.Get("comment").(string); comment != "" {
+			if err := client.SemanticViews.Alter(ctx, sdk.NewAlterSemanticViewRequest(id).WithSetComment(comment)); err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := client.SemanticViews.Alter(ctx, sdk.NewAlterSemanticViewRequest(id).WithUnsetComment(true)); err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+		}
+	}
+	return ReadSemanticView(ctx, d, meta)
 }
 
-func getLogicalTableRequests(from interface{}) ([]sdk.LogicalTableRequest, error) {
-	cols := from.([]interface{})
+func getLogicalTableRequest(from interface{}) (*sdk.LogicalTableRequest, error) {
+	c := from.(map[string]interface{})
+	qualifiedTableName := c["table_name"].(string)
+
+	logicalTableName, err := sdk.ParseSchemaObjectIdentifier(qualifiedTableName)
+	if err != nil {
+		return nil, err
+	}
+	logicalTableRequest := sdk.NewLogicalTableRequest(logicalTableName)
+
+	if c["comment"] != nil && c["comment"].(string) != "" {
+		return logicalTableRequest.
+			WithComment(c["comment"].(string)), nil
+	} else {
+		return logicalTableRequest, nil
+	}
+}
+
+func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
+	cols, ok := from.([]any)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failure")
+	}
 	to := make([]sdk.LogicalTableRequest, len(cols))
 	for i, c := range cols {
 		cReq, err := getLogicalTableRequest(c)
