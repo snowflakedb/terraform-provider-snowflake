@@ -102,13 +102,13 @@ func TestInt_SemanticView(t *testing.T) {
 		).WithRelationshipAlias(*relAliasRequest).WithRelationshipRefColumnNames([]sdk.SemanticViewColumnRequest{*relRefCol})
 
 		// facts
-		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{"F1"}})
+		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F1"}})
 		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.fact1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "FIRST_C"}).
 			WithSynonyms(*factSynonymRequest).
 			WithComment("fact comment")
 
 		// dimensions
-		dimensionSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{"D1"}})
+		dimensionSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "D1"}})
 		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.FIRST_C"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "table1.FIRST_C"}).
 			WithSynonyms(*dimensionSynonymRequest).
 			WithComment("dimension comment")

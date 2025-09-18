@@ -9,6 +9,8 @@ description: |-
 
 !> **Note** According to Snowflake [docs](https://docs.snowflake.com/en/sql-reference/sql/drop-authentication-policy#usage-notes), an authentication policy cannot be dropped successfully if it is currently assigned to another object. Currently, the provider does not unassign such objects automatically. Before dropping the resource, first unassign the policy from the relevant objects. See [guide](../guides/unassigning_policies) for more details.
 
+-> **Note** This resource is not yet adjusted to the changes in BCR 2025_06 (see our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#bundle-2025_06)). As a workaround, please use the [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+
 # snowflake_authentication_policy (Resource)
 
 Resource used to manage authentication policy objects. For more information, check [authentication policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy).
