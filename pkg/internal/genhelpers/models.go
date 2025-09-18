@@ -19,8 +19,8 @@ func NewPreambleModel(name string, version string, imports []string) *PreambleMo
 	}
 }
 
-func (m *PreambleModel) getPreambleModel() *PreambleModel { return m }
+func (m PreambleModel) getPreambleModel() PreambleModel { return m }
 
 type HasPreambleModel interface {
-	getPreambleModel() *PreambleModel
+	getPreambleModel() PreambleModel
 }
