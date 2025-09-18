@@ -9,8 +9,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
+const name = "resource show output assertions"
+const version = "0.1.0"
+
+// TODO [this PR]: unwanted slices import?
+
 func main() {
 	genhelpers.NewGenerator(
+		name,
+		version,
 		objectassertgen.GetSdkObjectDetails,
 		gen.ModelFromSdkObjectDetails,
 		getFilename,

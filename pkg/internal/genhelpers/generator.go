@@ -17,24 +17,20 @@ type ObjectNameProvider interface {
 	ObjectName() string
 }
 
-// TODO [SNOW-1501905]: describe
-// TODO [SNOW-1501905]: better func
-type GenerationModel interface {
-	SomeFunc()
-}
-
-type Generator[T ObjectNameProvider, M GenerationModel] struct {
+type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	objectsProvider func() []T
-	modelProvider   func(T) M
+	modelProvider   func(T, PreambleModel) M
 	// TODO [SNOW-1501905]: consider adding filename to model?
 	filenameProvider func(T, M) string
 	templates        []*template.Template
 
 	additionalObjectDebugLogProviders []func([]T)
 	objectFilters                     []func(T) bool
+
+	preamble *PreambleModel
 }
 
-func NewGenerator[T ObjectNameProvider, M GenerationModel](objectsProvider func() []T, modelProvider func(T) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+func NewGenerator[T ObjectNameProvider, M HasPreambleModel](name string, version string, objectsProvider func() []T, modelProvider func(T, PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	return &Generator[T, M]{
 		objectsProvider:  objectsProvider,
 		modelProvider:    modelProvider,
@@ -43,6 +39,9 @@ func NewGenerator[T ObjectNameProvider, M GenerationModel](objectsProvider func(
 
 		additionalObjectDebugLogProviders: make([]func([]T), 0),
 		objectFilters:                     make([]func(T) bool, 0),
+
+		// TODO [this PR]: handle imports
+		preamble: NewPreambleModel(name, version, []string{}),
 	}
 }
 
@@ -123,11 +122,12 @@ func (g *Generator[_, _]) RunAndHandleOsReturn() {
 	}
 }
 
-func generateAndSaveForAllObjects[T ObjectNameProvider, M GenerationModel](objects []T, modelProvider func(T) M, filenameProvider func(T, M) string, templates ...*template.Template) error {
+func generateAndSaveForAllObjects[T ObjectNameProvider, M HasPreambleModel](objects []T, modelProvider func(T, PreambleModel) M, filenameProvider func(T, M) string, templates ...*template.Template) error {
 	var errs []error
 	for _, s := range objects {
 		buffer := bytes.Buffer{}
-		model := modelProvider(s)
+		// TODO [this PR]: fill in the correct preamble
+		model := modelProvider(s, PreambleModel{})
 		if err := executeAllTemplates(model, &buffer, templates...); err != nil {
 			errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
 			continue
@@ -141,13 +141,14 @@ func generateAndSaveForAllObjects[T ObjectNameProvider, M GenerationModel](objec
 	return errors.Join(errs...)
 }
 
-func generateAndPrintForAllObjects[T ObjectNameProvider, M GenerationModel](objects []T, modelProvider func(T) M, templates ...*template.Template) error {
+func generateAndPrintForAllObjects[T ObjectNameProvider, M HasPreambleModel](objects []T, modelProvider func(T, PreambleModel) M, templates ...*template.Template) error {
 	var errs []error
 	for _, s := range objects {
 		fmt.Println("===========================")
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
-		if err := executeAllTemplates(modelProvider(s), os.Stdout, templates...); err != nil {
+		// TODO [this PR]: fill in the correct preamble
+		if err := executeAllTemplates(modelProvider(s, PreambleModel{}), os.Stdout, templates...); err != nil {
 			errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
 			continue
 		}
@@ -155,7 +156,7 @@ func generateAndPrintForAllObjects[T ObjectNameProvider, M GenerationModel](obje
 	return errors.Join(errs...)
 }
 
-func executeAllTemplates[M GenerationModel](model M, writer io.Writer, templates ...*template.Template) error {
+func executeAllTemplates[M HasPreambleModel](model M, writer io.Writer, templates ...*template.Template) error {
 	var errs []error
 	for _, t := range templates {
 		if err := t.Execute(writer, model); err != nil {

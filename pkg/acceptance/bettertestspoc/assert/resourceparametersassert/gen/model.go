@@ -1,25 +1,18 @@
 package gen
 
 import (
-	"os"
 	"strings"
 
 	objectparametersassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert/gen"
-)
 
-// TODO [SNOW-1501905]: extract to commons?
-type PreambleModel struct {
-	PackageName               string
-	AdditionalStandardImports []string
-}
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+)
 
 type ResourceParametersAssertionsModel struct {
 	Name       string
 	Parameters []ResourceParameterAssertionModel
-	PreambleModel
-}
 
-func (m ResourceParametersAssertionsModel) SomeFunc() {
+	genhelpers.PreambleModel
 }
 
 type ResourceParameterAssertionModel struct {
@@ -28,7 +21,7 @@ type ResourceParameterAssertionModel struct {
 	AssertionCreator string
 }
 
-func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparametersassertgen.SnowflakeObjectParameters) ResourceParametersAssertionsModel {
+func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparametersassertgen.SnowflakeObjectParameters, preamble genhelpers.PreambleModel) ResourceParametersAssertionsModel {
 	parameters := make([]ResourceParameterAssertionModel, len(snowflakeObjectParameters.Parameters))
 	for idx, p := range snowflakeObjectParameters.Parameters {
 		// TODO [SNOW-1501905]: get a runtime name for the assertion creator
@@ -53,12 +46,9 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparamete
 		}
 	}
 
-	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
 	return ResourceParametersAssertionsModel{
-		Name:       snowflakeObjectParameters.ObjectName(),
-		Parameters: parameters,
-		PreambleModel: PreambleModel{
-			PackageName: packageWithGenerateDirective,
-		},
+		Name:          snowflakeObjectParameters.ObjectName(),
+		Parameters:    parameters,
+		PreambleModel: preamble,
 	}
 }

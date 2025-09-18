@@ -1,29 +1,18 @@
 package gen
 
 import (
-	"log"
-	"os"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
-
-// TODO [SNOW-1501905]: extract to commons?
-type PreambleModel struct {
-	PackageName               string
-	AdditionalStandardImports []string
-	AdditionalImports         []string
-}
 
 type SnowflakeObjectAssertionsModel struct {
 	Name    string
 	SdkType string
 	IdType  string
 	Fields  []SnowflakeObjectFieldAssertion
-	PreambleModel
-}
 
-func (m SnowflakeObjectAssertionsModel) SomeFunc() {
+	genhelpers.PreambleModel
 }
 
 type SnowflakeObjectFieldAssertion struct {
@@ -35,24 +24,19 @@ type SnowflakeObjectFieldAssertion struct {
 	ExpectedValueMapper   genhelpers.Mapper
 }
 
-func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) SnowflakeObjectAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble genhelpers.PreambleModel) SnowflakeObjectAssertionsModel {
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	fields := make([]SnowflakeObjectFieldAssertion, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {
 		fields[idx] = MapToSnowflakeObjectFieldAssertion(field)
 	}
 
-	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
 	return SnowflakeObjectAssertionsModel{
-		Name:    name,
-		SdkType: sdkObject.Name,
-		IdType:  sdkObject.IdType,
-		Fields:  fields,
-		PreambleModel: PreambleModel{
-			PackageName:               packageWithGenerateDirective,
-			AdditionalStandardImports: genhelpers.AdditionalStandardImports(sdkObject.Fields),
-			AdditionalImports:         getAdditionalImports(sdkObject.Fields),
-		},
+		Name:          name,
+		SdkType:       sdkObject.Name,
+		IdType:        sdkObject.IdType,
+		Fields:        fields,
+		PreambleModel: preamble,
 	}
 }
 
@@ -93,22 +77,4 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 		Mapper:                mapper,
 		ExpectedValueMapper:   expectedValueMapper,
 	}
-}
-
-func getAdditionalImports(fields []genhelpers.Field) []string {
-	imports := make(map[string]struct{})
-	for _, field := range fields {
-		if field.IsSlice() {
-			imports["collections"] = struct{}{}
-		}
-	}
-	additionalImports := make([]string, 0)
-	for k := range imports {
-		if v, ok := genhelpers.PredefinedImports[k]; ok {
-			additionalImports = append(additionalImports, v)
-		} else {
-			log.Printf("[WARN] No predefined import found for %s", k)
-		}
-	}
-	return additionalImports
 }

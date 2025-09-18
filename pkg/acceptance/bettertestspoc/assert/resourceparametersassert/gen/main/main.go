@@ -9,8 +9,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
+const name = "resource parameter assertions"
+const version = "0.1.0"
+
 func main() {
 	genhelpers.NewGenerator(
+		name,
+		version,
 		objectparametersassertgen.GetAllSnowflakeObjectParameters,
 		gen.ModelFromSnowflakeObjectParameters,
 		getFilename,

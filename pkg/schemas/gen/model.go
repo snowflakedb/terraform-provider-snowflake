@@ -10,12 +10,11 @@ type ShowResultSchemaModel struct {
 	Name         string
 	SdkType      string
 	SchemaFields []SchemaField
+
+	genhelpers.PreambleModel
 }
 
-func (m ShowResultSchemaModel) SomeFunc() {
-}
-
-func ModelFromStructDetails(sdkStruct genhelpers.StructDetails) ShowResultSchemaModel {
+func ModelFromStructDetails(sdkStruct genhelpers.StructDetails, preamble genhelpers.PreambleModel) ShowResultSchemaModel {
 	name, _ := strings.CutPrefix(sdkStruct.Name, "sdk.")
 	schemaFields := make([]SchemaField, len(sdkStruct.Fields))
 	for idx, field := range sdkStruct.Fields {
@@ -23,8 +22,9 @@ func ModelFromStructDetails(sdkStruct genhelpers.StructDetails) ShowResultSchema
 	}
 
 	return ShowResultSchemaModel{
-		Name:         name,
-		SdkType:      sdkStruct.Name,
-		SchemaFields: schemaFields,
+		Name:          name,
+		SdkType:       sdkStruct.Name,
+		SchemaFields:  schemaFields,
+		PreambleModel: preamble,
 	}
 }

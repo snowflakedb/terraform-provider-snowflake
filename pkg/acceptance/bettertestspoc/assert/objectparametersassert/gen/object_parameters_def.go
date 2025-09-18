@@ -6,9 +6,10 @@ import (
 )
 
 type SnowflakeObjectParameters struct {
-	Name              string
-	IdType            string
-	Level             sdk.ParameterType
+	Name   string
+	IdType string
+	Level  sdk.ParameterType
+	// TODO [this PR]: can be removed?
 	AdditionalImports []string
 	Parameters        []SnowflakeParameter
 }

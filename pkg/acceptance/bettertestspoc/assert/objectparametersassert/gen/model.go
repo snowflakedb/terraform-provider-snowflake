@@ -2,21 +2,17 @@ package gen
 
 import (
 	"fmt"
-	"os"
 	"strings"
-)
 
-// TODO [SNOW-1501905]: extract to commons?
-type PreambleModel struct {
-	PackageName               string
-	AdditionalStandardImports []string
-}
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+)
 
 type SnowflakeObjectParametersAssertionsModel struct {
 	Name       string
 	IdType     string
 	Parameters []ParameterAssertionModel
-	PreambleModel
+
+	genhelpers.PreambleModel
 }
 
 type ParameterAssertionModel struct {
@@ -27,10 +23,7 @@ type ParameterAssertionModel struct {
 	AssertionCreator string
 }
 
-func (m SnowflakeObjectParametersAssertionsModel) SomeFunc() {
-}
-
-func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjectParameters) SnowflakeObjectParametersAssertionsModel {
+func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjectParameters, preamble genhelpers.PreambleModel) SnowflakeObjectParametersAssertionsModel {
 	parameters := make([]ParameterAssertionModel, len(snowflakeObjectParameters.Parameters))
 	for idx, p := range snowflakeObjectParameters.Parameters {
 		// TODO [SNOW-1501905]: get a runtime name for the assertion creator
@@ -64,14 +57,10 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjec
 		}
 	}
 
-	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
 	return SnowflakeObjectParametersAssertionsModel{
-		Name:       snowflakeObjectParameters.ObjectName(),
-		IdType:     snowflakeObjectParameters.IdType,
-		Parameters: parameters,
-		PreambleModel: PreambleModel{
-			PackageName:               packageWithGenerateDirective,
-			AdditionalStandardImports: snowflakeObjectParameters.AdditionalImports,
-		},
+		Name:          snowflakeObjectParameters.ObjectName(),
+		IdType:        snowflakeObjectParameters.IdType,
+		Parameters:    parameters,
+		PreambleModel: preamble,
 	}
 }

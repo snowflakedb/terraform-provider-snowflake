@@ -2,7 +2,6 @@ package gen
 
 import (
 	"log"
-	"os"
 	"slices"
 	"strings"
 
@@ -11,20 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [SNOW-1501905]: extract to commons?
-type PreambleModel struct {
-	PackageName               string
-	AdditionalStandardImports []string
-	AdditionalImports         []string
-}
-
 type ResourceConfigBuilderModel struct {
 	Name       string
 	Attributes []ResourceConfigBuilderAttributeModel
-	PreambleModel
-}
 
-func (m ResourceConfigBuilderModel) SomeFunc() {
+	genhelpers.PreambleModel
 }
 
 type ResourceConfigBuilderAttributeModel struct {
@@ -37,7 +27,8 @@ type ResourceConfigBuilderAttributeModel struct {
 	OriginalType   schema.ValueType
 }
 
-func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails) ResourceConfigBuilderModel {
+func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble genhelpers.PreambleModel) ResourceConfigBuilderModel {
+	// TODO [this PR]: deal with the additional imports
 	additionalImports := make([]string, 0)
 	attributes := make([]ResourceConfigBuilderAttributeModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
@@ -99,15 +90,10 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		})
 	}
 
-	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
 	return ResourceConfigBuilderModel{
-		Name:       resourceSchemaDetails.ObjectName(),
-		Attributes: attributes,
-		PreambleModel: PreambleModel{
-			PackageName:               packageWithGenerateDirective,
-			AdditionalStandardImports: []string{"encoding/json"},
-			AdditionalImports:         additionalImports,
-		},
+		Name:          resourceSchemaDetails.ObjectName(),
+		Attributes:    attributes,
+		PreambleModel: preamble,
 	}
 }
 

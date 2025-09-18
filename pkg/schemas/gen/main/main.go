@@ -9,13 +9,17 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas/gen"
 	"golang.org/x/exp/maps"
 )
 
+const name = "show output schemas"
+const version = "0.1.0"
+
 func main() {
 	genhelpers.NewGenerator(
+		name,
+		version,
 		getStructDetails,
 		gen.ModelFromStructDetails,
 		getFilename,

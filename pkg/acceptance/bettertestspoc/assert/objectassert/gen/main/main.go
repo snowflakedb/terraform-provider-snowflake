@@ -7,8 +7,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
+const name = "object assertions"
+const version = "0.1.0"
+
 func main() {
 	genhelpers.NewGenerator(
+		name,
+		version,
 		gen.GetSdkObjectDetails,
 		gen.ModelFromSdkObjectDetails,
 		getFilename,
