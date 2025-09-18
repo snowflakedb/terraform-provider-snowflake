@@ -377,6 +377,32 @@ References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/
 ## v2.1.x ➞ v2.2.0
 <a id="v210--v220"></a>
 
+### *(new feature)* Changes in `snowflake_tables` data source
+
+We adjusted the `snowflake_tables` data source with the following:
+- Added support for `IN APPLICATION`, `IN APPLICATION PACKAGE`, `LIKE`, `STARTS WITH`, and `LIMIT`.
+- Added support for getting data with `DESCRIBE TABLE` - see the `with_describe` field.
+- Added more fields returned by the data source.
+
+With added support for other `IN APPLICATION` and `IN APPLICATION PACKAGE`, we also nested the whole `IN` block and made all these fields optional. For example, please adjust the configurations from:
+```terraform
+data "snowflake_tables" "current" {
+  database = "MYDB"
+}
+```
+to
+```terraform
+data "snowflake_tables" "current" {
+  in {
+    database = "MYDB"
+  }
+}
+```
+
+Please read the [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/tables) for more information.
+
+Note that `snowflake_tables` data source and `snowflake_table` resource are still in preview.
+
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
 Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
