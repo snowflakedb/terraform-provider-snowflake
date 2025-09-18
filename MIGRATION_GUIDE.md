@@ -377,14 +377,15 @@ References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/
 ## v2.1.x ➞ v2.2.0
 <a id="v210--v220"></a>
 
-### *(new feature)* Changes in `snowflake_tables` data source
+### *(breaking change, new feature)* Changes in `snowflake_tables` data source
 
 We adjusted the `snowflake_tables` data source with the following:
+- Moved the `database` and `schema` fields to the `in` block (breaking change). See the before/after examples below.
 - Added support for `IN APPLICATION`, `IN APPLICATION PACKAGE`, `LIKE`, `STARTS WITH`, and `LIMIT`.
 - Added support for getting data with `DESCRIBE TABLE` - see the `with_describe` field.
-- Added more fields returned by the data source.
+- Changed the output format returned by the data source (breaking change). See the before/after examples below.
 
-With added support for other `IN APPLICATION` and `IN APPLICATION PACKAGE`, we also nested the whole `IN` block and made all these fields optional. For example, please adjust the configurations from:
+With added support for `IN APPLICATION` and `IN APPLICATION PACKAGE` filters, we also nested the `database` and `schema` fields in a separate `in` block and made all these fields optional. For example, please adjust the configurations from:
 ```terraform
 data "snowflake_tables" "current" {
   database = "MYDB"
@@ -396,6 +397,27 @@ data "snowflake_tables" "current" {
   in {
     database = "MYDB"
   }
+}
+```
+
+The output format is also changed. Now, all data is nested in `tables.show_output`, and in `tables.describe_output` if `with_describe` is set to `true`.
+
+Before:
+
+```terraform
+output "simple_output" {
+  value = data.snowflake_tables.test.roles[0].name
+}
+```
+After:
+
+```
+output "simple_output" {
+  value = data.snowflake_tables.test.tables[0].show_output[0].name
+}
+
+output "describe_output" {
+  value = data.snowflake_tables.test.tables[0].describe_output[0].name # Column name from the DESCRIBE TABLE query.
 }
 ```
 
