@@ -75,8 +75,6 @@ func TestAcc_StorageIntegration_PrivateLink_Update(t *testing.T) {
 	})
 }
 
-
-
 func TestAcc_StorageIntegration_Azure_PrivateLink_Update(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableAcceptance)
 	TestAccPreCheck(t)
@@ -85,7 +83,7 @@ func TestAcc_StorageIntegration_Azure_PrivateLink_Update(t *testing.T) {
 	azureTenantId := "11111111-2222-3333-4444-555555555555"
 
 	configVariables := config.Variables{
-		"name":         config.StringVariable(name.Name()),
+		"name":            config.StringVariable(name.Name()),
 		"azure_tenant_id": config.StringVariable(azureTenantId),
 		"allowed_locations": config.SetVariable(
 			config.StringVariable("azure://myaccount.blob.core.windows.net/mycontainer/path1/"),
@@ -139,5 +137,3 @@ func TestAcc_StorageIntegration_Azure_PrivateLink_Update(t *testing.T) {
 		},
 	})
 }
-
-
