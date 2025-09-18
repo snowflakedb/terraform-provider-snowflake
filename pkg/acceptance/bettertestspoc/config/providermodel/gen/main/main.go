@@ -12,6 +12,10 @@ import (
 const name = "provider model builder"
 const version = "0.1.0"
 
+// TODO [this PR]: imports?
+//  - tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+
 func main() {
 	genhelpers.NewGenerator(
 		name,

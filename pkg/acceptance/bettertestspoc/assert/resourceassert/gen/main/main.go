@@ -10,6 +10,10 @@ import (
 const name = "resource assertions"
 const version = "0.1.0"
 
+// TODO [this PR]: imports?
+//  - "testing"
+//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+
 func main() {
 	genhelpers.NewGenerator(
 		name,

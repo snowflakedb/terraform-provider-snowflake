@@ -13,8 +13,12 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-const name = "show output schemas"
+const name = "sdk to schema"
 const version = "0.1.0"
+
+// TODO [this PR]: imports?
+//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+//  - "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 func main() {
 	genhelpers.NewGenerator(

@@ -7,8 +7,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testacc/poc/gen"
 )
 
-const name = "plugin framework schema"
+const name = "PoC plugin framework model and schema"
 const version = "0.1.0"
+
+// TODO [this PR]: imports?
+//  - "github.com/hashicorp/terraform-plugin-framework/provider/schema"
+//  - "github.com/hashicorp/terraform-plugin-framework/types"
+//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 
 func main() {
 	genhelpers.NewGenerator(

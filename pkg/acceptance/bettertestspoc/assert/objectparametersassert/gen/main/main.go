@@ -10,6 +10,12 @@ import (
 const name = "object parameter assertions"
 const version = "0.1.0"
 
+// TODO [this PR]: imports?
+//  - "testing"
+//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+
 func main() {
 	genhelpers.NewGenerator(
 		name,
