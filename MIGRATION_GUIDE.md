@@ -377,6 +377,54 @@ References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/
 ## v2.1.x ➞ v2.2.0
 <a id="v210--v220"></a>
 
+### *(breaking change, new feature)* Changes in `snowflake_tables` data source
+
+We adjusted the `snowflake_tables` data source with the following:
+- Moved the `database` and `schema` fields to the `in` block (breaking change). See the before/after examples below.
+- Added support for `IN APPLICATION`, `IN APPLICATION PACKAGE`, `LIKE`, `STARTS WITH`, and `LIMIT`.
+- Added support for getting data with `DESCRIBE TABLE` - see the `with_describe` field.
+- Changed the output format returned by the data source (breaking change). See the before/after examples below.
+
+With added support for `IN APPLICATION` and `IN APPLICATION PACKAGE` filters, we also nested the `database` and `schema` fields in a separate `in` block and made all these fields optional. For example, please adjust the configurations from:
+```terraform
+data "snowflake_tables" "current" {
+  database = "MYDB"
+}
+```
+to
+```terraform
+data "snowflake_tables" "current" {
+  in {
+    database = "MYDB"
+  }
+}
+```
+
+The output format is also changed. Now, all data is nested in `tables.show_output`, and in `tables.describe_output` if `with_describe` is set to `true`.
+
+Before:
+
+```terraform
+output "simple_output" {
+  value = data.snowflake_tables.test.tables[0].name
+}
+```
+After:
+
+```
+output "simple_output" {
+  value = data.snowflake_tables.test.tables[0].show_output[0].name
+}
+
+output "describe_output" {
+  value = data.snowflake_tables.test.tables[0].describe_output[0].name # Column name from the DESCRIBE TABLE query.
+}
+```
+
+Please read the [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/tables) for more information.
+
+Note that `snowflake_tables` data source and `snowflake_table` resource are still in preview.
+
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
 Due to incorrect mapping in setting account parameter logic in [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.1.0/docs/resources/account_parameter), the [`ENABLE_INTERNAL_STAGES_PRIVATELINK`](https://docs.snowflake.com/en/sql-reference/parameters#enable-internal-stages-privatelink) could not be set. Setting it results in setting the [`ALLOW_ID_TOKEN`](https://docs.snowflake.com/en/sql-reference/parameters#allow-id-token) parameter instead. This version introduces the corrected mapping.
