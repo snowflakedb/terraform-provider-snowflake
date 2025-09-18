@@ -75,7 +75,7 @@ func hello() {
 		require.Equal(t, expected, string(out))
 	})
 
-	t.Run("add ambigous import", func(t *testing.T) {
+	t.Run("add ambiguous import", func(t *testing.T) {
 		src := []byte(`package somepackagename
 
 func hello() {
@@ -104,7 +104,7 @@ func hello() {
 		require.Equal(t, expected, string(out))
 	})
 
-	t.Run("add ambigous import - with explicit import", func(t *testing.T) {
+	t.Run("add ambiguous import - with explicit import", func(t *testing.T) {
 		src := []byte(`package somepackagename
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -125,6 +125,30 @@ import (
 func hello() {
 	r := resources.Database
 	fmt.Println(r)
+}
+`
+
+		out, err := imports.Process("", src, nil)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, string(out))
+	})
+
+	t.Run("add unused explicit import", func(t *testing.T) {
+		src := []byte(`package somepackagename
+
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+
+func hello() {
+	fmt.Println("not used")
+}
+`)
+		expected := `package somepackagename
+
+import "fmt"
+
+func hello() {
+	fmt.Println("not used")
 }
 `
 
@@ -190,7 +214,7 @@ func hello() {
 		require.Equal(t, expected, string(out))
 	})
 
-	t.Run("add ambigous import", func(t *testing.T) {
+	t.Run("add ambiguous import", func(t *testing.T) {
 		src := []byte(`package somepackagename
 
 func hello() {
@@ -219,7 +243,7 @@ func hello() {
 		require.Equal(t, expected, string(out))
 	})
 
-	t.Run("add ambigous import - with explicit import", func(t *testing.T) {
+	t.Run("add ambiguous import - with explicit import", func(t *testing.T) {
 		src := []byte(`package somepackagename
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -240,6 +264,30 @@ import (
 func hello() {
 	r := resources.Database
 	fmt.Println(r)
+}
+`
+
+		out, err := genhelpers.AddImports("", src)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, string(out))
+	})
+
+	t.Run("add unused explicit import", func(t *testing.T) {
+		src := []byte(`package somepackagename
+
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+
+func hello() {
+	fmt.Println("not used")
+}
+`)
+		expected := `package somepackagename
+
+import "fmt"
+
+func hello() {
+	fmt.Println("not used")
 }
 `
 
