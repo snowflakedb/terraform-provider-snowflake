@@ -21,6 +21,7 @@ const (
 	ObjectTypeUser                 ObjectType = "USER"
 	ObjectTypeDatabaseRole         ObjectType = "DATABASE ROLE"
 	ObjectTypeDataset              ObjectType = "DATASET"
+	ObjectTypeDbtProject           ObjectType = "DBT PROJECT"
 	ObjectTypeRole                 ObjectType = "ROLE"
 	ObjectTypeIntegration          ObjectType = "INTEGRATION"
 	ObjectTypeNetworkPolicy        ObjectType = "NETWORK POLICY"
@@ -45,6 +46,8 @@ const (
 	ObjectTypeMaterializedView     ObjectType = "MATERIALIZED VIEW"
 	ObjectTypeSequence             ObjectType = "SEQUENCE"
 	ObjectTypeSnapshot             ObjectType = "SNAPSHOT"
+	ObjectTypeSnapshotPolicy       ObjectType = "SNAPSHOT POLICY"
+	ObjectTypeSnapshotSet          ObjectType = "SNAPSHOT SET"
 	ObjectTypeFunction             ObjectType = "FUNCTION"
 	ObjectTypeExternalFunction     ObjectType = "EXTERNAL FUNCTION"
 	ObjectTypeProcedure            ObjectType = "PROCEDURE"
@@ -66,6 +69,7 @@ const (
 	ObjectTypeStreamlit            ObjectType = "STREAMLIT"
 	ObjectTypeColumn               ObjectType = "COLUMN"
 	ObjectTypeIcebergTable         ObjectType = "ICEBERG TABLE"
+	ObjectTypeJoinPolicy           ObjectType = "JOIN POLICY"
 	ObjectTypeExternalVolume       ObjectType = "EXTERNAL VOLUME"
 	ObjectTypeNetworkRule          ObjectType = "NETWORK RULE"
 	ObjectTypeNotebook             ObjectType = "NOTEBOOK"
@@ -79,6 +83,7 @@ const (
 	ObjectTypeDataMetricFunction   ObjectType = "DATA METRIC FUNCTION"
 	ObjectTypeGitRepository        ObjectType = "GIT REPOSITORY"
 	ObjectTypeModel                ObjectType = "MODEL"
+	ObjectTypeModelMonitor         ObjectType = "MODEL MONITOR"
 	ObjectTypeService              ObjectType = "SERVICE"
 	ObjectTypeStorageIntegration   ObjectType = "STORAGE INTEGRATION"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
@@ -102,6 +107,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeUser,
 	ObjectTypeDatabaseRole,
 	ObjectTypeDataset,
+	ObjectTypeDbtProject,
 	ObjectTypeRole,
 	ObjectTypeIntegration,
 	ObjectTypeNetworkPolicy,
@@ -126,6 +132,9 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeMaterializedView,
 	ObjectTypeSequence,
 	ObjectTypeSnapshot,
+	ObjectTypeSnapshotPolicy,
+	ObjectTypeSnapshotSet,
+	ObjectTypeSemanticView,
 	ObjectTypeFunction,
 	ObjectTypeExternalFunction,
 	ObjectTypeProcedure,
@@ -147,6 +156,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeStreamlit,
 	ObjectTypeColumn,
 	ObjectTypeIcebergTable,
+	ObjectTypeJoinPolicy,
 	ObjectTypeExternalVolume,
 	ObjectTypeNetworkRule,
 	ObjectTypeNotebook,
@@ -160,6 +170,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeDataMetricFunction,
 	ObjectTypeGitRepository,
 	ObjectTypeModel,
+	ObjectTypeModelMonitor,
 	ObjectTypeService,
 	ObjectTypeStorageIntegration,
 	ObjectTypeProgrammaticAccessToken,
@@ -181,6 +192,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeUser:                    PluralObjectTypeUsers,
 		ObjectTypeDatabaseRole:            PluralObjectTypeDatabaseRoles,
 		ObjectTypeDataset:                 PluralObjectTypeDatasets,
+		ObjectTypeDbtProject:              PluralObjectTypeDbtProjects,
 		ObjectTypeRole:                    PluralObjectTypeRoles,
 		ObjectTypeIntegration:             PluralObjectTypeIntegrations,
 		ObjectTypeNetworkPolicy:           PluralObjectTypeNetworkPolicies,
@@ -205,6 +217,9 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeMaterializedView:        PluralObjectTypeMaterializedViews,
 		ObjectTypeSequence:                PluralObjectTypeSequences,
 		ObjectTypeSnapshot:                PluralObjectTypeSnapshots,
+		ObjectTypeSnapshotPolicy:          PluralObjectTypeSnapshotPolicies,
+		ObjectTypeSnapshotSet:             PluralObjectTypeSnapshotSets,
+		ObjectTypeSemanticView:            PluralObjectTypeSemanticViews,
 		ObjectTypeFunction:                PluralObjectTypeFunctions,
 		ObjectTypeExternalFunction:        PluralObjectTypeExternalFunctions,
 		ObjectTypeProcedure:               PluralObjectTypeProcedures,
@@ -225,6 +240,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeApplicationRole:         PluralObjectTypeApplicationRoles,
 		ObjectTypeStreamlit:               PluralObjectTypeStreamlits,
 		ObjectTypeIcebergTable:            PluralObjectTypeIcebergTables,
+		ObjectTypeJoinPolicy:              PluralObjectTypeJoinPolicies,
 		ObjectTypeExternalVolume:          PluralObjectTypeExternalVolumes,
 		ObjectTypeNetworkRule:             PluralObjectTypeNetworkRules,
 		ObjectTypeNotebook:                PluralObjectTypeNotebooks,
@@ -238,6 +254,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeDataMetricFunction:      PluralObjectTypeDataMetricFunctions,
 		ObjectTypeGitRepository:           PluralObjectTypeGitRepositories,
 		ObjectTypeModel:                   PluralObjectTypeModels,
+		ObjectTypeModelMonitor:            PluralObjectTypeModelMonitors,
 		ObjectTypeService:                 PluralObjectTypeServices,
 		ObjectTypeProgrammaticAccessToken: PluralObjectTypeProgrammaticAccessTokens,
 		ObjectTypeStorageIntegration:      PluralObjectTypeStorageIntegrations,
@@ -294,6 +311,7 @@ const (
 	PluralObjectTypeUsers                    PluralObjectType = "USERS"
 	PluralObjectTypeDatabaseRoles            PluralObjectType = "DATABASE ROLES"
 	PluralObjectTypeDatasets                 PluralObjectType = "DATASETS"
+	PluralObjectTypeDbtProjects              PluralObjectType = "DBT PROJECTS"
 	PluralObjectTypeRoles                    PluralObjectType = "ROLES"
 	PluralObjectTypeIntegrations             PluralObjectType = "INTEGRATIONS"
 	PluralObjectTypeNetworkPolicies          PluralObjectType = "NETWORK POLICIES"
@@ -318,6 +336,9 @@ const (
 	PluralObjectTypeMaterializedViews        PluralObjectType = "MATERIALIZED VIEWS"
 	PluralObjectTypeSequences                PluralObjectType = "SEQUENCES"
 	PluralObjectTypeSnapshots                PluralObjectType = "SNAPSHOTS"
+	PluralObjectTypeSnapshotPolicies         PluralObjectType = "SNAPSHOT POLICIES"
+	PluralObjectTypeSnapshotSets             PluralObjectType = "SNAPSHOT SETS"
+	PluralObjectTypeSemanticViews            PluralObjectType = "SEMANTIC VIEWS"
 	PluralObjectTypeFunctions                PluralObjectType = "FUNCTIONS"
 	PluralObjectTypeExternalFunctions        PluralObjectType = "EXTERNAL FUNCTIONS"
 	PluralObjectTypeProcedures               PluralObjectType = "PROCEDURES"
@@ -338,6 +359,7 @@ const (
 	PluralObjectTypeApplicationRoles         PluralObjectType = "APPLICATION ROLES"
 	PluralObjectTypeStreamlits               PluralObjectType = "STREAMLITS"
 	PluralObjectTypeIcebergTables            PluralObjectType = "ICEBERG TABLES"
+	PluralObjectTypeJoinPolicies             PluralObjectType = "JOIN POLICIES"
 	PluralObjectTypeExternalVolumes          PluralObjectType = "EXTERNAL VOLUMES"
 	PluralObjectTypeNetworkRules             PluralObjectType = "NETWORK RULES"
 	PluralObjectTypeNotebooks                PluralObjectType = "NOTEBOOKS"
@@ -351,6 +373,7 @@ const (
 	PluralObjectTypeDataMetricFunctions      PluralObjectType = "DATA METRIC FUNCTIONS"
 	PluralObjectTypeGitRepositories          PluralObjectType = "GIT REPOSITORIES"
 	PluralObjectTypeModels                   PluralObjectType = "MODELS"
+	PluralObjectTypeModelMonitors            PluralObjectType = "MODEL MONITORS"
 	PluralObjectTypeServices                 PluralObjectType = "SERVICES"
 	PluralObjectTypeProgrammaticAccessTokens PluralObjectType = "PROGRAMMATIC ACCESS TOKENS" //nolint:gosec
 	PluralObjectTypeStorageIntegrations      PluralObjectType = "STORAGE INTEGRATIONS"

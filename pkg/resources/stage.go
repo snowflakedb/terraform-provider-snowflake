@@ -182,7 +182,8 @@ func ReadStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	stage, err := client.Stages.ShowByID(ctx, id)
+	// TODO: Test
+	stage, err := client.Stages.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
