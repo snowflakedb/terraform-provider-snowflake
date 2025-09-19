@@ -18,16 +18,6 @@ func NewEnum(name string, values ...string) *Enum {
 	}
 }
 
-func (e *Enum) WithPlural(plural string) *Enum {
-	e.NamePlural = plural
-	return e
-}
-
-// TypeName returns the Go type name for the enum.
-func (e *Enum) TypeName() string {
-	return e.Name
-}
-
 // valueName returns the constant name for a given enum value.
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
 func (e *Enum) valueName(value string) string {
