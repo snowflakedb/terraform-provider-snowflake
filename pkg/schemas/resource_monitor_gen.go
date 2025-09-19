@@ -41,10 +41,11 @@ var ShowResourceMonitorSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"notify_at": {
-		Type:     schema.TypeInvalid,
-		Computed: true,
-	},
+	// commented out manually
+	// "notify_at": {
+	//	Type:     schema.TypeInvalid,
+	//	Computed: true,
+	// },
 	"suspend_at": {
 		Type:     schema.TypeInt,
 		Computed: true,
@@ -65,10 +66,11 @@ var ShowResourceMonitorSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"notify_users": {
-		Type:     schema.TypeInvalid,
-		Computed: true,
-	},
+	// commented out manually
+	// "notify_users": {
+	//	Type:     schema.TypeInvalid,
+	//	Computed: true,
+	// },
 }
 
 var _ = ShowResourceMonitorSchema
@@ -86,7 +88,8 @@ func ResourceMonitorToSchema(resourceMonitor *sdk.ResourceMonitor) map[string]an
 	resourceMonitorSchema["frequency"] = string(resourceMonitor.Frequency)
 	resourceMonitorSchema["start_time"] = resourceMonitor.StartTime
 	resourceMonitorSchema["end_time"] = resourceMonitor.EndTime
-	resourceMonitorSchema["notify_at"] = resourceMonitor.NotifyAt
+	// commented out manually
+	// resourceMonitorSchema["notify_at"] = resourceMonitor.NotifyAt
 	if resourceMonitor.SuspendAt != nil {
 		resourceMonitorSchema["suspend_at"] = resourceMonitor.SuspendAt
 	}
@@ -96,7 +99,8 @@ func ResourceMonitorToSchema(resourceMonitor *sdk.ResourceMonitor) map[string]an
 	resourceMonitorSchema["created_on"] = resourceMonitor.CreatedOn.String()
 	resourceMonitorSchema["owner"] = resourceMonitor.Owner
 	resourceMonitorSchema["comment"] = resourceMonitor.Comment
-	resourceMonitorSchema["notify_users"] = resourceMonitor.NotifyUsers
+	// commented out manually
+	// resourceMonitorSchema["notify_users"] = resourceMonitor.NotifyUsers
 	return resourceMonitorSchema
 }
 
