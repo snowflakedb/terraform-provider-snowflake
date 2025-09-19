@@ -1,17 +1,19 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"io"
 	"log"
 	"os"
+	"os/exec"
 	"slices"
-	"strings"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"sync"
 )
 
 type TestType string
@@ -34,6 +36,15 @@ var AllTestTypes = []TestType{
 	TestTypeArchitecture,
 }
 
+var TestMakeCommand = map[TestType]string{
+	TestTypeUnit:         "test-unit",
+	TestTypeIntegration:  "test-integration",
+	TestTypeAcceptance:   "test-acceptance",
+	TestTypeAccountLevel: "test-account-level-features",
+	TestTypeFunctional:   "test-functional",
+	TestTypeArchitecture: "test-architecture",
+}
+
 func ToTestType(s string) (TestType, error) {
 	if slices.Contains(AllTestTypes, TestType(s)) {
 		return TestType(s), nil
@@ -50,14 +61,14 @@ func main() {
 	}
 	log.Println("Processing with the following workflow id: ", testWorkflowId)
 
-	testTypesInWorkflow, ok := os.LookupEnv("TEST_SF_TF_TEST_TYPES_IN_WORKFLOW")
+	testType, ok := os.LookupEnv("TEST_SF_TF_TEST_TYPE")
 	if !ok {
-		log.Fatal("Environment variable TEST_SF_TF_TEST_TYPES_IN_WORKFLOW is not set")
+		log.Fatal("Environment variable TEST_SF_TF_TEST_TYPE is not set")
 	}
 
-	testTypesInWorkflowMapped, err := collections.MapErr(strings.Split(testTypesInWorkflow, ","), ToTestType)
+	mappedTestType, err := ToTestType(testType)
 	if err != nil {
-		log.Fatal("Failed to parse TEST_SF_TF_TEST_TYPES_IN_WORKFLOW:", err)
+		log.Fatal("Failed to parse TEST_SF_TF_TEST_TYPE:", err)
 	}
 
 	dirName, err := os.UserHomeDir()
@@ -87,18 +98,58 @@ func main() {
 		log.Fatal("Failed to create test results stage:", err)
 	}
 
-	if errs := errors.Join(collections.Map(testTypesInWorkflowMapped, func(testType TestType) error {
-		log.Printf("Processing test results from  %s test type", testType)
-		return processTestResults(testType, testWorkflowId, client, testResultsStageId, testResultsDirName)
-	})...); errs != nil {
-		log.Fatal(errs)
+	log.Printf("Running %s tests", testType)
+
+	testResults := runTest(mappedTestType)
+	if err := processTestResults(mappedTestType, testWorkflowId, client, testResultsStageId, testResultsDirName, testResults); err != nil {
+		log.Fatal("Failed to processed the test results")
 	}
 
 	log.Println("Successfully processed test results")
 }
 
-func processTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsDirName string) error {
-	err, fileLocation := stageTestResults(testType, testWorkflowId, client, testResultsStageId, testResultsDirName)
+func runTest(testType TestType) *bytes.Buffer {
+	cmd := exec.Command("make", TestMakeCommand[testType])
+
+	buf := NewSyncBuffer()
+
+	cmd.Stdout = buf
+	cmd.Stderr = buf
+	cmd.Env = cmd.Environ()
+
+	doneChan := make(chan struct{})
+	go func() {
+		defer close(doneChan)
+		if err := cmd.Run(); err != nil {
+			log.Printf("Running %s tests run ended with errors: %s", testType, err)
+		}
+	}()
+
+	resultingBuffer := new(bytes.Buffer)
+	reader := bufio.NewReader(io.TeeReader(buf, resultingBuffer))
+
+loop:
+	for {
+		select {
+		case <-doneChan:
+			break loop
+		default:
+			var entry struct {
+				Output string `json:"Output"`
+			}
+			text, _ := reader.ReadBytes('\n')
+			_ = json.Unmarshal(text, &entry)
+			if entry.Output != "" {
+				fmt.Print(entry.Output)
+			}
+		}
+	}
+
+	return resultingBuffer
+}
+
+func processTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsDirName string, testResults *bytes.Buffer) error {
+	err, fileLocation := stageTestResults(testType, testWorkflowId, client, testResultsStageId, testResultsDirName, testResults)
 	if err != nil {
 		return fmt.Errorf("failed to stage test results for test type %s, err = %w", testType, err)
 	}
@@ -139,23 +190,22 @@ func processTestResults(testType TestType, testWorkflowId string, client *sdk.Cl
 	return nil
 }
 
-func stageTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsDirName string) (error, sdk.Location) {
-	fileName := fmt.Sprintf("test_%s_output.json", testType)
+func stageTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsDirName string, testResults *bytes.Buffer) (error, sdk.Location) {
+	fileName := fmt.Sprintf("%s_test_%s_output.json", testWorkflowId, testType)
 	testResultsFilePath := testResultsDirName + "/" + fileName
 
-	uniqueFileName := fmt.Sprintf("%s_test_%s_output.json", testWorkflowId, testType)
-	uniqueTestResultsFilePath := testResultsDirName + "/" + uniqueFileName
+	file, err := os.Create(testResultsFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to create test results file %s, err = %w", testResultsFilePath, err), nil
+	}
+	fileLocation := sdk.NewStageLocation(testResultsStageId, fileName)
 
-	fileLocation := sdk.NewStageLocation(testResultsStageId, uniqueFileName)
-
-	// We have to rename them because it's not possible to pass different target file name in Snowflake,
-	// and we need to have unique file names for each test run (to avoid collisions with other test runs).
-	if err := os.Rename(testResultsFilePath, uniqueTestResultsFilePath); err != nil {
-		return fmt.Errorf("failed to rename test results file %s, err = %w", testResultsFilePath, err), fileLocation
+	if _, err := file.Write(testResults.Bytes()); err != nil {
+		return fmt.Errorf("failed to write test results to file %s, err = %w", testResultsFilePath, err), nil
 	}
 
-	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @%s auto_compress = true overwrite = true;", uniqueTestResultsFilePath, testResultsStageId.FullyQualifiedName())); err != nil {
-		return fmt.Errorf("failed to put test results file to stage, err = %w", err), fileLocation
+	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @%s auto_compress = true overwrite = true;", testResultsFilePath, testResultsStageId.FullyQualifiedName())); err != nil {
+		return fmt.Errorf("failed to put test results file to stage, err = %w", err), nil
 	}
 
 	return nil, fileLocation
@@ -173,4 +223,31 @@ func transformTemporaryTableData(client *sdk.Client, temporaryTableId sdk.Schema
 	}
 
 	return nil
+}
+
+type SyncBuffer struct {
+	buf    *bytes.Buffer
+	reader *bufio.Reader
+	mutex  *sync.Mutex
+}
+
+func NewSyncBuffer() *SyncBuffer {
+	buf := new(bytes.Buffer)
+	return &SyncBuffer{
+		buf:    buf,
+		reader: bufio.NewReader(buf),
+		mutex:  new(sync.Mutex),
+	}
+}
+
+func (b *SyncBuffer) Read(p []byte) (n int, err error) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+	return b.buf.Read(p)
+}
+
+func (b *SyncBuffer) Write(p []byte) (n int, err error) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+	return b.buf.Write(p)
 }

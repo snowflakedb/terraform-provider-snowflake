@@ -71,7 +71,7 @@ create-test-output-directory:
 	mkdir -p $$HOME/test_results
 
 test-unit: create-test-output-directory ## run unit tests
-	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") -json | tee $$HOME/test_results/test_unit_output.json
+	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") -json
 
 test-acceptance: create-test-output-directory ## run acceptance tests
 	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=120m ./pkg/testacc -json | tee $$HOME/test_results/test_acceptance_output.json
