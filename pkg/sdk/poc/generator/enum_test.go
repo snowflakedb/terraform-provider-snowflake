@@ -17,7 +17,7 @@ func TestEnum_AllValuesSliceName(t *testing.T) {
 			name:              "custom plural",
 			enumName:          "Policy",
 			plural:            "Policies",
-			expectedSliceName: "allPolicies",
+			expectedSliceName: "AllPolicies",
 		},
 	}
 
