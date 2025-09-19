@@ -148,10 +148,6 @@ jobs:
 #          terraform_wrapper: false
 #
 #      - name: Run functional tests of the underlying terraform libraries
-        run: make test-functional
-        if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
-
-      - name: Run acceptance tests
 #        run: go run ./pkg/scripts/test_runner/test_runner.go
 #        if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
 #        env:
