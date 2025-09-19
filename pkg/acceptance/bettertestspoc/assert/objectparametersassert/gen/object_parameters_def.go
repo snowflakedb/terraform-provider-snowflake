@@ -6,12 +6,10 @@ import (
 )
 
 type SnowflakeObjectParameters struct {
-	Name   string
-	IdType string
-	Level  sdk.ParameterType
-	// TODO [this PR]: can be removed?
-	AdditionalImports []string
-	Parameters        []SnowflakeParameter
+	Name       string
+	IdType     string
+	Level      sdk.ParameterType
+	Parameters []SnowflakeParameter
 }
 
 func (p SnowflakeObjectParameters) ObjectName() string {
@@ -96,8 +94,6 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.UserParameterWeekOfYearPolicy), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.UserParameterWeekStart), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},
-		// for the quickfix above
-		AdditionalImports: []string{"strings"},
 	},
 	{
 		Name:   "Warehouse",
@@ -197,8 +193,6 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.TaskParameterWeekOfYearPolicy), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.TaskParameterWeekStart), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},
-		// for the quickfix above
-		AdditionalImports: []string{"strings"},
 	},
 	{
 		Name:   "Account",
