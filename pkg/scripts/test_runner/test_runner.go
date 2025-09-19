@@ -101,7 +101,7 @@ func main() {
 
 	testResults := runTest(mappedTestType)
 	if err := processTestResults(mappedTestType, testWorkflowId, client, testResultsStageId, testResultsDirName, testResults); err != nil {
-		log.Fatal("Failed to processed the test results")
+		log.Fatalf("Failed to processed the test results, err = %s", err)
 	}
 
 	log.Println("Successfully processed test results")
