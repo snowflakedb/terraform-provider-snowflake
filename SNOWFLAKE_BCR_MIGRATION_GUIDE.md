@@ -32,19 +32,48 @@ To use the provider with the bundles containing this change:
 
 Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
 
-### `MFA_AUTHENTICATION_METHODS` property in authentication policies is now deprecated
+## [Bundle 2025_06](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06_bundle)
+
+### Changes in authentication policies
 <!-- TODO(SNOW-2187814): Update this entry. -->
 
 > [!IMPORTANT]
-> This change has been rolled back from the BCR 2025_04.
+> The [BCR-2086](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2086) change has been rolled back from the BCR 2025_04 and was moved to 2025_06.
 
 > [!IMPORTANT]
-> This change has not been addressed in the provider yet. This will be addressed in the next versions of the provider.
+> These change has not been addressed in the provider yet. They will be addressed in the next versions of the provider.
+> As a workaround, please use the [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
 
 The `MFA_AUTHENTICATION_METHODS` property is deprecated. Setting the `MFA_AUTHENTICATION_METHODS` property returns an error. If you use the [authentication_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) resource with `mfa_authentication_methods` field
 and have this bundle enabled, the provider will return an error.
+The new way of handling authentication methods is `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` which will be handled in this resource in the next versions.
 
-Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
+Additionally, the allowed values for `MFA_ENROLLMENT` are changed: `OPTIONAL` is removed and `REQUIRED_PASSWORD_ONLY` and `REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY` are added.
+
+
+Reference: [BCR-2086](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2086), [BCR-2097](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2097)
+
+### Snowflake OAuth authentication: Change in the network policy used for a request from client to Snowflake
+
+This change modifies the behavior of authentication with active network policies. Please verify that your network policy configuration allows connection by the provider after activating this change.
+
+Additionally, this change adds the possibility to assign network policies to External Oauth integrations.
+
+Setting the `network_policy` field in `external_oauth_integration` resource is not yet supported in the provider, and it will be handled in the future. As a workaround, please use the [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+
+Reference: [BCR-2094](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2094)
+
+### Snowpark Container Services job service: Retention-time increase
+
+In the provider, the job_service resource forces setting the `ASYNC` option.
+
+Before the change, Snowflake automatically deletes the job service 7 days after completion.
+
+After the change, Snowflake retains job services for 14 days after completion.
+
+In most cases, this change in Snowflake should have no effect on the provider. Optionally, you can manually drop the completed jobs.
+
+Reference: [BCR-2093](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2093)
 
 ## [Bundle 2025_05](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05_bundle)
 
