@@ -3,9 +3,6 @@ package sdk
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"slices"
-	"strings"
 	"time"
 )
 
@@ -45,11 +42,6 @@ type addProgrammaticAccessTokenResultDBRow struct {
 type AddProgrammaticAccessTokenResult struct {
 	TokenName   string
 	TokenSecret string
-}
-
-// Added manually.
-func (r *AddProgrammaticAccessTokenResult) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(r.TokenName)
 }
 
 // ModifyUserProgrammaticAccessTokenOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-user-modify-programmatic-access-token.
@@ -143,29 +135,6 @@ type ProgrammaticAccessToken struct {
 	RotatedTo                            *string
 }
 
-type ProgrammaticAccessTokenStatus string
-
-const (
-	ProgrammaticAccessTokenStatusActive   ProgrammaticAccessTokenStatus = "ACTIVE"
-	ProgrammaticAccessTokenStatusExpired  ProgrammaticAccessTokenStatus = "EXPIRED"
-	ProgrammaticAccessTokenStatusDisabled ProgrammaticAccessTokenStatus = "DISABLED"
-)
-
-var allProgrammaticAccessTokenStatuses = []ProgrammaticAccessTokenStatus{
-	ProgrammaticAccessTokenStatusActive,
-	ProgrammaticAccessTokenStatusExpired,
-	ProgrammaticAccessTokenStatusDisabled,
-}
-
-func toProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(allProgrammaticAccessTokenStatuses, ProgrammaticAccessTokenStatus(s)) {
-		return "", fmt.Errorf("invalid ProgrammaticAccessTokenStatus: %s", s)
-	}
-	return ProgrammaticAccessTokenStatus(s), nil
-}
-
-// Added manually.
-func (v *ProgrammaticAccessToken) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.Name)
+func (v *ProgrammaticAccessToken) ObjectType() ObjectType {
+	return ObjectTypeProgrammaticAccessToken
 }

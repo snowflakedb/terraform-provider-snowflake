@@ -6,7 +6,7 @@ import (
 
 //go:generate go run ./poc/main.go
 
-var ProgrammaticAccessTokenStatusDef = g.NewEnum("ProgrammaticAccessTokenStatus", "ACTIVE", "EXPIRED", "DISABLED").WithPlural("ProgrammaticAccessTokenStatuses")
+var ProgrammaticAccessTokenStatusDef = g.NewEnum("ProgrammaticAccessTokenStatus", "ProgrammaticAccessTokenStatuses", "ACTIVE", "EXPIRED", "DISABLED")
 
 var programmaticAccessTokenResultDBRowDef = g.DbStruct("programmaticAccessTokenResultDBRow").
 	Text("name").
