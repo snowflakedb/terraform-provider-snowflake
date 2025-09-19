@@ -130,17 +130,29 @@ func runTest(testType TestType) *bytes.Buffer {
 
 loop:
 	for {
-		if _, ok := <-doneChan; !ok && reader.Buffered() == 0 {
+		select {
+		case <-doneChan:
+			for reader.Buffered() != 0 {
+				// TODO: Try to unify with code below
+				var entry struct {
+					Output string `json:"Output"`
+				}
+				text, _ := reader.ReadBytes('\n')
+				_ = json.Unmarshal(text, &entry)
+				if entry.Output != "" {
+					fmt.Print(entry.Output)
+				}
+			}
 			break loop
-		}
-
-		var entry struct {
-			Output string `json:"Output"`
-		}
-		text, _ := reader.ReadBytes('\n')
-		_ = json.Unmarshal(text, &entry)
-		if entry.Output != "" {
-			fmt.Print(entry.Output)
+		default:
+			var entry struct {
+				Output string `json:"Output"`
+			}
+			text, _ := reader.ReadBytes('\n')
+			_ = json.Unmarshal(text, &entry)
+			if entry.Output != "" {
+				fmt.Print(entry.Output)
+			}
 		}
 	}
 
