@@ -176,13 +176,13 @@ func processTestResults(testType TestType, testWorkflowId string, client *sdk.Cl
 	// Create a temporary table for storing and transforming test results before inserting them into the final table
 	temporaryTableId := sdk.NewSchemaObjectIdentifier("TEST_RESULTS_DATABASE", "TEST_RESULTS_SCHEMA", fmt.Sprintf("TEST_RESULTS_TEMP_%s", testType))
 	if err := client.Tables.Create(context.Background(), sdk.NewCreateTableRequest(temporaryTableId, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("test_run_id", sdk.DataTypeVARCHAR),
-		*sdk.NewTableColumnRequest("test_type", sdk.DataTypeVARCHAR),
-		*sdk.NewTableColumnRequest("package_name", sdk.DataTypeVARCHAR),
-		*sdk.NewTableColumnRequest("test_name", sdk.DataTypeVARCHAR),
-		*sdk.NewTableColumnRequest("action", sdk.DataTypeVARCHAR),
-		*sdk.NewTableColumnRequest("elapsed", sdk.DataTypeFloat),
-		*sdk.NewTableColumnRequest("finished_at", sdk.DataTypeTimestampNTZ),
+		*sdk.NewTableColumnRequest("TEST_RUN_ID", sdk.DataTypeVARCHAR),
+		*sdk.NewTableColumnRequest("TEST_TYPE", sdk.DataTypeVARCHAR),
+		*sdk.NewTableColumnRequest("PACKAGE_NAME", sdk.DataTypeVARCHAR),
+		*sdk.NewTableColumnRequest("TEST_NAME", sdk.DataTypeVARCHAR),
+		*sdk.NewTableColumnRequest("ACTION", sdk.DataTypeVARCHAR),
+		*sdk.NewTableColumnRequest("ELAPSED", sdk.DataTypeFloat),
+		*sdk.NewTableColumnRequest("FINISHED_AT", sdk.DataTypeTimestampNTZ),
 	}).WithKind(sdk.Pointer(sdk.TemporaryTableKind))); err != nil {
 		return fmt.Errorf("failed to create temporary table for test results, err = %w", err)
 	}
@@ -212,6 +212,10 @@ func processTestResults(testType TestType, testWorkflowId string, client *sdk.Cl
 func stageTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsDirName string, testResults *bytes.Buffer) (sdk.Location, error) {
 	fileName := fmt.Sprintf("%s_test_%s_output.json", testWorkflowId, testType)
 	testResultsFilePath := testResultsDirName + "/" + fileName
+
+	if err := os.MkdirAll(testResultsDirName, os.ModePerm); err != nil {
+		return nil, fmt.Errorf("failed to create test results directory %s, err = %w", testResultsDirName, err)
+	}
 
 	file, err := os.Create(testResultsFilePath)
 	if err != nil {
