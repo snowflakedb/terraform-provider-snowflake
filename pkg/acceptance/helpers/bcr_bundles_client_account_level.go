@@ -17,10 +17,10 @@ func (c *BcrBundlesClient) EnableBcrBundle(t *testing.T, name string) {
 	t.Helper()
 	ctx := context.Background()
 
-	bundle := c.getBcrInfo(t, name)
 	err := c.client().EnableBehaviorChangeBundle(ctx, name)
 	require.NoError(t, err)
 
+	bundle := c.getBcrInfo(t, name)
 	if !bundle.IsDefault {
 		t.Cleanup(c.DisableBcrBundleFunc(t, name))
 	}
@@ -32,10 +32,10 @@ func (c *BcrBundlesClient) DisableBcrBundle(t *testing.T, name string) {
 	t.Helper()
 	ctx := context.Background()
 
-	bundle := c.getBcrInfo(t, name)
 	err := c.client().DisableBehaviorChangeBundle(ctx, name)
 	require.NoError(t, err)
 
+	bundle := c.getBcrInfo(t, name)
 	if bundle.IsDefault {
 		t.Cleanup(c.EnableBcrBundleFunc(t, name))
 	}
@@ -73,5 +73,5 @@ func (c *BcrBundlesClient) getBcrInfo(t *testing.T, name string) sdk.BehaviorCha
 	})
 	require.NoError(t, err)
 
-	return info
+	return *info
 }

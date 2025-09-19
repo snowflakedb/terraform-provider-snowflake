@@ -17,10 +17,10 @@ import (
 // 4. In this test we don't want to assert the bundle names as they may change. So, we simply assert that they are not empty.
 // 5. After each test, we clean up the bundle state by enabling the first bundle and disabling the second bundle.
 func TestInt_BcrBundles_AccountLevel(t *testing.T) {
-	client := testClient(t)
+	client := testSecondaryClient(t)
 	ctx := testContext(t)
 
-	bundles := testClientHelper().BcrBundles.ShowActiveBundles(t)
+	bundles := secondaryTestClientHelper().BcrBundles.ShowActiveBundles(t)
 	require.Len(t, bundles, 2)
 
 	t.Run("show active bundles", func(t *testing.T) {
@@ -38,16 +38,16 @@ func TestInt_BcrBundles_AccountLevel(t *testing.T) {
 	t.Run("enable a valid bundle", func(t *testing.T) {
 		err := client.SystemFunctions.EnableBehaviorChangeBundle(ctx, bundles[1].Name)
 		require.NoError(t, err)
-		t.Cleanup(testClientHelper().BcrBundles.DisableBcrBundleFunc(t, bundles[1].Name))
-		status := testClientHelper().BcrBundles.BehaviorChangeBundleStatus(t, bundles[1].Name)
+		t.Cleanup(secondaryTestClientHelper().BcrBundles.DisableBcrBundleFunc(t, bundles[1].Name))
+		status := secondaryTestClientHelper().BcrBundles.BehaviorChangeBundleStatus(t, bundles[1].Name)
 		require.Equal(t, sdk.BehaviorChangeBundleStatusEnabled, status)
 	})
 
 	t.Run("disable a valid bundle", func(t *testing.T) {
-		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, bundles[1].Name)
+		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, bundles[0].Name)
 		require.NoError(t, err)
-		t.Cleanup(testClientHelper().BcrBundles.EnableBcrBundleFunc(t, bundles[1].Name))
-		status := testClientHelper().BcrBundles.BehaviorChangeBundleStatus(t, bundles[1].Name)
+		t.Cleanup(secondaryTestClientHelper().BcrBundles.EnableBcrBundleFunc(t, bundles[0].Name))
+		status := secondaryTestClientHelper().BcrBundles.BehaviorChangeBundleStatus(t, bundles[0].Name)
 		require.Equal(t, sdk.BehaviorChangeBundleStatusDisabled, status)
 	})
 
