@@ -14,16 +14,16 @@ const (
 	ProgrammaticAccessTokenStatusDisabled ProgrammaticAccessTokenStatus = "DISABLED"
 )
 
-var allProgrammaticAccessTokenStatuses = []ProgrammaticAccessTokenStatus{
+var AllProgrammaticAccessTokenStatuses = []ProgrammaticAccessTokenStatus{
 	ProgrammaticAccessTokenStatusActive,
 	ProgrammaticAccessTokenStatusExpired,
 	ProgrammaticAccessTokenStatusDisabled,
 }
 
-func toProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, error) {
+func ToProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(allProgrammaticAccessTokenStatuses, ProgrammaticAccessTokenStatus(s)) {
-		return "", fmt.Errorf("invalid programmatic access token status: %s", s)
+	if !slices.Contains(AllProgrammaticAccessTokenStatuses, ProgrammaticAccessTokenStatus(s)) {
+		return "", fmt.Errorf("invalid ProgrammaticAccessTokenStatus: %s", s)
 	}
 	return ProgrammaticAccessTokenStatus(s), nil
 }
