@@ -12,14 +12,12 @@ import (
 const name = "resource parameter assertions"
 const version = "0.1.0"
 
-// TODO [this PR]: imports?
-//  - "testing"
-//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-
 func main() {
 	genhelpers.NewGenerator(
-		genhelpers.NewPreambleModel(name, version),
+		genhelpers.NewPreambleModel(name, version).
+			WithImport("testing").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"),
 		objectparametersassertgen.GetAllSnowflakeObjectParameters,
 		gen.ModelFromSnowflakeObjectParameters,
 		getFilename,
