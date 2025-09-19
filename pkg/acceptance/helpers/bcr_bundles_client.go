@@ -22,42 +22,22 @@ func (c *BcrBundlesClient) client() sdk.SystemFunctions {
 	return c.context.client.SystemFunctions
 }
 
-func (c *BcrBundlesClient) EnableBcrBundle(t *testing.T, name string) {
+func (c *BcrBundlesClient) ShowActiveBundles(t *testing.T) []sdk.BehaviorChangeBundleInfo {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().EnableBehaviorChangeBundle(ctx, name)
+	bundles, err := c.client().ShowActiveBehaviorChangeBundles(ctx)
 	require.NoError(t, err)
 
-	t.Cleanup(c.disableBcrBundleFunc(t, name))
+	return bundles
 }
 
-func (c *BcrBundlesClient) DisableBcrBundle(t *testing.T, name string) {
+func (c *BcrBundlesClient) BehaviorChangeBundleStatus(t *testing.T, bundle string) sdk.BehaviorChangeBundleStatus {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().DisableBehaviorChangeBundle(ctx, name)
+	status, err := c.client().BehaviorChangeBundleStatus(ctx, bundle)
 	require.NoError(t, err)
 
-	t.Cleanup(c.enableBcrBundleFunc(t, name))
-}
-
-func (c *BcrBundlesClient) disableBcrBundleFunc(t *testing.T, name string) func() {
-	t.Helper()
-	ctx := context.Background()
-
-	return func() {
-		err := c.client().DisableBehaviorChangeBundle(ctx, name)
-		require.NoError(t, err)
-	}
-}
-
-func (c *BcrBundlesClient) enableBcrBundleFunc(t *testing.T, name string) func() {
-	t.Helper()
-	ctx := context.Background()
-
-	return func() {
-		err := c.client().EnableBehaviorChangeBundle(ctx, name)
-		require.NoError(t, err)
-	}
+	return status
 }

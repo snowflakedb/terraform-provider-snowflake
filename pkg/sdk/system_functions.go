@@ -19,6 +19,8 @@ type SystemFunctions interface {
 	PipeForceResume(pipeId SchemaObjectIdentifier, options []ForceResumePipeOption) error
 	EnableBehaviorChangeBundle(ctx context.Context, bundle string) error
 	DisableBehaviorChangeBundle(ctx context.Context, bundle string) error
+	ShowActiveBehaviorChangeBundles(ctx context.Context) ([]BehaviorChangeBundleInfo, error)
+	BehaviorChangeBundleStatus(ctx context.Context, bundle string) (BehaviorChangeBundleStatus, error)
 }
 
 var _ SystemFunctions = (*systemFunctions)(nil)
@@ -138,4 +140,61 @@ func (c *systemFunctions) EnableBehaviorChangeBundle(ctx context.Context, bundle
 func (c *systemFunctions) DisableBehaviorChangeBundle(ctx context.Context, bundle string) error {
 	_, err := c.client.exec(ctx, fmt.Sprintf("SELECT SYSTEM$DISABLE_BEHAVIOR_CHANGE_BUNDLE('%s')", bundle))
 	return err
+}
+
+type BehaviorChangeBundleInfo struct {
+	Name      string `json:"name"`
+	IsDefault bool   `json:"isDefault"`
+	IsEnabled bool   `json:"isEnabled"`
+}
+
+func (c *systemFunctions) ShowActiveBehaviorChangeBundles(ctx context.Context) ([]BehaviorChangeBundleInfo, error) {
+	row := &struct {
+		BundlesRaw string `db:"BUNDLES"`
+	}{}
+	sql := `SELECT SYSTEM$SHOW_ACTIVE_BEHAVIOR_CHANGE_BUNDLES() AS "BUNDLES"`
+	err := c.client.queryOne(ctx, row, sql)
+	if err != nil {
+		return nil, err
+	}
+	var bundles []BehaviorChangeBundleInfo
+	err = json.Unmarshal([]byte(row.BundlesRaw), &bundles)
+	if err != nil {
+		return nil, err
+	}
+	return bundles, nil
+}
+
+type BehaviorChangeBundleStatus string
+
+const (
+	BehaviorChangeBundleStatusEnabled  BehaviorChangeBundleStatus = "ENABLED"
+	BehaviorChangeBundleStatusDisabled BehaviorChangeBundleStatus = "DISABLED"
+	BehaviorChangeBundleStatusReleased BehaviorChangeBundleStatus = "RELEASED"
+)
+
+var allBehaviorChangeBundleStatuses = []BehaviorChangeBundleStatus{
+	BehaviorChangeBundleStatusEnabled,
+	BehaviorChangeBundleStatusDisabled,
+	BehaviorChangeBundleStatusReleased,
+}
+
+func ToBehaviorChangeBundleStatus(s string) (BehaviorChangeBundleStatus, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(allBehaviorChangeBundleStatuses, BehaviorChangeBundleStatus(s)) {
+		return "", fmt.Errorf("invalid behavior change bundle status: %s", s)
+	}
+	return BehaviorChangeBundleStatus(s), nil
+}
+
+func (c *systemFunctions) BehaviorChangeBundleStatus(ctx context.Context, bundle string) (BehaviorChangeBundleStatus, error) {
+	row := &struct {
+		StatusRaw string `db:"STATUS"`
+	}{}
+	sql := fmt.Sprintf(`SELECT SYSTEM$BEHAVIOR_CHANGE_BUNDLE_STATUS('%s') AS "STATUS"`, bundle)
+	err := c.client.queryOne(ctx, row, sql)
+	if err != nil {
+		return "", err
+	}
+	return ToBehaviorChangeBundleStatus(row.StatusRaw)
 }
