@@ -10,16 +10,15 @@ import (
 const name = "object assertions"
 const version = "0.1.0"
 
-// TODO [this PR]: imports?
-//  - "fmt"
-//  - "testing"
-//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-//  - "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-
 func main() {
 	genhelpers.NewGenerator(
-		genhelpers.NewPreambleModel(name, version),
+		genhelpers.NewPreambleModel(name, version).
+			WithImport("fmt").
+			WithImport("testing").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"),
 		gen.GetSdkObjectDetails,
 		gen.ModelFromSdkObjectDetails,
 		getFilename,
