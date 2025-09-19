@@ -40,7 +40,7 @@ type Interface struct {
 	Operations []*Operation
 	// IdentifierKind keeps identifier of the underlying object (e.g. DatabaseObjectIdentifier)
 	IdentifierKind string
-	// Enums contains all enum definitions for this operation
+	// Enums contains all enum definitions for this operation group.
 	Enums []*Enum
 
 	*genhelpers.PreambleModel
