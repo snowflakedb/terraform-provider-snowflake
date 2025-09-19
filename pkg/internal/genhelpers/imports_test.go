@@ -8,19 +8,8 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-// TODO [this PR]: extract common setup for easier test writing
+// TODO [next PR - SNOW-2324252]: extract common setup, template for easier test writing
 func Test_ExperimentWithImportsProcess(t *testing.T) {
-	// TODO [this PR]: use these opts in dedicated tests
-	opts := &imports.Options{
-		Fragment:   false,
-		AllErrors:  true,
-		Comments:   true,
-		TabIndent:  true,
-		TabWidth:   4,
-		FormatOnly: false,
-	}
-	_ = opts
-
 	t.Run("add standard imports", func(t *testing.T) {
 		src := []byte(`package somepackagename
 
