@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-var _ convertibleRow[Table] = new(tableDBRow)
-
 // TODO [SNOW-1007542]: add missing features:
 // - show columns (https://docs.snowflake.com/en/sql-reference/sql/show-columns)
 // - show primary keys (https://docs.snowflake.com/en/sql-reference/sql/show-primary-keys)
@@ -595,7 +593,7 @@ func splitClusterBy(statementWithoutLinear string) []string {
 	return keysClean
 }
 
-func (row tableDBRow) convert() *Table {
+func (row tableDBRow) convert() (*Table, error) {
 	table := Table{
 		CreatedOn:    row.CreatedOn,
 		Name:         row.Name,
@@ -652,7 +650,7 @@ func (row tableDBRow) convert() *Table {
 	if row.Budget.Valid {
 		table.Budget = String(row.Budget.String)
 	}
-	return &table
+	return &table, nil
 }
 
 func (v *Table) ID() SchemaObjectIdentifier {
@@ -702,7 +700,7 @@ type tableColumnDetailsRow struct {
 	SchemaEvolutionRecord sql.NullString `db:"schema evolution record"`
 }
 
-func (r tableColumnDetailsRow) convert() *TableColumnDetails {
+func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
 	type_, collation := r.splitTypeAndCollation()
 
 	details := &TableColumnDetails{
@@ -732,7 +730,7 @@ func (r tableColumnDetailsRow) convert() *TableColumnDetails {
 	if r.SchemaEvolutionRecord.Valid {
 		details.SchemaEvolutionRecord = String(r.SchemaEvolutionRecord.String)
 	}
-	return details
+	return details, nil
 }
 
 func (r tableColumnDetailsRow) splitTypeAndCollation() (DataType, *string) {
@@ -769,12 +767,12 @@ type tableStageDetailsRow struct {
 	PropertyDefault string `db:"property_default"`
 }
 
-func (r tableStageDetailsRow) convert() *TableStageDetails {
+func (r tableStageDetailsRow) convert() (*TableStageDetails, error) {
 	return &TableStageDetails{
 		ParentProperty:  r.ParentProperty,
 		Property:        r.Property,
 		PropertyType:    r.PropertyType,
 		PropertyValue:   r.PropertyValue,
 		PropertyDefault: r.PropertyDefault,
-	}
+	}, nil
 }

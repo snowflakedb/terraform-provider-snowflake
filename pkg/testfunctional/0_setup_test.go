@@ -17,19 +17,15 @@ func TestMain(m *testing.M) {
 }
 
 func execute(m *testing.M) int {
-	setup()
-	exitVal := m.Run()
-	return exitVal
-}
-
-func setup() {
-	functionalTestLog.Printf("[INFO] Running functional tests setup")
-
+	defer cleanup()
+	functionalTestLog.Printf("[INFO] Setting up functional tests")
 	err := initialize()
 	if err != nil {
-		functionalTestLog.Printf("[ERROR] Functional tests context initialization failed with: `%s`", err)
-		os.Exit(1)
+		functionalTestLog.Printf("[ERROR] Functional tests setup failed with: `%s`", err)
+		return 1
 	}
+	exitVal := m.Run()
+	return exitVal
 }
 
 func initialize() error {
@@ -47,5 +43,17 @@ func initialize() error {
 		return fmt.Errorf("cannot set up test providers for the functional tests, err: %w", err)
 	}
 
+	if err := setUpTestHttpServer(); err != nil {
+		return fmt.Errorf("cannot set up test http server for the functional tests, err: %w", err)
+	}
+
 	return nil
+}
+
+func cleanup() {
+	functionalTestLog.Printf("[INFO] Running functional tests cleanup")
+
+	if serverCleanup != nil {
+		defer serverCleanup()
+	}
 }

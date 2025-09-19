@@ -23,10 +23,12 @@ const (
 	CortexSearchServicesDatasource                feature = "snowflake_cortex_search_services_datasource"
 	CurrentAccountResource                        feature = "snowflake_current_account_resource"
 	CurrentAccountDatasource                      feature = "snowflake_current_account_datasource"
+	CurrentOrganizationAccountResource            feature = "snowflake_current_organization_account_resource"
 	DatabaseDatasource                            feature = "snowflake_database_datasource"
 	DatabaseRoleDatasource                        feature = "snowflake_database_role_datasource"
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
 	DynamicTablesDatasource                       feature = "snowflake_dynamic_tables_datasource"
+	EmailNotificationIntegrationResource          feature = "snowflake_email_notification_integration_resource"
 	ExternalFunctionResource                      feature = "snowflake_external_function_resource"
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
@@ -47,12 +49,12 @@ const (
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	JobServiceResource                            feature = "snowflake_job_service_resource"
+	ListingResource                               feature = "snowflake_listing_resource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
-	EmailNotificationIntegrationResource          feature = "snowflake_email_notification_integration_resource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
@@ -87,6 +89,8 @@ const (
 	UserAuthenticationPolicyAttachmentResource    feature = "snowflake_user_authentication_policy_attachment_resource"
 	UserPublicKeysResource                        feature = "snowflake_user_public_keys_resource"
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
+	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
+	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
 )
 
 var allPreviewFeatures = []feature{
@@ -102,6 +106,7 @@ var allPreviewFeatures = []feature{
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
 	CurrentAccountDatasource,
+	CurrentOrganizationAccountResource,
 	DatabaseDatasource,
 	DatabaseRoleDatasource,
 	DynamicTableResource,
@@ -126,6 +131,7 @@ var allPreviewFeatures = []feature{
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
 	JobServiceResource,
+	ListingResource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
@@ -166,6 +172,8 @@ var allPreviewFeatures = []feature{
 	UserAuthenticationPolicyAttachmentResource,
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+	UserProgrammaticAccessTokenResource,
+	UserProgrammaticAccessTokensDatasource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 

@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -53,18 +56,11 @@ var secondaryConnectionSchema = map[string]*schema.Schema{
 }
 
 func SecondaryConnection() *schema.Resource {
-	deleteFunc := ResourceDeleteContextFunc(
-		sdk.ParseAccountObjectIdentifier,
-		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-			return client.Connections.DropSafely
-		},
-	)
-
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.SecondaryConnection, CreateContextSecondaryConnection),
 		ReadContext:   TrackingReadWrapper(resources.SecondaryConnection, ReadContextSecondaryConnection),
 		UpdateContext: TrackingUpdateWrapper(resources.SecondaryConnection, UpdateContextSecondaryConnection),
-		DeleteContext: TrackingDeleteWrapper(resources.SecondaryConnection, deleteFunc),
+		DeleteContext: TrackingDeleteWrapper(resources.SecondaryConnection, DeleteConnection),
 		Description:   "Resource used to manage secondary (replicated) connections. To manage primary connection check resource [snowflake_primary_connection](./primary_connection). For more information, check [connection documentation](https://docs.snowflake.com/en/sql-reference/sql/create-connection.html).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SecondaryConnection, customdiff.All(
@@ -102,8 +98,15 @@ func CreateContextSecondaryConnection(ctx context.Context, d *schema.ResourceDat
 		request.WithComment(v.(string))
 	}
 
-	err = client.Connections.Create(ctx, request)
-	if err != nil {
+	if err := util.Retry(5, 2*time.Second, func() (error, bool) {
+		if err := client.Connections.Create(ctx, request); err != nil {
+			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) || strings.Contains(err.Error(), "This account is not authorized to create a secondary connection of this primary connection.") {
+				return nil, false
+			}
+			return err, true
+		}
+		return nil, true
+	}); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -145,7 +148,7 @@ func ReadContextSecondaryConnection(ctx context.Context, d *schema.ResourceData,
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ConnectionToSchema(connection)}),
 		d.Set("comment", connection.Comment),
-		d.Set("as_replica_of", connection.Primary),
+		d.Set("as_replica_of", connection.Primary.FullyQualifiedName()),
 	))
 }
 

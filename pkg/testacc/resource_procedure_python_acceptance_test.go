@@ -45,7 +45,6 @@ func TestAcc_ProcedurePython_InlineBasic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedurePython),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -183,7 +182,6 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedurePython),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -294,7 +292,6 @@ func TestAcc_ProcedurePython_ImportsDiffSuppression(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedurePython),
 		Steps: []resource.TestStep{
 			{
@@ -391,7 +388,6 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedurePython),
 		Steps: []resource.TestStep{
 			{

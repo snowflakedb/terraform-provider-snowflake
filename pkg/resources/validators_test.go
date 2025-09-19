@@ -152,3 +152,43 @@ func Test_isNotEqualTo(t *testing.T) {
 		})
 	}
 }
+
+func Test_IsValidListingName(t *testing.T) {
+	testCases := []struct {
+		ListingName string
+	}{
+		{"listing"},
+		{"\"listing\""},
+		{"listing_name"},
+		{"listing_name_123"},
+		{"LISTING_NAME_123"},
+	}
+
+	invalidCases := []struct {
+		ListingName string
+	}{
+		{"_invalid"},
+		{"_INVALID"},
+		{"1_invalid"},
+		{"*_invalid"},
+		{" _invalid"},
+		{"invalid_name()"},
+		{"INVALID_NAME()"},
+		{"invalid name"},
+		{"INVALID NAME"},
+	}
+
+	for _, tt := range testCases {
+		t.Run(fmt.Sprintf("valid name: %s", tt.ListingName), func(t *testing.T) {
+			diag := IsValidListingName(tt.ListingName, cty.IndexStringPath("path"))
+			assert.False(t, diag.HasError())
+		})
+	}
+
+	for _, tt := range invalidCases {
+		t.Run(fmt.Sprintf("invalid name: %s", tt.ListingName), func(t *testing.T) {
+			diag := IsValidListingName(tt.ListingName, cty.IndexStringPath("path"))
+			assert.True(t, diag.HasError())
+		})
+	}
+}

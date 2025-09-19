@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ StorageIntegrations = (*storageIntegrations)(nil)
+var (
+	_ StorageIntegrations                        = (*storageIntegrations)(nil)
+	_ convertibleRow[StorageIntegrationProperty] = new(descStorageIntegrationsDbRow)
+	_ convertibleRow[StorageIntegration]         = new(showStorageIntegrationsDbRow)
+)
 
 type storageIntegrations struct {
 	client *Client
@@ -37,8 +41,7 @@ func (v *storageIntegrations) Show(ctx context.Context, request *ShowStorageInte
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showStorageIntegrationsDbRow, StorageIntegration](dbRows)
-	return resultList, nil
+	return convertRows[showStorageIntegrationsDbRow, StorageIntegration](dbRows)
 }
 
 func (v *storageIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error) {
@@ -63,7 +66,7 @@ func (v *storageIntegrations) Describe(ctx context.Context, id AccountObjectIden
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[descStorageIntegrationsDbRow, StorageIntegrationProperty](rows), nil
+	return convertRows[descStorageIntegrationsDbRow, StorageIntegrationProperty](rows)
 }
 
 func (r *CreateStorageIntegrationRequest) toOpts() *CreateStorageIntegrationOptions {
@@ -79,9 +82,10 @@ func (r *CreateStorageIntegrationRequest) toOpts() *CreateStorageIntegrationOpti
 	}
 	if r.S3StorageProviderParams != nil {
 		opts.S3StorageProviderParams = &S3StorageParams{
-			Protocol:            r.S3StorageProviderParams.Protocol,
-			StorageAwsRoleArn:   r.S3StorageProviderParams.StorageAwsRoleArn,
-			StorageAwsObjectAcl: r.S3StorageProviderParams.StorageAwsObjectAcl,
+			Protocol:             r.S3StorageProviderParams.Protocol,
+			StorageAwsRoleArn:    r.S3StorageProviderParams.StorageAwsRoleArn,
+			StorageAwsExternalId: r.S3StorageProviderParams.StorageAwsExternalId,
+			StorageAwsObjectAcl:  r.S3StorageProviderParams.StorageAwsObjectAcl,
 		}
 	}
 	if r.GCSStorageProviderParams != nil {
@@ -112,8 +116,9 @@ func (r *AlterStorageIntegrationRequest) toOpts() *AlterStorageIntegrationOption
 		}
 		if r.Set.S3Params != nil {
 			opts.Set.S3Params = &SetS3StorageParams{
-				StorageAwsRoleArn:   r.Set.S3Params.StorageAwsRoleArn,
-				StorageAwsObjectAcl: r.Set.S3Params.StorageAwsObjectAcl,
+				StorageAwsRoleArn:    r.Set.S3Params.StorageAwsRoleArn,
+				StorageAwsExternalId: r.Set.S3Params.StorageAwsExternalId,
+				StorageAwsObjectAcl:  r.Set.S3Params.StorageAwsObjectAcl,
 			}
 		}
 		if r.Set.AzureParams != nil {
@@ -124,6 +129,7 @@ func (r *AlterStorageIntegrationRequest) toOpts() *AlterStorageIntegrationOption
 	}
 	if r.Unset != nil {
 		opts.Unset = &StorageIntegrationUnset{
+			StorageAwsExternalId:    r.Unset.StorageAwsExternalId,
 			StorageAwsObjectAcl:     r.Unset.StorageAwsObjectAcl,
 			Enabled:                 r.Unset.Enabled,
 			StorageBlockedLocations: r.Unset.StorageBlockedLocations,
@@ -148,7 +154,7 @@ func (r *ShowStorageIntegrationRequest) toOpts() *ShowStorageIntegrationOptions 
 	return opts
 }
 
-func (r showStorageIntegrationsDbRow) convert() *StorageIntegration {
+func (r showStorageIntegrationsDbRow) convert() (*StorageIntegration, error) {
 	s := &StorageIntegration{
 		Name:        r.Name,
 		StorageType: r.Type,
@@ -159,7 +165,7 @@ func (r showStorageIntegrationsDbRow) convert() *StorageIntegration {
 	if r.Comment.Valid {
 		s.Comment = r.Comment.String
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeStorageIntegrationRequest) toOpts() *DescribeStorageIntegrationOptions {
@@ -169,11 +175,11 @@ func (r *DescribeStorageIntegrationRequest) toOpts() *DescribeStorageIntegration
 	return opts
 }
 
-func (r descStorageIntegrationsDbRow) convert() *StorageIntegrationProperty {
+func (r descStorageIntegrationsDbRow) convert() (*StorageIntegrationProperty, error) {
 	return &StorageIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }

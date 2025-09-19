@@ -138,8 +138,12 @@ find a better solution to solve the issue (add more logic to the templates ?)
 - add empty ids in generated tests (TODO in random_test.go)
 - add optional imports (currently they have to be added manually, e.g. `datatypes.DataType`)
 - handle objects that do not have ids
+  - ShowById should take more customizable attributes, instead of only object ID
+  - Add a possibility to generate a non-sql method with a custom implementation. Currently, it is done only in `ShowById...` functions with `newNoSqlOperation`.
 - improve handling operations that return one row
 - add more context to validated identifiers, so that error contains the affected field
+- add custom identifier wrapping, like it's used in security integrations' network policies
+- Generate nested Request structs for fields that use slices of Opt objects (see the following fields Create operation in semantic_view.def: LogicalTables, semanticViewRelationships, etc.)
 
 ##### Known issues
 - generating two converts when Show and Desc use the same data structure

@@ -12,6 +12,8 @@ description: |-
 
 ~> **Note** When granting privileges on applications (for example, the default "SNOWFLAKE" application) use `on_account_object.object_type = "DATABASE"` instead.
 
+~> **Note** When using `IMPORTED PRIVILEGES` privilege, the `with_grant_option` field is not supported. Additionally, when the `IMPORTED PRIVILEGES` privilege is not set in the config, and it is granted externally, this change is not detected because of Snowflake limitations. Also, granting individual privileges on imported database is not allowed, this is a Snowflake limitation. Use `IMPORTED PRIVILEGES` instead.
+
 ~> **Note** Please, follow the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-considerations) for best practices on access control. The provider does not enforce any specific methodology, so it is essential for users to choose the appropriate strategy for seamless privilege management. Additionally, refer to [this link](https://docs.snowflake.com/en/user-guide/security-access-control-privileges) for a list of all available privileges in Snowflake.
 
 # snowflake_grant_privileges_to_account_role (Resource)
@@ -292,7 +294,7 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 Required:
 
 - `object_name` (String) The fully qualified name of the object on which privileges will be granted.
-- `object_type` (String) The object type of the account object on which privileges will be granted. Valid values are: USER | RESOURCE MONITOR | WAREHOUSE | COMPUTE POOL | DATABASE | INTEGRATION | FAILOVER GROUP | REPLICATION GROUP | EXTERNAL VOLUME
+- `object_type` (String) The object type of the account object on which privileges will be granted. Valid values are: `USER` | `RESOURCE MONITOR` | `WAREHOUSE` | `COMPUTE POOL` | `DATABASE` | `INTEGRATION` | `FAILOVER GROUP` | `REPLICATION GROUP` | `EXTERNAL VOLUME`
 
 
 <a id="nestedblock--on_schema"></a>

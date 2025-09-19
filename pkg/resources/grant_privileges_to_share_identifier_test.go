@@ -226,3 +226,63 @@ func TestGrantPrivilegesToShareIdString(t *testing.T) {
 		})
 	}
 }
+
+func TestIsGrantedOnEquivalent(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Expected sdk.ObjectType
+		Actual   sdk.ObjectType
+		Result   bool
+	}{
+		{
+			Name:     "identical types",
+			Expected: sdk.ObjectTypeTable,
+			Actual:   sdk.ObjectTypeTable,
+			Result:   true,
+		},
+		{
+			Name:     "table vs external table",
+			Expected: sdk.ObjectTypeTable,
+			Actual:   sdk.ObjectTypeExternalTable,
+			Result:   true,
+		},
+		{
+			Name:     "table vs dynamic table",
+			Expected: sdk.ObjectTypeTable,
+			Actual:   sdk.ObjectTypeDynamicTable,
+			Result:   true,
+		},
+		{
+			Name:     "table vs iceberg table",
+			Expected: sdk.ObjectTypeTable,
+			Actual:   sdk.ObjectTypeIcebergTable,
+			Result:   true,
+		},
+		{
+			Name:     "external table vs table - not equivalent (expected is not TABLE)",
+			Expected: sdk.ObjectTypeExternalTable,
+			Actual:   sdk.ObjectTypeTable,
+			Result:   false,
+		},
+		{
+			Name:     "different base types",
+			Expected: sdk.ObjectTypeTable,
+			Actual:   sdk.ObjectTypeView,
+			Result:   false,
+		},
+		{
+			Name:     "view vs table",
+			Expected: sdk.ObjectTypeView,
+			Actual:   sdk.ObjectTypeTable,
+			Result:   false,
+		},
+	}
+
+	for _, tt := range testCases {
+		tt := tt
+		t.Run(tt.Name, func(t *testing.T) {
+			result := isGrantedOnEquivalent(tt.Expected, tt.Actual)
+			assert.Equal(t, tt.Result, result)
+		})
+	}
+}

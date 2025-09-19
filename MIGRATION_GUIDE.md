@@ -17,9 +17,332 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > - focus on changes to authentication to make sure your provider is set up correctly in the newest version;
 > - check changes to resource schemas; if in doubt, you can always simplify the resource and let the terraform figure out the changes (you can use plan output to make the configuration appropriate);
 > - reimport your infrastructure using the target provider version, preferably in smaller chunks (or experiment with 1-2 resources of each type first).
+>
+> What should be considered an ancient version?
+> The rule of thumb should be: if you are on ~0.85.0 (or close so that you can bump to it), you can follow this guide step by step. If you are on a lower version, import your infrastructure into config using the newest version.
 
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
+
+## v2.6.x ➞ v2.7.0
+
+### *(new feature)* Added support for generation 2 Standard warehouses and resource constraints for Snowpark-optimized warehouses
+
+Snowflake offers support for generation 2 standard warehouses (read [documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2)) and resource constraints for Snowpark-optimized warehouses.
+
+The provider did not support these features in previous versions. In this version, we added two fields: generation and resource_constraint. We decided to split resource_constraint in SHOW into two fields:
+- `resource_constraint` - handling a subset of possible values designated for Snowpark-optimized warehouses,
+- `generation` - handling the warehouse generation-related values for Standard warehouses.
+The split aligns with the current work of making the generation its own first-class property.
+We can't share more details at the moment, and we will add them when the changes are released on the Snowflake side.
+These fields are available as optional configurable attributes and as read-only attributes in `show_output`.
+
+The state is upgraded automatically. You can optionally update your configurations by explicitly setting the warehouse `type`, `generation`, or `resource_constraint`.
+
+References: [#3258](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3258)
+
+### *(tool)* Added a grant migration script
+
+As we have recently published in [this section of the new roadmap entry](./ROADMAP.md#migration),
+we have prepared example script that could be used with the grants' migration.
+The tool turned out to be a bit different from what we announced in our [roadmap entry](./ROADMAP.md#grants-migration);
+it generates the necessary Terraform resources and import statements based on the Snowflake output.
+The main idea is the same though: simplify the migration from the deprecated grant resources to the new ones.
+This should streamline your grants' migration process and support upgrades to newer provider versions,
+as we focus on increasing adoption of GA+ releases (`>= v2.0.0`).
+
+The script was provided to give an idea how the migration process can be automated, and, for now, is not meant to be a standalone product.
+It is not officially supported, and we do not prioritize fixes for it.
+Feel free to use it as a starting point and modify it to fit your specific needs.
+
+This script is designed to be extendable and not to be limited to grant-related resources only.
+It can be used for both one-time migrations from deprecated resources to the new ones, but also importing existing objects into Terraform state.
+We are open to contributions to enhance its functionality.
+
+Currently, the script supports only a few grant resources, namely:
+- `snowflake_grant_privileges_to_account_role`
+- `snowflake_grant_privileges_to_database_role`
+- `snowflake_grant_account_role`
+- `snowflake_grant_database_role`
+
+With the following limitations:
+- grants on `future` or on `all` objects are not supported
+- `all_privileges` and `always_apply` fields are not supported
+
+You can find the script and its documentation in our [repository](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/scripts/migration_script).
+
+References: [#2707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2707)
+
+### *(bugfix)* Fixed diff suppress for sets of identifiers
+A number of resources have fields, like the `after` field in `snowflake_task`, containing a set of references to other objects (their identifiers). These fields run a custom function to correctly suppress diffs for quoting, and case. Before, when the set in state was `null`, this function could panic.
+
+For example, in the following configuration:
+```terraform
+resource "snowflake_task" "parent" {
+  database      = "DB"
+  schema        = "PUBLIC"
+  warehouse     = "SNOWFLAKE"
+  name          = "TERRAFORM_PARENT_TASK"
+  sql_statement = "select 1"
+  started       = false
+  schedule {
+    using_cron = "0 9 * * * UTC"
+  }
+}
+
+resource "snowflake_task" "child" {
+  database      = "DB"
+  schema        = "PUBLIC"
+  warehouse     = "SNOWFLAKE"
+  name          = "TERRAFORM_CHILD_TASK"
+  sql_statement = "select 1"
+  started       = false
+
+  #   after = [snowflake_task.parent.fully_qualified_name] #<-------------------------- this is commented
+}
+```
+After uncommenting the `after` field in the child resource and running `terraform plan -refresh=false`, the provider panicked with the following message:
+```
+Planning failed. Terraform encountered an error while generating this plan.
+╷
+│ Error: Plugin did not respond
+│
+│ The plugin encountered an error, and failed to respond to the plugin6.(*GRPCProvider).PlanResourceChange call. The plugin logs may contain more details.
+╵
+Stack trace from the terraform-provider-snowflake_v2.6.0 plugin:
+panic: can't use ElementIterator on null value
+goroutine 44 [running]:
+github.com/hashicorp/go-cty/cty.Value.ElementIterator({{{0x10315eff0?, 0x1400119eb50?}}, {0x0?, 0x0?}})
+        github.com/hashicorp/go-cty@v1.5.0/cty/value_ops.go:1046 +0xb8
+<...>
+```
+This was not happening when `refresh` was set to true or was not set at all. This behavior may have appeared in other resources with sets of identifiers.
+
+Now, this behavior is fixed, and the provider will not panic. No changes in configuration and state are required.
+
+References: [#4001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4001)
+
+### *(bugfix)* Fixed privileges validation in `grant_privileges_to_account_role` resource
+In [v2.6.0](#bugfix-fixed-privileges-validation-in-grant_privileges_to_account_role-resource), we added a validation for using the `IMPORTED PRIVILEGES` grant. The validator contained a bug, causing the provider to panic in situations with privileges set by a reference, like this one:
+```terraform
+resource "snowflake_grant_privileges_to_account_role" "direct" {
+  account_role_name = "ROLE"
+  privileges        = [var.privilege]
+
+  on_account_object {
+    object_type = "DATABASE"
+    object_name = "DB"
+  }
+
+}
+
+variable "privilege" {
+  type = string
+  default = "USAGE"
+}
+```
+
+The provider panicked with the following message:
+```
+│ Error: Plugin did not respond
+│
+│ The plugin encountered an error, and failed to respond to the plugin6.(*GRPCProvider).ValidateResourceConfig call. The plugin logs may contain more details.
+╵
+
+Stack trace from the terraform-provider-snowflake_v2.6.0 plugin:
+
+panic: value is unknown
+
+goroutine 23 [running]:
+github.com/hashicorp/go-cty/cty.Value.AsString({{{0x1029376c8?, 0x14000011051?}}, {0x1025b2060?, 0x103b04ec0?}})
+        github.com/hashicorp/go-cty@v1.5.0/cty/value_ops.go:1187 +0x100
+<...>
+```
+
+Now, this behavior is fixed, and the provider will not panic. No changes in configuration and state are required.
+
+References: [#3992](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3992)
+
+## v2.5.0 ➞ v2.6.0
+
+### *(improvement)* Handling conversion-based errors
+
+Previously, when an error occurred during the conversion from Snowflake data to the SDK object, the error would be printed as a debug log.
+We would then proceed with the conversion and later handle the standard operations within the resource or data source with potentially incorrectly converted data.
+
+This could result in errors at the resource or data source level, sometimes causing undefined behavior.
+Ideally, these errors should be detected and addressed at the conversion level.
+
+Let's say we got an error in one of our conversion functions that transfers a text column containing JSON to a Go structure.
+Before the change, on failure, we would print something similar to:
+```text
+[DEBUG] Failed to convert X, err: <error from JSON mapping>
+```
+
+After implementing these improvements, any such failure will be propagated and acknowledged by the resources and data sources.
+This will result in operations reporting failures, as in the following example:
+```text
+conversion from Snowflake failed with error: failed to convert X, err: <error from JSON mapping>
+```
+
+If you encounter any errors of this kind, we encourage you to report them. Your feedback helps us improve the provider stability.
+
+### *(bugfix)* Fixed handling `IMPORTED PRIVILEGES` grant in the `grant_privileges_to_account_role` resource
+In Snowflake, `WITH GRANT OPTION` is not supported when granting or revoking the `IMPORTED PRIVILEGES` privilege. In previous versions, in handling resource updates, the provider revoked `IMPORTED PRIVILEGES` with `WITH GRANT OPTION`, even for cases when this option was not set in the resource. It resulted in errors like
+```
+│ Error: Failed to revoke privileges to add
+│
+│   with module.roles.module.roles["data_engineer"].module.databases.snowflake_grant_privileges_to_account_role.grant["snowflake"],
+│   on ../../modules/role/privileges/account/database/main.tf line 32, in resource "snowflake_grant_privileges_to_account_role" "grant":
+│   32: resource "snowflake_grant_privileges_to_account_role" "grant" {
+│
+│ Id: "DATA_ENGINEER"|false|false|IMPORTED
+│ PRIVILEGES|OnAccountObject|DATABASE|"SNOWFLAKE"
+│ Privileges to add: [IMPORTED PRIVILEGES]
+│ Error: 001003 (42000): SQL compilation error:
+│ syntax error line 1 at position 24 unexpected 'IMPORTED'.
+```
+This behavior has been fixed. No state or configuration update is necessary.
+
+Additionally, when `IMPORTED PRIVILEGES` is granted with other privileges in one resource, the provider now validates that and fails with the following error:
+```
+  | exit status 1
+  |
+  | Error: Invalid privileges
+  |
+  |   with snowflake_grant_privileges_to_account_role.test,
+  |   on terraform_plugin_test.tf line 12, in resource "snowflake_grant_privileges_to_account_role" "test":
+  |   12: resource "snowflake_grant_privileges_to_account_role" "test" {
+  |
+  | IMPORTED PRIVILEGES cannot be used with other privileges
+```
+Before, this was not validated, but it failed in Snowflake.
+
+References: https://github.com/snowflakedb/terraform-provider-snowflake/issues/2803#issuecomment-3152992005
+
+### *(bugfix)* Fixed `snowflake_primary_connection` or `snowflake_secondary_connection` reading and improved creation and deletion operations
+
+When configuring `snowflake_primary_connection` or `snowflake_secondary_connection` resources, previous issues could lead to failures or incorrect planning.
+These problems arose because the shared connections appear in the `SHOW CONNECTIONS` command, and because Snowflake requires primary and secondary connections to have the same name,
+they were not distinguished correctly; the first appearing one was chosen. We have now resolved this by fixing the function that retrieves the connection by ID, ensuring such issues do not occur.
+
+Additionally, we have made adjustments to the create operation for `snowflake_secondary_connection` and the delete operations for both `snowflake_primary_connection` and `snowflake_secondary_connection`.
+These adjustments aim to prevent issues that could arise from Snowflake systems registering or unregistering connections asynchronously to the create/delete operations.
+However, these issues may still occur depending on system latencies. If you encounter errors from the provider when creating or deleting both in the same `terraform apply`, please report them.
+
+We generally recommend splitting the creation and deletion of both resources into two steps to allow Snowflake's background systems sufficient time to process these operations efficiently.
+
+## v2.4.x ➞ v2.5.0
+
+### *(bugfix)* Fixed incorrect authenticator when using the `token` field
+
+Previously, the provider incorrectly set the default authenticator to `OAUTH` when the `token` field was specified in the Terraform configuration, or environmental variables, without possibility to override it. This resulted in errors like:
+```
+Planning failed. Terraform encountered an error while generating this plan.
+
+╷
+│ Error: open snowflake connection: 390303 (08004): Invalid OAuth access token. [fca49dca-38da-421e-b88e-94547d09b3cf]
+│
+│   with provider["registry.terraform.io/snowflakedb/snowflake"],
+│   on main.tf line 9, in provider "snowflake":
+│    9: provider "snowflake" {
+│
+╵
+```
+
+Now, the default authenticator can be overridden. For example, for the PAT authenticator, set one of the following:
+- `authenticator="PROGRAMMATIC_ACCESS_TOKEN"` in your Terraform configuration, or
+- `SNOWFLAKE_AUTHENTICATOR="PROGRAMMATIC_ACCESS_TOKEN"` in your environmental variables, or
+- `authenticator='PROGRAMMATIC_ACCESS_TOKEN'` in your TOML configuration file.
+
+### *(bugfix)* Fixed `default_ddl_collation` for `snowflake_schema` resource
+
+Previously, the `default_ddl_collation` field in the `snowflake_schema` resource was not able to correctly handle setting an empty string as a proper value.
+This is mostly connected to both things: [Terraform empty value handling](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#empty-values) and our [internal parameter handling](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/v1-preparations/CHANGES_BEFORE_V1.md#snowflake-parameters).
+With the provided fix, we were able to make it work, however, it is not a perfect solution as it requires an intermediate step.
+To set the `default_ddl_collation` to an empty string from non-empty value, you need to:
+- Set it to `null` (or remove it from the resource configuration) and run `terraform apply` to remove the value from the state
+- Then set it to an empty string and run `terraform apply` again to set the value to an empty string in Snowflake on the schema level.
+
+As we already confirmed, this shouldn't be a problem in the future, once we move our provider to the new Terraform Plugin Framework, but for now, this is the best solution we can provide.
+We will be checking other resources that may have similar issues and will fix them in the future releases.
+No configuration changes are needed, but if you want to set the `default_ddl_collation` to an empty string, please follow the steps above.
+
+References: [#3510](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3510)
+
+### *(bugfix)* Fixed granting other table types in `snowflake_grant_privileges_to_share` resource
+
+Previously, the `snowflake_grant_privileges_to_share` resource was not able to grant privileges on other table types than `TABLE`.
+For example, granting on hybrid table wouldn't work as it has different type than `TABLE` returned by SHOW GRANTS in Snowflake.
+With the help of the community ([PR reference](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3859)), we are able to provide the fix this issue.
+Now, the configurations like the following will work as expected:
+
+```terraform
+resource "snowflake_grant_privileges_to_share" "test" {
+  to_share   = "<share_name>"
+  privileges = ["<privilege>"]
+  on_table   = "<hybrid_table_name>"
+}
+```
+
+No changes to the current configurations are needed.
+
+References: [#3167](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3167)
+
+### *(new feature)* snowflake_listing resource
+Added a new preview resource for managing listings. Check the official Snowflake documentation to know more [about listings](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about). You can read about the resource limitations in the documentation in the registry.
+
+> **Warning** This resource isn't suitable for public listings because its review process doesn't align with Terraform's standard method for managing infrastructure resources. The challenge is that the review process often takes time and might need several manual revisions. We need to reconsider how to integrate this process into a resource. Although we plan to support this in the future, it might be added later. Currently, the resource may not function well with public listings because review requests are closely connected to the publish field.
+
+> **Note** For inlined manifest version, only string is accepted. The manifest structure is not mapped to the resource schema to keep it simple and aligned with other resources that accept similar metadata (e.g., service templates). While it's more recommended to keep your manifest in a stage, the inlined version may be useful for initial setup and testing.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listing_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource
+
+Previously, this field was read-only. In this version, this field is promoted to optional configurable attribute. Because config was previously empty, and there is a value in state, the provider will show the planned change to `null`. After applying, the plan should be empty. This apply is effectively a no-op, as it will run ALTER UNSET on the integration, which will revert the `storage_aws_external_id` to the default (the same value as there was no option to set it through the resource before). In case, when the value was changed externally (manually or through `snowflake_execute`), make sure to set this value in config before bumping the version.
+
+If `storage_aws_external_id` was used as input in other fields, it needs to be changed because of the SDKv2 limitations (read more [here](./v1-preparations/CHANGES_BEFORE_V1.md#config-values-in-the-state) and [here](./v1-preparations/CHANGES_BEFORE_V1.md#raw-snowflake-output)). To reference it in other blocks:
+- set its value directly in the resource OR
+- use `snowflake_storage_integration.<resource_name>.describe_output.0.storage_aws_external_id.0.value` instead.
+
+We added a new `describe_output` field to handle this field properly (read more in our [design considerations](v1-preparations/CHANGES_BEFORE_V1.md#default-values)). Note that fields other than `storage_aws_external_id` do not leverage this field. This will be addressed during the resource rework.
+
+Note that this resource is still in preview, and not officially supported. This change was requested and done by the community: [#3659](https://github.com/snowflakedb/terraform-provider-snowflake/pull/3659).
+
+References: [#3924](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3924)
+
+### *(bugfix)* Fix setting network policies with lowercase characters in security integrations
+Previously, when the provider created or set a security integration (in `snowflake_oauth_integration_for_custom_clients` or `snowflake_scim_integration`) with a network policy containing lowercase letters, this could fail due to a different quoting used in Snowflake in these objects. Namely, despite using the `"` quotes, the referenced network name was uppercased in Snowflake. This means that the uppercased network policy was used instead.
+Snowflake could return errors like `Network policy TEST does not exist or not authorized.`.
+In this case, a special quoting needs to be used (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake)). Instead of the usual `NETWORK_POLICY = "test"`, it needs to be `NETWORK_POLICY = '"test"'`.
+
+In this version, this behavior is fixed. The provider always uses the mixed `'"name"'` notation, and the casing should match the name in Snowflake.
+
+References: [#3229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3229)
+
+## v2.3.0 ➞ v2.4.0
+
+### *(new feature)* snowflake_current_organization_account resource
+Added a new preview resource for managing the organization account that the provider is currently connected to. It's capable of managing attached parameters, resource_monitors, and more. See reference docs for [ALTERING ORGANIZATION ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-organization-account). You can read about the resource limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_current_organization_account_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Handling Programmatic Access Tokens
+As we announced in our [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#pat-support), we implemented handling Programmatic Access Tokens (PATs) in the provider. In [v2.3.0](#v220--v230), we already added `PROGRAMMATIC_ACCESS_TOKEN` authenticator option.
+In this version, we enhanced the provider capabilities with handling PATs in a new resource and data source. See more in our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#pat-personal-access-token).
+
+#### New `snowflake_user_programmatic_access_tokens` data source
+Added a new preview data source for user programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_tokens_datasource` to `preview_features_enabled` field in the provider configuration.
+
+#### New `snowflake_user_programmatic_access_token` resource
+Added a new preview resource for managing users' programmatic access tokens. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token) and a [user guide](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) for more details.
+
+This resource also supports token rotation. See our [Authentication Methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/guides/authentication_methods#managing-pats) and the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.4.0/docs/resources/user_programmatic_access_token).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_user_programmatic_access_token_resource` to `preview_features_enabled` field in the provider configuration.
 
 ## v2.2.0 ➞ v2.3.0
 
@@ -31,17 +354,76 @@ See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/
 
 ### *(bugfix)* Fix `snowflake_functions` and `snowflake_procedures` data sources with 2025_03 Bundle enabled
 
+> [!IMPORTANT]
+> This behavior change in Snowflake was originally in the [2025_03 Bundle](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle) and intended to become enabled by default in the 2025_04 bundle. However, it has been [postponed](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944) and a new release date has not been determined.
+> After adjusting parsing data types in the provider, it handles arguments with and without attributes.
+
 Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+This fix was also backported to version v1.2.3.
 
 References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
 
 ### *(bugfix)* Fix all function and procedure resources with 2025_03 Bundle enabled
 
+> [!IMPORTANT]
+> This behavior change in Snowflake was originally in the [2025_03 Bundle](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle) and intended to become enabled by default in the 2025_04 bundle. However, it has been [postponed](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944) and a new release date has not been determined.
+> After adjusting parsing data types in the provider, it handles arguments with and without attributes.
+
 Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+This fix was also backported to version v1.2.3.
 
 References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
 
-## v2.1.0 ➞ v2.2.0
+## v2.1.x ➞ v2.2.0
+<a id="v210--v220"></a>
+
+### *(breaking change, new feature)* Changes in `snowflake_tables` data source
+
+We adjusted the `snowflake_tables` data source with the following:
+- Moved the `database` and `schema` fields to the `in` block (breaking change). See the before/after examples below.
+- Added support for `IN APPLICATION`, `IN APPLICATION PACKAGE`, `LIKE`, `STARTS WITH`, and `LIMIT`.
+- Added support for getting data with `DESCRIBE TABLE` - see the `with_describe` field.
+- Changed the output format returned by the data source (breaking change). See the before/after examples below.
+
+With added support for `IN APPLICATION` and `IN APPLICATION PACKAGE` filters, we also nested the `database` and `schema` fields in a separate `in` block and made all these fields optional. For example, please adjust the configurations from:
+```terraform
+data "snowflake_tables" "current" {
+  database = "MYDB"
+}
+```
+to
+```terraform
+data "snowflake_tables" "current" {
+  in {
+    database = "MYDB"
+  }
+}
+```
+
+The output format is also changed. Now, all data is nested in `tables.show_output`, and in `tables.describe_output` if `with_describe` is set to `true`.
+
+Before:
+
+```terraform
+output "simple_output" {
+  value = data.snowflake_tables.test.tables[0].name
+}
+```
+After:
+
+```
+output "simple_output" {
+  value = data.snowflake_tables.test.tables[0].show_output[0].name
+}
+
+output "describe_output" {
+  value = data.snowflake_tables.test.tables[0].describe_output[0].name # Column name from the DESCRIBE TABLE query.
+}
+```
+
+Please read the [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/tables) for more information.
+
+Note that `snowflake_tables` data source and `snowflake_table` resource are still in preview.
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -237,7 +619,8 @@ No configuration changes are necessary.
 
 As this is now available on Snowflake, we allow to grant privileges on future cortex search services both in `snowflake_grant_privileges_on_account_role` and `snowflake_grant_privileges_on_database_role`.
 
-## v2.1.0 -> v2.1.1
+## v2.1.0 ➞ v2.1.1
+<a id="v210---v211"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -247,7 +630,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6, v1.1.1, v1.2.2, and v2.0.1.
 
-## v2.0.0 ➞ v2.1.0
+## v2.0.x ➞ v2.1.0
+<a id="v200--v210"></a>
 
 ### *(bugfix)* Fixed `snowflake_tag_association` resource
 
@@ -291,7 +675,8 @@ No configuration changes are necessary.
 
 References: [#3629](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629)
 
-## v2.0.0 -> v2.0.1
+## v2.0.0 ➞ v2.0.1
+<a id="v200---v201"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -301,7 +686,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6, v1.1.1, and v1.2.2.
 
-## v1.2.1 ➞ v2.0.0
+## v1.2.x ➞ v2.0.0
+<a id="v121--v200"></a>
 
 ### Supported architectures
 
@@ -354,7 +740,7 @@ Planning failed. Terraform encountered an error while generating this plan.
 
 Some fields, like secure function definitions, can also contain sensitive values. However, because of [SDK v2](https://developer.hashicorp.com/terraform/plugin/sdkv2) limitations:
 - There is no possibility to mark sensitive values conditionally ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/736)). This means it is not possible to mark sensitive values based on other fields, like marking `body` based on the value of `secure` field in views, functions, and procedures. As a result, this field is not marked as sensitive. For such cases, we add disclaimers in the resource documentation.
-- There is no possibility to mark sensitive values in nested fields ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/201)). This means the nested fields, like these in `show_output` and `describe_output` cannot be sensitive. fields, like in `show_output` and `describe_output`, cannot be marked as sensitive.
+- There is no possibility to mark sensitive values in nested fields ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/201)). This means the nested fields, like these in `show_output` and `describe_output` cannot be marked as sensitive.
 
 Instead, we added notes in the documentation of the related resources. The full list includes:
 - `snowflake_execute` resource: `execute`, `revert`, `query` and `query_results` fields,
@@ -449,8 +835,19 @@ To be able to detect changes in config properly and to react to some external ch
 
 References: [#3580](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3580)
 
-## v1.2.0 ➞ v1.2.1
-No migration needed.
+## v1.2.2 ➞ v1.2.3
+
+### *(bugfix)* Fix `snowflake_functions` and `snowflake_procedures` data sources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3822](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3822)
+
+### *(bugfix)* Fix all function and procedure resources with 2025_03 Bundle enabled
+
+Check for more details and action steps needed in [Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#argument-output-changes-for-show-functions-and-show-procedures-commands).
+
+References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3823)
 
 ## v1.2.1 -> v1.2.2
 
@@ -462,7 +859,11 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to versions v1.0.6 and v1.1.1.
 
-## v1.1.0 ➞ v1.2.0
+## v1.2.0 ➞ v1.2.1
+No migration needed.
+
+## v1.1.x ➞ v1.2.0
+<a id="v110--v120"></a>
 
 ### New behavior for Read and Delete operations when removing high-hierarchy objects
 Some objects in Snowflake are created in hierarchy, for example, tables (database → schema → table).
@@ -533,7 +934,8 @@ This version fixes this behavior. No action should be required on user side.
 
 References: [#3522](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3522)
 
-## v1.1.0 -> v1.1.1
+## v1.1.0 ➞ v1.1.1
+<a id="v110---v111"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -543,7 +945,8 @@ No configuration changes are needed. However, the provider won't set back the `A
 
 This fix was also backported to version v1.0.6.
 
-## v1.0.5 ➞ v1.1.0
+## v1.0.x ➞ v1.1.0
+<a id="v105--v110"></a>
 
 ### Timeouts in resources
 By default, resource operation timeout after 20 minutes ([reference](https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/retries-and-customizable-timeouts#default-timeouts-and-deadline-exceeded-errors)). This caused some long running operations to timeout.
@@ -566,7 +969,8 @@ Instead of failing the whole action, we return a warning instead and the operati
 
 References: [#3507](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3507)
 
-## v1.0.5 -> v1.0.6
+## v1.0.5 ➞ v1.0.6
+<a id="v105---v106"></a>
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 
@@ -961,21 +1365,29 @@ output "simple_output" {
 ```
 
 ### snowflake_tag_association resource changes
+
 #### *(behavior change)* new id format
-To provide more functionality for tagging objects, we have changed the resource id from `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"` to `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"|TAG_VALUE|OBJECT_TYPE`. This allows to group tags associations per tag ID, tag value and object type in one resource.
-```
+To provide more functionality for tagging objects, we have changed the resource id from `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"` to `"TAG_DATABASE"."TAG_SCHEMA"."TAG_NAME"|TAG_VALUE|OBJECT_TYPE`.
+
+The state is migrated automatically. There is no need to adjust configuration files, unless you use resource id `snowflake_tag_association.example.id` as a reference in other resources.
+
+This change allows to group tags associations per tag ID, tag value and object type in one resource, like so:
+
+```terraform
 resource "snowflake_tag_association" "gold_warehouses" {
   object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name]
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "gold"
 }
+
 resource "snowflake_tag_association" "silver_warehouses" {
   object_identifiers = [snowflake_warehouse.w3.fully_qualified_name]
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "silver"
 }
+
 resource "snowflake_tag_association" "silver_databases" {
   object_identifiers = [snowflake_database.d1.fully_qualified_name]
   object_type = "DATABASE"
@@ -984,10 +1396,41 @@ resource "snowflake_tag_association" "silver_databases" {
 }
 ```
 
-Note that if you want to promote silver instances to gold, you can not simply change `tag_value` in `silver_warehouses`. Instead, you should first remove `object_identifiers` from `silver_warehouses`, run `terraform apply`, and then add the relevant `object_identifiers` in `gold_warehouses`, like this (note that `silver_warehouses` resource was deleted):
-```
+Note that if you want to promote `silver` instances to `gold`, you cannot change the `tag_value` in `silver_warehouses` to `gold`.
+Instead, you should first remove `object_identifiers` from `silver_warehouses`, run `terraform apply`.
+Your configuration should like as follows:
+
+```terraform
+resource "snowflake_tag_association" "silver_databases" {
+  object_identifiers = [snowflake_database.d1.fully_qualified_name]
+  object_type = "DATABASE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "silver"
+}
+
+## "snowflake_tag_association" "silver_warehouses" was removed
+
 resource "snowflake_tag_association" "gold_warehouses" {
-  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name, snowflake_warehouse.w3.fully_qualified_name]
+  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name]
+  object_type = "WAREHOUSE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "gold"
+}
+```
+
+Then, add the relevant object identifiers in `gold_warehouses`'s `object_identifiers` field.
+With those changes, you should end up with the following configuration:
+
+```terraform
+resource "snowflake_tag_association" "silver_databases" {
+  object_identifiers = [snowflake_database.d1.fully_qualified_name]
+  object_type = "DATABASE"
+  tag_id      = snowflake_tag.tier.fully_qualified_name
+  tag_value   = "silver"
+}
+
+resource "snowflake_tag_association" "gold_warehouses" {
+  object_identifiers = [snowflake_warehouse.w1.fully_qualified_name, snowflake_warehouse.w2.fully_qualified_name, snowflake_warehouse.w3.fully_qualified_name] # New warehouse was added
   object_type = "WAREHOUSE"
   tag_id      = snowflake_tag.tier.fully_qualified_name
   tag_value   = "gold"
@@ -995,9 +1438,7 @@ resource "snowflake_tag_association" "gold_warehouses" {
 ```
 and run `terraform apply` again.
 
-Note that the order of operations is not deterministic in this case, and if you do these operations in one step, it is possible that the tag value will be changed first, and unset later because of removing the resource with old value.
-
-The state is migrated automatically. There is no need to adjust configuration files, unless you use resource id `snowflake_tag_association.example.id` as a reference in other resources.
+> Note: This operation has to be done in two steps. Otherwise, they will run in the non-deterministic order and may end up in the incorrect state.
 
 #### *(behavior change)* changed fields
 Behavior of some fields was changed:
@@ -1023,7 +1464,7 @@ resource "snowflake_tag_association" "table_association" {
   tag_value   = "engineering"
 }
 ```
-- `tag_id`  has now suppressed identifier quoting to prevent issues with Terraform showing permament differences, like [this one](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2982)
+- `tag_id`  has now suppressed identifier quoting to prevent issues with Terraform showing permanent differences, like [this one](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2982)
 - `object_type` and `tag_id` are now marked as ForceNew
 
 The state is migrated automatically. Please adjust your configuration files.
@@ -1702,7 +2143,7 @@ Argument names are now case sensitive. All policies created previously in the pr
 Previously, after changing `name` field, the resource was recreated. Now, the object is renamed with `RENAME TO`.
 
 #### *(breaking change)* Mitigating permadiff on `body`
-Previously, `body` of a policy was compared as a raw string. This led to permament diff because of leading newlines (see https://github.com/snowflakedb/terraform-provider-snowflake/issues/2053).
+Previously, `body` of a policy was compared as a raw string. This led to permanent diff because of leading newlines (see https://github.com/snowflakedb/terraform-provider-snowflake/issues/2053).
 
 Now, similarly to handling statements in other resources, we replace blank characters with a space. The provider can cause false positives in cases where a change in case or run of whitespace is semantically significant.
 
@@ -2062,7 +2503,7 @@ resource "snowflake_user" "example_user" {
 ## v0.94.0 ➞ v0.94.1
 ### changes in snowflake_schema
 
-In order to avoid dropping `PUBLIC` schemas, we have decided to use `ALTER` instead of `OR REPLACE` during creation. In the future we are planning to use `CREATE OR ALTER` when it becomes available for schems.
+In order to avoid dropping `PUBLIC` schemas, we have decided to use `ALTER` instead of `OR REPLACE` during creation. In the future we are planning to use `CREATE OR ALTER` when it becomes available for schemas.
 
 ## v0.93.0 ➞ v0.94.0
 ### *(breaking change)* changes in snowflake_scim_integration
@@ -2141,7 +2582,7 @@ Changes:
 Added a new resource for managing streamlits. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-streamlit). In this resource, we decided to split `ROOT_LOCATION` in Snowflake to two fields: `stage` representing stage fully qualified name and `directory_location` containing a path within this stage to root location.
 
 ### *(new feature)* snowflake_streamlits datasource
-Added a new datasource enabling querying and filtering stremlits. Notes:
+Added a new datasource enabling querying and filtering streamlits. Notes:
 - all results are stored in `streamlits` field.
 - `like`, `in`, and `limit` fields enable streamlits filtering.
 - SHOW STREAMLITS output is enclosed in `show_output` field inside `streamlits`.
@@ -2417,7 +2858,7 @@ When upgrading to the 0.93.0 version, the automatic state upgrader should cover 
 - `from_replica` (now, the new `snowflake_secondary_database` should be used instead)
 - `replication_configuration`
 
-For configurations containing `replication_configuraiton` like this one:
+For configurations containing `replication_configuration` like this one:
 ```terraform
 resource "snowflake_database" "test" {
   name = "<name>"
@@ -2665,7 +3106,8 @@ The `comment` attribute is now optional. It was required before, but it is not r
 #### *(behavior change)* schema is now required with database
 The `schema` attribute is now required with `database` attribute to match old implementation `SHOW EXTERNAL FUNCTIONS IN SCHEMA "<database>"."<schema>"`. In the future this may change to make schema optional.
 
-## vX.XX.X -> v0.85.0
+## vX.XX.X ➞ v0.85.0
+<a id="vxxxx---v0850"></a>
 
 ### Migration from old (grant) resources to new ones
 

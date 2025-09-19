@@ -132,3 +132,61 @@ func TestWriteTree(t *testing.T) {
 		})
 	}
 }
+
+func TestDecodeDriverError(t *testing.T) {
+	unrecognizedErr := errors.New("some other error")
+	errWithNotFound := errors.New("foo bar not found")
+	tests := []struct {
+		name  string
+		input error
+		want  error
+	}{
+		{
+			name:  "nil error returns nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Match ErrDoesNotExistOrOperationCannotBePerformed",
+			input: errors.New("Object does not exist, or operation cannot be performed"),
+			want:  ErrDoesNotExistOrOperationCannotBePerformed,
+		},
+		{
+			name:  "Match ErrObjectNotExistOrAuthorized",
+			input: errors.New("does not exist or not authorized"),
+			want:  ErrObjectNotExistOrAuthorized,
+		},
+		{
+			name:  "Match ErrAccountIsEmpty",
+			input: errors.New("account is empty"),
+			want:  ErrAccountIsEmpty,
+		},
+		{
+			name:  "Match ErrGrantPartiallyExecuted",
+			input: errors.New("Grant partially executed"),
+			want:  ErrGrantPartiallyExecuted,
+		},
+		{
+			name:  "Match ErrPatNotFound",
+			input: errors.New("Programmatic access token foo not found"),
+			want:  ErrPatNotFound,
+		},
+		{
+			name:  "Unmatched error returns original",
+			input: unrecognizedErr,
+			want:  unrecognizedErr,
+		},
+		{
+			name:  "Unmatched error returns original",
+			input: errWithNotFound,
+			want:  errWithNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := decodeDriverError(tt.input)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}

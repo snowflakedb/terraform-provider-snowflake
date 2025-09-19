@@ -28,8 +28,8 @@ var (
 	NonExistingSchemaObjectIdentifier   = sdk.NewSchemaObjectIdentifier(TestDatabaseName, TestSchemaName, "does_not_exist")
 )
 
-// TODO [next PRs]: make logging level configurable
-// TODO [next PRs]: adjust during logger rework (e.g. use in model builders); maybe use log/slog
+// TODO [SNOW-1325306]: make logging level configurable
+// TODO [SNOW-1325306]: adjust during logger rework (e.g. use in model builders); maybe use log/slog
 var accTestLog = log.New(os.Stdout, "", log.LstdFlags)
 
 type acceptanceTestContext struct {
@@ -81,8 +81,8 @@ func setup() {
 	}
 }
 
-// TODO [next PRs]: extract more convenience methods for reuse
-// TODO [next PRs]: potentially extract test context logic into separate directory
+// TODO [SNOW-2298294]: extract more convenience methods for reuse
+// TODO [SNOW-2298294]: potentially extract test context logic into separate directory
 func (atc *acceptanceTestContext) initialize() error {
 	accTestLog.Printf("[INFO] Initializing acceptance test context")
 
@@ -127,7 +127,7 @@ func (atc *acceptanceTestContext) initialize() error {
 	}
 	atc.warehouse = wh
 
-	// TODO [next PRs]: what do we do with SimplifiedIntegrationTestsSetup
+	// TODO [SNOW-1763603]: what do we do with SimplifiedIntegrationTestsSetup
 	if os.Getenv(string(testenvs.SimplifiedIntegrationTestsSetup)) == "" {
 		secondaryConfig, secondaryClient, err := setUpSdkClient(testprofiles.Secondary, "acceptance")
 		if err != nil {

@@ -50,12 +50,20 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CurrentAccount().Schema,
 	},
 	{
+		name:   "CurrentOrganizationAccount",
+		schema: resources.CurrentOrganizationAccount().Schema,
+	},
+	{
 		name:   "Database",
 		schema: resources.Database().Schema,
 	},
 	{
 		name:   "DatabaseRole",
 		schema: resources.DatabaseRole().Schema,
+	},
+	{
+		name:   "Execute",
+		schema: resources.Execute().Schema,
 	},
 	{
 		name:   "ExternalVolume",
@@ -101,6 +109,15 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "LegacyServiceUser",
 		schema: resources.LegacyServiceUser().Schema,
 	},
+	// TODO(SNOW-1501905): Support required object types (commented because it's blocking model generator)
+	// Manifest field (required object type) is not supported by the model generator.
+	// Current overrides are not sufficient to generate the model with the required attribute that would use tfconfig.Variable type.
+	// The WithManifestValue method should be used in the constructors as WithManifest is not generated at all (another generator limitation, but not that important in this case).
+	// Once it's supported, uncomment this and remove the manually written model.
+	// {
+	//	name:   "Listing",
+	//	schema: resources.Listing().Schema,
+	// },
 	{
 		name:   "ManagedAccount",
 		schema: resources.ManagedAccount().Schema,
@@ -242,11 +259,39 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.User().Schema,
 	},
 	{
+		name:   "UserProgrammaticAccessToken",
+		schema: resources.UserProgrammaticAccessToken().Schema,
+	},
+	{
 		name:   "View",
 		schema: resources.View().Schema,
 	},
 	{
 		name:   "Warehouse",
 		schema: resources.Warehouse().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToAccountRole",
+		schema: resources.GrantPrivilegesToAccountRole().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToDatabaseRole",
+		schema: resources.GrantPrivilegesToDatabaseRole().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToShare",
+		schema: resources.GrantPrivilegesToShare().Schema,
+	},
+	{
+		name:   "GrantAccountRole",
+		schema: resources.GrantAccountRole().Schema,
+	},
+	{
+		name:   "GrantDatabaseRole",
+		schema: resources.GrantDatabaseRole().Schema,
+	},
+	{
+		name:   "GrantApplicationRole",
+		schema: resources.GrantApplicationRole().Schema,
 	},
 }

@@ -5,8 +5,6 @@ import (
 	"database/sql"
 )
 
-var _ convertibleRow[Pipe] = new(pipeDBRow)
-
 type Pipes interface {
 	Create(ctx context.Context, id SchemaObjectIdentifier, copyStatement string, opts *CreatePipeOptions) error
 	Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterPipeOptions) error
@@ -128,7 +126,7 @@ func (v *Pipe) ObjectType() ObjectType {
 	return ObjectTypePipe
 }
 
-func (row pipeDBRow) convert() *Pipe {
+func (row pipeDBRow) convert() (*Pipe, error) {
 	pipe := Pipe{
 		CreatedOn:    row.CreatedOn,
 		Name:         row.Name,
@@ -158,7 +156,7 @@ func (row pipeDBRow) convert() *Pipe {
 	if row.InvalidReason.Valid {
 		pipe.InvalidReason = row.InvalidReason.String
 	}
-	return &pipe
+	return &pipe, nil
 }
 
 // describePipeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-pipe.

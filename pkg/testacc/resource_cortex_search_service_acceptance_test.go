@@ -39,7 +39,6 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 	resourceName := "snowflake_cortex_search_service.css"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -141,7 +140,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// currently not set in read because the early implementation on Snowflake side did not return these values on SHOW/DESCRIBE
-				ImportStateVerifyIgnore: []string{"attributes", "on", "query", "target_lag", "warehouse"},
+				ImportStateVerifyIgnore: []string{"attributes", "on", "query", "target_lag", "warehouse", "describe_output.0.data_timestamp"},
 			},
 		},
 	})

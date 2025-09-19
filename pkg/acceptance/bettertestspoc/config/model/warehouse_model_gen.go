@@ -18,11 +18,13 @@ type WarehouseModel struct {
 	Comment                         tfconfig.Variable `json:"comment,omitempty"`
 	EnableQueryAcceleration         tfconfig.Variable `json:"enable_query_acceleration,omitempty"`
 	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	Generation                      tfconfig.Variable `json:"generation,omitempty"`
 	InitiallySuspended              tfconfig.Variable `json:"initially_suspended,omitempty"`
 	MaxClusterCount                 tfconfig.Variable `json:"max_cluster_count,omitempty"`
 	MaxConcurrencyLevel             tfconfig.Variable `json:"max_concurrency_level,omitempty"`
 	MinClusterCount                 tfconfig.Variable `json:"min_cluster_count,omitempty"`
 	QueryAccelerationMaxScaleFactor tfconfig.Variable `json:"query_acceleration_max_scale_factor,omitempty"`
+	ResourceConstraint              tfconfig.Variable `json:"resource_constraint,omitempty"`
 	ResourceMonitor                 tfconfig.Variable `json:"resource_monitor,omitempty"`
 	ScalingPolicy                   tfconfig.Variable `json:"scaling_policy,omitempty"`
 	StatementQueuedTimeoutInSeconds tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
@@ -115,6 +117,11 @@ func (w *WarehouseModel) WithFullyQualifiedName(fullyQualifiedName string) *Ware
 	return w
 }
 
+func (w *WarehouseModel) WithGeneration(generation string) *WarehouseModel {
+	w.Generation = tfconfig.StringVariable(generation)
+	return w
+}
+
 func (w *WarehouseModel) WithInitiallySuspended(initiallySuspended bool) *WarehouseModel {
 	w.InitiallySuspended = tfconfig.BoolVariable(initiallySuspended)
 	return w
@@ -137,6 +144,11 @@ func (w *WarehouseModel) WithMinClusterCount(minClusterCount int) *WarehouseMode
 
 func (w *WarehouseModel) WithQueryAccelerationMaxScaleFactor(queryAccelerationMaxScaleFactor int) *WarehouseModel {
 	w.QueryAccelerationMaxScaleFactor = tfconfig.IntegerVariable(queryAccelerationMaxScaleFactor)
+	return w
+}
+
+func (w *WarehouseModel) WithResourceConstraint(resourceConstraint string) *WarehouseModel {
+	w.ResourceConstraint = tfconfig.StringVariable(resourceConstraint)
 	return w
 }
 
@@ -204,6 +216,11 @@ func (w *WarehouseModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *W
 	return w
 }
 
+func (w *WarehouseModel) WithGenerationValue(value tfconfig.Variable) *WarehouseModel {
+	w.Generation = value
+	return w
+}
+
 func (w *WarehouseModel) WithInitiallySuspendedValue(value tfconfig.Variable) *WarehouseModel {
 	w.InitiallySuspended = value
 	return w
@@ -226,6 +243,11 @@ func (w *WarehouseModel) WithMinClusterCountValue(value tfconfig.Variable) *Ware
 
 func (w *WarehouseModel) WithQueryAccelerationMaxScaleFactorValue(value tfconfig.Variable) *WarehouseModel {
 	w.QueryAccelerationMaxScaleFactor = value
+	return w
+}
+
+func (w *WarehouseModel) WithResourceConstraintValue(value tfconfig.Variable) *WarehouseModel {
+	w.ResourceConstraint = value
 	return w
 }
 

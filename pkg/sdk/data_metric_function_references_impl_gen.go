@@ -4,7 +4,10 @@ import (
 	"context"
 )
 
-var _ DataMetricFunctionReferences = (*dataMetricFunctionReferences)(nil)
+var (
+	_ DataMetricFunctionReferences                = (*dataMetricFunctionReferences)(nil)
+	_ convertibleRow[DataMetricFunctionReference] = new(dataMetricFunctionReferencesRow)
+)
 
 type dataMetricFunctionReferences struct {
 	client *Client
@@ -16,8 +19,7 @@ func (v *dataMetricFunctionReferences) GetForEntity(ctx context.Context, request
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[dataMetricFunctionReferencesRow, DataMetricFunctionReference](dbRows)
-	return resultList, nil
+	return convertRows[dataMetricFunctionReferencesRow, DataMetricFunctionReference](dbRows)
 }
 
 func (r *GetForEntityDataMetricFunctionReferenceRequest) toOpts() *GetForEntityDataMetricFunctionReferenceOptions {

@@ -23,6 +23,7 @@ jobs:
       - name: Filter changed files
         uses: dorny/paths-filter@v3
         id: changes
+        if: github.event_name != 'repository_dispatch'
         with:
           filters: |
             run_tests:
@@ -57,7 +58,7 @@ jobs:
         if: (github.event_name == 'repository_dispatch')
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+          ref: ${{ github.event.client_payload.slash_command.args.named.sha }}
           persist-credentials: false
 
       - name: Checkout Code (Pull Request Event)
@@ -146,7 +147,11 @@ jobs:
 #          terraform_version: 1.7.4
 #          terraform_wrapper: false
 #
-#      - name: Run acceptance tests
+#      - name: Run functional tests of the underlying terraform libraries
+        run: make test-functional
+        if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
+
+      - name: Run acceptance tests
 #        run: go run ./pkg/scripts/test_runner/test_runner.go
 #        if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
 #        env:

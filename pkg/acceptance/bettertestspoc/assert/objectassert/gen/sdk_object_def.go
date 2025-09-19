@@ -122,6 +122,26 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeService,
 		ObjectStruct: sdk.Service{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeProgrammaticAccessToken,
+		ObjectStruct: sdk.ProgrammaticAccessToken{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeAccount,
+		ObjectStruct: sdk.OrganizationAccount{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeListing,
+		ObjectStruct: sdk.Listing{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeSemanticView,
+		ObjectStruct: sdk.SemanticView{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

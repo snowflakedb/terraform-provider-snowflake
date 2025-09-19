@@ -2,12 +2,13 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -103,7 +104,7 @@ func (c *StageClient) PutOnUserStageWithContent(t *testing.T, filename string, c
 	t.Helper()
 	ctx := context.Background()
 
-	path := testhelpers.TestFile(t, filename, []byte(content))
+	path := testfiles.TestFile(t, filename, []byte(content))
 
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s @~/ AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, path))
 	require.NoError(t, err)
@@ -117,13 +118,16 @@ func (c *StageClient) PutInLocationWithContent(t *testing.T, stageLocation strin
 	t.Helper()
 	ctx := context.Background()
 
-	filePath := testhelpers.TestFile(t, filename, []byte(content))
+	filePath := testfiles.TestFile(t, filename, []byte(content))
 
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s %s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, stageLocation))
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf(`REMOVE %s/%s`, stageLocation, filename))
-		require.NoError(t, err)
+		// Only check the error if it's not related to the stage / file existence or access
+		if !errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+			require.NoError(t, err)
+		}
 	})
 
 	return filePath
@@ -163,7 +167,7 @@ func (c *StageClient) PutOnStageWithContent(t *testing.T, id sdk.SchemaObjectIde
 	t.Helper()
 	ctx := context.Background()
 
-	filePath := testhelpers.TestFile(t, filename, []byte(content))
+	filePath := testfiles.TestFile(t, filename, []byte(content))
 
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s @%s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, id.FullyQualifiedName()))
 	require.NoError(t, err)

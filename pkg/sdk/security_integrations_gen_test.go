@@ -270,13 +270,13 @@ func TestSecurityIntegrations_CreateOauthForCustomClients(t *testing.T) {
 		opts.BlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{role2ID}}
 		opts.OauthIssueRefreshTokens = Pointer(true)
 		opts.OauthRefreshTokenValidity = Pointer(42)
-		opts.NetworkPolicy = Pointer(npID)
+		opts.NetworkPolicy = securityIntegrationNetworkPolicyQuoted(&npID)
 		opts.OauthClientRsaPublicKey = Pointer("key")
 		opts.OauthClientRsaPublicKey2 = Pointer("key2")
 		opts.Comment = Pointer("a")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri' ENABLED = true"+
 			" OAUTH_ALLOW_NON_TLS_REDIRECT_URI = true OAUTH_ENFORCE_PKCE = true OAUTH_USE_SECONDARY_ROLES = NONE PRE_AUTHORIZED_ROLES_LIST = (%s) BLOCKED_ROLES_LIST = (%s)"+
-			" OAUTH_ISSUE_REFRESH_TOKENS = true OAUTH_REFRESH_TOKEN_VALIDITY = 42 NETWORK_POLICY = %s OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key' OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2' COMMENT = 'a'",
+			" OAUTH_ISSUE_REFRESH_TOKENS = true OAUTH_REFRESH_TOKEN_VALIDITY = 42 NETWORK_POLICY = '%s' OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key' OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2' COMMENT = 'a'",
 			id.FullyQualifiedName(), roleID.FullyQualifiedName(), role2ID.FullyQualifiedName(), npID.FullyQualifiedName())
 	})
 }
@@ -433,11 +433,11 @@ func TestSecurityIntegrations_CreateScim(t *testing.T) {
 		networkPolicyID := randomAccountObjectIdentifier()
 		opts.Enabled = Pointer(true)
 		opts.IfNotExists = Pointer(true)
-		opts.NetworkPolicy = Pointer(networkPolicyID)
+		opts.NetworkPolicy = securityIntegrationNetworkPolicyQuoted(&networkPolicyID)
 		opts.SyncPassword = Pointer(true)
 		opts.Comment = Pointer("a")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = SCIM ENABLED = true SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = 'GENERIC_SCIM_PROVISIONER'"+
-			" NETWORK_POLICY = %s SYNC_PASSWORD = true COMMENT = 'a'", id.FullyQualifiedName(), networkPolicyID.FullyQualifiedName())
+			" NETWORK_POLICY = '%s' SYNC_PASSWORD = true COMMENT = 'a'", id.FullyQualifiedName(), networkPolicyID.FullyQualifiedName())
 	})
 }
 
@@ -1090,14 +1090,14 @@ func TestSecurityIntegrations_AlterOauthForCustomClients(t *testing.T) {
 			BlockedRolesList:            &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{role2ID}},
 			OauthIssueRefreshTokens:     Pointer(true),
 			OauthRefreshTokenValidity:   Pointer(42),
-			NetworkPolicy:               Pointer(npID),
+			NetworkPolicy:               securityIntegrationNetworkPolicyQuoted(&npID),
 			OauthClientRsaPublicKey:     Pointer("key"),
 			OauthClientRsaPublicKey2:    Pointer("key2"),
 			Comment:                     Pointer("a"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_REDIRECT_URI = 'uri', OAUTH_ALLOW_NON_TLS_REDIRECT_URI = true, OAUTH_ENFORCE_PKCE = true,"+
 			" PRE_AUTHORIZED_ROLES_LIST = (%s), BLOCKED_ROLES_LIST = (%s), OAUTH_ISSUE_REFRESH_TOKENS = true, OAUTH_REFRESH_TOKEN_VALIDITY = 42, OAUTH_USE_SECONDARY_ROLES = NONE,"+
-			" NETWORK_POLICY = %s, OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key', OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2', COMMENT = 'a'", id.FullyQualifiedName(), roleID.FullyQualifiedName(), role2ID.FullyQualifiedName(), npID.FullyQualifiedName())
+			" NETWORK_POLICY = '%s', OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key', OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2', COMMENT = 'a'", id.FullyQualifiedName(), roleID.FullyQualifiedName(), role2ID.FullyQualifiedName(), npID.FullyQualifiedName())
 	})
 
 	t.Run("all options - unset", func(t *testing.T) {
@@ -1310,11 +1310,11 @@ func TestSecurityIntegrations_AlterScim(t *testing.T) {
 		networkPolicyID := randomAccountObjectIdentifier()
 		opts.Set = &ScimIntegrationSet{
 			Enabled:       Pointer(true),
-			NetworkPolicy: Pointer(networkPolicyID),
+			NetworkPolicy: securityIntegrationNetworkPolicyQuoted(&networkPolicyID),
 			SyncPassword:  Pointer(true),
 			Comment:       Pointer(StringAllowEmpty{Value: "test"}),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, NETWORK_POLICY = %s, SYNC_PASSWORD = true, COMMENT = 'test'",
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, NETWORK_POLICY = '%s', SYNC_PASSWORD = true, COMMENT = 'test'",
 			id.FullyQualifiedName(), networkPolicyID.FullyQualifiedName())
 	})
 

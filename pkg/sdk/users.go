@@ -17,6 +17,8 @@ var (
 	_ validatable = new(DropUserOptions)
 	_ validatable = new(describeUserOptions)
 	_ validatable = new(ShowUserOptions)
+
+	_ convertibleRow[User] = new(userDBRow)
 )
 
 type Users interface {
@@ -34,7 +36,10 @@ type Users interface {
 	ModifyProgrammaticAccessToken(ctx context.Context, request *ModifyUserProgrammaticAccessTokenRequest) error
 	RotateProgrammaticAccessToken(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) (*RotateProgrammaticAccessTokenResult, error)
 	RemoveProgrammaticAccessToken(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
+	RemoveProgrammaticAccessTokenSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 	ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
+	ShowProgrammaticAccessTokenByName(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
+	ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 }
 
 var _ Users = (*users)(nil)
@@ -121,7 +126,7 @@ type userDBRow struct {
 	HasMfa                sql.NullBool   `db:"has_mfa"`
 }
 
-func (row userDBRow) convert() *User {
+func (row userDBRow) convert() (*User, error) {
 	user := &User{
 		Name:      row.Name,
 		CreatedOn: row.CreatedOn,
@@ -151,10 +156,18 @@ func (row userDBRow) convert() *User {
 	if row.Comment.Valid {
 		user.Comment = row.Comment.String
 	}
-	handleNullableBoolString(row.Disabled, &user.Disabled)
-	handleNullableBoolString(row.MustChangePassword, &user.MustChangePassword)
-	handleNullableBoolString(row.SnowflakeLock, &user.SnowflakeLock)
-	handleNullableBoolString(row.ExtAuthnDuo, &user.ExtAuthnDuo)
+	if err := handleNullableBoolString(row.Disabled, &user.Disabled); err != nil {
+		return nil, fmt.Errorf("error parsing disabled: %w", err)
+	}
+	if err := handleNullableBoolString(row.MustChangePassword, &user.MustChangePassword); err != nil {
+		return nil, fmt.Errorf("error parsing must change password: %w", err)
+	}
+	if err := handleNullableBoolString(row.SnowflakeLock, &user.SnowflakeLock); err != nil {
+		return nil, fmt.Errorf("error parsing snowflake lock: %w", err)
+	}
+	if err := handleNullableBoolString(row.ExtAuthnDuo, &user.ExtAuthnDuo); err != nil {
+		return nil, fmt.Errorf("error parsing ext authn duo: %w", err)
+	}
 	if row.ExtAuthnUid.Valid {
 		user.ExtAuthnUid = row.ExtAuthnUid.String
 	}
@@ -194,7 +207,7 @@ func (row userDBRow) convert() *User {
 	if row.HasMfa.Valid {
 		user.HasMfa = row.HasMfa.Bool
 	}
-	return user
+	return user, nil
 }
 
 func (v *User) ID() AccountObjectIdentifier {
@@ -691,8 +704,7 @@ func (v *users) Show(ctx context.Context, opts *ShowUserOptions) ([]User, error)
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[userDBRow, User](dbRows)
-	return resultList, nil
+	return convertRows[userDBRow, User](dbRows)
 }
 
 func (v *users) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*User, error) {
@@ -738,8 +750,20 @@ func (v *users) RemoveProgrammaticAccessToken(ctx context.Context, request *Remo
 	return v.client.UserProgrammaticAccessTokens.Remove(ctx, request)
 }
 
+func (v *users) RemoveProgrammaticAccessTokenSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
+	return v.client.UserProgrammaticAccessTokens.RemoveByIDSafely(ctx, request)
+}
+
 func (v *users) ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error) {
 	return v.client.UserProgrammaticAccessTokens.Show(ctx, request)
+}
+
+func (v *users) ShowProgrammaticAccessTokenByName(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
+	return v.client.UserProgrammaticAccessTokens.ShowByID(ctx, userId, tokenName)
+}
+
+func (v *users) ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
+	return v.client.UserProgrammaticAccessTokens.ShowByIDSafely(ctx, userId, tokenName)
 }
 
 type SecondaryRolesOption string

@@ -27,6 +27,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_cortex_search_services_datasource", want: CortexSearchServicesDatasource},
 		{input: "snowflake_current_account_resource", want: CurrentAccountResource},
 		{input: "snowflake_current_account_datasource", want: CurrentAccountDatasource},
+		{input: "snowflake_current_organization_account_resource", want: CurrentOrganizationAccountResource},
 		{input: "snowflake_database_datasource", want: DatabaseDatasource},
 		{input: "snowflake_database_role_datasource", want: DatabaseRoleDatasource},
 		{input: "snowflake_dynamic_table_resource", want: DynamicTableResource},
@@ -45,6 +46,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_image_repository_resource", want: ImageRepositoryResource},
 		{input: "snowflake_image_repositories_datasource", want: ImageRepositoriesDatasource},
 		{input: "snowflake_job_service_resource", want: JobServiceResource},
+		{input: "snowflake_listing_resource", want: ListingResource},
 		{input: "snowflake_managed_account_resource", want: ManagedAccountResource},
 		{input: "snowflake_materialized_view_resource", want: MaterializedViewResource},
 		{input: "snowflake_materialized_views_datasource", want: MaterializedViewsDatasource},
@@ -77,6 +79,8 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_user_authentication_policy_attachment_resource", want: UserAuthenticationPolicyAttachmentResource},
 		{input: "snowflake_user_public_keys_resource", want: UserPublicKeysResource},
 		{input: "snowflake_user_password_policy_attachment_resource", want: UserPasswordPolicyAttachmentResource},
+		{input: "snowflake_user_programmatic_access_token_resource", want: UserProgrammaticAccessTokenResource},
+		{input: "snowflake_user_programmatic_access_tokens_datasource", want: UserProgrammaticAccessTokensDatasource},
 	}
 
 	invalid := []test{

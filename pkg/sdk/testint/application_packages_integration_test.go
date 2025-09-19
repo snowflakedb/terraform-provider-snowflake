@@ -5,7 +5,6 @@ package testint
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -136,36 +135,10 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 	client := testClient(t)
 	ctx := context.Background()
 
-	cleanupApplicationPackageHandle := func(id sdk.AccountObjectIdentifier) func() {
-		return func() {
-			err := client.ApplicationPackages.Drop(ctx, sdk.NewDropApplicationPackageRequest(id))
-			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
-				return
-			}
-			require.NoError(t, err)
-		}
-	}
-
-	createApplicationPackageHandle := func(t *testing.T) *sdk.ApplicationPackage {
-		t.Helper()
-
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreateApplicationPackageRequest(id).WithDistribution(sdk.DistributionPointer(sdk.DistributionInternal))
-		err := client.ApplicationPackages.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(cleanupApplicationPackageHandle(id))
-
-		// grant role "ACCOUNTADMIN" on application package
-		_, err = client.ExecForTests(ctx, fmt.Sprintf(`GRANT MANAGE VERSIONS ON APPLICATION PACKAGE "%s" TO ROLE ACCOUNTADMIN;`, id.Name()))
-		require.NoError(t, err)
-
-		e, err := client.ApplicationPackages.ShowByID(ctx, id)
-		require.NoError(t, err)
-		return e
-	}
-
 	t.Run("alter application package: add, patch and drop version", func(t *testing.T) {
-		e := createApplicationPackageHandle(t)
+		applicationPackage, applicationPackageCleanup := testClientHelper().ApplicationPackage.CreateApplicationPackageWithReleaseChannelsDisabled(t)
+		t.Cleanup(applicationPackageCleanup)
+
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 		testClientHelper().Stage.PutOnStage(t, stage.ID(), "manifest.yml")
@@ -174,12 +147,12 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		version := "V001"
 		using := "@" + stage.ID().FullyQualifiedName()
 		// add version to application package
-		id := e.ID()
+		id := applicationPackage.ID()
 		vr := sdk.NewAddVersionRequest(using).WithVersionIdentifier(&version).WithLabel(sdk.String("add version V001"))
 		r1 := sdk.NewAlterApplicationPackageRequest(id).WithAddVersion(vr)
 		err := client.ApplicationPackages.Alter(ctx, r1)
 		require.NoError(t, err)
-		versions := testClientHelper().ApplicationPackage.ShowVersions(t, e.ID())
+		versions := testClientHelper().ApplicationPackage.ShowVersions(t, applicationPackage.ID())
 		require.Len(t, versions, 1)
 		require.Equal(t, version, versions[0].Version)
 		require.Equal(t, 0, versions[0].Patch)
@@ -189,7 +162,7 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		r2 := sdk.NewAlterApplicationPackageRequest(id).WithAddPatchForVersion(pr)
 		err = client.ApplicationPackages.Alter(ctx, r2)
 		require.NoError(t, err)
-		versions = testClientHelper().ApplicationPackage.ShowVersions(t, e.ID())
+		versions = testClientHelper().ApplicationPackage.ShowVersions(t, applicationPackage.ID())
 		require.Len(t, versions, 2)
 		require.Equal(t, version, versions[0].Version)
 		require.Equal(t, 0, versions[0].Patch)
@@ -200,12 +173,14 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		r3 := sdk.NewAlterApplicationPackageRequest(id).WithDropVersion(sdk.NewDropVersionRequest(version))
 		err = client.ApplicationPackages.Alter(ctx, r3)
 		require.NoError(t, err)
-		versions = testClientHelper().ApplicationPackage.ShowVersions(t, e.ID())
+		versions = testClientHelper().ApplicationPackage.ShowVersions(t, applicationPackage.ID())
 		require.Empty(t, versions)
 	})
 
 	t.Run("alter application package: set default release directive", func(t *testing.T) {
-		e := createApplicationPackageHandle(t)
+		applicationPackage, applicationPackageCleanup := testClientHelper().ApplicationPackage.CreateApplicationPackageWithReleaseChannelsDisabled(t)
+		t.Cleanup(applicationPackageCleanup)
+
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 		testClientHelper().Stage.PutOnStage(t, stage.ID(), "manifest.yml")
@@ -214,12 +189,12 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		version := "V001"
 		using := "@" + stage.ID().FullyQualifiedName()
 		// add version to application package
-		id := e.ID()
+		id := applicationPackage.ID()
 		vr := sdk.NewAddVersionRequest(using).WithVersionIdentifier(&version).WithLabel(sdk.String("add version V001"))
 		r1 := sdk.NewAlterApplicationPackageRequest(id).WithAddVersion(vr)
 		err := client.ApplicationPackages.Alter(ctx, r1)
 		require.NoError(t, err)
-		versions := testClientHelper().ApplicationPackage.ShowVersions(t, e.ID())
+		versions := testClientHelper().ApplicationPackage.ShowVersions(t, applicationPackage.ID())
 		require.Len(t, versions, 1)
 		require.Equal(t, version, versions[0].Version)
 		require.Equal(t, 0, versions[0].Patch)

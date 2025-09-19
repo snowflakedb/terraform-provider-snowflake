@@ -2,12 +2,15 @@ package sdk
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Streams = (*streams)(nil)
+var (
+	_ Streams                = (*streams)(nil)
+	_ convertibleRow[Stream] = new(showStreamsDbRow)
+)
 
 type streams struct {
 	client *Client
@@ -58,8 +61,7 @@ func (v *streams) Show(ctx context.Context, request *ShowStreamRequest) ([]Strea
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showStreamsDbRow, Stream](dbRows)
-	return resultList, nil
+	return convertRows[showStreamsDbRow, Stream](dbRows)
 }
 
 func (v *streams) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Stream, error) {
@@ -85,7 +87,7 @@ func (v *streams) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Str
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateOnTableStreamRequest) toOpts() *CreateOnTableStreamOptions {
@@ -228,7 +230,7 @@ func (r *ShowStreamRequest) toOpts() *ShowStreamOptions {
 	return opts
 }
 
-func (r showStreamsDbRow) convert() *Stream {
+func (r showStreamsDbRow) convert() (*Stream, error) {
 	s := &Stream{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -251,7 +253,7 @@ func (r showStreamsDbRow) convert() *Stream {
 	if r.SourceType.Valid {
 		sourceType, err := ToStreamSourceType(r.SourceType.String)
 		if err != nil {
-			log.Printf("[DEBUG] error converting show stream: %v", err)
+			return nil, fmt.Errorf("error converting show stream: %w", err)
 		} else {
 			s.SourceType = &sourceType
 		}
@@ -265,7 +267,7 @@ func (r showStreamsDbRow) convert() *Stream {
 	if r.Mode.Valid {
 		mode, err := ToStreamMode(r.Mode.String)
 		if err != nil {
-			log.Printf("[DEBUG] error converting show stream: %v", err)
+			return nil, fmt.Errorf("error converting show stream: %w", err)
 		} else {
 			s.Mode = &mode
 		}
@@ -276,7 +278,7 @@ func (r showStreamsDbRow) convert() *Stream {
 	if r.OwnerRoleType.Valid {
 		s.OwnerRoleType = &r.OwnerRoleType.String
 	}
-	return s
+	return s, nil
 }
 
 func (r *DescribeStreamRequest) toOpts() *DescribeStreamOptions {

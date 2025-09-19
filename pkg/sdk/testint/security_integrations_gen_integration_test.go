@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO(SNOW-2312051): Set up proper test level for each test.
 func TestInt_SecurityIntegrations(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -26,13 +27,6 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 	revertParameter := testClientHelper().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterEnableIdentifierFirstLogin, "true")
 	t.Cleanup(revertParameter)
 
-	cleanupSecurityIntegration := func(t *testing.T, id sdk.AccountObjectIdentifier) {
-		t.Helper()
-		t.Cleanup(func() {
-			err := client.SecurityIntegrations.Drop(ctx, sdk.NewDropSecurityIntegrationRequest(id).WithIfExists(true))
-			assert.NoError(t, err)
-		})
-	}
 	createApiAuthClientCred := func(t *testing.T, with func(*sdk.CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest)) (*sdk.SecurityIntegration, sdk.AccountObjectIdentifier) {
 		t.Helper()
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -42,7 +36,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		}
 		err := client.SecurityIntegrations.CreateApiAuthenticationWithClientCredentialsFlow(ctx, req)
 		require.NoError(t, err)
-		cleanupSecurityIntegration(t, id)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -57,7 +51,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		}
 		err := client.SecurityIntegrations.CreateApiAuthenticationWithAuthorizationCodeGrantFlow(ctx, req)
 		require.NoError(t, err)
-		cleanupSecurityIntegration(t, id)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -72,7 +66,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		}
 		err := client.SecurityIntegrations.CreateApiAuthenticationWithJwtBearerFlow(ctx, req)
 		require.NoError(t, err)
-		cleanupSecurityIntegration(t, id)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -90,7 +84,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		}
 		err := client.SecurityIntegrations.CreateExternalOauth(ctx, req)
 		require.NoError(t, err)
-		cleanupSecurityIntegration(t, id)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -105,7 +99,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		}
 		err := client.SecurityIntegrations.CreateOauthForCustomClients(ctx, req)
 		require.NoError(t, err)
-		cleanupSecurityIntegration(t, id)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -122,7 +116,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		}
 		err := client.SecurityIntegrations.CreateOauthForPartnerApplications(ctx, req)
 		require.NoError(t, err)
-		cleanupSecurityIntegration(t, id)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -138,7 +132,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		}
 		err := client.SecurityIntegrations.CreateSaml2(ctx, saml2Req)
 		require.NoError(t, err)
-		cleanupSecurityIntegration(t, id)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -155,7 +149,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		}
 		err := client.SecurityIntegrations.CreateScim(ctx, scimReq)
 		require.NoError(t, err)
-		cleanupSecurityIntegration(t, id)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 		integration, err := client.SecurityIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -199,8 +193,8 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 
 	assertApiAuth := func(details []sdk.SecurityIntegrationProperty, d apiAuthDetails) {
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: d.enabled, Default: "false"})
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_ACCESS_TOKEN_VALIDITY", Type: "Integer", Value: d.oauthAccessTokenValidity, Default: ""})
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Integer", Value: d.oauthRefreshTokenValidity, Default: "7776000"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_ACCESS_TOKEN_VALIDITY", Type: "Long", Value: d.oauthAccessTokenValidity, Default: ""})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Long", Value: d.oauthRefreshTokenValidity, Default: "7776000"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_CLIENT_ID", Type: "String", Value: d.oauthClientId, Default: ""})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_CLIENT_AUTH_METHOD", Type: "String", Value: d.oauthClientAuthMethod, Default: "CLIENT_SECRET_BASIC"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_AUTHORIZATION_ENDPOINT", Type: "String", Value: d.oauthAuthorizationEndpoint, Default: ""})
@@ -261,7 +255,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 	assertOauthPartner := func(details []sdk.SecurityIntegrationProperty, d oauthPartnerDetails) {
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: d.enabled, Default: "false"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_ISSUE_REFRESH_TOKENS", Type: "Boolean", Value: d.oauthIssueRefreshTokens, Default: "true"})
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Integer", Value: d.refreshTokenValidity, Default: "7776000"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Long", Value: d.refreshTokenValidity, Default: "7776000"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_USE_SECONDARY_ROLES", Type: "String", Value: d.useSecondaryRoles, Default: "NONE"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "PRE_AUTHORIZED_ROLES_LIST", Type: "List", Value: d.preAuthorizedRolesList, Default: "[]"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "NETWORK_POLICY", Type: "String", Value: d.networkPolicy, Default: ""})
@@ -532,16 +526,33 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		assertSecurityIntegration(t, integration, id, "OAUTH - CUSTOM", true, "a")
 	})
 
-	// Prove that creating a security integration with a specified network policy id with lower case characters fails. This is a bug in Snowflake.
+	// Prove that creating a security integration with a specified network policy id with lower case characters fails. This is an intended behavior in Snowflake.
 	// https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/3229
-	t.Run("CreateOauthCustom_issue3229", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix("test")
-		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(id))
+	t.Run("CreateOauthCustom_issue3229_lowercase_network_policy_fails_with_double_quotes", func(t *testing.T) {
+		networkPolicyId := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix("test")
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(networkPolicyId))
 		t.Cleanup(networkPolicyCleanup)
 
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		_, err := client.ExecForTests(ctx, fmt.Sprintf(`CREATE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = PUBLIC OAUTH_REDIRECT_URI = 'https://example.com' NETWORK_POLICY = %s`, id.FullyQualifiedName(), networkPolicy.ID().FullyQualifiedName()))
+		require.ErrorContains(t, err, "object does not exist or not authorized")
+	})
+
+	// Prove that 3229 is fixed.
+	t.Run("CreateOauthCustom_issue3229_fix", func(t *testing.T) {
+		networkRule, networkRuleCleanup := testClientHelper().NetworkRule.CreateIP(t)
+		t.Cleanup(networkRuleCleanup)
+
+		networkPolicyId := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix("test")
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(networkPolicyId).WithAllowedNetworkRuleList([]sdk.SchemaObjectIdentifier{networkRule.ID()}))
+		t.Cleanup(networkPolicyCleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		req := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypePublic, "https://example.com").WithNetworkPolicy(networkPolicy.ID())
 		err := client.SecurityIntegrations.CreateOauthForCustomClients(ctx, req)
-		require.ErrorContains(t, err, "object does not exist or not authorized")
+		require.NoError(t, err)
+
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 	})
 
 	t.Run("CreateSaml2", func(t *testing.T) {
@@ -940,20 +951,35 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 
 	// Prove that altering a security integration with a specified network policy id with lower case characters fails. This is a bug in Snowflake.
 	// https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/3229
-	t.Run("AlterOauthCustom_issue3229", func(t *testing.T) {
-		neworkPolicyId := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix("test")
-		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(neworkPolicyId))
+	t.Run("AlterOauthCustom_issue3229_lowercase_network_policy_fails_with_double_quotes", func(t *testing.T) {
+		networkPolicyId := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix("test")
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(networkPolicyId))
 		t.Cleanup(networkPolicyCleanup)
 
 		_, id := createOauthCustom(t, nil)
 
+		_, err := client.ExecForTests(ctx, fmt.Sprintf(`ALTER SECURITY INTEGRATION %s SET NETWORK_POLICY = %s`, id.FullyQualifiedName(), networkPolicy.ID().FullyQualifiedName()))
+		require.ErrorContains(t, err, "object does not exist or not authorized")
+	})
+
+	// Prove that 3229 is fixed.
+	t.Run("AlterOauthCustom_issue3229_fix", func(t *testing.T) {
+		networkRule, networkRuleCleanup := testClientHelper().NetworkRule.CreateIP(t)
+		t.Cleanup(networkRuleCleanup)
+
+		networkPolicyId := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix("test")
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(networkPolicyId).WithAllowedNetworkRuleList([]sdk.SchemaObjectIdentifier{networkRule.ID()}))
+		t.Cleanup(networkPolicyCleanup)
+
+		_, id := createOauthCustom(t, nil)
 		setRequest := sdk.NewAlterOauthForCustomClientsSecurityIntegrationRequest(id).
 			WithSet(
 				*sdk.NewOauthForCustomClientsIntegrationSetRequest().
 					WithNetworkPolicy(networkPolicy.ID()),
 			)
 		err := client.SecurityIntegrations.AlterOauthForCustomClients(ctx, setRequest)
-		require.ErrorContains(t, err, "object does not exist or not authorized")
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
 	})
 
 	t.Run("AlterSAML2Integration", func(t *testing.T) {

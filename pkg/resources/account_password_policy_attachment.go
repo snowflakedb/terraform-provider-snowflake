@@ -65,7 +65,7 @@ func CreateAccountPasswordPolicyAttachment(ctx context.Context, d *schema.Resour
 }
 
 func ReadAccountPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	passwordPolicy := helpers.DecodeSnowflakeID(d.Id())
+	passwordPolicy := helpers.DecodeSnowflakeIDLegacy(d.Id())
 	if err := d.Set("password_policy", passwordPolicy.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
 	}
