@@ -2,7 +2,7 @@
 page_title: "snowflake_storage_integration Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
@@ -44,7 +44,7 @@ resource "snowflake_storage_integration" "integration" {
   storage_aws_role_arn      = "arn:aws:iam::001234567890:role/myrole"
   storage_aws_external_id   = "ABC12345_DEFRole=2_123ABC459AWQmtAdRqwe/A=="
   storage_aws_object_acl    = "bucket-owner-full-control"
-  use_private_link_endpoint = "true"
+  use_privatelink_endpoint = "true"
 }
 
 # Azure integration with all fields set.
@@ -59,7 +59,7 @@ resource "snowflake_storage_integration" "azure_integration" {
   # Azure-specific fields.
   storage_provider          = "AZURE"
   azure_tenant_id           = "a123b4c5-1234-123a-a12b-1a23b45678c9"
-  use_private_link_endpoint = "true"
+  use_privatelink_endpoint = "true"
 }
 ```
 
@@ -85,7 +85,7 @@ resource "snowflake_storage_integration" "azure_integration" {
 - `storage_blocked_locations` (List of String) Explicitly prohibits external stages that use the integration from referencing one or more storage locations.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `type` (String) (Default: `EXTERNAL_STAGE`)
-- `use_private_link_endpoint` (Boolean) (Default: `false`) Specifies whether to use outbound private connectivity to harden the security posture. Supported for AWS S3 and Azure storage providers.
+- `use_privatelink_endpoint` (Boolean) (Default: `false`) Specifies whether to use outbound private connectivity to harden the security posture. Supported for AWS S3 and Azure storage providers.
 
 ### Read-Only
 

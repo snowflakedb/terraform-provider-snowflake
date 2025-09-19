@@ -151,6 +151,7 @@ func IgnoreChangeToCurrentSnowflakeListValueInDescribe(keyInDescribeOutput strin
 			queryOutputList := queryOutput.([]any)
 			if len(queryOutputList) == 1 {
 				result := queryOutputList[0].(map[string]any)
+				// does it even work?
 				newValueInDescribeList := result[keyInDescribeOutput].([]any)
 				if len(newValueInDescribeList) == 1 {
 					newValueInDescribe := newValueInDescribeList[0].(map[string]any)["value"]

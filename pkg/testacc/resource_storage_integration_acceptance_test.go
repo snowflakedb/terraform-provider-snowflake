@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -169,7 +170,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 			variables["aws_object_acl"] = config.StringVariable("bucket-owner-full-control")
 			variables["external_id"] = config.StringVariable(awsExternalId)
 			variables["comment"] = config.StringVariable("some comment")
-			variables["use_private_link_endpoint"] = config.BoolVariable(true)
+			variables["use_privatelink_endpoint"] = config.StringVariable(r.BooleanTrue)
 			variables["allowed_locations"] = config.SetVariable(
 				config.StringVariable("s3://foo/"),
 				config.StringVariable("s3://bar/"),
@@ -202,7 +203,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 					resource.TestCheckNoResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations"),
 					resource.TestCheckNoResourceAttr("snowflake_storage_integration.test", "storage_aws_object_acl"),
 					resource.TestCheckNoResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id"),
-					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_private_link_endpoint", "false"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanDefault),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", ""),
 				),
 			},
@@ -216,7 +217,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", "some comment"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_role_arn", awsRoleArn),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", awsExternalId),
-					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_private_link_endpoint", "true"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanTrue),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", "s3://bar/"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.1", "s3://foo/"),
@@ -250,7 +251,8 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", "false"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", r.BooleanFalse),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanDefault),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_role_arn", awsRoleArn),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", "s3://foo/"),
@@ -266,7 +268,8 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 						WithSet(*sdk.NewStorageIntegrationSetRequest().
 							WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).
 								WithStorageAwsExternalId(awsExternalId).
-								WithStorageAwsObjectAcl("bucket-owner-full-control")).
+								WithStorageAwsObjectAcl("bucket-owner-full-control").
+								WithUsePrivateLinkEndpoint(true)).
 							WithStorageBlockedLocations([]sdk.StorageLocation{
 								{Path: "s3://external-blocked/"},
 							}))
@@ -276,6 +279,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StorageIntegration/AWS_Update/unset"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanDefault),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_external_id", ""),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_aws_object_acl", ""),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations.#", "0"),
@@ -303,7 +307,7 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 		}
 		if set {
 			variables["comment"] = config.StringVariable("some comment")
-			variables["use_private_link_endpoint"] = config.BoolVariable(true)
+			variables["use_privatelink_endpoint"] = config.StringVariable(r.BooleanTrue)
 			variables["allowed_locations"] = config.SetVariable(
 				config.StringVariable(azureBucketUrl+"/foo"),
 				config.StringVariable(azureBucketUrl+"/bar"),
@@ -333,7 +337,7 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", azureBucketUrl+"/foo"),
 					resource.TestCheckNoResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations"),
-					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_private_link_endpoint", "false"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanDefault),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", ""),
 				),
 			},
@@ -345,7 +349,7 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", "some comment"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "azure_tenant_id", azureTenantId),
-					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_private_link_endpoint", "true"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanTrue),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", azureBucketUrl+"/bar"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.1", azureBucketUrl+"/foo"),
@@ -359,7 +363,8 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StorageIntegration/Azure_Update/unset"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", "false"),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", r.BooleanFalse),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanDefault),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "azure_tenant_id", azureTenantId),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", azureBucketUrl+"/foo"),

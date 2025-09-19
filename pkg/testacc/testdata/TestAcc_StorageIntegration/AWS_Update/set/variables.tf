@@ -26,6 +26,6 @@ variable "external_id" {
   type = string
 }
 
-variable "use_private_link_endpoint" {
-  type = bool
+variable "use_privatelink_endpoint" {
+  type = string
 }

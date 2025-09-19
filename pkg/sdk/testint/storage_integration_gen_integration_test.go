@@ -47,6 +47,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		allowedLocations []sdk.StorageLocation,
 		blockedLocations []sdk.StorageLocation,
 		comment string,
+		usePrivateLinkEndpoint bool,
 	) {
 		t.Helper()
 		allowed := make([]string, len(allowedLocations))
@@ -67,6 +68,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assert.NotEmpty(t, findProp(t, props, "STORAGE_AWS_ROLE_ARN").Value)
 		assert.NotEmpty(t, findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 		assert.Equal(t, comment, findProp(t, props, "COMMENT").Value)
+		assert.Equal(t, strconv.FormatBool(usePrivateLinkEndpoint), findProp(t, props, "USE_PRIVATELINK_ENDPOINT").Value)
 	}
 
 	assertGCSStorageIntegrationDescResult := func(
@@ -159,7 +161,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		req := sdk.NewCreateStorageIntegrationRequest(id, true, s3AllowedLocations).
 			WithIfNotExists(true).
-			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(protocol, awsRoleARN).WithStorageAwsExternalId("some-external-id")).
+			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(protocol, awsRoleARN).WithStorageAwsExternalId("some-external-id").WithUsePrivateLinkEndpoint(true)).
 			WithStorageBlockedLocations(s3BlockedLocations).
 			WithComment("some comment")
 
@@ -195,6 +197,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		return id
 	}
 
+	// TODO: make a tick test for azure storage integration with use_privatelink_endpoint
 	createAzureStorageIntegration := func(t *testing.T) sdk.AccountObjectIdentifier {
 		t.Helper()
 
@@ -267,7 +270,8 @@ func TestInt_StorageIntegrations(t *testing.T) {
 				*sdk.NewStorageIntegrationSetRequest().
 					WithS3Params(
 						*sdk.NewSetS3StorageParamsRequest(awsRoleARN).
-							WithStorageAwsExternalId("new-external-id"),
+							WithStorageAwsExternalId("new-external-id").
+							WithUsePrivateLinkEndpoint(true),
 					).
 					WithEnabled(true).
 					WithStorageAllowedLocations(changedS3AllowedLocations).
@@ -280,7 +284,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertS3StorageIntegrationDescResult(t, props, true, changedS3AllowedLocations, changedS3BlockedLocations, "changed comment")
+		assertS3StorageIntegrationDescResult(t, props, true, changedS3AllowedLocations, changedS3BlockedLocations, "changed comment", true)
 		assert.Equal(t, "new-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
@@ -325,8 +329,20 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertS3StorageIntegrationDescResult(t, props, false, s3AllowedLocations, []sdk.StorageLocation{}, "")
+		assertS3StorageIntegrationDescResult(t, props, false, s3AllowedLocations, []sdk.StorageLocation{}, "", true)
 		assert.NotEqual(t, "some-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
+	})
+
+	t.Run("Alter - unset privatelink endpoint does not work", func(t *testing.T) {
+		id := createS3StorageIntegration(t, sdk.RegularS3Protocol)
+
+		req := sdk.NewAlterStorageIntegrationRequest(id).
+			WithUnset(
+				*sdk.NewStorageIntegrationUnsetRequest().
+					WithUsePrivateLinkEndpoint(true),
+			)
+		err := client.StorageIntegrations.Alter(ctx, req)
+		require.ErrorContains(t, err, "Cannot unset property 'USE_PRIVATELINK_ENDPOINT' on integration")
 	})
 
 	t.Run("Describe - S3", func(t *testing.T) {
@@ -335,7 +351,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		desc, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertS3StorageIntegrationDescResult(t, desc, true, s3AllowedLocations, s3BlockedLocations, "some comment")
+		assertS3StorageIntegrationDescResult(t, desc, true, s3AllowedLocations, s3BlockedLocations, "some comment", true)
 	})
 
 	t.Run("Describe - GCS", func(t *testing.T) {
