@@ -4,7 +4,7 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
-var ProgrammaticAccessTokenStatusDef = g.NewEnum("ProgrammaticAccessTokenStatus", "ACTIVE", "EXPIRED", "DISABLED").WithPlural("ProgrammaticAccessTokenStatuses")
+var ProgrammaticAccessTokenStatusDef = g.NewEnum("ProgrammaticAccessTokenStatus", "ProgrammaticAccessTokenStatuses", "ACTIVE", "EXPIRED", "DISABLED")
 
 var programmaticAccessTokenResultDBRowDef = g.DbStruct("programmaticAccessTokenResultDBRow").
 	Text("name").
