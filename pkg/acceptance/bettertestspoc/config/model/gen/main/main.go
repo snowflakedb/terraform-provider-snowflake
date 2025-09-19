@@ -9,8 +9,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
-const name = "resource model builder"
-const version = "0.1.0"
+const (
+	name    = "resource model builder"
+	version = "0.1.0"
+)
 
 func main() {
 	genhelpers.NewGenerator(

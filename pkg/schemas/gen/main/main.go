@@ -13,8 +13,10 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-const name = "SDK to schema"
-const version = "0.1.0"
+const (
+	name    = "SDK to schema"
+	version = "0.1.0"
+)
 
 func main() {
 	genhelpers.NewGenerator(
