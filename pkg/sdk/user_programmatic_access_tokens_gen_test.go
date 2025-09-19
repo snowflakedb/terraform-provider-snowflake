@@ -275,7 +275,7 @@ func Test_ProgrammaticAccessTokenStatus(t *testing.T) {
 
 	for _, tc := range valid {
 		t.Run(tc.input, func(t *testing.T) {
-			got, err := toProgrammaticAccessTokenStatus(tc.input)
+			got, err := ToProgrammaticAccessTokenStatus(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})
@@ -283,7 +283,7 @@ func Test_ProgrammaticAccessTokenStatus(t *testing.T) {
 
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
-			_, err := toProgrammaticAccessTokenStatus(tc.input)
+			_, err := ToProgrammaticAccessTokenStatus(tc.input)
 			require.Error(t, err)
 		})
 	}
