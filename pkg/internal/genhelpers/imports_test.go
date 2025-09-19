@@ -10,7 +10,6 @@ import (
 
 // TODO [this PR]: extract common setup for easier test writing
 func Test_ExperimentWithImportsProcess(t *testing.T) {
-
 	// TODO [this PR]: use these opts in dedicated tests
 	opts := &imports.Options{
 		Fragment:   false,
@@ -190,7 +189,6 @@ func hello() {
 }
 
 func Test_AddImports(t *testing.T) {
-
 	t.Run("add standard imports", func(t *testing.T) {
 		src := []byte(`package somepackagename
 
