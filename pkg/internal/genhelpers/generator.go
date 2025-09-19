@@ -40,7 +40,6 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 		additionalObjectDebugLogProviders: make([]func([]T), 0),
 		objectFilters:                     make([]func(T) bool, 0),
 
-		// TODO: format version in the preamble differently
 		preamble: preamble,
 	}
 }
