@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -126,7 +125,7 @@ func runTest(testType TestType) *bytes.Buffer {
 	}()
 
 	resultingBuffer := new(bytes.Buffer)
-	reader := bufio.NewReader(io.TeeReader(buf, resultingBuffer))
+	reader := bufio.NewReader(buf)
 
 loop:
 	for {
@@ -134,24 +133,33 @@ loop:
 		case <-doneChan:
 			for reader.Buffered() != 0 {
 				// TODO: Try to unify with code below
-				var entry struct {
-					Output string `json:"Output"`
-				}
 				text, _ := reader.ReadBytes('\n')
+
+				var entry map[string]string
 				_ = json.Unmarshal(text, &entry)
-				if entry.Output != "" {
-					fmt.Print(entry.Output)
+
+				if v, ok := entry["Output"]; ok && v != "" {
+					fmt.Print(v)
+				}
+
+				if v, ok := entry["Action"]; ok && v != "" {
+					resultingBuffer.Write(text)
 				}
 			}
 			break loop
 		default:
-			var entry struct {
-				Output string `json:"Output"`
-			}
 			text, _ := reader.ReadBytes('\n')
+
+			var entry map[string]string
 			_ = json.Unmarshal(text, &entry)
-			if entry.Output != "" {
-				fmt.Print(entry.Output)
+
+			if v, ok := entry["Output"]; ok && v != "" {
+				fmt.Print(v)
+			}
+
+			// TODO: Remove if (workaround for now)
+			if v, ok := entry["Action"]; ok && v != "" {
+				resultingBuffer.Write(text)
 			}
 		}
 	}
