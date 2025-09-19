@@ -8,7 +8,7 @@ import (
 
 var (
 	_ Roles                = (*roles)(nil)
-	_ convertibleRow[Role] = (*roleDBRow)(nil)
+	_ convertibleRow[Role] = new(roleDBRow)
 )
 
 type roles struct {
@@ -36,8 +36,7 @@ func (v *roles) Show(ctx context.Context, req *ShowRoleRequest) ([]Role, error) 
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[roleDBRow, Role](dbRows)
-	return resultList, nil
+	return convertRows[roleDBRow, Role](dbRows)
 }
 
 func (v *roles) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Role, error) {

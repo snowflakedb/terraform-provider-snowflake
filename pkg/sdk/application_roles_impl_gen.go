@@ -6,7 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ApplicationRoles = (*applicationRoles)(nil)
+var (
+	_ ApplicationRoles                = (*applicationRoles)(nil)
+	_ convertibleRow[ApplicationRole] = new(applicationRoleDbRow)
+)
 
 type applicationRoles struct {
 	client *Client
@@ -28,8 +31,7 @@ func (v *applicationRoles) Show(ctx context.Context, request *ShowApplicationRol
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[applicationRoleDbRow, ApplicationRole](dbRows)
-	return resultList, nil
+	return convertRows[applicationRoleDbRow, ApplicationRole](dbRows)
 }
 
 func (v *applicationRoles) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*ApplicationRole, error) {
@@ -78,12 +80,12 @@ func (r *ShowApplicationRoleRequest) toOpts() *ShowApplicationRoleOptions {
 	return opts
 }
 
-func (r applicationRoleDbRow) convert() *ApplicationRole {
+func (r applicationRoleDbRow) convert() (*ApplicationRole, error) {
 	return &ApplicationRole{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		Owner:         r.Owner,
 		Comment:       r.Comment,
 		OwnerRoleType: r.OwnerRoleType,
-	}
+	}, nil
 }

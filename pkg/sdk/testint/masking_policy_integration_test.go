@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [next PR]: merge these tests
+// TODO [SNOW-2298256]: merge these tests
 func TestInt_MaskingPoliciesShow(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)

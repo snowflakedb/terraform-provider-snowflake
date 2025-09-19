@@ -62,7 +62,7 @@ var failoverGroupSchema = map[string]*schema.Schema{
 		Elem:          &schema.Schema{Type: schema.TypeString},
 		Optional:      true,
 		ConflictsWith: []string{"from_replica"},
-		Description:   "Specifies the target account or list of target accounts to which replication and failover of specified objects from the source account is enabled. Secondary failover groups in the target accounts in this list can be promoted to serve as the primary failover group in case of failover. Expected in the form <org_name>.<target_account_name>",
+		Description:   "Specifies the target account or list of target accounts to which replication and failover of specified objects from the source account is enabled. Secondary failover groups in the target accounts in this list can be promoted to serve as the primary failover group in case of failover. Expected in the form `<org_name>.<target_account_name>`. This value is case-sensitive.",
 	},
 	"ignore_edition_check": {
 		Type:          schema.TypeBool,
@@ -141,7 +141,7 @@ var failoverGroupSchema = map[string]*schema.Schema{
 
 func FailoverGroup() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.FailoverGroups.DropSafely
 		},
@@ -277,7 +277,7 @@ func CreateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 // ReadFailoverGroup implements schema.ReadFunc.
 func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 	failoverGroup, err := client.FailoverGroups.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
@@ -416,7 +416,7 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 // UpdateFailoverGroup implements schema.UpdateFunc.
 func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	// alter failover group <name> set ...
 	opts := &sdk.AlterSourceFailoverGroupOptions{
@@ -649,7 +649,7 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 				},
 			}
 			if err := client.FailoverGroups.AlterSource(ctx, id, opts); err != nil {
-				return diag.FromErr(fmt.Errorf("error removing allowed accounts for failover group %v err = %w", id.Name(), err))
+				return diag.FromErr(fmt.Errorf("error adding allowed accounts for failover group %v err = %w", id.Name(), err))
 			}
 		}
 	}

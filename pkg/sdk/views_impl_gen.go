@@ -4,11 +4,14 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Views = (*views)(nil)
+var (
+	_ Views                       = (*views)(nil)
+	_ convertibleRow[ViewDetails] = new(viewDetailsRow)
+	_ convertibleRow[View]        = new(viewDBRow)
+)
 
 type views struct {
 	client *Client
@@ -39,8 +42,7 @@ func (v *views) Show(ctx context.Context, request *ShowViewRequest) ([]View, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[viewDBRow, View](dbRows)
-	return resultList, nil
+	return convertRows[viewDBRow, View](dbRows)
 }
 
 func (v *views) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*View, error) {
@@ -66,7 +68,7 @@ func (v *views) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]View
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[viewDetailsRow, ViewDetails](rows), nil
+	return convertRows[viewDetailsRow, ViewDetails](rows)
 }
 
 func (r *CreateViewRequest) toOpts() *CreateViewOptions {
@@ -272,7 +274,7 @@ func (r *ShowViewRequest) toOpts() *ShowViewOptions {
 	return opts
 }
 
-func (r viewDBRow) convert() *View {
+func (r viewDBRow) convert() (*View, error) {
 	view := View{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -306,7 +308,7 @@ func (r viewDBRow) convert() *View {
 	if r.ChangeTracking.Valid {
 		view.ChangeTracking = r.ChangeTracking.String
 	}
-	return &view
+	return &view, nil
 }
 
 func (r *DescribeViewRequest) toOpts() *DescribeViewOptions {
@@ -316,7 +318,7 @@ func (r *DescribeViewRequest) toOpts() *DescribeViewOptions {
 	return opts
 }
 
-func (r viewDetailsRow) convert() *ViewDetails {
+func (r viewDetailsRow) convert() (*ViewDetails, error) {
 	details := &ViewDetails{
 		Name:       r.Name,
 		Type:       r.Type,
@@ -340,5 +342,5 @@ func (r viewDetailsRow) convert() *ViewDetails {
 	if r.PolicyName.Valid {
 		details.PolicyName = String(r.PolicyName.String)
 	}
-	return details
+	return details, nil
 }

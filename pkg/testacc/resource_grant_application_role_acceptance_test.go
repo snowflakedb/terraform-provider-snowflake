@@ -28,7 +28,7 @@ func createApp(t *testing.T) *sdk.Application {
 	applicationPackage, cleanupApplicationPackage := testClient().ApplicationPackage.CreateApplicationPackage(t)
 	t.Cleanup(cleanupApplicationPackage)
 
-	testClient().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), "v1")
+	testClient().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), "v1")
 
 	application, cleanupApplication := testClient().Application.CreateApplication(t, applicationPackage.ID(), "v1")
 	t.Cleanup(cleanupApplication)

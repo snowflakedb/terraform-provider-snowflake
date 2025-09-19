@@ -27,7 +27,6 @@ func TestAcc_NetworkPolicyAttachmentUser(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -60,14 +59,12 @@ func TestAcc_NetworkPolicyAttachmentUser(t *testing.T) {
 }
 
 func TestAcc_NetworkPolicyAttachmentAccount(t *testing.T) {
-	// TODO [SNOW-2010844]: unskip
-	t.Skip("Skipping as it messes with the account level setting. Should be moved to manual tests and later invoked on a brand new account.")
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	policyNameAccount := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlpha))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

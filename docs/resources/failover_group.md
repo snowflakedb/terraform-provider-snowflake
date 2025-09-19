@@ -7,6 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+!> **Updating `allowed_accounts`** Currently, updating the `allowed_accounts` field may fail due to an incorrect query being sent (see [#3946](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3946)). This will be fixed during the resource rework. As a workaround, use the `execute` resource to update the allowed accounts manually. After that, refresh the state with the updated `allowed_accounts` field in the resource configuration.
+
 # snowflake_failover_group (Resource)
 
 
@@ -64,7 +66,7 @@ resource "snowflake_failover_group" "target_failover_group" {
 
 ### Optional
 
-- `allowed_accounts` (Set of String) Specifies the target account or list of target accounts to which replication and failover of specified objects from the source account is enabled. Secondary failover groups in the target accounts in this list can be promoted to serve as the primary failover group in case of failover. Expected in the form <org_name>.<target_account_name>
+- `allowed_accounts` (Set of String) Specifies the target account or list of target accounts to which replication and failover of specified objects from the source account is enabled. Secondary failover groups in the target accounts in this list can be promoted to serve as the primary failover group in case of failover. Expected in the form `<org_name>.<target_account_name>`. This value is case-sensitive.
 - `allowed_databases` (Set of String) Specifies the database or list of databases for which you are enabling replication and failover from the source account to the target account. The OBJECT_TYPES list must include DATABASES to set this parameter.
 - `allowed_integration_types` (Set of String) Type(s) of integrations for which you are enabling replication and failover from the source account to the target account. This property requires that the OBJECT_TYPES list include INTEGRATIONS to set this parameter. The following integration types are supported: "SECURITY INTEGRATIONS", "API INTEGRATIONS", "STORAGE INTEGRATIONS", "EXTERNAL ACCESS INTEGRATIONS", "NOTIFICATION INTEGRATIONS"
 - `allowed_shares` (Set of String) Specifies the share or list of shares for which you are enabling replication and failover from the source account to the target account. The OBJECT_TYPES list must include SHARES to set this parameter.

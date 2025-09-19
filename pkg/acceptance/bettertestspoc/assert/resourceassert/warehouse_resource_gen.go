@@ -62,6 +62,11 @@ func (w *WarehouseResourceAssert) HasFullyQualifiedNameString(expected string) *
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasGenerationString(expected string) *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueSet("generation", expected))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasInitiallySuspendedString(expected string) *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("initially_suspended", expected))
 	return w
@@ -84,6 +89,11 @@ func (w *WarehouseResourceAssert) HasMinClusterCountString(expected string) *War
 
 func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactorString(expected string) *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("query_acceleration_max_scale_factor", expected))
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasResourceConstraintString(expected string) *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueSet("resource_constraint", expected))
 	return w
 }
 
@@ -151,6 +161,11 @@ func (w *WarehouseResourceAssert) HasNoFullyQualifiedName() *WarehouseResourceAs
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasNoGeneration() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("generation"))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasNoInitiallySuspended() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueNotSet("initially_suspended"))
 	return w
@@ -173,6 +188,11 @@ func (w *WarehouseResourceAssert) HasNoMinClusterCount() *WarehouseResourceAsser
 
 func (w *WarehouseResourceAssert) HasNoQueryAccelerationMaxScaleFactor() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueNotSet("query_acceleration_max_scale_factor"))
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasNoResourceConstraint() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("resource_constraint"))
 	return w
 }
 
@@ -235,6 +255,11 @@ func (w *WarehouseResourceAssert) HasFullyQualifiedNameEmpty() *WarehouseResourc
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasGenerationEmpty() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueSet("generation", ""))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasInitiallySuspendedEmpty() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("initially_suspended", ""))
 	return w
@@ -257,6 +282,11 @@ func (w *WarehouseResourceAssert) HasMinClusterCountEmpty() *WarehouseResourceAs
 
 func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactorEmpty() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValueSet("query_acceleration_max_scale_factor", ""))
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasResourceConstraintEmpty() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValueSet("resource_constraint", ""))
 	return w
 }
 
@@ -324,6 +354,11 @@ func (w *WarehouseResourceAssert) HasFullyQualifiedNameNotEmpty() *WarehouseReso
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasGenerationNotEmpty() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValuePresent("generation"))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasInitiallySuspendedNotEmpty() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValuePresent("initially_suspended"))
 	return w
@@ -346,6 +381,11 @@ func (w *WarehouseResourceAssert) HasMinClusterCountNotEmpty() *WarehouseResourc
 
 func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactorNotEmpty() *WarehouseResourceAssert {
 	w.AddAssertion(assert.ValuePresent("query_acceleration_max_scale_factor"))
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasResourceConstraintNotEmpty() *WarehouseResourceAssert {
+	w.AddAssertion(assert.ValuePresent("resource_constraint"))
 	return w
 }
 

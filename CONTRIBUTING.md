@@ -15,6 +15,7 @@
   - [Naming and describing the PR](#naming-and-describing-the-pr)
   - [Requesting the review](#requesting-the-review)
 - [Advanced Debugging](#advanced-debugging)
+- [Extending the migration script](#extending-the-migration-script)
 
 ## Setting up the development environment
 
@@ -177,3 +178,8 @@ To debug the provider with a debugger:
 **Note**: The `TF_REATTACH_PROVIDERS` environment variable needs to be set every time you restart your debugger session as some values like the `Pid` or the TCP port will change with every execution.
 
 For further instructions, please check the official [Terraform Plugin Development guide](https://www.terraform.io/plugin/debugging#starting-a-provider-in-debug-mode).
+
+## Extending the migration script
+
+If you wish to extend the [migration script](./pkg/scripts/migration_script/README.md)
+please check the dedicated [contribution guide](./pkg/scripts/migration_script/CONTRIBUTING.md).

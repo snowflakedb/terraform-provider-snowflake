@@ -99,6 +99,24 @@ func (c *WarehouseClient) UpdateWarehouseType(t *testing.T, id sdk.AccountObject
 	require.NoError(t, err)
 }
 
+func (c *WarehouseClient) UpdateResourceConstraint(t *testing.T, id sdk.AccountObjectIdentifier, newResourceConstraint sdk.WarehouseResourceConstraint) {
+	t.Helper()
+
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, id, &sdk.AlterWarehouseOptions{Set: &sdk.WarehouseSet{ResourceConstraint: sdk.Pointer(newResourceConstraint)}})
+	require.NoError(t, err)
+}
+
+func (c *WarehouseClient) UpdateWarehouseTypeAndResourceConstraint(t *testing.T, id sdk.AccountObjectIdentifier, newType sdk.WarehouseType, newResourceConstraint sdk.WarehouseResourceConstraint) {
+	t.Helper()
+
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, id, &sdk.AlterWarehouseOptions{Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(newType), ResourceConstraint: sdk.Pointer(newResourceConstraint)}})
+	require.NoError(t, err)
+}
+
 func (c *WarehouseClient) UpdateStatementTimeoutInSeconds(t *testing.T, id sdk.AccountObjectIdentifier, newValue int) {
 	t.Helper()
 

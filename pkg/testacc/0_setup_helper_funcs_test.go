@@ -9,7 +9,7 @@ import (
 	"github.com/snowflakedb/gosnowflake"
 )
 
-// TODO [next PRs]: contents of this file may be potentially reused for both integration and acceptance tests setups
+// TODO [SNOW-2298294]: contents of this file may be potentially reused for both integration and acceptance tests setups
 
 // timer measures time from invocation point to the end of method.
 // It's supposed to be used like:

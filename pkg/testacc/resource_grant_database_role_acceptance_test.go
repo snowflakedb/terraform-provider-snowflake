@@ -31,7 +31,6 @@ func TestAcc_GrantDatabaseRole_databaseRole(t *testing.T) {
 	resourceName := "snowflake_grant_database_role.g"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -75,7 +74,6 @@ func TestAcc_GrantDatabaseRole_databaseRoleMixedQuoting(t *testing.T) {
 	resourceName := "snowflake_grant_database_role.g"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -123,7 +121,6 @@ func TestAcc_GrantDatabaseRole_issue2402(t *testing.T) {
 	resourceName := "snowflake_grant_database_role.g"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -159,7 +156,6 @@ func TestAcc_GrantDatabaseRole_accountRole(t *testing.T) {
 	resourceName := "snowflake_grant_database_role.g"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -205,7 +201,6 @@ func TestAcc_GrantDatabaseRole_share(t *testing.T) {
 	resourceName := "snowflake_grant_database_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -250,7 +245,6 @@ func TestAcc_GrantDatabaseRole_shareWithDots(t *testing.T) {
 	resourceName := "snowflake_grant_database_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -282,7 +276,6 @@ func TestAcc_GrantDatabaseRole_migrateFromV0941_ensureSmoothUpgradeWithNewResour
 	parentRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -339,7 +332,6 @@ func TestAcc_GrantDatabaseRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 	parentRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -67,7 +67,6 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -256,7 +255,6 @@ func TestAcc_MaskingPolicy_complete(t *testing.T) {
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -324,7 +322,6 @@ func TestAcc_MaskingPolicyMultiColumns(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.MaskingPolicy),
 		Steps: []resource.TestStep{
 			{
@@ -389,7 +386,6 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -434,7 +430,6 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -484,7 +479,6 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -513,7 +507,6 @@ func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -557,7 +550,6 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
@@ -650,7 +642,6 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				PreConfig:         func() { SetLegacyConfigPathEnv(t) },
@@ -709,7 +700,6 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				PreConfig:         func() { SetLegacyConfigPathEnv(t) },
@@ -777,7 +767,6 @@ func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -837,7 +826,6 @@ func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -894,7 +882,6 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -919,7 +906,7 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 					// had to update the body too, as otherwise error is returned
 					// 090207 (42601): Declared return type 'NUMBER(38,0)' is incompatible with actual return type 'VARCHAR(5)'
 					// we could later suppress the body changes to be sure what triggers the changes
-					// TODO [next PR]: suppress the changes
+					// TODO [SNOW-2298286]: suppress the body changes
 					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeNumber, updatedBody, &sdk.CreateMaskingPolicyOptions{})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -969,7 +956,6 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1040,7 +1026,6 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

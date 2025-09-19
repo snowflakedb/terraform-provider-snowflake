@@ -28,7 +28,6 @@ func TestAcc_Share(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.Share),
 		Steps: []resource.TestStep{
 			{
@@ -79,7 +78,6 @@ func TestAcc_Share_validateAccounts(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.Share),
 		Steps: []resource.TestStep{
 			{

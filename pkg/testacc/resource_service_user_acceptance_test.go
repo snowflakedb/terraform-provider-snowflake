@@ -79,7 +79,6 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			// CREATE WITHOUT ATTRIBUTES
@@ -308,7 +307,6 @@ func TestAcc_ServiceUser_AllParameters(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters
@@ -546,7 +544,6 @@ func TestAcc_ServiceUser_handleExternalTypeChange(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			{
@@ -600,7 +597,6 @@ func TestAcc_ServiceUser_setIncompatibleAttributes(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			{

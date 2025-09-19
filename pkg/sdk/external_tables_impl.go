@@ -6,7 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ExternalTables = (*externalTables)(nil)
+var (
+	_ ExternalTables                             = (*externalTables)(nil)
+	_ convertibleRow[ExternalTable]              = new(externalTableRow)
+	_ convertibleRow[ExternalTableColumnDetails] = new(externalTableColumnDetailsRow)
+	_ convertibleRow[ExternalTableStageDetails]  = new(externalTableStageDetailsRow)
+)
 
 type externalTables struct {
 	client *Client
@@ -49,8 +54,7 @@ func (v *externalTables) Show(ctx context.Context, req *ShowExternalTableRequest
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[externalTableRow, ExternalTable](dbRows)
-	return resultList, nil
+	return convertRows[externalTableRow, ExternalTable](dbRows)
 }
 
 func (v *externalTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*ExternalTable, error) {
@@ -77,7 +81,7 @@ func (v *externalTables) DescribeColumns(ctx context.Context, req *DescribeExter
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalTableColumnDetailsRow, ExternalTableColumnDetails](rows), nil
+	return convertRows[externalTableColumnDetailsRow, ExternalTableColumnDetails](rows)
 }
 
 func (v *externalTables) DescribeStage(ctx context.Context, req *DescribeExternalTableStageRequest) ([]ExternalTableStageDetails, error) {
@@ -85,5 +89,5 @@ func (v *externalTables) DescribeStage(ctx context.Context, req *DescribeExterna
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalTableStageDetailsRow, ExternalTableStageDetails](rows), nil
+	return convertRows[externalTableStageDetailsRow, ExternalTableStageDetails](rows)
 }

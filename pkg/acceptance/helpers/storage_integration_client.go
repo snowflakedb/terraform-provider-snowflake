@@ -77,3 +77,11 @@ func (c *StorageIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectId
 		require.NoError(t, err)
 	}
 }
+
+func (c *StorageIntegrationClient) Alter(t *testing.T, request *sdk.AlterStorageIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, request)
+	require.NoError(t, err)
+}

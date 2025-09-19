@@ -10,15 +10,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/snowflakedb/gosnowflake"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/snowflakedb/gosnowflake"
 )
 
 var (
 	_ validatable = new(CreateAccountOptions)
 	_ validatable = new(AlterAccountOptions)
 	_ validatable = new(ShowAccountOptions)
+
+	_ convertibleRow[Account] = new(accountDBRow)
 )
 
 type Accounts interface {
@@ -461,7 +462,7 @@ type accountDBRow struct {
 	OrganizationUrlExpirationOn sql.NullTime   `db:"organization_URL_expiration_on"`
 }
 
-func (row accountDBRow) convert() *Account {
+func (row accountDBRow) convert() (*Account, error) {
 	acc := &Account{
 		OrganizationName:      row.OrganizationName,
 		AccountName:           row.AccountName,
@@ -541,7 +542,7 @@ func (row accountDBRow) convert() *Account {
 	if row.OrganizationUrlExpirationOn.Valid {
 		acc.OrganizationUrlExpirationOn = &row.OrganizationUrlExpirationOn.Time
 	}
-	return acc
+	return acc, nil
 }
 
 func (c *accounts) Show(ctx context.Context, opts *ShowAccountOptions) ([]Account, error) {
@@ -550,8 +551,7 @@ func (c *accounts) Show(ctx context.Context, opts *ShowAccountOptions) ([]Accoun
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[accountDBRow, Account](dbRows)
-	return resultList, nil
+	return convertRows[accountDBRow, Account](dbRows)
 }
 
 func (c *accounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Account, error) {
@@ -784,7 +784,7 @@ func (c *accounts) UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
 	}
 	err := c.client.Accounts.Alter(ctx, &AlterAccountOptions{Unset: unset})
 	// If the policy is not attached to the account, Snowflake returns an error.
-	if err != nil && strings.Contains(err.Error(), fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", kind)) {
+	if errors.Is(err, ErrPolicyNotAttachedToAccount) {
 		return nil
 	}
 	return err

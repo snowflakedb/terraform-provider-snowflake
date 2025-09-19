@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -18,21 +19,23 @@ import (
 func TestAcc_Functions(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
 	dataSourceName := "data.snowflake_functions.functions"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.FunctionJava),
 		Steps: []resource.TestStep{
 			{
-				Config: functionsConfig(t),
+				Config: functionsConfig(t, schema.ID()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(dataSourceName, "database", TestDatabaseName),
-					resource.TestCheckResourceAttr(dataSourceName, "schema", TestSchemaName),
-					resource.TestCheckResourceAttrSet(dataSourceName, "functions.#"),
+					resource.TestCheckResourceAttr(dataSourceName, "database", schema.ID().DatabaseName()),
+					resource.TestCheckResourceAttr(dataSourceName, "schema", schema.ID().Name()),
+					resource.TestCheckResourceAttr(dataSourceName, "functions.#", "2"),
 				),
 			},
 		},
@@ -40,7 +43,7 @@ func TestAcc_Functions(t *testing.T) {
 }
 
 // TODO [SNOW-1348103]: use generated config builder when reworking the datasource
-func functionsConfig(t *testing.T) string {
+func functionsConfig(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) string {
 	t.Helper()
 
 	className := "TestFunc"
@@ -51,8 +54,8 @@ func functionsConfig(t *testing.T) string {
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Function.SampleJavaDefinition(t, className, funcName, argName)
 
-	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
+	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
 
 	functionsSetup := config.FromModels(t,
 		model.FunctionJavaBasicInline("f1", id1, dataType, handler, definition).WithArgument(argName, dataType),
@@ -66,5 +69,5 @@ data "snowflake_functions" "functions" {
   schema     = "%s"
   depends_on = [snowflake_function_java.f1, snowflake_function_java.f2]
 }
-`, functionsSetup, TestDatabaseName, TestSchemaName)
+`, functionsSetup, schemaId.DatabaseName(), schemaId.Name())
 }

@@ -116,6 +116,30 @@ func TestFailoverGroupAlterSource(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" REMOVE "db1" FROM ALLOWED_DATABASES`)
 	})
 
+	t.Run("add allowed accounts", func(t *testing.T) {
+		opts := &AlterSourceFailoverGroupOptions{
+			name: id,
+			Add: &FailoverGroupAdd{
+				AllowedAccounts: []AccountIdentifier{
+					NewAccountIdentifier("MY_ORG", "MY_ACCOUNT"),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" ADD "MY_ORG"."MY_ACCOUNT" TO ALLOWED_ACCOUNTS`)
+	})
+
+	t.Run("remove allowed accounts", func(t *testing.T) {
+		opts := &AlterSourceFailoverGroupOptions{
+			name: id,
+			Remove: &FailoverGroupRemove{
+				AllowedAccounts: []AccountIdentifier{
+					NewAccountIdentifier("MY_ORG", "MY_ACCOUNT"),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" REMOVE "MY_ORG"."MY_ACCOUNT" FROM ALLOWED_ACCOUNTS`)
+	})
+
 	t.Run("add share account object", func(t *testing.T) {
 		opts := &AlterSourceFailoverGroupOptions{
 			name: id,

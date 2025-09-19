@@ -300,7 +300,7 @@ func TestInt_RowAccessPoliciesShowByID(t *testing.T) {
 	})
 }
 
-// TODO [next PR]: improve this test
+// TODO [SNOW-2298259]: improve this test; follow functions/procedures tests
 func TestInt_RowAccessPoliciesDescribe(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)

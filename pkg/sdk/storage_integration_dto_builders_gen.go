@@ -61,6 +61,11 @@ func NewS3StorageParamsRequest(
 	return &s
 }
 
+func (s *S3StorageParamsRequest) WithStorageAwsExternalId(StorageAwsExternalId string) *S3StorageParamsRequest {
+	s.StorageAwsExternalId = &StorageAwsExternalId
+	return s
+}
+
 func (s *S3StorageParamsRequest) WithStorageAwsObjectAcl(StorageAwsObjectAcl string) *S3StorageParamsRequest {
 	s.StorageAwsObjectAcl = &StorageAwsObjectAcl
 	return s
@@ -153,6 +158,11 @@ func NewSetS3StorageParamsRequest(
 	return &s
 }
 
+func (s *SetS3StorageParamsRequest) WithStorageAwsExternalId(StorageAwsExternalId string) *SetS3StorageParamsRequest {
+	s.StorageAwsExternalId = &StorageAwsExternalId
+	return s
+}
+
 func (s *SetS3StorageParamsRequest) WithStorageAwsObjectAcl(StorageAwsObjectAcl string) *SetS3StorageParamsRequest {
 	s.StorageAwsObjectAcl = &StorageAwsObjectAcl
 	return s
@@ -168,6 +178,11 @@ func NewSetAzureStorageParamsRequest(
 
 func NewStorageIntegrationUnsetRequest() *StorageIntegrationUnsetRequest {
 	return &StorageIntegrationUnsetRequest{}
+}
+
+func (s *StorageIntegrationUnsetRequest) WithStorageAwsExternalId(StorageAwsExternalId bool) *StorageIntegrationUnsetRequest {
+	s.StorageAwsExternalId = &StorageAwsExternalId
+	return s
 }
 
 func (s *StorageIntegrationUnsetRequest) WithStorageAwsObjectAcl(StorageAwsObjectAcl bool) *StorageIntegrationUnsetRequest {

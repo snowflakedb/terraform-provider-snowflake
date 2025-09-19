@@ -21,6 +21,7 @@ import (
 func TestInt_Users(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
+	secondaryClient := testSecondaryClient(t)
 
 	randomPrefix := random.AlphaN(6)
 
@@ -849,6 +850,32 @@ func TestInt_Users(t *testing.T) {
 		)
 	})
 
+	t.Run("create: do not set type with 2025_05 bundle", func(t *testing.T) {
+		secondaryTestClientHelper().BcrBundles.EnableBcrBundle(t, "2025_05")
+
+		id := secondaryTestClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		err := secondaryClient.Users.Create(ctx, id, nil)
+		require.NoError(t, err)
+
+		assertThatObjectSecondary(t, objectassert.User(t, id).
+			HasType(string(sdk.UserTypePerson)),
+		)
+	})
+
+	t.Run("create: do not set type without 2025_05 bundle", func(t *testing.T) {
+		secondaryTestClientHelper().BcrBundles.DisableBcrBundle(t, "2025_05")
+
+		id := secondaryTestClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		err := secondaryClient.Users.Create(ctx, id, nil)
+		require.NoError(t, err)
+
+		assertThatObjectSecondary(t, objectassert.User(t, id).
+			HasType(""),
+		)
+	})
+
 	t.Run("alter: rename", func(t *testing.T) {
 		user, userCleanup := testClientHelper().User.CreateUser(t)
 		t.Cleanup(userCleanup)
@@ -1162,28 +1189,6 @@ func TestInt_Users(t *testing.T) {
 			HasDefaults(user.Name).
 			HasDisplayName("").
 			HasOwner(currentRole.Name()),
-		)
-	})
-
-	t.Run("alter: unset type", func(t *testing.T) {
-		user, userCleanup := testClientHelper().User.CreateServiceUser(t)
-		t.Cleanup(userCleanup)
-
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasType(string(sdk.UserTypeService)),
-		)
-
-		alterOpts := &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				Type: sdk.Bool(true),
-			},
-		}}
-
-		err := client.Users.Alter(ctx, user.ID(), alterOpts)
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasType(""),
 		)
 	})
 
@@ -1578,6 +1583,54 @@ func TestInt_Users(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
+	})
+
+	t.Run("alter: unset type with 2025_05 bundle", func(t *testing.T) {
+		secondaryTestClientHelper().BcrBundles.EnableBcrBundle(t, "2025_05")
+
+		user, userCleanup := secondaryTestClientHelper().User.CreateServiceUser(t)
+		t.Cleanup(userCleanup)
+
+		assertThatObjectSecondary(t, objectassert.UserFromObject(t, user).
+			HasType(string(sdk.UserTypeService)),
+		)
+
+		alterOpts := &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				Type: sdk.Bool(true),
+			},
+		}}
+
+		err := secondaryClient.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObjectSecondary(t, objectassert.User(t, user.ID()).
+			HasType(string(sdk.UserTypePerson)),
+		)
+	})
+
+	t.Run("alter: unset type without 2025_05 bundle", func(t *testing.T) {
+		secondaryTestClientHelper().BcrBundles.DisableBcrBundle(t, "2025_05")
+
+		user, userCleanup := secondaryTestClientHelper().User.CreateServiceUser(t)
+		t.Cleanup(userCleanup)
+
+		assertThatObjectSecondary(t, objectassert.UserFromObject(t, user).
+			HasType(string(sdk.UserTypeService)),
+		)
+
+		alterOpts := &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				Type: sdk.Bool(true),
+			},
+		}}
+
+		err := secondaryClient.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObjectSecondary(t, objectassert.User(t, user.ID()).
+			HasType(""),
+		)
 	})
 
 	t.Run("describe: when user exists", func(t *testing.T) {

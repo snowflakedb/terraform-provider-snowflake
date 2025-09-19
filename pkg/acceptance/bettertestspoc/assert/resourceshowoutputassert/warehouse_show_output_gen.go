@@ -176,6 +176,16 @@ func (w *WarehouseShowOutputAssert) HasOwnerRoleType(expected string) *Warehouse
 	return w
 }
 
+func (w *WarehouseShowOutputAssert) HasResourceConstraint(expected sdk.WarehouseResourceConstraint) *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("resource_constraint", expected))
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasGeneration(expected sdk.WarehouseGeneration) *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("generation", expected))
+	return w
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -312,5 +322,15 @@ func (w *WarehouseShowOutputAssert) HasNoScalingPolicy() *WarehouseShowOutputAss
 
 func (w *WarehouseShowOutputAssert) HasNoOwnerRoleType() *WarehouseShowOutputAssert {
 	w.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoResourceConstraint() *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("resource_constraint"))
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoGeneration() *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("generation"))
 	return w
 }

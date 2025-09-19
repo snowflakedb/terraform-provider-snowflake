@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ AuthenticationPolicies = (*authenticationPolicies)(nil)
+var (
+	_ AuthenticationPolicies                          = (*authenticationPolicies)(nil)
+	_ convertibleRow[AuthenticationPolicy]            = new(showAuthenticationPolicyDBRow)
+	_ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
+)
 
 type authenticationPolicies struct {
 	client *Client
@@ -37,8 +41,7 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
-	return resultList, nil
+	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {
@@ -64,7 +67,7 @@ func (v *authenticationPolicies) Describe(ctx context.Context, id SchemaObjectId
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[describeAuthenticationPolicyDBRow, AuthenticationPolicyDescription](rows), nil
+	return convertRows[describeAuthenticationPolicyDBRow, AuthenticationPolicyDescription](rows)
 }
 
 func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicyOptions {
@@ -133,7 +136,7 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 	return opts
 }
 
-func (r showAuthenticationPolicyDBRow) convert() *AuthenticationPolicy {
+func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
 	return &AuthenticationPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
@@ -143,7 +146,7 @@ func (r showAuthenticationPolicyDBRow) convert() *AuthenticationPolicy {
 		OwnerRoleType: r.OwnerRoleType,
 		Options:       r.Options,
 		Comment:       r.Comment,
-	}
+	}, nil
 }
 
 func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPolicyOptions {
@@ -153,11 +156,11 @@ func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPo
 	return opts
 }
 
-func (r describeAuthenticationPolicyDBRow) convert() *AuthenticationPolicyDescription {
+func (r describeAuthenticationPolicyDBRow) convert() (*AuthenticationPolicyDescription, error) {
 	return &AuthenticationPolicyDescription{
 		Property:    r.Property,
 		Value:       r.Value,
 		Default:     r.Default,
 		Description: r.Description,
-	}
+	}, nil
 }

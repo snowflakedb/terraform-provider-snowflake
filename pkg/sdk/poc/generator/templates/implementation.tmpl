@@ -8,6 +8,7 @@ import (
 
 {{ $impl := .NameLowerCased }}
 var _ {{ .Name }} = (*{{ $impl }})(nil)
+{{- template "convertGuards" . -}}
 
 type {{ $impl }} struct {
 client *Client

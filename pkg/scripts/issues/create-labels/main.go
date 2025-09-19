@@ -43,7 +43,7 @@ type ReadLabel struct {
 }
 
 func loadRepoLabels(accessToken string) []ReadLabel {
-	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/repos/Snowflake-Labs/terraform-provider-snowflake/labels", nil)
+	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/repos/snowflakedb/terraform-provider-snowflake/labels", nil)
 	if err != nil {
 		panic("failed to create list labels request: " + err.Error())
 	}
@@ -122,7 +122,7 @@ func createLabelsIfNotPresent(accessToken string, repoLabels []ReadLabel, labels
 		log.Println("Processing:", label)
 
 		// based on https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#create-a-label
-		req, err := http.NewRequest(http.MethodPost, "https://api.github.com/repos/Snowflake-Labs/terraform-provider-snowflake/labels", bytes.NewReader(requestBody))
+		req, err := http.NewRequest(http.MethodPost, "https://api.github.com/repos/snowflakedb/terraform-provider-snowflake/labels", bytes.NewReader(requestBody))
 		if err != nil {
 			log.Println("failed to create label request:", err)
 			failed = append(failed, label)

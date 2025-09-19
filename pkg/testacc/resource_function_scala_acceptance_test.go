@@ -48,7 +48,6 @@ func TestAcc_FunctionScala_InlineBasic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.FunctionScala),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -192,7 +191,6 @@ func TestAcc_FunctionScala_InlineFull(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.FunctionScala),
 		Steps: []resource.TestStep{
 			// CREATE WITH ALL

@@ -155,7 +155,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		assertProperty(t, desc, "COMMENT", "null")
 		assertProperty(t, desc, "MFA_ENROLLMENT", "OPTIONAL")
-		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
+		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[ALL]")

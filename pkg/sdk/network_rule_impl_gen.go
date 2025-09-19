@@ -7,7 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NetworkRules = (*networkRules)(nil)
+var (
+	_ NetworkRules                       = (*networkRules)(nil)
+	_ convertibleRow[NetworkRule]        = new(ShowNetworkRulesRow)
+	_ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
+)
 
 type networkRules struct {
 	client *Client
@@ -38,8 +42,7 @@ func (v *networkRules) Show(ctx context.Context, request *ShowNetworkRuleRequest
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[ShowNetworkRulesRow, NetworkRule](dbRows)
-	return resultList, nil
+	return convertRows[ShowNetworkRulesRow, NetworkRule](dbRows)
 }
 
 func (v *networkRules) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*NetworkRule, error) {
@@ -65,7 +68,7 @@ func (v *networkRules) Describe(ctx context.Context, id SchemaObjectIdentifier) 
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateNetworkRuleRequest) toOpts() *CreateNetworkRuleOptions {
@@ -118,7 +121,7 @@ func (r *ShowNetworkRuleRequest) toOpts() *ShowNetworkRuleOptions {
 	return opts
 }
 
-func (row ShowNetworkRulesRow) convert() *NetworkRule {
+func (row ShowNetworkRulesRow) convert() (*NetworkRule, error) {
 	return &NetworkRule{
 		CreatedOn:          row.CreatedOn,
 		Name:               row.Name,
@@ -130,7 +133,7 @@ func (row ShowNetworkRulesRow) convert() *NetworkRule {
 		Mode:               NetworkRuleMode(row.Mode),
 		EntriesInValueList: row.EntriesInValueList,
 		OwnerRoleType:      row.OwnerRoleType,
-	}
+	}, nil
 }
 
 func (r *DescribeNetworkRuleRequest) toOpts() *DescribeNetworkRuleOptions {
@@ -140,7 +143,7 @@ func (r *DescribeNetworkRuleRequest) toOpts() *DescribeNetworkRuleOptions {
 	return opts
 }
 
-func (row DescNetworkRulesRow) convert() *NetworkRuleDetails {
+func (row DescNetworkRulesRow) convert() (*NetworkRuleDetails, error) {
 	valueList := strings.Split(row.ValueList, ",")
 	if len(valueList) == 1 && valueList[0] == "" {
 		valueList = []string{}
@@ -155,5 +158,5 @@ func (row DescNetworkRulesRow) convert() *NetworkRuleDetails {
 		Type:         NetworkRuleType(row.Type),
 		Mode:         NetworkRuleMode(row.Mode),
 		ValueList:    valueList,
-	}
+	}, nil
 }

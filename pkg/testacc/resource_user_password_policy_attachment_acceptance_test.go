@@ -28,7 +28,6 @@ func TestAcc_UserPasswordPolicyAttachment(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		CheckDestroy:             CheckUserPasswordPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
 			// CREATE

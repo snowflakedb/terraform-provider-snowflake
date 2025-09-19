@@ -12,7 +12,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tasks = (*tasks)(nil)
+var (
+	_ Tasks                = (*tasks)(nil)
+	_ convertibleRow[Task] = new(taskDBRow)
+)
 
 type tasks struct {
 	client *Client
@@ -53,8 +56,7 @@ func (v *tasks) Show(ctx context.Context, request *ShowTaskRequest) ([]Task, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[taskDBRow, Task](dbRows)
-	return resultList, nil
+	return convertRows[taskDBRow, Task](dbRows)
 }
 
 func (v *tasks) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Task, error) {
@@ -88,7 +90,7 @@ func (v *tasks) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Task,
 	if err != nil {
 		return nil, err
 	}
-	return result.convert(), nil
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *tasks) Execute(ctx context.Context, request *ExecuteTaskRequest) error {
@@ -325,7 +327,7 @@ func (r *ShowTaskRequest) toOpts() *ShowTaskOptions {
 	return opts
 }
 
-func (r taskDBRow) convert() *Task {
+func (r taskDBRow) convert() (*Task, error) {
 	task := Task{
 		CreatedOn:                 r.CreatedOn,
 		Id:                        r.Id,
@@ -337,11 +339,13 @@ func (r taskDBRow) convert() *Task {
 		AllowOverlappingExecution: r.AllowOverlappingExecution == "true",
 		OwnerRoleType:             r.OwnerRoleType,
 	}
-	taskRelations, err := ToTaskRelations(r.TaskRelations)
-	if err != nil {
-		log.Printf("[DEBUG] failed to convert task relations: %v", err)
-	} else {
-		task.TaskRelations = taskRelations
+	if r.TaskRelations != "" {
+		taskRelations, err := ToTaskRelations(r.TaskRelations)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert task relations: %w", err)
+		} else {
+			task.TaskRelations = taskRelations
+		}
 	}
 	if r.Comment.Valid {
 		task.Comment = r.Comment.String
@@ -349,7 +353,7 @@ func (r taskDBRow) convert() *Task {
 	if r.Warehouse.Valid && r.Warehouse.String != "null" {
 		id, err := ParseAccountObjectIdentifier(r.Warehouse.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse warehouse: %v", err)
+			return nil, fmt.Errorf("failed to parse warehouse: %w", err)
 		} else {
 			task.Warehouse = &id
 		}
@@ -372,7 +376,7 @@ func (r taskDBRow) convert() *Task {
 	if len(r.State) > 0 {
 		taskState, err := ToTaskState(r.State)
 		if err != nil {
-			log.Printf("[DEBUG] failed to convert to task state: %v", err)
+			return nil, fmt.Errorf("failed to convert to task state: %w", err)
 		} else {
 			task.State = taskState
 		}
@@ -383,7 +387,7 @@ func (r taskDBRow) convert() *Task {
 	if r.ErrorIntegration.Valid && r.ErrorIntegration.String != "null" {
 		id, err := ParseAccountObjectIdentifier(r.ErrorIntegration.String)
 		if err != nil {
-			log.Printf("[DEBUG] failed to parse error_integration: %v", err)
+			return nil, fmt.Errorf("failed to parse error_integration: %w", err)
 		} else {
 			task.ErrorIntegration = &id
 		}
@@ -403,7 +407,7 @@ func (r taskDBRow) convert() *Task {
 	if r.LastSuspendedReason.Valid {
 		task.LastSuspendedReason = r.LastSuspendedReason.String
 	}
-	return &task
+	return &task, nil
 }
 
 func getPredecessors(predecessors string) ([]string, error) {

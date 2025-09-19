@@ -26,7 +26,7 @@ var currentAccountSchema = map[string]*schema.Schema{
 	"authentication_policy": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "Specifies [authentication policy](https://docs.snowflake.com/en/user-guide/authentication-policies) for the current account.",
+		Description:      relatedResourceDescription("Specifies [authentication policy](https://docs.snowflake.com/en/user-guide/authentication-policies) for the current account.", resources.AuthenticationPolicy),
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -47,7 +47,7 @@ var currentAccountSchema = map[string]*schema.Schema{
 	"password_policy": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "Specifies [password policy](https://docs.snowflake.com/en/user-guide/password-authentication#label-using-password-policies) for the current account.",
+		Description:      relatedResourceDescription("Specifies [password policy](https://docs.snowflake.com/en/user-guide/password-authentication#label-using-password-policies) for the current account.", resources.PasswordPolicy),
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -138,12 +138,12 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(errs)
 	}
 
-	setParameters := new(sdk.AccountSet)
+	setParameters := new(sdk.AccountParameters)
 	if diags := handleAccountParametersCreate(d, setParameters); diags != nil {
 		return diags
 	}
-	if *setParameters != (sdk.AccountSet{}) {
-		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: setParameters}); err != nil {
+	if *setParameters != (sdk.AccountParameters{}) {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{Parameters: setParameters}}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -161,14 +161,19 @@ func ReadCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	for _, policy := range attachedPolicies {
-		switch policy.PolicyKind {
-		case sdk.PolicyKindAuthenticationPolicy,
-			sdk.PolicyKindFeaturePolicy,
-			sdk.PolicyKindPackagesPolicy,
-			sdk.PolicyKindPasswordPolicy,
-			sdk.PolicyKindSessionPolicy:
-			if err := d.Set(strings.ToLower(string(policy.PolicyKind)), sdk.NewSchemaObjectIdentifier(*policy.PolicyDb, *policy.PolicySchema, policy.PolicyName).FullyQualifiedName()); err != nil {
+	for _, policyKind := range []sdk.PolicyKind{
+		sdk.PolicyKindAuthenticationPolicy,
+		sdk.PolicyKindFeaturePolicy,
+		sdk.PolicyKindPackagesPolicy,
+		sdk.PolicyKindPasswordPolicy,
+		sdk.PolicyKindSessionPolicy,
+	} {
+		if policy, err := collections.FindFirst(attachedPolicies, func(p sdk.PolicyReference) bool { return p.PolicyKind == policyKind }); err == nil {
+			if err := d.Set(strings.ToLower(string(policyKind)), sdk.NewSchemaObjectIdentifier(*policy.PolicyDb, *policy.PolicySchema, policy.PolicyName).FullyQualifiedName()); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := d.Set(strings.ToLower(string(policyKind)), nil); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -255,18 +260,18 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(errs)
 	}
 
-	setParameters := new(sdk.AccountSet)
-	unsetParameters := new(sdk.AccountUnset)
+	setParameters := new(sdk.AccountParameters)
+	unsetParameters := new(sdk.AccountParametersUnset)
 	if diags := handleAccountParametersUpdate(d, setParameters, unsetParameters); diags != nil {
 		return diags
 	}
-	if *setParameters != (sdk.AccountSet{}) {
-		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: setParameters}); err != nil {
+	if *setParameters != (sdk.AccountParameters{}) {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{Parameters: setParameters}}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if *unsetParameters != (sdk.AccountUnset{}) {
-		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: unsetParameters}); err != nil {
+	if *unsetParameters != (sdk.AccountParametersUnset{}) {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{Parameters: unsetParameters}}); err != nil {
 			return diag.FromErr(err)
 		}
 	}

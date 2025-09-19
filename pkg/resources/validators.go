@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -119,4 +120,21 @@ func isValidSecondaryRole() func(value any, path cty.Path) diag.Diagnostics {
 		}
 		return diags
 	}
+}
+
+// ListingNameRegex matches names that are starting with an alphabetic character, followed by any combination of alphanumeric characters and underscores.
+// The name can optionally be enclosed in double quotes.
+var ListingNameRegex = regexp.MustCompile("^\"?[a-zA-Z][a-zA-Z_0-9]*\"?$")
+
+func IsValidListingName(i any, path cty.Path) diag.Diagnostics {
+	v, ok := i.(string)
+	if !ok {
+		return diag.Errorf("Expected type of %v to be string", path)
+	}
+
+	if !ListingNameRegex.MatchString(v) {
+		return diag.Errorf("Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores.")
+	}
+
+	return nil
 }

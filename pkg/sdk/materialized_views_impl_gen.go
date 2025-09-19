@@ -4,11 +4,14 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ MaterializedViews = (*materializedViews)(nil)
+var (
+	_ MaterializedViews                       = (*materializedViews)(nil)
+	_ convertibleRow[MaterializedViewDetails] = new(materializedViewDetailsRow)
+	_ convertibleRow[MaterializedView]        = new(materializedViewDBRow)
+)
 
 type materializedViews struct {
 	client *Client
@@ -39,8 +42,7 @@ func (v *materializedViews) Show(ctx context.Context, request *ShowMaterializedV
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[materializedViewDBRow, MaterializedView](dbRows)
-	return resultList, nil
+	return convertRows[materializedViewDBRow, MaterializedView](dbRows)
 }
 
 func (v *materializedViews) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaterializedView, error) {
@@ -66,7 +68,7 @@ func (v *materializedViews) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[materializedViewDetailsRow, MaterializedViewDetails](rows), nil
+	return convertRows[materializedViewDetailsRow, MaterializedViewDetails](rows)
 }
 
 func (r *CreateMaterializedViewRequest) toOpts() *CreateMaterializedViewOptions {
@@ -164,7 +166,7 @@ func (r *ShowMaterializedViewRequest) toOpts() *ShowMaterializedViewOptions {
 	return opts
 }
 
-func (r materializedViewDBRow) convert() *MaterializedView {
+func (r materializedViewDBRow) convert() (*MaterializedView, error) {
 	materializedView := MaterializedView{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
@@ -202,7 +204,7 @@ func (r materializedViewDBRow) convert() *MaterializedView {
 	if r.Budget.Valid {
 		materializedView.Budget = r.Budget.String
 	}
-	return &materializedView
+	return &materializedView, nil
 }
 
 func (r *DescribeMaterializedViewRequest) toOpts() *DescribeMaterializedViewOptions {
@@ -212,7 +214,7 @@ func (r *DescribeMaterializedViewRequest) toOpts() *DescribeMaterializedViewOpti
 	return opts
 }
 
-func (r materializedViewDetailsRow) convert() *MaterializedViewDetails {
+func (r materializedViewDetailsRow) convert() (*MaterializedViewDetails, error) {
 	details := &MaterializedViewDetails{
 		Name:       r.Name,
 		Type:       r.Type,
@@ -233,5 +235,5 @@ func (r materializedViewDetailsRow) convert() *MaterializedViewDetails {
 	if r.Comment.Valid {
 		details.Comment = String(r.Comment.String)
 	}
-	return details
+	return details, nil
 }

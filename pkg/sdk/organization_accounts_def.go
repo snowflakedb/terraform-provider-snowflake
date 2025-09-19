@@ -69,7 +69,8 @@ var OrganizationAccountsDef = g.NewInterface(
 					OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
 					OptionalIdentifier("PasswordPolicy", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
 					OptionalIdentifier("SessionPolicy", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
-					WithValidation(g.ExactlyOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"),
+					OptionalComment().
+					WithValidation(g.ExactlyOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).
 			OptionalQueryStructField(
@@ -79,7 +80,8 @@ var OrganizationAccountsDef = g.NewInterface(
 					OptionalSQL("RESOURCE_MONITOR").
 					OptionalSQL("PASSWORD POLICY").
 					OptionalSQL("SESSION POLICY").
-					WithValidation(g.ExactlyOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy"),
+					OptionalSQL("COMMENT").
+					WithValidation(g.ExactlyOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy", "Comment"),
 				g.KeywordOptions().SQL("UNSET"),
 			).
 			OptionalSetTags().
@@ -108,7 +110,7 @@ var OrganizationAccountsDef = g.NewInterface(
 			Text("edition").
 			Text("account_url").
 			Text("created_on").
-			Text("comment").
+			OptionalText("comment").
 			Text("account_locator").
 			Text("account_locator_url").
 			Number("managed_accounts").
@@ -131,7 +133,7 @@ var OrganizationAccountsDef = g.NewInterface(
 			Field("Edition", g.KindOfT[OrganizationAccountEdition]()).
 			Text("AccountUrl").
 			Text("CreatedOn").
-			Text("Comment").
+			OptionalText("Comment").
 			Text("AccountLocator").
 			Text("AccountLocatorUrl").
 			Number("ManagedAccounts").
@@ -151,4 +153,5 @@ var OrganizationAccountsDef = g.NewInterface(
 			Show().
 			SQL("ORGANIZATION ACCOUNTS").
 			OptionalLike(),
-	)
+	).
+	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering)

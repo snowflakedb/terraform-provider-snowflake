@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ExternalVolumes = (*externalVolumes)(nil)
+var (
+	_ ExternalVolumes                        = (*externalVolumes)(nil)
+	_ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
+	_ convertibleRow[ExternalVolume]         = new(externalVolumeShowRow)
+)
 
 type externalVolumes struct {
 	client *Client
@@ -39,7 +43,7 @@ func (v *externalVolumes) Describe(ctx context.Context, id AccountObjectIdentifi
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalVolumeDescRow, ExternalVolumeProperty](rows), nil
+	return convertRows[externalVolumeDescRow, ExternalVolumeProperty](rows)
 }
 
 func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error) {
@@ -48,8 +52,7 @@ func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeR
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[externalVolumeShowRow, ExternalVolume](dbRows)
-	return resultList, nil
+	return convertRows[externalVolumeShowRow, ExternalVolume](dbRows)
 }
 
 func (v *externalVolumes) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error) {
@@ -150,14 +153,14 @@ func (r *DescribeExternalVolumeRequest) toOpts() *DescribeExternalVolumeOptions 
 	return opts
 }
 
-func (r externalVolumeDescRow) convert() *ExternalVolumeProperty {
+func (r externalVolumeDescRow) convert() (*ExternalVolumeProperty, error) {
 	return &ExternalVolumeProperty{
 		Parent:  r.ParentProperty,
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}
+	}, nil
 }
 
 func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
@@ -167,7 +170,7 @@ func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
 	return opts
 }
 
-func (r externalVolumeShowRow) convert() *ExternalVolume {
+func (r externalVolumeShowRow) convert() (*ExternalVolume, error) {
 	externalVolume := ExternalVolume{
 		Name:        r.Name,
 		AllowWrites: r.AllowWrites,
@@ -177,5 +180,5 @@ func (r externalVolumeShowRow) convert() *ExternalVolume {
 		externalVolume.Comment = r.Comment.String
 	}
 
-	return &externalVolume
+	return &externalVolume, nil
 }

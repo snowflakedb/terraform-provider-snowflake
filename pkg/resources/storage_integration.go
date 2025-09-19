@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -16,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -64,9 +67,10 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
 	},
 	"storage_aws_external_id": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The external ID that Snowflake will use when assuming the AWS role.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("storage_aws_external_id"),
+		Description:      "The external ID that Snowflake will use when assuming the AWS role.",
 	},
 	"storage_aws_iam_user_arn": {
 		Type:        schema.TypeString,
@@ -110,12 +114,20 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Date and time when the storage integration was created.",
 	},
+	DescribeOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `DESCRIBE STORAGE INTEGRATION` for the given storage integration.",
+		Elem: &schema.Resource{
+			Schema: schemas.DescribeStorageIntegrationSchema,
+		},
+	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
 func StorageIntegration() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.AccountObjectIdentifier],
+		sdk.ParseAccountObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.StorageIntegrations.DropSafely
 		},
@@ -123,7 +135,7 @@ func StorageIntegration() *schema.Resource {
 
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingCreateWrapper(resources.StorageIntegration, CreateStorageIntegration)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingReadWrapper(resources.StorageIntegration, ReadStorageIntegration)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingReadWrapper(resources.StorageIntegration, GetReadStorageIntegrationFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingUpdateWrapper(resources.StorageIntegration, UpdateStorageIntegration)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingDeleteWrapper(resources.StorageIntegration, deleteFunc)),
 
@@ -132,6 +144,105 @@ func StorageIntegration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: defaultTimeouts,
+		CustomizeDiff: customdiff.All(
+			ComputedIfAnyAttributeChanged(storageIntegrationSchema, DescribeOutputAttributeName, "storage_aws_external_id", "enabled", "comment"),
+		),
+	}
+}
+
+func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		client := meta.(*provider.Context).Client
+		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		s, err := client.StorageIntegrations.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query storage integration. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Storage integration id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
+		}
+
+		if s.Category != "STORAGE" {
+			return diag.FromErr(fmt.Errorf("expected %v to be a STORAGE integration, got %v", d.Id(), s.Category))
+		}
+
+		integrationProperties, err := client.StorageIntegrations.Describe(ctx, id)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("could not describe storage integration (%s), err = %w", d.Id(), err))
+		}
+
+		if withExternalChangesMarking {
+			storageAwsExternalId, err := collections.FindFirst(integrationProperties, func(property sdk.StorageIntegrationProperty) bool {
+				return property.Name == "STORAGE_AWS_EXTERNAL_ID"
+			})
+			if err == nil {
+				if err = handleExternalChangesToObjectInDescribe(d,
+					describeMapping{"storage_aws_external_id", "storage_aws_external_id", storageAwsExternalId.Value, storageAwsExternalId.Value, nil},
+				); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+
+		if err = setStateToValuesFromConfig(d, storageIntegrationSchema, []string{
+			"storage_aws_external_id",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
+
+		errs := errors.Join(
+			d.Set("name", s.Name),
+			d.Set("type", s.StorageType),
+			d.Set("created_on", s.CreatedOn.String()),
+			d.Set("enabled", s.Enabled),
+			d.Set("comment", s.Comment),
+			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+		)
+
+		for _, prop := range integrationProperties {
+			switch prop.Name {
+			case "STORAGE_PROVIDER":
+				errs = errors.Join(errs, d.Set("storage_provider", prop.Value))
+			case "STORAGE_ALLOWED_LOCATIONS":
+				errs = errors.Join(errs, d.Set("storage_allowed_locations", strings.Split(prop.Value, ",")))
+			case "STORAGE_BLOCKED_LOCATIONS":
+				if prop.Value != "" {
+					errs = errors.Join(errs, d.Set("storage_blocked_locations", strings.Split(prop.Value, ",")))
+				}
+			case "STORAGE_AWS_IAM_USER_ARN":
+				errs = errors.Join(errs, d.Set("storage_aws_iam_user_arn", prop.Value))
+			case "STORAGE_AWS_OBJECT_ACL":
+				if prop.Value != "" {
+					errs = errors.Join(errs, d.Set("storage_aws_object_acl", prop.Value))
+				}
+			case "STORAGE_AWS_ROLE_ARN":
+				errs = errors.Join(errs, d.Set("storage_aws_role_arn", prop.Value))
+			// STORAGE_AWS_EXTERNAL_ID is removed from here - handled by external changes detection above
+			case "STORAGE_GCP_SERVICE_ACCOUNT":
+				errs = errors.Join(errs, d.Set("storage_gcp_service_account", prop.Value))
+			case "AZURE_CONSENT_URL":
+				errs = errors.Join(errs, d.Set("azure_consent_url", prop.Value))
+			case "AZURE_MULTI_TENANT_APP_NAME":
+				errs = errors.Join(errs, d.Set("azure_multi_tenant_app_name", prop.Value))
+			}
+		}
+
+		errs = errors.Join(errs,
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.DescribeStorageIntegrationToSchema(integrationProperties)}),
+		)
+
+		return diag.FromErr(errs)
 	}
 }
 
@@ -183,6 +294,9 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		if _, ok := d.GetOk("storage_aws_object_acl"); ok {
 			s3Params.WithStorageAwsObjectAcl(d.Get("storage_aws_object_acl").(string))
 		}
+		if _, ok := d.GetOk("storage_aws_external_id"); ok {
+			s3Params.WithStorageAwsExternalId(d.Get("storage_aws_external_id").(string))
+		}
 		req.WithS3StorageProviderParams(*s3Params)
 	case storageProvider == "AZURE":
 		v, ok := d.GetOk("azure_tenant_id")
@@ -200,133 +314,28 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(fmt.Errorf("error creating storage integration: %w", err))
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(name))
-	return ReadStorageIntegration(ctx, d, meta)
-}
-
-func ReadStorageIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, ok := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("storage integration read, error decoding id: %s as sdk.AccountObjectIdentifier, got: %T", d.Id(), id))
-	}
-
-	s, err := client.StorageIntegrations.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query storage integration. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Storage integration id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return diag.FromErr(err)
-	}
-	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if s.Category != "STORAGE" {
-		return diag.FromErr(fmt.Errorf("expected %v to be a STORAGE integration, got %v", d.Id(), s.Category))
-	}
-	if err := d.Set("name", s.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("type", s.StorageType); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("created_on", s.CreatedOn.String()); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("enabled", s.Enabled); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("comment", s.Comment); err != nil {
-		return diag.FromErr(err)
-	}
-
-	storageIntegrationProps, err := client.StorageIntegrations.Describe(ctx, id)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("could not describe storage integration (%s), err = %w", d.Id(), err))
-	}
-
-	for _, prop := range storageIntegrationProps {
-		switch prop.Name {
-		case "STORAGE_PROVIDER":
-			if err := d.Set("storage_provider", prop.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		case "STORAGE_ALLOWED_LOCATIONS":
-			if err := d.Set("storage_allowed_locations", strings.Split(prop.Value, ",")); err != nil {
-				return diag.FromErr(err)
-			}
-		case "STORAGE_BLOCKED_LOCATIONS":
-			if prop.Value != "" {
-				if err := d.Set("storage_blocked_locations", strings.Split(prop.Value, ",")); err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		case "STORAGE_AWS_IAM_USER_ARN":
-			if err := d.Set("storage_aws_iam_user_arn", prop.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		case "STORAGE_AWS_OBJECT_ACL":
-			if prop.Value != "" {
-				if err := d.Set("storage_aws_object_acl", prop.Value); err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		case "STORAGE_AWS_ROLE_ARN":
-			if err := d.Set("storage_aws_role_arn", prop.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		case "STORAGE_AWS_EXTERNAL_ID":
-			if err := d.Set("storage_aws_external_id", prop.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		case "STORAGE_GCP_SERVICE_ACCOUNT":
-			if err := d.Set("storage_gcp_service_account", prop.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		case "AZURE_CONSENT_URL":
-			if err := d.Set("azure_consent_url", prop.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		case "AZURE_MULTI_TENANT_APP_NAME":
-			if err := d.Set("azure_multi_tenant_app_name", prop.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
-	return diag.FromErr(err)
+	d.SetId(helpers.EncodeResourceIdentifier(name))
+	return GetReadStorageIntegrationFunc(false)(ctx, d, meta)
 }
 
 func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id, ok := helpers.DecodeSnowflakeID(d.Id()).(sdk.AccountObjectIdentifier)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("storage integration update, error decoding id: %s as sdk.AccountObjectIdentifier, got: %T", d.Id(), id))
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	var runSetStatement bool
-	setReq := sdk.NewStorageIntegrationSetRequest()
+	set, unset := sdk.NewStorageIntegrationSetRequest(), sdk.NewStorageIntegrationUnsetRequest()
 
 	if d.HasChange("comment") {
-		runSetStatement = true
-		setReq.WithComment(d.Get("comment").(string))
+		set.WithComment(d.Get("comment").(string))
 	}
 
 	if d.HasChange("enabled") {
-		runSetStatement = true
-		setReq.WithEnabled(d.Get("enabled").(bool))
+		set.WithEnabled(d.Get("enabled").(bool))
 	}
 
 	if d.HasChange("storage_allowed_locations") {
-		runSetStatement = true
 		stringStorageAllowedLocations := expandStringList(d.Get("storage_allowed_locations").([]any))
 		storageAllowedLocations := make([]sdk.StorageLocation, len(stringStorageAllowedLocations))
 		for i, loc := range stringStorageAllowedLocations {
@@ -334,58 +343,65 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 				Path: loc,
 			}
 		}
-		setReq.WithStorageAllowedLocations(storageAllowedLocations)
+		set.WithStorageAllowedLocations(storageAllowedLocations)
 	}
 
 	// We need to UNSET this if we remove all storage blocked locations, because Snowflake won't accept an empty list
 	if d.HasChange("storage_blocked_locations") {
-		v := d.Get("storage_blocked_locations").([]interface{})
-		if len(v) == 0 {
-			if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).
-				WithUnset(*sdk.NewStorageIntegrationUnsetRequest().WithStorageBlockedLocations(true))); err != nil {
-				return diag.FromErr(fmt.Errorf("error unsetting storage_blocked_locations, err = %w", err))
-			}
-		} else {
-			runSetStatement = true
-			stringStorageBlockedLocations := expandStringList(d.Get("storage_blocked_locations").([]any))
+		storageBlockedLocations := d.Get("storage_blocked_locations")
+		if len(storageBlockedLocations.([]interface{})) > 0 {
+			stringStorageBlockedLocations := expandStringList(storageBlockedLocations.([]any))
 			storageBlockedLocations := make([]sdk.StorageLocation, len(stringStorageBlockedLocations))
 			for i, loc := range stringStorageBlockedLocations {
 				storageBlockedLocations[i] = sdk.StorageLocation{
 					Path: loc,
 				}
 			}
-			setReq.WithStorageBlockedLocations(storageBlockedLocations)
+			set.WithStorageBlockedLocations(storageBlockedLocations)
+		} else {
+			unset.WithStorageBlockedLocations(true)
 		}
 	}
 
-	if d.HasChange("storage_aws_role_arn") || d.HasChange("storage_aws_object_acl") {
-		runSetStatement = true
+	if d.HasChange("storage_aws_role_arn") || d.HasChange("storage_aws_object_acl") || d.HasChange("storage_aws_external_id") {
 		s3SetParams := sdk.NewSetS3StorageParamsRequest(d.Get("storage_aws_role_arn").(string))
 
 		if d.HasChange("storage_aws_object_acl") {
 			if v, ok := d.GetOk("storage_aws_object_acl"); ok {
 				s3SetParams.WithStorageAwsObjectAcl(v.(string))
 			} else {
-				if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).
-					WithUnset(*sdk.NewStorageIntegrationUnsetRequest().WithStorageAwsObjectAcl(true))); err != nil {
-					return diag.FromErr(fmt.Errorf("error unsetting storage_aws_object_acl, err = %w", err))
-				}
+				unset.WithStorageAwsObjectAcl(true)
 			}
 		}
 
-		setReq.WithS3Params(*s3SetParams)
+		if d.HasChange("storage_aws_external_id") {
+			if v, ok := d.GetOk("storage_aws_external_id"); ok {
+				s3SetParams.WithStorageAwsExternalId(v.(string))
+			} else {
+				unset.WithStorageAwsExternalId(true)
+			}
+		}
+
+		set.WithS3Params(*s3SetParams)
 	}
 
 	if d.HasChange("azure_tenant_id") {
-		runSetStatement = true
-		setReq.WithAzureParams(*sdk.NewSetAzureStorageParamsRequest(d.Get("azure_tenant_id").(string)))
+		set.WithAzureParams(*sdk.NewSetAzureStorageParamsRequest(d.Get("azure_tenant_id").(string)))
 	}
 
-	if runSetStatement {
-		if err := client.StorageIntegrations.Alter(ctx, sdk.NewAlterStorageIntegrationRequest(id).WithSet(*setReq)); err != nil {
+	if !reflect.DeepEqual(*set, *sdk.NewStorageIntegrationSetRequest()) {
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithSet(*set)
+		if err := client.StorageIntegrations.Alter(ctx, req); err != nil {
 			return diag.FromErr(fmt.Errorf("error updating storage integration, err = %w", err))
 		}
 	}
 
-	return ReadStorageIntegration(ctx, d, meta)
+	if !reflect.DeepEqual(*unset, *sdk.NewStorageIntegrationUnsetRequest()) {
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithUnset(*unset)
+		if err := client.StorageIntegrations.Alter(ctx, req); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating storage integration, err = %w", err))
+		}
+	}
+
+	return GetReadStorageIntegrationFunc(false)(ctx, d, meta)
 }

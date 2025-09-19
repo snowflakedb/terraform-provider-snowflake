@@ -11,19 +11,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type MockAccountInformation struct {
+	AccountLocator string
+}
+
+func (m MockAccountInformation) GetAccountLocator() string {
+	return m.AccountLocator
+}
+
 func TestEnsureValidAccountIsUsed(t *testing.T) {
-	client := sdk.Client{}
+	accountLocator := "ABC123123"
 
 	testClient := TestClient{
-		context: &TestClientContext{
-			client: &client,
+		AccountInformation: &MockAccountInformation{
+			AccountLocator: accountLocator,
 		},
 	}
 
 	t.Run("valid account: the test shouldn't be skipped", func(t *testing.T) {
-		accountLocator := "ABC123123"
-		client.SetAccountLocatorForTests(accountLocator)
-
 		t.Setenv(string(testenvs.TestAccountCreate), "1")
 		t.Setenv(string(testenvs.TestNonProdModifiableAccountLocator), accountLocator)
 		defer func() {
@@ -35,8 +40,6 @@ func TestEnsureValidAccountIsUsed(t *testing.T) {
 	})
 
 	t.Run(fmt.Sprintf("invalid account is used: should skip the tests as %s is not set", testenvs.TestAccountCreate), func(t *testing.T) {
-		accountLocator := "ABC123123"
-		client.SetAccountLocatorForTests(accountLocator)
 		t.Setenv(string(testenvs.TestNonProdModifiableAccountLocator), accountLocator)
 		t.Setenv(string(testenvs.TestAccountCreate), "")
 		defer func() {
@@ -68,6 +71,14 @@ func (m *mockOrganizationAccounts) Show(ctx context.Context, request *sdk.ShowOr
 	return m.ShowResult, m.ShowResultErr
 }
 
+func (m *mockOrganizationAccounts) ShowByID(ctx context.Context, id sdk.AccountObjectIdentifier) (*sdk.OrganizationAccount, error) {
+	return nil, nil
+}
+
+func (m *mockOrganizationAccounts) ShowByIDSafely(ctx context.Context, id sdk.AccountObjectIdentifier) (*sdk.OrganizationAccount, error) {
+	return nil, nil
+}
+
 func (m *mockOrganizationAccounts) Create(ctx context.Context, request *sdk.CreateOrganizationAccountRequest) error {
 	return nil
 }
@@ -84,6 +95,16 @@ func (m *mockOrganizationAccounts) UnsetAllParameters(ctx context.Context) error
 	return nil
 }
 
+func (m *mockOrganizationAccounts) UnsetPolicySafely(ctx context.Context, kind sdk.PolicyKind) error {
+	return nil
+}
+
+func (m *mockOrganizationAccounts) SetPolicySafely(ctx context.Context, kind sdk.PolicyKind, id sdk.SchemaObjectIdentifier) error {
+	return nil
+}
+
+func (m *mockOrganizationAccounts) UnsetAll(ctx context.Context) error { return nil }
+
 func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 	accountLocator := "ABC123123"
 	anotherAccountLocator := "DEF456456"
@@ -99,9 +120,11 @@ func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 	client := sdk.Client{
 		OrganizationAccounts: organizationAccounts,
 	}
-	client.SetAccountLocatorForTests(accountLocator)
 
 	testClient := TestClient{
+		AccountInformation: &MockAccountInformation{
+			AccountLocator: accountLocator,
+		},
 		context: &TestClientContext{
 			client: &client,
 		},

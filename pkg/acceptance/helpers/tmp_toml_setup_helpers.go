@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 )
 
 // TODO [SNOW-1827324]: add TestClient ref to each specific client, so that we enhance specific client and not the base one
@@ -28,6 +28,13 @@ func (c *TestClient) TempIncorrectTomlConfigForServiceUser(t *testing.T, service
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {
 		return TomlIncorrectConfigForServiceUser(t, profile, serviceUser.AccountId)
+	})
+}
+
+func (c *TestClient) TempIncorrectTomlConfigForTmpUser(t *testing.T, tmpUser *TmpUser) *TmpTomlConfig {
+	t.Helper()
+	return c.StoreTempTomlConfig(t, func(profile string) string {
+		return TomlIncorrectConfigForServiceUser(t, profile, tmpUser.AccountId)
 	})
 }
 
@@ -81,6 +88,13 @@ func (c *TestClient) TempTomlConfigForServiceUserWithPatAsPassword(t *testing.T,
 	})
 }
 
+func (c *TestClient) TempTomlConfigForServiceUserWithoutAuthenticator(t *testing.T, legacyServiceUser *TmpLegacyServiceUser) *TmpTomlConfig {
+	t.Helper()
+	return c.StoreTempTomlConfig(t, func(profile string) string {
+		return TomlConfigForLegacyServiceUserWithoutAuthenticator(t, profile, legacyServiceUser.UserId, legacyServiceUser.RoleId, legacyServiceUser.WarehouseId, legacyServiceUser.AccountId, legacyServiceUser.Pass)
+	})
+}
+
 func (c *TestClient) StoreTempTomlConfig(t *testing.T, tomlProvider func(string) string) *TmpTomlConfig {
 	t.Helper()
 
@@ -92,7 +106,7 @@ func (c *TestClient) StoreTempTomlConfigWithProfile(t *testing.T, profile string
 	t.Helper()
 
 	toml := tomlProvider(profile)
-	configPath := testhelpers.TestFile(t, random.AlphaN(10), []byte(toml))
+	configPath := testfiles.TestFile(t, random.AlphaN(10), []byte(toml))
 	return &TmpTomlConfig{
 		Profile: profile,
 		Path:    configPath,
@@ -104,7 +118,7 @@ func (c *TestClient) StoreTempTomlConfigWithCustomPermissions(t *testing.T, toml
 
 	profile := random.AlphaN(6)
 	toml := tomlProvider(profile)
-	configPath := testhelpers.TestFileWithCustomPermissions(t, random.AlphaN(10), []byte(toml), permissions)
+	configPath := testfiles.TestFileWithCustomPermissions(t, random.AlphaN(10), []byte(toml), permissions)
 	return &TmpTomlConfig{
 		Profile: profile,
 		Path:    configPath,

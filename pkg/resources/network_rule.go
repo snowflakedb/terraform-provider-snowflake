@@ -69,7 +69,7 @@ var networkRuleSchema = map[string]*schema.Schema{
 func NetworkRule() *schema.Resource {
 	// TODO(SNOW-1818849): unassign network rules before dropping
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.NetworkRules.DropSafely
 		},
@@ -128,7 +128,7 @@ func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	networkRule, err := client.NetworkRules.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -186,7 +186,7 @@ func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta in
 
 func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	valueList := expandStringList(d.Get("value_list").(*schema.Set).List())
 	networkRuleValues := make([]sdk.NetworkRuleValue, len(valueList))

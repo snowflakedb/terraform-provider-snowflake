@@ -21,7 +21,6 @@ func TestAcc_FailoverGroupBasic(t *testing.T) {
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -64,7 +63,6 @@ func TestAcc_FailoverGroupRemoveObjectTypes(t *testing.T) {
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -105,7 +103,6 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -216,7 +213,6 @@ func TestAcc_FailoverGroup_issue2517(t *testing.T) {
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -247,7 +243,6 @@ func TestAcc_FailoverGroup_issue2544(t *testing.T) {
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -141,7 +141,7 @@ var externalTableSchema = map[string]*schema.Schema{
 
 func ExternalTable() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.ExternalTables.DropSafely
 		},
@@ -256,7 +256,7 @@ func CreateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 // ReadExternalTable implements schema.ReadFunc.
 func ReadExternalTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	externalTable, err := client.ExternalTables.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -291,7 +291,7 @@ func ReadExternalTable(ctx context.Context, d *schema.ResourceData, meta any) di
 // UpdateExternalTable implements schema.UpdateFunc.
 func UpdateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	if d.HasChange("tag") {
 		unsetTags, setTags := GetTagsDiff(d, "tag")

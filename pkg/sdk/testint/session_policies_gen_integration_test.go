@@ -181,7 +181,12 @@ func TestInt_SessionPolicies(t *testing.T) {
 		assert.Contains(t, returnedSessionPolicies, *sessionPolicy2)
 	})
 
+	// TODO(SNOW-1348362): Unskip this test.
 	t.Run("describe session_policy", func(t *testing.T) {
+		// In 2025_04 BCR, the format of the DESC has been changed from row-oriented to column-oriented.
+		// It means that the values are returned as a list of properties with additional default values, description, etc.
+		// The SDK currently expects the old row-oriented format. It should be adjusted to the new format, and this test should be unskipped.
+		t.Skip("Skipping session_policy describe test due to changes in the output format")
 		sessionPolicy := createSessionPolicy(t)
 
 		returnedSessionPolicy, err := client.SessionPolicies.Describe(ctx, sessionPolicy.ID())

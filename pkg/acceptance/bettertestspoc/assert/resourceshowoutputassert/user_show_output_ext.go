@@ -23,3 +23,8 @@ func (u *UserShowOutputAssert) HasMinsToBypassMfaNotEmpty() *UserShowOutputAsser
 	u.AddAssertion(assert.ResourceShowOutputValuePresent("mins_to_bypass_mfa"))
 	return u
 }
+
+func (t *UserShowOutputAssert) HasTypeEmpty() *UserShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("type", ""))
+	return t
+}

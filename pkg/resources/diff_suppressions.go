@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -51,34 +50,25 @@ func NormalizeAndCompareIdentifiersInSet(key string) schema.SchemaDiffSuppressFu
 			return false
 		}
 
+		// TODO(SNOW-2332640): Research if we can simplify this logic and keep this type safe.
 		if oldValue == "" && !d.GetRawState().IsNull() {
-			if helpers.ContainsIdentifierIgnoringQuotes(ctyValToSliceString(d.GetRawState().AsValueMap()[key].AsValueSet().Values()), newValue) {
-				return true
+			stateRaw, ok := d.GetRawState().AsValueMap()[key]
+			if ok && !stateRaw.IsNull() && stateRaw.Type().IsCollectionType() {
+				if helpers.ContainsIdentifierIgnoringQuotes(ctyValToSliceString(stateRaw.AsValueSet().Values()), newValue) {
+					return true
+				}
+			} else {
+				log.Printf("[DEBUG] NormalizeAndCompareIdentifiersInSet: state raw for key %s is not found or is not a collection type", key)
 			}
 		}
 
 		if newValue == "" {
-			if helpers.ContainsIdentifierIgnoringQuotes(expandStringList(d.Get(key).(*schema.Set).List()), oldValue) {
+			oldRaw, ok := d.Get(key).(*schema.Set)
+			if ok && helpers.ContainsIdentifierIgnoringQuotes(expandStringList(oldRaw.List()), oldValue) {
 				return true
+			} else {
+				log.Printf("[DEBUG] NormalizeAndCompareIdentifiersInSet: old raw for key %s is not found or is not a collection type", key)
 			}
-		}
-
-		return false
-	}
-}
-
-func SuppressCaseInSet(key string) schema.SchemaDiffSuppressFunc {
-	return func(k, oldValue, newValue string, d *schema.ResourceData) bool {
-		if strings.HasSuffix(k, ".#") {
-			return false
-		}
-
-		if oldValue == "" && !d.GetRawState().IsNull() && !d.GetRawState().AsValueMap()[key].IsNull() {
-			return slices.Contains(collections.Map(ctyValToSliceString(d.GetRawState().AsValueMap()[key].AsValueSet().Values()), strings.ToUpper), strings.ToUpper(newValue))
-		}
-
-		if newValue == "" {
-			return slices.Contains(collections.Map(expandStringList(d.Get(key).(*schema.Set).List()), strings.ToUpper), strings.ToUpper(oldValue))
 		}
 
 		return false

@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -192,17 +193,52 @@ func (c *UserClient) UnsetDefaultSecondaryRoles(t *testing.T, id sdk.AccountObje
 	require.NoError(t, err)
 }
 
-func (c *UserClient) AddProgrammaticAccessToken(t *testing.T, id sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier) sdk.AddProgrammaticAccessTokenResult {
+func (c *UserClient) AddProgrammaticAccessToken(t *testing.T, userId sdk.AccountObjectIdentifier) (sdk.AddProgrammaticAccessTokenResult, func()) {
 	t.Helper()
-	ctx := context.Background()
 	name := c.ids.RandomAccountObjectIdentifier()
 
-	token, err := c.context.client.UserProgrammaticAccessTokens.Add(ctx, sdk.NewAddUserProgrammaticAccessTokenRequest(id, name).
-		WithRoleRestriction(roleId).
-		// Expire the token after 1 day to avoid valid leftover tokens.
-		WithDaysToExpiry(1),
-	)
+	return c.AddProgrammaticAccessTokenWithRequest(t, userId, sdk.NewAddUserProgrammaticAccessTokenRequest(userId, name))
+}
+
+func (c *UserClient) AddProgrammaticAccessTokenWithRequest(t *testing.T, userId sdk.AccountObjectIdentifier, request *sdk.AddUserProgrammaticAccessTokenRequest) (sdk.AddProgrammaticAccessTokenResult, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	// Expire the token after 1 day to avoid valid leftover tokens.
+	request.WithDaysToExpiry(1)
+
+	token, err := c.context.client.Users.AddProgrammaticAccessToken(ctx, request)
 	require.NoError(t, err)
 	require.NotNil(t, token)
-	return *token
+	return *token, c.RemoveProgrammaticAccessTokenFunc(t, userId, sdk.NewAccountObjectIdentifier(token.TokenName))
+}
+
+func (c *UserClient) ModifyProgrammaticAccessToken(t *testing.T, request *sdk.ModifyUserProgrammaticAccessTokenRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().ModifyProgrammaticAccessToken(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *UserClient) RemoveProgrammaticAccessTokenFunc(t *testing.T, userId sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	return func() {
+		err := c.context.client.Users.RemoveProgrammaticAccessTokenSafely(ctx, sdk.NewRemoveUserProgrammaticAccessTokenRequest(userId, tokenName))
+		if err != nil && !errors.Is(err, sdk.ErrPatNotFound) {
+			t.Errorf("failed to remove programmatic access token: %v", err)
+		}
+	}
+}
+
+func (c *UserClient) ShowProgrammaticAccessToken(t *testing.T, userId sdk.AccountObjectIdentifier, tokenName sdk.AccountObjectIdentifier) *sdk.ProgrammaticAccessToken {
+	t.Helper()
+	ctx := context.Background()
+
+	token, err := c.context.client.Users.ShowProgrammaticAccessTokenByName(ctx, userId, tokenName)
+	require.NoError(t, err)
+	require.NotNil(t, token)
+	return token
 }

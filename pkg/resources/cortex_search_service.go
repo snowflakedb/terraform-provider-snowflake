@@ -97,7 +97,7 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 
 func CortexSearchService() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErr[sdk.SchemaObjectIdentifier],
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.CortexSearchServices.DropSafely
 		},
@@ -128,7 +128,7 @@ func CortexSearchService() *schema.Resource {
 
 func ImportCortexSearchService(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	cortexSearchServiceDetails, err := client.CortexSearchServices.Describe(ctx, id)
 	if err != nil {
@@ -156,7 +156,7 @@ func GetReadCortexSearchServiceFunc(withExternalChangesMarking bool) schema.Read
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 
-		id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+		id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 		cortexSearchService, err := client.CortexSearchServices.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
@@ -268,7 +268,7 @@ func CreateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 // UpdateCortexSearchService implements schema.UpdateFunc.
 func UpdateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeID(d.Id()).(sdk.SchemaObjectIdentifier)
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 	request := sdk.NewAlterCortexSearchServiceRequest(id)
 
 	set := sdk.NewCortexSearchServiceSetRequest()

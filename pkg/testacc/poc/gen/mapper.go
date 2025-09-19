@@ -56,7 +56,7 @@ type ProviderModelField struct {
 	TfsdkTagValue             string
 }
 
-// TODO [mux-PR]: support blocks
+// TODO [SNOW-2296275]: support blocks
 func MapToPluginFrameworkProviderModelField(key string, fieldSchema *schema.Schema) (*ProviderModelField, error) {
 	name := genhelpers.SnakeCaseToCamel(key)
 	pfType, err := pluginFrameworkTypeFromSdkV2Type(fieldSchema.Type)
@@ -79,7 +79,7 @@ type ProviderSchemaEntry struct {
 	Sensitive                          bool
 }
 
-// TODO [mux-PR]: support blocks
+// TODO [SNOW-2296275]: support blocks
 func MapToPluginFrameworkProviderSchema(key string, fieldSchema *schema.Schema) (*ProviderSchemaEntry, error) {
 	pfType, err := pluginFrameworkTypeFromSdkV2Type(fieldSchema.Type)
 	if err != nil {

@@ -1,14 +1,19 @@
-//go:build !account_level_tests
+//go:build account_level_tests
+
+// Tests for OAuth integration for partner applications are marked as account_level_tests,
+// because only one integration of this type can exist in the account.
 
 package testacc
 
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -42,7 +47,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_Basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -296,7 +300,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -545,7 +548,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -622,7 +624,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_Invalid(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -650,7 +651,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_migrateFromV0941_ensureSmoot
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -686,7 +686,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithQuotedName(t *testing.T)
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -735,7 +734,6 @@ func TestAcc_OauthIntegrationForPartnerApplications_DetectExternalChangesForOaut
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -763,6 +761,76 @@ func TestAcc_OauthIntegrationForPartnerApplications_DetectExternalChangesForOaut
 				Check: assertThat(t,
 					resourceassert.OauthIntegrationForPartnerApplicationsResource(t, configModel.ResourceReference()).
 						HasOauthRedirectUriString(oauthRedirectUri),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_OauthIntegrationForPartnerApplications_WithPrivilegedRolesBlockedList(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	// Use an identifier with this prefix to have this role in the end.
+	roleId := testClient().Ids.RandomAccountObjectIdentifierWithPrefix("Z")
+	role, roleCleanup := testClient().Role.CreateRoleWithIdentifier(t, roleId)
+	t.Cleanup(roleCleanup)
+
+	allRoles := []string{snowflakeroles.Accountadmin.Name(), snowflakeroles.SecurityAdmin.Name(), role.ID().Name()}
+	onlyPrivilegedRoles := []string{snowflakeroles.Accountadmin.Name(), snowflakeroles.SecurityAdmin.Name()}
+	customRoles := []string{role.ID().Name()}
+
+	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, "true")
+	t.Cleanup(paramCleanup)
+
+	modelWithoutBlockedRole := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauDesktop))
+	modelWithBlockedRole := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauDesktop)).
+		WithBlockedRolesList(role.ID().Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelWithBlockedRole),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(modelWithBlockedRole.ResourceReference(), "blocked_roles_list.#", "1"),
+					resource.TestCheckTypeSetElemAttr(modelWithBlockedRole.ResourceReference(), "blocked_roles_list.*", role.ID().Name()),
+					resource.TestCheckResourceAttr(modelWithBlockedRole.ResourceReference(), "name", id.Name()),
+
+					resource.TestCheckResourceAttr(modelWithBlockedRole.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", strings.Join(allRoles, ",")),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelWithoutBlockedRole),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(modelWithoutBlockedRole.ResourceReference(), "blocked_roles_list.#", "0"),
+					resource.TestCheckResourceAttr(modelWithoutBlockedRole.ResourceReference(), "name", id.Name()),
+
+					resource.TestCheckResourceAttr(modelWithoutBlockedRole.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", strings.Join(onlyPrivilegedRoles, ",")),
+				),
+			},
+			{
+				PreConfig: func() {
+					// Do not revert, because the revert is setup above.
+					testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, "false")
+				},
+				Config: accconfig.FromModels(t, modelWithBlockedRole),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(modelWithBlockedRole.ResourceReference(), "blocked_roles_list.#", "1"),
+					resource.TestCheckTypeSetElemAttr(modelWithBlockedRole.ResourceReference(), "blocked_roles_list.*", role.ID().Name()),
+					resource.TestCheckResourceAttr(modelWithBlockedRole.ResourceReference(), "name", id.Name()),
+
+					resource.TestCheckResourceAttr(modelWithBlockedRole.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", strings.Join(customRoles, ",")),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelWithoutBlockedRole),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(modelWithoutBlockedRole.ResourceReference(), "blocked_roles_list.#", "0"),
+					resource.TestCheckResourceAttr(modelWithoutBlockedRole.ResourceReference(), "name", id.Name()),
+
+					resource.TestCheckResourceAttr(modelWithoutBlockedRole.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", ""),
 				),
 			},
 		},

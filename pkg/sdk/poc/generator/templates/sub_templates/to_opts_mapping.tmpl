@@ -12,11 +12,11 @@
         {{- if .IsStruct }}
             {{- if or .IsPointer .IsSlice }}
                 if r{{ .Path }} != nil {
-            {{- end -}}
+            {{- end }}
 
-            {{- if not .IsSlice -}}
+            {{- if not .IsSlice }}
                 opts{{ .Path }} = {{ if .IsPointer }}&{{end}}{{ template "toOptsMapping" . -}}{{/* Recursive call */}}
-            {{- else -}}
+            {{- else }}
                 s := make({{ .Kind }}, len(r{{ .Path }}))
                 for i, v := range r{{ .Path }} {
                     s[i] = {{ .KindNoSlice }}{
@@ -26,11 +26,11 @@
                     }
                 }
                 opts{{ .Path }} = s
-            {{- end -}}
+            {{- end }}
 
-            {{- if or .IsPointer .IsSlice -}}
+            {{- if or .IsPointer .IsSlice }}
                 }
-            {{- end -}}
-        {{- end -}}
+            {{- end }}
+        {{- end }}
     {{- end }}
 {{- end }}

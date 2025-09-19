@@ -113,22 +113,22 @@ func (s *ServiceDetailsAssert) HasDnsName(expected string) *ServiceDetailsAssert
 	return s
 }
 
-func (s *ServiceDetailsAssert) HasCurrentInstances(expected int) *ServiceDetailsAssert {
+func (s *ServiceDetailsAssert) HasCurrentInstancesBetween(min, max int) *ServiceDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
-		if o.CurrentInstances != expected {
-			return fmt.Errorf("expected current instances: %v; got: %v", expected, o.CurrentInstances)
+		if o.CurrentInstances < min || max < o.CurrentInstances {
+			return fmt.Errorf("expected current instances to be between %d and %d; got: %d", min, max, o.CurrentInstances)
 		}
 		return nil
 	})
 	return s
 }
 
-func (s *ServiceDetailsAssert) HasTargetInstances(expected int) *ServiceDetailsAssert {
+func (s *ServiceDetailsAssert) HasTargetInstancesBetween(min, max int) *ServiceDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
-		if o.TargetInstances != expected {
-			return fmt.Errorf("expected target instances: %v; got: %v", expected, o.TargetInstances)
+		if o.TargetInstances < min || max < o.TargetInstances {
+			return fmt.Errorf("expected target instances to be between %d and %d; got: %d", min, max, o.TargetInstances)
 		}
 		return nil
 	})

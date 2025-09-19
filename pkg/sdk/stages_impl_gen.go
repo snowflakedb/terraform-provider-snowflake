@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Stages = (*stages)(nil)
+var (
+	_ Stages                        = (*stages)(nil)
+	_ convertibleRow[StageProperty] = new(stageDescRow)
+	_ convertibleRow[Stage]         = new(stageShowRow)
+)
 
 type stages struct {
 	client *Client
@@ -84,7 +88,7 @@ func (v *stages) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]Sta
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[stageDescRow, StageProperty](rows), nil
+	return convertRows[stageDescRow, StageProperty](rows)
 }
 
 func (v *stages) Show(ctx context.Context, request *ShowStageRequest) ([]Stage, error) {
@@ -93,8 +97,7 @@ func (v *stages) Show(ctx context.Context, request *ShowStageRequest) ([]Stage, 
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[stageShowRow, Stage](dbRows)
-	return resultList, nil
+	return convertRows[stageShowRow, Stage](dbRows)
 }
 
 func (v *stages) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Stage, error) {
@@ -631,7 +634,7 @@ func (r *DescribeStageRequest) toOpts() *DescribeStageOptions {
 	return opts
 }
 
-func (r stageDescRow) convert() *StageProperty {
+func (r stageDescRow) convert() (*StageProperty, error) {
 	stageProp := &StageProperty{
 		Parent:  r.ParentProperty,
 		Name:    r.Property,
@@ -639,7 +642,7 @@ func (r stageDescRow) convert() *StageProperty {
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
 	}
-	return stageProp
+	return stageProp, nil
 }
 
 func (r *ShowStageRequest) toOpts() *ShowStageOptions {
@@ -650,7 +653,7 @@ func (r *ShowStageRequest) toOpts() *ShowStageOptions {
 	return opts
 }
 
-func (r stageShowRow) convert() *Stage {
+func (r stageShowRow) convert() (*Stage, error) {
 	stage := &Stage{
 		CreatedOn:        r.CreatedOn,
 		Name:             r.Name,
@@ -679,5 +682,5 @@ func (r stageShowRow) convert() *Stage {
 	if r.OwnerRoleType.Valid {
 		stage.OwnerRoleType = &r.OwnerRoleType.String
 	}
-	return stage
+	return stage, nil
 }

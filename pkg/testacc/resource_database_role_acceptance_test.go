@@ -28,7 +28,6 @@ func TestAcc_DatabaseRole_Basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -152,7 +151,6 @@ func TestAcc_DatabaseRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(
 	databaseRoleModelWithComment := model.DatabaseRole("test", id.DatabaseName(), id.Name()).WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -192,7 +190,6 @@ func TestAcc_DatabaseRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 	databaseRoleModelWithComment := model.DatabaseRole("test", id.DatabaseName(), quotedDatabaseRoleId).WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

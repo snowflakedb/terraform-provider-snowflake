@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
 	"github.com/snowflakedb/gosnowflake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -35,7 +35,7 @@ func TestLoadConfigFile(t *testing.T) {
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
-	configPath := testhelpers.TestFile(t, "config", bytes)
+	configPath := testfiles.TestFile(t, "config", bytes)
 
 	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -57,7 +57,7 @@ func TestLoadConfigFileWithUnknownFields(t *testing.T) {
 	unknown='TEST_ACCOUNT'
 	account_name='TEST_ACCOUNT'
 	`
-	configPath := testhelpers.TestFile(t, "config", []byte(c))
+	configPath := testfiles.TestFile(t, "config", []byte(c))
 
 	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -76,7 +76,7 @@ func Test_LoadConfigFile_triValueBooleanDefault(t *testing.T) {
 	)
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
-	configPath := testhelpers.TestFile(t, "config", bytes)
+	configPath := testfiles.TestFile(t, "config", bytes)
 
 	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -106,7 +106,7 @@ func Test_LoadConfigFile_triValueBooleanSet(t *testing.T) {
 			)
 			bytes, err := cfg.MarshalToml()
 			require.NoError(t, err)
-			configPath := testhelpers.TestFile(t, "config", bytes)
+			configPath := testfiles.TestFile(t, "config", bytes)
 
 			m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 			require.NoError(t, err)
@@ -162,7 +162,7 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		[default]
 		%s=42
 		`, tt.fieldName)
-			configPath := testhelpers.TestFile(t, "config", []byte(config))
+			configPath := testfiles.TestFile(t, "config", []byte(config))
 
 			_, err := LoadConfigFile[*ConfigDTO](configPath, true)
 			require.ErrorContains(t, err, fmt.Sprintf("toml: cannot decode TOML integer into struct field sdk.ConfigDTO.%s of type %s", tt.name, tt.wantType))
@@ -190,7 +190,7 @@ func TestLoadConfigFileWithInvalidFieldTypeIntFails(t *testing.T) {
 		[default]
 		%s=value
 		`, tt.fieldName)
-			configPath := testhelpers.TestFile(t, "config", []byte(config))
+			configPath := testfiles.TestFile(t, "config", []byte(config))
 
 			_, err := LoadConfigFile[*ConfigDTO](configPath, true)
 			require.ErrorContains(t, err, "toml: incomplete number")
@@ -255,7 +255,7 @@ func TestLoadConfigFileWithInvalidTOMLFails(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			configPath := testhelpers.TestFile(t, "config", []byte(tt.config))
+			configPath := testfiles.TestFile(t, "config", []byte(tt.config))
 
 			_, err := LoadConfigFile[*ConfigDTO](configPath, true)
 			require.ErrorContains(t, err, tt.err)
@@ -312,7 +312,7 @@ func TestProfileConfig(t *testing.T) {
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
 
-	configPath := testhelpers.TestFile(t, "config", bytes)
+	configPath := testfiles.TestFile(t, "config", bytes)
 
 	t.Run("with found profile", func(t *testing.T) {
 		t.Setenv(snowflakeenvs.ConfigPath, configPath)
@@ -504,7 +504,7 @@ func Test_MergeConfig(t *testing.T) {
 
 	t.Run("special authenticator value", func(t *testing.T) {
 		config := MergeConfig(&gosnowflake.Config{
-			Authenticator: gosnowflakeAuthTypeEmpty,
+			Authenticator: GosnowflakeAuthTypeEmpty,
 		}, config1)
 
 		require.Equal(t, config1, config)
@@ -613,7 +613,7 @@ func Test_ToExtendedAuthenticatorType(t *testing.T) {
 		{input: "TOKENACCESSOR", want: gosnowflake.AuthTypeTokenAccessor},
 		{input: "USERNAMEPASSWORDMFA", want: gosnowflake.AuthTypeUsernamePasswordMFA},
 		{input: "PROGRAMMATIC_ACCESS_TOKEN", want: gosnowflake.AuthTypePat},
-		{input: "", want: gosnowflakeAuthTypeEmpty},
+		{input: "", want: GosnowflakeAuthTypeEmpty},
 	}
 
 	invalid := []test{
@@ -773,6 +773,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "org-acc", got.Account)
 				assert.Equal(t, "user", got.User)
 				assert.Equal(t, "pass", got.Password)
+				assert.Equal(t, GosnowflakeAuthTypeEmpty, got.Authenticator)
 			},
 		},
 		{
@@ -883,6 +884,12 @@ func TestConfigDTODriverConfig(t *testing.T) {
 			input: NewConfigDTO().
 				WithAuthenticator("invalid"),
 			err: fmt.Errorf("invalid authenticator type: invalid"),
+		},
+		{
+			name: "invalid authenticator - empty",
+			input: NewConfigDTO().
+				WithAuthenticator(""),
+			err: fmt.Errorf("invalid authenticator type: "),
 		},
 		{
 			name: "invalid privatekey",

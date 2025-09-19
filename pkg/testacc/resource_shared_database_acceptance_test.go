@@ -55,7 +55,6 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -173,7 +172,6 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -226,7 +224,6 @@ func TestAcc_CreateSharedDatabase_InvalidValues(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -271,7 +268,6 @@ func TestAcc_SharedDatabase_migrateFromV0941_ensureSmoothUpgradeWithNewResourceI
 	sharedDatabaseModel := model.SharedDatabase("test", id.Name(), externalShareId.FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -307,7 +303,6 @@ func TestAcc_SharedDatabase_IdentifierQuotingDiffSuppression(t *testing.T) {
 	sharedDatabaseModel := model.SharedDatabase("test", quotedId, unquotedExternalShareId)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

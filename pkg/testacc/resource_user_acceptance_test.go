@@ -19,8 +19,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -99,7 +102,6 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// CREATE WITHOUT ATTRIBUTES
@@ -295,7 +297,6 @@ func TestAcc_User_RemovedOutsideOfTerraform(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -345,7 +346,6 @@ func TestAcc_User_issue2058(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -430,7 +430,6 @@ func TestAcc_User_AllParameters(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters
@@ -671,7 +670,6 @@ func TestAcc_User_issue2836(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -712,7 +710,6 @@ func TestAcc_User_issue2970(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -761,7 +758,6 @@ func TestAcc_User_issue1572(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -809,7 +805,6 @@ func TestAcc_User_issue1535_withNullPassword(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -849,7 +844,6 @@ func TestAcc_User_issue1535_withRemovedPassword(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -888,7 +882,6 @@ func TestAcc_User_issue1155_handleChangesToDaysToExpiry(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// 1. create without days_to_expiry
@@ -984,14 +977,13 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(""),
-					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(""),
+					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
 			},
 			{
@@ -1006,8 +998,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(""),
-					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(""),
+					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
 			},
 			// no change should happen if the change is to PERSON explicitly
@@ -1023,8 +1015,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString("PERSON"),
-					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType("PERSON"),
+					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
 			},
 			// no change should happen if we fall back to default
@@ -1040,8 +1032,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(""),
-					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(""),
+					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
 			},
 		},
@@ -1049,8 +1041,6 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 }
 
 func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
-	t.Skip("Ordering needs to be changed after BCR 2024_08 general availability.")
-
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModelEmpty := model.UserWithDefaultMeta(userId.Name())
@@ -1066,154 +1056,6 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
-		CheckDestroy: CheckDestroy(t, resources.User),
-		Steps: []resource.TestStep{
-			// 1. create without default secondary roles option set (DEFAULT will be used)
-			{
-				Config: config.FromModels(t, userModelEmpty),
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles(""),
-				),
-			},
-			// 2. add default secondary roles NONE (expecting change because null != [] on Snowflake side)
-			{
-				Config: config.FromModels(t, userModelWithOptionNone),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectNonEmptyPlan(),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelWithOptionAll.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionNone),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles(`[]`),
-				),
-			},
-			// 3. add default secondary roles ALL
-			{
-				Config: config.FromModels(t, userModelWithOptionAll),
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelWithOptionAll.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
-				),
-			},
-			// 4. change to lowercase (no changes)
-			{
-				Config: config.FromModels(t, userModelLowercaseValue),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-			},
-			// 5. unset externally
-			{
-				PreConfig: func() {
-					testClient().User.UnsetDefaultSecondaryRoles(t, userId)
-				},
-				Config: config.FromModels(t, userModelWithOptionAll),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChange(userModelWithOptionAll.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("DEFAULT"), sdk.String("ALL")),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelWithOptionAll.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
-				),
-			},
-			// 6. unset in config (change)
-			{
-				Config: config.FromModels(t, userModelEmpty),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChange(userModelEmpty.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("ALL"), sdk.String("DEFAULT")),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles(""),
-				),
-			},
-			// 7. incorrect value used
-			{
-				Config:      config.FromModels(t, userModelIncorrectValue),
-				ExpectError: regexp.MustCompile("invalid secondary roles option: OTHER"),
-			},
-			// 8. set to empty in config (invalid)
-			{
-				Config:      config.FromModels(t, userModelEmptyValue),
-				ExpectError: regexp.MustCompile("invalid secondary roles option: "),
-			},
-			// 9. set in config to NONE (change)
-			{
-				Config: config.FromModels(t, userModelWithOptionNone),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChange(userModelWithOptionNone.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("DEFAULT"), sdk.String("NONE")),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelWithOptionNone.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionNone),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles("[]"),
-				),
-			},
-			// 10. unset in config (change)
-			{
-				Config: config.FromModels(t, userModelEmpty),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChange(userModelEmpty.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("NONE"), sdk.String("DEFAULT")),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles(""),
-				),
-			},
-			// 11. add default secondary roles ALL
-			{
-				Config: config.FromModels(t, userModelWithOptionAll),
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelWithOptionAll.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
-				),
-			},
-			// 12. set to null value in config (change)
-			{
-				Config: config.FromModels(t, userModelNullValue),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChange(userModelNullValue.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("ALL"), sdk.String("DEFAULT")),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelNullValue.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
-					objectassert.User(t, userId).HasDefaultSecondaryRoles(""),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_User_handleChangesToDefaultSecondaryRoles_bcr202408(t *testing.T) {
-	userId := testClient().Ids.RandomAccountObjectIdentifier()
-
-	userModelEmpty := model.UserWithDefaultMeta(userId.Name())
-	userModelWithOptionAll := model.UserWithDefaultMeta(userId.Name()).WithDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll)
-	userModelWithOptionNone := model.UserWithDefaultMeta(userId.Name()).WithDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone)
-	userModelLowercaseValue := model.UserWithDefaultMeta(userId.Name()).WithDefaultSecondaryRolesOption("all")
-	userModelIncorrectValue := model.UserWithDefaultMeta(userId.Name()).WithDefaultSecondaryRolesOption("OTHER")
-	userModelEmptyValue := model.UserWithDefaultMeta(userId.Name()).WithDefaultSecondaryRolesOption("")
-	userModelNullValue := model.UserWithDefaultMeta(userId.Name()).WithDefaultSecondaryRolesOptionValue(config.ReplacementPlaceholderVariable(config.SnowflakeProviderConfigNull))
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// 1. create without default secondary roles option set (DEFAULT will be used)
@@ -1226,12 +1068,12 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles_bcr202408(t *testing.T) {
 			},
 			// 2. add default secondary roles ALL (expecting no change)
 			{
+				Config: config.FromModels(t, userModelWithOptionAll),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Config: config.FromModels(t, userModelWithOptionAll),
 			},
 			// 3. change to lowercase (change because we have DEFAULT in state because previous step was suppressed so none of the suppressors NormalizeAndCompare nor IgnoreChangeToCurrentSnowflakeValueInShowWithMapping suppresses it; it can be made better later)
 			{
@@ -1330,6 +1172,11 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles_bcr202408(t *testing.T) {
 			// 12. set to null value in config (change)
 			{
 				Config: config.FromModels(t, userModelNullValue),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.ExpectChange(userModelNullValue.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("NONE"), sdk.String("DEFAULT")),
+					},
+				},
 				Check: assertThat(t,
 					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
@@ -1345,7 +1192,6 @@ func TestAcc_User_migrateFromVersion094_defaultSecondaryRolesSet(t *testing.T) {
 	userModelWithOptionAll := model.UserWithDefaultMeta(id.Name()).WithDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1403,7 +1249,6 @@ func TestAcc_User_ParameterValidationsAndDiffSuppressions(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1437,7 +1282,6 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// Create without both set
@@ -1551,7 +1395,6 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_gh3125(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1584,7 +1427,6 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1624,7 +1466,6 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1664,7 +1505,6 @@ func TestAcc_User_importPassword(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			// IMPORT
@@ -1721,7 +1561,6 @@ func TestAcc_User_gh3522_proof(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1762,7 +1601,6 @@ func TestAcc_User_gh3522_fix(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1816,7 +1654,6 @@ func TestAcc_User_gh3655(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
@@ -1832,6 +1669,73 @@ func TestAcc_User_gh3655(t *testing.T) {
 				Config:                   config.FromModels(t, networkPolicyModel, userModel),
 				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
 					HasNetworkPolicyString(networkPolicyId.Name()),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_User_BCR_2025_05(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	userModel := model.User("test", userId.Name())
+
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.User),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					secondaryTestClient().BcrBundles.DisableBcrBundle(t, "2025_05")
+				},
+				Config: config.FromModels(t, providerModel, userModel),
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNameString(userId.Name()).
+					HasUserTypeEmpty(),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).
+						HasTypeEmpty(),
+				),
+			},
+			// Prove that after enabling the 2025_05 bundle, the type is still not set, and the plan is empty.
+			{
+				PreConfig: func() {
+					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2025_05")
+				},
+				Config: config.FromModels(t, providerModel, userModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNameString(userId.Name()).
+					HasUserTypeEmpty(),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).
+						HasTypeEmpty(),
+				),
+			},
+			// When the user type is set to PERSON externally, the plan is empty.
+			{
+				PreConfig: func() {
+					secondaryTestClient().User.SetType(t, userId, sdk.UserTypePerson)
+				},
+				Config: config.FromModels(t, providerModel, userModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
+					HasNameString(userId.Name()).
+					HasUserTypeString(string(sdk.UserTypePerson)),
+					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).
+						HasType(string(sdk.UserTypePerson)),
 				),
 			},
 		},

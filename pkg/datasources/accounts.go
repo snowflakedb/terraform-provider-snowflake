@@ -34,7 +34,7 @@ var accountsSchema = map[string]*schema.Schema{
 						Schema: schemas.ShowAccountSchema,
 					},
 				},
-				// TODO(SNOW-1348092 - next prs): Add parameters
+				// TODO [SNOW-2298247]: Add parameters
 			},
 		},
 	},

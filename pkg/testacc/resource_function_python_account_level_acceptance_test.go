@@ -21,6 +21,9 @@ import (
 )
 
 func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
+	// TODO(SNOW-2251351): Resolve these tests after the change rollout is clarified.
+	t.Skip("Skipping because the changes have been reverted from the BCR")
+
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	schema, schemaCleanup := secondaryTestClient().Schema.CreateSchema(t)
@@ -39,7 +42,6 @@ func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -83,6 +85,9 @@ func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
 }
 
 func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
+	// TODO(SNOW-2251351): Resolve these tests after the change rollout is clarified.
+	t.Skip("Skipping because the changes have been reverted from the BCR")
+
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	schema, schemaCleanup := secondaryTestClient().Schema.CreateSchema(t)
@@ -101,7 +106,6 @@ func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

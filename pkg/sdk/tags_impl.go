@@ -6,7 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tags = (*tags)(nil)
+var (
+	_ Tags                = (*tags)(nil)
+	_ convertibleRow[Tag] = new(tagRow)
+)
 
 type tags struct {
 	client *Client
@@ -28,8 +31,7 @@ func (v *tags) Show(ctx context.Context, request *ShowTagRequest) ([]Tag, error)
 	if err != nil {
 		return nil, err
 	}
-	result := convertRows[tagRow, Tag](rows)
-	return result, nil
+	return convertRows[tagRow, Tag](rows)
 }
 
 func (v *tags) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Tag, error) {

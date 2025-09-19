@@ -118,13 +118,13 @@ func commentAndCloseIssues(issues []Issue, accessToken string) ([]int, []int) {
 // expecting 201
 func prepareCommentRequest(token string, issueNumber int) (*http.Request, error) {
 	addCommentBody := AddComment{
-		Body: "We are closing this issue as part of a cleanup described in [announcement](https://github.com/Snowflake-Labs/terraform-provider-snowflake/discussions/2755). If you believe that the issue is still valid in v0.89.0, please open a new ticket.",
+		Body: "We are closing this issue as part of a cleanup described in [announcement](https://github.com/snowflakedb/terraform-provider-snowflake/discussions/2755). If you believe that the issue is still valid in v0.89.0, please open a new ticket.",
 	}
 	marshalledAddCommentBody, err := json.Marshal(addCommentBody)
 	if err != nil {
 		return nil, fmt.Errorf("impossible to marshall add comment body for issue %d, err: %w", issueNumber, err)
 	}
-	url := fmt.Sprintf("https://api.github.com/repos/Snowflake-Labs/terraform-provider-snowflake/issues/%d/comments", issueNumber)
+	url := fmt.Sprintf("https://api.github.com/repos/snowflakedb/terraform-provider-snowflake/issues/%d/comments", issueNumber)
 	req, err := http.NewRequest("POST", url, bytes.NewReader(marshalledAddCommentBody))
 	if err != nil {
 		return nil, fmt.Errorf("error creating comment request for issue %d, err: %w", issueNumber, err)
@@ -148,7 +148,7 @@ func prepareCloseRequest(token string, issueNumber int) (*http.Request, error) {
 	if err != nil {
 		return nil, fmt.Errorf("impossible to marshall update body for issue %d, err: %w", issueNumber, err)
 	}
-	url := fmt.Sprintf("https://api.github.com/repos/Snowflake-Labs/terraform-provider-snowflake/issues/%d", issueNumber)
+	url := fmt.Sprintf("https://api.github.com/repos/snowflakedb/terraform-provider-snowflake/issues/%d", issueNumber)
 	req, err := http.NewRequest("PATCH", url, bytes.NewReader(marshalledCloseIssueBody))
 	if err != nil {
 		return nil, fmt.Errorf("error creating close request for issue %d, err: %w", issueNumber, err)

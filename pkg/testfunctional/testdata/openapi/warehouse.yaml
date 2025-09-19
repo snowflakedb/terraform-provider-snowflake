@@ -1,0 +1,733 @@
+openapi: 3.0.0
+servers:
+- description: Snowflake Warehouse API
+  url: https://org-account.snowflakecomputing.com
+info:
+  version: 0.0.1
+  title: Snowflake Warehouse API
+  description: The Snowflake Warehouse API is a REST API that you can use to access,
+    customize and manage virtual warehouse in a Snowflake account.
+  contact:
+    name: Snowflake, Inc.
+    url: https://snowflake.com
+    email: support@snowflake.com
+paths:
+  /api/v2/warehouses:
+    post:
+      summary: Create or replace warehouse
+      description: Create a virtual warehouse. Equivalent to CREATE WAREHOUSE in SQL.
+      operationId: createWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/createMode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Warehouse'
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+    get:
+      summary: List warehouse
+      description: Show a list of warehouse filtered by pattern. Equivalent to SHOW
+        WAREHOUSE in SQL.
+      operationId: listWarehouses
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/like
+      responses:
+        '200':
+          description: successful
+          headers:
+            X-Snowflake-Request-ID:
+              $ref: common.yaml#/components/headers/X-Snowflake-Request-ID
+            Link:
+              $ref: common.yaml#/components/headers/Link
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Warehouse'
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+  /api/v2/warehouses/{name}:
+    get:
+      summary: Describe warehouse
+      description: Describes the warehouse, show information of the chosen warehouse.
+        Equivalent to DESCRIBE WAREHOUSE in SQL.
+      operationId: fetchWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/name
+      responses:
+        '200':
+          description: successful
+          headers:
+            X-Snowflake-Request-ID:
+              $ref: common.yaml#/components/headers/X-Snowflake-Request-ID
+            Link:
+              $ref: common.yaml#/components/headers/Link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warehouse'
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+    delete:
+      summary: Drop warehouse
+      description: Removes the specified virtual warehouse from the system. Equivalent
+        to DROP WAREHOUSE in SQL.
+      operationId: deleteWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/ifExists
+      - $ref: common.yaml#/components/parameters/name
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+    put:
+      summary: Create a (or alter an existing) warehouse.
+      description: Create a (or alter an existing) warehouse. Even if the operation
+        is just an alter, the full property set must be provided.
+      operationId: createOrAlterWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Warehouse'
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+  /api/v2/warehouses/{name}:resume:
+    post:
+      summary: Resume warehouse
+      description: "Bring current warehouse to a usable \u2018Running\u2019 state\
+        \ by provisioning compute resources if current warehouse is suspended."
+      operationId: resumeWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/ifExists
+      - $ref: common.yaml#/components/parameters/name
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+  /api/v2/warehouses/{name}:suspend:
+    post:
+      summary: Suspend warehouse
+      description: "Remove all compute nodes from a warehouse and put the warehouse\
+        \ into a \u2018Suspended\u2019 state if current warehouse is not suspended."
+      operationId: suspendWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/ifExists
+      - $ref: common.yaml#/components/parameters/name
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+  /api/v2/warehouses/{name}:rename:
+    post:
+      summary: Update and rename warehouse
+      description: Specifies a new identifier for the warehouse; must be unique for
+        current account.
+      operationId: renameWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/ifExists
+      - $ref: common.yaml#/components/parameters/name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Warehouse'
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+  /api/v2/warehouses/{name}:abort:
+    post:
+      summary: Abort all queries
+      description: Aborts all the queries currently running or queued on the warehouse.
+      operationId: abortAllQueriesOnWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/ifExists
+      - $ref: common.yaml#/components/parameters/name
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+  /api/v2/warehouses/{name}:use:
+    post:
+      summary: Use current warehouse for session
+      description: '[Deprecated] Specifies the active/current warehouse for the session.'
+      operationId: useWarehouse
+      tags:
+      - warehouse
+      deprecated: true
+      parameters:
+      - $ref: common.yaml#/components/parameters/name
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+  /api/v2/warehouses/{name}:enable:
+    post:
+      summary: enable adaptive warehouse
+      description: "Enable an adaptive warehouse and put the warehouse into a \u2018\
+        enabled\u2019 state, if the warehouse is not enabled."
+      operationId: enableWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/ifExists
+      - $ref: common.yaml#/components/parameters/name
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+  /api/v2/warehouses/{name}:disable:
+    post:
+      summary: disable adaptive warehouse
+      description: "Disable an adaptive warehouse and put the warehouse into a \u2018\
+        disabled\u2019 state, if the warehouse is not disabled."
+      operationId: disableWarehouse
+      tags:
+      - warehouse
+      parameters:
+      - $ref: common.yaml#/components/parameters/ifExists
+      - $ref: common.yaml#/components/parameters/name
+      responses:
+        '200':
+          $ref: common.yaml#/components/responses/200SuccessResponse
+        '202':
+          $ref: common.yaml#/components/responses/202SuccessAcceptedResponse
+        '400':
+          $ref: common.yaml#/components/responses/400BadRequest
+        '401':
+          $ref: common.yaml#/components/responses/401Unauthorized
+        '403':
+          $ref: common.yaml#/components/responses/403Forbidden
+        '404':
+          $ref: common.yaml#/components/responses/404NotFound
+        '405':
+          $ref: common.yaml#/components/responses/405MethodNotAllowed
+        '408':
+          $ref: common.yaml#/components/responses/408RequestTimeout
+        '409':
+          $ref: common.yaml#/components/responses/409Conflict
+        '410':
+          $ref: common.yaml#/components/responses/410Gone
+        '429':
+          $ref: common.yaml#/components/responses/429LimitExceeded
+        '500':
+          $ref: common.yaml#/components/responses/500InternalServerError
+        '503':
+          $ref: common.yaml#/components/responses/503ServiceUnavailable
+        '504':
+          $ref: common.yaml#/components/responses/504GatewayTimeout
+components:
+  schemas:
+    Warehouse:
+      type: object
+      description: A Snowflake virtual warehouse
+      properties:
+        name:
+          $ref: ./common.yaml#/components/schemas/Identifier
+          description: Name of warehouse
+        warehouse_type:
+          type: string
+          description: 'Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED'
+        warehouse_size:
+          type: string
+          description: 'Size of warehouse, possible sizes: XSMALL, SMALL, MEDIUM,
+            LARGE, XLARGE, XXLARGE, XXXLARGE, X4LARGE, X5LARGE, X6LARGE'
+        wait_for_completion:
+          type: string
+          enum:
+          - true
+          - false
+          description: When resizing a warehouse, you can use this parameter to block
+            the return of the ALTER WAREHOUSE command until the resize has finished
+            provisioning all its compute resources
+        max_cluster_count:
+          type: integer
+          format: int32
+          description: Specifies the maximum number of clusters for a multi-cluster
+            warehouse
+        min_cluster_count:
+          type: integer
+          format: int32
+          description: Specifies the minimum number of clusters for a multi-cluster
+            warehouse
+        scaling_policy:
+          type: string
+          description: 'Scaling policy of warehouse, possible scaling policies: STANDARD,
+            ECONOMY'
+        auto_suspend:
+          type: integer
+          format: int32
+          description: time in seconds before auto suspend
+        auto_resume:
+          type: string
+          enum:
+          - true
+          - false
+          description: Specifies whether to automatically resume a warehouse when
+            a SQL statement is submitted to it
+        initially_suspended:
+          type: string
+          enum:
+          - true
+          - false
+          description: Specifies whether the warehouse is created initially in the
+            Suspended state
+        resource_monitor:
+          $ref: ./common.yaml#/components/schemas/Identifier
+          description: Specifies the name of a resource monitor that is explicitly
+            assigned to the warehouse. When a resource monitor is explicitly assigned
+            to a warehouse, the monitor controls the monthly credits used by the warehouse
+        comment:
+          type: string
+          format: comment
+          description: Specifies a comment for the warehouse
+        enable_query_acceleration:
+          type: string
+          enum:
+          - true
+          - false
+          description: Specifies whether to enable the query acceleration service
+            for queries that rely on this warehouse for compute resources
+        query_acceleration_max_scale_factor:
+          type: integer
+          format: int32
+          description: Specifies the maximum scale factor for leasing compute resources
+            for query acceleration. The scale factor is used as a multiplier based
+            on warehouse size
+        max_concurrency_level:
+          type: integer
+          format: int32
+          description: Object parameter that specifies the concurrency level for SQL
+            statements executed by a warehouse cluster
+        statement_queued_timeout_in_seconds:
+          type: integer
+          format: int32
+          description: Object parameter that specifies the time, in seconds, a SQL
+            statement can be queued on a warehouse before it is canceled by the system
+        statement_timeout_in_seconds:
+          type: integer
+          format: int32
+          description: Object parameter that specifies the time, in seconds, after
+            which a running SQL statement  is canceled by the system
+        type:
+          type: string
+          description: '[Deprecated] Type of warehouse, possible types: STANDARD,
+            SNOWPARK-OPTIMIZED'
+          deprecated: true
+        size:
+          type: string
+          description: '[Deprecated] names of size: X-Small, Small, Medium, Large,
+            X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large'
+          deprecated: true
+        state:
+          type: string
+          readOnly: true
+          description: 'The state of warehouse, possible states: STARTED, STARTING,
+            DYNAMIC, SUSPENDED, RESIZING, RESUMING, SUSPENDING'
+        started_clusters:
+          type: integer
+          format: int32
+          readOnly: true
+          description: Number of clusters currently started.
+        running:
+          type: integer
+          format: int32
+          readOnly: true
+          description: Number of SQL statements that are being executed by the warehouse.
+        queued:
+          type: integer
+          format: int32
+          readOnly: true
+          description: Number of SQL statements that are queued for the warehouse.
+        is_default:
+          type: boolean
+          readOnly: true
+          description: Whether the warehouse is the default for the current user.
+        is_current:
+          type: boolean
+          readOnly: true
+          description: Whether the warehouse is in use for the session. Only one warehouse
+            can be in use at a time for a session.  To specify or change the warehouse
+            for a session, use the USE WAREHOUSE command.
+        available:
+          type: string
+          format: Percentage
+          readOnly: true
+          description: Percentage of the warehouse compute resources that are provisioned
+            and available.
+        provisioning:
+          type: string
+          format: Percentage
+          readOnly: true
+          description: Percentage of the warehouse compute resources that are in the
+            process of provisioning.
+        quiescing:
+          type: string
+          format: Percentage
+          readOnly: true
+          description: Percentage of the warehouse compute resources that are executing
+            SQL statements,  but will be shut down once the queries complete.
+        other:
+          type: string
+          format: Percentage
+          readOnly: true
+          description: Percentage of the warehouse compute resources that are in a
+            state other than available,  provisioning, or quiescing.
+        created_on:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Date and time when the warehouse was created.
+        resumed_on:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Date and time when the warehouse was last started or restarted.
+        updated_on:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Date and time when the warehouse was last updated,  which includes
+            changing any of the properties of the warehouse or changing the state
+            (STARTED, SUSPENDED, RESIZING) of the warehouse.
+        owner:
+          type: string
+          format: role name
+          readOnly: true
+          description: Role that owns the warehouse.
+        budget:
+          type: string
+          readOnly: true
+          description: Comment representing budget for warehouse.
+        kind:
+          type: string
+          format: warehouse
+          readOnly: true
+          deprecated: true
+        owner_role_type:
+          type: string
+          readOnly: true
+          description: The type of role that owns the object.
+        warehouse_credit_limit:
+          type: integer
+          format: int64
+          description: Credit limit that are can be executed by the warehouse.
+        target_statement_size:
+          type: string
+          description: 'Names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large,
+            3X-Large, 4X-Large, 5X-Large, 6X-Large'
+      required:
+      - name
+  securitySchemes:
+    KeyPair:
+      $ref: common.yaml#/components/securitySchemes/KeyPair
+    ExternalOAuth:
+      $ref: common.yaml#/components/securitySchemes/ExternalOAuth
+    SnowflakeOAuth:
+      $ref: common.yaml#/components/securitySchemes/SnowflakeOAuth
+security:
+- KeyPair: []
+- ExternalOAuth: []
+- SnowflakeOAuth: []

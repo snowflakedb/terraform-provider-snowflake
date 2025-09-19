@@ -6,7 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tables = (*tables)(nil)
+var (
+	_ Tables                             = (*tables)(nil)
+	_ convertibleRow[TableColumnDetails] = new(tableColumnDetailsRow)
+	_ convertibleRow[TableStageDetails]  = new(tableStageDetailsRow)
+	_ convertibleRow[Table]              = new(tableDBRow)
+)
 
 var (
 	_ optionsProvider[createTableOptions]              = new(CreateTableRequest)
@@ -76,9 +81,7 @@ func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, 
 		return nil, err
 	}
 
-	resultList := convertRows[tableDBRow, Table](dbRows)
-
-	return resultList, nil
+	return convertRows[tableDBRow, Table](dbRows)
 }
 
 func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
@@ -100,7 +103,7 @@ func (v *tables) DescribeColumns(ctx context.Context, req *DescribeTableColumnsR
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[tableColumnDetailsRow, TableColumnDetails](rows), nil
+	return convertRows[tableColumnDetailsRow, TableColumnDetails](rows)
 }
 
 func (v *tables) DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error) {
@@ -108,7 +111,7 @@ func (v *tables) DescribeStage(ctx context.Context, req *DescribeTableStageReque
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[tableStageDetailsRow, TableStageDetails](rows), nil
+	return convertRows[tableStageDetailsRow, TableStageDetails](rows)
 }
 
 func (s *AlterTableRequest) toOpts() *alterTableOptions {

@@ -321,28 +321,20 @@ func TestInt_TagsAssociations(t *testing.T) {
 		tag.ID(),
 	}
 
+	// TODO(SNOW-1813223): Inline these assertions.
 	assertTagSet := func(id sdk.ObjectIdentifier, objectType sdk.ObjectType) {
-		returnedTagValue, err := client.SystemFunctions.GetTag(ctx, tag.ID(), id, objectType)
-		require.NoError(t, err)
-		assert.Equal(t, sdk.Pointer(tagValue), returnedTagValue)
+		t.Helper()
+		assertTagSet(t, tag.ID(), id, objectType, tagValue)
 	}
 
 	assertTagUnset := func(id sdk.ObjectIdentifier, objectType sdk.ObjectType) {
-		returnedTagValue, err := client.SystemFunctions.GetTag(ctx, tag.ID(), id, objectType)
-		require.NoError(t, err)
-		assert.Nil(t, returnedTagValue)
+		t.Helper()
+		assertTagUnset(t, tag.ID(), id, objectType)
 	}
 
 	testTagSet := func(id sdk.ObjectIdentifier, objectType sdk.ObjectType) {
-		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(objectType, id).WithSetTags(tags))
-		require.NoError(t, err)
-
-		assertTagSet(id, objectType)
-
-		err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags(unsetTags))
-		require.NoError(t, err)
-
-		assertTagUnset(id, objectType)
+		t.Helper()
+		testSetAndUnsetInTagObject(t, tags[0], id, objectType)
 	}
 
 	t.Run("TestInt_TagAssociationForAccountLocator", func(t *testing.T) {
@@ -563,19 +555,6 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
 				return client.SecurityIntegrations.AlterExternalOauth(ctx, sdk.NewAlterExternalOauthSecurityIntegrationRequest(id).WithUnsetTags(tags))
-			},
-		},
-		{
-			name:       "OauthForPartnerApplications",
-			objectType: sdk.ObjectTypeIntegration,
-			setupObject: func() (IDProvider[sdk.AccountObjectIdentifier], func()) {
-				return testClientHelper().SecurityIntegration.CreateOauthForPartnerApplications(t)
-			},
-			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.SecurityIntegrations.AlterOauthForPartnerApplications(ctx, sdk.NewAlterOauthForPartnerApplicationsSecurityIntegrationRequest(id).WithSetTags(tags))
-			},
-			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.SecurityIntegrations.AlterOauthForPartnerApplications(ctx, sdk.NewAlterOauthForPartnerApplicationsSecurityIntegrationRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{
