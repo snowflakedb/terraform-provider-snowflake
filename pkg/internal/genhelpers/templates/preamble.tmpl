@@ -5,7 +5,7 @@
 package {{ .PackageName }}
 
 import (
-    {{- range .ExplicitImports }}
-    "{{- . }}"
-    {{- end }}
+{{- range .ExplicitImports }}
+    {{ .Name }} "{{- .Path }}"
+{{- end }}
 )

@@ -42,7 +42,8 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](name string, version
 
 		// TODO [this PR]: handle imports
 		// TODO [this PR]: handle named imports in the preamble template (adding double quotes to each entry now)
-		preamble: *NewPreambleModel(name, version, []string{"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"}),
+		// TODO: format version in the preamble differently
+		preamble: *NewPreambleModelWithImports(name, version, []string{"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"}),
 	}
 }
 
