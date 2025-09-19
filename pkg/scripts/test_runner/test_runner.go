@@ -130,18 +130,17 @@ func runTest(testType TestType) *bytes.Buffer {
 
 loop:
 	for {
-		select {
-		case <-doneChan:
+		if _, ok := <-doneChan; !ok && reader.Buffered() == 0 {
 			break loop
-		default:
-			var entry struct {
-				Output string `json:"Output"`
-			}
-			text, _ := reader.ReadBytes('\n')
-			_ = json.Unmarshal(text, &entry)
-			if entry.Output != "" {
-				fmt.Print(entry.Output)
-			}
+		}
+
+		var entry struct {
+			Output string `json:"Output"`
+		}
+		text, _ := reader.ReadBytes('\n')
+		_ = json.Unmarshal(text, &entry)
+		if entry.Output != "" {
+			fmt.Print(entry.Output)
 		}
 	}
 
@@ -149,7 +148,7 @@ loop:
 }
 
 func processTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsDirName string, testResults *bytes.Buffer) error {
-	err, fileLocation := stageTestResults(testType, testWorkflowId, client, testResultsStageId, testResultsDirName, testResults)
+	fileLocation, err := stageTestResults(testType, testWorkflowId, client, testResultsStageId, testResultsDirName, testResults)
 	if err != nil {
 		return fmt.Errorf("failed to stage test results for test type %s, err = %w", testType, err)
 	}
@@ -190,25 +189,26 @@ func processTestResults(testType TestType, testWorkflowId string, client *sdk.Cl
 	return nil
 }
 
-func stageTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsDirName string, testResults *bytes.Buffer) (error, sdk.Location) {
+func stageTestResults(testType TestType, testWorkflowId string, client *sdk.Client, testResultsStageId sdk.SchemaObjectIdentifier, testResultsDirName string, testResults *bytes.Buffer) (sdk.Location, error) {
 	fileName := fmt.Sprintf("%s_test_%s_output.json", testWorkflowId, testType)
 	testResultsFilePath := testResultsDirName + "/" + fileName
 
 	file, err := os.Create(testResultsFilePath)
 	if err != nil {
-		return fmt.Errorf("failed to create test results file %s, err = %w", testResultsFilePath, err), nil
+		return nil, fmt.Errorf("failed to create test results file %s, err = %w", testResultsFilePath, err)
 	}
+	defer file.Close()
 	fileLocation := sdk.NewStageLocation(testResultsStageId, fileName)
 
 	if _, err := file.Write(testResults.Bytes()); err != nil {
-		return fmt.Errorf("failed to write test results to file %s, err = %w", testResultsFilePath, err), nil
+		return nil, fmt.Errorf("failed to write test results to file %s, err = %w", testResultsFilePath, err)
 	}
 
 	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @%s auto_compress = true overwrite = true;", testResultsFilePath, testResultsStageId.FullyQualifiedName())); err != nil {
-		return fmt.Errorf("failed to put test results file to stage, err = %w", err), nil
+		return nil, fmt.Errorf("failed to put test results file to stage, err = %w", err)
 	}
 
-	return nil, fileLocation
+	return fileLocation, nil
 }
 
 func transformTemporaryTableData(client *sdk.Client, temporaryTableId sdk.SchemaObjectIdentifier) error {
