@@ -35,10 +35,6 @@ func GenerateInterface(writer io.Writer, def *Interface) {
 			generateShowObjectTypeMethod(writer, newShowObjectTypeMethod(def.NameSingular))
 		}
 	}
-
-	for _, enum := range def.Enums {
-		printTo(writer, EnumTemplate, enum)
-	}
 }
 
 func generateShowObjectIdMethod(writer io.Writer, m *ShowObjectIdMethod) {
@@ -117,9 +113,11 @@ func GenerateValidations(writer io.Writer, def *Interface) {
 	printTo(writer, ValidationsTemplate, def)
 }
 
-func GenerateEnums(writer io.Writer, enum *Enum) {
+func GenerateEnums(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
-	printTo(writer, EnumTemplate, enum)
+	for _, enum := range def.Enums {
+		printTo(writer, EnumTemplate, enum)
+	}
 }
 
 func generatePackageDirective(writer io.Writer) {
