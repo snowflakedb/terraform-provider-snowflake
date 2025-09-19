@@ -31,7 +31,6 @@ func NewPreambleModelWithImports(name string, version string, imports []string) 
 	return m
 }
 
-// TODO [this PR]: fix mixed receivers
 func (m *PreambleModel) WithImport(path string) *PreambleModel {
 	return m.WithNamedImport("", path)
 }
@@ -44,8 +43,8 @@ func (m *PreambleModel) WithNamedImport(name string, path string) *PreambleModel
 	return m
 }
 
-func (m PreambleModel) getPreambleModel() PreambleModel { return m }
+func (m *PreambleModel) getPreambleModel() *PreambleModel { return m }
 
 type HasPreambleModel interface {
-	getPreambleModel() PreambleModel
+	getPreambleModel() *PreambleModel
 }

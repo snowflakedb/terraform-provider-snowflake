@@ -11,10 +11,10 @@ type ShowResultSchemaModel struct {
 	SdkType      string
 	SchemaFields []SchemaField
 
-	genhelpers.PreambleModel
+	*genhelpers.PreambleModel
 }
 
-func ModelFromStructDetails(sdkStruct genhelpers.StructDetails, preamble genhelpers.PreambleModel) ShowResultSchemaModel {
+func ModelFromStructDetails(sdkStruct genhelpers.StructDetails, preamble *genhelpers.PreambleModel) ShowResultSchemaModel {
 	name, _ := strings.CutPrefix(sdkStruct.Name, "sdk.")
 	schemaFields := make([]SchemaField, len(sdkStruct.Fields))
 	for idx, field := range sdkStruct.Fields {

@@ -12,10 +12,10 @@ type PluginFrameworkProviderModel struct {
 	SchemaEntries []ProviderSchemaEntry
 	PackageName   string
 
-	genhelpers.PreambleModel
+	*genhelpers.PreambleModel
 }
 
-func ModelFromSdkV2Schema(sdkV2ProviderSchema SdkV2ProviderSchema, preamble genhelpers.PreambleModel) PluginFrameworkProviderModel {
+func ModelFromSdkV2Schema(sdkV2ProviderSchema SdkV2ProviderSchema, preamble *genhelpers.PreambleModel) PluginFrameworkProviderModel {
 	orderedAttributeNames := make([]string, 0)
 	for key := range sdkV2ProviderSchema {
 		orderedAttributeNames = append(orderedAttributeNames, key)

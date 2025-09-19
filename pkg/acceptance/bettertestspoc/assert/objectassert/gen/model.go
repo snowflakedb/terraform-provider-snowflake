@@ -12,7 +12,7 @@ type SnowflakeObjectAssertionsModel struct {
 	IdType  string
 	Fields  []SnowflakeObjectFieldAssertion
 
-	genhelpers.PreambleModel
+	*genhelpers.PreambleModel
 }
 
 type SnowflakeObjectFieldAssertion struct {
@@ -24,7 +24,7 @@ type SnowflakeObjectFieldAssertion struct {
 	ExpectedValueMapper   genhelpers.Mapper
 }
 
-func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble genhelpers.PreambleModel) SnowflakeObjectAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel) SnowflakeObjectAssertionsModel {
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	fields := make([]SnowflakeObjectFieldAssertion, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {

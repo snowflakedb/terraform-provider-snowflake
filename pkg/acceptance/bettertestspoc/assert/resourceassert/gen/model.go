@@ -12,7 +12,7 @@ type ResourceAssertionsModel struct {
 	Name       string
 	Attributes []ResourceAttributeAssertionModel
 
-	genhelpers.PreambleModel
+	*genhelpers.PreambleModel
 }
 
 type ResourceAttributeAssertionModel struct {
@@ -22,7 +22,7 @@ type ResourceAttributeAssertionModel struct {
 	IsRequired    bool
 }
 
-func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble genhelpers.PreambleModel) ResourceAssertionsModel {
+func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel) ResourceAssertionsModel {
 	attributes := make([]ResourceAttributeAssertionModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
 		if slices.Contains([]string{resources.ShowOutputAttributeName, resources.ParametersAttributeName, resources.DescribeOutputAttributeName}, attr.Name) {

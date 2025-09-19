@@ -14,7 +14,7 @@ type ResourceConfigBuilderModel struct {
 	Name       string
 	Attributes []ResourceConfigBuilderAttributeModel
 
-	genhelpers.PreambleModel
+	*genhelpers.PreambleModel
 }
 
 type ResourceConfigBuilderAttributeModel struct {
@@ -27,7 +27,7 @@ type ResourceConfigBuilderAttributeModel struct {
 	OriginalType   schema.ValueType
 }
 
-func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble genhelpers.PreambleModel) ResourceConfigBuilderModel {
+func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel) ResourceConfigBuilderModel {
 	// TODO [this PR]: deal with the additional imports
 	additionalImports := make([]string, 0)
 	attributes := make([]ResourceConfigBuilderAttributeModel, 0)

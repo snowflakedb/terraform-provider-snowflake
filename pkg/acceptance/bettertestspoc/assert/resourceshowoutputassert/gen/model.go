@@ -10,7 +10,7 @@ type ResourceShowOutputAssertionsModel struct {
 	Name       string
 	Attributes []ResourceShowOutputAssertionModel
 
-	genhelpers.PreambleModel
+	*genhelpers.PreambleModel
 }
 
 type ResourceShowOutputAssertionModel struct {
@@ -20,7 +20,7 @@ type ResourceShowOutputAssertionModel struct {
 	Mapper           genhelpers.Mapper
 }
 
-func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble genhelpers.PreambleModel) ResourceShowOutputAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel) ResourceShowOutputAssertionsModel {
 	attributes := make([]ResourceShowOutputAssertionModel, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {
 		attributes[idx] = MapToResourceShowOutputAssertion(field)

@@ -12,7 +12,7 @@ type ResourceParametersAssertionsModel struct {
 	Name       string
 	Parameters []ResourceParameterAssertionModel
 
-	genhelpers.PreambleModel
+	*genhelpers.PreambleModel
 }
 
 type ResourceParameterAssertionModel struct {
@@ -21,7 +21,7 @@ type ResourceParameterAssertionModel struct {
 	AssertionCreator string
 }
 
-func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparametersassertgen.SnowflakeObjectParameters, preamble genhelpers.PreambleModel) ResourceParametersAssertionsModel {
+func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparametersassertgen.SnowflakeObjectParameters, preamble *genhelpers.PreambleModel) ResourceParametersAssertionsModel {
 	parameters := make([]ResourceParameterAssertionModel, len(snowflakeObjectParameters.Parameters))
 	for idx, p := range snowflakeObjectParameters.Parameters {
 		// TODO [SNOW-1501905]: get a runtime name for the assertion creator
