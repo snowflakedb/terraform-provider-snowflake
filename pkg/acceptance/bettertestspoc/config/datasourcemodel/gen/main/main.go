@@ -19,8 +19,7 @@ const version = "0.1.0"
 
 func main() {
 	genhelpers.NewGenerator(
-		name,
-		version,
+		genhelpers.NewPreambleModel(name, version),
 		gen.GetDatasourceSchemaDetails,
 		resourcemodelgen.ModelFromResourceSchemaDetails,
 		getFilename,

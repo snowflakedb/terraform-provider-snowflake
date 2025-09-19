@@ -30,7 +30,7 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	preamble *PreambleModel
 }
 
-func NewGenerator[T ObjectNameProvider, M HasPreambleModel](name string, version string, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	return &Generator[T, M]{
 		objectsProvider:  objectsProvider,
 		modelProvider:    modelProvider,
@@ -40,10 +40,8 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](name string, version
 		additionalObjectDebugLogProviders: make([]func([]T), 0),
 		objectFilters:                     make([]func(T) bool, 0),
 
-		// TODO [this PR]: handle imports
-		// TODO [this PR]: handle named imports in the preamble template (adding double quotes to each entry now)
 		// TODO: format version in the preamble differently
-		preamble: NewPreambleModelWithImports(name, version, []string{"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"}),
+		preamble: preamble,
 	}
 }
 

@@ -17,8 +17,7 @@ const version = "0.1.0"
 
 func main() {
 	genhelpers.NewGenerator(
-		name,
-		version,
+		genhelpers.NewPreambleModel(name, version),
 		getSdkV2ProviderSchemas,
 		gen.ModelFromSdkV2Schema,
 		getFilename,
