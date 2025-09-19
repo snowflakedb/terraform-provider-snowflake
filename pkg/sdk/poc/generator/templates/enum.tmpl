@@ -1,23 +1,29 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.Enum*/ -}}
 
-type {{ .TypeName }} string
+import (
+	"fmt"
+	"slices"
+	"strings"
+)
+
+type {{ .Name }} string
 
 const (
 	{{- range .ValueRepresentations }}
-	{{ .Name }} {{ $.TypeName }} = "{{ .Value }}"
+	{{ .Name }} {{ $.Name }} = "{{ .Value }}"
 	{{- end }}
 )
 
-var {{ .AllValuesSliceName }} = []{{ .TypeName }}{
+var {{ .AllValuesSliceName }} = []{{ .Name }}{
 	{{- range .ValueRepresentations }}
 	{{ .Name }},
 	{{- end }}
 }
 
-func {{ .ConverterFunctionName }}(s string) ({{ .TypeName }}, error) {
+func {{ .ConverterFunctionName }}(s string) ({{ .Name }}, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains({{ .AllValuesSliceName }}, {{ .TypeName }}(s)) {
-		return "", fmt.Errorf("invalid {{ .TypeName }}: %s", s)
+	if !slices.Contains({{ .AllValuesSliceName }}, {{ .Name }}(s)) {
+		return "", fmt.Errorf("invalid {{ .Name }}: %s", s)
 	}
-	return {{ .TypeName }}(s), nil
+	return {{ .Name }}(s), nil
 }
