@@ -11,6 +11,7 @@ type SdkObjectDef struct {
 	ObjectStruct any
 }
 
+// TODO [this PR]: remove object type?
 var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -155,7 +156,6 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 		structDetails := genhelpers.ExtractStructDetails(d.ObjectStruct)
 		allSdkObjectsDetails[idx] = genhelpers.SdkObjectDetails{
 			IdType:        d.IdType,
-			ObjectType:    d.ObjectType,
 			StructDetails: structDetails,
 		}
 	}
