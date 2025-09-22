@@ -452,7 +452,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
 		assert.Nil(t, returnedWarehouse.Generation)
-		assert.NotNil(t, returnedWarehouse.ResourceConstraint)
+		require.NotNil(t, returnedWarehouse.ResourceConstraint)
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
@@ -478,7 +478,7 @@ func TestInt_Warehouses(t *testing.T) {
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assert.NotNil(t, returnedWarehouse.ResourceConstraint)
+		require.NotNil(t, returnedWarehouse.ResourceConstraint)
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 	})
 
