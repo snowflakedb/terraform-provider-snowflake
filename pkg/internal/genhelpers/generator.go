@@ -24,18 +24,35 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	filenameProvider func(T, M) string
 	templates        []*template.Template
 
+	generationParts []GenerationPart[T, M]
+
 	additionalObjectDebugLogProviders []func([]T)
 	objectFilters                     []func(T) bool
 
 	preamble *PreambleModel
 }
 
+type GenerationPart[T ObjectNameProvider, M HasPreambleModel] struct {
+	filenameProvider func(T, M) string
+	templates        []*template.Template
+}
+
 func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+	// TODO [this PR]: handle vararg input
+	// TODO [this PR]: extract constructor
+	parts := []GenerationPart[T, M]{
+		{
+			filenameProvider: filenameProvider,
+			templates:        templates,
+		},
+	}
 	return &Generator[T, M]{
 		objectsProvider:  objectsProvider,
 		modelProvider:    modelProvider,
 		filenameProvider: filenameProvider,
 		templates:        templates,
+
+		generationParts: parts,
 
 		additionalObjectDebugLogProviders: make([]func([]T), 0),
 		objectFilters:                     make([]func(T) bool, 0),
