@@ -22,7 +22,7 @@ func (c *BcrBundlesClient) EnableBcrBundle(t *testing.T, name string) {
 
 	bundle := c.getBcrInfo(t, name)
 	if !bundle.IsDefault {
-		t.Cleanup(c.DisableBcrBundleFunc(t, name))
+		t.Cleanup(c.DisableBcrBundleCleanupFunc(t, name))
 	}
 }
 
@@ -37,11 +37,11 @@ func (c *BcrBundlesClient) DisableBcrBundle(t *testing.T, name string) {
 
 	bundle := c.getBcrInfo(t, name)
 	if bundle.IsDefault {
-		t.Cleanup(c.EnableBcrBundleFunc(t, name))
+		t.Cleanup(c.EnableBcrBundleCleanupFunc(t, name))
 	}
 }
 
-func (c *BcrBundlesClient) DisableBcrBundleFunc(t *testing.T, name string) func() {
+func (c *BcrBundlesClient) DisableBcrBundleCleanupFunc(t *testing.T, name string) func() {
 	t.Helper()
 	ctx := context.Background()
 
@@ -51,7 +51,7 @@ func (c *BcrBundlesClient) DisableBcrBundleFunc(t *testing.T, name string) func(
 	}
 }
 
-func (c *BcrBundlesClient) EnableBcrBundleFunc(t *testing.T, name string) func() {
+func (c *BcrBundlesClient) EnableBcrBundleCleanupFunc(t *testing.T, name string) func() {
 	t.Helper()
 	ctx := context.Background()
 

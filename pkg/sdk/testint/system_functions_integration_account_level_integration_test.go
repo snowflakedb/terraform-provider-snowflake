@@ -38,7 +38,7 @@ func TestInt_BcrBundles_AccountLevel(t *testing.T) {
 	t.Run("enable a valid bundle", func(t *testing.T) {
 		err := client.SystemFunctions.EnableBehaviorChangeBundle(ctx, bundles[1].Name)
 		require.NoError(t, err)
-		t.Cleanup(secondaryTestClientHelper().BcrBundles.DisableBcrBundleFunc(t, bundles[1].Name))
+		t.Cleanup(secondaryTestClientHelper().BcrBundles.DisableBcrBundleCleanupFunc(t, bundles[1].Name))
 		status := secondaryTestClientHelper().BcrBundles.BehaviorChangeBundleStatus(t, bundles[1].Name)
 		require.Equal(t, sdk.BehaviorChangeBundleStatusEnabled, status)
 	})
@@ -46,7 +46,7 @@ func TestInt_BcrBundles_AccountLevel(t *testing.T) {
 	t.Run("disable a valid bundle", func(t *testing.T) {
 		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, bundles[0].Name)
 		require.NoError(t, err)
-		t.Cleanup(secondaryTestClientHelper().BcrBundles.EnableBcrBundleFunc(t, bundles[0].Name))
+		t.Cleanup(secondaryTestClientHelper().BcrBundles.EnableBcrBundleCleanupFunc(t, bundles[0].Name))
 		status := secondaryTestClientHelper().BcrBundles.BehaviorChangeBundleStatus(t, bundles[0].Name)
 		require.Equal(t, sdk.BehaviorChangeBundleStatusDisabled, status)
 	})
