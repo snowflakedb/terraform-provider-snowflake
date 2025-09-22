@@ -15,7 +15,7 @@ import (
 // 2. The first bundle is always active by default.
 // 3. The second bundle is always not active by default.
 // 4. In this test we don't want to assert the bundle names as they may change. So, we simply assert that they are not empty.
-// 5. After each test, we clean up the bundle state by enabling the first bundle and disabling the second bundle.
+// 5. After each test, we clean up the bundle state by reverting the operation, i.e. by enabling the first bundle or disabling the second bundle.
 func TestInt_BcrBundles_AccountLevel(t *testing.T) {
 	client := testSecondaryClient(t)
 	ctx := testContext(t)
@@ -49,15 +49,5 @@ func TestInt_BcrBundles_AccountLevel(t *testing.T) {
 		t.Cleanup(secondaryTestClientHelper().BcrBundles.EnableBcrBundleFunc(t, bundles[0].Name))
 		status := secondaryTestClientHelper().BcrBundles.BehaviorChangeBundleStatus(t, bundles[0].Name)
 		require.Equal(t, sdk.BehaviorChangeBundleStatusDisabled, status)
-	})
-
-	t.Run("enable non-existing bundle", func(t *testing.T) {
-		err := client.SystemFunctions.EnableBehaviorChangeBundle(ctx, "non-existing-bundle")
-		require.ErrorContains(t, err, "Invalid Change Bundle 'non-existing-bundle'")
-	})
-
-	t.Run("disable non-existing bundle", func(t *testing.T) {
-		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, "non-existing-bundle")
-		require.ErrorContains(t, err, "Invalid Change Bundle 'non-existing-bundle'")
 	})
 }

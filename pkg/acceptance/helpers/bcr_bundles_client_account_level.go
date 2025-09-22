@@ -72,6 +72,7 @@ func (c *BcrBundlesClient) getBcrInfo(t *testing.T, name string) sdk.BehaviorCha
 		return bundle.Name == name
 	})
 	require.NoError(t, err)
+	require.NotNil(t, info)
 
 	return *info
 }

@@ -189,4 +189,14 @@ func TestInt_BcrBundles(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, sdk.BehaviorChangeBundleStatusReleased, status)
 	})
+
+	t.Run("enable non-existing bundle", func(t *testing.T) {
+		err := client.SystemFunctions.EnableBehaviorChangeBundle(ctx, "non-existing-bundle")
+		require.ErrorContains(t, err, "Invalid Change Bundle 'non-existing-bundle'")
+	})
+
+	t.Run("disable non-existing bundle", func(t *testing.T) {
+		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, "non-existing-bundle")
+		require.ErrorContains(t, err, "Invalid Change Bundle 'non-existing-bundle'")
+	})
 }
