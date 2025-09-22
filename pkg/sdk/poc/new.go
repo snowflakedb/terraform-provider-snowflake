@@ -1,6 +1,8 @@
 package poc
 
 import (
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
@@ -15,11 +17,31 @@ type SdkObjectDef struct {
 
 func GetSdkDefinitions() []*generator.Interface {
 	allDefinitions := allSdkObjectDefinitions
-	definitions := make([]*generator.Interface, len(allDefinitions))
+	interfaces := make([]*generator.Interface, len(allDefinitions))
 	for idx, s := range allDefinitions {
-		definitions[idx] = s.definition
+		preprocessDefinition(s.definition)
+		interfaces[idx] = s.definition
 	}
-	return definitions
+	return interfaces
+}
+
+// preprocessDefinition is needed because current simple builder is not ideal, should be removed later
+func preprocessDefinition(definition *generator.Interface) {
+	for _, o := range definition.Operations {
+		o.ObjectInterface = definition
+		if o.OptsField != nil {
+			o.OptsField.Name = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
+			o.OptsField.Kind = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
+			setParent(o.OptsField)
+		}
+	}
+}
+
+func setParent(field *generator.Field) {
+	for _, f := range field.Fields {
+		f.Parent = field
+		setParent(f)
+	}
 }
 
 func WithPreamble(i *generator.Interface, preamble *genhelpers.PreambleModel) *generator.Interface {
@@ -29,8 +51,8 @@ func WithPreamble(i *generator.Interface, preamble *genhelpers.PreambleModel) *g
 
 var allSdkObjectDefinitions = []SdkObjectDef{
 	{
-		name:       "NetworkPolicies",
-		file:       "network_policies_def.go",
-		definition: sdk.NetworkPoliciesDef,
+		name:       "Sequences",
+		file:       "sequences_def.go",
+		definition: sdk.SequencesDef,
 	},
 }
