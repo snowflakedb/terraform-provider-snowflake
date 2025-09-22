@@ -44,11 +44,6 @@ type AddProgrammaticAccessTokenResult struct {
 	TokenSecret string
 }
 
-// Added manually.
-func (r *AddProgrammaticAccessTokenResult) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(r.TokenName)
-}
-
 // ModifyUserProgrammaticAccessTokenOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-user-modify-programmatic-access-token.
 type ModifyUserProgrammaticAccessTokenOptions struct {
 	alter                         bool                                `ddl:"static" sql:"ALTER"`
@@ -140,7 +135,6 @@ type ProgrammaticAccessToken struct {
 	RotatedTo                            *string
 }
 
-// Added manually.
-func (v *ProgrammaticAccessToken) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.Name)
+func (v *ProgrammaticAccessToken) ObjectType() ObjectType {
+	return ObjectTypeProgrammaticAccessToken
 }
