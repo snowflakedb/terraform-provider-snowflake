@@ -333,6 +333,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assert.NotEqual(t, "some-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
+	// TODO(SNOW-2356049): Adjust this test when UNSET starts working correctly
 	t.Run("Alter - unset privatelink endpoint does not work", func(t *testing.T) {
 		id := createS3StorageIntegration(t, sdk.RegularS3Protocol)
 

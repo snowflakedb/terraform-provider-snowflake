@@ -230,6 +230,7 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 
 		for _, prop := range integrationProperties {
 			switch prop.Name {
+			// STORAGE_AWS_EXTERNAL_ID and USE_PRIVATELINK_ENDPOINT are removed from here - handled by external changes detection above
 			case "STORAGE_PROVIDER":
 				errs = errors.Join(errs, d.Set("storage_provider", prop.Value))
 			case "STORAGE_ALLOWED_LOCATIONS":
@@ -246,7 +247,6 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 				}
 			case "STORAGE_AWS_ROLE_ARN":
 				errs = errors.Join(errs, d.Set("storage_aws_role_arn", prop.Value))
-			// STORAGE_AWS_EXTERNAL_ID is removed from here - handled by external changes detection above
 			case "STORAGE_GCP_SERVICE_ACCOUNT":
 				errs = errors.Join(errs, d.Set("storage_gcp_service_account", prop.Value))
 			case "AZURE_CONSENT_URL":
@@ -431,6 +431,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 				}
 				s3SetParams.WithUsePrivateLinkEndpoint(parsedBool)
 			} else {
+				// TODO(SNOW-2356049): uncomment this when UNSET starts working correctly
 				// unset.WithUsePrivateLinkEndpoint(true)
 				s3SetParams.WithUsePrivateLinkEndpoint(false)
 			}
@@ -455,6 +456,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 				}
 				azureParams.WithUsePrivateLinkEndpoint(parsedBool)
 			} else {
+				// TODO(SNOW-2356049): uncomment this when UNSET starts working correctly
 				// unset.WithUsePrivateLinkEndpoint(true)
 				azureParams.WithUsePrivateLinkEndpoint(false)
 			}
