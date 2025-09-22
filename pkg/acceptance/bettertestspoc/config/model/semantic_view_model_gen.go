@@ -5,6 +5,7 @@ package model
 import (
 	"encoding/json"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -13,12 +14,12 @@ import (
 
 
 type SemanticViewModel struct {
-	Database 			tfconfig.Variable `json:"database,omitempty"`
-	Schema 				tfconfig.Variable `json:"schema,omitempty"`
-	Name 				tfconfig.Variable `json:"name,omitempty"`
-	Comment 			tfconfig.Variable `json:"comment,omitempty"`
-	FullyQualifiedName 	tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Tables 				tfconfig.Variable `json:"tables,omitempty"`
+	Database 			tfconfig.Variable 	`json:"database,omitempty"`
+	Schema 				tfconfig.Variable 	`json:"schema,omitempty"`
+	Name 				tfconfig.Variable 	`json:"name,omitempty"`
+	Comment 			tfconfig.Variable 	`json:"comment,omitempty"`
+	FullyQualifiedName 	tfconfig.Variable 	`json:"fully_qualified_name,omitempty"`
+	Tables 				tfconfig.Variable	`json:"tables,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -34,13 +35,13 @@ func SemanticView(
 	database string,
 	schema string,
 	name string,
-	// tables ,
+	tables []sdk.LogicalTable, // manually adjusted
 ) *SemanticViewModel {
 	s := &SemanticViewModel{ResourceModelMeta: config.Meta(resourceName, resources.SemanticView)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
-	// s.WithTables(tables)
+	s.WithTables(tables) // manually adjusted
 	return s
 }
 
@@ -48,13 +49,13 @@ func SemanticViewWithDefaultMeta(
 	database string,
 	schema string,
 	name string,
-	// tables ,
+	tables []sdk.LogicalTable, // manually adjusted
 ) *SemanticViewModel {
 	s := &SemanticViewModel{ResourceModelMeta: config.DefaultMeta(resources.SemanticView)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
-	// s.WithTables(tables)
+	s.WithTables(tables) // manually adjusted
 	return s
 }
 
@@ -87,44 +88,30 @@ func (s *SemanticViewModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) 
 // below all the proper values //
 /////////////////////////////////
 
-
 func (s *SemanticViewModel) WithDatabase(database string) *SemanticViewModel {
 	s.Database = tfconfig.StringVariable(database)
 	return s
 }
-
-
 
 func (s *SemanticViewModel) WithSchema(schema string) *SemanticViewModel {
 	s.Schema = tfconfig.StringVariable(schema)
 	return s
 }
 
-
-
 func (s *SemanticViewModel) WithName(name string) *SemanticViewModel {
 	s.Name = tfconfig.StringVariable(name)
 	return s
 }
-
-
 
 func (s *SemanticViewModel) WithComment(comment string) *SemanticViewModel {
 	s.Comment = tfconfig.StringVariable(comment)
 	return s
 }
 
-
-
 func (s *SemanticViewModel) WithFullyQualifiedName(fullyQualifiedName string) *SemanticViewModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return s
 }
-
-
-
-// tables attribute type is not yet supported, so WithTables can't be generated
-
 
 //////////////////////////////////////////
 // below it's possible to set any value //
