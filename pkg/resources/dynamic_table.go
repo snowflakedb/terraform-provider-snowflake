@@ -303,9 +303,14 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
-	// TODO: Test
 	if dynamicTable.Text == "" {
-		return diag.FromErr(fmt.Errorf("the text is empty for dynamic table (%s): ensure that the currently used role is privileged enough to see the TEXT column of this dynamic table", id.FullyQualifiedName()))
+		return diag.FromErr(fmt.Errorf(
+			joinWithSpace(
+				"The text is empty for dynamic table (%s): ensure that the currently used user and role is privileged enough to see the TEXT column in SHOW DYNAMIC TABLES command for this dynamic table.",
+				"If not, refer to the Snowflake documentation to see which privileges are required: https://docs.snowflake.com/en/user-guide/dynamic-tables-privileges#label-dynamic-tables-privileges-view-metadata.",
+			),
+			id.FullyQualifiedName(),
+		))
 	}
 
 	extractor := snowflake.NewViewSelectStatementExtractor(dynamicTable.Text)

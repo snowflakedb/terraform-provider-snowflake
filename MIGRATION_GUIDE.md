@@ -26,6 +26,49 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.7.0 ➞ v2.7.1
 
+### *(bugfix)* Dynamic tables resource handling insufficient access and missing Text column
+
+Previously, when the `snowflake_dynamic_table` resource was created and the dynamic table's privileges were altered in a
+way that the current user lost access to view [`text` metadata field](https://docs.snowflake.com/en/user-guide/dynamic-tables-privileges#label-dynamic-tables-privileges-view-metadata),
+the resource thew internal error instead of handling the situation gracefully.
+
+Now, when the user has insufficient privileges to view `text` field,
+the resource will return an error to the user with a clear message.
+
+No changes in configuration and state are required.
+
+References: [#3931](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3931)
+
+### *(bugfix)* Stages safe removal when not present in Snowflake
+
+As the `snowflake_stage` resource wasn't adjusted fully according to the changes introduced in [this change](#new-behavior-for-read-and-delete-operations-when-removing-high-hierarchy-objects),
+we had to adjust its reading function to handle the case when the stage is not present in Snowflake and should safely
+remove itself from the state.
+
+Now, when the stage is not present in Snowflake, it will be removed from the state without throwing an error (only an informational warning like in other resources).
+
+No changes in configuration and state are required.
+
+References: [#3959](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3959)
+
+### *(new feature)* Added missing object types in privilege-granting resources
+
+As Snowflake constantly evolves, new object types are supported in `GRANT` commands. To keep up with these changes, we adjusted the following resources:
+- `snowflake_grant_privileges_to_account_role` (all object types that can be specified in `on_schema_object` block)
+- `snowflake_grant_privileges_to_database_role` (all object types that can be specified in `on_schema_object` block)
+
+To support the missing object types:
+- `DBT PROJECT`
+- `JOIN POLICY`
+- `PRIVACY POLICY`
+- `SEMANTIC VIEW`
+- `SNAPSHOT POLICY`
+- `SNAPSHOT SET`
+
+No changes in configuration and state are required.
+
+References: [#3860](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3860)
+
 ### Changed handling of unset `generation` and `resource_constraint` fields in the `warehouse` resource
 
 Previously, due to limitations in Snowflake, when one of `generation` or `resource_constraint` field was unset in the configuration, the provider used `SET RESOURCE_CONSTRAINT=STANDARD_GEN_1` and `SET RESOURCE_CONSTRAINT=MEMORY_16X`, respectively. Now, the `UNSET` operation is supported for this field, and it is used in the provider in handling `generation` and `resource_constraint`.

@@ -294,4 +294,13 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "GrantApplicationRole",
 		schema: resources.GrantApplicationRole().Schema,
 	},
+	{
+		name:   "Stage",
+		schema: resources.Stage().Schema,
+	},
+	// Commented out as generated content needs manual adjustments which make the pre-push fail
+	// {
+	//	name:   "DynamicTable",
+	//	schema: resources.DynamicTable().Schema,
+	// },
 }

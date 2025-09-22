@@ -122,10 +122,8 @@ resource "snowflake_user_programmatic_access_token" "example" {
   keeper = time_rotating.rotation_schedule.rotation_rfc3339
 }
 ```
-
 Note that in this example, the rotation occurs only when you execute a `terraform apply` command.
 After 30 days pass, you will see a plan output similar to:
-
 ```
 time_rotating.rotation_schedule: Refreshing state... [id=2025-07-22T08:06:51Z]
 snowflake_user_programmatic_access_token.complete_with_external_references: Refreshing state... [id="PAT"|"TOKEN"]
@@ -190,7 +188,6 @@ To use PATs in the provider, you have the following options:
 - Follow the [user + password](#snowflake-authenticator-flow-login--password) authentication workflow,
 but instead of password, use the generated token.
 - Use the `PROGRAMMATIC_ACCESS_TOKEN` authenticator and pass the generated token in the `token` field, like:
-
 ```terraform
 provider "snowflake" {
   organization_name = "<organization_name>"
