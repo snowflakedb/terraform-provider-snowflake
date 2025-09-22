@@ -3,7 +3,8 @@
 package main
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model/gen"
+	"text/template"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
@@ -21,7 +22,7 @@ func main() {
 		poc.GetSdkDefinitions,
 		poc.WithPreamble,
 		filenameFor(""),
-		gen.AllTemplates,
+		[]*template.Template{genhelpers.PreambleTemplate, generator.ImplementationTemplate},
 	).
 		RunAndHandleOsReturn()
 }

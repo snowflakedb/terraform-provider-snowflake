@@ -212,4 +212,10 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
+generate-sdk: ## Generate all SDK objects
+	go generate ./pkg/sdk/poc/rework/generate.go
+
+clean-sdk: ## Clean all generated SDK objects
+	rm -f ./pkg/sdk/poc/rework/*_gen.go
+
 .PHONY: build-local clean-generator-poc dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf

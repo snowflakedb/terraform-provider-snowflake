@@ -17,6 +17,7 @@ var (
 func GenerateInterface(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, InterfaceTemplate, def)
+	// TODO [this PR]: replace this with the template logic
 	for _, o := range def.Operations {
 		if o.OptsField != nil {
 			generateOptionsStruct(writer, o)
