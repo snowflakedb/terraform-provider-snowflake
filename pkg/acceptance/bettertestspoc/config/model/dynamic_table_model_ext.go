@@ -1,10 +1,11 @@
 package model
 
 import (
+	"log"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
-	"log"
 )
 
 // TODO(SNOW-2357735): Remove after complex non-list type overrides are handled
