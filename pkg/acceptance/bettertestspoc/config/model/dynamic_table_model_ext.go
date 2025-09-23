@@ -4,6 +4,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+	"log"
 )
 
 // TODO(SNOW-2357735): Remove after complex non-list type overrides are handled
@@ -25,8 +26,8 @@ func DynamicTableWithoutTargetLag(
 }
 
 // TODO(SNOW-2357735): Remove after complex non-list type overrides are handled
-func (d *DynamicTableModel) WithTargetLag(tl []string) *DynamicTableModel {
-	_ = tl
+func (d *DynamicTableModel) WithTargetLag(_ []string) *DynamicTableModel {
+	log.Fatalln("Don't use the default DynamicTable model constructors with WithTargetLag. Use DynamicTableWithoutTargetLag constructor with WithMaximumDurationTargetLag instead.")
 	return d
 }
 
