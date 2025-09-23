@@ -666,9 +666,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 					}
 					set.ResourceConstraint = &resourceConstraint
 				} else {
-					// TODO [SNOW-2330776]: UNSET of resource constraint does not work
-					// unset.ResourceConstraint = sdk.Bool(true)
-					set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintMemory16X)
+					unset.ResourceConstraint = sdk.Bool(true)
 				}
 			} else {
 				log.Printf("[DEBUG] resource constraint is not supported for %s warehouses, ignoring", warehouseType)
@@ -701,9 +699,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 				}
 				set.ResourceConstraint = &resourceConstraint
 			} else {
-				// TODO [SNOW-2330776]: UNSET of resource constraint does not work
-				// unset.ResourceConstraint = sdk.Bool(true)
-				set.ResourceConstraint = sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen1)
+				unset.ResourceConstraint = sdk.Bool(true)
 			}
 		} else {
 			log.Printf("[DEBUG] generation is not supported for %s warehouses, ignoring", warehouseTypeRaw)

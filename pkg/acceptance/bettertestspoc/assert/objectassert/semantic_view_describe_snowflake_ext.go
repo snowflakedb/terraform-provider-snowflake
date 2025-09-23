@@ -22,6 +22,7 @@ func SemanticViewDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *SemanticV
 	return &SemanticViewDetailsAssert{
 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeSemanticView, id, func(testClient *helpers.TestClient) assert.ObjectProvider[SemanticViewDetailsCollection, sdk.SchemaObjectIdentifier] {
 			return func(t *testing.T, id sdk.SchemaObjectIdentifier) (*SemanticViewDetailsCollection, error) {
+				t.Helper()
 				details, err := testClient.SemanticView.Describe(t, id)
 				if err != nil {
 					return nil, err
@@ -61,20 +62,20 @@ func (s *SemanticViewDetailsAssert) ContainsDetail(expected sdk.SemanticViewDeta
 }
 
 func NewSemanticViewDetails(
-	ObjectKind string,
-	ObjectName string,
-	ParentEntity *string,
-	Property string,
-	PropertyValue string,
+	objectKind string,
+	objectName string,
+	parentEntity *string,
+	property string,
+	propertyValue string,
 ) sdk.SemanticViewDetails {
 	details := sdk.SemanticViewDetails{
-		ObjectKind:    ObjectKind,
-		ObjectName:    ObjectName,
-		Property:      Property,
-		PropertyValue: PropertyValue,
+		ObjectKind:    objectKind,
+		ObjectName:    objectName,
+		Property:      property,
+		PropertyValue: propertyValue,
 	}
-	if ParentEntity != nil {
-		details.ParentEntity = ParentEntity
+	if parentEntity != nil {
+		details.ParentEntity = parentEntity
 	}
 
 	return details
