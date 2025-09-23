@@ -17,7 +17,3 @@ variable "blocked_locations" {
 variable "azure_tenant_id" {
   type = string
 }
-
-variable "use_privatelink_endpoint" {
-  type = string
-}

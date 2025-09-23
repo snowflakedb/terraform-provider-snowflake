@@ -296,8 +296,10 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 	})
 }
 
+// TODO(SNOW-2356128): Add test for use_privatelink_endpoint
 func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
+	resourceName := "snowflake_storage_integration.test"
 
 	azureTenantId, err := uuid.GenerateUUID()
 	require.NoError(t, err)
@@ -314,7 +316,6 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 		}
 		if set {
 			variables["comment"] = tfconfig.StringVariable("some comment")
-			variables["use_privatelink_endpoint"] = tfconfig.StringVariable(r.BooleanTrue)
 			variables["allowed_locations"] = tfconfig.SetVariable(
 				tfconfig.StringVariable(azureBucketUrl+"/foo"),
 				tfconfig.StringVariable(azureBucketUrl+"/bar"),
@@ -346,6 +347,9 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 					resource.TestCheckNoResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanDefault),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", ""),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.use_privatelink_endpoint.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.use_privatelink_endpoint.0.value", r.BooleanFalse),
 				),
 			},
 			{
@@ -356,13 +360,16 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", "some comment"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "azure_tenant_id", azureTenantId),
-					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanTrue),
+					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "use_privatelink_endpoint", r.BooleanDefault),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", azureBucketUrl+"/bar"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.1", azureBucketUrl+"/foo"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations.0", azureBucketUrl+"/bar"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations.1", azureBucketUrl+"/foo"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.use_privatelink_endpoint.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.use_privatelink_endpoint.0.value", r.BooleanFalse),
 				),
 			},
 			{
@@ -377,6 +384,9 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_allowed_locations.0", azureBucketUrl+"/foo"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "storage_blocked_locations.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_storage_integration.test", "comment", ""),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.use_privatelink_endpoint.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.use_privatelink_endpoint.0.value", r.BooleanFalse),
 				),
 			},
 		},
@@ -540,7 +550,7 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateManuallySetDefault
 					resourceassert.StorageIntegrationResource(t, s3ModelWithPrivatelink.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStorageProviderString(string(sdk.StorageProviderS3)).
-						HasUsePrivatelinkEndpointString(r.BooleanFalse),
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
 					assert.Check(resource.TestCheckResourceAttr(s3Model.ResourceReference(), "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(s3Model.ResourceReference(), "describe_output.0.use_privatelink_endpoint.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(s3Model.ResourceReference(), "describe_output.0.use_privatelink_endpoint.0.value", r.BooleanFalse)),

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"slices"
 	"strings"
@@ -201,22 +202,26 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 		}
 
 		if withExternalChangesMarking {
+			var outputMappings []describeMapping
 			storageAwsExternalId, err := collections.FindFirst(integrationProperties, func(property sdk.StorageIntegrationProperty) bool {
 				return property.Name == "STORAGE_AWS_EXTERNAL_ID"
 			})
-			if err != nil {
-				return diag.FromErr(err)
+			if err == nil {
+				outputMappings = append(outputMappings, describeMapping{"storage_aws_external_id", "storage_aws_external_id", storageAwsExternalId.Value, storageAwsExternalId.Value, nil})
+			} else {
+				log.Println("[DEBUG] could not find STORAGE_AWS_EXTERNAL_ID in integration properties, skipping...")
 			}
 			usePrivatelinkEndpoint, err := collections.FindFirst(integrationProperties, func(property sdk.StorageIntegrationProperty) bool {
 				return property.Name == "USE_PRIVATELINK_ENDPOINT"
 			})
-			if err != nil {
-				return diag.FromErr(err)
+			if err == nil {
+				outputMappings = append(outputMappings, describeMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", usePrivatelinkEndpoint.Value, usePrivatelinkEndpoint.Value, nil})
+			} else {
+				log.Println("[DEBUG] could not find USE_PRIVATELINK_ENDPOINT in integration properties, skipping...")
 			}
 
 			if err = handleExternalChangesToObjectInDescribe(d,
-				describeMapping{"storage_aws_external_id", "storage_aws_external_id", storageAwsExternalId.Value, storageAwsExternalId.Value, nil},
-				describeMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", usePrivatelinkEndpoint.Value, usePrivatelinkEndpoint.Value, nil},
+				outputMappings...,
 			); err != nil {
 				return diag.FromErr(err)
 			}
