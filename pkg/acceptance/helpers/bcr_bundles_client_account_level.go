@@ -6,8 +6,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +18,7 @@ func (c *BcrBundlesClient) EnableBcrBundle(t *testing.T, name string) {
 	err := c.client().EnableBehaviorChangeBundle(ctx, name)
 	require.NoError(t, err)
 
-	bundle := c.getBcrInfo(t, name)
+	bundle := c.GetBcrInfo(t, name)
 	if !bundle.IsDefault {
 		t.Cleanup(c.DisableBcrBundleCleanupFunc(t, name))
 	}
@@ -35,7 +33,7 @@ func (c *BcrBundlesClient) DisableBcrBundle(t *testing.T, name string) {
 	err := c.client().DisableBehaviorChangeBundle(ctx, name)
 	require.NoError(t, err)
 
-	bundle := c.getBcrInfo(t, name)
+	bundle := c.GetBcrInfo(t, name)
 	if bundle.IsDefault {
 		t.Cleanup(c.EnableBcrBundleCleanupFunc(t, name))
 	}
@@ -59,20 +57,4 @@ func (c *BcrBundlesClient) EnableBcrBundleCleanupFunc(t *testing.T, name string)
 		err := c.client().EnableBehaviorChangeBundle(ctx, name)
 		require.NoError(t, err)
 	}
-}
-
-func (c *BcrBundlesClient) getBcrInfo(t *testing.T, name string) sdk.BehaviorChangeBundleInfo {
-	t.Helper()
-	ctx := context.Background()
-
-	bundles, err := c.client().ShowActiveBehaviorChangeBundles(ctx)
-	require.NoError(t, err)
-
-	info, err := collections.FindFirst(bundles, func(bundle sdk.BehaviorChangeBundleInfo) bool {
-		return bundle.Name == name
-	})
-	require.NoError(t, err)
-	require.NotNil(t, info)
-
-	return *info
 }
