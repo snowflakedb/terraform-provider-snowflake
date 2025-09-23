@@ -625,7 +625,7 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateWithoutValue_Updat
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegration),
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
