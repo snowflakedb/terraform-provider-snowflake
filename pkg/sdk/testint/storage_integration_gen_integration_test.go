@@ -197,7 +197,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		return id
 	}
 
-	// TODO: make a tick test for azure storage integration with use_privatelink_endpoint
+	// TODO(SNOW-2356128): Test use_privatelink_endpoint
 	createAzureStorageIntegration := func(t *testing.T) sdk.AccountObjectIdentifier {
 		t.Helper()
 
@@ -288,6 +288,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assert.Equal(t, "new-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
+	// TODO(SNOW-2356128): Add test for use_privatelink_endpoint
 	t.Run("Alter - set - Azure", func(t *testing.T) {
 		id := createAzureStorageIntegration(t)
 

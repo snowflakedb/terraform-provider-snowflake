@@ -142,6 +142,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeSemanticView,
 		ObjectStruct: sdk.SemanticView{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeStorageIntegration,
+		ObjectStruct: sdk.StorageIntegration{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

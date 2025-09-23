@@ -17,6 +17,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -115,7 +116,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Default:          BooleanDefault,
 		ValidateDiagFunc: validateBooleanString,
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeListValueInDescribe("use_privatelink_endpoint"),
-		Description:      "Specifies whether to use outbound private connectivity to harden the security posture. Supported for AWS S3 and Azure storage providers.",
+		Description:      booleanStringFieldDescription("Specifies whether to use outbound private connectivity to harden the security posture. Supported for AWS S3 and Azure storage providers."),
 	},
 	"created_on": {
 		Type:        schema.TypeString,
@@ -142,6 +143,8 @@ func StorageIntegration() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingCreateWrapper(resources.StorageIntegration, CreateStorageIntegration)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingReadWrapper(resources.StorageIntegration, GetReadStorageIntegrationFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingUpdateWrapper(resources.StorageIntegration, UpdateStorageIntegration)),
@@ -155,6 +158,13 @@ func StorageIntegration() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(storageIntegrationSchema, DescribeOutputAttributeName, "storage_aws_external_id", "enabled", "comment", "use_privatelink_endpoint"),
 		),
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_7_0_StorageIntegrationUsePrivatelinkEndpointUpgrader,
+			},
+		},
 	}
 }
 
