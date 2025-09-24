@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -123,10 +122,10 @@ func SemanticView() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingCreateWrapper(resources.SemanticView, CreateSemanticView)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.SemanticViewResource), TrackingReadWrapper(resources.SemanticView, ReadSemanticView)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingUpdateWrapper(resources.SemanticView, UpdateSemanticView)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.SemanticViewResource), TrackingDeleteWrapper(resources.SemanticView, deleteFunc)),
+		CreateContext: CreateSemanticView,
+		ReadContext:   ReadSemanticView,
+		UpdateContext: UpdateSemanticView,
+		DeleteContext: deleteFunc,
 		Description:   "Resource used to manage semantic views. For more information, check [semantic views documentation](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SemanticView, customdiff.All(
@@ -216,17 +215,8 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if d.HasChange("name") {
-		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.SemanticViews.Alter(ctx, sdk.NewAlterSemanticViewRequest(id).WithRenameTo(&newId))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("error renaming semantic view %v err = %w", d.Id(), err))
-		}
-
-		d.SetId(helpers.EncodeResourceIdentifier(newId))
-		id = newId
-	}
+	// TODO [SNOW-2108211]: handle rename through ALTER ... RENAME to
 
 	if d.HasChange("comment") {
 		if comment := d.Get("comment").(string); comment != "" {
@@ -244,7 +234,6 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 	return ReadSemanticView(ctx, d, meta)
 }
 
-
 func getLogicalTableRequest(from interface{}) (*sdk.LogicalTableRequest, error) {
 	c := from.(map[string]interface{})
 	qualifiedTableName := c["table_name"].(string)
@@ -258,22 +247,9 @@ func getLogicalTableRequest(from interface{}) (*sdk.LogicalTableRequest, error) 
 	if c["comment"] != nil && c["comment"].(string) != "" {
 		logicalTableRequest = logicalTableRequest.WithComment(c["comment"].(string))
 	}
-	
-	if c["primary_key"] != nil {
-		logicalTableRequest = logicalTableRequest.WithPrimaryKey(c["primary_key"].(string))
-	}
-	
-	if c["unique"] != nil {
-		logicalTableRequest = logicalTableRequest.WithUnique(c["unique"].(string))
-	}
-	
-	if c["synonym"] != nil {
-		logicalTableRequest = logicalTableRequest.WithSynonym(c["synonym"].(string))
-	}
-	
+
 	return logicalTableRequest, nil
 }
-
 
 func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 	cols, ok := from.([]any)
