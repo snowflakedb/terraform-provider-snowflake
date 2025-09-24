@@ -216,6 +216,17 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+
+		err := client.SemanticViews.Alter(ctx, sdk.NewAlterSemanticViewRequest(id).WithRenameTo(&newId))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error renaming semantic view %v err = %w", d.Id(), err))
+		}
+
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
+	}
 
 	if d.HasChange("comment") {
 		if comment := d.Get("comment").(string); comment != "" {
