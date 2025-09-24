@@ -130,7 +130,7 @@ func SemanticView() *schema.Resource {
 		Description:   "Resource used to manage semantic views. For more information, check [semantic views documentation](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SemanticView, customdiff.All(
-			ComputedIfAnyAttributeChanged(semanticViewsSchema, FullyQualifiedNameAttributeName, "name", "tables"),
+			ComputedIfAnyAttributeChanged(semanticViewsSchema, FullyQualifiedNameAttributeName, "name"),
 		)),
 
 		Schema: semanticViewsSchema,
