@@ -244,6 +244,7 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 	return ReadSemanticView(ctx, d, meta)
 }
 
+
 func getLogicalTableRequest(from interface{}) (*sdk.LogicalTableRequest, error) {
 	c := from.(map[string]interface{})
 	qualifiedTableName := c["table_name"].(string)
@@ -255,12 +256,24 @@ func getLogicalTableRequest(from interface{}) (*sdk.LogicalTableRequest, error) 
 	logicalTableRequest := sdk.NewLogicalTableRequest(logicalTableName)
 
 	if c["comment"] != nil && c["comment"].(string) != "" {
-		return logicalTableRequest.
-			WithComment(c["comment"].(string)), nil
-	} else {
-		return logicalTableRequest, nil
+		logicalTableRequest = logicalTableRequest.WithComment(c["comment"].(string))
 	}
+	
+	if c["primary_key"] != nil {
+		logicalTableRequest = logicalTableRequest.WithPrimaryKey(c["primary_key"].(string))
+	}
+	
+	if c["unique"] != nil {
+		logicalTableRequest = logicalTableRequest.WithUnique(c["unique"].(string))
+	}
+	
+	if c["synonym"] != nil {
+		logicalTableRequest = logicalTableRequest.WithSynonym(c["synonym"].(string))
+	}
+	
+	return logicalTableRequest, nil
 }
+
 
 func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 	cols, ok := from.([]any)
