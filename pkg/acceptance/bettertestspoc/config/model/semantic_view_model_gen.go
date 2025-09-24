@@ -12,14 +12,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 )
 
-
 type SemanticViewModel struct {
-	Database 			tfconfig.Variable 	`json:"database,omitempty"`
-	Schema 				tfconfig.Variable 	`json:"schema,omitempty"`
-	Name 				tfconfig.Variable 	`json:"name,omitempty"`
-	Comment 			tfconfig.Variable 	`json:"comment,omitempty"`
-	FullyQualifiedName 	tfconfig.Variable 	`json:"fully_qualified_name,omitempty"`
-	Tables 				tfconfig.Variable	`json:"tables,omitempty"`
+	Database           tfconfig.Variable `json:"database,omitempty"`
+	Schema             tfconfig.Variable `json:"schema,omitempty"`
+	Name               tfconfig.Variable `json:"name,omitempty"`
+	Comment            tfconfig.Variable `json:"comment,omitempty"`
+	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	Tables             tfconfig.Variable `json:"tables,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
