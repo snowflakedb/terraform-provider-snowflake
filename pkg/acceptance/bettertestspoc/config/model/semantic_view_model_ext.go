@@ -53,3 +53,30 @@ func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewM
 	s.Tables = tfconfig.ListVariable(maps...)
 	return s
 }
+
+func LogicalTableWithProps(
+	alias string,
+	tableName sdk.SchemaObjectIdentifier,
+	primaryKeys []sdk.SemanticViewColumn,
+	uniqueKeys [][]sdk.SemanticViewColumn,
+	synonyms []sdk.Synonym,
+	comment string,
+) *sdk.LogicalTable {
+	table := &sdk.LogicalTable{
+		TableName: tableName,
+		Comment:   &comment,
+	}
+	if alias != "" {
+		table.SetLogicalTableAlias(alias)
+	}
+	if primaryKeys != nil {
+		table.SetPrimaryKeys(primaryKeys)
+	}
+	if uniqueKeys != nil {
+		table.SetUniqueKeys(uniqueKeys)
+	}
+	if synonyms != nil {
+		table.SetSynonyms(synonyms)
+	}
+	return table
+}

@@ -24,12 +24,17 @@ import (
 func TestAcc_SemanticView_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
+	table1Id := testClient().Ids.RandomSchemaObjectIdentifier()
+	table2Id := testClient().Ids.RandomSchemaObjectIdentifier()
+	logicalTable1 := model.LogicalTableWithProps("lt1", table1Id, nil, nil, nil, "")
+	logicalTable2 := model.LogicalTableWithProps("lt2", table2Id, nil, nil, nil, "")
 
 	modelBasic := model.SemanticView(
 		"test",
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
+		[]sdk.LogicalTable{*logicalTable1},
 	)
 
 	modelComplete := model.SemanticView(
@@ -37,6 +42,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
+		[]sdk.LogicalTable{*logicalTable1},
 	).WithComment(comment)
 
 	modelCompleteWithDifferentValues := model.SemanticView(
@@ -44,6 +50,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
+		[]sdk.LogicalTable{*logicalTable2},
 	).WithComment(changedComment)
 
 	resource.Test(t, resource.TestCase{
