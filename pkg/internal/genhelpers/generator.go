@@ -34,12 +34,18 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 }
 
 type GenerationPart[T ObjectNameProvider, M HasPreambleModel] struct {
+	name             string
 	filenameProvider func(T, M) string
 	templates        []*template.Template
 }
 
-func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](filenameProvider func(T, M) string, templates []*template.Template) GenerationPart[T, M] {
+func (g *GenerationPart[_, _]) GetName() string {
+	return g.name
+}
+
+func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](name string, filenameProvider func(T, M) string, templates []*template.Template) GenerationPart[T, M] {
 	return GenerationPart[T, M]{
+		name:             name,
 		filenameProvider: filenameProvider,
 		templates:        templates,
 	}
@@ -48,7 +54,7 @@ func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](filenameProvide
 func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	// TODO [SNOW-2324252]: handle vararg input
 	parts := []GenerationPart[T, M]{
-		NewGenerationPart(filenameProvider, templates),
+		NewGenerationPart("default", filenameProvider, templates),
 	}
 	return &Generator[T, M]{
 		objectsProvider:  objectsProvider,
@@ -60,14 +66,15 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 
 		additionalObjectDebugLogProviders: make([]func([]T), 0),
 		objectFilters:                     make([]func(T) bool, 0),
+		generationPartFilters:             make([]func(GenerationPart[T, M]) bool, 0),
 
 		preamble: preamble,
 	}
 }
 
 // TODO [SNOW-2324252]: Probably remove later when we have vararg support in the NewGenerator constructor
-func (g *Generator[T, M]) WithGenerationPart(filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
-	g.generationParts = append(g.generationParts, NewGenerationPart(filenameProvider, templates))
+func (g *Generator[T, M]) WithGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+	g.generationParts = append(g.generationParts, NewGenerationPart(partName, filenameProvider, templates))
 	return g
 }
 
@@ -78,6 +85,11 @@ func (g *Generator[T, M]) WithAdditionalObjectsDebugLogs(objectLogsProvider func
 
 func (g *Generator[T, M]) WithObjectFilter(objectFilter func(T) bool) *Generator[T, M] {
 	g.objectFilters = append(g.objectFilters, objectFilter)
+	return g
+}
+
+func (g *Generator[T, M]) WithGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
+	g.generationPartFilters = append(g.generationPartFilters, generationPartFilter)
 	return g
 }
 

@@ -76,7 +76,7 @@ func printUniqueTypes(allStructs []genhelpers.StructDetails) {
 	}
 }
 
-// TODO: move this filter to commons and consider extracting this as a command line param
+// TODO [SNOW-2324252]: move this filter to commons and consider extracting this as a command line param
 func filterByNameFromEnv(o genhelpers.StructDetails) bool {
 	allowedObjectNamesString := os.Getenv("SF_TF_GENERATOR_EXT_ALLOWED_OBJECT_NAMES")
 	if allowedObjectNamesString == "" {
