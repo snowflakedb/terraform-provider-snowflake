@@ -16,7 +16,6 @@ const (
 )
 
 // TODO [this PR]: conversionErrorWrapped in templates?
-// TODO [this PR]: filename + templates (to handle multiple sets in sdk); vararg
 func main() {
 	genhelpers.NewGenerator(
 		genhelpers.NewPreambleModel(name, version),
@@ -25,6 +24,7 @@ func main() {
 		filenameFor(""),
 		[]*template.Template{genhelpers.PreambleTemplate, generator.InterfaceTemplate, generator.OperationStructIterateTemplate},
 	).
+		WithGenerationPart(filenameFor("dto"), []*template.Template{genhelpers.PreambleTemplate, generator.DtoTemplate}).
 		RunAndHandleOsReturn()
 }
 

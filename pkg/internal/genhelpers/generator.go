@@ -37,14 +37,17 @@ type GenerationPart[T ObjectNameProvider, M HasPreambleModel] struct {
 	templates        []*template.Template
 }
 
+func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](filenameProvider func(T, M) string, templates []*template.Template) GenerationPart[T, M] {
+	return GenerationPart[T, M]{
+		filenameProvider: filenameProvider,
+		templates:        templates,
+	}
+}
+
 func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
-	// TODO [this PR]: handle vararg input
-	// TODO [this PR]: extract constructor
+	// TODO [next PR]: handle vararg input
 	parts := []GenerationPart[T, M]{
-		{
-			filenameProvider: filenameProvider,
-			templates:        templates,
-		},
+		NewGenerationPart(filenameProvider, templates),
 	}
 	return &Generator[T, M]{
 		objectsProvider:  objectsProvider,
@@ -59,6 +62,12 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 
 		preamble: preamble,
 	}
+}
+
+// TODO [next PR]: Probably remove later when we have vararg support in the NewGenerator constructor
+func (g *Generator[T, M]) WithGenerationPart(filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+	g.generationParts = append(g.generationParts, NewGenerationPart(filenameProvider, templates))
+	return g
 }
 
 func (g *Generator[T, M]) WithAdditionalObjectsDebugLogs(objectLogsProvider func([]T)) *Generator[T, M] {
@@ -136,16 +145,21 @@ func (g *Generator[_, _]) RunAndHandleOsReturn() {
 func (g *Generator[T, _]) generateAndSaveForAllObjects(objects []T) error {
 	var errs []error
 	for _, s := range objects {
-		buffer := bytes.Buffer{}
 		model := g.modelProvider(s, g.preamble)
-		if err := executeAllTemplates(model, &buffer, g.templates...); err != nil {
-			errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
-			continue
-		}
-		filename := g.filenameProvider(s, model)
-		if err := WriteCodeToFile(&buffer, filename); err != nil {
-			errs = append(errs, fmt.Errorf("saving output for object %s to file %s failed with err: %w", s.ObjectName(), filename, err))
-			continue
+
+		// TODO [this PR]: add per part filtering
+		for _, p := range g.generationParts {
+			buffer := bytes.Buffer{}
+
+			if err := executeAllTemplates(model, &buffer, p.templates...); err != nil {
+				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
+				continue
+			}
+			filename := p.filenameProvider(s, model)
+			if err := WriteCodeToFile(&buffer, filename); err != nil {
+				errs = append(errs, fmt.Errorf("saving output for object %s to file %s failed with err: %w", s.ObjectName(), filename, err))
+				continue
+			}
 		}
 	}
 	return errors.Join(errs...)
@@ -157,9 +171,11 @@ func (g *Generator[T, _]) generateAndPrintForAllObjects(objects []T) error {
 		fmt.Println("===========================")
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
-		if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, g.templates...); err != nil {
-			errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
-			continue
+		for _, p := range g.generationParts {
+			if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, p.templates...); err != nil {
+				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
+				continue
+			}
 		}
 	}
 	return errors.Join(errs...)
