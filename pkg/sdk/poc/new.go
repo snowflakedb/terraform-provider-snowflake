@@ -29,6 +29,10 @@ func GetSdkDefinitions() []*generator.Interface {
 
 // preprocessDefinition is needed because current simple builder is not ideal, should be removed later
 func preprocessDefinition(definition *generator.Interface) {
+
+	generatedStructs := make([]string, 0)
+	generatedDtos := make([]string, 0)
+
 	for _, o := range definition.Operations {
 		o.ObjectInterface = definition
 		if o.OptsField != nil {
@@ -39,15 +43,14 @@ func preprocessDefinition(definition *generator.Interface) {
 			// TODO [next PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out StructsToGenerate; it replaces the old generateOptionsStruct and generateStruct
 			structsToGenerate := make([]*generator.Field, 0)
-			generatedStructs := make([]string, 0)
 			for _, f := range o.HelperStructs {
 				if !slices.Contains(generatedStructs, f.KindNoPtr()) {
-					structsToGenerate = addStructToGenerate(f, structsToGenerate, generatedStructs)
+					structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
 				}
 			}
 			for _, f := range o.OptsField.Fields {
 				if len(f.Fields) > 0 && !slices.Contains(generatedStructs, f.KindNoPtr()) {
-					structsToGenerate = addStructToGenerate(f, structsToGenerate, generatedStructs)
+					structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
 				}
 			}
 			// TODO [this PR]: replace with log or remove
@@ -72,8 +75,7 @@ func preprocessDefinition(definition *generator.Interface) {
 			// TODO [next PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out DtosToGenerate; it replaces the old GenerateDtos and generateDtoDecls logic
 			dtosToGenerate := make([]*generator.Field, 0)
-			generatedDtos := make([]string, 0)
-			dtosToGenerate = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)
+			dtosToGenerate, generatedDtos = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)
 			// TODO [this PR]: replace with log or remove
 			fmt.Printf("Dtos to generate length: %d\n", len(structsToGenerate))
 			o.DtosToGenerate = dtosToGenerate
@@ -88,7 +90,7 @@ func setParent(field *generator.Field) {
 	}
 }
 
-func addStructToGenerate(field *generator.Field, structsToGenerate []*generator.Field, generatedStructs []string) []*generator.Field {
+func addStructToGenerate(field *generator.Field, structsToGenerate []*generator.Field, generatedStructs []string) ([]*generator.Field, []string) {
 	if !slices.Contains(generatedStructs, field.KindNoPtr()) {
 		// TODO [this PR]: replace with log or remove
 		fmt.Printf("Adding: %s\n", field.KindNoPtr())
@@ -98,24 +100,26 @@ func addStructToGenerate(field *generator.Field, structsToGenerate []*generator.
 
 	for _, f := range field.Fields {
 		if len(f.Fields) > 0 && !slices.Contains(generatedStructs, f.Name) {
-			structsToGenerate = addStructToGenerate(f, structsToGenerate, generatedStructs)
+			structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
 		}
 	}
-	return structsToGenerate
+	return structsToGenerate, generatedStructs
 }
 
-func addDtoToGenerate(field *generator.Field, dtosToGenerate []*generator.Field, generatedDtos []string) []*generator.Field {
+func addDtoToGenerate(field *generator.Field, dtosToGenerate []*generator.Field, generatedDtos []string) ([]*generator.Field, []string) {
 	if !slices.Contains(generatedDtos, field.DtoDecl()) {
+		// TODO [this PR]: replace with log or remove
+		fmt.Printf("Adding: %s\n", field.DtoDecl())
 		dtosToGenerate = append(dtosToGenerate, field)
 		generatedDtos = append(generatedDtos, field.DtoDecl())
 
 		for _, f := range field.Fields {
 			if f.IsStruct() {
-				dtosToGenerate = addDtoToGenerate(f, dtosToGenerate, generatedDtos)
+				dtosToGenerate, generatedDtos = addDtoToGenerate(f, dtosToGenerate, generatedDtos)
 			}
 		}
 	}
-	return dtosToGenerate
+	return dtosToGenerate, generatedDtos
 }
 
 func WithPreamble(i *generator.Interface, preamble *genhelpers.PreambleModel) *generator.Interface {
