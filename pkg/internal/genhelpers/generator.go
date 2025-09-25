@@ -45,7 +45,7 @@ func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](filenameProvide
 }
 
 func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
-	// TODO [next PR]: handle vararg input
+	// TODO [SNOW-2324252]: handle vararg input
 	parts := []GenerationPart[T, M]{
 		NewGenerationPart(filenameProvider, templates),
 	}
@@ -64,7 +64,7 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 	}
 }
 
-// TODO [next PR]: Probably remove later when we have vararg support in the NewGenerator constructor
+// TODO [SNOW-2324252]: Probably remove later when we have vararg support in the NewGenerator constructor
 func (g *Generator[T, M]) WithGenerationPart(filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	g.generationParts = append(g.generationParts, NewGenerationPart(filenameProvider, templates))
 	return g

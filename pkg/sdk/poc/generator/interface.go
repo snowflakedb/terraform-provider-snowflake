@@ -42,7 +42,7 @@ type Interface struct {
 	IdentifierKind string
 
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
-	// TODO [next PR]: Rework DTO builder gen
+	// TODO [SNOW-2324252]: Rework DTO builder gen
 	// PathToDtoBuilderGen is a temporary solution to have working path to a separate DTO builder generator
 	PathToDtoBuilderGen string
 

@@ -12,7 +12,7 @@ import (
 
 type SdkObjectDef struct {
 	name string
-	// TODO [next PR]: can be removed?
+	// TODO [SNOW-2324252]: can be removed?
 	file       string
 	definition *generator.Interface
 }
@@ -40,7 +40,7 @@ func preprocessDefinition(definition *generator.Interface) {
 			o.OptsField.Kind = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			setParent(o.OptsField)
 
-			// TODO [next PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
+			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out StructsToGenerate; it replaces the old generateOptionsStruct and generateStruct
 			structsToGenerate := make([]*generator.Field, 0)
 			for _, f := range o.HelperStructs {
@@ -57,10 +57,10 @@ func preprocessDefinition(definition *generator.Interface) {
 			fmt.Printf("Structs to generate length: %d\n", len(structsToGenerate))
 			o.StructsToGenerate = structsToGenerate
 
-			// TODO [next PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
+			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out ObjectIdMethod and ObjectIdType; it replaces the old template executors logic
 			if o.Name == string(generator.OperationKindShow) {
-				// TODO [next PR]: do we really conversion logic? The definition file should handle this.
+				// TODO [SNOW-2324252]: do we really conversion logic? The definition file should handle this.
 				idKind, err := generator.ToObjectIdentifierKind(definition.IdentifierKind)
 				if err != nil {
 					log.Printf("[WARN] for showObjectIdMethod: %v", err)
@@ -72,7 +72,7 @@ func preprocessDefinition(definition *generator.Interface) {
 				o.ObjectTypeMethod = generator.NewShowObjectTypeMethod(definition.NameSingular)
 			}
 
-			// TODO [next PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
+			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out DtosToGenerate; it replaces the old GenerateDtos and generateDtoDecls logic
 			dtosToGenerate := make([]*generator.Field, 0)
 			dtosToGenerate, generatedDtos = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)

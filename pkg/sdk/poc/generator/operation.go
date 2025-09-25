@@ -51,7 +51,7 @@ type Operation struct {
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
 
-	// TODO [next PR]: Consider splitting the Operation into definition and generation model
+	// TODO [SNOW-2324252]: Consider splitting the Operation into definition and generation model
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
 
 	// StructsToGenerate is a list of all newly introduced structs comprised of HelperStructs and OptsField; contains only unique structs

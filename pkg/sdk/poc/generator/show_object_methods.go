@@ -25,7 +25,7 @@ var idTypeParts map[objectIdentifierKind][]string = map[objectIdentifierKind][]s
 	SchemaObjectIdentifier:   {"DatabaseName", "SchemaName", "Name"},
 }
 
-// TODO [next PR]: do we need to search for this struct? Maybe we can have it more easily?
+// TODO [SNOW-2324252]: do we need to search for this struct? Maybe we can have it more easily?
 func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, idKind objectIdentifierKind) bool {
 	if requiredFields, ok := idTypeParts[idKind]; ok {
 		for _, field := range helperStructs {

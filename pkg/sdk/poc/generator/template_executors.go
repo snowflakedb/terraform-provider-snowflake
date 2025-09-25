@@ -14,7 +14,7 @@ var (
 	generatedDtos    []string
 )
 
-// TODO [next PR]: remove this method
+// TODO [SNOW-2324252]: remove this method
 func GenerateInterface(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, InterfaceTemplate, def)
@@ -37,7 +37,7 @@ func GenerateInterface(writer io.Writer, def *Interface) {
 	}
 }
 
-// TODO [next PR]: remove this method
+// TODO [SNOW-2324252]: remove this method
 func generateOptionsStruct(writer io.Writer, operation *Operation) {
 	printTo(writer, OperationStructTemplate, operation)
 
@@ -54,7 +54,7 @@ func generateOptionsStruct(writer io.Writer, operation *Operation) {
 	}
 }
 
-// TODO [next PR]: remove this method
+// TODO [SNOW-2324252]: remove this method
 func generateStruct(writer io.Writer, field *Field) {
 	if !slices.Contains(generatedStructs, field.KindNoPtr()) {
 		fmt.Println("Generating: " + field.KindNoPtr())
@@ -69,7 +69,7 @@ func generateStruct(writer io.Writer, field *Field) {
 	}
 }
 
-// TODO [next PR]: remove this method
+// TODO [SNOW-2324252]: remove this method
 func GenerateDtos(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, DtoTemplate, def)
@@ -80,7 +80,7 @@ func GenerateDtos(writer io.Writer, def *Interface) {
 	}
 }
 
-// TODO [next PR]: remove this method
+// TODO [SNOW-2324252]: remove this method
 func generateDtoDecls(writer io.Writer, field *Field) {
 	if !slices.Contains(generatedDtos, field.DtoDecl()) {
 		printTo(writer, DtoDeclTemplate, field)
@@ -94,19 +94,19 @@ func generateDtoDecls(writer io.Writer, field *Field) {
 	}
 }
 
-// TODO [next PR]: remove this method
+// TODO [SNOW-2324252]: remove this method
 func GenerateImplementation(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, ImplementationTemplate, def)
 }
 
-// TODO [next PR]: remove this method
+// TODO [SNOW-2324252]: remove this method
 func GenerateUnitTests(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, UnitTestsTemplate, def)
 }
 
-// TODO [next PR]: remove this method
+// TODO [SNOW-2324252]: remove this method
 func GenerateValidations(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, ValidationsTemplate, def)
