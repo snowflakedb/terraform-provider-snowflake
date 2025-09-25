@@ -22,7 +22,7 @@ func main() {
 		poc.GetSdkDefinitions,
 		poc.WithPreamble,
 		filenameFor(""),
-		[]*template.Template{genhelpers.PreambleTemplate, generator.ImplementationTemplate},
+		[]*template.Template{genhelpers.PreambleTemplate, generator.InterfaceTemplate, generator.OperationStructIterateTemplate},
 	).
 		RunAndHandleOsReturn()
 }

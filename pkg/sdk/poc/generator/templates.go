@@ -25,6 +25,10 @@ var (
 	operationStructTemplateContent string
 	OperationStructTemplate, _     = template.New("optionsTemplate").Parse(operationStructTemplateContent)
 
+	//go:embed templates/operation_struct_iterate.tmpl
+	operationStructIterateTemplateContent string
+	OperationStructIterateTemplate        *template.Template
+
 	//go:embed templates/struct.tmpl
 	structTemplateContent string
 	StructTemplate, _     = template.New("structTemplate").Parse(structTemplateContent)
@@ -99,8 +103,10 @@ func init() {
 	subTemplates, _ = subTemplates.New("validationTest").Parse(validationTestTemplateContent)
 	subTemplates, _ = subTemplates.New("validationTests").Parse(validationTestsTemplateContent)
 	subTemplates, _ = subTemplates.New("validationImplementation").Parse(validationImplementationTemplateContent)
+	subTemplates, _ = subTemplates.New("optionsTemplate").Parse(operationStructTemplateContent)
 
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)
+	OperationStructIterateTemplate, _ = subTemplates.New("optionsIterateTemplate").Parse(operationStructIterateTemplateContent)
 }
