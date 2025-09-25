@@ -9,46 +9,44 @@ func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewM
 	maps := make([]tfconfig.Variable, len(tables))
 	for i, v := range tables {
 		m := map[string]tfconfig.Variable{
-			"table_name":    tfconfig.StringVariable(v.TableName.Name()),
-			"database_name": tfconfig.StringVariable(v.TableName.DatabaseName()),
-			"schema_name":   tfconfig.StringVariable(v.TableName.SchemaName()),
+			"table_name": tfconfig.StringVariable(v.TableName.FullyQualifiedName()),
 		}
 		if v.Comment != nil {
 			m["comment"] = tfconfig.StringVariable(*v.Comment)
 		}
 		logicalTableAlias := v.GetLogicalTableAlias()
 		if logicalTableAlias != nil {
-			m["logical_table_alias"] = tfconfig.StringVariable(logicalTableAlias.LogicalTableAlias)
+			m["table_alias"] = tfconfig.StringVariable(logicalTableAlias.LogicalTableAlias)
 		}
 		primaryKeys := v.GetPrimaryKeys()
 		if primaryKeys != nil {
 			keys := make([]tfconfig.Variable, len(primaryKeys.PrimaryKey))
-			for _, key := range primaryKeys.PrimaryKey {
-				keys = append(keys, tfconfig.StringVariable(key.Name))
+			for j, key := range primaryKeys.PrimaryKey {
+				keys[j] = tfconfig.StringVariable(key.Name)
 			}
 			m["primary_keys"] = tfconfig.ListVariable(keys...)
 		}
 		uniqueKeys := v.GetUniqueKeys()
 		if uniqueKeys != nil {
 			keys := make([]tfconfig.Variable, len(uniqueKeys))
-			for _, key := range uniqueKeys {
+			for j, key := range uniqueKeys {
 				uniKeys := make([]tfconfig.Variable, len(key.Unique))
-				for _, uniKey := range key.Unique {
-					uniKeys = append(uniKeys, tfconfig.StringVariable(uniKey.Name))
+				for k, uniKey := range key.Unique {
+					uniKeys[k] = tfconfig.StringVariable(uniKey.Name)
 				}
-				keys = append(keys, tfconfig.ListVariable(uniKeys...))
+				keys[j] = tfconfig.ListVariable(uniKeys...)
 			}
 			m["unique_keys"] = tfconfig.ListVariable(keys...)
 		}
 		synonyms := v.GetSynonyms()
 		if synonyms != nil {
 			syns := make([]tfconfig.Variable, len(synonyms.WithSynonyms))
-			for _, synonym := range synonyms.WithSynonyms {
-				syns = append(syns, tfconfig.StringVariable(synonym.Synonym))
+			for j, synonym := range synonyms.WithSynonyms {
+				syns[j] = tfconfig.StringVariable(synonym.Synonym)
 			}
 			m["synonyms"] = tfconfig.ListVariable(syns...)
 		}
-		maps[i] = tfconfig.MapVariable(m)
+		maps[i] = tfconfig.ObjectVariable(m)
 	}
 	s.Tables = tfconfig.ListVariable(maps...)
 	return s

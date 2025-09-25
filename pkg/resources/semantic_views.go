@@ -55,11 +55,12 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					DiffSuppressFunc: suppressIdentifierQuoting,
 				},
 				"primary_key": {
-					Type:        schema.TypeList,
+					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Definitions of primary keys in the logical table."),
 					Elem: &schema.Schema{
-						Type: schema.TypeString,
+						Type:     schema.TypeString,
+						Optional: true,
 					},
 				},
 				"unique": {
@@ -68,18 +69,21 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Description: blocklistedCharactersFieldDescription("Definitions of unique key combinations in the logical table."),
 					Elem: &schema.Schema{
 						Type:        schema.TypeList,
+						Optional:    true,
 						Description: blocklistedCharactersFieldDescription("Unique key combinations in the logical table"),
 						Elem: &schema.Schema{
-							Type: schema.TypeString,
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 					},
 				},
 				"synonym": {
-					Type:        schema.TypeList,
+					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("List of synonyms for the logical table."),
 					Elem: &schema.Schema{
-						Type: schema.TypeString,
+						Type:     schema.TypeString,
+						Optional: true,
 					},
 				},
 				"comment": {
@@ -146,7 +150,7 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 	name := d.Get("name").(string)
 	schemaName := d.Get("schema").(string)
 	databaseName := d.Get("database").(string)
-	logicalTableRequests, err := getLogicalTableRequests(d.Get("logical_tables").([]interface{}))
+	logicalTableRequests, err := getLogicalTableRequests(d.Get("tables").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -234,8 +238,8 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 	return ReadSemanticView(ctx, d, meta)
 }
 
-func getLogicalTableRequest(from interface{}) (*sdk.LogicalTableRequest, error) {
-	c := from.(map[string]interface{})
+func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
+	c := from.(map[string]any)
 	qualifiedTableName := c["table_name"].(string)
 
 	logicalTableName, err := sdk.ParseSchemaObjectIdentifier(qualifiedTableName)
@@ -243,6 +247,11 @@ func getLogicalTableRequest(from interface{}) (*sdk.LogicalTableRequest, error) 
 		return nil, err
 	}
 	logicalTableRequest := sdk.NewLogicalTableRequest(logicalTableName)
+
+	if c["table_alias"] != nil && c["table_alias"].(string) != "" {
+		aliasRequest := sdk.LogicalTableAliasRequest{LogicalTableAlias: c["table_alias"].(string)}
+		logicalTableRequest = logicalTableRequest.WithLogicalTableAlias(aliasRequest)
+	}
 
 	if c["comment"] != nil && c["comment"].(string) != "" {
 		logicalTableRequest = logicalTableRequest.WithComment(c["comment"].(string))
