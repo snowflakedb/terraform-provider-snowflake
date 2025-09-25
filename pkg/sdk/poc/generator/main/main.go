@@ -1,4 +1,4 @@
-// TODO[this PR]: go:build exclude
+//go:build exclude
 
 package main
 

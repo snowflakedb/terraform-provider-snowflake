@@ -30,7 +30,7 @@ func main() {
 	).
 		WithAdditionalObjectsDebugLogs(printAllStructsFields).
 		WithAdditionalObjectsDebugLogs(printUniqueTypes).
-		WithObjectFilter(filterByNameFromEnv).
+		WithObjectFilter(filterObjectByNameFromEnv[genhelpers.StructDetails]).
 		RunAndHandleOsReturn()
 }
 
@@ -77,11 +77,11 @@ func printUniqueTypes(allStructs []genhelpers.StructDetails) {
 }
 
 // TODO [SNOW-2324252]: move this filter to commons and consider extracting this as a command line param
-func filterByNameFromEnv(o genhelpers.StructDetails) bool {
+func filterObjectByNameFromEnv[T genhelpers.ObjectNameProvider](object T) bool {
 	allowedObjectNamesString := os.Getenv("SF_TF_GENERATOR_EXT_ALLOWED_OBJECT_NAMES")
 	if allowedObjectNamesString == "" {
 		return true
 	}
 	allowedObjectNames := strings.Split(allowedObjectNamesString, ",")
-	return slices.Contains(allowedObjectNames, o.ObjectName())
+	return slices.Contains(allowedObjectNames, object.ObjectName())
 }
