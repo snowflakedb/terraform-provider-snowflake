@@ -330,12 +330,8 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		if _, ok := d.GetOk("storage_aws_external_id"); ok {
 			s3Params.WithStorageAwsExternalId(d.Get("storage_aws_external_id").(string))
 		}
-		if v := d.Get("use_privatelink_endpoint"); v != BooleanDefault {
-			parsedBool, err := booleanStringToBool(v.(string))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			s3Params.WithUsePrivateLinkEndpoint(parsedBool)
+		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", s3Params.WithUsePrivateLinkEndpoint); err != nil {
+			return diag.FromErr(err)
 		}
 		req.WithS3StorageProviderParams(*s3Params)
 	case storageProvider == "AZURE":
@@ -344,12 +340,8 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(fmt.Errorf("if you use the Azure storage provider you must specify an azure_tenant_id"))
 		}
 		azureParams := sdk.NewAzureStorageParamsRequest(sdk.String(v.(string)))
-		if v := d.Get("use_privatelink_endpoint"); v != BooleanDefault {
-			parsedBool, err := booleanStringToBool(v.(string))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			azureParams.WithUsePrivateLinkEndpoint(parsedBool)
+		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivateLinkEndpoint); err != nil {
+			return diag.FromErr(err)
 		}
 		req.WithAzureStorageProviderParams(*azureParams)
 	case storageProvider == "GCS":
@@ -437,19 +429,9 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		if d.HasChange("use_privatelink_endpoint") {
-			v := d.Get("use_privatelink_endpoint").(string)
-			if v != BooleanDefault {
-				parsedBool, err := booleanStringToBool(v)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				s3SetParams.WithUsePrivateLinkEndpoint(parsedBool)
-			} else {
-				// TODO(SNOW-2356049): uncomment this when UNSET starts working correctly
-				// unset.WithUsePrivateLinkEndpoint(true)
-				s3SetParams.WithUsePrivateLinkEndpoint(false)
-			}
+		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
+		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", s3SetParams.WithUsePrivateLinkEndpoint, false); err != nil {
+			return diag.FromErr(err)
 		}
 
 		set.WithS3Params(*s3SetParams)
@@ -462,19 +444,9 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		}
 		azureParams := sdk.NewSetAzureStorageParamsRequest(azureTenantID.(string))
 
-		if d.HasChange("use_privatelink_endpoint") {
-			v := d.Get("use_privatelink_endpoint").(string)
-			if v != BooleanDefault {
-				parsedBool, err := booleanStringToBool(v)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				azureParams.WithUsePrivateLinkEndpoint(parsedBool)
-			} else {
-				// TODO(SNOW-2356049): uncomment this when UNSET starts working correctly
-				// unset.WithUsePrivateLinkEndpoint(true)
-				azureParams.WithUsePrivateLinkEndpoint(false)
-			}
+		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
+		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivateLinkEndpoint, false); err != nil {
+			return diag.FromErr(err)
 		}
 
 		set.WithAzureParams(*azureParams)
