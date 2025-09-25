@@ -4,9 +4,7 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"slices"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas/gen"
@@ -30,7 +28,7 @@ func main() {
 	).
 		WithAdditionalObjectsDebugLogs(printAllStructsFields).
 		WithAdditionalObjectsDebugLogs(printUniqueTypes).
-		WithObjectFilter(filterObjectByNameFromEnv[genhelpers.StructDetails]).
+		WithObjectFilter(genhelpers.FilterObjectByNameFromEnv[genhelpers.StructDetails]).
 		RunAndHandleOsReturn()
 }
 
@@ -74,14 +72,4 @@ func printUniqueTypes(allStructs []genhelpers.StructDetails) {
 	for _, k := range keys {
 		fmt.Println(k)
 	}
-}
-
-// TODO [SNOW-2324252]: move this filter to commons and consider extracting this as a command line param
-func filterObjectByNameFromEnv[T genhelpers.ObjectNameProvider](object T) bool {
-	allowedObjectNamesString := os.Getenv("SF_TF_GENERATOR_EXT_ALLOWED_OBJECT_NAMES")
-	if allowedObjectNamesString == "" {
-		return true
-	}
-	allowedObjectNames := strings.Split(allowedObjectNamesString, ",")
-	return slices.Contains(allowedObjectNames, object.ObjectName())
 }
