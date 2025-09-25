@@ -16,3 +16,5 @@ type (
 	In   struct{}
 	Like struct{}
 )
+
+type ValuesBehavior string

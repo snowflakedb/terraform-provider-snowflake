@@ -4,4 +4,7 @@
     {{- if .OptsField }}
         {{ template "optionsTemplate" . }}
     {{- end }}
+    {{- range .StructsToGenerate }}
+        {{ template "structTemplate" . }}
+    {{- end }}
 {{- end }}

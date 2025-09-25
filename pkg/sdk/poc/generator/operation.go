@@ -39,6 +39,8 @@ type Operation struct {
 	OptsField *Field
 	// HelperStructs are struct definitions that are not tied to OptsField, but tied to the Operation itself, e.g. Show() return type
 	HelperStructs []*Field
+	// StructsToGenerate is a list of all newly introduced structs comprised of HelperStructs and OptsField; contains only unique structs
+	StructsToGenerate []*Field
 	// ShowKind defines a kind of mapping that needs to be performed in particular case of Show implementation
 	// TODO(SNOW-2183036) This is a temporary solution to support single value and slice return types for Show operation.
 	ShowKind *ShowMappingKind

@@ -45,6 +45,7 @@ func generateShowObjectTypeMethod(writer io.Writer, m *ShowObjectTypeMethod) {
 	printTo(writer, ShowObjectTypeMethodTemplate, m)
 }
 
+// TODO [next PR]: remove this method
 func generateOptionsStruct(writer io.Writer, operation *Operation) {
 	printTo(writer, OperationStructTemplate, operation)
 
@@ -61,6 +62,7 @@ func generateOptionsStruct(writer io.Writer, operation *Operation) {
 	}
 }
 
+// TODO [next PR]: remove this method
 func generateStruct(writer io.Writer, field *Field) {
 	if !slices.Contains(generatedStructs, field.KindNoPtr()) {
 		fmt.Println("Generating: " + field.KindNoPtr())
