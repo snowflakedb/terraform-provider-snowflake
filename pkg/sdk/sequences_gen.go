@@ -80,6 +80,9 @@ type Sequence struct {
 func (v *Sequence) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
+func (v *Sequence) ObjectType() ObjectType {
+	return ObjectTypeSequence
+}
 
 // DescribeSequenceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-sequence.
 type DescribeSequenceOptions struct {
