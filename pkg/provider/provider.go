@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/url"
 	"slices"
@@ -403,6 +404,27 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.UseLegacyTomlFile, false),
 		},
+		"oauth_client_id": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Client id for OAuth2 external IdP.", snowflakeenvs.OauthClientId),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthClientId, nil),
+		},
+		"oauth_client_secret": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Client secret for OAuth2 external IdP.", snowflakeenvs.OauthClientSecret),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthClientSecret, nil),
+		},
+		"oauth_token_request_url": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Token request URL of OAuth2 external IdP.", snowflakeenvs.OauthTokenRequestUrl),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthTokenRequestUrl, nil),
+		},
 	}
 }
 
@@ -595,6 +617,7 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 			config.Authenticator = gosnowflake.AuthTypeOAuth
 		}
 	}
+	log.Printf("[DEBUG] xxxx%+v\n", config)
 
 	providerCtx := &provider.Context{}
 	if client, err := sdk.NewClient(config); err != nil {
@@ -756,6 +779,9 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleBooleanStringAttribute(s, "disable_console_login", &config.DisableConsoleLogin),
 		// profile is handled in the calling function
 		// TODO(SNOW-1761318): handle DisableSamlURLCheck after upgrading the driver to at least 1.10.1
+		handleStringField(s, "oauth_client_id", &config.OauthClientID),
+		handleStringField(s, "oauth_client_secret", &config.OauthClientSecret),
+		handleStringField(s, "oauth_token_request_url", &config.OauthTokenRequestURL),
 	)
 	if err != nil {
 		return nil, err

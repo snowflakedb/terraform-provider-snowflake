@@ -48,5 +48,9 @@ const (
 	SkipTomlFilePermissionVerification = "SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION"
 	UseLegacyTomlFile                  = "SNOWFLAKE_USE_LEGACY_TOML_FILE"
 
+	OauthClientId        = "SNOWFLAKE_OAUTH_CLIENT_ID"
+	OauthClientSecret    = "SNOWFLAKE_OAUTH_CLIENT_SECRET"     //nolint:gosec
+	OauthTokenRequestUrl = "SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL" //nolint:gosec
+
 	ConfigPath = "SNOWFLAKE_CONFIG_PATH"
 )

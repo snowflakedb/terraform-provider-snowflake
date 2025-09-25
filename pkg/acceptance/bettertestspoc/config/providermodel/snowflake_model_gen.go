@@ -50,6 +50,9 @@ type SnowflakeModel struct {
 	User                               tfconfig.Variable `json:"user,omitempty"`
 	ValidateDefaultParameters          tfconfig.Variable `json:"validate_default_parameters,omitempty"`
 	Warehouse                          tfconfig.Variable `json:"warehouse,omitempty"`
+	OauthClientID                      tfconfig.Variable `json:"oauth_client_id,omitempty"`
+	OauthClientSecret                  tfconfig.Variable `json:"oauth_client_secret,omitempty"`
+	OauthTokenRequestURL               tfconfig.Variable `json:"oauth_token_request_url,omitempty"`
 
 	*config.ProviderModelMeta
 }
@@ -272,6 +275,21 @@ func (s *SnowflakeModel) WithValidateDefaultParameters(validateDefaultParameters
 
 func (s *SnowflakeModel) WithWarehouse(warehouse string) *SnowflakeModel {
 	s.Warehouse = tfconfig.StringVariable(warehouse)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientID(oauthClientID string) *SnowflakeModel {
+	s.OauthClientID = tfconfig.StringVariable(oauthClientID)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientSecret(oauthClientSecret string) *SnowflakeModel {
+	s.OauthClientSecret = tfconfig.StringVariable(oauthClientSecret)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthTokenRequestURL(oauthTokenRequestURL string) *SnowflakeModel {
+	s.OauthTokenRequestURL = tfconfig.StringVariable(oauthTokenRequestURL)
 	return s
 }
 

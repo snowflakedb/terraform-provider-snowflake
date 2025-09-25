@@ -2,8 +2,6 @@
 
 package sdk
 
-import ()
-
 func NewConfigFile() *ConfigFile {
 	return &ConfigFile{}
 }
@@ -204,5 +202,20 @@ func (s *ConfigDTO) WithIncludeRetryReason(IncludeRetryReason bool) *ConfigDTO {
 
 func (s *ConfigDTO) WithDisableConsoleLogin(DisableConsoleLogin bool) *ConfigDTO {
 	s.DisableConsoleLogin = &DisableConsoleLogin
+	return s
+}
+
+func (s *ConfigDTO) WithOauthClientID(OauthClientID string) *ConfigDTO {
+	s.OauthClientID = &OauthClientID
+	return s
+}
+
+func (s *ConfigDTO) WithOauthClientSecret(OauthClientSecret string) *ConfigDTO {
+	s.OauthClientSecret = &OauthClientSecret
+	return s
+}
+
+func (s *ConfigDTO) WithOauthTokenRequestURL(OauthTokenRequestURL string) *ConfigDTO {
+	s.OauthTokenRequestURL = &OauthTokenRequestURL
 	return s
 }

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -345,6 +346,9 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
 
 					return nil
 				},
@@ -538,6 +542,9 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.DriverTracing, string(sdk.DriverLogLevelWarning))
 					t.Setenv(snowflakeenvs.TmpDirectoryPath, "../")
 					t.Setenv(snowflakeenvs.DisableConsoleLogin, "false")
+					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
+					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
+					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -579,6 +586,9 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
 
 					return nil
 				},
@@ -644,6 +654,9 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.DriverTracing, "invalid")
 					t.Setenv(snowflakeenvs.TmpDirectoryPath, "../")
 					t.Setenv(snowflakeenvs.DisableConsoleLogin, "false")
+					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
+					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
+					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -685,6 +698,9 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 						"foo": sdk.Pointer("piyo"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
 
 					return nil
 				},
@@ -1031,6 +1047,37 @@ func TestAcc_Provider_ProgrammaticAccessTokenAuth_tokenInTfConfig(t *testing.T) 
 					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile).WithToken(userWithPat.Pat), datasourceModel()),
+			},
+		},
+	})
+}
+
+// TODO: move to acc level OR provide users outside the suite
+func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+	oauthClientId := testenvs.GetOrSkipTest(t, testenvs.OauthClientId)
+	oauthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OauthClientSecret)
+	oauthTokenRequestURL := testenvs.GetOrSkipTest(t, testenvs.OauthTokenRequestUrl)
+
+	// user := testClient().SetUpTemporaryUserWithOauthClientCredentials(t, oauthClientId)
+	user := helpers.TmpUser{
+		UserId:    sdk.NewAccountObjectIdentifier(oauthClientId),
+		AccountId: testClient().Context.CurrentAccountId(t),
+		RoleId:    snowflakeroles.Public,
+	}
+	userConfig := testClient().TempTomlConfigForServiceUserWithOauthClientCredentials(t, &user, oauthClientId, oauthClientSecret, oauthTokenRequestURL)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, userConfig.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userConfig.Profile)) + executeShowSessionParameter(),
 			},
 		},
 	})

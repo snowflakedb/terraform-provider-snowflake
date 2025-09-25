@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -64,6 +65,22 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpSe
 	return &TmpServiceUserWithPat{
 		Pat:     pat.TokenSecret,
 		TmpUser: tmpUser,
+	}
+}
+
+func (c *TestClient) SetUpTemporaryUserWithOauthClientCredentials(t *testing.T, loginName string) *TmpUser {
+	t.Helper()
+	userId := c.Ids.RandomAccountObjectIdentifier()
+	user, userCleanup := c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+		MustChangePassword: sdk.Bool(false),
+		LoginName:          sdk.String(loginName),
+		// TODO: password?
+	}})
+	t.Cleanup(userCleanup)
+
+	return &TmpUser{
+		UserId: user.ID(),
+		RoleId: snowflakeroles.Public,
 	}
 }
 
