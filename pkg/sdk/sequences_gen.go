@@ -80,6 +80,7 @@ type Sequence struct {
 func (v *Sequence) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
+
 func (v *Sequence) ObjectType() ObjectType {
 	return ObjectTypeSequence
 }

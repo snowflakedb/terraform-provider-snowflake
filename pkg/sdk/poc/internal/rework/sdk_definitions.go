@@ -38,11 +38,15 @@ type (
 	LimitFrom = sdk.LimitFrom
 )
 
-type ValuesBehavior = sdk.ValuesBehavior
-type ObjectType = sdk.ObjectType
+type (
+	ValuesBehavior = sdk.ValuesBehavior
+	ObjectType     = sdk.ObjectType
+)
 
-const ObjectTypeSequence = sdk.ObjectTypeSequence
-const ObjectTypeStreamlit = sdk.ObjectTypeStreamlit
+const (
+	ObjectTypeSequence  = sdk.ObjectTypeSequence
+	ObjectTypeStreamlit = sdk.ObjectTypeStreamlit
+)
 
 func NewSchemaObjectIdentifier(_, _, _ string) SchemaObjectIdentifier {
 	return sdk.NewSchemaObjectIdentifier("", "", "")

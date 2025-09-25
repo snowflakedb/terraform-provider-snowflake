@@ -29,7 +29,6 @@ func GetSdkDefinitions() []*generator.Interface {
 
 // preprocessDefinition is needed because current simple builder is not ideal, should be removed later
 func preprocessDefinition(definition *generator.Interface) {
-
 	generatedStructs := make([]string, 0)
 	generatedDtos := make([]string, 0)
 
