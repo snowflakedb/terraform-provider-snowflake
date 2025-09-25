@@ -28,6 +28,7 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 
 	additionalObjectDebugLogProviders []func([]T)
 	objectFilters                     []func(T) bool
+	generationPartFilters             []func(GenerationPart[T, M]) bool
 
 	preamble *PreambleModel
 }
@@ -80,7 +81,7 @@ func (g *Generator[T, M]) WithObjectFilter(objectFilter func(T) bool) *Generator
 	return g
 }
 
-func (g *Generator[T, _]) Run() error {
+func (g *Generator[T, M]) Run() error {
 	preprocessArgs()
 
 	file := os.Getenv("GOFILE")
@@ -91,7 +92,6 @@ func (g *Generator[T, _]) Run() error {
 	flag.Parse()
 
 	objects := g.objectsProvider()
-
 	if len(g.objectFilters) > 0 {
 		filteredObjects := make([]T, 0)
 		for _, o := range objects {
@@ -106,6 +106,21 @@ func (g *Generator[T, _]) Run() error {
 		objects = filteredObjects
 	}
 
+	parts := g.generationParts
+	if len(g.generationPartFilters) > 0 {
+		filteredGenerationParts := make([]GenerationPart[T, M], 0)
+		for _, p := range g.generationParts {
+			matches := true
+			for _, f := range g.generationPartFilters {
+				matches = matches && f(p)
+			}
+			if matches {
+				filteredGenerationParts = append(filteredGenerationParts, p)
+			}
+		}
+		parts = filteredGenerationParts
+	}
+
 	if *additionalLogs {
 		for _, p := range g.additionalObjectDebugLogProviders {
 			p(objects)
@@ -113,11 +128,11 @@ func (g *Generator[T, _]) Run() error {
 	}
 
 	if *dryRun {
-		if err := g.generateAndPrintForAllObjects(objects); err != nil {
+		if err := g.generateAndPrint(objects, parts); err != nil {
 			return err
 		}
 	} else {
-		if err := g.generateAndSaveForAllObjects(objects); err != nil {
+		if err := g.generateAndSave(objects, parts); err != nil {
 			return err
 		}
 	}
@@ -142,13 +157,12 @@ func (g *Generator[_, _]) RunAndHandleOsReturn() {
 	}
 }
 
-func (g *Generator[T, _]) generateAndSaveForAllObjects(objects []T) error {
+func (g *Generator[T, M]) generateAndSave(objects []T, parts []GenerationPart[T, M]) error {
 	var errs []error
 	for _, s := range objects {
 		model := g.modelProvider(s, g.preamble)
 
-		// TODO [this PR]: add per part filtering
-		for _, p := range g.generationParts {
+		for _, p := range parts {
 			buffer := bytes.Buffer{}
 
 			if err := executeAllTemplates(model, &buffer, p.templates...); err != nil {
@@ -165,13 +179,13 @@ func (g *Generator[T, _]) generateAndSaveForAllObjects(objects []T) error {
 	return errors.Join(errs...)
 }
 
-func (g *Generator[T, _]) generateAndPrintForAllObjects(objects []T) error {
+func (g *Generator[T, M]) generateAndPrint(objects []T, parts []GenerationPart[T, M]) error {
 	var errs []error
 	for _, s := range objects {
 		fmt.Println("===========================")
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
-		for _, p := range g.generationParts {
+		for _, p := range parts {
 			if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, p.templates...); err != nil {
 				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
 				continue
