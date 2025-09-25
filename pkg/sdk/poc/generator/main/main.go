@@ -15,6 +15,7 @@ const (
 	version = "0.1.0"
 )
 
+// TODO [this PR]: conversionErrorWrapped in templates?
 // TODO [this PR]: filename + templates (to handle multiple sets in sdk); vararg
 func main() {
 	genhelpers.NewGenerator(
