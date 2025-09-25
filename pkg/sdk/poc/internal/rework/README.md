@@ -1,0 +1,35 @@
+> ⚠️ **Disclaimer**: This file will be deleted, it's just temporary to discuss moving the SDK generator to our common generator builder.
+
+## SDK generator rework
+
+The following objects are generated as a rework example:
+- Sequences
+- Streamlits
+
+There are following generation parts:
+- default
+- dto 
+- impl 
+- unit_tests 
+- validations
+
+The reworked generator offers filtering by object name and by generation part. `dto` should be currently present if the dto builders are meant to be regenerated. 
+
+Experiment with the following commands:
+
+```shell
+# generate all objects and all files
+make clean-sdk generate-sdk
+```
+```shell
+# generate all objects and chosen files only
+make clean-sdk generate-sdk SF_TF_GENERATOR_EXT_ALLOWED_GENERATION_PARTS_NAMES="default,dto,validations"
+```
+```shell
+# generate chosen objects only and all files
+make clean-sdk generate-sdk SF_TF_GENERATOR_EXT_ALLOWED_OBJECT_NAMES="Sequences"
+```
+```shell
+# generate chosen objects and chosen files only
+make clean-sdk generate-sdk SF_TF_GENERATOR_EXT_ALLOWED_GENERATION_PARTS_NAMES="default,impl" SF_TF_GENERATOR_EXT_ALLOWED_OBJECT_NAMES="Streamlits"
+```

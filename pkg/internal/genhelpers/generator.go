@@ -54,6 +54,7 @@ func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](name string, fi
 func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	// TODO [SNOW-2324252]: handle vararg input
 	parts := []GenerationPart[T, M]{
+		// TODO [SNOW-2324252]: change default to name when changing to vararg
 		NewGenerationPart("default", filenameProvider, templates),
 	}
 	return &Generator[T, M]{
