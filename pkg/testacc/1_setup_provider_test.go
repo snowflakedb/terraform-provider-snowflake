@@ -45,7 +45,7 @@ func setUpProvider() error {
 	providerInitializationCache = make(map[string]cacheEntry)
 
 	TestAccProvider = provider.Provider()
-	TestAccProvider.ResourcesMap["snowflake_semantic_views"] = resources.SemanticView()
+	TestAccProvider.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	TestAccProvider.ConfigureContextFunc = configureProviderWithConfigCache
 
 	var err error
