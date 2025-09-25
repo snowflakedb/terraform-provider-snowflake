@@ -7,6 +7,11 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -476,6 +481,52 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", query),
 				),
 				ExpectError: regexp.MustCompile("context deadline exceeded"),
+			},
+		},
+	})
+}
+
+func TestAcc_DynamicTable_issue3931_EmptyText(t *testing.T) {
+	table, tableCleanup := testClient().Table.Create(t)
+	t.Cleanup(tableCleanup)
+
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	query := fmt.Sprintf(`select * from %v`, table.ID().FullyQualifiedName())
+	dynamicTableModel := model.DynamicTableWithoutTargetLag("test", id.DatabaseName(), id.SchemaName(), id.Name(), query, TestWarehouseName).
+		WithMaximumDurationTargetLag("2 minutes")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.DynamicTable),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, dynamicTableModel),
+				Check: assertThat(t,
+					resourceassert.DynamicTableResource(t, dynamicTableModel.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Grant.GrantOwnershipToAccountRole(t, role.ID(), sdk.ObjectTypeDynamicTable, id)
+				},
+				Config:      accconfig.FromModels(t, dynamicTableModel),
+				ExpectError: regexp.MustCompile("the text is empty for dynamic table"),
+			},
+			// Step needed to clean up the ownership to correctly remove the dynamic table
+			{
+				PreConfig: func() {
+					testClient().Grant.GrantOwnershipToAccountRole(t, snowflakeroles.Accountadmin, sdk.ObjectTypeDynamicTable, id)
+				},
+				Config: accconfig.FromModels(t, dynamicTableModel),
 			},
 		},
 	})
