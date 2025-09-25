@@ -122,9 +122,12 @@ func addDtoToGenerate(field *generator.Field, dtosToGenerate []*generator.Field,
 	return dtosToGenerate, generatedDtos
 }
 
-func WithPreamble(i *generator.Interface, preamble *genhelpers.PreambleModel) *generator.Interface {
-	i.PreambleModel = preamble
-	return i
+func ExtendInterface(path string) func(*generator.Interface, *genhelpers.PreambleModel) *generator.Interface {
+	return func(i *generator.Interface, preamble *genhelpers.PreambleModel) *generator.Interface {
+		i.PreambleModel = preamble
+		i.PathToDtoBuilderGen = path
+		return i
+	}
 }
 
 var allSdkObjectDefinitions = []SdkObjectDef{

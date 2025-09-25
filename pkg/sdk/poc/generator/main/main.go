@@ -20,7 +20,7 @@ func main() {
 	genhelpers.NewGenerator(
 		genhelpers.NewPreambleModel(name, version),
 		poc.GetSdkDefinitions,
-		poc.WithPreamble,
+		poc.ExtendInterface("../../../dto-builder-generator/main.go"),
 		filenameForPart(""),
 		[]*template.Template{genhelpers.PreambleTemplate, generator.InterfaceTemplate, generator.OperationStructIterateTemplate},
 	).

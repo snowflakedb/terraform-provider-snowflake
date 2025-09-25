@@ -214,8 +214,10 @@ clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model a
 
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/poc/internal/rework/generate.go
+	go generate ./pkg/sdk/poc/internal/rework/*_dto_gen.go
 
 clean-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/poc/internal/rework/*_gen.go
+	rm -f ./pkg/sdk/poc/internal/rework/*_gen_test.go
 
 .PHONY: build-local clean-generator-poc dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf
