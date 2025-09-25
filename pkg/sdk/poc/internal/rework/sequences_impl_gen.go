@@ -98,7 +98,6 @@ func (r *AlterSequenceRequest) toOpts() *AlterSequenceOptions {
 			ValuesBehavior: r.Set.ValuesBehavior,
 			Comment:        r.Set.Comment,
 		}
-
 	}
 	return opts
 }
@@ -138,7 +137,6 @@ func (r *DropSequenceRequest) toOpts() *DropSequenceOptions {
 			Cascade:  r.Constraint.Cascade,
 			Restrict: r.Constraint.Restrict,
 		}
-
 	}
 	return opts
 }

@@ -85,10 +85,8 @@ func (r *CreateStreamlitRequest) toOpts() *CreateStreamlitOptions {
 	}
 	if r.ExternalAccessIntegrations != nil {
 		opts.ExternalAccessIntegrations = &ExternalAccessIntegrations{
-			// TODO [SNOW-2324252]: ".Set" manually removed; it looks like a path problem when nested struct has the same name (the path is correct for alter)
-			ExternalAccessIntegrations: r.ExternalAccessIntegrations.ExternalAccessIntegrations,
+			ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations.ExternalAccessIntegrations,
 		}
-
 	}
 	return opts
 }
@@ -113,9 +111,7 @@ func (r *AlterStreamlitRequest) toOpts() *AlterStreamlitOptions {
 			opts.Set.ExternalAccessIntegrations = &ExternalAccessIntegrations{
 				ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations.ExternalAccessIntegrations,
 			}
-
 		}
-
 	}
 	if r.Unset != nil {
 		opts.Unset = &StreamlitUnset{
@@ -123,7 +119,6 @@ func (r *AlterStreamlitRequest) toOpts() *AlterStreamlitOptions {
 			Comment:        r.Unset.Comment,
 			Title:          r.Unset.Title,
 		}
-
 	}
 	return opts
 }
