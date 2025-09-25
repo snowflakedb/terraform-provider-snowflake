@@ -21,18 +21,30 @@ func main() {
 		genhelpers.NewPreambleModel(name, version),
 		poc.GetSdkDefinitions,
 		poc.WithPreamble,
-		filenameFor(""),
+		filenameForPart(""),
 		[]*template.Template{genhelpers.PreambleTemplate, generator.InterfaceTemplate, generator.OperationStructIterateTemplate},
 	).
-		WithGenerationPart(filenameFor("dto"), []*template.Template{genhelpers.PreambleTemplate, generator.DtoTemplate}).
+		WithGenerationPart(filenameForPart("dto"), []*template.Template{genhelpers.PreambleTemplate, generator.DtoTemplate}).
+		WithGenerationPart(filenameForPart("impl"), []*template.Template{genhelpers.PreambleTemplate, generator.ImplementationTemplate}).
+		WithGenerationPart(testFilenameForPart(""), []*template.Template{genhelpers.PreambleTemplate, generator.UnitTestsTemplate}).
+		WithGenerationPart(filenameForPart("validations"), []*template.Template{genhelpers.PreambleTemplate, generator.ValidationsTemplate}).
 		RunAndHandleOsReturn()
 }
 
-func filenameFor(part string) func(_ *generator.Interface, model *generator.Interface) string {
+func filenameForPart(part string) func(_ *generator.Interface, model *generator.Interface) string {
 	return func(_ *generator.Interface, model *generator.Interface) string {
 		if part != "" {
 			part = "_" + part
 		}
 		return genhelpers.ToSnakeCase(model.Name) + part + "_gen.go"
+	}
+}
+
+func testFilenameForPart(part string) func(_ *generator.Interface, model *generator.Interface) string {
+	return func(_ *generator.Interface, model *generator.Interface) string {
+		if part != "" {
+			part = "_" + part
+		}
+		return genhelpers.ToSnakeCase(model.Name) + part + "_gen_test.go"
 	}
 }

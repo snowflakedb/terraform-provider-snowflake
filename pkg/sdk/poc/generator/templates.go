@@ -109,9 +109,9 @@ func init() {
 	subTemplates, _ = subTemplates.New("showObjectTypeMethodTemplate").Parse(showObjectTypeMethodTemplateContent)
 	subTemplates, _ = subTemplates.New("dtoDeclTemplate").Parse(dtoStructsTemplateContent)
 
+	OperationStructIterateTemplate, _ = subTemplates.New("optionsIterateTemplate").Parse(operationStructIterateTemplateContent)
+	DtoTemplate, _ = subTemplates.New("dtoTemplate").Parse(dtoDeclarationsTemplateContent)
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)
-	OperationStructIterateTemplate, _ = subTemplates.New("optionsIterateTemplate").Parse(operationStructIterateTemplateContent)
-	DtoTemplate, _ = subTemplates.New("dtoTemplate").Parse(dtoDeclarationsTemplateContent)
 }

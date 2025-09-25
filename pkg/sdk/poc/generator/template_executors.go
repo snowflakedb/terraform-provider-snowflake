@@ -94,16 +94,19 @@ func generateDtoDecls(writer io.Writer, field *Field) {
 	}
 }
 
+// TODO [next PR]: remove this method
 func GenerateImplementation(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, ImplementationTemplate, def)
 }
 
+// TODO [next PR]: remove this method
 func GenerateUnitTests(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, UnitTestsTemplate, def)
 }
 
+// TODO [next PR]: remove this method
 func GenerateValidations(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, ValidationsTemplate, def)
