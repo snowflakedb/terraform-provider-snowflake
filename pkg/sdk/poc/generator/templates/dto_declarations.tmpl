@@ -9,3 +9,9 @@ var (
     {{- end }}
 {{- end }}
 )
+
+{{- range .Operations }}
+    {{- range .DtosToGenerate }}
+        {{ template "dtoDeclTemplate" . }}
+    {{- end }}
+{{- end }}

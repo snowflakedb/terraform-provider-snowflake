@@ -43,7 +43,7 @@ var (
 
 	//go:embed templates/dto_declarations.tmpl
 	dtoDeclarationsTemplateContent string
-	DtoTemplate, _                 = template.New("dtoTemplate").Parse(dtoDeclarationsTemplateContent)
+	DtoTemplate                    *template.Template
 
 	//go:embed templates/dto_structs.tmpl
 	dtoStructsTemplateContent string
@@ -107,9 +107,11 @@ func init() {
 	subTemplates, _ = subTemplates.New("structTemplate").Parse(structTemplateContent)
 	subTemplates, _ = subTemplates.New("showObjectIdMethodTemplate").Parse(showObjectIdMethodTemplateContent)
 	subTemplates, _ = subTemplates.New("showObjectTypeMethodTemplate").Parse(showObjectTypeMethodTemplateContent)
+	subTemplates, _ = subTemplates.New("dtoDeclTemplate").Parse(dtoStructsTemplateContent)
 
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)
 	OperationStructIterateTemplate, _ = subTemplates.New("optionsIterateTemplate").Parse(operationStructIterateTemplateContent)
+	DtoTemplate, _ = subTemplates.New("dtoTemplate").Parse(dtoDeclarationsTemplateContent)
 }

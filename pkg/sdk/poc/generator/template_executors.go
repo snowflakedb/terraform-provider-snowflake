@@ -69,6 +69,7 @@ func generateStruct(writer io.Writer, field *Field) {
 	}
 }
 
+// TODO [next PR]: remove this method
 func GenerateDtos(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, DtoTemplate, def)
@@ -79,6 +80,7 @@ func GenerateDtos(writer io.Writer, def *Interface) {
 	}
 }
 
+// TODO [next PR]: remove this method
 func generateDtoDecls(writer io.Writer, field *Field) {
 	if !slices.Contains(generatedDtos, field.DtoDecl()) {
 		printTo(writer, DtoDeclTemplate, field)

@@ -53,12 +53,15 @@ type Operation struct {
 
 	// TODO [next PR]: Consider splitting the Operation into definition and generation model
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
+
 	// StructsToGenerate is a list of all newly introduced structs comprised of HelperStructs and OptsField; contains only unique structs
 	StructsToGenerate []*Field
 	// ObjectIdMethod TODO
 	ObjectIdMethod *ShowObjectIdMethod
 	// ObjectTypeMethod TODO
 	ObjectTypeMethod *ShowObjectTypeMethod
+	// DtosToGenerate is a list of all newly introduced dto structs based on the operation opts; contains only unique structs
+	DtosToGenerate []*Field
 }
 
 type Mapping struct {

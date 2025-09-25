@@ -68,6 +68,15 @@ func preprocessDefinition(definition *generator.Interface) {
 
 				o.ObjectTypeMethod = generator.NewShowObjectTypeMethod(definition.NameSingular)
 			}
+
+			// TODO [next PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
+			// fill out DtosToGenerate; it replaces the old GenerateDtos and generateDtoDecls logic
+			dtosToGenerate := make([]*generator.Field, 0)
+			generatedDtos := make([]string, 0)
+			dtosToGenerate = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)
+			// TODO [this PR]: replace with log or remove
+			fmt.Printf("Dtos to generate length: %d\n", len(structsToGenerate))
+			o.DtosToGenerate = dtosToGenerate
 		}
 	}
 }
@@ -93,6 +102,20 @@ func addStructToGenerate(field *generator.Field, structsToGenerate []*generator.
 		}
 	}
 	return structsToGenerate
+}
+
+func addDtoToGenerate(field *generator.Field, dtosToGenerate []*generator.Field, generatedDtos []string) []*generator.Field {
+	if !slices.Contains(generatedDtos, field.DtoDecl()) {
+		dtosToGenerate = append(dtosToGenerate, field)
+		generatedDtos = append(generatedDtos, field.DtoDecl())
+
+		for _, f := range field.Fields {
+			if f.IsStruct() {
+				dtosToGenerate = addDtoToGenerate(f, dtosToGenerate, generatedDtos)
+			}
+		}
+	}
+	return dtosToGenerate
 }
 
 func WithPreamble(i *generator.Interface, preamble *genhelpers.PreambleModel) *generator.Interface {
