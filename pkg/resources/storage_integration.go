@@ -27,14 +27,16 @@ import (
 
 var storageIntegrationSchema = map[string]*schema.Schema{
 	"name": {
-		Type:     schema.TypeString,
-		Required: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Required:    true,
+		ForceNew:    true,
+		Description: "String that specifies the identifier (i.e. name) for the integration; must be unique in your account.",
 	},
 	"comment": {
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
+		Type:        schema.TypeString,
+		Optional:    true,
+		Default:     "",
+		Description: "Specifies a comment for the storage integration.",
 	},
 	"type": {
 		Type:         schema.TypeString,
@@ -42,6 +44,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Default:      "EXTERNAL_STAGE",
 		ValidateFunc: validation.StringInSlice([]string{"EXTERNAL_STAGE"}, true),
 		ForceNew:     true,
+		Description:  "Specifies the type of the storage integration.",
 	},
 	"enabled": {
 		Type:     schema.TypeBool,
@@ -72,7 +75,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("storage_aws_external_id"),
-		Description:      "The external ID that Snowflake will use when assuming the AWS role.",
+		Description:      "Optionally specifies an external ID that Snowflake uses to establish a trust relationship with AWS.",
 	},
 	"storage_aws_iam_user_arn": {
 		Type:        schema.TypeString,
@@ -86,14 +89,16 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Description:  "\"bucket-owner-full-control\" Enables support for AWS access control lists (ACLs) to grant the bucket owner full control.",
 	},
 	"storage_aws_role_arn": {
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
+		Type:        schema.TypeString,
+		Optional:    true,
+		Default:     "",
+		Description: "Specifies the Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.",
 	},
 	"azure_tenant_id": {
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
+		Type:        schema.TypeString,
+		Optional:    true,
+		Default:     "",
+		Description: "Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.",
 	},
 	"azure_consent_url": {
 		Type:        schema.TypeString,
@@ -437,7 +442,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		set.WithS3Params(*s3SetParams)
 	}
 
-	if (d.HasChange("azure_tenant_id") || d.HasChange("use_privatelink_endpoint")) && d.Get("storage_provider").(string) == "AZURE" {
+	if (d.HasChange("azure_tenant_id") || d.HasChange("use_privatelink_endpoint")) && storageProvider == "AZURE" {
 		azureTenantID, ok := d.GetOk("azure_tenant_id")
 		if !ok {
 			return diag.Errorf("azure_tenant_id must be set for AZURE storage integrations")

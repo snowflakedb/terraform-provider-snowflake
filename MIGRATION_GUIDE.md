@@ -32,6 +32,8 @@ Snowflake offers using private link in S3 and Azure storage integration. In this
 
 No changes in configuration and state are required. You can optionally update your configurations by explicitly setting the `use_privatelink_endpoint` field in the `snowflake_storage_integration` resource.
 
+Additionally, in this change we dropped validating combinations of provider-specific fields with storage providers during the update, e.g. setting `azure_tenant_id` for the AWS provider. We clarified in the documentation that the users are responsible for passing correct configurations. We are planning to introduce separate resources for each provider in the future.
+
 Note that this resource remains in preview.
 
 ### Changed handling of unset `generation` and `resource_constraint` fields in the `warehouse` resource

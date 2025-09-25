@@ -7,6 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+-> **Note** This resource manages storage integrations for AWS, Azure, and GCS storage providers. Make sure you use only fields that are supported for the storage provider you are using, as they are not validated by the provider. In the future, we are planning to implement separate resources for each storage provider.
+
 -> **Note** Currently, `describe_output` field is not used in all the relevant fields (only `storage_aws_external_id` is supported). This will be addressed during the resource rework.
 
 # snowflake_storage_integration (Resource)
@@ -70,21 +72,21 @@ resource "snowflake_storage_integration" "azure_integration" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) String that specifies the identifier (i.e. name) for the integration; must be unique in your account.
 - `storage_allowed_locations` (List of String) Explicitly limits external stages that use the integration to reference one or more storage locations.
 - `storage_provider` (String) Specifies the storage provider for the integration. Valid options are: `S3` | `S3GOV` | `S3CHINA` | `GCS` | `AZURE`
 
 ### Optional
 
-- `azure_tenant_id` (String) (Default: ``)
-- `comment` (String) (Default: ``)
+- `azure_tenant_id` (String) (Default: ``) Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.
+- `comment` (String) (Default: ``) Specifies a comment for the storage integration.
 - `enabled` (Boolean) (Default: `true`)
-- `storage_aws_external_id` (String) The external ID that Snowflake will use when assuming the AWS role.
+- `storage_aws_external_id` (String) Optionally specifies an external ID that Snowflake uses to establish a trust relationship with AWS.
 - `storage_aws_object_acl` (String) "bucket-owner-full-control" Enables support for AWS access control lists (ACLs) to grant the bucket owner full control.
-- `storage_aws_role_arn` (String) (Default: ``)
+- `storage_aws_role_arn` (String) (Default: ``) Specifies the Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.
 - `storage_blocked_locations` (List of String) Explicitly prohibits external stages that use the integration from referencing one or more storage locations.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `type` (String) (Default: `EXTERNAL_STAGE`)
+- `type` (String) (Default: `EXTERNAL_STAGE`) Specifies the type of the storage integration.
 - `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use outbound private connectivity to harden the security posture. Supported for AWS S3 and Azure storage providers. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 ### Read-Only
