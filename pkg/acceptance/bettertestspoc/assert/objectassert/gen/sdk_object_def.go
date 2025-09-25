@@ -11,7 +11,7 @@ type SdkObjectDef struct {
 	ObjectStruct any
 }
 
-// TODO [this PR]: remove object type?
+// TODO [SNOW-2324252]: remove object type?
 var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",

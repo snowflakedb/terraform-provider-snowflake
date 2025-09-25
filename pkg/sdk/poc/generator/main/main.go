@@ -15,7 +15,7 @@ const (
 	version = "0.1.0"
 )
 
-// TODO [this PR]: conversionErrorWrapped in templates?
+// TODO [SNOW-2324252]: conversionErrorWrapped in templates?
 func main() {
 	genhelpers.NewGenerator(
 		genhelpers.NewPreambleModel(name, version),

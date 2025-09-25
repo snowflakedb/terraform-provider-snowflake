@@ -53,8 +53,7 @@ func preprocessDefinition(definition *generator.Interface) {
 					structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
 				}
 			}
-			// TODO [this PR]: replace with log or remove
-			fmt.Printf("Structs to generate length: %d\n", len(structsToGenerate))
+			log.Printf("[DEBUG] Structs to generate (length: %d): %v", len(structsToGenerate), structsToGenerate)
 			o.StructsToGenerate = structsToGenerate
 
 			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
@@ -76,8 +75,7 @@ func preprocessDefinition(definition *generator.Interface) {
 			// fill out DtosToGenerate; it replaces the old GenerateDtos and generateDtoDecls logic
 			dtosToGenerate := make([]*generator.Field, 0)
 			dtosToGenerate, generatedDtos = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)
-			// TODO [this PR]: replace with log or remove
-			fmt.Printf("Dtos to generate length: %d\n", len(structsToGenerate))
+			log.Printf("[DEBUG] Dtos to generate (length: %d): %v", len(dtosToGenerate), dtosToGenerate)
 			o.DtosToGenerate = dtosToGenerate
 		}
 	}
@@ -92,8 +90,7 @@ func setParent(field *generator.Field) {
 
 func addStructToGenerate(field *generator.Field, structsToGenerate []*generator.Field, generatedStructs []string) ([]*generator.Field, []string) {
 	if !slices.Contains(generatedStructs, field.KindNoPtr()) {
-		// TODO [this PR]: replace with log or remove
-		fmt.Printf("Adding: %s\n", field.KindNoPtr())
+		log.Printf("[DEBUG] Adding %s to structs to be generated", field.KindNoPtr())
 		structsToGenerate = append(structsToGenerate, field)
 		generatedStructs = append(generatedStructs, field.KindNoPtr())
 	}
@@ -108,8 +105,7 @@ func addStructToGenerate(field *generator.Field, structsToGenerate []*generator.
 
 func addDtoToGenerate(field *generator.Field, dtosToGenerate []*generator.Field, generatedDtos []string) ([]*generator.Field, []string) {
 	if !slices.Contains(generatedDtos, field.DtoDecl()) {
-		// TODO [this PR]: replace with log or remove
-		fmt.Printf("Adding: %s\n", field.DtoDecl())
+		log.Printf("[DEBUG] Adding %s to structs to be generated", field.DtoDecl())
 		dtosToGenerate = append(dtosToGenerate, field)
 		generatedDtos = append(generatedDtos, field.DtoDecl())
 
