@@ -23,6 +23,7 @@ func GenerateInterface(writer io.Writer, def *Interface) {
 			generateOptionsStruct(writer, o)
 		}
 
+		// TODO [this PR]: what about this part?
 		if o.Name == string(OperationKindShow) {
 			idKind, err := toObjectIdentifierKind(def.IdentifierKind)
 			if err != nil {
