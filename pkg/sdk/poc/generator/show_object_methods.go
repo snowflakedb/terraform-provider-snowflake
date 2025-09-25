@@ -11,7 +11,7 @@ type ShowObjectIdMethod struct {
 	Args           []string
 }
 
-func newShowObjectIDMethod(structName string, idType objectIdentifierKind) *ShowObjectIdMethod {
+func NewShowObjectIDMethod(structName string, idType objectIdentifierKind) *ShowObjectIdMethod {
 	return &ShowObjectIdMethod{
 		StructName:     structName,
 		IdentifierKind: idType,
@@ -25,7 +25,8 @@ var idTypeParts map[objectIdentifierKind][]string = map[objectIdentifierKind][]s
 	SchemaObjectIdentifier:   {"DatabaseName", "SchemaName", "Name"},
 }
 
-func checkRequiredFieldsForIdMethod(structName string, helperStructs []*Field, idKind objectIdentifierKind) bool {
+// TODO [next PR]: do we need to search for this struct? Maybe we can have it more easily?
+func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, idKind objectIdentifierKind) bool {
 	if requiredFields, ok := idTypeParts[idKind]; ok {
 		for _, field := range helperStructs {
 			if field.Name == structName {
@@ -55,6 +56,6 @@ type ShowObjectTypeMethod struct {
 	StructName string
 }
 
-func newShowObjectTypeMethod(structName string) *ShowObjectTypeMethod {
+func NewShowObjectTypeMethod(structName string) *ShowObjectTypeMethod {
 	return &ShowObjectTypeMethod{StructName: structName}
 }

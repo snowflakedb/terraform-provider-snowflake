@@ -105,6 +105,8 @@ func init() {
 	subTemplates, _ = subTemplates.New("validationImplementation").Parse(validationImplementationTemplateContent)
 	subTemplates, _ = subTemplates.New("optionsTemplate").Parse(operationStructTemplateContent)
 	subTemplates, _ = subTemplates.New("structTemplate").Parse(structTemplateContent)
+	subTemplates, _ = subTemplates.New("showObjectIdMethodTemplate").Parse(showObjectIdMethodTemplateContent)
+	subTemplates, _ = subTemplates.New("showObjectTypeMethodTemplate").Parse(showObjectTypeMethodTemplateContent)
 
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)

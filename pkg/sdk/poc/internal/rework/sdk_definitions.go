@@ -18,3 +18,10 @@ type (
 )
 
 type ValuesBehavior string
+type ObjectType string
+
+const ObjectTypeSequence ObjectType = "SEQUENCE"
+
+func NewSchemaObjectIdentifier(_, _, _ string) SchemaObjectIdentifier {
+	return SchemaObjectIdentifier{}
+}

@@ -14,36 +14,27 @@ var (
 	generatedDtos    []string
 )
 
+// TODO [next PR]: remove this method
 func GenerateInterface(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, InterfaceTemplate, def)
-	// TODO [this PR]: replace this with the template logic
 	for _, o := range def.Operations {
 		if o.OptsField != nil {
 			generateOptionsStruct(writer, o)
 		}
 
-		// TODO [this PR]: what about this part?
 		if o.Name == string(OperationKindShow) {
-			idKind, err := toObjectIdentifierKind(def.IdentifierKind)
+			idKind, err := ToObjectIdentifierKind(def.IdentifierKind)
 			if err != nil {
 				log.Printf("[WARN] for showObjectIdMethod: %v", err)
 			}
-			if checkRequiredFieldsForIdMethod(def.NameSingular, o.HelperStructs, idKind) {
-				generateShowObjectIdMethod(writer, newShowObjectIDMethod(def.NameSingular, idKind))
+			if CheckRequiredFieldsForIdMethod(def.NameSingular, o.HelperStructs, idKind) {
+				printTo(writer, ShowObjectIdMethodTemplate, NewShowObjectIDMethod(def.NameSingular, idKind))
 			}
 
-			generateShowObjectTypeMethod(writer, newShowObjectTypeMethod(def.NameSingular))
+			printTo(writer, ShowObjectTypeMethodTemplate, NewShowObjectTypeMethod(def.NameSingular))
 		}
 	}
-}
-
-func generateShowObjectIdMethod(writer io.Writer, m *ShowObjectIdMethod) {
-	printTo(writer, ShowObjectIdMethodTemplate, m)
-}
-
-func generateShowObjectTypeMethod(writer io.Writer, m *ShowObjectTypeMethod) {
-	printTo(writer, ShowObjectTypeMethodTemplate, m)
 }
 
 // TODO [next PR]: remove this method

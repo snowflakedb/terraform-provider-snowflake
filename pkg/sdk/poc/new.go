@@ -2,6 +2,7 @@ package poc
 
 import (
 	"fmt"
+	"log"
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -35,7 +36,7 @@ func preprocessDefinition(definition *generator.Interface) {
 			o.OptsField.Kind = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			setParent(o.OptsField)
 
-			// TODO [this PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
+			// TODO [next PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out StructsToGenerate; it replaces the old generateOptionsStruct and generateStruct
 			structsToGenerate := make([]*generator.Field, 0)
 			generatedStructs := make([]string, 0)
@@ -52,6 +53,21 @@ func preprocessDefinition(definition *generator.Interface) {
 			// TODO [this PR]: replace with log or remove
 			fmt.Printf("Structs to generate length: %d\n", len(structsToGenerate))
 			o.StructsToGenerate = structsToGenerate
+
+			// TODO [next PR]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
+			// fill out ObjectIdMethod and ObjectIdType; it replaces the old template executors logic
+			if o.Name == string(generator.OperationKindShow) {
+				// TODO [next PR]: do we really conversion logic? The definition file should handle this.
+				idKind, err := generator.ToObjectIdentifierKind(definition.IdentifierKind)
+				if err != nil {
+					log.Printf("[WARN] for showObjectIdMethod: %v", err)
+				}
+				if generator.CheckRequiredFieldsForIdMethod(definition.NameSingular, o.HelperStructs, idKind) {
+					o.ObjectIdMethod = generator.NewShowObjectIDMethod(definition.NameSingular, idKind)
+				}
+
+				o.ObjectTypeMethod = generator.NewShowObjectTypeMethod(definition.NameSingular)
+			}
 		}
 	}
 }

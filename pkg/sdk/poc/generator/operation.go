@@ -39,8 +39,6 @@ type Operation struct {
 	OptsField *Field
 	// HelperStructs are struct definitions that are not tied to OptsField, but tied to the Operation itself, e.g. Show() return type
 	HelperStructs []*Field
-	// StructsToGenerate is a list of all newly introduced structs comprised of HelperStructs and OptsField; contains only unique structs
-	StructsToGenerate []*Field
 	// ShowKind defines a kind of mapping that needs to be performed in particular case of Show implementation
 	// TODO(SNOW-2183036) This is a temporary solution to support single value and slice return types for Show operation.
 	ShowKind *ShowMappingKind
@@ -52,6 +50,15 @@ type Operation struct {
 	DescribeMapping *Mapping
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
+
+	// TODO [next PR]: Consider splitting the Operation into definition and generation model
+	// new fields used to move the old template executors logic into simpler template generation based on prepared model
+	// StructsToGenerate is a list of all newly introduced structs comprised of HelperStructs and OptsField; contains only unique structs
+	StructsToGenerate []*Field
+	// ObjectIdMethod TODO
+	ObjectIdMethod *ShowObjectIdMethod
+	// ObjectTypeMethod TODO
+	ObjectTypeMethod *ShowObjectTypeMethod
 }
 
 type Mapping struct {

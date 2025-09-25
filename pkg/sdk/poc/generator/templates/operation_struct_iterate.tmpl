@@ -7,4 +7,10 @@
     {{- range .StructsToGenerate }}
         {{ template "structTemplate" . }}
     {{- end }}
+    {{- if .ObjectIdMethod }}
+        {{ template "showObjectIdMethodTemplate" .ObjectIdMethod }}
+    {{- end }}
+    {{- if .ObjectTypeMethod }}
+        {{ template "showObjectTypeMethodTemplate" .ObjectTypeMethod }}
+    {{- end }}
 {{- end }}
