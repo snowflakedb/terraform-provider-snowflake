@@ -33,14 +33,16 @@ type (
 	SchemaObjectIdentifier   = sdk.SchemaObjectIdentifier
 	TableColumnIdentifier    = sdk.TableColumnIdentifier
 
-	In   = sdk.In
-	Like = sdk.Like
+	In        = sdk.In
+	Like      = sdk.Like
+	LimitFrom = sdk.LimitFrom
 )
 
 type ValuesBehavior = sdk.ValuesBehavior
 type ObjectType = sdk.ObjectType
 
 const ObjectTypeSequence = sdk.ObjectTypeSequence
+const ObjectTypeStreamlit = sdk.ObjectTypeStreamlit
 
 func NewSchemaObjectIdentifier(_, _, _ string) SchemaObjectIdentifier {
 	return sdk.NewSchemaObjectIdentifier("", "", "")
@@ -66,6 +68,10 @@ func valueSet(_ any) bool {
 	return true
 }
 
+func anyValueSet(_ ...any) bool {
+	return true
+}
+
 func everyValueSet(_ ...any) bool {
 	return true
 }
@@ -88,6 +94,10 @@ func errOneOf(_ ...string) error {
 }
 
 func errExactlyOneOf(_ ...string) error {
+	return errors.New("")
+}
+
+func errAtLeastOneOf(_ ...string) error {
 	return errors.New("")
 }
 
@@ -125,4 +135,8 @@ func SafeDrop[ID ObjectIdentifierConstraint](
 	id ID,
 ) error {
 	return sdk.SafeDrop(c, f, con, id)
+}
+
+func String(s string) *string {
+	return sdk.String(s)
 }

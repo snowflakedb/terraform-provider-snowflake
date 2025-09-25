@@ -132,4 +132,9 @@ var allSdkObjectDefinitions = []SdkObjectDef{
 		file:       "sequences_def.go",
 		definition: sdk.SequencesDef,
 	},
+	{
+		name:       "Streamlits",
+		file:       "streamlits_def.go",
+		definition: sdk.StreamlitsDef,
+	},
 }

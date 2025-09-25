@@ -35,18 +35,20 @@ func main() {
 
 func filenameForPart(part string) func(_ *generator.Interface, model *generator.Interface) string {
 	return func(_ *generator.Interface, model *generator.Interface) string {
+		var p string
 		if part != "" {
-			part = "_" + part
+			p = "_" + part
 		}
-		return genhelpers.ToSnakeCase(model.Name) + part + "_gen.go"
+		return genhelpers.ToSnakeCase(model.Name) + p + "_gen.go"
 	}
 }
 
 func testFilenameForPart(part string) func(_ *generator.Interface, model *generator.Interface) string {
 	return func(_ *generator.Interface, model *generator.Interface) string {
+		var p string
 		if part != "" {
-			part = "_" + part
+			p = "_" + part
 		}
-		return genhelpers.ToSnakeCase(model.Name) + part + "_gen_test.go"
+		return genhelpers.ToSnakeCase(model.Name) + p + "_gen_test.go"
 	}
 }
