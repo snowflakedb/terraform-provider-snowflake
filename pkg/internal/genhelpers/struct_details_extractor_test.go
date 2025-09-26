@@ -76,7 +76,7 @@ func Test_ExtractStructDetails(t *testing.T) {
 	t.Run("test struct details extraction", func(t *testing.T) {
 		structDetails := genhelpers.ExtractStructDetails(testStruct{})
 
-		assert.Equal(t, "genhelpers.testStruct", structDetails.Name)
+		assert.Equal(t, "genhelpers_test.testStruct", structDetails.Name)
 
 		assertFieldExtracted(structDetails.Fields[0], "unexportedString", "string", "string")
 		assertFieldExtracted(structDetails.Fields[1], "unexportedInt", "int", "int")
@@ -92,8 +92,8 @@ func Test_ExtractStructDetails(t *testing.T) {
 
 		assertFieldExtracted(structDetails.Fields[10], "unexportedStringEnum", "sdk.WarehouseType", "string")
 		assertFieldExtracted(structDetails.Fields[11], "unexportedStringEnumPtr", "*sdk.WarehouseType", "*string")
-		assertFieldExtracted(structDetails.Fields[12], "unexportedIntEnum", "genhelpers.testIntEnum", "int")
-		assertFieldExtracted(structDetails.Fields[13], "unexportedIntEnumPtr", "*genhelpers.testIntEnum", "*int")
+		assertFieldExtracted(structDetails.Fields[12], "unexportedIntEnum", "genhelpers_test.testIntEnum", "int")
+		assertFieldExtracted(structDetails.Fields[13], "unexportedIntEnumPtr", "*genhelpers_test.testIntEnum", "*int")
 
 		assertFieldExtracted(structDetails.Fields[14], "unexportedAccountIdentifier", "sdk.AccountIdentifier", "struct")
 		assertFieldExtracted(structDetails.Fields[15], "unexportedExternalObjectIdentifier", "sdk.ExternalObjectIdentifier", "struct")
