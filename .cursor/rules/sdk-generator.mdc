@@ -1,0 +1,364 @@
+---
+description: Rules for using the SDK generator to create Snowflake object definitions
+globs:
+  - "pkg/sdk/**/*_def.go"
+  - "pkg/sdk/poc/**/*.go"
+alwaysApply: false
+---
+
+# SDK Generator Usage
+
+You are working with the SDK generator that creates Go types and methods for Snowflake SQL commands using a custom DSL.
+
+## Creating SDK Object Definitions
+
+### Definition File Structure
+Create `<object_name>_def.go` files with this pattern:
+
+```go
+package sdk
+
+import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+
+//go:generate go run ./poc/main.go
+
+var ObjectsDef = g.NewInterface(
+    "Objects",           // Interface name (plural)
+    "Object",           // Struct name (singular)
+    g.KindOfT[SchemaObjectIdentifier](), // Identifier type
+).
+CreateOperation("https://docs.snowflake.com/...",
+    g.NewQueryStruct("CreateObject").
+        Create().
+        SQL("OBJECT").
+        Name().
+        OptionalComment(),
+).
+ShowOperation("https://docs.snowflake.com/...",
+    dbRow, plainStruct,
+    g.NewQueryStruct("ShowObjects").
+        Show().
+        SQL("OBJECTS"),
+)
+```
+
+### DSL Guidelines
+
+**Documentation-Based Development:**
+- Use Snowflake documentation as the source of truth
+- Map SQL syntax directly to DSL operations
+- Include documentation URLs in operation definitions
+- **CRITICAL**: When creating SDK definitions from Snowflake documentation, examine the EXACT syntax from the specific command documentation pages
+- **Documentation Parsing**: Always check nested links like:
+  - `https://docs.snowflake.com/en/sql-reference/sql/create-dataset` for CREATE DATASET syntax
+  - `https://docs.snowflake.com/en/sql-reference/sql/alter-dataset` for ALTER DATASET syntax
+  - `https://docs.snowflake.com/en/sql-reference/sql/show-datasets` for SHOW DATASETS syntax
+- **Syntax Accuracy**: Only include fields and options that are explicitly documented in the "Syntax" section
+- **Conservative Approach**: When in doubt, implement minimal required syntax and expand later based on actual documentation
+
+**DSL Patterns and DDL Tag System**
+
+The SDK uses a sophisticated DDL tag system to generate SQL from Go structs. Understanding these patterns is crucial for accurate implementation:
+
+**Core DDL Tags:**
+- `ddl:"static"` - Fixed SQL keywords (e.g., `CREATE`, `ALTER`, `DROP`)
+- `ddl:"keyword"` - Dynamic keywords with optional quoting and parentheses
+- `ddl:"parameter"` - Parameter assignments with `KEY = value` syntax
+- `ddl:"identifier"` - Snowflake object identifiers with proper escaping
+- `ddl:"list"` - Collections with configurable separators and parentheses
+
+**SQL Generation Modifiers:**
+- Quoting: `single_quotes`, `double_quotes`, `no_quotes`, `double_dollar_quotes`
+- Parentheses: `parentheses`, `no_parentheses`, `must_parentheses`
+- Equals: `no_equals` (for identifiers and special cases)
+- Separators: `comma`, `no_comma` (for lists)
+- Reverse: `reverse` (for reversed parameter syntax)
+
+**DSL Method Mapping:**
+- `SQL("TEXT")` → `ddl:"static" sql:"TEXT"`
+- `OptionalSQL("TEXT")` → `ddl:"keyword" sql:"TEXT"` (optional field)
+- `TextAssignment("FIELD", options)` → `ddl:"parameter" sql:"FIELD"`
+- `Name()` → `ddl:"identifier"` with appropriate identifier type
+- `OptionalComment()` → `ddl:"parameter,single_quotes" sql:"COMMENT"`
+
+**Complex Pattern Examples:**
+```go
+// Generates: ALLOWED_VALUES ('value1', 'value2')
+AllowedValues *AllowedValues `ddl:"keyword" sql:"ALLOWED_VALUES"`
+type AllowedValues struct {
+    Values []AllowedValue `ddl:"list,comma"`
+}
+type AllowedValue struct {
+    Value string `ddl:"keyword,single_quotes"`
+}
+
+// Generates: SET TAG (tag1 = 'value1', tag2 = 'value2')
+SetTags []TagAssociation `ddl:"keyword" sql:"SET TAG"`
+
+// Generates: MODIFY COLUMN "column_name" for column operations
+column *string `ddl:"parameter,no_equals,double_quotes" sql:"MODIFY COLUMN"`
+```
+
+**Operation Types**
+- `CreateOperation()` - CREATE commands
+- `AlterOperation()` - ALTER commands
+- `DropOperation()` - DROP commands
+- `ShowOperation()` - SHOW commands
+- `DescribeOperation()` - DESCRIBE commands
+- `CustomOperation()` - Non-standard commands
+
+**Data Structure Fields and Output Mapping**
+
+**Show/Describe Operations:**
+- **NEVER assume fields**: Do not guess or assume what fields SHOW, DESCRIBE, or other operations return
+- **Empty structs for unknown output**: If field structure is not documented, define empty structs with TODO comments:
+  ```go
+  // TODO: Fields for SHOW OBJECTS output are not documented.
+  // Developer should examine actual SHOW OBJECTS output and fill in the correct fields.
+  var objectDbRow = g.DbStruct("objectDBRow")
+
+  // TODO: Object struct fields should match the actual SHOW OBJECTS output.
+  // Developer should examine actual output and define the correct fields.
+  var object = g.PlainStruct("Object")
+  ```
+- **Documentation requirement**: Only add fields when you have explicit documentation or can verify actual output structure
+- **TODO comments**: Always include TODO comments explaining what needs to be filled in by the developer
+
+**Identifier Type Selection:**
+Choose the appropriate identifier type based on Snowflake object hierarchy:
+- `AccountObjectIdentifier` - Account-level objects (databases, warehouses, users, roles)
+- `DatabaseObjectIdentifier` - Database-level objects (schemas)
+- `SchemaObjectIdentifier` - Schema-level objects (tables, views, sequences)
+- `SchemaObjectIdentifierWithArguments` - Functions and procedures with arguments
+
+**Privilege and Permission Considerations:**
+When implementing new objects, document privilege requirements:
+- Research required privileges for each operation (CREATE, ALTER, DROP, SHOW)
+- Document role requirements in comments
+- Consider edge cases like ownership transfer, grants, and access patterns
+- Reference Snowflake documentation for privilege requirements
+
+## Generator Workflow
+
+### 1. Setup
+If missing, create definition files and add it to the mapping in `pkg/sdk/poc/main.go`:
+```go
+"your_object_def.go": sdk.YourObjectDef,
+```
+
+### 2. Documentation Analysis
+**Critical Phase - Must Be Thorough:**
+- Request documentation URLs for ALL operations (CREATE, ALTER, DROP, SHOW, DESCRIBE)
+- Examine EXACT syntax from "Syntax" sections only
+- Note ALL optional vs required parameters
+- Identify privilege requirements and edge cases
+- Document any unclear or ambiguous syntax patterns
+- **Consult with developers** for unknown or complex scenarios to avoid generating unsupported DSL
+
+### 3. Implementation and Verification
+**Based on Documentation Analysis:**
+- Map each documented syntax element to appropriate DSL pattern
+- Reference similar existing objects for complex patterns
+- When uncertain about DSL mapping, ask for guidance rather than guessing
+
+### 4. Generation and Validation
+```bash
+make run-generator-<object_name>  # Uses filename without _def suffix
+```
+
+**Post-Generation Validation:**
+- Verify generated SQL matches documented Snowflake syntax
+- Test unit tests with realistic parameter combinations
+- Validate all DDL tags produce expected output
+
+### 5. Generated Files Structure
+The generator creates these files following [SDK Development Rules](sdk-development.mdc):
+- `*_gen.go` - Interface and option structs with DDL tags
+- `*_impl_gen.go` - Implementation methods (SQL execution)
+- `*_dto_gen.go` - Request DTOs for builder pattern
+- `*_dto_builders_gen.go` - Constructor and builder methods
+- `*_validations_gen.go` - Validation functions for all parameters
+- `*_gen_test.go` - Unit test templates with TODO placeholders
+
+### 6. Manual Extensions and Testing
+**Extension Files:**
+- **NEVER** edit generated files directly (unless it's expected by design, e.g. conversions or unit tests)
+- Create `<object_name>_ext.go` for custom extensions
+- Mark manual changes in generated files with `// manually adjusted`
+
+**Required Manual Work:**
+- Fill conversion mappings in the generated `_impl_gen.go` file
+- Fill unit test TODOs with realistic SQL expectations and add new cases to cover all usage paths
+- Implement integration tests in `testint/` directory to test against actual Snowflake instances
+- Document privilege requirements and edge cases
+
+## Common Patterns
+
+### Basic Object with CRUD
+```go
+var ObjectsDef = g.NewInterface("Objects", "Object", g.KindOfT[SchemaObjectIdentifier]()).
+    CreateOperation(url, createStruct).
+    AlterOperation(url, alterStruct).
+    DropOperation(url, dropStruct).
+    ShowOperation(url, dbRow, plainStruct, showStruct)
+```
+
+### Complex ALTER with SET/UNSET
+```go
+AlterOperation(url,
+    g.NewQueryStruct("AlterObject").
+        Alter().SQL("OBJECT").Name().
+        OptionalQueryStructField("Set",
+            g.NewQueryStruct("ObjectSet").
+                OptionalComment().
+                OptionalTextAssignment("FIELD", options),
+            g.KeywordOptions().SQL("SET"),
+        ).
+        OptionalQueryStructField("Unset",
+            g.NewQueryStruct("ObjectUnset").
+                OptionalSQL("COMMENT").
+                OptionalSQL("FIELD"),
+            g.ListOptions().NoParentheses().SQL("UNSET"),
+        ),
+)
+```
+
+## Unit Testing Requirements
+
+**Generated Test Structure:**
+Generated unit tests follow this pattern and must be completed manually:
+
+```go
+func TestObjects_Create(t *testing.T) {
+    id := randomSchemaObjectIdentifier()
+
+    // Minimal valid options - TEST REQUIRED
+    defaultOpts := func() *CreateObjectOptions {
+        return &CreateObjectOptions{
+            name: id,
+            // Add other required fields based on Snowflake documentation
+        }
+    }
+
+    t.Run("validation: nil options", func(t *testing.T) {
+        // Auto-generated validation test
+    })
+
+    t.Run("basic", func(t *testing.T) {
+        opts := defaultOpts()
+        // TODO: fill me - MUST be replaced with expected SQL
+        assertOptsValidAndSQLEquals(t, opts, "CREATE OBJECT %s", id.FullyQualifiedName())
+    })
+
+    t.Run("all options", func(t *testing.T) {
+        opts := defaultOpts()
+        // TODO: fill me - MUST test comprehensive option combinations
+        // Set ALL optional fields to verify complete SQL generation
+        assertOptsValidAndSQLEquals(t, opts, "CREATE OBJECT %s COMMENT = 'test'", id.FullyQualifiedName())
+    })
+}
+```
+
+**Unit Test Completion Guidelines:**
+- **Replace ALL TODO comments** with actual expected SQL
+- **Test basic case** with minimal required parameters
+- **Test comprehensive case** with all optional parameters set
+- **Verify SQL syntax** matches official Snowflake documentation exactly
+- **Test validation cases** for conflicting options and required fields
+- **Use realistic values** not placeholder text
+
+## Integration Testing Patterns
+
+**Integration Test Structure:**
+```go
+//go:build !account_level_tests  // or account_level_tests for account operations
+
+func TestInt_Objects(t *testing.T) {
+    client := testClient(t)
+    ctx := testContext(t)
+
+    // Helper functions for test resource management
+    createObject := func(t *testing.T) (*sdk.Object, func()) {
+        t.Helper()
+        id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+        req := sdk.NewCreateObjectRequest(id)
+        err := client.Objects.Create(ctx, req)
+        require.NoError(t, err)
+
+        object, err := client.Objects.ShowByID(ctx, id)
+        require.NoError(t, err)
+
+        cleanup := func() {
+            err := testClientHelper().Object.DropObjectFunc(t, id)()
+            require.NoError(t, err)
+        }
+
+        return object, cleanup
+    }
+
+    t.Run("create and show", func(t *testing.T) {
+        object, cleanup := createObject(t)
+        t.Cleanup(cleanup)
+
+        // Test object was created correctly
+        assert.Equal(t, expectedValue, object.Field)
+    })
+
+    // Test privilege requirements and edge cases
+    t.Run("privilege requirements", func(t *testing.T) {
+        // Document and test required privileges
+        // Test with insufficient privileges where applicable
+    })
+}
+```
+
+**Integration Test Requirements:**
+- Use `testClient()` and `testContext()` for setup
+- Implement proper cleanup with `t.Cleanup()`
+- Test all CRUD operations comprehensively
+- Test privilege requirements and edge cases
+- Use helper functions from `testClientHelper()` for common operations
+- Follow build constraints for account-level vs standard tests
+
+## Documentation and Privilege Requirements
+
+**When implementing new objects, always document:**
+
+**Privilege Requirements:**
+```go
+// CREATE OBJECT requires:
+// - CREATE privileges on the schema
+// - USAGE privileges on the database and schema
+// - Additional privileges: [list specific requirements from Snowflake docs]
+
+// ALTER OBJECT requires:
+// - Object ownership OR ALTER privileges
+// - [specific privilege requirements]
+
+// DROP OBJECT requires:
+// - Object ownership OR DROP privileges
+```
+
+**Edge Cases and Limitations:**
+```go
+// Known limitations:
+// - Feature X requires Snowflake version Y or higher
+// - Operation Z requires specific account settings
+// - Privilege P may require account admin role in certain configurations
+```
+
+## Best Practices
+
+**Documentation-Driven Development:**
+- **Always start with official Snowflake documentation**
+- **Map syntax exactly** - do not add unsupported features
+- **Document privilege requirements** from Snowflake docs
+- **Consult developers** for ambiguous or complex syntax patterns
+
+**Code Quality:**
+- **Complete all generated TODO comments** with realistic tests
+- **Validate SQL output** against Snowflake documentation
+- **Test comprehensive parameter combinations** in unit tests
+- **Implement thorough integration tests** with proper cleanup
+- **Use appropriate identifier types** for object hierarchy
+- **Follow SDK development patterns** from [SDK Development Rules](sdk-development.mdc)

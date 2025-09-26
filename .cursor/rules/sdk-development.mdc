@@ -1,0 +1,176 @@
+---
+description: Rules for SDK development and maintenance in the pkg/sdk directory
+globs:
+  - "pkg/sdk/**/*.go"
+alwaysApply: false
+---
+
+# SDK Development Rules
+
+You are working on the Snowflake SDK that provides Go types and methods for interacting with Snowflake APIs.
+
+## SDK Architecture
+
+The Snowflake SDK is organized around a centralized Client structure that provides access to all Snowflake object operations through typed interfaces. The SDK uses a hybrid approach combining code generation for newer objects and manual implementation for legacy objects.
+
+### Core Components
+
+**Client Structure** (`client.go`):
+- Central hub providing access to all Snowflake object types
+- Organizes operations into logical groups (DDL Commands, System Functions)
+- Each object type exposed as a field (e.g., `client.Databases`, `client.Users`)
+- Initialized with all object implementations in `initialize()` method
+
+**Object Types** (`object_types.go`):
+- Centralized registry of all supported Snowflake object types
+- Maps singular to plural forms for SQL generation
+- Provides identifier type resolution for different object hierarchies
+- Currently supports 50+ object types from Account to Services
+
+### File Organization Patterns
+
+**Generated Objects** (New objects using SDK generator):
+- `*_def.go` - Object definition using generator DSL (e.g., `applications_def.go`)
+- `*_gen.go` - Generated interfaces and option structs
+- `*_dto_gen.go` - Generated request DTOs
+- `*_dto_builders_gen.go` - Generated DTO constructors and builders
+- `*_impl_gen.go` - Generated interface implementations
+- `*_validations_gen.go` - Generated validation logic
+- `*_gen_test.go` - Generated unit test placeholders
+- `*_ext.go` - Manual extensions to generated code (when needed)
+
+**Manual Objects** (Legacy objects written by hand):
+- `*.go` - Combined interface, implementation, and types (e.g., `databases.go`)
+- No `_def.go` file
+- Manual DTO definitions with `//go:generate` for builders
+- Manual validation and test implementations
+
+**Integration Tests**:
+- Located in `testint/` subdirectory
+- Always manually written (never generated)
+- Follow pattern `*_integration_test.go`
+
+### Code Generation System
+
+**SDK Generator** (`pkg/sdk/poc/`):
+- Template-based code generation from DSL definitions
+- Generates 5 main file types per object definition
+- Uses Go generate directives: `//go:generate go run ./poc/main.go`
+- Supports complex validation, SQL generation, and type mapping
+- Still considered PoC but widely used for new objects
+
+**DTO Builder Generator** (`pkg/sdk/dto-builder-generator/`):
+- Generates constructor and builder methods for DTO structs
+- Uses Go generate directive: `//go:generate go run ./dto-builder-generator/main.go`
+- Identifies required fields via `// required` comments
+- Separate from main SDK generator
+
+### Object Implementation Patterns
+
+**Interface Design**:
+- Each object type implements a standard interface (Create, Alter, Drop, Show, etc.)
+- Common methods: `ShowByID()`, `ShowByIDSafely()`, `DropSafely()`
+- Context-aware operations with `context.Context` parameter
+
+**Identifier System**:
+- Typed identifiers based on Snowflake hierarchy
+- `AccountObjectIdentifier` - Account-level objects (databases, warehouses, users)
+- `DatabaseObjectIdentifier` - Database-level objects (schemas)
+- `SchemaObjectIdentifier` - Schema-level objects (tables, views, functions)
+
+**SQL Generation**:
+- DDL tag system for struct-to-SQL conversion
+- Tags: `ddl:"static"`, `ddl:"keyword"`, `ddl:"identifier"`, `ddl:"parameter"`, `ddl:"list"`
+- Supports complex SQL generation with parentheses, quotes, and separators
+
+## Adding New SDK Objects
+
+For new Snowflake objects, prefer the code generation approach over manual implementation:
+
+- **Primary Reference**: Follow [SDK Generator Rules](sdk-generator.mdc) for complete implementation workflow
+- Create `*_def.go` file with DSL definition using the generator package
+- Thoroughly analyze Snowflake documentation before implementing (see [Documentation Analysis](sdk-generator.mdc#2-documentation-analysis))
+- Add object to Client struct and initialize it in `initialize()` method
+- Run generation to create all required files
+- Complete generated unit test TODOs with realistic SQL expectations (see [Unit Testing Requirements](sdk-generator.mdc#unit-testing-requirements))
+- Implement comprehensive integration tests (see [Integration Testing Patterns](sdk-generator.mdc#integration-testing-patterns))
+- Add manual extensions in `*_ext.go` files only when necessary
+
+## Data Type Conventions
+
+**Nullable Fields**:
+- Use pointer types (`*string`, `*int`, `*bool`) for optional/nullable fields
+- Use `sdk.String()`, `sdk.Int()`, `sdk.Bool()`, `sdk.Pointer()` helpers for pointer creation
+- Handle nil values appropriately in conversion methods
+
+**Enums and Constants**:
+- Define enum types as custom string types (e.g., `type TaskState string`)
+- Use const blocks for enum values with clear naming patterns
+- Define a slice of all enum values under (e.g., `var AllTaskStates = []TaskState { ... }`) as it's used in places like conversion method or documentation generation
+- Implement `To<EnumType>(string)` conversion methods with validation
+- Test conversion methods thoroughly, including error cases
+- Use `ListingState` enum and `ToListingState` method as implementation example
+
+**Identifier Conventions**:
+- Use typed identifiers based on Snowflake object hierarchy
+- Validation is auto-generated by the SDK generator
+- Use `FullyQualifiedName()` method for SQL representation
+- Implement `ID()` method returning appropriate identifier type
+
+## Error Handling
+
+**SDK Error Types**:
+- Define custom error types for different error categories
+- Wrap Snowflake API errors with additional context using error wrapping
+- Use error constants for common error patterns to enable error checking
+- Provide meaningful error messages that help with debugging
+
+**Error Patterns**:
+- Check for specific Snowflake error codes when handling API responses
+- Return structured errors that can be programmatically handled
+- Include object identifiers and operation context in error messages
+
+## Testing Strategy
+
+**Unit Tests**:
+- Generated unit tests provide basic coverage for option structs and validations
+- Add manual unit tests for:
+  - Complex validation logic not covered by generated tests
+  - Enum conversion methods and error cases
+  - Custom helper functions and utilities
+  - SQL generation edge cases
+
+**Integration Tests**:
+- Located in `testint/` subdirectory, always manually written
+- Use request builders: `NewCreate<Resource>Request()`, `NewAlter<Resource>Request()`
+- Test against real Snowflake connections with proper setup/teardown
+- Validate all CRUD operations with comprehensive option coverage
+- Use generated assertions from `pkg/acceptance/bettertestspoc/assert/objectassert/`
+- Create helper functions for groupping similar assertions
+- Use test client for creating objects that are needed to test particular object
+- Clean up test resources properly to avoid test pollution
+- Test error scenarios and edge cases
+
+**Test Organization**:
+- Group tests by operation type (Create, Alter, Drop, Show)
+- Use table-driven tests for multiple configuration scenarios
+- Include both positive and negative test cases
+- Document any special test requirements or setup needs
+
+## Snowflake-Specific Patterns
+
+**Object Hierarchies**:
+- Respect Snowflake's three-tier hierarchy: Account > Database > Schema > Object
+- Use appropriate identifier types for each hierarchy level
+- Account-level: `AccountObjectIdentifier` (databases, warehouses, users)
+- Database-level: `DatabaseObjectIdentifier` (schemas)
+- Schema-level: `SchemaObjectIdentifier` (tables, views)
+- Schema-level with data types as arguments: `SchemaObjectIdentifierWithArguments` (functions, procedures)
+
+**SQL Generation**:
+- Leverage DDL tag system for automatic SQL generation from Go structs
+- Core tags: `ddl:"static"`, `ddl:"keyword"`, `ddl:"identifier"`, `ddl:"parameter"`, `ddl:"list"`
+- SQL modifiers: `single_quotes`, `double_quotes`, `no_quotes`, `parentheses`, `no_equals`, `comma`
+- Support complex SQL patterns with parentheses, quotes, and custom separators
+- **Reference**: See [DSL Patterns and DDL Tag System](sdk-generator.mdc#dsl-patterns-and-ddl-tag-system) for comprehensive tag usage
+- Test generated SQL against actual Snowflake syntax requirements based on official documentation
