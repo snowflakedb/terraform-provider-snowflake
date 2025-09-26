@@ -1,3 +1,5 @@
+//go:build exclude
+
 package main
 
 import (
@@ -7,8 +9,16 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
+const (
+	name    = "provider model builder"
+	version = "0.1.0"
+)
+
 func main() {
 	genhelpers.NewGenerator(
+		genhelpers.NewPreambleModel(name, version).
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config").
+			WithNamedImport("tfconfig", "github.com/hashicorp/terraform-plugin-testing/config"),
 		gen.GetProviderSchemaDetails,
 		resourcemodelgen.ModelFromResourceSchemaDetails,
 		getFilename,
