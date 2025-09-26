@@ -55,7 +55,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					DiffSuppressFunc: suppressIdentifierQuoting,
 				},
 				"primary_key": {
-					Type:        schema.TypeSet,
+					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Definitions of primary keys in the logical table."),
 					Elem: &schema.Schema{
@@ -133,7 +133,8 @@ func SemanticView() *schema.Resource {
 		Description:   "Resource used to manage semantic views. For more information, check [semantic views documentation](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SemanticView, customdiff.All(
-			ComputedIfAnyAttributeChanged(semanticViewsSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(semanticViewsSchema, ShowOutputAttributeName, "comment"),
+			ComputedIfAnyAttributeChanged(semanticViewsSchema, DescribeOutputAttributeName, "comment"),
 		)),
 
 		Schema: semanticViewsSchema,
@@ -255,6 +256,46 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 
 	if c["comment"] != nil && c["comment"].(string) != "" {
 		logicalTableRequest = logicalTableRequest.WithComment(c["comment"].(string))
+	}
+
+	if c["primary_key"] != nil {
+		primaryKeys, ok := c["primary_key"].([]any)
+		if ok && len(primaryKeys) > 0 {
+			var primaryKeyColumns []sdk.SemanticViewColumn
+			for _, pk := range primaryKeys {
+				primaryKeyColumns = append(primaryKeyColumns, sdk.SemanticViewColumn{Name: pk.(string)})
+			}
+			pkRequest := sdk.PrimaryKeysRequest{PrimaryKey: primaryKeyColumns}
+			logicalTableRequest = logicalTableRequest.WithPrimaryKeys(pkRequest)
+		}
+	}
+
+	if c["unique"] != nil {
+		uniqueKeys, ok := c["unique"].([]any)
+		if ok && len(uniqueKeys) > 0 {
+			var ukRequests []sdk.UniqueKeysRequest
+			for _, ukSet := range uniqueKeys {
+				var uniqueKeyColumns []sdk.SemanticViewColumn
+				for _, uk := range ukSet.([]any) {
+					uniqueKeyColumns = append(uniqueKeyColumns, sdk.SemanticViewColumn{Name: uk.(string)})
+				}
+				ukRequest := sdk.UniqueKeysRequest{Unique: uniqueKeyColumns}
+				ukRequests = append(ukRequests, ukRequest)
+			}
+			logicalTableRequest = logicalTableRequest.WithUniqueKeys(ukRequests)
+		}
+	}
+
+	if c["synonym"] != nil {
+		synonyms, ok := c["synonym"].([]any)
+		if ok && len(synonyms) > 0 {
+			var syns []sdk.Synonym
+			for _, s := range synonyms {
+				syns = append(syns, sdk.Synonym{Synonym: s.(string)})
+			}
+			sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
+			logicalTableRequest = logicalTableRequest.WithSynonyms(sRequest)
+		}
 	}
 
 	return logicalTableRequest, nil
