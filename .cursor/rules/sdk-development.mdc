@@ -9,6 +9,10 @@ alwaysApply: false
 
 You are working on the Snowflake SDK that provides Go types and methods for interacting with Snowflake APIs.
 
+**Scope**: This document covers SDK architecture, development patterns, data conventions, testing strategy, and Snowflake-specific patterns.
+
+**Related**: For SDK object implementation using the generator, see [SDK Generator Rules](sdk-generator.mdc).
+
 ## SDK Architecture
 
 The Snowflake SDK is organized around a centralized Client structure that provides access to all Snowflake object operations through typed interfaces. The SDK uses a hybrid approach combining code generation for newer objects and manual implementation for legacy objects.
@@ -87,13 +91,10 @@ The Snowflake SDK is organized around a centralized Client structure that provid
 
 For new Snowflake objects, prefer the code generation approach over manual implementation:
 
-- **Primary Reference**: Follow [SDK Generator Rules](sdk-generator.mdc) for complete implementation workflow
-- Create `*_def.go` file with DSL definition using the generator package
-- Thoroughly analyze Snowflake documentation before implementing (see [Documentation Analysis](sdk-generator.mdc#2-documentation-analysis))
+**Implementation Workflow:**
+- **Primary Reference**: Follow [SDK Generator Rules](./sdk-generator.mdc) for complete implementation workflow
 - Add object to Client struct and initialize it in `initialize()` method
-- Run generation to create all required files
-- Complete generated unit test TODOs with realistic SQL expectations (see [Unit Testing Requirements](sdk-generator.mdc#unit-testing-requirements))
-- Implement comprehensive integration tests (see [Integration Testing Patterns](sdk-generator.mdc#integration-testing-patterns))
+- Update `object_types.go` registry with new object type if needed
 - Add manual extensions in `*_ext.go` files only when necessary
 
 ## Data Type Conventions
@@ -132,30 +133,139 @@ For new Snowflake objects, prefer the code generation approach over manual imple
 
 ## Testing Strategy
 
-**Unit Tests**:
-- Generated unit tests provide basic coverage for option structs and validations
-- Add manual unit tests for:
-  - Complex validation logic not covered by generated tests
-  - Enum conversion methods and error cases
-  - Custom helper functions and utilities
-  - SQL generation edge cases
+**Testing Approach:**
+- **Generated Tests**: SDK generator creates basic unit test structure
+- **Manual Completion**: Developers complete generated TODOs and add comprehensive coverage
+- **Integration Tests**: Manual implementation against real Snowflake instances
 
-**Integration Tests**:
-- Located in `testint/` subdirectory, always manually written
-- Use request builders: `NewCreate<Resource>Request()`, `NewAlter<Resource>Request()`
-- Test against real Snowflake connections with proper setup/teardown
-- Validate all CRUD operations with comprehensive option coverage
-- Use generated assertions from `pkg/acceptance/bettertestspoc/assert/objectassert/`
-- Create helper functions for groupping similar assertions
-- Use test client for creating objects that are needed to test particular object
-- Clean up test resources properly to avoid test pollution
-- Test error scenarios and edge cases
+**Test File Organization:**
+- **Unit Tests**: Generated in `*_gen_test.go` files, completed manually
+- **Integration Tests**: Manual implementation in `testint/` directory
+- **Build Constraints**: Use `//go:build !account_level_tests` by default
 
-**Test Organization**:
-- Group tests by operation type (Create, Alter, Drop, Show)
-- Use table-driven tests for multiple configuration scenarios
-- Include both positive and negative test cases
-- Document any special test requirements or setup needs
+## Unit Testing Requirements
+
+**Generated Test Structure:**
+The SDK generator creates unit test templates that must be completed manually:
+
+```go
+func TestObjects_Create(t *testing.T) {
+    id := randomSchemaObjectIdentifier()
+
+    // Minimal valid options - MUST BE COMPLETED
+    defaultOpts := func() *CreateObjectOptions {
+        return &CreateObjectOptions{
+            name: id,
+            // Add other required fields based on Snowflake documentation
+        }
+    }
+
+    t.Run("validation: nil options", func(t *testing.T) {
+        // Auto-generated validation test
+    })
+
+    t.Run("basic", func(t *testing.T) {
+        opts := defaultOpts()
+        // TODO: fill me - MUST be replaced with expected SQL
+        assertOptsValidAndSQLEquals(t, opts, "CREATE OBJECT %s", id.FullyQualifiedName())
+    })
+
+    t.Run("all options", func(t *testing.T) {
+        opts := defaultOpts()
+        // TODO: fill me - MUST test comprehensive option combinations
+        assertOptsValidAndSQLEquals(t, opts, "CREATE OBJECT %s COMMENT = 'test'", id.FullyQualifiedName())
+    })
+}
+```
+
+**Manual Completion Requirements:**
+- **Replace ALL TODO comments** with actual expected SQL
+- **Test basic case** with minimal required parameters
+- **Test comprehensive case** with all optional parameters set
+- **Verify SQL syntax** matches official Snowflake documentation exactly
+- **Test validation cases** for conflicting options and required fields
+- **Use realistic values** not placeholder text
+
+**Additional Manual Unit Tests:**
+Beyond generated tests, add manual tests for:
+- Enum conversion methods and error cases
+- Custom helper functions and utilities
+- SQL generation edge cases
+- Complex validation logic not covered by generated tests
+
+## Integration Testing Requirements
+
+**Integration Test Structure:**
+```go
+//go:build !account_level_tests  // or account_level_tests for account operations
+
+func TestInt_Objects(t *testing.T) {
+    client := testClient(t)
+    ctx := testContext(t)
+
+    // Helper functions for test resource management
+    createObject := func(t *testing.T) (*sdk.Object, func()) {
+        t.Helper()
+        id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+        req := sdk.NewCreateObjectRequest(id)
+        err := client.Objects.Create(ctx, req)
+        require.NoError(t, err)
+
+        object, err := client.Objects.ShowByID(ctx, id)
+        require.NoError(t, err)
+
+        cleanup := func() {
+            err := testClientHelper().Object.DropObjectFunc(t, id)()
+            require.NoError(t, err)
+        }
+
+        return object, cleanup
+    }
+
+    t.Run("create and show", func(t *testing.T) {
+        object, cleanup := createObject(t)
+        t.Cleanup(cleanup)
+
+        // Test object was created correctly
+        assert.Equal(t, expectedValue, object.Field)
+    })
+
+    // Test privilege requirements and edge cases
+    t.Run("privilege requirements", func(t *testing.T) {
+        // Document and test required privileges
+        // Test with insufficient privileges where applicable
+    })
+}
+```
+
+**Integration Test Implementation:**
+- **Use `testClient()` and `testContext()`** for setup
+- **Implement proper cleanup** with `t.Cleanup()`
+- **Test all CRUD operations** comprehensively
+- **Test privilege requirements** and edge cases
+- **Use helper functions** from `testClientHelper()` for common operations
+- **Test error scenarios** and insufficient privilege cases
+
+**Test Resource Management:**
+- **Create helper functions** for test resource creation and cleanup
+- **Use test client** for creating prerequisite objects
+- **Clean up test resources** properly to avoid test pollution
+- **Group similar assertions** using helper functions
+- **Use generated assertions** from `pkg/acceptance/bettertestspoc/assert/objectassert/`
+
+**Test Organization Standards:**
+- **Group tests by operation type** (Create, Alter, Drop, Show)
+- **Use table-driven tests** for multiple configuration scenarios
+- **Include both positive and negative test cases**
+- **Document special test requirements** and setup needs
+- **Test comprehensive option coverage** for all operations
+
+**Privilege and Edge Case Testing:**
+- **Document privilege requirements** in test comments
+- **Test with different role configurations** where applicable
+- **Verify error handling** for insufficient privileges
+- **Test ownership transfer scenarios** when relevant
+- **Cover account vs object-level privilege differences**
 
 ## Snowflake-Specific Patterns
 
@@ -167,10 +277,8 @@ For new Snowflake objects, prefer the code generation approach over manual imple
 - Schema-level: `SchemaObjectIdentifier` (tables, views)
 - Schema-level with data types as arguments: `SchemaObjectIdentifierWithArguments` (functions, procedures)
 
-**SQL Generation**:
-- Leverage DDL tag system for automatic SQL generation from Go structs
-- Core tags: `ddl:"static"`, `ddl:"keyword"`, `ddl:"identifier"`, `ddl:"parameter"`, `ddl:"list"`
-- SQL modifiers: `single_quotes`, `double_quotes`, `no_quotes`, `parentheses`, `no_equals`, `comma`
-- Support complex SQL patterns with parentheses, quotes, and custom separators
-- **Reference**: See [DSL Patterns and DDL Tag System](sdk-generator.mdc#dsl-patterns-and-ddl-tag-system) for comprehensive tag usage
-- Test generated SQL against actual Snowflake syntax requirements based on official documentation
+**SQL Generation System**:
+- Automatic SQL generation from Go structs using DDL tag system
+- Core philosophy: Map Snowflake SQL syntax directly to Go struct tags
+- **Implementation Details**: See [DDL Tag System](sdk-generator.mdc#dsl-patterns-and-ddl-tag-system) for comprehensive usage
+- Validation: Generated SQL must match official Snowflake documentation exactly

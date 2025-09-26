@@ -10,6 +10,10 @@ alwaysApply: false
 
 You are working with the SDK generator that creates Go types and methods for Snowflake SQL commands using a custom DSL.
 
+**Scope**: This document covers the SDK generator workflow, DSL patterns, DDL tag system, testing requirements, and best practices for implementing new SDK objects.
+
+**Prerequisites**: Understand the SDK architecture and patterns from [SDK Development Rules](sdk-development.mdc) before using the generator.
+
 ## Creating SDK Object Definitions
 
 ### Definition File Structure
@@ -125,10 +129,10 @@ column *string `ddl:"parameter,no_equals,double_quotes" sql:"MODIFY COLUMN"`
 - **TODO comments**: Always include TODO comments explaining what needs to be filled in by the developer
 
 **Identifier Type Selection:**
-Choose the appropriate identifier type based on Snowflake object hierarchy:
-- `AccountObjectIdentifier` - Account-level objects (databases, warehouses, users, roles)
-- `DatabaseObjectIdentifier` - Database-level objects (schemas)
-- `SchemaObjectIdentifier` - Schema-level objects (tables, views, sequences)
+Choose the appropriate identifier type based on Snowflake object hierarchy (see [Object Hierarchies](sdk-development.mdc#object-hierarchies) for complete reference):
+- `AccountObjectIdentifier` - Account-level objects
+- `DatabaseObjectIdentifier` - Database-level objects
+- `SchemaObjectIdentifier` - Schema-level objects
 - `SchemaObjectIdentifierWithArguments` - Functions and procedures with arguments
 
 **Privilege and Permission Considerations:**
@@ -172,7 +176,7 @@ make run-generator-<object_name>  # Uses filename without _def suffix
 - Validate all DDL tags produce expected output
 
 ### 5. Generated Files Structure
-The generator creates these files following [SDK Development Rules](sdk-development.mdc):
+The generator creates files following the [File Organization Patterns](sdk-development.mdc#file-organization-patterns):
 - `*_gen.go` - Interface and option structs with DDL tags
 - `*_impl_gen.go` - Implementation methods (SQL execution)
 - `*_dto_gen.go` - Request DTOs for builder pattern
@@ -188,8 +192,7 @@ The generator creates these files following [SDK Development Rules](sdk-developm
 
 **Required Manual Work:**
 - Fill conversion mappings in the generated `_impl_gen.go` file
-- Fill unit test TODOs with realistic SQL expectations and add new cases to cover all usage paths
-- Implement integration tests in `testint/` directory to test against actual Snowflake instances
+- Complete all testing requirements following [Testing Strategy](./sdk-development.mdc#testing-strategy)
 - Document privilege requirements and edge cases
 
 ## Common Patterns
@@ -223,102 +226,20 @@ AlterOperation(url,
 )
 ```
 
-## Unit Testing Requirements
+## Testing After Generation
 
-**Generated Test Structure:**
-Generated unit tests follow this pattern and must be completed manually:
+**Generated Test Files:**
+The generator creates `*_gen_test.go` files with unit test templates containing TODO placeholders.
 
-```go
-func TestObjects_Create(t *testing.T) {
-    id := randomSchemaObjectIdentifier()
+**Manual Completion Required:**
+All generated tests must be completed manually following the comprehensive [Testing Strategy](./sdk-development.mdc#testing-strategy) in SDK Development Rules.
 
-    // Minimal valid options - TEST REQUIRED
-    defaultOpts := func() *CreateObjectOptions {
-        return &CreateObjectOptions{
-            name: id,
-            // Add other required fields based on Snowflake documentation
-        }
-    }
-
-    t.Run("validation: nil options", func(t *testing.T) {
-        // Auto-generated validation test
-    })
-
-    t.Run("basic", func(t *testing.T) {
-        opts := defaultOpts()
-        // TODO: fill me - MUST be replaced with expected SQL
-        assertOptsValidAndSQLEquals(t, opts, "CREATE OBJECT %s", id.FullyQualifiedName())
-    })
-
-    t.Run("all options", func(t *testing.T) {
-        opts := defaultOpts()
-        // TODO: fill me - MUST test comprehensive option combinations
-        // Set ALL optional fields to verify complete SQL generation
-        assertOptsValidAndSQLEquals(t, opts, "CREATE OBJECT %s COMMENT = 'test'", id.FullyQualifiedName())
-    })
-}
-```
-
-**Unit Test Completion Guidelines:**
-- **Replace ALL TODO comments** with actual expected SQL
-- **Test basic case** with minimal required parameters
-- **Test comprehensive case** with all optional parameters set
-- **Verify SQL syntax** matches official Snowflake documentation exactly
-- **Test validation cases** for conflicting options and required fields
-- **Use realistic values** not placeholder text
-
-## Integration Testing Patterns
-
-**Integration Test Structure:**
-```go
-//go:build !account_level_tests  // or account_level_tests for account operations
-
-func TestInt_Objects(t *testing.T) {
-    client := testClient(t)
-    ctx := testContext(t)
-
-    // Helper functions for test resource management
-    createObject := func(t *testing.T) (*sdk.Object, func()) {
-        t.Helper()
-        id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-        req := sdk.NewCreateObjectRequest(id)
-        err := client.Objects.Create(ctx, req)
-        require.NoError(t, err)
-
-        object, err := client.Objects.ShowByID(ctx, id)
-        require.NoError(t, err)
-
-        cleanup := func() {
-            err := testClientHelper().Object.DropObjectFunc(t, id)()
-            require.NoError(t, err)
-        }
-
-        return object, cleanup
-    }
-
-    t.Run("create and show", func(t *testing.T) {
-        object, cleanup := createObject(t)
-        t.Cleanup(cleanup)
-
-        // Test object was created correctly
-        assert.Equal(t, expectedValue, object.Field)
-    })
-
-    // Test privilege requirements and edge cases
-    t.Run("privilege requirements", func(t *testing.T) {
-        // Document and test required privileges
-        // Test with insufficient privileges where applicable
-    })
-}
-```
-
-**Integration Test Requirements:**
-- Use `testClient()` and `testContext()` for setup
-- Implement proper cleanup with `t.Cleanup()`
-- Test all CRUD operations comprehensively
-- Test privilege requirements and edge cases
-- Use helper functions from `testClientHelper()` for common operations
-- Follow build constraints for account-level vs standard tests
+**Key Post-Generation Tasks:**
+- **Complete unit test TODOs** with realistic SQL expectations
+- **Implement integration tests** in `testint/` directory
+- **Test all CRUD operations** against real Snowflake instances
+- **Document and test privilege requirements**
+- **Verify SQL output** matches Snowflake documentation exactly
 
 ## Documentation and Privilege Requirements
 
@@ -355,10 +276,10 @@ func TestInt_Objects(t *testing.T) {
 - **Document privilege requirements** from Snowflake docs
 - **Consult developers** for ambiguous or complex syntax patterns
 
-**Code Quality:**
+**Generator-Specific Quality:**
 - **Complete all generated TODO comments** with realistic tests
-- **Validate SQL output** against Snowflake documentation
+- **Validate SQL output** against Snowflake documentation exactly
 - **Test comprehensive parameter combinations** in unit tests
-- **Implement thorough integration tests** with proper cleanup
+- **Verify DDL tag combinations** produce expected SQL patterns
 - **Use appropriate identifier types** for object hierarchy
-- **Follow SDK development patterns** from [SDK Development Rules](sdk-development.mdc)
+- **Follow architecture patterns** from [SDK Development Rules](sdk-development.mdc)
