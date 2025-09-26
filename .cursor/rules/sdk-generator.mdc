@@ -26,6 +26,27 @@ import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/gen
 
 //go:generate go run ./poc/main.go
 
+// Define output structures separately above the main definition
+var objectDbRow = g.DbStruct("objectDBRow").
+    Text("created_on").
+    Text("name").
+    Text("owner").
+    Text("comment")
+
+var object = g.PlainStruct("Object").
+    Time("CreatedOn").
+    Text("Name").
+    Text("Owner").
+    Text("Comment")
+
+var describeObjectDbRow = g.DbStruct("describeObjectDBRow").
+    Text("property").
+    Text("value")
+
+var objectDetails = g.PlainStruct("ObjectDetails").
+    Text("Property").
+    Text("Value")
+
 var ObjectsDef = g.NewInterface(
     "Objects",           // Interface name (plural)
     "Object",           // Struct name (singular)
@@ -39,10 +60,26 @@ CreateOperation("https://docs.snowflake.com/...",
         OptionalComment(),
 ).
 ShowOperation("https://docs.snowflake.com/...",
-    dbRow, plainStruct,
+    objectDbRow, object,
     g.NewQueryStruct("ShowObjects").
         Show().
-        SQL("OBJECTS"),
+        SQL("OBJECTS").
+        OptionalLike().
+        OptionalExtendedIn(),
+).
+ShowByIdOperationWithFiltering(
+    g.ShowByIDLikeFiltering,
+    g.ShowByIDExtendedInFiltering,
+).
+DescribeOperation(
+    g.DescriptionMappingKindSingleValue,
+    "https://docs.snowflake.com/...",
+    describeObjectDbRow,
+    objectDetails,
+    g.NewQueryStruct("DescribeObject").
+        Describe().
+        SQL("OBJECT").
+        Name(),
 )
 ```
 
@@ -53,12 +90,20 @@ ShowOperation("https://docs.snowflake.com/...",
 - Map SQL syntax directly to DSL operations
 - Include documentation URLs in operation definitions
 - **CRITICAL**: When creating SDK definitions from Snowflake documentation, examine the EXACT syntax from the specific command documentation pages
+- **Documentation Verification Workflow**:
+  1. **Verify each documentation URL** is accessible and contains expected content
+  2. **Check for "Syntax" sections** with command structure
+  3. **Check for "Output" sections** with field specifications for query commands like SHOW or DESC
+  4. **Ask for help** if any links are broken or sections are missing
+  5. **Never proceed** with made-up fields or syntax
 - **Documentation Parsing**: Always check nested links like:
   - `https://docs.snowflake.com/en/sql-reference/sql/create-dataset` for CREATE DATASET syntax
   - `https://docs.snowflake.com/en/sql-reference/sql/alter-dataset` for ALTER DATASET syntax
   - `https://docs.snowflake.com/en/sql-reference/sql/show-datasets` for SHOW DATASETS syntax
+  - `https://docs.snowflake.com/en/sql-reference/sql/desc-dataset` for DESCRIBE DATASET output
 - **Syntax Accuracy**: Only include fields and options that are explicitly documented in the "Syntax" section
-- **Conservative Approach**: When in doubt, implement minimal required syntax and expand later based on actual documentation
+- **Output Accuracy**: Only include output fields that are explicitly documented in the "Output" section
+- **Conservative Approach**: When in doubt, ask for clarification rather than making assumptions
 
 **DSL Patterns and DDL Tag System**
 
@@ -108,25 +153,152 @@ column *string `ddl:"parameter,no_equals,double_quotes" sql:"MODIFY COLUMN"`
 - `AlterOperation()` - ALTER commands
 - `DropOperation()` - DROP commands
 - `ShowOperation()` - SHOW commands
-- `DescribeOperation()` - DESCRIBE commands
+- `ShowByIdOperationWithFiltering()` - ShowByID with filtering options
+- `ShowByIdOperationWithNoFiltering()` - ShowByID without filtering
+- `DescribeOperation()` - DESCRIBE commands with mapping kind selection
 - `CustomOperation()` - Non-standard commands
+
+**DescriptionMappingKind Selection:**
+The `DescribeOperation()` requires a `DescriptionMappingKind` parameter that determines the return type and implementation:
+
+- **`DescriptionMappingKindSingleValue`**: Returns a single object (`*ObjectDetails`)
+  - **Use when**: DESCRIBE returns object metadata as a single record (name, owner, comment, etc.)
+  - **Generated method**: `Describe(ctx context.Context, id Identifier) (*ObjectDetails, error)`
+  - **Implementation**: Uses `validateAndQueryOne()` and `result.convert()`
+  - **Examples**: Tasks, Streams, Services, Git Repositories, Secrets
+
+- **`DescriptionMappingKindSlice`**: Returns a slice of objects (`[]ObjectProperty`)
+  - **Use when**: DESCRIBE returns property-value pairs or multiple configuration entries
+  - **Generated method**: `Describe(ctx context.Context, id Identifier) ([]ObjectProperty, error)`
+  - **Implementation**: Uses `validateAndQuery()` and `convertRows()`
+  - **Examples**: Procedures, Functions, Views, Storage Integrations, Network Policies
+
+**Pattern Recognition:**
+- **Single Value**: Object has fixed metadata structure (created_on, name, owner, comment, specific config fields)
+- **Slice**: Object has variable properties returned as key-value pairs (property, value, description columns)
+
+### ShowByID Operation
+
+The `ShowByID` operation provides a convenient method to retrieve a single object by its identifier. It internally uses the `Show` operation with appropriate filtering to find the specific object.
+
+**Purpose and Implementation:**
+- **Generated methods**: `ShowByID(ctx context.Context, id Identifier) (*Object, error)` and `ShowByIDSafely(ctx context.Context, id Identifier) (*Object, error)`
+- **Implementation**: Calls `Show()` with filtering parameters, then uses `collections.FindFirst()` to locate the object by name
+- **Safety**: `ShowByIDSafely()` handles cases where the object might not exist without throwing errors
+
+**Filtering Strategy Selection:**
+The filtering options for `ShowByID` must match the filtering capabilities available in the corresponding `Show` operation. Choose based on what the Snowflake `SHOW` command supports:
+
+**Available Filtering Types:**
+- **`ShowByIDLikeFiltering`**: Uses `LIKE` pattern matching with object name
+  - **Generated filter**: `WithLike(Like{Pattern: String(id.Name())})`
+  - **Use when**: `SHOW` command supports `LIKE` clause
+  - **Universal**: Works for all object types that support pattern matching
+
+- **`ShowByIDInFiltering`**: Uses `IN` clause to filter by parent container
+  - **Generated filter**: `WithIn(In{Schema: id.SchemaId()})` (for schema objects)
+  - **Use when**: `SHOW` command supports `IN` clause and object has hierarchical structure
+  - **Examples**: Schema-level objects can be filtered `IN SCHEMA`
+
+- **`ShowByIDExtendedInFiltering`**: Uses `ExtendedIn` for more complex hierarchical filtering
+  - **Generated filter**: `WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})`
+  - **Use when**: `SHOW` command supports extended `IN` syntax
+  - **Examples**: Objects that can be filtered by database, schema, or other containers
+
+- **`ShowByIDServiceInFiltering`**: Specialized filtering for service-related objects
+  - **Generated filter**: `WithIn(ServiceIn{In: In{Schema: id.SchemaId()}})`
+  - **Use when**: Object is service-related and supports service-specific filtering
+
+- **`ShowByIDApplicationNameFiltering`**: Specialized filtering for application objects
+  - **Generated filter**: `WithApplicationName(id.DatabaseId())`
+  - **Use when**: Object is application-related and uses application name filtering
+
+**Filtering Selection Guidelines:**
+
+**Ideal Combination (Most Common):**
+```go
+ShowByIdOperationWithFiltering(
+    g.ShowByIDLikeFiltering,           // Primary: Name pattern matching
+    g.ShowByIDExtendedInFiltering,     // Secondary: Hierarchical filtering
+)
+```
+
+**Selection Rules:**
+1. **Always include `ShowByIDLikeFiltering`** if the `SHOW` command supports `LIKE`
+2. **Add hierarchical filtering** based on object level:
+   - **Schema objects**: Add `ShowByIDInFiltering` or `ShowByIDExtendedInFiltering`
+   - **Database objects**: Add `ShowByIDInFiltering` if supported
+   - **Account objects**: Usually only `ShowByIDLikeFiltering`
+3. **Use specialized filtering** for specific object types (services, applications)
+4. **No filtering** only when `SHOW` command has no filtering options
+
+**Examples by Object Hierarchy:**
+
+**Account-Level Objects** (Users, Roles, Integrations):
+```go
+ShowByIdOperationWithFiltering(
+    g.ShowByIDLikeFiltering,  // Only LIKE filtering available
+)
+```
+
+**Database-Level Objects** (Schemas, Tables):
+```go
+ShowByIdOperationWithFiltering(
+    g.ShowByIDLikeFiltering,     // Name pattern matching
+    g.ShowByIDInFiltering,       // Filter by database
+)
+```
+
+**Schema-Level Objects** (Views, Functions, Procedures):
+```go
+ShowByIdOperationWithFiltering(
+    g.ShowByIDLikeFiltering,        // Name pattern matching
+    g.ShowByIDExtendedInFiltering,  // Filter by schema/database
+)
+```
+
+**Service Objects**:
+```go
+ShowByIdOperationWithFiltering(
+    g.ShowByIDLikeFiltering,        // Name pattern matching
+    g.ShowByIDServiceInFiltering,   // Service-specific filtering
+)
+```
+
+**No Filtering Required**:
+```go
+ShowByIdOperationWithNoFiltering()  // When SHOW has no filtering options
+```
+
+**Documentation-Driven Selection:**
+Base filtering choices on the Snowflake documentation for the `SHOW` command:
+- **Check "Syntax" section** for available clauses (`LIKE`, `IN`, `STARTS WITH`)
+- **Match filtering options** to what's documented in Snowflake
+- **Test combinations** that make sense for the object hierarchy
+- **Prefer LIKE + IN combination** when both are available for optimal performance
 
 **Data Structure Fields and Output Mapping**
 
+**Structure Definition Pattern:**
+- **Define output structures separately** above the main interface definition
+- **Use descriptive variable names**: `objectDbRow`, `object`, `describeObjectDbRow`, `objectDetails`
+- **Follow consistent naming**: `<object>DbRow` for database mapping, `<object>` for plain struct, `describe<Object>DbRow` and `<object>Details` for describe operations
+- **Reference structures by variable name** in operations, not inline definitions
+
 **Show/Describe Operations:**
 - **NEVER assume fields**: Do not guess or assume what fields SHOW, DESCRIBE, or other operations return
-- **Empty structs for unknown output**: If field structure is not documented, define empty structs with TODO comments:
+- **VERIFY documentation links first**: Always check that documentation URLs are correct and accessible
+- **Use documented OUTPUT sections**: When Snowflake documentation includes OUTPUT sections with field specifications, implement those fields exactly as documented
+- **ASK FOR HELP with broken links**: If documentation links are broken or OUTPUT sections are missing, ask for clarification before proceeding
+- **Use TODO only for completely unknown structures**:
   ```go
-  // TODO: Fields for SHOW OBJECTS output are not documented.
+  // TODO: Fields for SHOW OBJECTS output are not documented and no standard pattern applies.
   // Developer should examine actual SHOW OBJECTS output and fill in the correct fields.
   var objectDbRow = g.DbStruct("objectDBRow")
-
-  // TODO: Object struct fields should match the actual SHOW OBJECTS output.
-  // Developer should examine actual output and define the correct fields.
-  var object = g.PlainStruct("Object")
   ```
-- **Documentation requirement**: Only add fields when you have explicit documentation or can verify actual output structure
-- **TODO comments**: Always include TODO comments explaining what needs to be filled in by the developer
+- **Documentation requirement**: Add fields when OUTPUT sections are explicitly documented in Snowflake documentation
+- **Field accuracy**: Match field names, types, and descriptions exactly as specified in OUTPUT documentation
+- **Comment Policy**: Only add TODO comments when genuinely unsure about field mappings or when documentation is incomplete. If you've verified the documentation and are confident about the fields, don't add comments - developers will validate the mapping during implementation anyway
 
 **Identifier Type Selection:**
 Choose the appropriate identifier type based on Snowflake object hierarchy (see [Object Hierarchies](sdk-development.mdc#object-hierarchies) for complete reference):
@@ -153,10 +325,19 @@ If missing, create definition files and add it to the mapping in `pkg/sdk/poc/ma
 ### 2. Documentation Analysis
 **Critical Phase - Must Be Thorough:**
 - Request documentation URLs for ALL operations (CREATE, ALTER, DROP, SHOW, DESCRIBE)
+- **VERIFY ALL DOCUMENTATION LINKS** - Check that URLs are accessible and contain the expected content
+- **ASK FOR CLARIFICATION** if any documentation links are broken, missing, or incomplete
 - Examine EXACT syntax from "Syntax" sections only
+- Examine EXACT output fields from "Output" sections when available
 - Note ALL optional vs required parameters
+- **Analyze SHOW command filtering options** for ShowByID operation:
+  - Check for `LIKE` clause support
+  - Check for `IN` clause support (database, schema, application)
+  - Check for `STARTS WITH` or other filtering options
+  - Note object hierarchy level for appropriate filtering selection
 - Identify privilege requirements and edge cases
 - Document any unclear or ambiguous syntax patterns
+- **NEVER make up fields or syntax** - always verify against actual documentation
 - **Consult with developers** for unknown or complex scenarios to avoid generating unsupported DSL
 
 ### 3. Implementation and Verification
