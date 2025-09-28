@@ -28,8 +28,6 @@ func main() {
 	).
 		WithAdditionalObjectsDebugLogs(printAllStructsFields).
 		WithAdditionalObjectsDebugLogs(printUniqueTypes).
-		// TODO [this PR]: remove this filter from here
-		WithObjectFilter(genhelpers.FilterObjectByNameFromEnv[genhelpers.StructDetails]).
 		RunAndHandleOsReturn()
 }
 

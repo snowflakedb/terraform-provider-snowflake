@@ -1,20 +1,8 @@
 package genhelpers
 
 import (
-	"os"
 	"slices"
-	"strings"
 )
-
-// TODO [SNOW-2324252]: Consider extracting this as a command line param
-func FilterObjectByNameFromEnv[T ObjectNameProvider](object T) bool {
-	allowedObjectNamesString := os.Getenv("SF_TF_GENERATOR_EXT_ALLOWED_OBJECT_NAMES")
-	if allowedObjectNamesString == "" {
-		return true
-	}
-	allowedObjectNames := strings.Split(allowedObjectNamesString, ",")
-	return slices.Contains(allowedObjectNames, object.ObjectName())
-}
 
 func filterObjectByNameProvider[T ObjectNameProvider](allowedObjectNames []string) func(object T) bool {
 	return func(object T) bool {

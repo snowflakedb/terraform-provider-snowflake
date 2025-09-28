@@ -86,14 +86,12 @@ func (g *Generator[T, M]) WithAdditionalObjectsDebugLogs(objectLogsProvider func
 	return g
 }
 
-// TODO [this PR]: rename to AdditionalObjectFilter
-func (g *Generator[T, M]) WithObjectFilter(objectFilter func(T) bool) *Generator[T, M] {
+func (g *Generator[T, M]) WithAdditionalObjectFilter(objectFilter func(T) bool) *Generator[T, M] {
 	g.objectFilters = append(g.objectFilters, objectFilter)
 	return g
 }
 
-// TODO [this PR]: rename to AdditionalGenerationPartFilter
-func (g *Generator[T, M]) WithGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
+func (g *Generator[T, M]) WithAdditionalGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
 	g.generationPartFilters = append(g.generationPartFilters, generationPartFilter)
 	return g
 }
