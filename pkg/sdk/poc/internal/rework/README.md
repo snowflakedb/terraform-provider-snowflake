@@ -8,12 +8,13 @@ The following objects are generated as a rework example:
 
 There are following generation parts:
 - default
-- dto 
+- dto
+- dto_builders
 - impl 
 - unit_tests 
 - validations
 
-The reworked generator offers filtering by object name and by generation part. `dto` should be currently present if the dto builders are meant to be regenerated. 
+The reworked generator offers filtering by object name and by generation part.
 
 Experiment with the following commands:
 
