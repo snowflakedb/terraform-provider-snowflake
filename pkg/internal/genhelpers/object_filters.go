@@ -15,3 +15,12 @@ func FilterObjectByNameFromEnv[T ObjectNameProvider](object T) bool {
 	allowedObjectNames := strings.Split(allowedObjectNamesString, ",")
 	return slices.Contains(allowedObjectNames, object.ObjectName())
 }
+
+func filterObjectByNameProvider[T ObjectNameProvider](allowedObjectNames []string) func(object T) bool {
+	return func(object T) bool {
+		if len(allowedObjectNames) == 0 {
+			return true
+		}
+		return slices.Contains(allowedObjectNames, object.ObjectName())
+	}
+}
