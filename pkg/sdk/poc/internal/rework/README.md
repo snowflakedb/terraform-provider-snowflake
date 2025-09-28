@@ -34,3 +34,7 @@ make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-objects=Sequences'
 # generate chosen objects and chosen files only
 make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-parts=default,impl --filter-objects=Streamlits'
 ```
+```shell
+# show usage
+make generate-sdk SF_TF_GENERATOR_ARGS='-h'
+```

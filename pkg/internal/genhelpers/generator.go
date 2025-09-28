@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 // TODO [SNOW-1501905]: describe
@@ -103,13 +105,34 @@ func (g *Generator[T, M]) Run() error {
 	file := os.Getenv("GOFILE")
 	fmt.Printf("Running generator on %s with args %#v\n", file, os.Args[1:])
 
+	// getting them early to be able to easily list available options in help
+	objects := g.objectsProvider()
+	parts := g.generationParts
+
+	allAvailableObjectNames := collections.Map(objects, func(o T) string {
+		return o.ObjectName()
+	})
+	allAvailableGenerationParts := collections.Map(parts, func(p GenerationPart[T, M]) string {
+		return p.GetName()
+	})
+
 	var filterObjects filters
 	var filterParts filters
 
 	additionalLogs := flag.Bool("verbose", false, "print additional object debug logs")
 	dryRun := flag.Bool("dry-run", false, "generate to std out instead of saving")
-	flag.Var(&filterObjects, "filter-objects", "generate only objects")
-	flag.Var(&filterParts, "filter-parts", "generate only parts")
+	// TODO [this PR]: better formatting; alphabetical
+	flag.Var(&filterObjects, "filter-objects", fmt.Sprintf("generate only objects; available objects:\n%s", strings.Join(collections.Map(allAvailableObjectNames, func(s string) string { return "   - " + s }), "\n")))
+	flag.Var(&filterParts, "filter-parts", fmt.Sprintf("generate only parts; available parts:\n%s", strings.Join(collections.Map(allAvailableGenerationParts, func(s string) string { return "   - " + s }), "\n")))
+
+	flag.Usage = func() {
+		usage := `Generate SDK objects based on the SQL definitions provided.
+
+usage: make generate-sdk SF_TF_GENERATOR_ARGS='<args>'
+`
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", usage)
+		flag.PrintDefaults()
+	}
 
 	flag.Parse()
 
@@ -122,7 +145,6 @@ func (g *Generator[T, M]) Run() error {
 		g.generationPartFilters = append(g.generationPartFilters, filterGenerationPartByNameProvider[T, M](filterParts))
 	}
 
-	objects := g.objectsProvider()
 	if len(g.objectFilters) > 0 {
 		filteredObjects := make([]T, 0)
 		for _, o := range objects {
@@ -137,7 +159,6 @@ func (g *Generator[T, M]) Run() error {
 		objects = filteredObjects
 	}
 
-	parts := g.generationParts
 	if len(g.generationPartFilters) > 0 {
 		filteredGenerationParts := make([]GenerationPart[T, M], 0)
 		for _, p := range g.generationParts {
