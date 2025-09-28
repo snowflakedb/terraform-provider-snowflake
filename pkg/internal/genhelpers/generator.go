@@ -20,7 +20,6 @@ type ObjectNameProvider interface {
 	ObjectName() string
 }
 
-// TODO [this PR]: allow printing allowed object filters and generation part filters
 type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	objectsProvider func() []T
 	modelProvider   func(T, *PreambleModel) M
@@ -115,14 +114,14 @@ func (g *Generator[T, M]) Run() error {
 	allAvailableGenerationParts := collections.Map(parts, func(p GenerationPart[T, M]) string { return p.GetName() })
 	slices.Sort(allAvailableGenerationParts)
 
-	var filterObjects filters
-	var filterParts filters
+	filterObjects := newFiltersFlag("object names")
+	filterParts := newFiltersFlag("generation part names")
 
 	// TODO [this PR]: improve descriptions
 	additionalLogs := flag.Bool("verbose", false, "print additional object debug logs")
 	dryRun := flag.Bool("dry-run", false, "generate to std out instead of saving")
-	flag.Var(&filterObjects, "filter-objects", fmt.Sprintf("generate only objects; available objects:\n%s", formatAvailableOptions(allAvailableObjectNames)))
-	flag.Var(&filterParts, "filter-parts", fmt.Sprintf("generate only parts; available parts:\n%s", formatAvailableOptions(allAvailableGenerationParts)))
+	flag.Var(filterObjects, "filter-objects", fmt.Sprintf("generate only objects; available objects:\n%s", formatAvailableOptions(allAvailableObjectNames)))
+	flag.Var(filterParts, "filter-parts", fmt.Sprintf("generate only parts; available parts:\n%s", formatAvailableOptions(allAvailableGenerationParts)))
 
 	flag.Usage = func() {
 		usage := `Generate SDK objects based on the SQL definitions provided.
@@ -135,13 +134,13 @@ usage: make generate-sdk SF_TF_GENERATOR_ARGS='<args>'
 
 	flag.Parse()
 
-	if len(filterObjects) > 0 {
-		fmt.Printf("Object filters present: %s (len: %d)\n", filterObjects, len(filterObjects))
-		g.objectFilters = append(g.objectFilters, filterObjectByNameProvider[T](filterObjects))
+	if filterObjects.hasValues() {
+		fmt.Printf("Object filters present: %s\n", filterObjects)
+		g.objectFilters = append(g.objectFilters, filterObjectByNameProvider[T](filterParts.filters))
 	}
-	if len(filterParts) > 0 {
-		fmt.Printf("Generation part filters present: %s (len: %d)\n", filterParts, len(filterParts))
-		g.generationPartFilters = append(g.generationPartFilters, filterGenerationPartByNameProvider[T, M](filterParts))
+	if filterParts.hasValues() {
+		fmt.Printf("Generation part filters present: %s\n", filterParts)
+		g.generationPartFilters = append(g.generationPartFilters, filterGenerationPartByNameProvider[T, M](filterParts.filters))
 	}
 
 	if len(g.objectFilters) > 0 {

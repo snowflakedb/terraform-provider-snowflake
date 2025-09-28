@@ -1,30 +1,40 @@
 package genhelpers
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
 
-// TODO [this PR]: add filter name to this type
-type filters []string
-
-func (f *filters) String() string {
-	return fmt.Sprint(*f)
+type filtersFlag struct {
+	name    string
+	filters []string
 }
 
-func (f *filters) Set(value string) error {
-	if len(*f) > 0 {
-		// TODO [this PR]: better error
-		return errors.New("filters already")
+func newFiltersFlag(name string) *filtersFlag {
+	return &filtersFlag{
+		name:    name,
+		filters: make([]string, 0),
+	}
+}
+
+func (f *filtersFlag) hasValues() bool {
+	return len(f.filters) > 0
+}
+
+func (f *filtersFlag) String() string {
+	return fmt.Sprintf("%s filter with values %s (len: %d)", f.name, f.filters, len(f.filters))
+}
+
+func (f *filtersFlag) Set(value string) error {
+	if len(f.filters) > 0 {
+		return fmt.Errorf("%s filters has been already initiated; use single attribute with comma-separated list", f.name)
 	}
 	value = strings.TrimSpace(value)
 	if value == "" {
-		// TODO [this PR]: return error here
-		return nil
+		return fmt.Errorf("%s filters cannot be initiated with an empty value; use single attribute with comma-separated list", f.name)
 	}
 	for _, fil := range strings.Split(value, ",") {
-		*f = append(*f, fil)
+		f.filters = append(f.filters, fil)
 	}
 	return nil
 }
