@@ -1,8 +1,11 @@
 package generator
 
 import (
-	_ "embed"
 	"text/template"
+
+	_ "embed"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
 func deref[T ~string](p *T) string {
@@ -115,7 +118,9 @@ func init() {
 	subTemplates, _ = subTemplates.New("showObjectIdMethodTemplate").Parse(showObjectIdMethodTemplateContent)
 	subTemplates, _ = subTemplates.New("showObjectTypeMethodTemplate").Parse(showObjectTypeMethodTemplateContent)
 	subTemplates, _ = subTemplates.New("dtoDeclTemplate").Parse(dtoStructsTemplateContent)
-	subTemplates, _ = subTemplates.New("dtoBuilderTemplate").Parse(dtoBuilderTemplateContent)
+	subTemplates, _ = subTemplates.New("dtoBuilderTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
+		genhelpers.FirstLetterLowercase,
+	)).Parse(dtoBuilderTemplateContent)
 
 	OperationStructIterateTemplate, _ = subTemplates.New("optionsIterateTemplate").Parse(operationStructIterateTemplateContent)
 	DtoTemplate, _ = subTemplates.New("dtoTemplate").Parse(dtoDeclarationsTemplateContent)
