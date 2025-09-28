@@ -100,9 +100,22 @@ func (g *Generator[T, M]) Run() error {
 	file := os.Getenv("GOFILE")
 	fmt.Printf("Running generator on %s with args %#v\n", file, os.Args[1:])
 
+	var filterObjects filters
+	var filterParts filters
+
 	additionalLogs := flag.Bool("verbose", false, "print additional object debug logs")
 	dryRun := flag.Bool("dry-run", false, "generate to std out instead of saving")
+	flag.Var(&filterObjects, "filter-objects", "generate only objects")
+	flag.Var(&filterParts, "filter-parts", "generate only parts")
+
 	flag.Parse()
+
+	if len(filterObjects) > 0 {
+		g.objectFilters = append(g.objectFilters, filterObjectByNameProvider[T](filterObjects))
+	}
+	if len(filterParts) > 0 {
+		g.generationPartFilters = append(g.generationPartFilters, filterGenerationPartByNameProvider[T, M](filterParts))
+	}
 
 	objects := g.objectsProvider()
 	if len(g.objectFilters) > 0 {
