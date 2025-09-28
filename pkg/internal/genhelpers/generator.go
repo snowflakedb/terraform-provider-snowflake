@@ -111,9 +111,11 @@ func (g *Generator[T, M]) Run() error {
 	flag.Parse()
 
 	if len(filterObjects) > 0 {
+		fmt.Printf("Object filters present: %s (len: %d)\n", filterObjects, len(filterObjects))
 		g.objectFilters = append(g.objectFilters, filterObjectByNameProvider[T](filterObjects))
 	}
 	if len(filterParts) > 0 {
+		fmt.Printf("Generation part filters present: %s (len: %d)\n", filterParts, len(filterParts))
 		g.generationPartFilters = append(g.generationPartFilters, filterGenerationPartByNameProvider[T, M](filterParts))
 	}
 

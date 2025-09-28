@@ -15,7 +15,13 @@ func (f *filters) String() string {
 
 func (f *filters) Set(value string) error {
 	if len(*f) > 0 {
+		// TODO [this PR]: better error
 		return errors.New("filters already")
+	}
+	value = strings.TrimSpace(value)
+	if value == "" {
+		// TODO [this PR]: return error here
+		return nil
 	}
 	for _, fil := range strings.Split(value, ",") {
 		*f = append(*f, fil)
