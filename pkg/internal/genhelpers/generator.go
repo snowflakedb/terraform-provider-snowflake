@@ -129,7 +129,7 @@ usage: make generate-sdk SF_TF_GENERATOR_ARGS='<args>'
 
 	if filterObjects.hasValues() {
 		fmt.Printf("Object filters present: %s\n", filterObjects)
-		g.objectFilters = append(g.objectFilters, filterObjectByNameProvider[T](filterParts.filters))
+		g.objectFilters = append(g.objectFilters, filterObjectByNameProvider[T](filterObjects.filters))
 	}
 	if filterParts.hasValues() {
 		fmt.Printf("Generation part filters present: %s\n", filterParts)
