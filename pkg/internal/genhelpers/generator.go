@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -109,21 +110,19 @@ func (g *Generator[T, M]) Run() error {
 	objects := g.objectsProvider()
 	parts := g.generationParts
 
-	allAvailableObjectNames := collections.Map(objects, func(o T) string {
-		return o.ObjectName()
-	})
-	allAvailableGenerationParts := collections.Map(parts, func(p GenerationPart[T, M]) string {
-		return p.GetName()
-	})
+	allAvailableObjectNames := collections.Map(objects, func(o T) string { return o.ObjectName() })
+	slices.Sort(allAvailableObjectNames)
+	allAvailableGenerationParts := collections.Map(parts, func(p GenerationPart[T, M]) string { return p.GetName() })
+	slices.Sort(allAvailableGenerationParts)
 
 	var filterObjects filters
 	var filterParts filters
 
+	// TODO [this PR]: improve descriptions
 	additionalLogs := flag.Bool("verbose", false, "print additional object debug logs")
 	dryRun := flag.Bool("dry-run", false, "generate to std out instead of saving")
-	// TODO [this PR]: better formatting; alphabetical
-	flag.Var(&filterObjects, "filter-objects", fmt.Sprintf("generate only objects; available objects:\n%s", strings.Join(collections.Map(allAvailableObjectNames, func(s string) string { return "   - " + s }), "\n")))
-	flag.Var(&filterParts, "filter-parts", fmt.Sprintf("generate only parts; available parts:\n%s", strings.Join(collections.Map(allAvailableGenerationParts, func(s string) string { return "   - " + s }), "\n")))
+	flag.Var(&filterObjects, "filter-objects", fmt.Sprintf("generate only objects; available objects:\n%s", formatAvailableOptions(allAvailableObjectNames)))
+	flag.Var(&filterParts, "filter-parts", fmt.Sprintf("generate only parts; available parts:\n%s", formatAvailableOptions(allAvailableGenerationParts)))
 
 	flag.Usage = func() {
 		usage := `Generate SDK objects based on the SQL definitions provided.
@@ -200,6 +199,10 @@ func preprocessArgs() {
 		newArgs = append(newArgs, strings.Split(a, " ")...)
 	}
 	os.Args = newArgs
+}
+
+func formatAvailableOptions(options []string) string {
+	return strings.Join(collections.Map(options, func(s string) string { return " - " + s }), "\n")
 }
 
 func (g *Generator[_, _]) RunAndHandleOsReturn() {
