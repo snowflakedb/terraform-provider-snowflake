@@ -24,15 +24,15 @@ make clean-sdk generate-sdk
 ```
 ```shell
 # generate all objects and chosen files only
-make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-parts=default,dto,validations'
+make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,dto,validations'
 ```
 ```shell
 # generate chosen objects only and all files
-make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-objects=Sequences'
+make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=Sequences'
 ```
 ```shell
 # generate chosen objects and chosen files only
-make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-parts=default,impl --filter-objects=Streamlits'
+make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,impl --filter-object-names=Streamlits'
 ```
 ```shell
 # show usage
