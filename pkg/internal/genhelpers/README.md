@@ -39,11 +39,9 @@ To create a new generator:
    - `--dry-run` allowing to print the generated content to the command line instead of saving it to files
    - `--verbose` allowing to see the all the additional debug logs
 
+[//]: # (TODO [this PR]: Update this description)
+
 ### Next steps
-
-##### Known limitations
-
-- Currently, only 3 generators reuse the same flow; we need to include more to have more observations
 
 ##### Improvements
 
@@ -54,9 +52,5 @@ Functional improvements:
 Implementation improvements:
 - add acceptance test for a `testStruct` (the one from [struct_details_extractor_test.go](./struct_details_extractor_test.go)) for the whole generation flow
 - add description to all publicly available structs and functions (multiple TODOs left)
-- introduce a more meaningful function for the `GenerationModel` interface (TODO left in the `generator.go`)
-- tackle the temporary hacky solution to allow easy passing multiple args from the make command (TODO left in the `generator.go`)
-- extract a common filter by name filter (TODO left in the `pkg/schemas/gen/main`)
 - describe and test all the template helpers (TODOs left in `templates_commons.go`)
 - test writing to file (TODO left in `util.go`)
-- use commons in the SDK generator

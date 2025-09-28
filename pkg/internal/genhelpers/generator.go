@@ -182,6 +182,7 @@ usage: make generate-sdk SF_TF_GENERATOR_ARGS='<args>'
 }
 
 // TODO [SNOW-1501905]: temporary hacky solution to allow easy passing multiple args from the make command
+// TODO [this PR]: describe the reasoning
 func preprocessArgs() {
 	rest := os.Args[1:]
 	newArgs := []string{os.Args[0]}
