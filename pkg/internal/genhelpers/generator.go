@@ -17,6 +17,7 @@ type ObjectNameProvider interface {
 	ObjectName() string
 }
 
+// TODO [this PR]: allow printing allowed object filters and generation part filters
 type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	objectsProvider func() []T
 	modelProvider   func(T, *PreambleModel) M
@@ -84,11 +85,13 @@ func (g *Generator[T, M]) WithAdditionalObjectsDebugLogs(objectLogsProvider func
 	return g
 }
 
+// TODO [this PR]: rename to AdditionalObjectFilter
 func (g *Generator[T, M]) WithObjectFilter(objectFilter func(T) bool) *Generator[T, M] {
 	g.objectFilters = append(g.objectFilters, objectFilter)
 	return g
 }
 
+// TODO [this PR]: rename to AdditionalGenerationPartFilter
 func (g *Generator[T, M]) WithGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
 	g.generationPartFilters = append(g.generationPartFilters, generationPartFilter)
 	return g
