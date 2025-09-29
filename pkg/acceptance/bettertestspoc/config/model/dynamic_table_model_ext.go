@@ -8,7 +8,7 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-// TODO(SNOW-2357735): Remove after complex non-list type overrides are handled
+// TODO(SNOW-1501905): Remove after complex non-list type overrides are handled
 func DynamicTableWithoutTargetLag(
 	resourceName string,
 	database string,
@@ -26,7 +26,7 @@ func DynamicTableWithoutTargetLag(
 	return d
 }
 
-// TODO(SNOW-2357735): Remove after complex non-list type overrides are handled
+// TODO(SNOW-1501905): Remove after complex non-list type overrides are handled
 func (d *DynamicTableModel) WithTargetLag(_ []string) *DynamicTableModel {
 	log.Fatalln("Don't use the default DynamicTable model constructors with WithTargetLag. Use DynamicTableWithoutTargetLag constructor with WithMaximumDurationTargetLag instead.")
 	return d

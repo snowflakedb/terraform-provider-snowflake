@@ -24,13 +24,13 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.7.0 ➞ v2.7.1
+## v2.7.0 ➞ v2.8.0
 
 ### *(bugfix)* Dynamic tables resource handling insufficient access and missing Text column
 
 Previously, when the `snowflake_dynamic_table` resource was created and the dynamic table's privileges were altered in a
 way that the current user lost access to view [`text` metadata field](https://docs.snowflake.com/en/user-guide/dynamic-tables-privileges#label-dynamic-tables-privileges-view-metadata),
-the resource thew internal error instead of handling the situation gracefully.
+the resource threw an internal error instead of handling the situation gracefully.
 
 Now, when the user has insufficient privileges to view `text` field,
 the resource will return an error to the user with a clear message.
