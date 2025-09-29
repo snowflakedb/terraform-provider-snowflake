@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -50,7 +51,7 @@ func DynamicTable(
 	schema string,
 	name string,
 	query string,
-	targetLag []string,
+	targetLag []sdk.TargetLag,
 	warehouse string,
 ) *DynamicTableModel {
 	d := &DynamicTableModel{ResourceModelMeta: config.Meta(resourceName, resources.DynamicTable)}
@@ -68,7 +69,7 @@ func DynamicTableWithDefaultMeta(
 	schema string,
 	name string,
 	query string,
-	targetLag []string,
+	targetLag []sdk.TargetLag,
 	warehouse string,
 ) *DynamicTableModel {
 	d := &DynamicTableModel{ResourceModelMeta: config.DefaultMeta(resources.DynamicTable)}
