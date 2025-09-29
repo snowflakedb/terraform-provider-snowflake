@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"slices"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,14 +27,16 @@ import (
 
 var storageIntegrationSchema = map[string]*schema.Schema{
 	"name": {
-		Type:     schema.TypeString,
-		Required: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Required:    true,
+		ForceNew:    true,
+		Description: "String that specifies the identifier (i.e. name) for the integration; must be unique in your account.",
 	},
 	"comment": {
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
+		Type:        schema.TypeString,
+		Optional:    true,
+		Default:     "",
+		Description: "Specifies a comment for the storage integration.",
 	},
 	"type": {
 		Type:         schema.TypeString,
@@ -40,6 +44,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Default:      "EXTERNAL_STAGE",
 		ValidateFunc: validation.StringInSlice([]string{"EXTERNAL_STAGE"}, true),
 		ForceNew:     true,
+		Description:  "Specifies the type of the storage integration.",
 	},
 	"enabled": {
 		Type:     schema.TypeBool,
@@ -70,7 +75,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("storage_aws_external_id"),
-		Description:      "The external ID that Snowflake will use when assuming the AWS role.",
+		Description:      "Optionally specifies an external ID that Snowflake uses to establish a trust relationship with AWS.",
 	},
 	"storage_aws_iam_user_arn": {
 		Type:        schema.TypeString,
@@ -84,14 +89,16 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Description:  "\"bucket-owner-full-control\" Enables support for AWS access control lists (ACLs) to grant the bucket owner full control.",
 	},
 	"storage_aws_role_arn": {
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
+		Type:        schema.TypeString,
+		Optional:    true,
+		Default:     "",
+		Description: "Specifies the Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.",
 	},
 	"azure_tenant_id": {
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
+		Type:        schema.TypeString,
+		Optional:    true,
+		Default:     "",
+		Description: "Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.",
 	},
 	"azure_consent_url": {
 		Type:        schema.TypeString,
@@ -108,6 +115,14 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "This is the name of the Snowflake Google Service Account created for your account.",
+	},
+	"use_privatelink_endpoint": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeListValueInDescribe("use_privatelink_endpoint"),
+		Description:      booleanStringFieldDescription("Specifies whether to use outbound private connectivity to harden the security posture. Supported for AWS S3 and Azure storage providers."),
 	},
 	"created_on": {
 		Type:        schema.TypeString,
@@ -134,6 +149,8 @@ func StorageIntegration() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingCreateWrapper(resources.StorageIntegration, CreateStorageIntegration)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingReadWrapper(resources.StorageIntegration, GetReadStorageIntegrationFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingUpdateWrapper(resources.StorageIntegration, UpdateStorageIntegration)),
@@ -145,8 +162,15 @@ func StorageIntegration() *schema.Resource {
 		},
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: customdiff.All(
-			ComputedIfAnyAttributeChanged(storageIntegrationSchema, DescribeOutputAttributeName, "storage_aws_external_id", "enabled", "comment"),
+			ComputedIfAnyAttributeChanged(storageIntegrationSchema, DescribeOutputAttributeName, "storage_aws_external_id", "enabled", "comment", "use_privatelink_endpoint"),
 		),
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_7_0_StorageIntegrationUsePrivatelinkEndpointUpgrader,
+			},
+		},
 	}
 }
 
@@ -183,20 +207,34 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 		}
 
 		if withExternalChangesMarking {
+			var outputMappings []describeMapping
 			storageAwsExternalId, err := collections.FindFirst(integrationProperties, func(property sdk.StorageIntegrationProperty) bool {
 				return property.Name == "STORAGE_AWS_EXTERNAL_ID"
 			})
 			if err == nil {
-				if err = handleExternalChangesToObjectInDescribe(d,
-					describeMapping{"storage_aws_external_id", "storage_aws_external_id", storageAwsExternalId.Value, storageAwsExternalId.Value, nil},
-				); err != nil {
-					return diag.FromErr(err)
-				}
+				outputMappings = append(outputMappings, describeMapping{"storage_aws_external_id", "storage_aws_external_id", storageAwsExternalId.Value, storageAwsExternalId.Value, nil})
+			} else {
+				log.Println("[DEBUG] could not find STORAGE_AWS_EXTERNAL_ID in integration properties, skipping...")
+			}
+			usePrivatelinkEndpoint, err := collections.FindFirst(integrationProperties, func(property sdk.StorageIntegrationProperty) bool {
+				return property.Name == "USE_PRIVATELINK_ENDPOINT"
+			})
+			if err == nil {
+				outputMappings = append(outputMappings, describeMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", usePrivatelinkEndpoint.Value, usePrivatelinkEndpoint.Value, nil})
+			} else {
+				log.Println("[DEBUG] could not find USE_PRIVATELINK_ENDPOINT in integration properties, skipping...")
+			}
+
+			if err = handleExternalChangesToObjectInDescribe(d,
+				outputMappings...,
+			); err != nil {
+				return diag.FromErr(err)
 			}
 		}
 
 		if err = setStateToValuesFromConfig(d, storageIntegrationSchema, []string{
 			"storage_aws_external_id",
+			"use_privatelink_endpoint",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -212,6 +250,7 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 
 		for _, prop := range integrationProperties {
 			switch prop.Name {
+			// STORAGE_AWS_EXTERNAL_ID and USE_PRIVATELINK_ENDPOINT are removed from here - handled by external changes detection above
 			case "STORAGE_PROVIDER":
 				errs = errors.Join(errs, d.Set("storage_provider", prop.Value))
 			case "STORAGE_ALLOWED_LOCATIONS":
@@ -228,7 +267,6 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 				}
 			case "STORAGE_AWS_ROLE_ARN":
 				errs = errors.Join(errs, d.Set("storage_aws_role_arn", prop.Value))
-			// STORAGE_AWS_EXTERNAL_ID is removed from here - handled by external changes detection above
 			case "STORAGE_GCP_SERVICE_ACCOUNT":
 				errs = errors.Join(errs, d.Set("storage_gcp_service_account", prop.Value))
 			case "AZURE_CONSENT_URL":
@@ -297,13 +335,20 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		if _, ok := d.GetOk("storage_aws_external_id"); ok {
 			s3Params.WithStorageAwsExternalId(d.Get("storage_aws_external_id").(string))
 		}
+		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", s3Params.WithUsePrivateLinkEndpoint); err != nil {
+			return diag.FromErr(err)
+		}
 		req.WithS3StorageProviderParams(*s3Params)
 	case storageProvider == "AZURE":
 		v, ok := d.GetOk("azure_tenant_id")
 		if !ok {
 			return diag.FromErr(fmt.Errorf("if you use the Azure storage provider you must specify an azure_tenant_id"))
 		}
-		req.WithAzureStorageProviderParams(*sdk.NewAzureStorageParamsRequest(sdk.String(v.(string))))
+		azureParams := sdk.NewAzureStorageParamsRequest(sdk.String(v.(string)))
+		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivateLinkEndpoint); err != nil {
+			return diag.FromErr(err)
+		}
+		req.WithAzureStorageProviderParams(*azureParams)
 	case storageProvider == "GCS":
 		req.WithGCSStorageProviderParams(*sdk.NewGCSStorageParamsRequest())
 	default:
@@ -362,9 +407,16 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			unset.WithStorageBlockedLocations(true)
 		}
 	}
+	storageProvider := strings.ToUpper(d.Get("storage_provider").(string))
 
-	if d.HasChange("storage_aws_role_arn") || d.HasChange("storage_aws_object_acl") || d.HasChange("storage_aws_external_id") {
-		s3SetParams := sdk.NewSetS3StorageParamsRequest(d.Get("storage_aws_role_arn").(string))
+	if (d.HasChange("storage_aws_role_arn") || d.HasChange("storage_aws_object_acl") || d.HasChange("storage_aws_external_id") || d.HasChange("use_privatelink_endpoint")) &&
+		(slices.Contains(sdk.AllS3Protocols, sdk.S3Protocol(storageProvider))) {
+		awsRoleArn, ok := d.GetOk("storage_aws_role_arn")
+		if !ok {
+			// If not set, this isn't an S3 storage integration
+			return diag.Errorf("storage_aws_role_arn must be set for S3 storage integrations")
+		}
+		s3SetParams := sdk.NewSetS3StorageParamsRequest(awsRoleArn.(string))
 
 		if d.HasChange("storage_aws_object_acl") {
 			if v, ok := d.GetOk("storage_aws_object_acl"); ok {
@@ -382,11 +434,27 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
+		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
+		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", s3SetParams.WithUsePrivateLinkEndpoint, false); err != nil {
+			return diag.FromErr(err)
+		}
+
 		set.WithS3Params(*s3SetParams)
 	}
 
-	if d.HasChange("azure_tenant_id") {
-		set.WithAzureParams(*sdk.NewSetAzureStorageParamsRequest(d.Get("azure_tenant_id").(string)))
+	if (d.HasChange("azure_tenant_id") || d.HasChange("use_privatelink_endpoint")) && storageProvider == "AZURE" {
+		azureTenantID, ok := d.GetOk("azure_tenant_id")
+		if !ok {
+			return diag.Errorf("azure_tenant_id must be set for AZURE storage integrations")
+		}
+		azureParams := sdk.NewSetAzureStorageParamsRequest(azureTenantID.(string))
+
+		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
+		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivateLinkEndpoint, false); err != nil {
+			return diag.FromErr(err)
+		}
+
+		set.WithAzureParams(*azureParams)
 	}
 
 	if !reflect.DeepEqual(*set, *sdk.NewStorageIntegrationSetRequest()) {

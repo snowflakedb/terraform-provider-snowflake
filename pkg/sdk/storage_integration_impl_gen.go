@@ -82,10 +82,11 @@ func (r *CreateStorageIntegrationRequest) toOpts() *CreateStorageIntegrationOpti
 	}
 	if r.S3StorageProviderParams != nil {
 		opts.S3StorageProviderParams = &S3StorageParams{
-			Protocol:             r.S3StorageProviderParams.Protocol,
-			StorageAwsRoleArn:    r.S3StorageProviderParams.StorageAwsRoleArn,
-			StorageAwsExternalId: r.S3StorageProviderParams.StorageAwsExternalId,
-			StorageAwsObjectAcl:  r.S3StorageProviderParams.StorageAwsObjectAcl,
+			Protocol:               r.S3StorageProviderParams.Protocol,
+			StorageAwsRoleArn:      r.S3StorageProviderParams.StorageAwsRoleArn,
+			StorageAwsExternalId:   r.S3StorageProviderParams.StorageAwsExternalId,
+			StorageAwsObjectAcl:    r.S3StorageProviderParams.StorageAwsObjectAcl,
+			UsePrivateLinkEndpoint: r.S3StorageProviderParams.UsePrivateLinkEndpoint,
 		}
 	}
 	if r.GCSStorageProviderParams != nil {
@@ -93,7 +94,8 @@ func (r *CreateStorageIntegrationRequest) toOpts() *CreateStorageIntegrationOpti
 	}
 	if r.AzureStorageProviderParams != nil {
 		opts.AzureStorageProviderParams = &AzureStorageParams{
-			AzureTenantId: r.AzureStorageProviderParams.AzureTenantId,
+			AzureTenantId:          r.AzureStorageProviderParams.AzureTenantId,
+			UsePrivateLinkEndpoint: r.AzureStorageProviderParams.UsePrivateLinkEndpoint,
 		}
 	}
 	return opts
@@ -116,14 +118,16 @@ func (r *AlterStorageIntegrationRequest) toOpts() *AlterStorageIntegrationOption
 		}
 		if r.Set.S3Params != nil {
 			opts.Set.S3Params = &SetS3StorageParams{
-				StorageAwsRoleArn:    r.Set.S3Params.StorageAwsRoleArn,
-				StorageAwsExternalId: r.Set.S3Params.StorageAwsExternalId,
-				StorageAwsObjectAcl:  r.Set.S3Params.StorageAwsObjectAcl,
+				StorageAwsRoleArn:      r.Set.S3Params.StorageAwsRoleArn,
+				StorageAwsExternalId:   r.Set.S3Params.StorageAwsExternalId,
+				StorageAwsObjectAcl:    r.Set.S3Params.StorageAwsObjectAcl,
+				UsePrivateLinkEndpoint: r.Set.S3Params.UsePrivateLinkEndpoint,
 			}
 		}
 		if r.Set.AzureParams != nil {
 			opts.Set.AzureParams = &SetAzureStorageParams{
-				AzureTenantId: r.Set.AzureParams.AzureTenantId,
+				AzureTenantId:          r.Set.AzureParams.AzureTenantId,
+				UsePrivateLinkEndpoint: r.Set.AzureParams.UsePrivateLinkEndpoint,
 			}
 		}
 	}
@@ -134,6 +138,7 @@ func (r *AlterStorageIntegrationRequest) toOpts() *AlterStorageIntegrationOption
 			Enabled:                 r.Unset.Enabled,
 			StorageBlockedLocations: r.Unset.StorageBlockedLocations,
 			Comment:                 r.Unset.Comment,
+			UsePrivateLinkEndpoint:  r.Unset.UsePrivateLinkEndpoint,
 		}
 	}
 	return opts

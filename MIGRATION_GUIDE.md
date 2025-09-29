@@ -24,7 +24,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.7.0 ➞ v2.7.1
+## v2.7.0 ➞ v2.8.0
+
+### *(new feature)* Added handling private link in S3 and Azure storage integrations
+
+Snowflake offers using private link in S3 and Azure storage integration. In this version, we added a new `use_privatelink_endpoint` field for handling this field in Snowflake.
+
+No changes in configuration and state are required. You can optionally update your configurations by explicitly setting the `use_privatelink_endpoint` field in the `snowflake_storage_integration` resource.
+
+Additionally, in this change we dropped validating combinations of provider-specific fields with storage providers during the update, e.g. setting `azure_tenant_id` for the AWS provider. We clarified in the documentation that the users are responsible for passing correct configurations. We are planning to introduce separate resources for each provider in the future.
+
+Note that this resource remains in preview.
 
 ### Changed handling of unset `generation` and `resource_constraint` fields in the `warehouse` resource
 
