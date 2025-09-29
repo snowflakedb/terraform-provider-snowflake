@@ -28,8 +28,9 @@ Each generator workflow looks as follows:
 - The list of input objects is filtered using all defined filters (default and additional).
 - The list of generation parts is filtered using all defined filters (default and additional).
 - For each remaining object, each remaining generation part is run.
+- The generator returns to OS.
 
-##### Defining and running a new generator
+#### Defining and running a new generator
 
 Before proceeding with the following steps check [objectassert/gen](../../acceptance/bettertestspoc/assert/objectassert/gen) package for reference.
 
@@ -40,7 +41,7 @@ To create a new generator:
     - `model.go` containing the model definition and conversion
     - `templates.go` containing the templates definitions and helper functions 
 2. Create `generate.go` file on the same level as the `gen` package above with the following content only (in addition to the package name) `//go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS`.
-3. In the `gen/main/main.go` create and run a new generator. This means:
+3. In the `gen/main/main.go` create and run a new generator. This means invoking the `genhelpers.NewGenerator` and:
    - providing the name and version for the generator
    - (currently optional) providing a short description and Makefile command part
    - providing an input definition for the source objects
@@ -50,6 +51,7 @@ To create a new generator:
    - providing method to translate enriched objects to the models used inside the templates
    - (optional) providing additional debug output you want to run for each of the objects
    - (optional) providing additional filters to limit the generation to only specific objects or generation parts
+   - ending with `RunAndHandleOsReturn()`
 4. Add two entries to our Makefile:
    - first for a cleanup, in form of `clean-<makefile-command-part>`, e.g.
    ```makefile
@@ -70,7 +72,7 @@ To create a new generator:
 
 ### Next steps
 
-##### Improvements
+#### Improvements
 
 Functional improvements:
 - add a generic terraform schema reader, to allow later generation from schemas
