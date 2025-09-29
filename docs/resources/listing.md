@@ -15,7 +15,7 @@ description: |-
 
 !> **Warning** To use external resources in your manifest (e.g., company logo) you must be sourcing your manifest from a stage. Any references to external resources are relative to the manifest location in the stage.
 
-!> **Warning** Currently, this resource doesn't support [organization listings](https://docs.snowflake.com/en/user-guide/collaboration/listings/organizational/org-listing-about). We plan to add support for this in the future (through separate parameter or entirely new resource). There is a workaround for this provided in this issue: [#3982](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3982), but beware that in the next major version of the provider such workarounds won't be allowed.
+!> **Warning** Currently, this resource doesn't support [organization listings](https://docs.snowflake.com/en/user-guide/collaboration/listings/organizational/org-listing-about). We plan to add support for this in the future (through separate parameter or entirely new resource). There is a workaround for this provided in this issue: [#3982](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3982), but beware that in the next major version of the provider such workarounds may not be allowed.
 
 -> **Note** When using manifest from stage, the change in either stage id, location, or version will create a new listing version that can be seen by calling the [SHOW VERSIONS IN LISTING](https://docs.snowflake.com/en/sql-reference/sql/show-versions-in-listing) command.
 
