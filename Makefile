@@ -200,7 +200,7 @@ generate-all-config-model-builders: generate-resource-model-builders generate-da
 generate-all-config-model-builders-check: clean-all-config-model-builders generate-all-config-model-builders ## check that generated config model builders are up-to-date
 	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/model
 	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/datasourcemodel
-	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/providelmodel
+	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/providermodel
 
 clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-snowflake-object-parameters-assertions clean-resource-assertions clean-resource-parameters-assertions clean-resource-show-output-assertions clean-resource-model-builders clean-provider-model-builders clean-datasource-model-builders ## clean all generated assertions and config models
 

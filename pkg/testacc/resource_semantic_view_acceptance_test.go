@@ -24,10 +24,12 @@ import (
 func TestAcc_SemanticView_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
-	table1Id := testClient().Ids.RandomSchemaObjectIdentifier()
-	table2Id := testClient().Ids.RandomSchemaObjectIdentifier()
-	logicalTable1 := model.LogicalTableWithProps("lt1", table1Id, nil, nil, nil, "")
-	logicalTable2 := model.LogicalTableWithProps("lt2", table2Id, nil, nil, nil, "")
+	table1, table1Cleanup := testClient().Table.Create(t)
+	t.Cleanup(table1Cleanup)
+	table2, table2Cleanup := testClient().Table.Create(t)
+	t.Cleanup(table2Cleanup)
+	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), nil, nil, nil, "")
+	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), nil, nil, nil, "")
 
 	modelBasic := model.SemanticView(
 		"test",

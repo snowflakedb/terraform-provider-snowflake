@@ -9,7 +9,6 @@ import (
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -45,7 +44,8 @@ func setUpProvider() error {
 	providerInitializationCache = make(map[string]cacheEntry)
 
 	TestAccProvider = provider.Provider()
-	TestAccProvider.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
+	// TODO (next PR): uncomment this after we have metrics or dimensions block. It's required for the object creation.
+	// TestAccProvider.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	TestAccProvider.ConfigureContextFunc = configureProviderWithConfigCache
 
 	var err error

@@ -24,7 +24,7 @@ func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewM
 			for j, key := range primaryKeys.PrimaryKey {
 				keys[j] = tfconfig.StringVariable(key.Name)
 			}
-			m["primary_keys"] = tfconfig.ListVariable(keys...)
+			m["primary_key"] = tfconfig.ListVariable(keys...)
 		}
 		uniqueKeys := v.GetUniqueKeys()
 		if uniqueKeys != nil {
@@ -34,9 +34,11 @@ func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewM
 				for k, uniKey := range key.Unique {
 					uniKeys[k] = tfconfig.StringVariable(uniKey.Name)
 				}
-				keys[j] = tfconfig.ListVariable(uniKeys...)
+				keys[j] = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"values": tfconfig.ListVariable(uniKeys...),
+				})
 			}
-			m["unique_keys"] = tfconfig.ListVariable(keys...)
+			m["unique"] = tfconfig.ListVariable(keys...)
 		}
 		synonyms := v.GetSynonyms()
 		if synonyms != nil {
@@ -44,7 +46,7 @@ func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewM
 			for j, synonym := range synonyms.WithSynonyms {
 				syns[j] = tfconfig.StringVariable(synonym.Synonym)
 			}
-			m["synonyms"] = tfconfig.ListVariable(syns...)
+			m["synonym"] = tfconfig.SetVariable(syns...)
 		}
 		maps[i] = tfconfig.ObjectVariable(m)
 	}

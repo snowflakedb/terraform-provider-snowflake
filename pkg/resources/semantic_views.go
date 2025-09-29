@@ -59,21 +59,23 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Definitions of primary keys in the logical table."),
 					Elem: &schema.Schema{
-						Type:     schema.TypeString,
-						Optional: true,
+						Type: schema.TypeString,
 					},
 				},
 				"unique": {
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Definitions of unique key combinations in the logical table."),
-					Elem: &schema.Schema{
-						Type:        schema.TypeList,
-						Optional:    true,
-						Description: blocklistedCharactersFieldDescription("Unique key combinations in the logical table"),
-						Elem: &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"values": {
+								Type:     schema.TypeList,
+								Required: true,
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+								Description: blocklistedCharactersFieldDescription("Unique key combinations in the logical table"),
+							},
 						},
 					},
 				},
@@ -82,8 +84,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("List of synonyms for the logical table."),
 					Elem: &schema.Schema{
-						Type:     schema.TypeString,
-						Optional: true,
+						Type: schema.TypeString,
 					},
 				},
 				"comment": {
