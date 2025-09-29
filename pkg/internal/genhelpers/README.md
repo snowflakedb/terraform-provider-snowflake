@@ -75,6 +75,7 @@ To create a new generator:
 Functional improvements:
 - add a generic terraform schema reader, to allow later generation from schemas
 - handle the missing types (TODOs in [struct_details_extractor_test.go](./struct_details_extractor_test.go))
+- add support for custom command line flags
 
 Implementation improvements:
 - add acceptance test for a `testStruct` (the one from [struct_details_extractor_test.go](./struct_details_extractor_test.go)) for the whole generation flow
