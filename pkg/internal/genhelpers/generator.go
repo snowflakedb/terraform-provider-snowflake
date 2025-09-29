@@ -201,8 +201,29 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 	return nil
 }
 
-// TODO [SNOW-1501905]: temporary hacky solution to allow easy passing multiple args from the make command
-// TODO [this PR]: describe the reasoning
+// We would like to be able to alter the generator behavior based on the command line flags.
+// The easiest way to do this is to use a dedicated environment variable and pass it to every generator invocation, e.g.:
+//
+//	go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS
+//
+// The go:generate directive does only a simple string replacement without retokenization, so:
+//
+//	go:generate go run .cmd/mygen ${MYFLAGS}
+//
+// is tokenized to:
+//
+//	[go, run, .cmd/mygen, ${MYFLAGS}]
+//
+// Let's say MYFLAGS="-a=42 b=somevalue" after replacement we'll get:
+//
+//	[go, run, .cmd/mygen, -a=42 b=somevalue].
+//
+// Because of that, we do the retokenization ourselves in this method.
+//
+// One of the potential workarounds is to wrap the invocation in sh -c '...' but for compatibility issues we will stick with the direct go run for now.
+//
+// References:
+// - https://pkg.go.dev/cmd/go/internal/generate
 func preprocessArgs() {
 	rest := os.Args[1:]
 	newArgs := []string{os.Args[0]}
