@@ -204,11 +204,11 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 // We would like to be able to alter the generator behavior based on the command line flags.
 // The easiest way to do this is to use a dedicated environment variable and pass it to every generator invocation, e.g.:
 //
-//	go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS
+//	//go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS
 //
 // The go:generate directive does only a simple string replacement without retokenization, so:
 //
-//	go:generate go run .cmd/mygen ${MYFLAGS}
+//	//go:generate go run .cmd/mygen ${MYFLAGS}
 //
 // is tokenized to:
 //
