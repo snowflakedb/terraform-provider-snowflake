@@ -56,9 +56,9 @@ type Operation struct {
 
 	// StructsToGenerate is a list of all newly introduced structs comprised of HelperStructs and OptsField; contains only unique structs
 	StructsToGenerate []*Field
-	// ObjectIdMethod TODO
+	// ObjectIdMethod is a model to generate the ID() method for an SDK object; replaces the old logic
 	ObjectIdMethod *ShowObjectIdMethod
-	// ObjectTypeMethod TODO
+	// ObjectTypeMethod is a model to generate the ObjectType() method for an SDK object; replaces the old logic
 	ObjectTypeMethod *ShowObjectTypeMethod
 	// DtosToGenerate is a list of all newly introduced dto structs based on the operation opts; contains only unique structs
 	DtosToGenerate []*Field
