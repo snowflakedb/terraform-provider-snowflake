@@ -30,6 +30,11 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	t.Cleanup(table2Cleanup)
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), nil, nil, nil, "")
 	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), nil, nil, nil, "")
+	semExp1 := model.SemanticExpressionWithProps("se1", "SUM(lt1.a1)", nil, "semantic expression 1")
+	partitionBy := "a1"
+	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps("wf1", "sum(lt2.a1)", sdk.WindowFunctionOverClause{PartitionBy: &partitionBy})
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
+	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1)
 
 	modelBasic := model.SemanticView(
 		"test",
@@ -37,6 +42,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		id.SchemaName(),
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.MetricDefinition{*metric1},
 	)
 
 	modelComplete := model.SemanticView(
@@ -45,6 +51,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		id.SchemaName(),
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.MetricDefinition{*metric1},
 	).WithComment(comment)
 
 	modelCompleteWithDifferentValues := model.SemanticView(
@@ -53,6 +60,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		id.SchemaName(),
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable2},
+		[]sdk.MetricDefinition{*metric2},
 	).WithComment(changedComment)
 
 	resource.Test(t, resource.TestCase{
