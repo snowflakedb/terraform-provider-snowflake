@@ -114,6 +114,7 @@ func (g *Generator[T, M]) Run() error {
 	flag.Var(filterObjects, filterObjects.flagName(), filterObjects.usage())
 	flag.Var(filterParts, filterParts.flagName(), filterParts.usage())
 
+	// TODO [this PR]: generic description
 	flag.Usage = func() {
 		usage := `Generate SDK objects based on the SQL definitions provided.
 
