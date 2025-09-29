@@ -4,13 +4,11 @@ import (
 	"text/template"
 
 	_ "embed"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
 var (
-	//go:embed templates/preamble.tmpl
-	preambleTemplateContent string
-	PreambleTemplate, _     = template.New("preambleTemplate").Parse(preambleTemplateContent)
-
 	//go:embed templates/model.tmpl
 	modelTemplateContent string
 	ModelTemplate, _     = template.New("modelTemplate").Parse(modelTemplateContent)
@@ -19,5 +17,5 @@ var (
 	schemaTemplateContent string
 	SchemaTemplate, _     = template.New("schemaTemplate").Parse(schemaTemplateContent)
 
-	AllTemplates = []*template.Template{PreambleTemplate, ModelTemplate, SchemaTemplate}
+	AllTemplates = []*template.Template{genhelpers.PreambleTemplate, ModelTemplate, SchemaTemplate}
 )

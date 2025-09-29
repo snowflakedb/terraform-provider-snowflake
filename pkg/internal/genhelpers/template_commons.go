@@ -6,11 +6,20 @@ import (
 	"strings"
 	"text/template"
 
+	_ "embed"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // TODO [SNOW-1501905]: describe all methods in this file
 // TODO [SNOW-1501905]: test all methods in this file
+
+// common templates should go here
+var (
+	//go:embed templates/preamble.tmpl
+	preambleTemplateContent string
+	PreambleTemplate, _     = template.New("preambleTemplate").Parse(preambleTemplateContent)
+)
 
 func FirstLetterLowercase(in string) string {
 	return strings.ToLower(in[:1]) + in[1:]

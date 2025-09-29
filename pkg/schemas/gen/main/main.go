@@ -9,13 +9,20 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas/gen"
 	"golang.org/x/exp/maps"
 )
 
+const (
+	name    = "SDK to schema"
+	version = "0.1.0"
+)
+
 func main() {
 	genhelpers.NewGenerator(
+		genhelpers.NewPreambleModel(name, version).
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk").
+			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),
 		getStructDetails,
 		gen.ModelFromStructDetails,
 		getFilename,
