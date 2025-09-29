@@ -42,7 +42,7 @@ func SemanticView(
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
-	s.WithTables(tables) // manually adjusted
+	s.WithTables(tables)   // manually adjusted
 	s.WithMetrics(metrics) //manually adjusted
 	return s
 }
@@ -58,7 +58,7 @@ func SemanticViewWithDefaultMeta(
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
-	s.WithTables(tables) // manually adjusted
+	s.WithTables(tables)   // manually adjusted
 	s.WithMetrics(metrics) //manually adjusted
 	return s
 }
