@@ -494,8 +494,10 @@ func TestAcc_DynamicTable_issue3931_EmptyText(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	query := fmt.Sprintf(`select * from %v`, table.ID().FullyQualifiedName())
-	dynamicTableModel := model.DynamicTableWithoutTargetLag("test", id.DatabaseName(), id.SchemaName(), id.Name(), query, TestWarehouseName).
-		WithMaximumDurationTargetLag("2 minutes")
+	targetLag := sdk.TargetLag{
+		MaximumDuration: sdk.String("2 minutes"),
+	}
+	dynamicTableModel := model.DynamicTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), query, []sdk.TargetLag{targetLag}, TestWarehouseName)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -514,8 +516,20 @@ func TestAcc_DynamicTable_issue3931_EmptyText(t *testing.T) {
 				),
 			},
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(dynamicTableModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
 				PreConfig: func() {
 					testClient().Grant.GrantOwnershipToAccountRole(t, role.ID(), sdk.ObjectTypeDynamicTable, id)
+					testClient().Grant.GrantPrivilegesOnSchemaObjectToAccountRole(t, snowflakeroles.Accountadmin, sdk.ObjectTypeDynamicTable, id, []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}, false)
+
+					// Added just in case if the test fails and the last step is not executed
+					t.Cleanup(testClient().DynamicTable.DropDynamicTableFunc(t, id))
+					t.Cleanup(func() {
+						testClient().Grant.GrantOwnershipToAccountRoleWithOwnershipOptions(t, snowflakeroles.Accountadmin, sdk.ObjectTypeDynamicTable, id, sdk.GrantOwnershipOptions{CurrentGrants: &sdk.OwnershipCurrentGrants{OutboundPrivileges: sdk.Revoke}})
+					})
 				},
 				Config:      accconfig.FromModels(t, dynamicTableModel),
 				ExpectError: regexp.MustCompile("the text is empty for dynamic table"),

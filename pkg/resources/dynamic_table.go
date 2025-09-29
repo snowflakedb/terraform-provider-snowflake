@@ -70,9 +70,10 @@ var dynamicTableSchema = map[string]*schema.Schema{
 		},
 	},
 	"warehouse": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The warehouse in which to create the dynamic table.",
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The warehouse in which to create the dynamic table.",
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"query": {
 		Type:             schema.TypeString,
@@ -218,9 +219,6 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if err := d.Set("schema", dynamicTable.SchemaName); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("warehouse", dynamicTable.Warehouse); err != nil {
-		return diag.FromErr(err)
-	}
 	if err := d.Set("comment", dynamicTable.Comment); err != nil {
 		return diag.FromErr(err)
 	}
@@ -306,7 +304,7 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if dynamicTable.Text == "" {
 		return diag.Diagnostics{
 			diag.Diagnostic{
-				Severity: diag.Warning,
+				Severity: diag.Error,
 				Summary:  "Failed to query dynamic table's text column.",
 				Detail: fmt.Sprintf(
 					joinWithSpace(
@@ -325,6 +323,10 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 	if err := d.Set("query", query); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := d.Set("warehouse", dynamicTable.Warehouse); err != nil {
 		return diag.FromErr(err)
 	}
 
