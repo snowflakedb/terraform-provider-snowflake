@@ -298,4 +298,8 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "GrantApplicationRole",
 		schema: resources.GrantApplicationRole().Schema,
 	},
+	{
+		name:   "StorageIntegration",
+		schema: resources.StorageIntegration().Schema,
+	},
 }

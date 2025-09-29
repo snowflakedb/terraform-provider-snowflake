@@ -39,10 +39,11 @@ type StorageLocation struct {
 }
 
 type S3StorageParams struct {
-	Protocol             S3Protocol `ddl:"parameter,single_quotes" sql:"STORAGE_PROVIDER"`
-	StorageAwsRoleArn    string     `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
-	StorageAwsExternalId *string    `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_EXTERNAL_ID"`
-	StorageAwsObjectAcl  *string    `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
+	Protocol               S3Protocol `ddl:"parameter,single_quotes" sql:"STORAGE_PROVIDER"`
+	StorageAwsRoleArn      string     `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
+	StorageAwsExternalId   *string    `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_EXTERNAL_ID"`
+	StorageAwsObjectAcl    *string    `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
+	UsePrivateLinkEndpoint *bool      `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type GCSStorageParams struct {
@@ -50,8 +51,9 @@ type GCSStorageParams struct {
 }
 
 type AzureStorageParams struct {
-	storageProvider string  `ddl:"static" sql:"STORAGE_PROVIDER = 'AZURE'"`
-	AzureTenantId   *string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
+	storageProvider        string  `ddl:"static" sql:"STORAGE_PROVIDER = 'AZURE'"`
+	AzureTenantId          *string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
+	UsePrivateLinkEndpoint *bool   `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 // AlterStorageIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-storage-integration.
@@ -76,13 +78,15 @@ type StorageIntegrationSet struct {
 }
 
 type SetS3StorageParams struct {
-	StorageAwsRoleArn    string  `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
-	StorageAwsExternalId *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_EXTERNAL_ID"`
-	StorageAwsObjectAcl  *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
+	StorageAwsRoleArn      string  `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
+	StorageAwsExternalId   *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_EXTERNAL_ID"`
+	StorageAwsObjectAcl    *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
+	UsePrivateLinkEndpoint *bool   `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type SetAzureStorageParams struct {
-	AzureTenantId string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
+	AzureTenantId          string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
+	UsePrivateLinkEndpoint *bool  `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type StorageIntegrationUnset struct {
@@ -91,6 +95,7 @@ type StorageIntegrationUnset struct {
 	Enabled                 *bool `ddl:"keyword" sql:"ENABLED"`
 	StorageBlockedLocations *bool `ddl:"keyword" sql:"STORAGE_BLOCKED_LOCATIONS"`
 	Comment                 *bool `ddl:"keyword" sql:"COMMENT"`
+	UsePrivateLinkEndpoint  *bool `ddl:"keyword" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 // DropStorageIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-integration.

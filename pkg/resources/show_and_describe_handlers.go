@@ -40,7 +40,7 @@ func handleExternalChangesToObjectInShow(d *schema.ResourceData, mappings ...out
 }
 
 // handleExternalChangesToObjectInFlatDescribe assumes that describe output is kept in DescribeOutputAttributeName attribute
-// It is to be used with flat - show like describe_output schemas
+// It is to be used with flat - (show-like) describe_output schemas
 // To handle external changes to describe with properties like collections use `handleExternalChangesToObjectInDescribe()`
 func handleExternalChangesToObjectInFlatDescribe(d *schema.ResourceData, mappings ...outputMapping) error {
 	return handleExternalChangesToObject(d, DescribeOutputAttributeName, mappings...)

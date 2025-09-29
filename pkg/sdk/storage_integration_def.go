@@ -1,35 +1,10 @@
 package sdk
 
 import (
-	"fmt"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
 //go:generate go run ./poc/main.go
-
-type S3Protocol string
-
-const (
-	RegularS3Protocol S3Protocol = "S3"
-	GovS3Protocol     S3Protocol = "S3GOV"
-	ChinaS3Protocol   S3Protocol = "S3CHINA"
-)
-
-var (
-	AllS3Protocols      = []S3Protocol{RegularS3Protocol, GovS3Protocol, ChinaS3Protocol}
-	AllStorageProviders = append(AsStringList(AllS3Protocols), "GCS", "AZURE")
-)
-
-func ToS3Protocol(s string) (S3Protocol, error) {
-	switch protocol := S3Protocol(strings.ToUpper(s)); protocol {
-	case RegularS3Protocol, GovS3Protocol, ChinaS3Protocol:
-		return protocol, nil
-	default:
-		return "", fmt.Errorf("invalid S3 protocol: %s", s)
-	}
-}
 
 var StorageLocationDef = g.NewQueryStruct("StorageLocation").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
@@ -53,7 +28,8 @@ var StorageIntegrationDef = g.NewInterface(
 					PredefinedQueryStructField("Protocol", g.KindOfT[S3Protocol](), g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required()).
 					TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
-					OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()),
+					OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
+					OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
@@ -66,7 +42,8 @@ var StorageIntegrationDef = g.NewInterface(
 				"AzureStorageProviderParams",
 				g.NewQueryStruct("AzureStorageParams").
 					PredefinedQueryStructField("storageProvider", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'AZURE'")).
-					OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()),
+					OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
+					OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
@@ -93,13 +70,15 @@ var StorageIntegrationDef = g.NewInterface(
 						g.NewQueryStruct("SetS3StorageParams").
 							TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 							OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
-							OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()),
+							OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
+							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 						g.KeywordOptions(),
 					).
 					OptionalQueryStructField(
 						"AzureParams",
 						g.NewQueryStruct("SetAzureStorageParams").
-							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()),
+							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
+							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 						g.KeywordOptions(),
 					).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
@@ -115,7 +94,8 @@ var StorageIntegrationDef = g.NewInterface(
 					OptionalSQL("STORAGE_AWS_OBJECT_ACL").
 					OptionalSQL("ENABLED").
 					OptionalSQL("STORAGE_BLOCKED_LOCATIONS").
-					OptionalSQL("COMMENT"),
+					OptionalSQL("COMMENT").
+					OptionalSQL("USE_PRIVATELINK_ENDPOINT"),
 				g.ListOptions().SQL("UNSET"),
 			).
 			OptionalSetTags().
