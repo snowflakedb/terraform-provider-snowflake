@@ -32,6 +32,9 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	objectFilters                     []func(T) bool
 	generationPartFilters             []func(GenerationPart[T, M]) bool
 
+	description         string
+	makefileCommandPart string
+
 	preamble *PreambleModel
 }
 
@@ -59,6 +62,9 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 		// TODO [SNOW-2324252]: change default to name when changing to vararg
 		NewGenerationPart("default", filenameProvider, templates),
 	}
+	// TODO [SNOW-2324252]: Probably remove later; it should be a part of the constructor
+	defaultDescription := "Generator's description missing."
+	defaultMakefileCommandPart := "<makefile-command-part>"
 	return &Generator[T, M]{
 		objectsProvider:  objectsProvider,
 		modelProvider:    modelProvider,
@@ -70,6 +76,9 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 		additionalObjectDebugLogProviders: make([]func([]T), 0),
 		objectFilters:                     make([]func(T) bool, 0),
 		generationPartFilters:             make([]func(GenerationPart[T, M]) bool, 0),
+
+		description:         defaultDescription,
+		makefileCommandPart: defaultMakefileCommandPart,
 
 		preamble: preamble,
 	}
@@ -96,6 +105,17 @@ func (g *Generator[T, M]) WithAdditionalGenerationPartFilter(generationPartFilte
 	return g
 }
 
+// TODO [SNOW-2324252]: Probably remove later; it should be a part of the constructor
+func (g *Generator[T, M]) WithDescription(description string) *Generator[T, M] {
+	g.description = description
+	return g
+}
+
+func (g *Generator[T, M]) WithMakefileCommandPart(part string) *Generator[T, M] {
+	g.makefileCommandPart = part
+	return g
+}
+
 func (g *Generator[T, M]) Run() error {
 	preprocessArgs()
 
@@ -114,12 +134,11 @@ func (g *Generator[T, M]) Run() error {
 	flag.Var(filterObjects, filterObjects.flagName(), filterObjects.usage())
 	flag.Var(filterParts, filterParts.flagName(), filterParts.usage())
 
-	// TODO [this PR]: generic description
 	flag.Usage = func() {
-		usage := `Generate SDK objects based on the SQL definitions provided.
+		usage := fmt.Sprintf(`%[1]s
 
-usage: make generate-sdk SF_TF_GENERATOR_ARGS='<args>'
-`
+usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
+`, g.description, g.makefileCommandPart)
 		_, _ = fmt.Fprintf(os.Stderr, "%s\n", usage)
 		flag.PrintDefaults()
 	}
