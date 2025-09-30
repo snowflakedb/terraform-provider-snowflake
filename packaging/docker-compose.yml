@@ -1,9 +1,9 @@
 services:
-  run-smoke-tests:
+  run-build-verification-tests:
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - ./../:/terraform-provider-snowflake
     working_dir: /terraform-provider-snowflake
-    command: [ "make", "test-smoke" ]
+    command: [ "make", "test-build-verification" ]
