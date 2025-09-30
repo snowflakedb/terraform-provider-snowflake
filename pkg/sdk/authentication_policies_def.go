@@ -44,8 +44,9 @@ var AllMfaAuthenticationMethods = []MfaAuthenticationMethodsOption{
 type MfaEnrollmentOption string
 
 const (
-	MfaEnrollmentRequired MfaEnrollmentOption = "REQUIRED"
-	MfaEnrollmentOptional MfaEnrollmentOption = "OPTIONAL"
+	MfaEnrollmentRequired             MfaEnrollmentOption = "REQUIRED"
+	MfaEnrollmentRequiredPasswordOnly MfaEnrollmentOption = "REQUIRED_PASSWORD_ONLY"
+	MfaEnrollmentOptional             MfaEnrollmentOption = "OPTIONAL"
 )
 
 type ClientTypesOption string
@@ -221,6 +222,7 @@ func ToMfaAuthenticationMethodsOption(s string) (*MfaAuthenticationMethodsOption
 func ToMfaEnrollmentOption(s string) (*MfaEnrollmentOption, error) {
 	switch mfaEnrollmentOption := MfaEnrollmentOption(strings.ToUpper(s)); mfaEnrollmentOption {
 	case MfaEnrollmentRequired,
+		MfaEnrollmentRequiredPasswordOnly,
 		MfaEnrollmentOptional:
 		return &mfaEnrollmentOption, nil
 	default:
