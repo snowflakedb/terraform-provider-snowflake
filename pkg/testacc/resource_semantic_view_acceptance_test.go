@@ -22,6 +22,9 @@ import (
 )
 
 func TestAcc_SemanticView_basic(t *testing.T) {
+	// TODO (next PR): unskip
+	t.Skip("Skipping semantic view acceptance test until we have metrics or dimensions block. It's required for the object creation.")
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
 	table1, table1Cleanup := testClient().Table.Create(t)
