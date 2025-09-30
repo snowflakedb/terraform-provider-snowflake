@@ -1,6 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.Interface*/ -}}
 
-//go:generate go run ./dto-builder-generator/main.go
+//go:generate go run {{ .PathToDtoBuilderGen }}
 
 var (
 {{- range .Operations }}
@@ -9,3 +9,9 @@ var (
     {{- end }}
 {{- end }}
 )
+
+{{- range .Operations }}
+    {{- range .DtosToGenerate }}
+        {{ template "dtoDeclTemplate" . }}
+    {{- end }}
+{{- end }}

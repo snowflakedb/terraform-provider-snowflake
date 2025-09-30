@@ -24,24 +24,59 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	filenameProvider func(T, M) string
 	templates        []*template.Template
 
+	generationParts []GenerationPart[T, M]
+
 	additionalObjectDebugLogProviders []func([]T)
 	objectFilters                     []func(T) bool
+	generationPartFilters             []func(GenerationPart[T, M]) bool
 
 	preamble *PreambleModel
 }
 
+type GenerationPart[T ObjectNameProvider, M HasPreambleModel] struct {
+	name             string
+	filenameProvider func(T, M) string
+	templates        []*template.Template
+}
+
+func (g *GenerationPart[_, _]) GetName() string {
+	return g.name
+}
+
+func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](name string, filenameProvider func(T, M) string, templates []*template.Template) GenerationPart[T, M] {
+	return GenerationPart[T, M]{
+		name:             name,
+		filenameProvider: filenameProvider,
+		templates:        templates,
+	}
+}
+
 func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+	// TODO [SNOW-2324252]: handle vararg input
+	parts := []GenerationPart[T, M]{
+		// TODO [SNOW-2324252]: change default to name when changing to vararg
+		NewGenerationPart("default", filenameProvider, templates),
+	}
 	return &Generator[T, M]{
 		objectsProvider:  objectsProvider,
 		modelProvider:    modelProvider,
 		filenameProvider: filenameProvider,
 		templates:        templates,
 
+		generationParts: parts,
+
 		additionalObjectDebugLogProviders: make([]func([]T), 0),
 		objectFilters:                     make([]func(T) bool, 0),
+		generationPartFilters:             make([]func(GenerationPart[T, M]) bool, 0),
 
 		preamble: preamble,
 	}
+}
+
+// TODO [SNOW-2324252]: Probably remove later when we have vararg support in the NewGenerator constructor
+func (g *Generator[T, M]) WithGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+	g.generationParts = append(g.generationParts, NewGenerationPart(partName, filenameProvider, templates))
+	return g
 }
 
 func (g *Generator[T, M]) WithAdditionalObjectsDebugLogs(objectLogsProvider func([]T)) *Generator[T, M] {
@@ -54,7 +89,12 @@ func (g *Generator[T, M]) WithObjectFilter(objectFilter func(T) bool) *Generator
 	return g
 }
 
-func (g *Generator[T, _]) Run() error {
+func (g *Generator[T, M]) WithGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
+	g.generationPartFilters = append(g.generationPartFilters, generationPartFilter)
+	return g
+}
+
+func (g *Generator[T, M]) Run() error {
 	preprocessArgs()
 
 	file := os.Getenv("GOFILE")
@@ -65,7 +105,6 @@ func (g *Generator[T, _]) Run() error {
 	flag.Parse()
 
 	objects := g.objectsProvider()
-
 	if len(g.objectFilters) > 0 {
 		filteredObjects := make([]T, 0)
 		for _, o := range objects {
@@ -80,6 +119,21 @@ func (g *Generator[T, _]) Run() error {
 		objects = filteredObjects
 	}
 
+	parts := g.generationParts
+	if len(g.generationPartFilters) > 0 {
+		filteredGenerationParts := make([]GenerationPart[T, M], 0)
+		for _, p := range g.generationParts {
+			matches := true
+			for _, f := range g.generationPartFilters {
+				matches = matches && f(p)
+			}
+			if matches {
+				filteredGenerationParts = append(filteredGenerationParts, p)
+			}
+		}
+		parts = filteredGenerationParts
+	}
+
 	if *additionalLogs {
 		for _, p := range g.additionalObjectDebugLogProviders {
 			p(objects)
@@ -87,11 +141,11 @@ func (g *Generator[T, _]) Run() error {
 	}
 
 	if *dryRun {
-		if err := g.generateAndPrintForAllObjects(objects); err != nil {
+		if err := g.generateAndPrint(objects, parts); err != nil {
 			return err
 		}
 	} else {
-		if err := g.generateAndSaveForAllObjects(objects); err != nil {
+		if err := g.generateAndSave(objects, parts); err != nil {
 			return err
 		}
 	}
@@ -116,33 +170,39 @@ func (g *Generator[_, _]) RunAndHandleOsReturn() {
 	}
 }
 
-func (g *Generator[T, _]) generateAndSaveForAllObjects(objects []T) error {
+func (g *Generator[T, M]) generateAndSave(objects []T, parts []GenerationPart[T, M]) error {
 	var errs []error
 	for _, s := range objects {
-		buffer := bytes.Buffer{}
 		model := g.modelProvider(s, g.preamble)
-		if err := executeAllTemplates(model, &buffer, g.templates...); err != nil {
-			errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
-			continue
-		}
-		filename := g.filenameProvider(s, model)
-		if err := WriteCodeToFile(&buffer, filename); err != nil {
-			errs = append(errs, fmt.Errorf("saving output for object %s to file %s failed with err: %w", s.ObjectName(), filename, err))
-			continue
+
+		for _, p := range parts {
+			buffer := bytes.Buffer{}
+
+			if err := executeAllTemplates(model, &buffer, p.templates...); err != nil {
+				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
+				continue
+			}
+			filename := p.filenameProvider(s, model)
+			if err := WriteCodeToFile(&buffer, filename); err != nil {
+				errs = append(errs, fmt.Errorf("saving output for object %s to file %s failed with err: %w", s.ObjectName(), filename, err))
+				continue
+			}
 		}
 	}
 	return errors.Join(errs...)
 }
 
-func (g *Generator[T, _]) generateAndPrintForAllObjects(objects []T) error {
+func (g *Generator[T, M]) generateAndPrint(objects []T, parts []GenerationPart[T, M]) error {
 	var errs []error
 	for _, s := range objects {
 		fmt.Println("===========================")
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
-		if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, g.templates...); err != nil {
-			errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
-			continue
+		for _, p := range parts {
+			if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, p.templates...); err != nil {
+				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
+				continue
+			}
 		}
 	}
 	return errors.Join(errs...)
