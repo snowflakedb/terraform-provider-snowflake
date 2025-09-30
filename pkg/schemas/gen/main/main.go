@@ -28,7 +28,6 @@ func main() {
 	).
 		WithAdditionalObjectsDebugLogs(printAllStructsFields).
 		WithAdditionalObjectsDebugLogs(printUniqueTypes).
-		WithObjectFilter(genhelpers.FilterObjectByNameFromEnv[genhelpers.StructDetails]).
 		RunAndHandleOsReturn()
 }
 

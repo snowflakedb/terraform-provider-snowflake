@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 // TODO [SNOW-1501905]: describe
@@ -29,6 +31,9 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	additionalObjectDebugLogProviders []func([]T)
 	objectFilters                     []func(T) bool
 	generationPartFilters             []func(GenerationPart[T, M]) bool
+
+	description         string
+	makefileCommandPart string
 
 	preamble *PreambleModel
 }
@@ -57,6 +62,9 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 		// TODO [SNOW-2324252]: change default to name when changing to vararg
 		NewGenerationPart("default", filenameProvider, templates),
 	}
+	// TODO [SNOW-2324252]: Probably remove later; it should be a part of the constructor
+	defaultDescription := "Generator's description missing."
+	defaultMakefileCommandPart := "<makefile-command-part>"
 	return &Generator[T, M]{
 		objectsProvider:  objectsProvider,
 		modelProvider:    modelProvider,
@@ -68,6 +76,9 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 		additionalObjectDebugLogProviders: make([]func([]T), 0),
 		objectFilters:                     make([]func(T) bool, 0),
 		generationPartFilters:             make([]func(GenerationPart[T, M]) bool, 0),
+
+		description:         defaultDescription,
+		makefileCommandPart: defaultMakefileCommandPart,
 
 		preamble: preamble,
 	}
@@ -84,13 +95,24 @@ func (g *Generator[T, M]) WithAdditionalObjectsDebugLogs(objectLogsProvider func
 	return g
 }
 
-func (g *Generator[T, M]) WithObjectFilter(objectFilter func(T) bool) *Generator[T, M] {
+func (g *Generator[T, M]) WithAdditionalObjectFilter(objectFilter func(T) bool) *Generator[T, M] {
 	g.objectFilters = append(g.objectFilters, objectFilter)
 	return g
 }
 
-func (g *Generator[T, M]) WithGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
+func (g *Generator[T, M]) WithAdditionalGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
 	g.generationPartFilters = append(g.generationPartFilters, generationPartFilter)
+	return g
+}
+
+// TODO [SNOW-2324252]: Probably remove later; it should be a part of the constructor
+func (g *Generator[T, M]) WithDescription(description string) *Generator[T, M] {
+	g.description = description
+	return g
+}
+
+func (g *Generator[T, M]) WithMakefileCommandPart(part string) *Generator[T, M] {
+	g.makefileCommandPart = part
 	return g
 }
 
@@ -100,11 +122,38 @@ func (g *Generator[T, M]) Run() error {
 	file := os.Getenv("GOFILE")
 	fmt.Printf("Running generator on %s with args %#v\n", file, os.Args[1:])
 
+	// getting them early to be able to easily list available options in help
+	objects := g.objectsProvider()
+	parts := g.generationParts
+
+	filterObjects := newFiltersFlag("object names", collections.Map(objects, func(o T) string { return o.ObjectName() }))
+	filterParts := newFiltersFlag("generation part names", collections.Map(parts, func(p GenerationPart[T, M]) string { return p.GetName() }))
+
 	additionalLogs := flag.Bool("verbose", false, "print additional object debug logs")
 	dryRun := flag.Bool("dry-run", false, "generate to std out instead of saving")
+	flag.Var(filterObjects, filterObjects.flagName(), filterObjects.usage())
+	flag.Var(filterParts, filterParts.flagName(), filterParts.usage())
+
+	flag.Usage = func() {
+		usage := fmt.Sprintf(`%[1]s
+
+usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
+`, g.description, g.makefileCommandPart)
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", usage)
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
-	objects := g.objectsProvider()
+	if filterObjects.hasValues() {
+		fmt.Printf("Object filters present: %s\n", filterObjects)
+		g.objectFilters = append(g.objectFilters, filterObjectByNameProvider[T](filterObjects.filters))
+	}
+	if filterParts.hasValues() {
+		fmt.Printf("Generation part filters present: %s\n", filterParts)
+		g.generationPartFilters = append(g.generationPartFilters, filterGenerationPartByNameProvider[T, M](filterParts.filters))
+	}
+
 	if len(g.objectFilters) > 0 {
 		filteredObjects := make([]T, 0)
 		for _, o := range objects {
@@ -119,7 +168,6 @@ func (g *Generator[T, M]) Run() error {
 		objects = filteredObjects
 	}
 
-	parts := g.generationParts
 	if len(g.generationPartFilters) > 0 {
 		filteredGenerationParts := make([]GenerationPart[T, M], 0)
 		for _, p := range g.generationParts {
@@ -153,7 +201,29 @@ func (g *Generator[T, M]) Run() error {
 	return nil
 }
 
-// TODO [SNOW-1501905]: temporary hacky solution to allow easy passing multiple args from the make command
+// We would like to be able to alter the generator behavior based on the command line flags.
+// The easiest way to do this is to use a dedicated environment variable and pass it to every generator invocation, e.g.:
+//
+//	//go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS
+//
+// The go:generate directive does only a simple string replacement without retokenization, so:
+//
+//	//go:generate go run .cmd/mygen ${MYFLAGS}
+//
+// is tokenized to:
+//
+//	[go, run, .cmd/mygen, ${MYFLAGS}]
+//
+// Let's say MYFLAGS="-a=42 b=somevalue" after replacement we'll get:
+//
+//	[go, run, .cmd/mygen, -a=42 b=somevalue].
+//
+// Because of that, we do the retokenization ourselves in this method.
+//
+// One of the potential workarounds is to wrap the invocation in sh -c '...' but for compatibility issues we will stick with the direct go run for now.
+//
+// References:
+// - https://pkg.go.dev/cmd/go/internal/generate
 func preprocessArgs() {
 	rest := os.Args[1:]
 	newArgs := []string{os.Args[0]}

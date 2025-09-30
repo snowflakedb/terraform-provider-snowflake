@@ -29,8 +29,8 @@ func main() {
 		WithGenerationPart("impl", filenameForPart("impl"), []*template.Template{genhelpers.PreambleTemplate, generator.ImplementationTemplate}).
 		WithGenerationPart("unit_tests", testFilenameForPart(""), []*template.Template{genhelpers.PreambleTemplate, generator.UnitTestsTemplate}).
 		WithGenerationPart("validations", filenameForPart("validations"), []*template.Template{genhelpers.PreambleTemplate, generator.ValidationsTemplate}).
-		WithObjectFilter(genhelpers.FilterObjectByNameFromEnv[*generator.Interface]).
-		WithGenerationPartFilter(genhelpers.FilterGenerationPartByNameFromEnv[*generator.Interface, *generator.Interface]).
+		WithDescription("Generate SDK objects based on the SQL definitions provided.").
+		WithMakefileCommandPart("sdk").
 		RunAndHandleOsReturn()
 }
 

@@ -9,6 +9,7 @@ import (
 )
 
 // TODO [SNOW-2324252]: extract common setup, template for easier test writing
+// TODO [SNOW-2324252]: add test expecting error
 func Test_ExperimentWithImportsProcess(t *testing.T) {
 	t.Run("add standard imports", func(t *testing.T) {
 		src := []byte(`package somepackagename
