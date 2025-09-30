@@ -61,7 +61,7 @@ To create a new generator:
    - second for a generation itself, in form of `generate-<makefile-command-part>`, e.g.
    ```makefile
    generate-snowflake-object-parameters-assertions:
-       go generate ./pkg/acceptance/bettertestspoc/assert/objectparametersassert/generate.g
+       go generate ./pkg/acceptance/bettertestspoc/assert/objectparametersassert/generate.go
    ```
 5. By default, generator support the following command line flags (invokable with e.g. `make generate-<makefile-command-part> SF_TF_GENERATOR_ARGS='<space-separated flags>'`)
    - `--dry-run` allowing to print the generated content to the command line instead of saving it to files
