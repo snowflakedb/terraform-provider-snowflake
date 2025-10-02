@@ -207,6 +207,7 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		return diag.FromErr(err)
 	}
+
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
 	}
@@ -301,10 +302,14 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
+	if err := d.Set("warehouse", dynamicTable.Warehouse); err != nil {
+		return diag.FromErr(err)
+	}
+
 	if dynamicTable.Text == "" {
 		return diag.Diagnostics{
 			diag.Diagnostic{
-				Severity: diag.Error,
+				Severity: diag.Warning,
 				Summary:  "Failed to query dynamic table's text column.",
 				Detail: fmt.Sprintf(
 					joinWithSpace(
@@ -323,10 +328,6 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 	if err := d.Set("query", query); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("warehouse", dynamicTable.Warehouse); err != nil {
 		return diag.FromErr(err)
 	}
 
