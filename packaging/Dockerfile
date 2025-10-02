@@ -18,5 +18,3 @@ RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz 
 
 # Add Go to the PATH
 ENV PATH "/usr/local/go/bin:${PATH}"
-
-RUN make dev-setup

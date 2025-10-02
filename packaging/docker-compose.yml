@@ -5,5 +5,10 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./../:/terraform-provider-snowflake
+    # TODO: Remove below?
+      - ~/.snowflake/config:/root/.snowflake/config
+    environment:
+      - TEST_SF_TF_TEST_OBJECT_SUFFIX=dummy_value_for_docker_compose
+      - TEST_SF_TF_GENERATED_RANDOM_VALUE=dummy_value_for_docker_compose
     working_dir: /terraform-provider-snowflake
     command: [ "make", "test-build-verification" ]
