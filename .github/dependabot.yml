@@ -5,12 +5,15 @@ updates:
     open-pull-requests-limit: 5
     schedule:
       interval: daily
+    target-branch: "dev"
   - package-ecosystem: gomod
     directory: /tools
     open-pull-requests-limit: 3
     schedule:
       interval: weekly
+    target-branch: "dev"
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    target-branch: "dev"
