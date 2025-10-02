@@ -1,8 +1,11 @@
 package generator
 
 import (
-	_ "embed"
 	"text/template"
+
+	_ "embed"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
 func deref[T ~string](p *T) string {
@@ -25,6 +28,10 @@ var (
 	operationStructTemplateContent string
 	OperationStructTemplate, _     = template.New("optionsTemplate").Parse(operationStructTemplateContent)
 
+	//go:embed templates/operation_struct_iterate.tmpl
+	operationStructIterateTemplateContent string
+	OperationStructIterateTemplate        *template.Template
+
 	//go:embed templates/struct.tmpl
 	structTemplateContent string
 	StructTemplate, _     = template.New("structTemplate").Parse(structTemplateContent)
@@ -39,11 +46,18 @@ var (
 
 	//go:embed templates/dto_declarations.tmpl
 	dtoDeclarationsTemplateContent string
-	DtoTemplate, _                 = template.New("dtoTemplate").Parse(dtoDeclarationsTemplateContent)
+	DtoTemplate                    *template.Template
+
+	//go:embed templates/dto_builders.tmpl
+	dtoBuildersTemplateContent string
+	DtoBuildersTemplate        *template.Template
 
 	//go:embed templates/dto_structs.tmpl
 	dtoStructsTemplateContent string
 	DtoDeclTemplate, _        = template.New("dtoTemplate").Parse(dtoStructsTemplateContent)
+
+	//go:embed templates/dto_builder.tmpl
+	dtoBuilderTemplateContent string
 
 	//go:embed templates/implementation.tmpl
 	implementationTemplateContent string
@@ -99,7 +113,18 @@ func init() {
 	subTemplates, _ = subTemplates.New("validationTest").Parse(validationTestTemplateContent)
 	subTemplates, _ = subTemplates.New("validationTests").Parse(validationTestsTemplateContent)
 	subTemplates, _ = subTemplates.New("validationImplementation").Parse(validationImplementationTemplateContent)
+	subTemplates, _ = subTemplates.New("optionsTemplate").Parse(operationStructTemplateContent)
+	subTemplates, _ = subTemplates.New("structTemplate").Parse(structTemplateContent)
+	subTemplates, _ = subTemplates.New("showObjectIdMethodTemplate").Parse(showObjectIdMethodTemplateContent)
+	subTemplates, _ = subTemplates.New("showObjectTypeMethodTemplate").Parse(showObjectTypeMethodTemplateContent)
+	subTemplates, _ = subTemplates.New("dtoDeclTemplate").Parse(dtoStructsTemplateContent)
+	subTemplates, _ = subTemplates.New("dtoBuilderTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
+		genhelpers.FirstLetterLowercase,
+	)).Parse(dtoBuilderTemplateContent)
 
+	OperationStructIterateTemplate, _ = subTemplates.New("optionsIterateTemplate").Parse(operationStructIterateTemplateContent)
+	DtoTemplate, _ = subTemplates.New("dtoTemplate").Parse(dtoDeclarationsTemplateContent)
+	DtoBuildersTemplate, _ = subTemplates.New("dtoBuildersTemplate").Parse(dtoBuildersTemplateContent)
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)

@@ -14,6 +14,7 @@ var (
 	generatedDtos    []string
 )
 
+// TODO [SNOW-2324252]: remove this method
 func GenerateInterface(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, InterfaceTemplate, def)
@@ -23,27 +24,20 @@ func GenerateInterface(writer io.Writer, def *Interface) {
 		}
 
 		if o.Name == string(OperationKindShow) {
-			idKind, err := toObjectIdentifierKind(def.IdentifierKind)
+			idKind, err := ToObjectIdentifierKind(def.IdentifierKind)
 			if err != nil {
 				log.Printf("[WARN] for showObjectIdMethod: %v", err)
 			}
-			if checkRequiredFieldsForIdMethod(def.NameSingular, o.HelperStructs, idKind) {
-				generateShowObjectIdMethod(writer, newShowObjectIDMethod(def.NameSingular, idKind))
+			if CheckRequiredFieldsForIdMethod(def.NameSingular, o.HelperStructs, idKind) {
+				printTo(writer, ShowObjectIdMethodTemplate, NewShowObjectIDMethod(def.NameSingular, idKind))
 			}
 
-			generateShowObjectTypeMethod(writer, newShowObjectTypeMethod(def.NameSingular))
+			printTo(writer, ShowObjectTypeMethodTemplate, NewShowObjectTypeMethod(def.NameSingular))
 		}
 	}
 }
 
-func generateShowObjectIdMethod(writer io.Writer, m *ShowObjectIdMethod) {
-	printTo(writer, ShowObjectIdMethodTemplate, m)
-}
-
-func generateShowObjectTypeMethod(writer io.Writer, m *ShowObjectTypeMethod) {
-	printTo(writer, ShowObjectTypeMethodTemplate, m)
-}
-
+// TODO [SNOW-2324252]: remove this method
 func generateOptionsStruct(writer io.Writer, operation *Operation) {
 	printTo(writer, OperationStructTemplate, operation)
 
@@ -60,6 +54,7 @@ func generateOptionsStruct(writer io.Writer, operation *Operation) {
 	}
 }
 
+// TODO [SNOW-2324252]: remove this method
 func generateStruct(writer io.Writer, field *Field) {
 	if !slices.Contains(generatedStructs, field.KindNoPtr()) {
 		fmt.Println("Generating: " + field.KindNoPtr())
@@ -74,6 +69,7 @@ func generateStruct(writer io.Writer, field *Field) {
 	}
 }
 
+// TODO [SNOW-2324252]: remove this method
 func GenerateDtos(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, DtoTemplate, def)
@@ -84,6 +80,7 @@ func GenerateDtos(writer io.Writer, def *Interface) {
 	}
 }
 
+// TODO [SNOW-2324252]: remove this method
 func generateDtoDecls(writer io.Writer, field *Field) {
 	if !slices.Contains(generatedDtos, field.DtoDecl()) {
 		printTo(writer, DtoDeclTemplate, field)
@@ -97,16 +94,19 @@ func generateDtoDecls(writer io.Writer, field *Field) {
 	}
 }
 
+// TODO [SNOW-2324252]: remove this method
 func GenerateImplementation(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, ImplementationTemplate, def)
 }
 
+// TODO [SNOW-2324252]: remove this method
 func GenerateUnitTests(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, UnitTestsTemplate, def)
 }
 
+// TODO [SNOW-2324252]: remove this method
 func GenerateValidations(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, ValidationsTemplate, def)

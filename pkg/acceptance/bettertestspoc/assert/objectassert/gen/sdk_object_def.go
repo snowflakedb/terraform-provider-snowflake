@@ -11,6 +11,7 @@ type SdkObjectDef struct {
 	ObjectStruct any
 }
 
+// TODO [SNOW-2324252]: remove object type?
 var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -142,6 +143,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeSemanticView,
 		ObjectStruct: sdk.SemanticView{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeStorageIntegration,
+		ObjectStruct: sdk.StorageIntegration{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
@@ -150,7 +156,6 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 		structDetails := genhelpers.ExtractStructDetails(d.ObjectStruct)
 		allSdkObjectsDetails[idx] = genhelpers.SdkObjectDetails{
 			IdType:        d.IdType,
-			ObjectType:    d.ObjectType,
 			StructDetails: structDetails,
 		}
 	}

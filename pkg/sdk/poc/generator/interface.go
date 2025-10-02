@@ -1,6 +1,10 @@
 package generator
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+)
 
 type objectIdentifierKind string
 
@@ -11,7 +15,7 @@ const (
 	SchemaObjectIdentifierWithArguments objectIdentifierKind = "SchemaObjectIdentifierWithArguments"
 )
 
-func toObjectIdentifierKind(s string) (objectIdentifierKind, error) {
+func ToObjectIdentifierKind(s string) (objectIdentifierKind, error) {
 	switch s {
 	case "AccountObjectIdentifier":
 		return AccountObjectIdentifier, nil
@@ -36,6 +40,17 @@ type Interface struct {
 	Operations []*Operation
 	// IdentifierKind keeps identifier of the underlying object (e.g. DatabaseObjectIdentifier)
 	IdentifierKind string
+
+	// new fields used to move the old template executors logic into simpler template generation based on prepared model
+	// TODO [SNOW-2324252]: Rework DTO builder gen
+	// PathToDtoBuilderGen is a temporary solution to have working path to a separate DTO builder generator
+	PathToDtoBuilderGen string
+
+	*genhelpers.PreambleModel
+}
+
+func (i *Interface) ObjectName() string {
+	return i.Name
 }
 
 func NewInterface(name string, nameSingular string, identifierKind string, operations ...*Operation) *Interface {

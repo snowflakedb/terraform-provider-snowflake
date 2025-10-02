@@ -85,3 +85,10 @@ func (c *StorageIntegrationClient) Alter(t *testing.T, request *sdk.AlterStorage
 	err := c.client().Alter(ctx, request)
 	require.NoError(t, err)
 }
+
+func (c *StorageIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.StorageIntegration, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByID(ctx, id)
+}

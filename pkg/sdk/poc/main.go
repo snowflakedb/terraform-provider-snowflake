@@ -88,6 +88,7 @@ func preprocessDefinition(definition *generator.Interface) {
 			setParent(o.OptsField)
 		}
 	}
+	definition.PathToDtoBuilderGen = "./dto-builder-generator/main.go"
 }
 
 func setParent(field *generator.Field) {
