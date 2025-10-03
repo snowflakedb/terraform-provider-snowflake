@@ -101,7 +101,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"semantic_expression": {
-					Type:        schema.TypeMap,
+					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Specifies a semantic expression for a metric definition"),
 					Elem: &schema.Resource{
@@ -131,7 +131,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					},
 				},
 				"window_function": {
-					Type:        schema.TypeMap,
+					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Specifies a window function for a metric definition"),
 					Elem: &schema.Resource{
