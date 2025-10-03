@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/url"
 	"slices"
@@ -617,7 +616,6 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 			config.Authenticator = gosnowflake.AuthTypeOAuth
 		}
 	}
-	log.Printf("[DEBUG] xxxx%+v\n", config)
 
 	providerCtx := &provider.Context{}
 	if client, err := sdk.NewClient(config); err != nil {
