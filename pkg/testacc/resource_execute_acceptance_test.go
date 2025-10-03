@@ -908,7 +908,7 @@ func TestAcc_Execute_gh3334_longRunningCreate(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
-				ExpectError: regexp.MustCompile("Error: context deadline exceeded"),
+				ExpectError: regexp.MustCompile("Error: .* context deadline exceeded"),
 			},
 		},
 	})
