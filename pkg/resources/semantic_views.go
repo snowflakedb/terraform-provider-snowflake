@@ -146,7 +146,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								Required: true,
 							},
 							"over_clause": {
-								Type:     schema.TypeMap,
+								Type:     schema.TypeList,
 								Required: true,
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
