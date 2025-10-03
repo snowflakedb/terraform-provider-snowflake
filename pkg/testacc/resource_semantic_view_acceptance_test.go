@@ -39,6 +39,10 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps("lt2.wf1", "sum(lt2.a1)", sdk.WindowFunctionOverClause{PartitionBy: &partitionBy})
 	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
 	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1)
+	fact1 := model.SemanticExpressionWithProps("f1", "lt1.a2", nil, "fact 1")
+	dimension1 := model.SemanticExpressionWithProps("d1", "lt1.a1", nil, "dimension 1")
+	fact2 := model.SemanticExpressionWithProps("f2", "lt1.a2", nil, "fact 2")
+	dimension2 := model.SemanticExpressionWithProps("d2", "lt1.a1", nil, "dimension 2")
 
 	lt1Request := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt1"})
 	lt2Request := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt2"})
@@ -63,7 +67,9 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable1},
 		[]sdk.MetricDefinition{*metric1},
-	).WithComment(comment)
+	).WithComment(comment).
+		WithFacts([]sdk.SemanticExpression{*fact1}).
+		WithDimensions([]sdk.SemanticExpression{*dimension1})
 
 	modelCompleteWithDifferentValues := model.SemanticView(
 		"test",
@@ -72,7 +78,9 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable2},
 		[]sdk.MetricDefinition{*metric2},
-	).WithComment(changedComment)
+	).WithComment(changedComment).
+		WithFacts([]sdk.SemanticExpression{*fact2}).
+		WithDimensions([]sdk.SemanticExpression{*dimension2})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

@@ -325,7 +325,7 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 		request.WithSemanticViewFacts(factsRequests)
 	}
 	if d.Get("dimensions") != nil {
-		dimensionsRequests, err := getSemanticExpressionRequests(d.Get("facts").([]any))
+		dimensionsRequests, err := getSemanticExpressionRequests(d.Get("dimensions").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
