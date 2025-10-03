@@ -95,6 +95,64 @@ var semanticViewsSchema = map[string]*schema.Schema{
 			},
 		},
 	},
+	"facts": {
+		Type:     schema.TypeList,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"qualified_expression_name": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"sql_expression": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"synonym": {
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Description: blocklistedCharactersFieldDescription("List of synonyms for the fact."),
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+				"comment": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: blocklistedCharactersFieldDescription("Specifies a comment for the fact."),
+				},
+			},
+		},
+	},
+	"dimensions": {
+		Type:     schema.TypeList,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"qualified_expression_name": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"sql_expression": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"synonym": {
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Description: blocklistedCharactersFieldDescription("List of synonyms for the dimension."),
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+				"comment": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: blocklistedCharactersFieldDescription("Specifies a comment for the dimension."),
+				},
+			},
+		},
+	},
 	"metrics": {
 		Type:     schema.TypeList,
 		Required: true,
@@ -258,6 +316,21 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	request := sdk.NewCreateSemanticViewRequest(semanticViewName, logicalTableRequests).
 		WithSemanticViewMetrics(metricDefinitionRequests)
+
+	if d.Get("facts") != nil {
+		factsRequests, err := getSemanticExpressionRequests(d.Get("facts").([]any))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		request.WithSemanticViewFacts(factsRequests)
+	}
+	if d.Get("dimensions") != nil {
+		dimensionsRequests, err := getSemanticExpressionRequests(d.Get("facts").([]any))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		request.WithSemanticViewDimensions(dimensionsRequests)
+	}
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
@@ -453,6 +526,41 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 	}
 }
 
+func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, error) {
+	c := from.(map[string]any)
+	qualifiedExpressionName := c["qualified_expression_name"].(string)
+	if qualifiedExpressionName == "" {
+		return nil, fmt.Errorf("qualified_expression_name is required")
+	}
+	qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
+		WithQualifiedExpressionName(qualifiedExpressionName)
+
+	sqlExpression := c["sql_expression"].(string)
+	if sqlExpression == "" {
+		return nil, fmt.Errorf("sql_expression is required")
+	}
+	sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
+		WithSqlExpression(sqlExpression)
+	semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
+
+	if c["comment"] != nil && c["comment"].(string) != "" {
+		semExpRequest = semExpRequest.WithComment(c["comment"].(string))
+	}
+
+	if c["synonym"] != nil {
+		synonyms, ok := c["synonym"].([]any)
+		if ok && len(synonyms) > 0 {
+			var syns []sdk.Synonym
+			for _, s := range synonyms {
+				syns = append(syns, sdk.Synonym{Synonym: s.(string)})
+			}
+			sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
+			semExpRequest = semExpRequest.WithSynonyms(sRequest)
+		}
+	}
+	return semExpRequest, nil
+}
+
 func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
@@ -477,6 +585,22 @@ func getMetricDefinitionRequests(from any) ([]sdk.MetricDefinitionRequest, error
 	to := make([]sdk.MetricDefinitionRequest, len(cols))
 	for i, c := range cols {
 		cReq, err := getMetricDefinitionRequest(c)
+		if err != nil {
+			return nil, err
+		}
+		to[i] = *cReq
+	}
+	return to, nil
+}
+
+func getSemanticExpressionRequests(from any) ([]sdk.SemanticExpressionRequest, error) {
+	cols, ok := from.([]any)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failure")
+	}
+	to := make([]sdk.SemanticExpressionRequest, len(cols))
+	for i, c := range cols {
+		cReq, err := getSemanticExpressionRequest(c)
 		if err != nil {
 			return nil, err
 		}

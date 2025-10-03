@@ -18,6 +18,8 @@ type SemanticViewModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Tables             tfconfig.Variable `json:"tables,omitempty"`
+	Facts              tfconfig.Variable `json:"facts,omitempty"`
+	Dimensions         tfconfig.Variable `json:"dimensions,omitempty"`
 	Metrics            tfconfig.Variable `json:"metrics,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
@@ -154,5 +156,15 @@ func (s *SemanticViewModel) WithTablesValue(value tfconfig.Variable) *SemanticVi
 
 func (s *SemanticViewModel) WithMetricsValue(value tfconfig.Variable) *SemanticViewModel {
 	s.Metrics = value
+	return s
+}
+
+func (s *SemanticViewModel) WithFactsValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Facts = value
+	return s
+}
+
+func (s *SemanticViewModel) WithDimensionsValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Dimensions = value
 	return s
 }

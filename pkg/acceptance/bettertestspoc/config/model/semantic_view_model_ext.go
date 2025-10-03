@@ -109,6 +109,76 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 	return s
 }
 
+func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticViewModel {
+	maps := make([]tfconfig.Variable, len(facts))
+	for i, semExp := range facts {
+		m := map[string]tfconfig.Variable{}
+		if semExp.Comment != nil {
+			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
+		}
+		qExpName := semExp.GetQualifiedExpressionName()
+		if qExpName != nil {
+			qExpNameVar := map[string]tfconfig.Variable{
+				"QualifiedExpressionName": tfconfig.StringVariable(qExpName.QualifiedExpressionName),
+			}
+			m["qualifiedExpressionName"] = tfconfig.ObjectVariable(qExpNameVar)
+		}
+		sqlExp := semExp.GetSqlExpression()
+		if sqlExp != nil {
+			sqlExpVar := map[string]tfconfig.Variable{
+				"SqlExpression": tfconfig.StringVariable(sqlExp.SqlExpression),
+			}
+			m["sqlExpression"] = tfconfig.ObjectVariable(sqlExpVar)
+		}
+		synonyms := semExp.GetSynonyms()
+		if synonyms != nil {
+			syns := make([]tfconfig.Variable, len(synonyms.WithSynonyms))
+			for j, synonym := range synonyms.WithSynonyms {
+				syns[j] = tfconfig.StringVariable(synonym.Synonym)
+			}
+			m["synonym"] = tfconfig.SetVariable(syns...)
+		}
+		maps[i] = tfconfig.ObjectVariable(m)
+	}
+	s.Facts = tfconfig.ListVariable(maps...)
+	return s
+}
+
+func (s *SemanticViewModel) WithDimensions(dimensions []sdk.SemanticExpression) *SemanticViewModel {
+	maps := make([]tfconfig.Variable, len(dimensions))
+	for i, semExp := range dimensions {
+		m := map[string]tfconfig.Variable{}
+		if semExp.Comment != nil {
+			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
+		}
+		qExpName := semExp.GetQualifiedExpressionName()
+		if qExpName != nil {
+			qExpNameVar := map[string]tfconfig.Variable{
+				"QualifiedExpressionName": tfconfig.StringVariable(qExpName.QualifiedExpressionName),
+			}
+			m["qualifiedExpressionName"] = tfconfig.ObjectVariable(qExpNameVar)
+		}
+		sqlExp := semExp.GetSqlExpression()
+		if sqlExp != nil {
+			sqlExpVar := map[string]tfconfig.Variable{
+				"SqlExpression": tfconfig.StringVariable(sqlExp.SqlExpression),
+			}
+			m["sqlExpression"] = tfconfig.ObjectVariable(sqlExpVar)
+		}
+		synonyms := semExp.GetSynonyms()
+		if synonyms != nil {
+			syns := make([]tfconfig.Variable, len(synonyms.WithSynonyms))
+			for j, synonym := range synonyms.WithSynonyms {
+				syns[j] = tfconfig.StringVariable(synonym.Synonym)
+			}
+			m["synonym"] = tfconfig.SetVariable(syns...)
+		}
+		maps[i] = tfconfig.ObjectVariable(m)
+	}
+	s.Dimensions = tfconfig.ListVariable(maps...)
+	return s
+}
+
 func LogicalTableWithProps(
 	alias string,
 	tableName sdk.SchemaObjectIdentifier,
