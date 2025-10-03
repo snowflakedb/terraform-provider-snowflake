@@ -68,13 +68,12 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpSe
 	}
 }
 
-func (c *TestClient) SetUpTemporaryUserWithOauthClientCredentials(t *testing.T, loginName string) *TmpUser {
+func (c *TestClient) SetUpTemporaryUserForOauthClientCredentials(t *testing.T, loginName string) *TmpUser {
 	t.Helper()
 	userId := c.Ids.RandomAccountObjectIdentifier()
 	user, userCleanup := c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
 		MustChangePassword: sdk.Bool(false),
 		LoginName:          sdk.String(loginName),
-		// TODO: password?
 	}})
 	t.Cleanup(userCleanup)
 

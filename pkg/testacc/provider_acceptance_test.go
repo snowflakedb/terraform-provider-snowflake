@@ -13,7 +13,6 @@ import (
 	"time"
 
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -1047,37 +1046,6 @@ func TestAcc_Provider_ProgrammaticAccessTokenAuth_tokenInTfConfig(t *testing.T) 
 					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile).WithToken(userWithPat.Pat), datasourceModel()),
-			},
-		},
-	})
-}
-
-// TODO: move to acc level OR provide users outside the suite
-func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-	oauthClientId := testenvs.GetOrSkipTest(t, testenvs.OauthClientId)
-	oauthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OauthClientSecret)
-	oauthTokenRequestURL := testenvs.GetOrSkipTest(t, testenvs.OauthTokenRequestUrl)
-
-	// user := testClient().SetUpTemporaryUserWithOauthClientCredentials(t, oauthClientId)
-	user := helpers.TmpUser{
-		UserId:    sdk.NewAccountObjectIdentifier(oauthClientId),
-		AccountId: testClient().Context.CurrentAccountId(t),
-		RoleId:    snowflakeroles.Public,
-	}
-	userConfig := testClient().TempTomlConfigForServiceUserWithOauthClientCredentials(t, &user, oauthClientId, oauthClientSecret, oauthTokenRequestURL)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			{
-				PreConfig: func() {
-					t.Setenv(snowflakeenvs.ConfigPath, userConfig.Path)
-				},
-				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userConfig.Profile)) + executeShowSessionParameter(),
 			},
 		},
 	})
