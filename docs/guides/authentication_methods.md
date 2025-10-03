@@ -34,6 +34,7 @@ Read more on Snowflake's password protection: https://docs.snowflake.com/en/user
 * [MFA authenticator flow](#mfa-authenticator-flow)
   * [MFA token caching](#mfa-token-caching)
 * [Okta authenticator flow](#okta-authenticator-flow)
+* [OAuth Client Credentials authenticator flow](#oauth-client-credentials-authenticator-flow)
 * [Common issues](#common-issues)
   * [How can I get my organization name?](#how-can-i-get-my-organization-name)
   * [How can I get my account name?](#how-can-i-get-my-account-name)
@@ -332,6 +333,39 @@ provider "snowflake" {
 }
 
 variable "password" {
+  type      = string
+  sensitive = true
+}
+```
+
+### OAuth Client Credentials authenticator flow
+
+To set up a new Okta account for this flow, follow [this guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/b863d2e79ae6ae021552c4348e3012b8053ede17/pkg/manual_tests/authentication_methods/README.md#okta-authenticator-test).
+If you already have an Okta account, skip the first point and follow the next steps.
+The guide includes writing the provider configuration in the TOML file, but here's what it should look like fully in HCL:
+
+```terraform
+provider "snowflake" {
+  organization_name       = "<organization_name>"
+  account_name            = "<account_name>"
+  role                    = "PUBLIC"
+  authenticator           = "OAUTH_CLIENT_CREDENTIALS"
+  oauth_client_id         = var.oauth_client_id
+  oauth_client_secret     = var.oauth_client_secret
+  oauth_token_request_url = var.oauth_token_request_url
+}
+
+variable "oauth_client_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "oauth_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+variable "oauth_token_request_url" {
   type      = string
   sensitive = true
 }

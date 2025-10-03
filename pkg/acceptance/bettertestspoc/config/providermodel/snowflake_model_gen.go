@@ -18,6 +18,7 @@ type SnowflakeModel struct {
 	DisableQueryContextCache           tfconfig.Variable `json:"disable_query_context_cache,omitempty"`
 	DisableTelemetry                   tfconfig.Variable `json:"disable_telemetry,omitempty"`
 	DriverTracing                      tfconfig.Variable `json:"driver_tracing,omitempty"`
+	EnableSingleUseRefreshTokens       tfconfig.Variable `json:"enable_single_use_refresh_tokens,omitempty"`
 	ExternalBrowserTimeout             tfconfig.Variable `json:"external_browser_timeout,omitempty"`
 	Host                               tfconfig.Variable `json:"host,omitempty"`
 	IncludeRetryReason                 tfconfig.Variable `json:"include_retry_reason,omitempty"`
@@ -27,6 +28,12 @@ type SnowflakeModel struct {
 	KeepSessionAlive                   tfconfig.Variable `json:"keep_session_alive,omitempty"`
 	LoginTimeout                       tfconfig.Variable `json:"login_timeout,omitempty"`
 	MaxRetryCount                      tfconfig.Variable `json:"max_retry_count,omitempty"`
+	OauthAuthorizationUrl              tfconfig.Variable `json:"oauth_authorization_url,omitempty"`
+	OauthClientId                      tfconfig.Variable `json:"oauth_client_id,omitempty"`
+	OauthClientSecret                  tfconfig.Variable `json:"oauth_client_secret,omitempty"`
+	OauthRedirectUri                   tfconfig.Variable `json:"oauth_redirect_uri,omitempty"`
+	OauthScope                         tfconfig.Variable `json:"oauth_scope,omitempty"`
+	OauthTokenRequestUrl               tfconfig.Variable `json:"oauth_token_request_url,omitempty"`
 	OcspFailOpen                       tfconfig.Variable `json:"ocsp_fail_open,omitempty"`
 	OktaUrl                            tfconfig.Variable `json:"okta_url,omitempty"`
 	OrganizationName                   tfconfig.Variable `json:"organization_name,omitempty"`
@@ -127,6 +134,11 @@ func (s *SnowflakeModel) WithDriverTracing(driverTracing string) *SnowflakeModel
 	return s
 }
 
+func (s *SnowflakeModel) WithEnableSingleUseRefreshTokens(enableSingleUseRefreshTokens bool) *SnowflakeModel {
+	s.EnableSingleUseRefreshTokens = tfconfig.BoolVariable(enableSingleUseRefreshTokens)
+	return s
+}
+
 func (s *SnowflakeModel) WithExternalBrowserTimeout(externalBrowserTimeout int) *SnowflakeModel {
 	s.ExternalBrowserTimeout = tfconfig.IntegerVariable(externalBrowserTimeout)
 	return s
@@ -172,6 +184,60 @@ func (s *SnowflakeModel) WithMaxRetryCount(maxRetryCount int) *SnowflakeModel {
 	return s
 }
 
+<<<<<<< HEAD
+||||||| parent of d6a437d9 (dev)
+func (s *SnowflakeModel) WithOauthAuthorizationUrl(oauthAuthorizationUrl string) *SnowflakeModel {
+	s.OauthAuthorizationUrl = tfconfig.StringVariable(oauthAuthorizationUrl)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientId(oauthClientId string) *SnowflakeModel {
+	s.OauthClientId = tfconfig.StringVariable(oauthClientId)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientSecret(oauthClientSecret string) *SnowflakeModel {
+	s.OauthClientSecret = tfconfig.StringVariable(oauthClientSecret)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthTokenRequestUrl(oauthTokenRequestUrl string) *SnowflakeModel {
+	s.OauthTokenRequestUrl = tfconfig.StringVariable(oauthTokenRequestUrl)
+	return s
+}
+
+=======
+func (s *SnowflakeModel) WithOauthAuthorizationUrl(oauthAuthorizationUrl string) *SnowflakeModel {
+	s.OauthAuthorizationUrl = tfconfig.StringVariable(oauthAuthorizationUrl)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientId(oauthClientId string) *SnowflakeModel {
+	s.OauthClientId = tfconfig.StringVariable(oauthClientId)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientSecret(oauthClientSecret string) *SnowflakeModel {
+	s.OauthClientSecret = tfconfig.StringVariable(oauthClientSecret)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthRedirectUri(oauthRedirectUri string) *SnowflakeModel {
+	s.OauthRedirectUri = tfconfig.StringVariable(oauthRedirectUri)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthScope(oauthScope string) *SnowflakeModel {
+	s.OauthScope = tfconfig.StringVariable(oauthScope)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthTokenRequestUrl(oauthTokenRequestUrl string) *SnowflakeModel {
+	s.OauthTokenRequestUrl = tfconfig.StringVariable(oauthTokenRequestUrl)
+	return s
+}
+
+>>>>>>> d6a437d9 (dev)
 func (s *SnowflakeModel) WithOcspFailOpen(ocspFailOpen string) *SnowflakeModel {
 	s.OcspFailOpen = tfconfig.StringVariable(ocspFailOpen)
 	return s
@@ -347,6 +413,11 @@ func (s *SnowflakeModel) WithDriverTracingValue(value tfconfig.Variable) *Snowfl
 	return s
 }
 
+func (s *SnowflakeModel) WithEnableSingleUseRefreshTokensValue(value tfconfig.Variable) *SnowflakeModel {
+	s.EnableSingleUseRefreshTokens = value
+	return s
+}
+
 func (s *SnowflakeModel) WithExternalBrowserTimeoutValue(value tfconfig.Variable) *SnowflakeModel {
 	s.ExternalBrowserTimeout = value
 	return s
@@ -392,6 +463,60 @@ func (s *SnowflakeModel) WithMaxRetryCountValue(value tfconfig.Variable) *Snowfl
 	return s
 }
 
+<<<<<<< HEAD
+||||||| parent of d6a437d9 (dev)
+func (s *SnowflakeModel) WithOauthAuthorizationUrlValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthAuthorizationUrl = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientIdValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthClientId = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientSecretValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthClientSecret = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthTokenRequestUrlValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthTokenRequestUrl = value
+	return s
+}
+
+=======
+func (s *SnowflakeModel) WithOauthAuthorizationUrlValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthAuthorizationUrl = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientIdValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthClientId = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientSecretValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthClientSecret = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthRedirectUriValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthRedirectUri = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthScopeValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthScope = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthTokenRequestUrlValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthTokenRequestUrl = value
+	return s
+}
+
+>>>>>>> d6a437d9 (dev)
 func (s *SnowflakeModel) WithOcspFailOpenValue(value tfconfig.Variable) *SnowflakeModel {
 	s.OcspFailOpen = value
 	return s
