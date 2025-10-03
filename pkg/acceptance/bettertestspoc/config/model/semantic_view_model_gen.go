@@ -150,3 +150,8 @@ func (s *SemanticViewModel) WithTablesValue(value tfconfig.Variable) *SemanticVi
 	s.Tables = value
 	return s
 }
+
+func (s *SemanticViewModel) WithMetricsValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Metrics = value
+	return s
+}
