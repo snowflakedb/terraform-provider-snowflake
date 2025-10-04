@@ -155,6 +155,11 @@ func (s *SemanticViewModel) WithTablesValue(value tfconfig.Variable) *SemanticVi
 	return s
 }
 
+func (s *SemanticViewModel) WithRelationshipssValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Relationships = value
+	return s
+}
+
 func (s *SemanticViewModel) WithMetricsValue(value tfconfig.Variable) *SemanticViewModel {
 	s.Metrics = value
 	return s
