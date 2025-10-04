@@ -95,6 +95,51 @@ var semanticViewsSchema = map[string]*schema.Schema{
 			},
 		},
 	},
+	"relationships": {
+		Type:     schema.TypeList,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"relationship_alias": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: blocklistedCharactersFieldDescription("Specifies an alias for the relationship."),
+				},
+				"table_name": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+				},
+				"table_alias": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"relationship_columns": {
+					Type:     schema.TypeList,
+					Required: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+				"referenced_table_name": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+				},
+				"referenced_table_alias": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"referenced_relationship_columns": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+			},
+		},
+	},
 	"facts": {
 		Type:     schema.TypeList,
 		Optional: true,
@@ -317,6 +362,13 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 	request := sdk.NewCreateSemanticViewRequest(semanticViewName, logicalTableRequests).
 		WithSemanticViewMetrics(metricDefinitionRequests)
 
+	if d.Get("relationships") != nil {
+		relationshipsRequests, err := getRelationshipRequests(d.Get("relationships").([]any))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		request.WithSemanticViewRelationships(relationshipsRequests)
+	}
 	if d.Get("facts") != nil {
 		factsRequests, err := getSemanticExpressionRequests(d.Get("facts").([]any))
 		if err != nil {
@@ -561,6 +613,55 @@ func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, err
 	return semExpRequest, nil
 }
 
+func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, error) {
+	c := from.(map[string]any)
+	tableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
+	if c["table_name"] != nil && c["table_name"].(string) != "" {
+		tableName, err := sdk.ParseSchemaObjectIdentifier(c["table_name"].(string))
+		if err != nil {
+			return nil, err
+		}
+		tableNameOrAliasRequest.WithRelationshipTableName(tableName)
+	}
+	if c["table_alias"] != nil && c["table_alias"].(string) != "" {
+		tableNameOrAliasRequest.WithRelationshipTableAlias(c["table_alias"].(string))
+	}
+
+	var relationshipColumnRequests []sdk.SemanticViewColumnRequest
+	for _, relationshipColumn := range c["relationship_columns"].([]any) {
+		relationshipColumnRequests = append(relationshipColumnRequests, *sdk.NewSemanticViewColumnRequest(relationshipColumn.(string)))
+	}
+
+	refTableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
+	if c["referenced_table_name"] != nil && c["referenced_table_name"].(string) != "" {
+		refTableName, err := sdk.ParseSchemaObjectIdentifier(c["referenced_table_name"].(string))
+		if err != nil {
+			return nil, err
+		}
+		refTableNameOrAliasRequest.WithRelationshipTableName(refTableName)
+	}
+	if c["referenced_table_alias"] != nil && c["referenced_table_alias"].(string) != "" {
+		refTableNameOrAliasRequest.WithRelationshipTableAlias(c["referenced_table_alias"].(string))
+	}
+
+	request := sdk.NewSemanticViewRelationshipRequest(tableNameOrAliasRequest, relationshipColumnRequests, refTableNameOrAliasRequest)
+
+	if c["relationship_alias"] != nil && c["relationship_alias"].(string) != "" {
+		relAliasRequest := sdk.NewRelationshipAliasRequest().WithRelationshipAlias(c["relationship_alias"].(string))
+		request.WithRelationshipAlias(*relAliasRequest)
+	}
+
+	if c["referenced_relationship_columns"] != nil {
+		var refRelationshipColumnRequests []sdk.SemanticViewColumnRequest
+		for _, refRelationshipColumn := range c["referenced_relationship_columns"].([]any) {
+			refRelationshipColumnRequests = append(refRelationshipColumnRequests, *sdk.NewSemanticViewColumnRequest(refRelationshipColumn.(string)))
+		}
+		request.WithRelationshipRefColumnNames(refRelationshipColumnRequests)
+	}
+
+	return request, nil
+}
+
 func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
@@ -601,6 +702,22 @@ func getSemanticExpressionRequests(from any) ([]sdk.SemanticExpressionRequest, e
 	to := make([]sdk.SemanticExpressionRequest, len(cols))
 	for i, c := range cols {
 		cReq, err := getSemanticExpressionRequest(c)
+		if err != nil {
+			return nil, err
+		}
+		to[i] = *cReq
+	}
+	return to, nil
+}
+
+func getRelationshipRequests(from any) ([]sdk.SemanticViewRelationshipRequest, error) {
+	cols, ok := from.([]any)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failure")
+	}
+	to := make([]sdk.SemanticViewRelationshipRequest, len(cols))
+	for i, c := range cols {
+		cReq, err := getRelationshipRequest(c)
 		if err != nil {
 			return nil, err
 		}

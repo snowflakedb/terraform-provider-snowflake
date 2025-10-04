@@ -55,6 +55,55 @@ func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewM
 	return s
 }
 
+func (s *SemanticViewModel) WithRelationships(relationships []sdk.SemanticViewRelationship) *SemanticViewModel {
+	maps := make([]tfconfig.Variable, len(relationships))
+	for i, v := range relationships {
+		m := map[string]tfconfig.Variable{}
+		tableNameOrAlias := v.GetTableNameOrAlias()
+		if tableNameOrAlias.RelationshipTableName != nil {
+			m["table_name"] = tfconfig.StringVariable(tableNameOrAlias.RelationshipTableName.FullyQualifiedName())
+		}
+		if tableNameOrAlias.RelationshipTableAlias != nil {
+			m["table_alias"] = tfconfig.StringVariable(*tableNameOrAlias.RelationshipTableAlias)
+		}
+
+		refTableNameOrAlias := v.GetRefTableNameOrAlias()
+		if refTableNameOrAlias.RelationshipTableName != nil {
+			m["referenced_table_name"] = tfconfig.StringVariable(refTableNameOrAlias.RelationshipTableName.FullyQualifiedName())
+		}
+		if refTableNameOrAlias.RelationshipTableAlias != nil {
+			m["referenced_table_alias"] = tfconfig.StringVariable(*refTableNameOrAlias.RelationshipTableAlias)
+		}
+
+		relColumnNames := v.GetRelationshipColumnsNames()
+		if relColumnNames != nil {
+			keys := make([]tfconfig.Variable, len(relColumnNames))
+			for j, key := range relColumnNames {
+				keys[j] = tfconfig.StringVariable(key.Name)
+			}
+			m["relationship_columns"] = tfconfig.ListVariable(keys...)
+		}
+
+		relRefColumnNames := v.GetRelationshipRefColumnsNames()
+		if relRefColumnNames != nil {
+			keys := make([]tfconfig.Variable, len(relRefColumnNames))
+			for j, key := range relRefColumnNames {
+				keys[j] = tfconfig.StringVariable(key.Name)
+			}
+			m["referenced_relationship_columns"] = tfconfig.ListVariable(keys...)
+		}
+
+		relationshipAlias := v.GetRelationshipAlias()
+		if relationshipAlias != nil {
+			m["relationship_alias"] = tfconfig.StringVariable(relationshipAlias.RelationshipAlias)
+		}
+
+		maps[i] = tfconfig.ObjectVariable(m)
+	}
+	s.Relationships = tfconfig.ListVariable(maps...)
+	return s
+}
+
 func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *SemanticViewModel {
 	maps := make([]tfconfig.Variable, len(metrics))
 	for i, v := range metrics {
@@ -251,4 +300,37 @@ func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.W
 	}
 
 	return metric
+}
+
+func RelationshipTableAliasWithProps(
+	alias string,
+	tableName sdk.SchemaObjectIdentifier,
+) *sdk.RelationshipTableAlias {
+	res := &sdk.RelationshipTableAlias{
+		RelationshipTableName:  &tableName,
+		RelationshipTableAlias: &alias,
+	}
+
+	return res
+}
+
+func RelationshipWithProps(
+	relationshipAlias string,
+	tableNameOrAlias sdk.RelationshipTableAlias,
+	relColumnNames []sdk.SemanticViewColumn,
+	refTableNameOrAlias sdk.RelationshipTableAlias,
+	relRefColumnNames []sdk.SemanticViewColumn,
+) *sdk.SemanticViewRelationship {
+	rel := &sdk.SemanticViewRelationship{}
+	rel.SetTableNameOrAlias(tableNameOrAlias)
+	rel.SetRelationshipColumnsNames(relColumnNames)
+	rel.SetRefTableNameOrAlias(refTableNameOrAlias)
+	if relRefColumnNames != nil {
+		rel.SetRelationshipRefColumnsNames(relRefColumnNames)
+	}
+	if relationshipAlias != "" {
+		rel.SetRelationshipAlias(relationshipAlias)
+	}
+
+	return rel
 }

@@ -39,6 +39,17 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps("lt2.wf1", "sum(lt2.a1)", sdk.WindowFunctionOverClause{PartitionBy: &partitionBy})
 	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
 	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1)
+	relTableAlias := model.RelationshipTableAliasWithProps("rt1", table1.ID())
+	relTableColumns := []sdk.SemanticViewColumn{
+		{
+			Name: "a1",
+		},
+		{
+			Name: "a2",
+		},
+	}
+	refTableAlias := model.RelationshipTableAliasWithProps("rf", table2.ID())
+	rel1 := model.RelationshipWithProps("r1", *relTableAlias, relTableColumns, *refTableAlias, nil)
 	fact1 := model.SemanticExpressionWithProps("f1", "lt1.a2", nil, "fact 1")
 	dimension1 := model.SemanticExpressionWithProps("d1", "lt1.a1", nil, "dimension 1")
 	fact2 := model.SemanticExpressionWithProps("f2", "lt1.a2", nil, "fact 2")
@@ -68,6 +79,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		[]sdk.LogicalTable{*logicalTable1},
 		[]sdk.MetricDefinition{*metric1},
 	).WithComment(comment).
+		WithRelationships([]sdk.SemanticViewRelationship{*rel1}).
 		WithFacts([]sdk.SemanticExpression{*fact1}).
 		WithDimensions([]sdk.SemanticExpression{*dimension1})
 
@@ -79,6 +91,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		[]sdk.LogicalTable{*logicalTable2},
 		[]sdk.MetricDefinition{*metric2},
 	).WithComment(changedComment).
+		WithRelationships([]sdk.SemanticViewRelationship{*rel1}).
 		WithFacts([]sdk.SemanticExpression{*fact2}).
 		WithDimensions([]sdk.SemanticExpression{*dimension2})
 

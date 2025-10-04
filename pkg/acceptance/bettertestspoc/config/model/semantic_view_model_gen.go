@@ -18,6 +18,7 @@ type SemanticViewModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Tables             tfconfig.Variable `json:"tables,omitempty"`
+	Relationships      tfconfig.Variable `json:"relationships,omitempty"`
 	Facts              tfconfig.Variable `json:"facts,omitempty"`
 	Dimensions         tfconfig.Variable `json:"dimensions,omitempty"`
 	Metrics            tfconfig.Variable `json:"metrics,omitempty"`
