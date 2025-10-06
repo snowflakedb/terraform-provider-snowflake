@@ -4,8 +4,15 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -114,4 +121,56 @@ resource "snowflake_object_parameter" "p" {
 	}
 }
 `, userId.Name(), key, value)
+}
+
+func TestAcc_ObjectParameter_ReplicableWithFailoverGroups(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
+				Config:            accconfig.FromModels(t, providerModel) + schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_object_parameter.p", "key", string(resources.ReplicableWithFailoverGroups)),
+					resource.TestCheckResourceAttr("snowflake_object_parameter.p", "value", "NO"),
+				),
+			},
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
+				Config:            accconfig.FromModels(t, providerModel) + schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
+				Destroy:           true,
+				ExpectError:       regexp.MustCompile(`invalid value \[UNSET] for parameter 'REPLICABLE_WITH_FAILOVER_GROUPS'`),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
+				Destroy:                  true,
+			},
+		},
+	})
+}
+
+func schemaReplicableWithFailoverGroupsConfig(schemaId sdk.DatabaseObjectIdentifier, value string) string {
+	return fmt.Sprintf(`
+resource "snowflake_object_parameter" "p" {
+	key = "REPLICABLE_WITH_FAILOVER_GROUPS"
+	value = "%[3]s"
+	object_type = "SCHEMA"
+	object_identifier {
+		database = "%[1]s"
+		name = "%[2]s"
+	}
+}
+`, schemaId.DatabaseName(), schemaId.Name(), value)
 }
