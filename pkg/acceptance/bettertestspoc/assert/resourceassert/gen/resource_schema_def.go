@@ -302,4 +302,12 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "StorageIntegration",
 		schema: resources.StorageIntegration().Schema,
 	},
+	{
+		name:   "Stage",
+		schema: resources.Stage().Schema,
+	},
+	{
+		name:   "DynamicTable",
+		schema: resources.DynamicTable().Schema,
+	},
 }
