@@ -67,17 +67,11 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 			}
 			qExpName := semExp.GetQualifiedExpressionName()
 			if qExpName != nil {
-				qExpNameVar := map[string]tfconfig.Variable{
-					"QualifiedExpressionName": tfconfig.StringVariable(qExpName.QualifiedExpressionName),
-				}
-				semExpVar["qualifiedExpressionName"] = tfconfig.ObjectVariable(qExpNameVar)
+				semExpVar["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
 			}
 			sqlExp := semExp.GetSqlExpression()
 			if sqlExp != nil {
-				sqlExpVar := map[string]tfconfig.Variable{
-					"SqlExpression": tfconfig.StringVariable(sqlExp.SqlExpression),
-				}
-				semExpVar["sqlExpression"] = tfconfig.ObjectVariable(sqlExpVar)
+				semExpVar["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
 			}
 			synonyms := semExp.GetSynonyms()
 			if synonyms != nil {
@@ -87,26 +81,26 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 				}
 				semExpVar["synonym"] = tfconfig.SetVariable(syns...)
 			}
-			m["semanticExpression"] = tfconfig.ObjectVariable(semExpVar)
+			m["semantic_expression"] = tfconfig.ListVariable(tfconfig.ObjectVariable(semExpVar))
 		} else if windFunc != nil {
 			windFuncVar := map[string]tfconfig.Variable{
-				"WindowFunction": tfconfig.StringVariable(windFunc.WindowFunction),
-				"Metric":         tfconfig.StringVariable(windFunc.Metric),
+				"window_function": tfconfig.StringVariable(windFunc.WindowFunction),
+				"metric":          tfconfig.StringVariable(windFunc.Metric),
 			}
 			if windFunc.OverClause != nil {
 				overClauseVar := map[string]tfconfig.Variable{}
 				if windFunc.OverClause.PartitionBy != nil {
-					overClauseVar["PartitionBy"] = tfconfig.StringVariable(*windFunc.OverClause.PartitionBy)
+					overClauseVar["partition_by"] = tfconfig.StringVariable(*windFunc.OverClause.PartitionBy)
 				}
 				if windFunc.OverClause.OrderBy != nil {
-					overClauseVar["OrderBy"] = tfconfig.StringVariable(*windFunc.OverClause.OrderBy)
+					overClauseVar["order_by"] = tfconfig.StringVariable(*windFunc.OverClause.OrderBy)
 				}
 				if windFunc.OverClause.WindowFrameClause != nil {
-					overClauseVar["WindowFrameClause"] = tfconfig.StringVariable(*windFunc.OverClause.WindowFrameClause)
+					overClauseVar["window_frame_clause"] = tfconfig.StringVariable(*windFunc.OverClause.WindowFrameClause)
 				}
-				windFuncVar["OverClause"] = tfconfig.ObjectVariable(overClauseVar)
+				windFuncVar["over_clause"] = tfconfig.ObjectVariable(overClauseVar)
 			}
-			m["windowFunctionMetricDefinition"] = tfconfig.ObjectVariable(windFuncVar)
+			m["window_function"] = tfconfig.ObjectVariable(windFuncVar)
 		}
 		maps[i] = tfconfig.ObjectVariable(m)
 	}

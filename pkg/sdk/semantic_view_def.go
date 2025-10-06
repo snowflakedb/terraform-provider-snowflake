@@ -163,6 +163,8 @@ var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
 var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
 	Text("SqlExpression", g.KeywordOptions().NoQuotes().Required())
 
+// TODO: add PUBLIC/PRIVATE optional field
+// TODO: replace qualifiedExpressionName with table_alias and fact_or_metric fields
 var semanticExpression = g.NewQueryStruct("SemanticExpression").
 	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
 	SQL("AS").

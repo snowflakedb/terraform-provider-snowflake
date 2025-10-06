@@ -100,6 +100,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Required: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				// TODO: update the SDK with the newly added fields for semantic expressions, then add them here
+				// TODO: add PUBLIC/PRIVATE field
+				// TODO: add table_alias
+				// TODO: add fact_or_metric
 				"semantic_expression": {
 					Type:        schema.TypeList,
 					Optional:    true,
@@ -128,6 +132,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								Description: blocklistedCharactersFieldDescription("Specifies a comment for the metric definition."),
 							},
 						},
+					},
+					ExactlyOneOf: []string{
+						"semantic_expression",
+						"window_function",
 					},
 				},
 				"window_function": {
@@ -169,6 +177,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								},
 							},
 						},
+					},
+					ExactlyOneOf: []string{
+						"semantic_expression",
+						"window_function",
 					},
 				},
 			},
