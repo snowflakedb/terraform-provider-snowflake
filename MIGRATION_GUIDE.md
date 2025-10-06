@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.7.0 ➞ v2.8.0
+## v2.7.x ➞ v2.8.0
 
 ### *(new feature)* Added handling private link in S3 and Azure storage integrations
 
