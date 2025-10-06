@@ -26,30 +26,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.7.0 ➞ v2.8.0
 
-### *(bugfix)* Dynamic tables resource handling insufficient access and missing Text column
+### *(new feature)* Added handling private link in S3 and Azure storage integrations
 
-Previously, when the `snowflake_dynamic_table` resource was created and the dynamic table's privileges were altered in a
-way that the current user lost access to view [`text` metadata field](https://docs.snowflake.com/en/user-guide/dynamic-tables-privileges#label-dynamic-tables-privileges-view-metadata),
-the resource threw an internal error instead of handling the situation gracefully.
+Snowflake offers using private link in S3 and Azure storage integration. In this version, we added a new `use_privatelink_endpoint` field for handling this field in Snowflake.
 
-Now, when the user has insufficient privileges to view `text` field,
-the resource will return an error to the user with a clear message.
+No changes in configuration and state are required. You can optionally update your configurations by explicitly setting the `use_privatelink_endpoint` field in the `snowflake_storage_integration` resource.
 
-No changes in configuration and state are required.
+Additionally, in this change we dropped validating combinations of provider-specific fields with storage providers during the update, e.g. setting `azure_tenant_id` for the AWS provider. We clarified in the documentation that the users are responsible for passing correct configurations. We are planning to introduce separate resources for each provider in the future.
 
-References: [#3931](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3931)
-
-### *(bugfix)* Stages safe removal when not present in Snowflake
-
-As the `snowflake_stage` resource wasn't adjusted fully according to the changes introduced in [this change](#new-behavior-for-read-and-delete-operations-when-removing-high-hierarchy-objects),
-we had to adjust its reading function to handle the case when the stage is not present in Snowflake and should safely
-remove itself from the state.
-
-Now, when the stage is not present in Snowflake, it will be removed from the state without throwing an error (only an informational warning like in other resources).
-
-No changes in configuration and state are required.
-
-References: [#3959](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3959)
+Note that this resource remains in preview.
 
 ### *(new feature)* Added missing object types in privilege-granting resources
 
@@ -74,6 +59,31 @@ References: [#3860](https://github.com/snowflakedb/terraform-provider-snowflake/
 Previously, due to limitations in Snowflake, when one of `generation` or `resource_constraint` field was unset in the configuration, the provider used `SET RESOURCE_CONSTRAINT=STANDARD_GEN_1` and `SET RESOURCE_CONSTRAINT=MEMORY_16X`, respectively. Now, the `UNSET` operation is supported for this field, and it is used in the provider in handling `generation` and `resource_constraint`.
 
 No changes in configuration and state are required.
+
+### *(bugfix)* Dynamic tables resource handling insufficient access and missing Text column
+
+Previously, when the `snowflake_dynamic_table` resource was created and the dynamic table's privileges were altered in a
+way that the current user lost access to view [`text` metadata field](https://docs.snowflake.com/en/user-guide/dynamic-tables-privileges#label-dynamic-tables-privileges-view-metadata),
+the resource threw an internal error instead of handling the situation gracefully.
+
+Now, when the user has insufficient privileges to view `text` field,
+the resource will return an error to the user with a clear message.
+
+No changes in configuration and state are required.
+
+References: [#3931](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3931)
+
+### *(bugfix)* Stages safe removal when not present in Snowflake
+
+As the `snowflake_stage` resource wasn't adjusted fully according to the changes introduced in [this change](#new-behavior-for-read-and-delete-operations-when-removing-high-hierarchy-objects),
+we had to adjust its reading function to handle the case when the stage is not present in Snowflake and should safely
+remove itself from the state.
+
+Now, when the stage is not present in Snowflake, it will be removed from the state without throwing an error (only an informational warning like in other resources).
+
+No changes in configuration and state are required.
+
+References: [#3959](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3959)
 
 ## v2.6.x ➞ v2.7.0
 

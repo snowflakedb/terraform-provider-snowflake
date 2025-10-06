@@ -207,6 +207,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.SecretWithGenericString().Schema,
 	},
 	{
+		name:   "SemanticView",
+		schema: resources.SemanticView().Schema,
+	},
+	{
 		name:   "Service",
 		schema: resources.Service().Schema,
 	},
@@ -293,6 +297,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "GrantApplicationRole",
 		schema: resources.GrantApplicationRole().Schema,
+	},
+	{
+		name:   "StorageIntegration",
+		schema: resources.StorageIntegration().Schema,
 	},
 	{
 		name:   "Stage",

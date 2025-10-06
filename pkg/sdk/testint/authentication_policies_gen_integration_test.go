@@ -92,7 +92,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", comment)
-		assertProperty(t, desc, "MFA_ENROLLMENT", "OPTIONAL")
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentRequiredPasswordOnly))
 		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL]")
@@ -154,7 +154,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", "null")
-		assertProperty(t, desc, "MFA_ENROLLMENT", "OPTIONAL")
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentRequiredPasswordOnly))
 		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")

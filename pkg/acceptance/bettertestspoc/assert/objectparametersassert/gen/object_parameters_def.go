@@ -346,6 +346,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.ProcedureParameterTraceLevel), ParameterType: "sdk.TraceLevel", DefaultValue: "sdk.TraceLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},
 	},
+	// TODO [SNOW-1501905]: update this definition and use results in tests
 	{
 		Name:   "Schema",
 		IdType: "sdk.DatabaseObjectIdentifier",
