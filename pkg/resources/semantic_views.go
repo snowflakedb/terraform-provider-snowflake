@@ -108,6 +108,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Specifies a semantic expression for a metric definition"),
+					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"qualified_expression_name": {
@@ -133,15 +134,12 @@ var semanticViewsSchema = map[string]*schema.Schema{
 							},
 						},
 					},
-					ExactlyOneOf: []string{
-						"metrics.0.semantic_expression",
-						"metrics.0.window_function",
-					},
 				},
 				"window_function": {
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: blocklistedCharactersFieldDescription("Specifies a window function for a metric definition"),
+					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"window_function": {
@@ -177,10 +175,6 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								},
 							},
 						},
-					},
-					ExactlyOneOf: []string{
-						"metrics.0.semantic_expression",
-						"metrics.0.window_function",
 					},
 				},
 			},
