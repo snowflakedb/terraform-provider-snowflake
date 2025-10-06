@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// This test is marked as account_level_tests because it creates an Oauth security integration with a unique issuer and a user with a unique login name.
 func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	oauthClientId := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsClientId)
@@ -31,6 +32,7 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 		},
 	})
 	t.Cleanup(userCleanup)
+	url := testClient().Context.AccountURL(t)
 
 	securityIntegrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, securityIntegrationCleanup := testClient().SecurityIntegration.CreateExternalOauthWithRequest(
@@ -43,7 +45,7 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 			[]sdk.TokenUserMappingClaim{{Claim: "sub"}},
 			sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
 		).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: oauthJwsKeysUrl}}).
-			WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: "https://SFDEVREL-CLOUD_ENGINEERING.snowflakecomputing.com"}}}),
+			WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: url}}}),
 	)
 	t.Cleanup(securityIntegrationCleanup)
 

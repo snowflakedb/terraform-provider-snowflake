@@ -340,8 +340,11 @@ variable "password" {
 
 ### OAuth Client Credentials authenticator flow
 
-To set up a new Okta account for this flow, follow [this guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/b863d2e79ae6ae021552c4348e3012b8053ede17/pkg/manual_tests/authentication_methods/README.md#okta-authenticator-test).
+To set up a new Okta account for this flow, follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-okta).
 If you already have an Okta account, skip the first point and follow the next steps.
+
+!> **Note** In Okta, the auth scope is case sensitive. This means that the casing in role configuration in the provider, and the allowed scope in Okta setup must match.
+
 The guide includes writing the provider configuration in the TOML file, but here's what it should look like fully in HCL:
 
 ```terraform
@@ -355,16 +358,19 @@ provider "snowflake" {
   oauth_token_request_url = var.oauth_token_request_url
 }
 
+# Client ID from the Okta application.
 variable "oauth_client_id" {
   type      = string
   sensitive = true
 }
 
+# Client ID from the Okta application.
 variable "oauth_client_secret" {
   type      = string
   sensitive = true
 }
 
+# Client Token Request URL from the Okta API Authorization Server.
 variable "oauth_token_request_url" {
   type      = string
   sensitive = true
