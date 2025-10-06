@@ -4,12 +4,18 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -331,4 +337,53 @@ resource "snowflake_stage" "test" {
 	url = "%[6]s"
 }
 `, stageId.DatabaseName(), stageId.SchemaName(), stageId.Name(), storageIntegrationId.Name(), fileFormat, url)
+}
+
+func TestAcc_Stage_Issue3959(t *testing.T) {
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	stageModel := model.Stage("test", id.DatabaseName(), id.SchemaName(), id.Name())
+
+	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.StageResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Stage),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
+				Config:            accconfig.FromModels(t, providerModel, stageModel),
+				Check: assertThat(t,
+					resourceassert.StageResource(t, stageModel.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()),
+				),
+			},
+			{
+				PreConfig: func() {
+					schemaCleanup()
+				},
+				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
+				Config:            accconfig.FromModels(t, providerModel, stageModel),
+				ExpectError:       regexp.MustCompile("object does not exist, or operation cannot be performed"),
+			},
+			// Verify that the current version is able to remove non-existing stage from the state
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, stageModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(stageModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				// We get this error during stage creation as the schema does not exist
+				ExpectError: regexp.MustCompile("Schema '.*' does not exist or not authorized"),
+			},
+		},
+	})
 }
