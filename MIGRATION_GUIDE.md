@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.7.0 ➞ v2.8.0
+## v2.7.x ➞ v2.8.0
 
 ### *(new feature)* Added handling private link in S3 and Azure storage integrations
 
@@ -84,6 +84,21 @@ Now, when the stage is not present in Snowflake, it will be removed from the sta
 No changes in configuration and state are required.
 
 References: [#3959](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3959)
+
+### *(bugfix)* Handling destruction of snowflake_object_parameter when the parameter key is REPLICABLE_WITH_FAILOVER_GROUPS
+
+`snowflake_object_parameter` handles the resource removal by checking the default value on the parameter and setting it.
+`REPLICABLE_WITH_FAILOVER_GROUPS` parameter has a default of `UNSET` in Snowflake.
+This value cannot be set correctly resulting in an error similar to:
+
+```
+SQL compilation error:
+  | invalid value [UNSET] for parameter 'REPLICABLE_WITH_FAILOVER_GROUPS'
+```
+
+Until the behavior is unchanged on Snowflake, we will set this value to `YES` on destruction.
+
+No action is needed.
 
 ## v2.6.x ➞ v2.7.0
 
