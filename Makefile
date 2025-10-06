@@ -67,20 +67,26 @@ sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 			else echo "Aborting..."; \
 		fi;
 
+create-test-output-directory:
+	mkdir -p $$HOME/test_results
+
 test-unit: ## run unit tests
-	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)")
+	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") -json
 
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=150m ./pkg/testacc
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=150m ./pkg/testacc -json
 
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=45m ./pkg/testacc ./pkg/sdk/testint
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=45m ./pkg/testacc ./pkg/sdk/testint -json
 
-test-integration: ## run SDK integration tests
-	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint
+test-account-level-features: create-test-output-directory ## run integration and acceptance test modifying account
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/testacc ./pkg/sdk/testint -json
 
-test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
-	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional
+test-integration: create-test-output-directory ## run SDK integration tests
+	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint -json
+
+test-functional: create-test-output-directory ## run functional tests of the underlying terraform libraries (currently SDKv2)
+	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional -json
 
 test-architecture: ## check architecture constraints between packages
 	go test ./pkg/architests/... -v
