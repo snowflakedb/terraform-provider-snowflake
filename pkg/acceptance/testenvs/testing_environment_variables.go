@@ -47,9 +47,9 @@ const (
 	TestResourceDataTypeDiffHandlingEnv env = "TEST_SF_TF_TEST_RESOURCE_DATA_DIFF_HANDLING_ENV"
 
 	// Oauth-related
-	OauthWithClientCredentialsClientId        env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_ID"
-	OauthWithClientCredentialsClientSecret    env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_SECRET"
-	OauthWithClientCredentialsTokenRequestUrl env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_TOKEN_REQUEST_URL"
+	OauthWithClientCredentialsClientId     env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_ID"
+	OauthWithClientCredentialsClientSecret env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_SECRET"
+	OauthWithClientCredentialsIssuer       env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_ISSUER"
 )
 
 func GetOrSkipTest(t *testing.T, envName Env) string {

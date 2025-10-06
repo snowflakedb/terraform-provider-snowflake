@@ -342,6 +342,9 @@ variable "password" {
 
 To set up a new Okta account for this flow, follow [this guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/b863d2e79ae6ae021552c4348e3012b8053ede17/pkg/manual_tests/authentication_methods/README.md#okta-authenticator-test).
 If you already have an Okta account, skip the first point and follow the next steps.
+
+!> **Note** In Okta, the auth scope is case sensitive. This means that the casing in role configuration in the provider, and the allowed scope in Okta setup must match.
+
 The guide includes writing the provider configuration in the TOML file, but here's what it should look like fully in HCL:
 
 ```terraform

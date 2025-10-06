@@ -18,17 +18,41 @@ import (
 
 func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-	oauthClientId := testenvs.GetOrSkipTest(t, testenvs.OauthClientId)
-	oauthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OauthClientSecret)
-	oauthTokenRequestURL := testenvs.GetOrSkipTest(t, testenvs.OauthTokenRequestUrl)
+	oauthClientId := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsClientId)
+	oauthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsClientSecret)
+	oauthIssuerUrl := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsIssuer)
+	oauthJwsKeysUrl := oauthIssuerUrl + "/v1/keys"
+	oauthTokenRequestUrl := oauthIssuerUrl + "/v1/token"
 
-	// user := testClient().SetUpTemporaryUserWithOauthClientCredentials(t, oauthClientId)
-	user := helpers.TmpUser{
-		UserId:    sdk.NewAccountObjectIdentifier(oauthClientId),
+	user, userCleanup := testClient().User.CreateUserWithOptions(t, sdk.NewAccountObjectIdentifier(oauthClientId), &sdk.CreateUserOptions{
+		ObjectProperties: &sdk.UserObjectProperties{
+			Type:      sdk.Pointer(sdk.UserTypeService),
+			LoginName: sdk.String(oauthClientId),
+		},
+	})
+	t.Cleanup(userCleanup)
+
+	securityIntegrationId := testClient().Ids.RandomAccountObjectIdentifier()
+	_, securityIntegrationCleanup := testClient().SecurityIntegration.CreateExternalOauthWithRequest(
+		t,
+		sdk.NewCreateExternalOauthSecurityIntegrationRequest(
+			securityIntegrationId,
+			true,
+			sdk.ExternalOauthSecurityIntegrationTypeOkta,
+			oauthIssuerUrl,
+			[]sdk.TokenUserMappingClaim{{Claim: "sub"}},
+			sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
+		).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: oauthJwsKeysUrl}}).
+			WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: "https://SFDEVREL-CLOUD_ENGINEERING.snowflakecomputing.com"}}}),
+	)
+	t.Cleanup(securityIntegrationCleanup)
+
+	userHelper := helpers.TmpUser{
+		UserId:    user.ID(),
 		AccountId: testClient().Context.CurrentAccountId(t),
 		RoleId:    snowflakeroles.Public,
 	}
-	userConfig := testClient().TempTomlConfigForServiceUserWithOauthClientCredentials(t, &user, oauthClientId, oauthClientSecret, oauthTokenRequestURL)
+	userConfig := testClient().TempTomlConfigForServiceUserWithOauthClientCredentials(t, &userHelper, oauthClientId, oauthClientSecret, oauthTokenRequestUrl)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -40,18 +64,8 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, userConfig.Path)
 				},
-				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userConfig.Profile)) + executeShowSessionParameter(),
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userConfig.Profile)) + helpers.DummyResource(),
 			},
 		},
 	})
-}
-
-// TODO: move to common package
-func executeShowSessionParameter() string {
-	return `
-resource snowflake_execute "t" {
-    execute = "SELECT 1"
-    query = "SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN SESSION"
-    revert        = "SELECT 1"
-}`
 }
