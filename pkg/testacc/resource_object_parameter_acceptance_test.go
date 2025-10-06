@@ -9,12 +9,16 @@ import (
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -136,14 +140,15 @@ func TestAcc_ObjectParameter_ReplicableWithFailoverGroups(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: nil,
+		CheckDestroy: checkSchemaObjectParameterValue(t, schema.ID(), "YES"),
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
 				Config:            accconfig.FromModels(t, providerModel) + schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_object_parameter.p", "key", string(resources.ReplicableWithFailoverGroups)),
-					resource.TestCheckResourceAttr("snowflake_object_parameter.p", "value", "NO"),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr("snowflake_object_parameter.p", "key", string(resources.ReplicableWithFailoverGroups))),
+					assert.Check(resource.TestCheckResourceAttr("snowflake_object_parameter.p", "value", "NO")),
+					objectparametersassert.SchemaParameters(t, schema.ID()).HasStringParameterValue(resources.ReplicableWithFailoverGroups, "NO"),
 				),
 			},
 			{
@@ -154,7 +159,7 @@ func TestAcc_ObjectParameter_ReplicableWithFailoverGroups(t *testing.T) {
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
+				Config:                   accconfig.FromModels(t, providerModel) + schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
 				Destroy:                  true,
 			},
 		},
@@ -173,4 +178,21 @@ resource "snowflake_object_parameter" "p" {
 	}
 }
 `, schemaId.DatabaseName(), schemaId.Name(), value)
+}
+
+// TODO [SNOW-1501905]: add more generic checks to check destroy (more easy Snowflake state checks)
+func checkSchemaObjectParameterValue(t *testing.T, schemaId sdk.DatabaseObjectIdentifier, value string) func(state *terraform.State) error {
+	t.Helper()
+
+	return func(s *terraform.State) error {
+		parameters := testClient().Parameter.ShowSchemaParameters(t, schemaId)
+		param := helpers.FindParameter(t, parameters, resources.ReplicableWithFailoverGroups)
+		if param == nil {
+			return fmt.Errorf("no %s parameter found", resources.ReplicableWithFailoverGroups)
+		}
+		if param.Value != value {
+			return fmt.Errorf("expected %s to be %s, got %s", resources.ReplicableWithFailoverGroups, value, param.Value)
+		}
+		return nil
+	}
 }
