@@ -88,6 +88,30 @@ func (c *TestClient) TempTomlConfigForServiceUserWithOauthClientCredentials(t *t
 	})
 }
 
+func (c *TestClient) TempTomlConfigForServiceUserWithOauthAuthorizationCodeSnowflakeIdp(t *testing.T, user *TmpUser, oauthClientId, oauthClientSecret, oauthTokenRequestURL string) *TmpTomlConfig {
+	t.Helper()
+	return c.StoreTempTomlConfig(t, func(profile string) string {
+		return TomlConfigForServiceUserWithOauthAuthorizationCodeSnowflakeIdp(t, profile, user.RoleId, user.AccountId, oauthClientId, oauthClientSecret, oauthTokenRequestURL)
+	})
+}
+
+func (c *TestClient) TempTomlConfigForServiceUserWithOauthAuthorizationCodeExternalIdp(
+	t *testing.T,
+	user *TmpServiceUser,
+	oauthClientId,
+	oauthClientSecret,
+	oauthTokenRequestURL,
+	oauthAuthorizationURL,
+	oauthRedirectUri,
+	oauthScope string,
+) *TmpTomlConfig {
+	t.Helper()
+	return c.StoreTempTomlConfig(t, func(profile string) string {
+		return TomlConfigForServiceUserWithOauthAuthorizationCodeExternalIdp(
+			t, profile, user.RoleId, user.AccountId, oauthClientId, oauthClientSecret, oauthTokenRequestURL, oauthAuthorizationURL, oauthRedirectUri, oauthScope)
+	})
+}
+
 func (c *TestClient) TempTomlConfigForServiceUserWithPatAsPassword(t *testing.T, serviceUser *TmpServiceUserWithPat) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {

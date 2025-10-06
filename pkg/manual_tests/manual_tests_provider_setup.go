@@ -3,8 +3,11 @@ package manual_tests
 import (
 	"context"
 	"log"
+	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -39,4 +42,19 @@ var ManualTestProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderSe
 	"snowflake": func() (tfprotov6.ProviderServer, error) {
 		return v6Server, nil
 	},
+}
+
+func TestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+
+	config, err := sdk.ProfileConfig(testprofiles.Default)
+	if err != nil {
+		t.Skipf("Snowflake %s profile not configured. Must be set in ~/.snowflake/config", testprofiles.Default)
+	}
+	client, err := sdk.NewClient(config)
+	if err != nil {
+		t.Skipf("Snowflake %s profile not configured. Must be set in ~/.snowflake/config", testprofiles.Default)
+	}
+
+	return client
 }

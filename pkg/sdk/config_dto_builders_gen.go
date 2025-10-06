@@ -215,7 +215,27 @@ func (s *ConfigDTO) WithOauthClientSecret(OauthClientSecret string) *ConfigDTO {
 	return s
 }
 
+func (s *ConfigDTO) WithOauthAuthorizationURL(OauthAuthorizationURL string) *ConfigDTO {
+	s.OauthAuthorizationURL = &OauthAuthorizationURL
+	return s
+}
+
 func (s *ConfigDTO) WithOauthTokenRequestURL(OauthTokenRequestURL string) *ConfigDTO {
 	s.OauthTokenRequestURL = &OauthTokenRequestURL
+	return s
+}
+
+func (s *ConfigDTO) WithOauthRedirectURI(OauthRedirectURI string) *ConfigDTO {
+	s.OauthRedirectURI = &OauthRedirectURI
+	return s
+}
+
+func (s *ConfigDTO) WithOauthScope(OauthScope string) *ConfigDTO {
+	s.OauthScope = &OauthScope
+	return s
+}
+
+func (s *ConfigDTO) WithEnableSingleUseRefreshTokens(EnableSingleUseRefreshTokens bool) *ConfigDTO {
+	s.EnableSingleUseRefreshTokens = &EnableSingleUseRefreshTokens
 	return s
 }

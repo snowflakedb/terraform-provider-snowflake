@@ -165,6 +165,10 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.OauthClientID, &driverCfg.OauthClientID)
 	pointerAttributeSet(c.OauthClientSecret, &driverCfg.OauthClientSecret)
 	pointerAttributeSet(c.OauthTokenRequestURL, &driverCfg.OauthTokenRequestURL)
+	pointerAttributeSet(c.OauthAuthorizationURL, &driverCfg.OauthAuthorizationURL)
+	pointerAttributeSet(c.OauthRedirectURI, &driverCfg.OauthRedirectURI)
+	pointerAttributeSet(c.OauthScope, &driverCfg.OauthScope)
+	pointerAttributeSet(c.EnableSingleUseRefreshTokens, &driverCfg.EnableSingleUseRefreshTokens)
 
 	return driverCfg, nil
 }
@@ -290,8 +294,20 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if baseConfig.OauthClientSecret == "" {
 		baseConfig.OauthClientSecret = mergeConfig.OauthClientSecret
 	}
+	if baseConfig.OauthAuthorizationURL == "" {
+		baseConfig.OauthAuthorizationURL = mergeConfig.OauthAuthorizationURL
+	}
 	if baseConfig.OauthTokenRequestURL == "" {
 		baseConfig.OauthTokenRequestURL = mergeConfig.OauthTokenRequestURL
+	}
+	if baseConfig.OauthRedirectURI == "" {
+		baseConfig.OauthRedirectURI = mergeConfig.OauthRedirectURI
+	}
+	if baseConfig.OauthScope == "" {
+		baseConfig.OauthScope = mergeConfig.OauthScope
+	}
+	if !baseConfig.EnableSingleUseRefreshTokens {
+		baseConfig.EnableSingleUseRefreshTokens = mergeConfig.EnableSingleUseRefreshTokens
 	}
 	return baseConfig
 }
@@ -432,6 +448,7 @@ const (
 	AuthenticationTypeUsernamePasswordMfa     AuthenticationType = "USERNAMEPASSWORDMFA"
 	AuthenticationTypeProgrammaticAccessToken AuthenticationType = "PROGRAMMATIC_ACCESS_TOKEN" //nolint:gosec
 	AuthenticationTypeOauthClientCredentials  AuthenticationType = "OAUTH_CLIENT_CREDENTIALS"  //nolint:gosec
+	AuthenticationTypeOauthAuthorizationCode  AuthenticationType = "OAUTH_AUTHORIZATION_CODE"
 
 	AuthenticationTypeEmpty AuthenticationType = ""
 )
@@ -446,6 +463,7 @@ var AllAuthenticationTypes = []AuthenticationType{
 	AuthenticationTypeUsernamePasswordMfa,
 	AuthenticationTypeProgrammaticAccessToken,
 	AuthenticationTypeOauthClientCredentials,
+	AuthenticationTypeOauthAuthorizationCode,
 }
 
 func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
@@ -468,6 +486,8 @@ func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 		return gosnowflake.AuthTypePat, nil
 	case string(AuthenticationTypeOauthClientCredentials):
 		return gosnowflake.AuthTypeOAuthClientCredentials, nil
+	case string(AuthenticationTypeOauthAuthorizationCode):
+		return gosnowflake.AuthTypeOAuthAuthorizationCode, nil
 	default:
 		return gosnowflake.AuthType(0), fmt.Errorf("invalid authenticator type: %s", s)
 	}

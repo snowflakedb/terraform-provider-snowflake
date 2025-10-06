@@ -211,6 +211,58 @@ func TomlConfigForServiceUserWithOauthClientCredentials(
 	)
 }
 
+// TomlConfigForServiceUserWithOauthAuthorizationCodeSnowflakeIdp is a temporary function used to test provider configuration
+func TomlConfigForServiceUserWithOauthAuthorizationCodeSnowflakeIdp(
+	t *testing.T,
+	profile string,
+	roleId sdk.AccountObjectIdentifier,
+	accountIdentifier sdk.AccountIdentifier,
+	oauthClientId string,
+	oauthClientSecret string,
+	oauthTokenRequestURL string,
+) string {
+	t.Helper()
+
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithOauthClientID(oauthClientId).
+		WithOauthClientSecret(oauthClientSecret).
+		WithOauthTokenRequestURL(oauthTokenRequestURL).
+		WithAuthenticator(string(sdk.AuthenticationTypeOauthAuthorizationCode)),
+	)
+}
+
+// TomlConfigForServiceUserWithOauthAuthorizationCodeExternalIdp is a temporary function used to test provider configuration
+func TomlConfigForServiceUserWithOauthAuthorizationCodeExternalIdp(
+	t *testing.T,
+	profile string,
+	roleId sdk.AccountObjectIdentifier,
+	accountIdentifier sdk.AccountIdentifier,
+	oauthClientId string,
+	oauthClientSecret string,
+	oauthTokenRequestURL string,
+	oauthAuthorizationURL string,
+	oauthRedirectURI string,
+	oauthScope string,
+) string {
+	t.Helper()
+
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithOauthClientID(oauthClientId).
+		WithOauthClientSecret(oauthClientSecret).
+		WithOauthTokenRequestURL(oauthTokenRequestURL).
+		WithOauthAuthorizationURL(oauthAuthorizationURL).
+		WithOauthRedirectURI(oauthRedirectURI).
+		WithOauthScope(oauthScope).
+		WithAuthenticator(string(sdk.AuthenticationTypeOauthAuthorizationCode)),
+	)
+}
+
 func configDtoToTomlString(t *testing.T, profile string, config *sdk.ConfigDTO) string {
 	t.Helper()
 

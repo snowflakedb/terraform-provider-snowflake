@@ -247,9 +247,10 @@ func GetProviderSchema() map[string]*schema.Schema {
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Token, nil),
 		},
 		"token_accessor": {
-			Type:     schema.TypeList,
-			Optional: true,
-			MaxItems: 1,
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "The legacy configuration for token accessor flows. If you are using the  OAuth authentication flows, use the dedicated `oauth...` fields instead.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"token_endpoint": {
@@ -417,12 +418,38 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthClientSecret, nil),
 		},
+		"oauth_authorization_url": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Authorization URL of OAuth2 external IdP.", snowflakeenvs.OauthAuthorizationUrl),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthTokenRequestUrl, nil),
+		},
 		"oauth_token_request_url": {
 			Type:        schema.TypeString,
 			Description: envNameFieldDescription("Token request URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthTokenRequestUrl),
 			Optional:    true,
 			Sensitive:   true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthTokenRequestUrl, nil),
+		},
+		"oauth_redirect_uri": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Redirect URI registered in IdP.", snowflakeenvs.OauthRedirectUri),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthRedirectUri, nil),
+		},
+		"oauth_scope": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Comma separated list of scopes. If empty it is derived from role.", snowflakeenvs.OauthScope),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthScope, nil),
+		},
+		"enable_single_use_refresh_tokens": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("Enables single use refresh tokens for Snowflake IdP.", snowflakeenvs.EnableSingleUseRefreshTokens),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.EnableSingleUseRefreshTokens, nil),
 		},
 	}
 }
@@ -779,7 +806,11 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		// TODO(SNOW-1761318): handle DisableSamlURLCheck after upgrading the driver to at least 1.10.1
 		handleStringField(s, "oauth_client_id", &config.OauthClientID),
 		handleStringField(s, "oauth_client_secret", &config.OauthClientSecret),
+		handleStringField(s, "oauth_authorization_url", &config.OauthAuthorizationURL),
 		handleStringField(s, "oauth_token_request_url", &config.OauthTokenRequestURL),
+		handleStringField(s, "oauth_redirect_uri", &config.OauthRedirectURI),
+		handleStringField(s, "oauth_scope", &config.OauthScope),
+		handleBoolField(s, "enable_single_use_refresh_tokens", &config.EnableSingleUseRefreshTokens),
 	)
 	if err != nil {
 		return nil, err
