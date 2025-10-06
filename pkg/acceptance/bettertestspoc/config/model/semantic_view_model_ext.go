@@ -167,17 +167,11 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticV
 		}
 		qExpName := semExp.GetQualifiedExpressionName()
 		if qExpName != nil {
-			qExpNameVar := map[string]tfconfig.Variable{
-				"QualifiedExpressionName": tfconfig.StringVariable(qExpName.QualifiedExpressionName),
-			}
-			m["qualifiedExpressionName"] = tfconfig.ObjectVariable(qExpNameVar)
+			m["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
 		}
 		sqlExp := semExp.GetSqlExpression()
 		if sqlExp != nil {
-			sqlExpVar := map[string]tfconfig.Variable{
-				"SqlExpression": tfconfig.StringVariable(sqlExp.SqlExpression),
-			}
-			m["sqlExpression"] = tfconfig.ObjectVariable(sqlExpVar)
+			m["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
 		}
 		synonyms := semExp.GetSynonyms()
 		if synonyms != nil {
@@ -202,17 +196,11 @@ func (s *SemanticViewModel) WithDimensions(dimensions []sdk.SemanticExpression) 
 		}
 		qExpName := semExp.GetQualifiedExpressionName()
 		if qExpName != nil {
-			qExpNameVar := map[string]tfconfig.Variable{
-				"QualifiedExpressionName": tfconfig.StringVariable(qExpName.QualifiedExpressionName),
-			}
-			m["qualifiedExpressionName"] = tfconfig.ObjectVariable(qExpNameVar)
+			m["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
 		}
 		sqlExp := semExp.GetSqlExpression()
 		if sqlExp != nil {
-			sqlExpVar := map[string]tfconfig.Variable{
-				"SqlExpression": tfconfig.StringVariable(sqlExp.SqlExpression),
-			}
-			m["sqlExpression"] = tfconfig.ObjectVariable(sqlExpVar)
+			m["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
 		}
 		synonyms := semExp.GetSynonyms()
 		if synonyms != nil {

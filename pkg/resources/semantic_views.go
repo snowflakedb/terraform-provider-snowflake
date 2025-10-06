@@ -197,12 +197,17 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				},
 			},
 		},
+		AtLeastOneOf: []string{
+			"dimensions",
+			"metrics",
+		},
 	},
 	"metrics": {
-		Type:     schema.TypeList,
-		Required: true,
+		Type: schema.TypeList,
 		Description: blocklistedCharactersFieldDescription("Specify a list of metrics for the semantic view. " +
 			"Each metric can have either a semantic expression or a window function in its definition."),
+
+		Optional: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				// TODO(SNOW-2396311): update the SDK with the newly added/updated fields for semantic expressions, then add them here
@@ -290,6 +295,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					},
 				},
 			},
+		},
+		AtLeastOneOf: []string{
+			"dimensions",
+			"metrics",
 		},
 	},
 	"comment": {
@@ -600,10 +609,9 @@ func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, err
 	}
 
 	if c["synonym"] != nil {
-		synonyms, ok := c["synonym"].([]any)
-		if ok && len(synonyms) > 0 {
+		if synonyms, ok := c["synonym"].(*schema.Set); ok && synonyms.Len() > 0 {
 			var syns []sdk.Synonym
-			for _, s := range synonyms {
+			for _, s := range synonyms.List() {
 				syns = append(syns, sdk.Synonym{Synonym: s.(string)})
 			}
 			sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
