@@ -160,7 +160,7 @@ func TestAcc_ObjectParameter_ReplicableWithFailoverGroups(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   accconfig.FromModels(t, providerModel) + schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
-				Destroy:                  true,
+				// destroy done at the end of the test and CheckDestroy verifies the value of the parameter
 			},
 		},
 	})
