@@ -134,8 +134,8 @@ var semanticViewsSchema = map[string]*schema.Schema{
 						},
 					},
 					ExactlyOneOf: []string{
-						"semantic_expression",
-						"window_function",
+						"metrics.0.semantic_expression",
+						"metrics.0.window_function",
 					},
 				},
 				"window_function": {
@@ -179,8 +179,8 @@ var semanticViewsSchema = map[string]*schema.Schema{
 						},
 					},
 					ExactlyOneOf: []string{
-						"semantic_expression",
-						"window_function",
+						"metrics.0.semantic_expression",
+						"metrics.0.window_function",
 					},
 				},
 			},
