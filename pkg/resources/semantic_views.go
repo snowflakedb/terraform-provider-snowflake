@@ -429,8 +429,8 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 		windowFunction := windowFunctionDefinition["window_function"].(string)
 		metric := windowFunctionDefinition["metric"].(string)
 		windowFuncRequest := sdk.NewWindowFunctionMetricDefinitionRequest(windowFunction, metric)
-		if windowFunctionDefinition["over_clauses"] != nil {
-			overClause, ok := windowFunctionDefinition["over_clauses"].(map[string]any)
+		if windowFunctionDefinition["over_clause"] != nil {
+			overClause, ok := windowFunctionDefinition["over_clause"].(map[string]any)
 			if ok {
 				overClauseRequest := sdk.NewWindowFunctionOverClauseRequest()
 				if overClause["partition_by"] != nil {
