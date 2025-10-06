@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+// TODO []: add this to SDK
+const ReplicableWithFailoverGroups = "REPLICABLE_WITH_FAILOVER_GROUPS"
 
 var objectParameterSchema = map[string]*schema.Schema{
 	"key": {
@@ -213,6 +214,10 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 			return diag.FromErr(err)
 		}
 		defaultValue := defaultParameter.Default
+		// TODO []: Remove the workaround when default value on REPLICABLE_WITH_FAILOVER_GROUPS parameter in Snowflake is settable or during snowflake_object_parameter rework (using UNSET)
+		if key == ReplicableWithFailoverGroups {
+			defaultValue = "YES"
+		}
 		err = client.Parameters.SetObjectParameterOnObject(ctx, o, objectParameter, defaultValue)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error resetting object parameter err = %w", err))
