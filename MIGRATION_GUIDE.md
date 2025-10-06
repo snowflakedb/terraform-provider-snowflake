@@ -42,6 +42,21 @@ Previously, due to limitations in Snowflake, when one of `generation` or `resour
 
 No changes in configuration and state are required.
 
+### *(bugfix)* Handling destruction of snowflake_object_parameter when the parameter key is REPLICABLE_WITH_FAILOVER_GROUPS
+
+`snowflake_object_parameter` handles the resource removal by checking the default value on the parameter and setting it.
+`REPLICABLE_WITH_FAILOVER_GROUPS` parameter has a default of `UNSET` in Snowflake.
+This value cannot be set correctly resulting in an error similar to:
+
+```
+SQL compilation error:
+  | invalid value [UNSET] for parameter 'REPLICABLE_WITH_FAILOVER_GROUPS'
+```
+
+Until the behavior is unchanged on Snowflake, we will set this value to `YES` on destruction.
+
+No action is needed.
+
 ## v2.6.x ➞ v2.7.0
 
 ### *(new feature)* Added support for generation 2 Standard warehouses and resource constraints for Snowpark-optimized warehouses
