@@ -28,6 +28,9 @@ type pluginFrameworkPocProviderModelV0 struct {
 	KeepSessionAlive                   types.Bool   `tfsdk:"keep_session_alive"`
 	LoginTimeout                       types.Int64  `tfsdk:"login_timeout"`
 	MaxRetryCount                      types.Int64  `tfsdk:"max_retry_count"`
+	OauthClientId                      types.String `tfsdk:"oauth_client_id"`
+	OauthClientSecret                  types.String `tfsdk:"oauth_client_secret"`
+	OauthTokenRequestUrl               types.String `tfsdk:"oauth_token_request_url"`
 	OcspFailOpen                       types.String `tfsdk:"ocsp_fail_open"`
 	OktaUrl                            types.String `tfsdk:"okta_url"`
 	OrganizationName                   types.String `tfsdk:"organization_name"`
@@ -150,6 +153,21 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["max_retry_count"].Description,
 		Optional:    true,
 		Sensitive:   false,
+	},
+	"oauth_client_id": schema.StringAttribute{
+		Description: existingSchema["oauth_client_id"].Description,
+		Optional:    true,
+		Sensitive:   true,
+	},
+	"oauth_client_secret": schema.StringAttribute{
+		Description: existingSchema["oauth_client_secret"].Description,
+		Optional:    true,
+		Sensitive:   true,
+	},
+	"oauth_token_request_url": schema.StringAttribute{
+		Description: existingSchema["oauth_token_request_url"].Description,
+		Optional:    true,
+		Sensitive:   true,
 	},
 	"ocsp_fail_open": schema.StringAttribute{
 		Description: existingSchema["ocsp_fail_open"].Description,
