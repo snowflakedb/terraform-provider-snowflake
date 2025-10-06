@@ -364,7 +364,7 @@ variable "oauth_client_id" {
   sensitive = true
 }
 
-# Client ID from the Okta application.
+# Client Secret from the Okta application.
 variable "oauth_client_secret" {
   type      = string
   sensitive = true
