@@ -4,18 +4,23 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"slices"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas/gen"
 	"golang.org/x/exp/maps"
 )
 
+const (
+	name    = "SDK to schema"
+	version = "0.1.0"
+)
+
 func main() {
 	genhelpers.NewGenerator(
+		genhelpers.NewPreambleModel(name, version).
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk").
+			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),
 		getStructDetails,
 		gen.ModelFromStructDetails,
 		getFilename,
@@ -23,7 +28,6 @@ func main() {
 	).
 		WithAdditionalObjectsDebugLogs(printAllStructsFields).
 		WithAdditionalObjectsDebugLogs(printUniqueTypes).
-		WithObjectFilter(filterByNameFromEnv).
 		RunAndHandleOsReturn()
 }
 
@@ -67,14 +71,4 @@ func printUniqueTypes(allStructs []genhelpers.StructDetails) {
 	for _, k := range keys {
 		fmt.Println(k)
 	}
-}
-
-// TODO: move this filter to commons and consider extracting this as a command line param
-func filterByNameFromEnv(o genhelpers.StructDetails) bool {
-	allowedObjectNamesString := os.Getenv("SF_TF_GENERATOR_EXT_ALLOWED_OBJECT_NAMES")
-	if allowedObjectNamesString == "" {
-		return true
-	}
-	allowedObjectNames := strings.Split(allowedObjectNamesString, ",")
-	return slices.Contains(allowedObjectNames, o.ObjectName())
 }

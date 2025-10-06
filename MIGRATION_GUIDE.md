@@ -24,6 +24,82 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.7.x ➞ v2.8.0
+
+### *(new feature)* Added handling private link in S3 and Azure storage integrations
+
+Snowflake offers using private link in S3 and Azure storage integration. In this version, we added a new `use_privatelink_endpoint` field for handling this field in Snowflake.
+
+No changes in configuration and state are required. You can optionally update your configurations by explicitly setting the `use_privatelink_endpoint` field in the `snowflake_storage_integration` resource.
+
+Additionally, in this change we dropped validating combinations of provider-specific fields with storage providers during the update, e.g. setting `azure_tenant_id` for the AWS provider. We clarified in the documentation that the users are responsible for passing correct configurations. We are planning to introduce separate resources for each provider in the future.
+
+Note that this resource remains in preview.
+
+### *(new feature)* Added missing object types in privilege-granting resources
+
+As Snowflake constantly evolves, new object types are supported in `GRANT` commands. To keep up with these changes, we adjusted the following resources:
+- `snowflake_grant_privileges_to_account_role` (all object types that can be specified in `on_schema_object` block)
+- `snowflake_grant_privileges_to_database_role` (all object types that can be specified in `on_schema_object` block)
+
+To support the missing object types:
+- `DBT PROJECT`
+- `JOIN POLICY`
+- `PRIVACY POLICY`
+- `SEMANTIC VIEW`
+- `SNAPSHOT POLICY`
+- `SNAPSHOT SET`
+
+No changes in configuration and state are required.
+
+References: [#3860](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3860)
+
+### Changed handling of unset `generation` and `resource_constraint` fields in the `warehouse` resource
+
+Previously, due to limitations in Snowflake, when one of `generation` or `resource_constraint` field was unset in the configuration, the provider used `SET RESOURCE_CONSTRAINT=STANDARD_GEN_1` and `SET RESOURCE_CONSTRAINT=MEMORY_16X`, respectively. Now, the `UNSET` operation is supported for this field, and it is used in the provider in handling `generation` and `resource_constraint`.
+
+No changes in configuration and state are required.
+
+### *(bugfix)* Dynamic tables resource handling insufficient access and missing Text column
+
+Previously, when the `snowflake_dynamic_table` resource was created and the dynamic table's privileges were altered in a
+way that the current user lost access to view [`text` metadata field](https://docs.snowflake.com/en/user-guide/dynamic-tables-privileges#label-dynamic-tables-privileges-view-metadata),
+the resource threw an internal error instead of handling the situation gracefully.
+
+Now, when the user has insufficient privileges to view `text` field,
+the resource will return an error to the user with a clear message.
+
+No changes in configuration and state are required.
+
+References: [#3931](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3931)
+
+### *(bugfix)* Stages safe removal when not present in Snowflake
+
+As the `snowflake_stage` resource wasn't adjusted fully according to the changes introduced in [this change](#new-behavior-for-read-and-delete-operations-when-removing-high-hierarchy-objects),
+we had to adjust its reading function to handle the case when the stage is not present in Snowflake and should safely
+remove itself from the state.
+
+Now, when the stage is not present in Snowflake, it will be removed from the state without throwing an error (only an informational warning like in other resources).
+
+No changes in configuration and state are required.
+
+References: [#3959](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3959)
+
+### *(bugfix)* Handling destruction of snowflake_object_parameter when the parameter key is REPLICABLE_WITH_FAILOVER_GROUPS
+
+`snowflake_object_parameter` handles the resource removal by checking the default value on the parameter and setting it.
+`REPLICABLE_WITH_FAILOVER_GROUPS` parameter has a default of `UNSET` in Snowflake.
+This value cannot be set correctly resulting in an error similar to:
+
+```
+SQL compilation error:
+  | invalid value [UNSET] for parameter 'REPLICABLE_WITH_FAILOVER_GROUPS'
+```
+
+Until the behavior is unchanged on Snowflake, we will set this value to `YES` on destruction.
+
+No action is needed.
+
 ## v2.6.x ➞ v2.7.0
 
 ### *(new feature)* Added support for generation 2 Standard warehouses and resource constraints for Snowpark-optimized warehouses
@@ -376,6 +452,54 @@ References: [#3823](https://github.com/snowflakedb/terraform-provider-snowflake/
 
 ## v2.1.x ➞ v2.2.0
 <a id="v210--v220"></a>
+
+### *(breaking change, new feature)* Changes in `snowflake_tables` data source
+
+We adjusted the `snowflake_tables` data source with the following:
+- Moved the `database` and `schema` fields to the `in` block (breaking change). See the before/after examples below.
+- Added support for `IN APPLICATION`, `IN APPLICATION PACKAGE`, `LIKE`, `STARTS WITH`, and `LIMIT`.
+- Added support for getting data with `DESCRIBE TABLE` - see the `with_describe` field.
+- Changed the output format returned by the data source (breaking change). See the before/after examples below.
+
+With added support for `IN APPLICATION` and `IN APPLICATION PACKAGE` filters, we also nested the `database` and `schema` fields in a separate `in` block and made all these fields optional. For example, please adjust the configurations from:
+```terraform
+data "snowflake_tables" "current" {
+  database = "MYDB"
+}
+```
+to
+```terraform
+data "snowflake_tables" "current" {
+  in {
+    database = "MYDB"
+  }
+}
+```
+
+The output format is also changed. Now, all data is nested in `tables.show_output`, and in `tables.describe_output` if `with_describe` is set to `true`.
+
+Before:
+
+```terraform
+output "simple_output" {
+  value = data.snowflake_tables.test.tables[0].name
+}
+```
+After:
+
+```
+output "simple_output" {
+  value = data.snowflake_tables.test.tables[0].show_output[0].name
+}
+
+output "describe_output" {
+  value = data.snowflake_tables.test.tables[0].describe_output[0].name # Column name from the DESCRIBE TABLE query.
+}
+```
+
+Please read the [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/2.2.0/docs/data-sources/tables) for more information.
+
+Note that `snowflake_tables` data source and `snowflake_table` resource are still in preview.
 
 ### *(bugfix)* Fix `ENABLE_INTERNAL_STAGES_PRIVATELINK` mapping in `snowflake_account_parameter` resource
 

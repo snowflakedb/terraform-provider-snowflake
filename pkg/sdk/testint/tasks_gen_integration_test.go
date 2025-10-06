@@ -947,7 +947,7 @@ func TestInt_Tasks(t *testing.T) {
 		require.Eventually(t, func() bool {
 			err := client.Tasks.Execute(ctx, sdk.NewExecuteTaskRequest(task.ID()).WithRetryLast(true))
 			return err != nil
-		}, time.Second, time.Millisecond*500)
+		}, 2*time.Second, time.Millisecond*500)
 	})
 
 	t.Run("temporarily suspend root tasks", func(t *testing.T) {

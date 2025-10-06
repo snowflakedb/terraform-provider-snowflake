@@ -358,6 +358,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 		"JAKUB_MICHALAK_LEGACY",
 		"JAN_CIESLAK",
 		"JAN_CIESLAK_LEGACY",
+		"MATEUSZ_KOWALSKI",
 		"TERRAFORM_SVC_ACCOUNT",
 		"TEST_CI_SERVICE_USER",
 		"PENTESTING_USER_1",

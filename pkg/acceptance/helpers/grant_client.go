@@ -295,6 +295,32 @@ func (c *GrantClient) GrantOwnershipToAccountRole(
 	require.NoError(t, err)
 }
 
+func (c *GrantClient) GrantOwnershipToAccountRoleWithOwnershipOptions(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	objectType sdk.ObjectType,
+	objectName sdk.ObjectIdentifier,
+	options sdk.GrantOwnershipOptions,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().GrantOwnership(
+		ctx,
+		sdk.OwnershipGrantOn{
+			Object: &sdk.Object{
+				ObjectType: objectType,
+				Name:       objectName,
+			},
+		},
+		sdk.OwnershipGrantTo{
+			AccountRoleName: &accountRoleId,
+		},
+		&options,
+	)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) GrantOwnershipOnSchemaObjectToAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,

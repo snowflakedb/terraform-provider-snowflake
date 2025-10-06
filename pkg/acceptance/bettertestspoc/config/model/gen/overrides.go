@@ -26,7 +26,9 @@ var complexListAttributesOverrides = map[string]map[string]string{
 	"ExternalVolume":  {"storage_location": "sdk.ExternalVolumeStorageLocation"},
 	"MaskingPolicy":   {"argument": "sdk.TableColumnSignature"},
 	"RowAccessPolicy": {"argument": "sdk.TableColumnSignature"},
+	"SemanticView":    {"tables": "sdk.LogicalTable"},
 	"TagAssociation":  {"object_identifiers": "sdk.ObjectIdentifier"},
 	// TODO [SNOW-1348114]: use better type for override (not null and default are currently not supported)
-	"Table": {"column": "sdk.TableColumnSignature"},
+	"Table":        {"column": "sdk.TableColumnSignature"},
+	"DynamicTable": {"target_lag": "sdk.TargetLag"},
 }

@@ -1,0 +1,28 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.Field*/ -}}
+
+{{- $name := .DtoDecl -}}
+
+func New{{ $name }}(
+{{- range .Fields }}
+    {{- if (and .ShouldBeInDto .Required) }}
+        {{ FirstLetterLowercase .Name }} {{ .DtoKind }},
+    {{- end }}
+{{- end }}
+) *{{ $name }} {
+s := {{ $name }}{}
+{{- range .Fields }}
+    {{- if (and .ShouldBeInDto .Required) }}
+        s.{{ .Name }} = {{ FirstLetterLowercase .Name }}
+    {{- end }}
+{{- end }}
+return &s
+}
+
+{{ range .Fields }}
+    {{- if (and .ShouldBeInDto (not .Required)) }}
+func (s *{{ $name }}) With{{ .Name }}({{ FirstLetterLowercase .Name }}  {{ if .IsSlice }}[]{{ end }}{{ .DtoDecl }}) *{{ $name }} {
+    s.{{ .Name }} = {{ if .IsPointer }}&{{ end }}{{ FirstLetterLowercase .Name }}
+    return s
+}
+    {{- end }}
+{{ end }}

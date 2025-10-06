@@ -3,18 +3,19 @@ package gen
 import (
 	"os"
 	"slices"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
 type PluginFrameworkProviderModel struct {
 	ModelFields   []ProviderModelField
 	SchemaEntries []ProviderSchemaEntry
 	PackageName   string
+
+	*genhelpers.PreambleModel
 }
 
-func (m PluginFrameworkProviderModel) SomeFunc() {
-}
-
-func ModelFromSdkV2Schema(sdkV2ProviderSchema SdkV2ProviderSchema) PluginFrameworkProviderModel {
+func ModelFromSdkV2Schema(sdkV2ProviderSchema SdkV2ProviderSchema, preamble *genhelpers.PreambleModel) PluginFrameworkProviderModel {
 	orderedAttributeNames := make([]string, 0)
 	for key := range sdkV2ProviderSchema {
 		orderedAttributeNames = append(orderedAttributeNames, key)
@@ -41,5 +42,6 @@ func ModelFromSdkV2Schema(sdkV2ProviderSchema SdkV2ProviderSchema) PluginFramewo
 		ModelFields:   modelFields,
 		SchemaEntries: schemaEntries,
 		PackageName:   packageWithGenerateDirective,
+		PreambleModel: preamble,
 	}
 }

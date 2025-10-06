@@ -7,8 +7,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testacc/poc/gen"
 )
 
+const (
+	name    = "PoC plugin framework model and schema"
+	version = "0.1.0"
+)
+
 func main() {
 	genhelpers.NewGenerator(
+		genhelpers.NewPreambleModel(name, version).
+			WithImport("github.com/hashicorp/terraform-plugin-framework/provider/schema").
+			WithImport("github.com/hashicorp/terraform-plugin-framework/types").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"),
 		getSdkV2ProviderSchemas,
 		gen.ModelFromSdkV2Schema,
 		getFilename,

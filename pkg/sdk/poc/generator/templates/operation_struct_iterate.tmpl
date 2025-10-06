@@ -1,0 +1,16 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.Interface*/ -}}
+
+{{- range .Operations }}
+    {{- if .OptsField }}
+        {{ template "optionsTemplate" . }}
+    {{- end }}
+    {{- range .StructsToGenerate }}
+        {{ template "structTemplate" . }}
+    {{- end }}
+    {{- if .ObjectIdMethod }}
+        {{ template "showObjectIdMethodTemplate" .ObjectIdMethod }}
+    {{- end }}
+    {{- if .ObjectTypeMethod }}
+        {{ template "showObjectTypeMethodTemplate" .ObjectTypeMethod }}
+    {{- end }}
+{{- end }}

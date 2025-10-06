@@ -452,7 +452,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
 		assert.Nil(t, returnedWarehouse.Generation)
-		assert.NotNil(t, returnedWarehouse.ResourceConstraint)
+		require.NotNil(t, returnedWarehouse.ResourceConstraint)
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
@@ -470,16 +470,16 @@ func TestInt_Warehouses(t *testing.T) {
 			HasSize(sdk.WarehouseSizeMedium),
 		)
 
-		// TODO [SNOW-1473453]: uncomment and test when UNSET starts working correctly (expecting to unset to default MEMORY_16X)
-		// alterOptions = &sdk.AlterWarehouseOptions{
-		//	Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
-		// }
-		// err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		// require.NoError(t, err)
-		//
-		// returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
-		// require.NoError(t, err)
-		// assert.Equal(t, *sdk.WarehouseResourceConstraintMemory1X, returnedWarehouse.ResourceConstraint)
+		alterOptions = &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		require.NotNil(t, returnedWarehouse.ResourceConstraint)
+		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 	})
 
 	t.Run("alter: set and unset generation", func(t *testing.T) {
@@ -509,16 +509,16 @@ func TestInt_Warehouses(t *testing.T) {
 			HasType(sdk.WarehouseTypeStandard),
 		)
 
-		// TODO [SNOW-1473453]: uncomment and test when UNSET starts working correctly (expecting to unset to default STANDARD_GEN_1)
-		// alterOptions = &sdk.AlterWarehouseOptions{
-		//	Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
-		// }
-		// err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		// require.NoError(t, err)
-		//
-		// returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
-		// require.NoError(t, err)
-		// assert.Equal(t, *sdk.WarehouseResourceConstraintStandardGen1, returnedWarehouse.Generation)
+		alterOptions = &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.NotNil(t, returnedWarehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
 	})
 
 	t.Run("alter: prove problems with unset auto suspend", func(t *testing.T) {
@@ -583,32 +583,6 @@ func TestInt_Warehouses(t *testing.T) {
 		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default auto resume TRUE)
 		// assert.Equal(t, true, returnedWarehouse.AutoResume)
 		assert.Equal(t, false, returnedWarehouse.AutoResume)
-	})
-
-	t.Run("alter: prove problems with unset resource constraint", func(t *testing.T) {
-		// new warehouse created on purpose
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{
-			WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
-		})
-		t.Cleanup(warehouseCleanup)
-
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.ErrorContains(t, err, "invalid type of property 'null' for 'RESOURCE_CONSTRAINT'")
-
-		// The same happens for SNOWPARK_OPTIMIZED type
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{
-				WarehouseType: sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized),
-			},
-		})
-		require.NoError(t, err)
-
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.ErrorContains(t, err, "invalid type of property 'null' for 'RESOURCE_CONSTRAINT'")
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
