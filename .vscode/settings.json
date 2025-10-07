@@ -6,8 +6,7 @@
         "formatting.gofumpt": true
     },
     "go.testFlags": [
-        "-v",
-        "--tags=account_level_tests",
+        "-v"
     ],
     "go.testTimeout": "600s",
     "go.lintTool": "golangci-lint",
