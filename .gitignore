@@ -30,3 +30,6 @@ dist/
 
 # Test environment variables
 test.env
+
+# Test sensitive values
+pkg/manual_tests/authentication_methods/**/*.tfvars
