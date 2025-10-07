@@ -430,6 +430,8 @@ variable "oauth_authorization_url" {
 }
 ```
 
+Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
+
 ### OAuth Authorization Code authenticator flow - Snowflake IdP
 
 To set up new Snowflake IdP objects for this flow, follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-custom).
@@ -474,6 +476,8 @@ variable "oauth_token_request_url" {
   sensitive = true
 }
 ```
+
+Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
 
 ## Common issues
 
