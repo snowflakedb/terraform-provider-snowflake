@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.8.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.7.0...v2.8.0) (2025-10-06)
+
+
+### 🎉 **What's new:**
+
+* add integration tests for semantic views ([#3978](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3978)) ([79482ea](https://github.com/snowflakedb/terraform-provider-snowflake/commit/79482ea7c2ad833c9edf46bbf567052f96dfd020))
+* add semantic view resource - 1 ([#4029](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4029)) ([f0df2ab](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f0df2ab6e6b2485949bf36641a2dd416fc7a5304))
+* Add use_private_link_endpoint option to storage integrations ([#3913](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3913)) ([8853d9a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8853d9a38f229332e9bfa3d7f396eb6d76f20df0))
+
+
+### 🔧 **Misc**
+
+* Add [@sfc-gh-mkowalski](https://github.com/sfc-gh-mkowalski) to the protected users list ([#4057](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4057)) ([d316ea2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d316ea2b0c6beb90def7c8577f4ba2c013bf88c3))
+* Add common filtering flags to each generator ([#4050](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4050)) ([84568f0](https://github.com/snowflakedb/terraform-provider-snowflake/commit/84568f04b33817430fdcc28ddeef6f3a4ecc0ef8))
+* Adjust integration tests ([#4052](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4052)) ([d6e9e2c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d6e9e2c68505603f330c9d38bc3ead81cd0a8c8f))
+* Adjust tables documentation ([#4037](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4037)) ([f8416ee](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f8416ee75e4d7ec76d3c1ef36a314265890cd70e))
+* Adjust warehouses after the changes in Snowflake ([#4038](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4038)) ([89d9da1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/89d9da18063f22a515a82506d1263fc99408d06c))
+* Bump driver to v1.17.0 ([#4053](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4053)) ([14f723f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/14f723f6a250482c7cd950342ba9e04a2c65577a))
+* Generate DTO builders in SDK generator ([#4049](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4049)) ([1f2d9d8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1f2d9d8277888997e4988349acb5df22319a9131))
+* Handle BCR 2025-06 ([#4036](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4036)) ([a009b16](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a009b165e831c91eaa3d20a860d82b9d27de15dc))
+* Improve bcr handling in tests ([#4042](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4042)) ([d21c1b3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d21c1b341c94a4ba7cf5b8d4cd7298b69a6a01b1))
+* Improve imports handling in generators ([#4043](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4043)) ([cf7dcd3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/cf7dcd397486e015718bbd72111f86cb6ee3a647))
+* Set dependabot target branch to dev ([#4056](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4056)) ([4b83f08](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4b83f087794b26c89ccfb6a9e240c1115dbb79dd))
+* Stabilize acceptance tests ([#4044](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4044)) ([d15cbab](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d15cbabd27ccc3554caf87370231ca8a9a801f82))
+* Use common generator setup in SDK generator ([#4048](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4048)) ([e0bc273](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e0bc27386b205dd3b61597f2c853b01bb7c22297))
+
+
+### 🐛 **Bug fixes:**
+
+* Bug fixes and documentation improvements ([#4045](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4045)) ([3c3819b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3c3819bdbd7bde8c3d77db061e8245846e843a07))
+* Handle REPLICABLE_WITH_FAILOVER_GROUPS in snowflake_object_parameter ([#4062](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4062)) ([9b28486](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9b2848659c3c524a4c0f4ea0603540052a5dcb75))
+
 ## [2.7.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.6.0...v2.7.0) (2025-09-11)
 
 
