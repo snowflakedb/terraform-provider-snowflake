@@ -25,26 +25,39 @@ func (c *TestClient) EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx context.C
 
 func (c *TestClient) EnsureEssentialRolesExist(ctx context.Context) error {
 	log.Printf("[DEBUG] Making sure essential roles exist")
-	roleIDs := []sdk.AccountObjectIdentifier{snowflakeroles.GenericScimProvisioner, snowflakeroles.AadProvisioner, snowflakeroles.OktaProvisioner, snowflakeroles.Restricted}
+	type RoleGrant struct {
+		RoleID          sdk.AccountObjectIdentifier
+		ShouldBeGranted bool
+	}
+	roleGrants := []RoleGrant{
+		{RoleID: snowflakeroles.GenericScimProvisioner, ShouldBeGranted: true},
+		{RoleID: snowflakeroles.AadProvisioner, ShouldBeGranted: true},
+		{RoleID: snowflakeroles.OktaProvisioner, ShouldBeGranted: true},
+		{RoleID: snowflakeroles.Restricted, ShouldBeGranted: false},
+	}
 	currentRoleID, err := c.context.client.ContextFunctions.CurrentRole(ctx)
 	if err != nil {
 		return err
 	}
-	for _, roleID := range roleIDs {
-		_, err := c.context.client.Roles.ShowByID(ctx, roleID)
+	for _, roleGrant := range roleGrants {
+		_, err := c.context.client.Roles.ShowByID(ctx, roleGrant.RoleID)
 		if err != nil {
 			return err
 		}
 		grants, err := c.context.client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			Of: &sdk.ShowGrantsOf{
-				Role: roleID,
+				Role: roleGrant.RoleID,
 			},
 		})
 		if err != nil {
 			return err
 		}
-		if !hasGranteeName(grants, currentRoleID) {
-			return fmt.Errorf("role %s not granted to %s", currentRoleID.Name(), roleID.Name())
+		isGranted := hasGranteeName(grants, currentRoleID)
+		if roleGrant.ShouldBeGranted && !isGranted {
+			return fmt.Errorf("role %s should be granted to %s, but is not", roleGrant.RoleID.Name(), currentRoleID.Name())
+		}
+		if !roleGrant.ShouldBeGranted && isGranted {
+			return fmt.Errorf("role %s should not be granted to %s, but is", roleGrant.RoleID.Name(), currentRoleID.Name())
 		}
 	}
 	return nil
