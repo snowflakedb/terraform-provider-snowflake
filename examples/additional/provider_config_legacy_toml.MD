@@ -32,6 +32,10 @@ disableconsolelogin = true
 oauthclientid = 'oauth_client_id'
 oauthclientsecret = 'oauth_client_secret'
 oauthtokenrequesturl = 'oauth_token_request_url'
+oauthauthorizationurl = 'oauth_authorization_url'
+oauthredirecturi = 'oauth_redirect_uri'
+oauthscope = 'oauth_scope'
+enablesingleuserefreshtokens = 'enable_single_use_refresh_tokens'
 
 [example.params]
 param_key = 'param_value'

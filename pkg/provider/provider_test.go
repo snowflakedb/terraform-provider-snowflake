@@ -164,5 +164,5 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 	assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 	assert.Equal(t, "oauth_scope", config.OauthScope)
-	assert.Equal(t, true, config.EnableSingleUseRefreshTokens)
+	assert.True(t, config.EnableSingleUseRefreshTokens)
 }

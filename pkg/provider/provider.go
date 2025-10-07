@@ -420,7 +420,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"oauth_authorization_url": {
 			Type:        schema.TypeString,
-			Description: envNameFieldDescription("Authorization URL of OAuth2 external IdP.", snowflakeenvs.OauthAuthorizationUrl),
+			Description: envNameFieldDescription("Authorization URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthAuthorizationUrl),
 			Optional:    true,
 			Sensitive:   true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthTokenRequestUrl, nil),
@@ -434,14 +434,14 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"oauth_redirect_uri": {
 			Type:        schema.TypeString,
-			Description: envNameFieldDescription("Redirect URI registered in IdP.", snowflakeenvs.OauthRedirectUri),
+			Description: envNameFieldDescription("Redirect URI registered in IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthRedirectUri),
 			Optional:    true,
 			Sensitive:   true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthRedirectUri, nil),
 		},
 		"oauth_scope": {
 			Type:        schema.TypeString,
-			Description: envNameFieldDescription("Comma separated list of scopes. If empty it is derived from role.", snowflakeenvs.OauthScope),
+			Description: envNameFieldDescription("Comma separated list of scopes. If empty it is derived from role. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthScope),
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthScope, nil),
 		},

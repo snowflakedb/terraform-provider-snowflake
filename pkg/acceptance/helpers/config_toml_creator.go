@@ -215,21 +215,27 @@ func TomlConfigForServiceUserWithOauthClientCredentials(
 func TomlConfigForServiceUserWithOauthAuthorizationCodeSnowflakeIdp(
 	t *testing.T,
 	profile string,
-	roleId sdk.AccountObjectIdentifier,
 	accountIdentifier sdk.AccountIdentifier,
+	userId sdk.AccountObjectIdentifier,
 	oauthClientId string,
 	oauthClientSecret string,
 	oauthTokenRequestURL string,
+	oauthAuthorizationURL string,
+	oauthRedirectURI string,
+	oauthScope string,
 ) string {
 	t.Helper()
 
 	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithRole(roleId.Name()).
 		WithOrganizationName(accountIdentifier.OrganizationName()).
 		WithAccountName(accountIdentifier.AccountName()).
+		WithUser(userId.Name()).
 		WithOauthClientID(oauthClientId).
 		WithOauthClientSecret(oauthClientSecret).
 		WithOauthTokenRequestURL(oauthTokenRequestURL).
+		WithOauthAuthorizationURL(oauthAuthorizationURL).
+		WithOauthRedirectURI(oauthRedirectURI).
+		WithOauthScope(oauthScope).
 		WithAuthenticator(string(sdk.AuthenticationTypeOauthAuthorizationCode)),
 	)
 }
@@ -240,6 +246,7 @@ func TomlConfigForServiceUserWithOauthAuthorizationCodeExternalIdp(
 	profile string,
 	roleId sdk.AccountObjectIdentifier,
 	accountIdentifier sdk.AccountIdentifier,
+	userId sdk.AccountObjectIdentifier,
 	oauthClientId string,
 	oauthClientSecret string,
 	oauthTokenRequestURL string,
@@ -251,6 +258,7 @@ func TomlConfigForServiceUserWithOauthAuthorizationCodeExternalIdp(
 
 	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
 		WithRole(roleId.Name()).
+		WithUser(userId.Name()).
 		WithOrganizationName(accountIdentifier.OrganizationName()).
 		WithAccountName(accountIdentifier.AccountName()).
 		WithOauthClientID(oauthClientId).

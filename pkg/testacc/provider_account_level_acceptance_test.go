@@ -77,42 +77,43 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 
 func TestAcc_Provider_OauthWithAuthorizationCodeSnowflakeIdp(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-	oauthClientId := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsClientId)
-	oauthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsClientSecret)
-	oauthIssuerUrl := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsIssuer)
-	oauthJwsKeysUrl := oauthIssuerUrl + "/v1/keys"
-	oauthTokenRequestUrl := oauthIssuerUrl + "/v1/token"
-
-	user, userCleanup := testClient().User.CreateUserWithOptions(t, sdk.NewAccountObjectIdentifier(oauthClientId), &sdk.CreateUserOptions{
-		ObjectProperties: &sdk.UserObjectProperties{
-			Type:      sdk.Pointer(sdk.UserTypeService),
-			LoginName: sdk.String(oauthClientId),
-		},
-	})
-	t.Cleanup(userCleanup)
-	url := testClient().Context.AccountURL(t)
+	oauthIssuerUrl := testClient().Context.AccountURL(t)
+	oauthAuthorizationUrl := oauthIssuerUrl + "/oauth/authorize"
+	oauthTokenRequestUrl := oauthIssuerUrl + "/oauth/token-request"
 
 	securityIntegrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, securityIntegrationCleanup := testClient().SecurityIntegration.CreateExternalOauthWithRequest(
+	_, securityIntegrationCleanup := testClient().SecurityIntegration.CreateOauthForCustomClientsWithRequest(
 		t,
-		sdk.NewCreateExternalOauthSecurityIntegrationRequest(
+		sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(
 			securityIntegrationId,
-			true,
-			sdk.ExternalOauthSecurityIntegrationTypeOkta,
-			oauthIssuerUrl,
-			[]sdk.TokenUserMappingClaim{{Claim: "sub"}},
-			sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
-		).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: oauthJwsKeysUrl}}).
-			WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: url}}}),
+			sdk.OauthSecurityIntegrationClientTypeConfidential,
+			"http://localhost:8001",
+		).
+			WithEnabled(true).
+			WithOauthAllowNonTlsRedirectUri(true).
+			WithOauthIssueRefreshTokens(true).
+			WithOauthEnforcePkce(false).
+			WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: []sdk.AccountObjectIdentifier{snowflakeroles.Public}}).
+			WithOauthRefreshTokenValidity(86400),
 	)
 	t.Cleanup(securityIntegrationCleanup)
 
+	secret := testClient().SecurityIntegration.ShowOauthClientSecrets(t, securityIntegrationId)
+
 	userHelper := helpers.TmpUser{
-		UserId:    user.ID(),
 		AccountId: testClient().Context.CurrentAccountId(t),
-		RoleId:    snowflakeroles.Public,
+		UserId:    testClient().Ids.RandomAccountObjectIdentifier(),
 	}
-	userConfig := testClient().TempTomlConfigForServiceUserWithOauthClientCredentials(t, &userHelper, oauthClientId, oauthClientSecret, oauthTokenRequestUrl)
+	userConfig := testClient().TempTomlConfigForServiceUserWithOauthAuthorizationCodeSnowflakeIdp(
+		t,
+		&userHelper,
+		secret.ClientId,
+		secret.ClientSecret,
+		oauthTokenRequestUrl,
+		oauthAuthorizationUrl,
+		"http://localhost:8001",
+		"session:role:PUBLIC",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

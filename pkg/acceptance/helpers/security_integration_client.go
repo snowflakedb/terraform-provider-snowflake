@@ -2,6 +2,8 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -62,20 +64,12 @@ func (c *SecurityIntegrationClient) CreateApiAuthenticationWithAuthorizationCode
 
 func (c *SecurityIntegrationClient) CreateExternalOauth(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	id := c.ids.RandomAccountObjectIdentifier()
 	issuer := random.String()
 	request := sdk.NewCreateExternalOauthSecurityIntegrationRequest(id, false, sdk.ExternalOauthSecurityIntegrationTypeCustom,
 		issuer, []sdk.TokenUserMappingClaim{{Claim: "foo"}}, sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
 	).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "http://example.com"}})
-	err := c.client().CreateExternalOauth(ctx, request)
-	require.NoError(t, err)
-
-	si, err := c.client().ShowByID(ctx, request.GetName())
-	require.NoError(t, err)
-
-	return si, c.DropSecurityIntegrationFunc(t, request.GetName())
+	return c.CreateExternalOauthWithRequest(t, request)
 }
 
 func (c *SecurityIntegrationClient) CreateExternalOauthWithRequest(t *testing.T, request *sdk.CreateExternalOauthSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {
@@ -109,10 +103,16 @@ func (c *SecurityIntegrationClient) CreateOauthForPartnerApplications(t *testing
 
 func (c *SecurityIntegrationClient) CreateOauthForCustomClients(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
+
+	request := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.OauthSecurityIntegrationClientTypePublic, "https://example.com")
+
+	return c.CreateOauthForCustomClientsWithRequest(t, request)
+}
+
+func (c *SecurityIntegrationClient) CreateOauthForCustomClientsWithRequest(t *testing.T, request *sdk.CreateOauthForCustomClientsSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {
+	t.Helper()
 	ctx := context.Background()
 
-	id := c.ids.RandomAccountObjectIdentifier()
-	request := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypePublic, "https://example.com")
 	err := c.client().CreateOauthForCustomClients(ctx, request)
 	require.NoError(t, err)
 
@@ -217,4 +217,26 @@ func (c *SecurityIntegrationClient) DropSecurityIntegrationFunc(t *testing.T, id
 		err := c.client().Drop(ctx, sdk.NewDropSecurityIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+type OauthClientSecret struct {
+	ClientId     string `json:"OAUTH_CLIENT_ID"`
+	ClientSecret string `json:"OAUTH_CLIENT_SECRET"`
+}
+
+// TODO(SNOW-2254233): Use the function from SDK when it's ready.
+func (c *SecurityIntegrationClient) ShowOauthClientSecrets(t *testing.T, id sdk.AccountObjectIdentifier) OauthClientSecret {
+	t.Helper()
+	ctx := context.Background()
+
+	row := &struct {
+		SecretRaw string `db:"SECRET"`
+	}{}
+	sql := fmt.Sprintf(`SELECT SYSTEM$SHOW_OAUTH_CLIENT_SECRETS('%s') AS "SECRET"`, id.Name())
+	err := c.context.client.QueryOneForTests(ctx, row, sql)
+	require.NoError(t, err)
+	var secret OauthClientSecret
+	err = json.Unmarshal([]byte(row.SecretRaw), &secret)
+	require.NoError(t, err)
+	return secret
 }

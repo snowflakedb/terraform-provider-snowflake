@@ -125,12 +125,12 @@ provider "snowflake" {
 - `keep_session_alive` (Boolean) Enables the session to persist even after the connection is closed. Can also be sourced from the `SNOWFLAKE_KEEP_SESSION_ALIVE` environment variable.
 - `login_timeout` (Number) Login retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_LOGIN_TIMEOUT` environment variable.
 - `max_retry_count` (Number) Specifies how many times non-periodic HTTP request can be retried by the driver. Can also be sourced from the `SNOWFLAKE_MAX_RETRY_COUNT` environment variable.
-- `oauth_authorization_url` (String, Sensitive) Authorization URL of OAuth2 external IdP. Can also be sourced from the `SNOWFLAKE_OAUTH_AUTHORIZATION_URL` environment variable.
-- `oauth_client_id` (String, Sensitive) Client id for OAuth2 external IdP. Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_ID` environment variable.
-- `oauth_client_secret` (String, Sensitive) Client secret for OAuth2 external IdP. Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_SECRET` environment variable.
-- `oauth_redirect_uri` (String, Sensitive) Redirect URI registered in IdP. Can also be sourced from the `SNOWFLAKE_OAUTH_REDIRECT_URI` environment variable.
-- `oauth_scope` (String) Comma separated list of scopes. If empty it is derived from role. Can also be sourced from the `SNOWFLAKE_OAUTH_SCOPE` environment variable.
-- `oauth_token_request_url` (String, Sensitive) Token request URL of OAuth2 external IdP. Can also be sourced from the `SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL` environment variable.
+- `oauth_authorization_url` (String, Sensitive) Authorization URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_AUTHORIZATION_URL` environment variable.
+- `oauth_client_id` (String, Sensitive) Client id for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_ID` environment variable.
+- `oauth_client_secret` (String, Sensitive) Client secret for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_SECRET` environment variable.
+- `oauth_redirect_uri` (String, Sensitive) Redirect URI registered in IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_REDIRECT_URI` environment variable.
+- `oauth_scope` (String) Comma separated list of scopes. If empty it is derived from role. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_SCOPE` environment variable.
+- `oauth_token_request_url` (String, Sensitive) Token request URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL` environment variable.
 - `ocsp_fail_open` (String) True represents OCSP fail open mode. False represents OCSP fail closed mode. Fail open true by default. Can also be sourced from the `SNOWFLAKE_OCSP_FAIL_OPEN` environment variable.
 - `okta_url` (String) The URL of the Okta server. e.g. https://example.okta.com. Okta URL host needs to to have a suffix `okta.com`. Read more in Snowflake [docs](https://docs.snowflake.com/en/user-guide/oauth-okta). Can also be sourced from the `SNOWFLAKE_OKTA_URL` environment variable.
 - `organization_name` (String) Specifies your Snowflake organization name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#organization-name). Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_ORGANIZATION_NAME` environment variable.
@@ -390,6 +390,10 @@ disable_console_login = true
 oauth_client_id = 'oauth_client_id'
 oauth_client_secret = 'oauth_client_secret'
 oauth_token_request_url = 'oauth_token_request_url'
+oauth_authorization_url = 'oauth_authorization_url'
+oauth_redirect_uri = 'oauth_redirect_uri'
+oauth_scope = 'oauth_scope'
+enable_single_use_refresh_tokens = 'enable_single_use_refresh_tokens'
 
 [example.params]
 param_key = 'param_value'
@@ -432,6 +436,10 @@ disableconsolelogin = true
 oauthclientid = 'oauth_client_id'
 oauthclientsecret = 'oauth_client_secret'
 oauthtokenrequesturl = 'oauth_token_request_url'
+oauthauthorizationurl = 'oauth_authorization_url'
+oauthredirecturi = 'oauth_redirect_uri'
+oauthscope = 'oauth_scope'
+enablesingleuserefreshtokens = 'enable_single_use_refresh_tokens'
 
 [example.params]
 param_key = 'param_value'
@@ -474,6 +482,10 @@ provider "snowflake" {
 	oauth_client_id         = var.oauth_client_id
 	oauth_client_secret     = var.oauth_client_secret
 	oauth_token_request_url = var.oauth_token_request_url
+	oauth_authorization_url = var.oauth_authorization_url
+	oauth_redirect_uri = var.oauth_redirect_uri
+	oauth_scope = "session:role:PUBLIC"
+	enable_single_use_refresh_tokens = true
 
 	params = {
 		param_key = "param_value"
@@ -494,6 +506,18 @@ variable "oauth_client_secret" {
 
 # Client Token Request URL from the Okta API Authorization Server.
 variable "oauth_token_request_url" {
+  type      = string
+  sensitive = true
+}
+
+# Authorization URL for the Oauth flow.
+variable "oauth_authorization_url" {
+  type      = string
+  sensitive = true
+}
+
+# Redirect URI for the Oauth flow.
+variable "oauth_redirect_uri" {
   type      = string
   sensitive = true
 }
@@ -561,7 +585,7 @@ Preview features are disabled by default and should be used with caution.
 To use them, add the relevant feature name to the `preview_features_enabled` field in the [provider configuration](#preview_features_enabled-1).
 
 <!-- Section of stable resources -->
-## Currently stable resources
+## Currently stable resources 
 
 - [snowflake_account](./docs/resources/account)
 - [snowflake_account_parameter](./docs/resources/account_parameter)
@@ -612,7 +636,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_warehouse](./docs/resources/warehouse)
 
 <!-- Section of stable data sources -->
-## Currently stable data sources
+## Currently stable data sources 
 
 - [snowflake_account_roles](./docs/data-sources/account_roles)
 - [snowflake_accounts](./docs/data-sources/accounts)
@@ -636,7 +660,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_warehouses](./docs/data-sources/warehouses)
 
 <!-- Section of preview resources -->
-## Currently preview resources
+## Currently preview resources 
 
 - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
@@ -690,7 +714,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
 
 <!-- Section of preview data sources -->
-## Currently preview data sources
+## Currently preview data sources 
 
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_compute_pools](./docs/data-sources/compute_pools)
