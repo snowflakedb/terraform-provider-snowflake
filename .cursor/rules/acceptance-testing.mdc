@@ -1,0 +1,209 @@
+---
+description: "Rules for writing and maintaining acceptance tests in the Snowflake provider"
+globs:
+    - "pkg/testacc/*.go"
+alwaysApply: false
+---
+
+# Acceptance Testing Guide
+
+## Test Structure
+
+### Required Test Functions
+- `TestAccResourceName_basic()` - Basic CRUD with minimal config, import, set/unset one property, external change
+- `TestAccResourceName_complete()` - All optional fields, import, unset/set all fields, external change
+- `TestAccResourceName_validation()` - Invalid configurations and constraint violations
+
+### Test Template
+```go
+func TestAcc_ResourceName_basic(t *testing.T) {
+    // Create dependencies first
+    dependency, dependencyCleanup := testClient().Dependency.Create(t)
+    t.Cleanup(dependencyCleanup)
+
+    id := testClient().Ids.RandomSchemaObjectIdentifier()
+    comment, newComment := random.Comment(), random.Comment()
+
+    modelBasic := model.ResourceName("test", id.Name())
+    modelComplete := model.ResourceName("test", id.Name()).WithComment(comment)
+
+    resource.Test(t, resource.TestCase{
+        ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+        TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+            tfversion.RequireAbove(tfversion.Version1_5_0),
+        },
+        CheckDestroy: CheckDestroy(t, resources.ResourceName),
+        Steps: []resource.TestStep{
+            // create without optionals
+            {
+                Config: accconfig.FromModels(t, modelBasic),
+                Check: assertThat(t,
+                    resourceassert.ResourceNameResource(t, modelBasic.ResourceReference()).
+                        HasNameString(id.Name()).
+                        HasCommentEmpty(),
+                    resourceshowoutputassert.ResourceNameShowOutput(t, modelBasic.ResourceReference()).
+                        HasName(id.Name()).
+                        HasComment(""),
+                ),
+            },
+            // import without optionals
+            {
+                Config:       accconfig.FromModels(t, modelBasic),
+                ResourceName: modelBasic.ResourceReference(),
+                ImportState:  true,
+                ImportStateCheck: assertThatImport(t,
+                    resourceassert.ImportedResourceNameResource(t, helpers.EncodeResourceIdentifier(id)).
+                        HasNameString(id.Name()).
+                        HasCommentEmpty(),
+                ),
+            },
+            // set optionals
+            {
+                Config: accconfig.FromModels(t, modelComplete),
+                Check: assertThat(t,
+                    resourceassert.ResourceNameResource(t, modelComplete.ResourceReference()).
+                        HasNameString(id.Name()).
+                        HasCommentString(comment),
+                ),
+            },
+            // unset
+            {
+                Config: accconfig.FromModels(t, modelBasic),
+                Check: assertThat(t,
+                    resourceassert.ResourceNameResource(t, modelBasic.ResourceReference()).
+                        HasNameString(id.Name()).
+                        HasCommentEmpty(),
+                ),
+            },
+            // change externally
+            {
+                PreConfig: func() {
+                    testClient().ResourceName.Alter(t, sdk.NewAlterResourceNameRequest(id).WithSet(*sdk.NewResourceNameSetRequest().WithComment(newComment)))
+                },
+                ConfigPlanChecks: resource.ConfigPlanChecks{
+                    PreApply: []plancheck.PlanCheck{
+                        plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+                        planchecks.ExpectDrift(modelBasic.ResourceReference(), "comment", sdk.String(comment), sdk.String(newComment)),
+                    },
+                },
+                Config: accconfig.FromModels(t, modelBasic),
+                Check: assertThat(t,
+                    resourceassert.ResourceNameResource(t, modelBasic.ResourceReference()).
+                        HasNameString(id.Name()).
+                        HasCommentString(comment),
+                ),
+            },
+        },
+    })
+}
+```
+
+## Test Patterns
+
+### Model Builders
+```go
+// Basic model
+modelBasic := model.ResourceName("test", id.Name())
+
+// Complete model with all options
+modelComplete := model.ResourceName("test", id.Name()).
+    WithComment(comment).
+    WithOption("value")
+
+// Model with different values for updates
+modelDifferent := model.ResourceName("test", newId.Name()).
+    WithComment(newComment)
+```
+
+### Assertions
+```go
+// Resource assertions
+resourceassert.ResourceNameResource(t, model.ResourceReference()).
+    HasNameString(id.Name()).
+    HasCommentString(comment).
+    HasListFieldCount(2)
+
+// Show output assertions
+resourceshowoutputassert.ResourceNameShowOutput(t, model.ResourceReference()).
+    HasName(id.Name()).
+    HasCreatedOn().
+    HasStatus(sdk.ResourceStatusActive)
+
+// Import assertions
+resourceassert.ImportedResourceNameResource(t, helpers.EncodeResourceIdentifier(id)).
+    HasNameString(id.Name())
+```
+
+### External Changes
+```go
+{
+    PreConfig: func() {
+        testClient().ResourceName.Alter(t, sdk.NewAlterResourceNameRequest(id).WithSet(*sdk.NewResourceNameSetRequest().WithComment("external")))
+    },
+    ConfigPlanChecks: resource.ConfigPlanChecks{
+        PreApply: []plancheck.PlanCheck{
+            plancheck.ExpectResourceAction(model.ResourceReference(), plancheck.ResourceActionUpdate),
+            planchecks.ExpectDrift(model.ResourceReference(), "comment", sdk.String("expected"), sdk.String("external")),
+        },
+    },
+    Config: accconfig.FromModels(t, model),
+}
+```
+
+### Validation Tests
+```go
+func TestAcc_ResourceName_Validations(t *testing.T) {
+    modelInvalid := model.ResourceName("test", "_invalid_name")
+
+    resource.Test(t, resource.TestCase{
+        ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+        CheckDestroy: CheckDestroy(t, resources.ResourceName),
+        Steps: []resource.TestStep{
+            {
+                Config:      accconfig.FromModels(t, modelInvalid),
+                PlanOnly:    true,
+                ExpectError: regexp.MustCompile(`Resource name must start with an alphabetic character`),
+            },
+        },
+    })
+}
+```
+
+## Key Requirements
+
+### Test Setup
+- Use `TestAccProtoV6ProviderFactories` for provider setup
+- Use `CheckDestroy(t, resources.ResourceName)` for cleanup verification
+- Use `tfversion.RequireAbove(tfversion.Version1_5_0)` for version checks
+- Create dependencies with `testClient().Dependency.Create(t)` and `t.Cleanup()`
+
+### Test Steps
+- **Create**: Basic resource creation with minimal config
+- **Import**: Test import functionality with `ImportStateCheck`
+- **Update**: Set optional fields and verify changes
+- **External Change**: Modify resource outside Terraform, verify drift detection
+- **Unset**: Remove optional fields and verify cleanup
+
+### Assertions
+- Use `resourceassert.ResourceNameResource()` for resource state
+- Use `resourceshowoutputassert.ResourceNameShowOutput()` for computed fields
+- Use `resourceassert.ImportedResourceNameResource()` for import verification
+- Use `assertThat(t, ...)` and `assertThatImport(t, ...)` for grouping
+
+### Plan Checks
+- Use `plancheck.ExpectResourceAction()` for expected actions
+- Use `planchecks.ExpectDrift()` for external change detection
+- Use `ConfigPlanChecks.PreApply` for plan validation
+
+### Error Testing
+- Use `PlanOnly: true` and `ExpectError: regexp.MustCompile()` for validation tests
+- Test constraint violations, invalid configurations, and resource conflicts
+
+## File Dependencies
+
+When writing acceptance tests, you'll work with:
+1. **Test files** in [@testacc/](mdc:pkg/testacc/) - Main test implementations
+2. **Test infrastructure** in [@acceptance/](mdc:pkg/acceptance/) - Helper functions and setup
+3. **Test client helpers** - See [test-client-helpers](mdc:.cursor/rules/test-client-helpers.mdc) for creating and using test client helpers
+4. **Assertions and models** - See [assertion-model-generation](mdc:.cursor/rules/assertion-model-generation.mdc) for generating model builders and assertions
+5. **Resource files** - See [resource-development](mdc:.cursor/rules/resource-development.mdc) for resource implementations being tested

@@ -227,52 +227,13 @@ func ObjectNameDescriptionToSchema(description sdk.ObjectNameDetails) []map[stri
 
 ## Integration with Resources
 
-### Using Generated Schemas in Resources
-
-The handling is the same regardless of it being generated or manually created.
-
-```go
-// In resource file
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-
-func resourceObjectNameRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    client := meta.(*provider.Context).Client
-
-    // Use SHOW operation
-    object, err := client.ObjectName.ShowByIDSafely(ctx, id)
-    if err != nil {
-        return diag.FromErr(err)
-    }
-
-    // Use DESC operation (if available)
-    objectDetails, err := client.ObjectName.Desc(ctx, id)
-    if err != nil {
-        return diag.FromErr(err)
-    }
-
-	if errs := errors.Join(
-        d.Set(ShowOutputAttributeName, []map[string]any{schemas.ObjectToSchema(object)}),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ObjectDetailsToSchema(objectDetails)}),
-    ); errs != nil {
-        return diag.FromErr(errs)
-    }
-
-    return nil
-}
-```
+Schemas generated or manually defined here are used in resource implementations. See [resource-development](mdc:.cursor/rules/resource-development.mdc) for integration patterns.
 
 ## Best Practices
-
-### Schema Design
-- Keep schemas focused on the specific query output
-- Use consistent field naming across similar objects
-- Document complex field mappings
-- Handle optional fields appropriately
 
 ### Manual Adjustments
 - Always comment manual adjustments clearly
 - Use consistent comment format: `// Adjusted manually.` or `// commented out manually`
-- Explain why adjustments were made
 - Keep adjustments minimal and focused
 
 ### Type Handling
@@ -329,7 +290,7 @@ When working with query command schemas, you'll interact with:
 2. **Manual files** in [@schemas/](mdc:pkg/schemas/) - Hand-written DESC schemas
 3. **Generation tools** in [@schemas/gen/](mdc:pkg/schemas/gen/) - Schema generation infrastructure
 4. **SDK files** in [@sdk/](mdc:pkg/sdk/) - Source of truth for object structures
-5. **Resource files** in [@resources/](mdc:pkg/resources/) - Consumers of the schemas
+5. **Resource files** - See [resource-development](mdc:.cursor/rules/resource-development.mdc) for schema usage
 
 ## Development Checklist
 

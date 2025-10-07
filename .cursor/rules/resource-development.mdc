@@ -1,9 +1,7 @@
 ---
 description: "Rules for developing Terraform resources in the Snowflake provider"
 globs:
-    - "pkg/resources/**/*.go"
-    - "pkg/testacc/**/*.go"
-    - "pkg/schemas/**/*.go"
+    - "pkg/resources/*.go"
 alwaysApply: false
 ---
 
@@ -14,13 +12,13 @@ This guide covers the complete workflow for developing Terraform resources in th
 ## Project Structure Overview
 
 - **[@resources/](mdc:pkg/resources/)** - Main resource implementations
-- **[@testacc/](mdc:pkg/testacc/)** - Acceptance tests for resources and data sources
-- **[@schemas/](mdc:pkg/schemas/)** - Schema definitions
 - **[@helpers/](mdc:pkg/helpers/)** - Shared helper functions
 - **[@internal/](mdc:pkg/internal/)** - Internal utilities and provider logic
 - **[@acceptance/](mdc:pkg/acceptance/)** - Acceptance test infrastructure
 - **[@manual_tests/](mdc:pkg/manual_tests/)** - Manual tests
 - **[@testfunctional/](mdc:pkg/testfunctional/)** - Functional tests
+
+**Note**: For schema definitions, see [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc). For acceptance testing, see [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc).
 
 ## Resource Development Workflow
 
@@ -72,36 +70,8 @@ type ResourceName interface {
   - `externalChangesNotDetectedFieldDescription()` - For fields that are not set in the Read Terraform operation (because the field is neither returned from Show nor Desc Snowflake command)
   - `docs.PossibleValuesListed()` - Used usually with enums to document all possible values
 - Whenever field groupping is needed from the SDK side, in Terrafrom this could be expressed as field of TypeList with MaxItems set to one.
-- If SDK analysis showed that the object has Show or Desc operations, the schemas should be generated according to [query-command-schema-generation](mdc:.cursor/query-command-schema-generation.mdc) rule and used like so:
-```go
-var resourceNameSchema = map[string]*schema.Schema{
-    // other fields ...
-	ShowOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW <object name plural>` for the given <object name>.",
-		Elem: &schema.Resource{
-			Schema: schemas.Show<object name>Schema,
-		},
-	},
-    DescribeOutputAttributeName: {
-        Type:        schema.TypeList,
-        Computed:    true,
-        Description: "Holds the output of DESCRIBE <object name>.",
-        Elem: &schema.Resource{
-            Schema: schemas.Describe<object name>Schema,
-        },
-    },
-    // other computed fields ...
-}
-```
-- The `FullyQualifiedNameAttributeName` is always added, here an example how to add it (it's always at the bottom with other computed fields):
-```go
-var resourceNameSchema = map[string]*schema.Schema{
-    // other fields ...
-	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-}
-```
+- If SDK analysis showed that the object has Show or Desc operations, the schemas should be generated according to [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc) rule
+- The `FullyQualifiedNameAttributeName` is always added as a computed field
 
 **Example Pattern**:
 ```go
@@ -357,62 +327,23 @@ This part of resource implementation should be compared against other resources 
 
 ### 4. Acceptance Testing
 
-**Location**: [@testacc/](mdc:pkg/testacc/) directory
+See [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc) for comprehensive acceptance testing guidelines and patterns.
 
-**Test File Naming**: `resource_resource_name_acceptance_test.go`
+## File Dependencies
 
-**Required Test Functions**:
-- `TestAccResourceName_basic()` - Basic test covering creation with minimal resource configuration, import, set and uset of at least one property (if rename is supported; could be name + simple field like comment), and external change step
-- `TestAccResourceName_complete()` - Complete test convering creation with all optional fields set, import, unset and set to all fields set, and external change step
-- `TestAccResourceName_validation()` - Tests the validation rules of the resource, proving the non-accepted configurations are not allowed
-- Other tests that are not covered by both above (e.g. more optional fields are availble that can be only tested separately, because of the resource schema valdiation rules)
-
-**Test Structure**:
-```go
-func TestAcc_TestName(t *testing.T) {
-    // If needed create any object that will be necessary in the resource testing (e.g. when resource accepts object identifier)
-
-    // Model builder has to be used (if not available, it should be generated based on the information from other rules)
-	modelBasic := model.ObjectName("test", id.Name())
-
-	modelComplete := model.ObjectName("test", id.Name()).WithOption("set")
-
-    resource.Test(t, resource.TestCase{
-        ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
-        PreCheck:                 func() { acc.TestAccPreCheck(t) },
-        TerraformVersionChecks: []tfversion.Check{
-            tfversion.Exact(acc.TerraformVersion),
-        },
-		CheckDestroy: CheckDestroy(t, resources.<object name>),
-        Steps: []resource.TestStep{
-            // Basic create (based on the listing resource)
-				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
-                    // Resource asserions have to be used (if not available, it should be generated based on the information from other rules)
-					resourceassert.ObjectNameResource(t, modelBasic.ResourceReference()).
-						HasNameString(id.Name()),
-                    // Show output asserions have to be used (if not available, it should be generated based on the information from other rules)
-					resourceshowoutputassert.ObjectNameShowOutput(t, modelBasic.ResourceReference()).
-						HasName(id.Name()),
-				),
-            // Update ...
-            // Import ...
-            // Other steps ...
-        },
-    })
-}
-```
+When developing resources, you'll work with:
+1. **Resource files** in [@resources/](mdc:pkg/resources/) - Implement CRUD operations
+2. **SDK files** in [@sdk/](mdc:pkg/sdk/) - Snowflake API integration
+3. **Helper files** in [@helpers/](mdc:pkg/helpers/) - Common utilities
+4. **Schema files** - See [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc) for schema development
+5. **Test files** - See [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc) for acceptance testing
 
 ## Development Checklist
 
 - [ ] **First**: Analyze SDK object interface for available operations
 - [ ] Define main resource schema in [@resources/](mdc:pkg/resources/) based on SDK object analysis
-- [ ] Generate or define schemas for SHOW and DESC outputs [@schemas/](mdc:pkg/schemas/) based on SDK object analysis
+- [ ] Generate or define schemas for SHOW and DESC outputs according to [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc)
 - [ ] Implement CRUD functions in [@resources/](mdc:pkg/resources/)
-- [ ] Write acceptance tests in [@testacc/](mdc:pkg/testacc/)
-- [ ] Test basic CRUD operations
-- [ ] Test update scenarios
-- [ ] Test import functionality
-- [ ] Verify error handling
+- [ ] Write acceptance tests according to [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc)
 - [ ] Run full test suite
 - [ ] Update documentation if needed

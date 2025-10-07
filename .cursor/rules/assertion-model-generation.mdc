@@ -1,0 +1,128 @@
+---
+description: "Rules for generating model builders and assertions used in acceptance tests"
+globs:
+    - "pkg/acceptance/bettertestspoc/**/*.go"
+alwaysApply: false
+---
+
+# Assertion and Model Generation Guide
+
+This guide covers the generation of model builders and assertions used in acceptance tests.
+
+## Overview
+
+The acceptance testing framework uses generated model builders and assertions to provide type-safe, readable test configurations and assertions. All generation is handled by the `bettertestspoc` package.
+
+## Generation Process
+
+### 1. Add Object to Generation Lists
+Add your object to the appropriate generation list:
+
+**Resource Assertions**: `pkg/acceptance/bettertestspoc/assert/resourceassert/gen/resource_schema_def.go`
+```go
+allStructs = []string{
+    "Warehouse",
+    "User",
+    "YourNewObject", // Add here
+}
+```
+
+**Show Output Assertions**: `pkg/acceptance/bettertestspoc/assert/objectassert/gen/sdk_object_def.go`
+```go
+allResourceSchemaDefs = []string{
+    "Warehouse",
+    "User",
+    "YourNewObject", // Add here
+}
+```
+
+**Model Builders**: `pkg/acceptance/bettertestspoc/assert/resourceassert/gen/resource_schema_def.go`
+```go
+allResourceSchemaDefs = []string{
+    "Warehouse",
+    "User",
+    "YourNewObject", // Add here
+}
+```
+
+### 2. Run Generation
+```bash
+# Generate all assertions and models
+make clean-all-assertions-and-config-models generate-all-assertions-and-config-models
+
+# Generate specific components
+make clean-resource-model-builders generate-resource-model-builders
+make clean-resource-assertions generate-resource-assertions
+make clean-show-output-assertions generate-show-output-assertions
+```
+
+### 3. Configure Generation Overrides
+Modify `pkg/acceptance/bettertestspoc/config/model/gen/overrides.go` for special field handling:
+
+**Multiline Fields**: For fields that should be generated as multiline strings
+```go
+var multilineAttributesOverrides = map[string][]string{
+    "User":     {"rsa_public_key", "rsa_public_key_2"},
+    "Function": {"function_definition"},
+    "YourObject": {"your_multiline_field"}, // Add here
+}
+```
+
+**Complex List Types**: For list fields that need specific type mapping
+```go
+var complexListAttributesOverrides = map[string]map[string]string{
+    "ExternalVolume": {"storage_location": "sdk.ExternalVolumeStorageLocation"},
+    "YourObject":     {"your_list_field": "sdk.YourCustomType"}, // Add here
+}
+```
+
+### 4. Add Custom Extensions
+Create extension files for custom assertions or model methods:
+
+**Resource Assertions**: `pkg/acceptance/bettertestspoc/assert/resourceassert/your_object_resource_ext.go`
+```go
+func (w *YourObjectResourceAssert) HasCustomProperty() *YourObjectResourceAssert {
+    w.AddAssertion(assert.ValueSet("custom_property", "expected_value"))
+    return w
+}
+```
+
+**Model Builders**: `pkg/acceptance/bettertestspoc/config/model/your_object_model_ext.go`
+```go
+func (w *YourObjectModel) WithCustomOption(value string) *YourObjectModel {
+    return w.WithCustomProperty(value)
+}
+```
+
+## Generated Components
+
+### Model Builders
+- **Resource Models**: `model.YourObject("test", id.Name())`
+- **Data Source Models**: `datasourcemodel.YourObject("test", id.Name())`
+- **Provider Models**: `providermodel.YourObject("test", id.Name())`
+
+### Assertions
+- **Resource Assertions**: `resourceassert.YourObjectResource(t, model.ResourceReference())`
+- **Show Output Assertions**: `resourceshowoutputassert.YourObjectShowOutput(t, model.ResourceReference())`
+- **Object Assertions**: `objectassert.YourObject(t, id)`
+- **Parameter Assertions**: `objectparametersassert.YourObjectParameters(t, id)`
+
+## Usage in Tests
+
+See [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc) for complete usage patterns.
+
+## File Dependencies
+
+When generating assertions and models, you'll work with:
+1. **Generation files** in [@acceptance/bettertestspoc/gen/](mdc:pkg/acceptance/bettertestspoc/gen/) - Generation definitions
+2. **Generated files** in [@acceptance/bettertestspoc/](mdc:pkg/acceptance/bettertestspoc/) - Generated assertions and models
+3. **Extension files** in [@acceptance/bettertestspoc/](mdc:pkg/acceptance/bettertestspoc/) - Custom extensions
+4. **Test files** - See [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc) for usage patterns
+
+## Development Checklist
+
+- [ ] Add object to appropriate generation lists
+- [ ] Configure generation overrides if needed (multiline fields, complex list types)
+- [ ] Run generation commands
+- [ ] Add custom extensions if needed
+- [ ] Use generated models and assertions in the acceptance tests
