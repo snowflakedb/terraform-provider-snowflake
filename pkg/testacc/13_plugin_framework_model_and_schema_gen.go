@@ -212,6 +212,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["params"].Description,
 		Optional:    true,
 		Sensitive:   false,
+		ElementType: types.StringType, // edited manually
 	},
 	"passcode": schema.StringAttribute{
 		Description: existingSchema["passcode"].Description,
@@ -237,6 +238,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["preview_features_enabled"].Description,
 		Optional:    true,
 		Sensitive:   false,
+		ElementType: types.StringType, // edited manually
 	},
 	"private_key": schema.StringAttribute{
 		Description: existingSchema["private_key"].Description,
@@ -283,11 +285,12 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   true,
 	},
-	"token_accessor": schema.ListAttribute{
-		Description: existingSchema["token_accessor"].Description,
-		Optional:    true,
-		Sensitive:   false,
-	},
+	// commented out manually
+	//"token_accessor": schema.ListAttribute{
+	//	Description: existingSchema["token_accessor"].Description,
+	//	Optional:    true,
+	//	Sensitive:   false,
+	//},
 	"use_legacy_toml_file": schema.BoolAttribute{
 		Description: existingSchema["use_legacy_toml_file"].Description,
 		Optional:    true,
