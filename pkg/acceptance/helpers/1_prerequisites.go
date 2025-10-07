@@ -23,9 +23,9 @@ func (c *TestClient) EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx context.C
 	return nil
 }
 
-func (c *TestClient) EnsureScimProvisionerRolesExist(ctx context.Context) error {
-	log.Printf("[DEBUG] Making sure Scim Provisioner roles exist")
-	roleIDs := []sdk.AccountObjectIdentifier{snowflakeroles.GenericScimProvisioner, snowflakeroles.AadProvisioner, snowflakeroles.OktaProvisioner}
+func (c *TestClient) EnsureEssentialRolesExist(ctx context.Context) error {
+	log.Printf("[DEBUG] Making sure essential roles exist")
+	roleIDs := []sdk.AccountObjectIdentifier{snowflakeroles.GenericScimProvisioner, snowflakeroles.AadProvisioner, snowflakeroles.OktaProvisioner, snowflakeroles.Restricted}
 	currentRoleID, err := c.context.client.ContextFunctions.CurrentRole(ctx)
 	if err != nil {
 		return err
