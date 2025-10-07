@@ -5,13 +5,11 @@ package testacc
 import (
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -24,15 +22,21 @@ import (
 func TestAcc_SemanticView_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
-	table1, table1Cleanup := testClient().Table.Create(t)
+	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
+	})
 	t.Cleanup(table1Cleanup)
-	table2, table2Cleanup := testClient().Table.Create(t)
+	table2, table2Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
+	})
 	t.Cleanup(table2Cleanup)
-	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), nil, nil, nil, "")
+	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), nil, nil, nil, "logical table 1")
 	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), nil, nil, nil, "")
-	semExp1 := model.SemanticExpressionWithProps("se1", "SUM(lt1.a1)", nil, "semantic expression 1")
+	semExp1 := model.SemanticExpressionWithProps("lt1.se1", "SUM(lt1.a1)", nil, "semantic expression 1")
 	partitionBy := "a1"
-	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps("wf1", "sum(lt2.a1)", sdk.WindowFunctionOverClause{PartitionBy: &partitionBy})
+	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps("lt2.wf1", "sum(lt2.a1)", sdk.WindowFunctionOverClause{PartitionBy: &partitionBy})
 	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
 	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1)
 
@@ -88,14 +92,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(""),
-					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
+						HasComment("").
+						HasExtension(""),
 				),
 			},
 			// import minimal state
@@ -117,14 +115,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(""),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.created_on")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.database_name", id.DatabaseName())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.schema_name", id.SchemaName())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.owner_role_type", "ROLE")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.comment", "")),
+						HasComment("").
+						HasExtension(""),
 				),
 			},
 			// add optional attributes
@@ -144,7 +136,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(comment),
+						HasComment(comment).
+						HasExtension(""),
 				),
 			},
 			// import complete state
@@ -176,7 +169,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(changedComment),
+						HasComment(changedComment).
+						HasExtension(""),
 				),
 			},
 			// change externally alter
@@ -204,7 +198,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(changedComment),
+						HasComment(changedComment).
+						HasExtension(""),
 				),
 			},
 			// change externally create
@@ -233,7 +228,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(changedComment),
+						HasComment(changedComment).
+						HasExtension(""),
 				),
 			},
 			// unset
@@ -258,7 +254,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(""),
+						HasComment("").
+						HasExtension(""),
 				),
 			},
 		},

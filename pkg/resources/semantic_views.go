@@ -98,31 +98,36 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"metrics": {
 		Type:     schema.TypeList,
 		Required: true,
+		Description: blocklistedCharactersFieldDescription("Specify a list of metrics for the semantic view. " +
+			"Each metric can have either a semantic expression or a window function in its definition."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				// TODO: update the SDK with the newly added fields for semantic expressions, then add them here
-				// TODO: add PUBLIC/PRIVATE field
-				// TODO: add table_alias
-				// TODO: add fact_or_metric
+				// TODO(SNOW-2396311): update the SDK with the newly added/updated fields for semantic expressions, then add them here
+				// TODO(SNOW-2396371): add PUBLIC/PRIVATE field
+				// TODO(SNOW-2398097): add table_alias
+				// TODO(SNOW-2398097): add fact_or_metric
 				"semantic_expression": {
-					Type:        schema.TypeList,
-					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies a semantic expression for a metric definition"),
-					MaxItems:    1,
+					Type:     schema.TypeList,
+					Optional: true,
+					Description: blocklistedCharactersFieldDescription("Specifies a semantic expression for a metric definition." +
+						"Cannot be used in combination with a window function."),
+					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"qualified_expression_name": {
-								Type:     schema.TypeString,
-								Required: true,
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: blocklistedCharactersFieldDescription("Specifies a name for the semantic expression"),
 							},
 							"sql_expression": {
-								Type:     schema.TypeString,
-								Required: true,
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: blocklistedCharactersFieldDescription("Specifies the sql expression used to compute the metric."),
 							},
 							"synonym": {
 								Type:        schema.TypeSet,
 								Optional:    true,
-								Description: blocklistedCharactersFieldDescription("List of synonyms for the metric definition."),
+								Description: blocklistedCharactersFieldDescription("List of synonyms for this semantic expression."),
 								Elem: &schema.Schema{
 									Type: schema.TypeString,
 								},
@@ -130,30 +135,34 @@ var semanticViewsSchema = map[string]*schema.Schema{
 							"comment": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: blocklistedCharactersFieldDescription("Specifies a comment for the metric definition."),
+								Description: blocklistedCharactersFieldDescription("Specifies a comment for the semantic expression."),
 							},
 						},
 					},
 				},
+				// TODO(SNOW-2396397): update the sdk and the model with the newly added/updated fields for window functions
 				"window_function": {
-					Type:        schema.TypeList,
-					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies a window function for a metric definition"),
-					MaxItems:    1,
+					Type:     schema.TypeList,
+					Optional: true,
+					Description: blocklistedCharactersFieldDescription("Specifies a window function for a metric definition." +
+						"Cannot be used in combination with a semantic expression."),
+					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"window_function": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: blocklistedCharactersFieldDescription("The window function for the metric definition"),
+								Description: blocklistedCharactersFieldDescription("Specifies a name for the window function."),
 							},
 							"metric": {
-								Type:     schema.TypeString,
-								Required: true,
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: blocklistedCharactersFieldDescription("Specifies a metric expression for this window function."),
 							},
 							"over_clause": {
 								Type:     schema.TypeList,
 								Required: true,
+								MaxItems: 1,
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
 										"partition_by": {
@@ -394,7 +403,7 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) {
 	c := from.(map[string]any)
 	metricDefinitionRequest := sdk.NewMetricDefinitionRequest()
-	if c["semantic_expression"] != nil {
+	if len(c["semantic_expression"].([]any)) > 0 {
 		semanticExpression := c["semantic_expression"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
 			WithQualifiedExpressionName(semanticExpression["qualified_expression_name"].(string))
@@ -418,13 +427,13 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 			}
 		}
 		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
-	} else if c["window_function"] != nil {
+	} else if len(c["window_function"].([]any)) > 0 {
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
 		windowFunction := windowFunctionDefinition["window_function"].(string)
 		metric := windowFunctionDefinition["metric"].(string)
 		windowFuncRequest := sdk.NewWindowFunctionMetricDefinitionRequest(windowFunction, metric)
-		if windowFunctionDefinition["over_clause"] != nil {
-			overClause, ok := windowFunctionDefinition["over_clause"].(map[string]any)
+		if len(windowFunctionDefinition["over_clause"].([]any)) > 0 {
+			overClause, ok := windowFunctionDefinition["over_clause"].([]any)[0].(map[string]any)
 			if ok {
 				overClauseRequest := sdk.NewWindowFunctionOverClauseRequest()
 				if overClause["partition_by"] != nil {
