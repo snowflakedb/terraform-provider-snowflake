@@ -2,8 +2,6 @@ package helpers
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -217,26 +215,4 @@ func (c *SecurityIntegrationClient) DropSecurityIntegrationFunc(t *testing.T, id
 		err := c.client().Drop(ctx, sdk.NewDropSecurityIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
-}
-
-type OauthClientSecret struct {
-	ClientId     string `json:"OAUTH_CLIENT_ID"`
-	ClientSecret string `json:"OAUTH_CLIENT_SECRET"`
-}
-
-// TODO(SNOW-2254233): Use the function from SDK when it's ready.
-func (c *SecurityIntegrationClient) ShowOauthClientSecrets(t *testing.T, id sdk.AccountObjectIdentifier) OauthClientSecret {
-	t.Helper()
-	ctx := context.Background()
-
-	row := &struct {
-		SecretRaw string `db:"SECRET"`
-	}{}
-	sql := fmt.Sprintf(`SELECT SYSTEM$SHOW_OAUTH_CLIENT_SECRETS('%s') AS "SECRET"`, id.Name())
-	err := c.context.client.QueryOneForTests(ctx, row, sql)
-	require.NoError(t, err)
-	var secret OauthClientSecret
-	err = json.Unmarshal([]byte(row.SecretRaw), &secret)
-	require.NoError(t, err)
-	return secret
 }

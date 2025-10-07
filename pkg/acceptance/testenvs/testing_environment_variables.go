@@ -50,11 +50,6 @@ const (
 	OauthWithClientCredentialsClientId     env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_ID"
 	OauthWithClientCredentialsClientSecret env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_SECRET"
 	OauthWithClientCredentialsIssuer       env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_ISSUER"
-
-	OauthWithAuthorizationCodeExternalIdpClientId     env = envPrefix + "OAUTH_WITH_AUTHORIZATION_CODE_EXTERNAL_IDP_CLIENT_ID"
-	OauthWithAuthorizationCodeExternalIdpClientSecret env = envPrefix + "OAUTH_WITH_AUTHORIZATION_CODE_EXTERNAL_IDP_CLIENT_SECRET"
-	OauthWithAuthorizationCodeExternalIdpIssuer       env = envPrefix + "OAUTH_WITH_AUTHORIZATION_CODE_EXTERNAL_IDP_ISSUER"
-	OauthWithAuthorizationCodeExternalIdpLoginName    env = envPrefix + "OAUTH_WITH_AUTHORIZATION_CODE_EXTERNAL_IDP_LOGIN_NAME"
 )
 
 func GetOrSkipTest(t *testing.T, envName Env) string {
