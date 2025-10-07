@@ -101,16 +101,10 @@ func (c *SecurityIntegrationClient) CreateOauthForPartnerApplications(t *testing
 
 func (c *SecurityIntegrationClient) CreateOauthForCustomClients(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
-
-	request := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.OauthSecurityIntegrationClientTypePublic, "https://example.com")
-
-	return c.CreateOauthForCustomClientsWithRequest(t, request)
-}
-
-func (c *SecurityIntegrationClient) CreateOauthForCustomClientsWithRequest(t *testing.T, request *sdk.CreateOauthForCustomClientsSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {
-	t.Helper()
 	ctx := context.Background()
 
+	id := c.ids.RandomAccountObjectIdentifier()
+	request := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypePublic, "https://example.com")
 	err := c.client().CreateOauthForCustomClients(ctx, request)
 	require.NoError(t, err)
 
