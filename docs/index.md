@@ -254,6 +254,16 @@ export SNOWFLAKE_USER='...'
 export SNOWFLAKE_PASSWORD='...'
 ```
 
+### Oauth with Client Credentials Environment Variables
+
+If you choose to use Oauth with Client Credentials Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_OAUTH_CLIENT_ID='...'
+export SNOWFLAKE_OAUTH_CLIENT_SECRET='...'
+export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
+```
+
 ## Order Precedence
 
 Currently, the provider can be configured in three ways:
