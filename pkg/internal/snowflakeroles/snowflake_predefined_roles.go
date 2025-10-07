@@ -10,6 +10,8 @@ var (
 	SysAdmin       = sdk.NewAccountObjectIdentifier("SYSADMIN")
 	UserAdmin      = sdk.NewAccountObjectIdentifier("USERADMIN")
 	Public         = sdk.NewAccountObjectIdentifier("PUBLIC")
+	// RESTRICTED is a role that has no grants. It can be used instead of PUBLIC role, so that it's not granted to any users by default.
+	Restricted     = sdk.NewAccountObjectIdentifier("RESTRICTED")
 	PentestingRole = sdk.NewAccountObjectIdentifier("PENTESTING_ROLE")
 	// RESTRICTED is a role that has no grants. It can be used instead of PUBLIC role, so that it's not granted to any users by default.
 	Restricted = sdk.NewAccountObjectIdentifier("RESTRICTED")
