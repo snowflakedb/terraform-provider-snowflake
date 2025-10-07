@@ -178,6 +178,7 @@ The Snowflake provider supports multiple ways to authenticate:
 * Private Key
 * Config File
 * Oauth with Client Credentials
+* Oauth with Authorization Code
 
 In all cases `organization_name`, and `account_name` are required. In all cases except for Oauth with Client Credentials, `user` is required.
 
@@ -268,6 +269,18 @@ export SNOWFLAKE_OAUTH_CLIENT_SECRET='...'
 export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
 ```
 
+### Oauth with Authorization Code Environment Variables
+
+If you choose to use Oauth with Authorization Code Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_OAUTH_CLIENT_ID='...'
+export SNOWFLAKE_OAUTH_CLIENT_SECRET='...'
+export SNOWFLAKE_OAUTH_AUTHORIZATION_URL='...'
+export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
+export SNOWFLAKE_OAUTH_REDIRECT_URI='...'
+export SNOWFLAKE_OAUTH_SCOPE='...'
+```
 ## Order Precedence
 
 Currently, the provider can be configured in three ways:
@@ -393,7 +406,7 @@ oauth_token_request_url = 'oauth_token_request_url'
 oauth_authorization_url = 'oauth_authorization_url'
 oauth_redirect_uri = 'oauth_redirect_uri'
 oauth_scope = 'oauth_scope'
-enable_single_use_refresh_tokens = 'enable_single_use_refresh_tokens'
+enable_single_use_refresh_tokens = true
 
 [example.params]
 param_key = 'param_value'
@@ -439,7 +452,7 @@ oauthtokenrequesturl = 'oauth_token_request_url'
 oauthauthorizationurl = 'oauth_authorization_url'
 oauthredirecturi = 'oauth_redirect_uri'
 oauthscope = 'oauth_scope'
-enablesingleuserefreshtokens = 'enable_single_use_refresh_tokens'
+enablesingleuserefreshtokens = true
 
 [example.params]
 param_key = 'param_value'
