@@ -340,7 +340,7 @@ variable "password" {
 
 ### OAuth Client Credentials authenticator flow
 
-To set up a new Okta account for this flow, follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-okta).
+To set up a new Okta account for this flow, follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-okta). You can also setup other OAuth providers.
 If you already have an Okta account, skip the first point and follow the next steps.
 
 !> **Note** In Okta, the auth scope is case sensitive. This means that the casing in role configuration in the provider, and the allowed scope in Okta setup must match.

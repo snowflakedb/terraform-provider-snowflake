@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -45,6 +46,7 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 			[]sdk.TokenUserMappingClaim{{Claim: "sub"}},
 			sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
 		).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: oauthJwsKeysUrl}}).
+			WithExternalOauthAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{snowflakeroles.Public}}).
 			WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: url}}}),
 	)
 	t.Cleanup(securityIntegrationCleanup)
@@ -66,7 +68,7 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, userConfig.Path)
 				},
-				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userConfig.Profile)) + helpers.DummyResource(),
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(userConfig.Profile), model.ExecuteWithNoOpActions("t")),
 			},
 		},
 	})

@@ -29,6 +29,9 @@ tmpdirpath = '/tmp/terraform-provider/'
 disablequerycontextcache = true
 includeretryreason = true
 disableconsolelogin = true
+oauthclientid = 'oauth_client_id'
+oauthclientsecret = 'oauth_client_secret'
+oauthtokenrequesturl = 'oauth_token_request_url'
 
 [example.params]
 param_key = 'param_value'

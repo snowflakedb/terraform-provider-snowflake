@@ -29,7 +29,29 @@ provider "snowflake" {
 	driver_tracing = "info"
 	tmp_directory_path = "/tmp/terraform-provider/"
 	disable_console_login = true
+	oauth_client_id         = var.oauth_client_id
+	oauth_client_secret     = var.oauth_client_secret
+	oauth_token_request_url = var.oauth_token_request_url
+
 	params = {
 		param_key = "param_value"
 	}
+}
+
+# Client ID from the Okta application.
+variable "oauth_client_id" {
+  type      = string
+  sensitive = true
+}
+
+# Client Secret from the Okta application.
+variable "oauth_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+# Client Token Request URL from the Okta API Authorization Server.
+variable "oauth_token_request_url" {
+  type      = string
+  sensitive = true
 }
