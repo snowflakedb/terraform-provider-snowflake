@@ -345,6 +345,9 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
 
 					return nil
 				},
@@ -538,6 +541,9 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.DriverTracing, string(sdk.DriverLogLevelWarning))
 					t.Setenv(snowflakeenvs.TmpDirectoryPath, "../")
 					t.Setenv(snowflakeenvs.DisableConsoleLogin, "false")
+					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
+					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
+					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -579,6 +585,9 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
 
 					return nil
 				},
@@ -644,6 +653,9 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.DriverTracing, "invalid")
 					t.Setenv(snowflakeenvs.TmpDirectoryPath, "../")
 					t.Setenv(snowflakeenvs.DisableConsoleLogin, "false")
+					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
+					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
+					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -685,6 +697,9 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 						"foo": sdk.Pointer("piyo"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
 
 					return nil
 				},

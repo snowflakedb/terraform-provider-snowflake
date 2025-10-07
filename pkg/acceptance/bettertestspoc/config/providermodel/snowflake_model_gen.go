@@ -27,6 +27,9 @@ type SnowflakeModel struct {
 	KeepSessionAlive                   tfconfig.Variable `json:"keep_session_alive,omitempty"`
 	LoginTimeout                       tfconfig.Variable `json:"login_timeout,omitempty"`
 	MaxRetryCount                      tfconfig.Variable `json:"max_retry_count,omitempty"`
+	OauthClientId                      tfconfig.Variable `json:"oauth_client_id,omitempty"`
+	OauthClientSecret                  tfconfig.Variable `json:"oauth_client_secret,omitempty"`
+	OauthTokenRequestUrl               tfconfig.Variable `json:"oauth_token_request_url,omitempty"`
 	OcspFailOpen                       tfconfig.Variable `json:"ocsp_fail_open,omitempty"`
 	OktaUrl                            tfconfig.Variable `json:"okta_url,omitempty"`
 	OrganizationName                   tfconfig.Variable `json:"organization_name,omitempty"`
@@ -166,6 +169,21 @@ func (s *SnowflakeModel) WithLoginTimeout(loginTimeout int) *SnowflakeModel {
 
 func (s *SnowflakeModel) WithMaxRetryCount(maxRetryCount int) *SnowflakeModel {
 	s.MaxRetryCount = tfconfig.IntegerVariable(maxRetryCount)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientId(oauthClientId string) *SnowflakeModel {
+	s.OauthClientId = tfconfig.StringVariable(oauthClientId)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientSecret(oauthClientSecret string) *SnowflakeModel {
+	s.OauthClientSecret = tfconfig.StringVariable(oauthClientSecret)
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthTokenRequestUrl(oauthTokenRequestUrl string) *SnowflakeModel {
+	s.OauthTokenRequestUrl = tfconfig.StringVariable(oauthTokenRequestUrl)
 	return s
 }
 
@@ -371,6 +389,21 @@ func (s *SnowflakeModel) WithLoginTimeoutValue(value tfconfig.Variable) *Snowfla
 
 func (s *SnowflakeModel) WithMaxRetryCountValue(value tfconfig.Variable) *SnowflakeModel {
 	s.MaxRetryCount = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientIdValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthClientId = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthClientSecretValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthClientSecret = value
+	return s
+}
+
+func (s *SnowflakeModel) WithOauthTokenRequestUrlValue(value tfconfig.Variable) *SnowflakeModel {
+	s.OauthTokenRequestUrl = value
 	return s
 }
 

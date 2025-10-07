@@ -78,6 +78,19 @@ func (c *SecurityIntegrationClient) CreateExternalOauth(t *testing.T) (*sdk.Secu
 	return si, c.DropSecurityIntegrationFunc(t, request.GetName())
 }
 
+func (c *SecurityIntegrationClient) CreateExternalOauthWithRequest(t *testing.T, request *sdk.CreateExternalOauthSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().CreateExternalOauth(ctx, request)
+	require.NoError(t, err)
+
+	si, err := c.client().ShowByID(ctx, request.GetName())
+	require.NoError(t, err)
+
+	return si, c.DropSecurityIntegrationFunc(t, request.GetName())
+}
+
 func (c *SecurityIntegrationClient) CreateOauthForPartnerApplications(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
 	ctx := context.Background()

@@ -155,6 +155,9 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		{name: "DisableQueryContextCache", fieldName: "disable_query_context_cache", wantType: "*bool"},
 		{name: "IncludeRetryReason", fieldName: "include_retry_reason", wantType: "*bool"},
 		{name: "DisableConsoleLogin", fieldName: "disable_console_login", wantType: "*bool"},
+		{name: "OauthClientID", fieldName: "oauth_client_id", wantType: "*string"},
+		{name: "OauthClientSecret", fieldName: "oauth_client_secret", wantType: "*string"},
+		{name: "OauthTokenRequestURL", fieldName: "oauth_token_request_url", wantType: "*string"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -306,7 +309,10 @@ func TestProfileConfig(t *testing.T) {
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
 			"foo": Pointer("bar"),
-		}),
+		}).
+		WithOauthClientID("oauth_client_id").
+		WithOauthClientSecret("oauth_client_secret").
+		WithOauthTokenRequestURL("oauth_token_request_url"),
 		"securityadmin",
 	)
 	bytes, err := cfg.MarshalToml()
@@ -365,6 +371,9 @@ func TestProfileConfig(t *testing.T) {
 		assert.True(t, config.DisableQueryContextCache)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
+		assert.Equal(t, "oauth_client_id", config.OauthClientID)
+		assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+		assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -443,6 +452,9 @@ func Test_MergeConfig(t *testing.T) {
 		DisableQueryContextCache:       false,
 		IncludeRetryReason:             1,
 		DisableConsoleLogin:            gosnowflake.ConfigBoolFalse,
+		OauthClientID:                  "oauth_client_id1",
+		OauthClientSecret:              "oauth_client_secret1",
+		OauthTokenRequestURL:           "oauth_token_request_url1",
 	}
 
 	config2 := &gosnowflake.Config{
@@ -483,6 +495,9 @@ func Test_MergeConfig(t *testing.T) {
 		DisableQueryContextCache:       true,
 		IncludeRetryReason:             gosnowflake.ConfigBoolTrue,
 		DisableConsoleLogin:            gosnowflake.ConfigBoolTrue,
+		OauthClientID:                  "oauth_client_id2",
+		OauthClientSecret:              "oauth_client_secret2",
+		OauthTokenRequestURL:           "oauth_token_request_url2",
 	}
 
 	t.Run("base config empty", func(t *testing.T) {
@@ -571,6 +586,7 @@ func Test_ToAuthenticationType(t *testing.T) {
 		{input: "SNOWFLAKE_JWT", want: gosnowflake.AuthTypeJwt},
 		{input: "TOKENACCESSOR", want: gosnowflake.AuthTypeTokenAccessor},
 		{input: "USERNAMEPASSWORDMFA", want: gosnowflake.AuthTypeUsernamePasswordMFA},
+		{input: "OAUTH_CLIENT_CREDENTIALS", want: gosnowflake.AuthTypeOAuthClientCredentials},
 	}
 
 	invalid := []test{
@@ -613,6 +629,7 @@ func Test_ToExtendedAuthenticatorType(t *testing.T) {
 		{input: "TOKENACCESSOR", want: gosnowflake.AuthTypeTokenAccessor},
 		{input: "USERNAMEPASSWORDMFA", want: gosnowflake.AuthTypeUsernamePasswordMFA},
 		{input: "PROGRAMMATIC_ACCESS_TOKEN", want: gosnowflake.AuthTypePat},
+		{input: "OAUTH_CLIENT_CREDENTIALS", want: gosnowflake.AuthTypeOAuthClientCredentials},
 		{input: "", want: GosnowflakeAuthTypeEmpty},
 	}
 
@@ -816,7 +833,10 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithTmpDirPath("/tmp").
 				WithDisableQueryContextCache(true).
 				WithIncludeRetryReason(true).
-				WithDisableConsoleLogin(true),
+				WithDisableConsoleLogin(true).
+				WithOauthClientID("oauth_client_id").
+				WithOauthClientSecret("oauth_client_secret").
+				WithOauthTokenRequestURL("oauth_token_request_url"),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -854,6 +874,9 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.True(t, got.DisableQueryContextCache)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.IncludeRetryReason)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.DisableConsoleLogin)
+				assert.Equal(t, "oauth_client_id", got.OauthClientID)
+				assert.Equal(t, "oauth_client_secret", got.OauthClientSecret)
+				assert.Equal(t, "oauth_token_request_url", got.OauthTokenRequestURL)
 
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
