@@ -50,7 +50,11 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		}).
 		WithOauthClientID("oauth_client_id").
 		WithOauthClientSecret("oauth_client_secret").
-		WithOauthTokenRequestURL("oauth_token_request_url"),
+		WithOauthTokenRequestURL("oauth_token_request_url").
+		WithOauthAuthorizationURL("oauth_authorization_url").
+		WithOauthRedirectURI("oauth_redirect_uri").
+		WithOauthScope("oauth_scope").
+		WithEnableSingleUseRefreshTokens(true),
 	)
 }
 
@@ -93,7 +97,14 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
 			"foo": sdk.Pointer("bar"),
-		})
+		}).
+		WithOauthClientID("invalid").
+		WithOauthClientSecret("invalid").
+		WithOauthTokenRequestURL("invalid").
+		WithOauthAuthorizationURL("invalid").
+		WithOauthRedirectURI("invalid").
+		WithOauthScope("invalid").
+		WithEnableSingleUseRefreshTokens(true)
 	return configDtoToTomlString(t, profile, dto)
 }
 

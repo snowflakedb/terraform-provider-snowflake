@@ -423,7 +423,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Description: envNameFieldDescription("Authorization URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthAuthorizationUrl),
 			Optional:    true,
 			Sensitive:   true,
-			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthTokenRequestUrl, nil),
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthAuthorizationUrl, nil),
 		},
 		"oauth_token_request_url": {
 			Type:        schema.TypeString,

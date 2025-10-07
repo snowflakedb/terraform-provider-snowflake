@@ -92,5 +92,5 @@ resource "snowflake_execute" "test" {
   provider   = snowflake.oauth
   execute    = "SELECT CURRENT_USER()"
   revert     = "SELECT CURRENT_USER()"
-  depends_on = [snowflake_external_oauth_integration.test]
+  depends_on = [snowflake_external_oauth_integration.test, snowflake_user.test]
 }

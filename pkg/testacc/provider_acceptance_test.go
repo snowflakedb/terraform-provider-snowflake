@@ -351,7 +351,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 					assert.Equal(t, "oauth_scope", config.OauthScope)
-					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.EnableSingleUseRefreshTokens)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 
 					return nil
 				},
@@ -599,7 +599,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 					assert.Equal(t, "oauth_scope", config.OauthScope)
-					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.EnableSingleUseRefreshTokens)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
 			},
@@ -718,7 +718,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 					assert.Equal(t, "oauth_scope", config.OauthScope)
-					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.EnableSingleUseRefreshTokens)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
 			},

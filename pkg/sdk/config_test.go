@@ -385,7 +385,7 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 		assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 		assert.Equal(t, "oauth_scope", config.OauthScope)
-		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.EnableSingleUseRefreshTokens)
+		assert.True(t, config.EnableSingleUseRefreshTokens)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -906,7 +906,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "oauth_authorization_url", got.OauthAuthorizationURL)
 				assert.Equal(t, "oauth_redirect_uri", got.OauthRedirectURI)
 				assert.Equal(t, "oauth_scope", got.OauthScope)
-				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.EnableSingleUseRefreshTokens)
+				assert.True(t, got.EnableSingleUseRefreshTokens)
 
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
