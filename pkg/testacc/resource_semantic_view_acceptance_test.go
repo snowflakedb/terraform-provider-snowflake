@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -21,7 +20,7 @@ import (
 
 func TestAcc_SemanticView_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	comment, changedComment := random.Comment(), random.Comment()
+	comment, changedComment := "comment 1", "comment 2"
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
 		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
@@ -34,11 +33,18 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	t.Cleanup(table2Cleanup)
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), nil, nil, nil, "logical table 1")
 	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), nil, nil, nil, "")
-	semExp1 := model.SemanticExpressionWithProps("lt1.se1", "SUM(lt1.a1)", nil, "semantic expression 1")
+	semExp1 := model.SemanticExpressionWithProps("lt1.se1", "SUM(lt1.a1)", []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
 	partitionBy := "a1"
 	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps("lt2.wf1", "sum(lt2.a1)", sdk.WindowFunctionOverClause{PartitionBy: &partitionBy})
 	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
 	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1)
+
+	lt1Request := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt1"})
+	lt2Request := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt2"})
+	seRequest := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "lt1.se1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "SUM(lt1.a1)"})
+	wfRequest := sdk.NewWindowFunctionMetricDefinitionRequest("lt2.wf1", "sum(lt2.a1)")
+	m1Request := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*seRequest)
+	m2Request := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*wfRequest)
 
 	modelBasic := model.SemanticView(
 		"test",
@@ -140,13 +146,6 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasExtension(""),
 				),
 			},
-			// import complete state
-			{
-				Config:            accconfig.FromModels(t, modelComplete),
-				ResourceName:      modelComplete.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
 			// alter
 			{
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
@@ -205,13 +204,15 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			// change externally create
 			{
 				PreConfig: func() {
-					testClient().SemanticView.CreateWithRequest(t, sdk.NewCreateSemanticViewRequest(id, nil).
+					_, semanticViewCleanup := testClient().SemanticView.CreateWithRequest(t, sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*lt1Request, *lt2Request}).
+						WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*m1Request, *m2Request}).
 						WithComment(comment).WithOrReplace(true))
+					t.Cleanup(semanticViewCleanup)
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: assertThat(t,

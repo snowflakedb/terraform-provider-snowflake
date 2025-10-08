@@ -101,7 +101,7 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 				}
 				windFuncVar["over_clause"] = tfconfig.ObjectVariable(overClauseVar)
 			}
-			m["window_function"] = tfconfig.ObjectVariable(windFuncVar)
+			m["window_function"] = tfconfig.ListVariable(tfconfig.ObjectVariable(windFuncVar))
 		}
 		maps[i] = tfconfig.ObjectVariable(m)
 	}

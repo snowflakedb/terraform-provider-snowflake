@@ -416,10 +416,9 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 		}
 
 		if semanticExpression["synonym"] != nil {
-			synonyms, ok := semanticExpression["synonym"].([]any)
-			if ok && len(synonyms) > 0 {
+			if synonyms, ok := semanticExpression["synonym"].(*schema.Set); ok && synonyms.Len() > 0 {
 				var syns []sdk.Synonym
-				for _, s := range synonyms {
+				for _, s := range synonyms.List() {
 					syns = append(syns, sdk.Synonym{Synonym: s.(string)})
 				}
 				sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
