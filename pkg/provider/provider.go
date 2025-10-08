@@ -250,7 +250,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			MaxItems:    1,
-			Description: "The legacy configuration for token accessor flows. If you are using the  OAuth authentication flows, use the dedicated `oauth...` fields instead.",
+			Description: "If you are using the OAuth authentication flows, use the dedicated `authenticator` and `oauth...` fields instead. See our [authentication methods guide](./guides/authentication_methods) for more information.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"token_endpoint": {
