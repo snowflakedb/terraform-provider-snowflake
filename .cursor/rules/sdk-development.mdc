@@ -141,7 +141,7 @@ For new Snowflake objects, prefer the code generation approach over manual imple
 **Test File Organization:**
 - **Unit Tests**: Generated in `*_gen_test.go` files, completed manually
 - **Integration Tests**: Manual implementation in `testint/` directory
-- **Build Constraints**: Use `//go:build !account_level_tests` by default
+- **Build Constraints**: Use `//go:build !account_level_tests` in integration tests by default
 
 ## Unit Testing Requirements
 
@@ -197,7 +197,7 @@ Beyond generated tests, add manual tests for:
 
 **Integration Test Structure:**
 ```go
-//go:build !account_level_tests  // or account_level_tests for account operations
+//go:build !account_level_tests
 
 func TestInt_Objects(t *testing.T) {
     client := testClient(t)

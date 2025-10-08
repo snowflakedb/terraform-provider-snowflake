@@ -52,35 +52,68 @@ var ObjectsDef = g.NewInterface(
     "Object",           // Struct name (singular)
     g.KindOfT[SchemaObjectIdentifier](), // Identifier type
 ).
-CreateOperation("https://docs.snowflake.com/...",
-    g.NewQueryStruct("CreateObject").
-        Create().
-        SQL("OBJECT").
-        Name().
-        OptionalComment(),
-).
-ShowOperation("https://docs.snowflake.com/...",
-    objectDbRow, object,
-    g.NewQueryStruct("ShowObjects").
-        Show().
-        SQL("OBJECTS").
-        OptionalLike().
-        OptionalExtendedIn(),
-).
-ShowByIdOperationWithFiltering(
-    g.ShowByIDLikeFiltering,
-    g.ShowByIDExtendedInFiltering,
-).
-DescribeOperation(
-    g.DescriptionMappingKindSingleValue,
-    "https://docs.snowflake.com/...",
-    describeObjectDbRow,
-    objectDetails,
-    g.NewQueryStruct("DescribeObject").
-        Describe().
-        SQL("OBJECT").
-        Name(),
-)
+    CreateOperation("https://docs.snowflake.com/...",
+        g.NewQueryStruct("CreateObject").
+            Create().
+            SQL("OBJECT").
+            Name().
+            OptionalComment(),
+    ).
+	AlterOperation(
+		"https://docs.snowflake.com/...",
+		g.NewQueryStruct("AlterObject").
+			Alter().
+			SQL("OBJECT").
+			IfExists().
+			Name().
+			OptionalSQL("PUBLISH").
+			OptionalIdentifier("RenameTo", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			OptionalQueryStructField(
+				"Set",
+				g.NewQueryStruct("ObjectSet").
+					OptionalComment(),
+				g.KeywordOptions().SQL("SET"),
+			).
+			OptionalQueryStructField(
+				"Unset",
+				g.NewQueryStruct("ObjectUnset").
+					OptionalSQL("COMMENT"),
+				g.KeywordOptions().SQL("UNSET"),
+			).
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ExactlyOneValueSet, "Publish", "RenameTo", "Set", "Unset"),
+	).
+	DropOperation(
+		"https://docs.snowflake.com/...",
+		g.NewQueryStruct("DropObject").
+			Drop().
+			SQL("OBJECT").
+			IfExists().
+			Name().
+			WithValidation(g.ValidIdentifier, "name"),
+	).
+    ShowOperation("https://docs.snowflake.com/...",
+        objectDbRow, object,
+        g.NewQueryStruct("ShowObjects").
+            Show().
+            SQL("OBJECTS").
+            OptionalLike().
+            OptionalExtendedIn(),
+    ).
+    ShowByIdOperationWithFiltering(
+        g.ShowByIDLikeFiltering,
+        g.ShowByIDExtendedInFiltering,
+    ).
+    DescribeOperation(
+        g.DescriptionMappingKindSingleValue,
+        "https://docs.snowflake.com/...",
+        describeObjectDbRow,
+        objectDetails,
+        g.NewQueryStruct("DescribeObject").
+            Describe().
+            SQL("OBJECT").
+            Name(),
+    )
 ```
 
 ### DSL Guidelines
@@ -156,13 +189,11 @@ The `DescribeOperation()` requires a `DescriptionMappingKind` parameter that det
 - **`DescriptionMappingKindSingleValue`**: Returns a single object (`*ObjectDetails`)
   - **Use when**: DESCRIBE returns object metadata as a single record (name, owner, comment, etc.)
   - **Generated method**: `Describe(ctx context.Context, id Identifier) (*ObjectDetails, error)`
-  - **Implementation**: Uses `validateAndQueryOne()` and `result.convert()`
   - **Examples**: Tasks, Streams, Services, Git Repositories, Secrets
 
 - **`DescriptionMappingKindSlice`**: Returns a slice of objects (`[]ObjectProperty`)
   - **Use when**: DESCRIBE returns property-value pairs or multiple configuration entries
   - **Generated method**: `Describe(ctx context.Context, id Identifier) ([]ObjectProperty, error)`
-  - **Implementation**: Uses `validateAndQuery()` and `convertRows()`
   - **Examples**: Procedures, Functions, Views, Storage Integrations, Network Policies
 
 **Pattern Recognition:**
@@ -171,12 +202,11 @@ The `DescribeOperation()` requires a `DescriptionMappingKind` parameter that det
 
 ### ShowByID Operation
 
-The `ShowByID` operation provides a convenient method to retrieve a single object by its identifier. It internally uses the `Show` operation with appropriate filtering to find the specific object.
+The `ShowByID` operation provides a convenient method to retrieve a single object by its identifier.
+It internally uses the `Show` operation with appropriate filtering to find the specific object.
 
-**Purpose and Implementation:**
-- **Generated methods**: `ShowByID(ctx context.Context, id Identifier) (*Object, error)` and `ShowByIDSafely(ctx context.Context, id Identifier) (*Object, error)`
-- **Implementation**: Calls `Show()` with filtering parameters, then uses `collections.FindFirst()` to locate the object by name
-- **Safety**: `ShowByIDSafely()` handles cases where the object might not exist without throwing errors
+**Generated methods:**
+`ShowByID(ctx context.Context, id Identifier) (*Object, error)` and `ShowByIDSafely(ctx context.Context, id Identifier) (*Object, error)`
 
 **Filtering Strategy Selection:**
 The filtering options for `ShowByID` must match the filtering capabilities available in the corresponding `Show` operation. Choose based on what the Snowflake `SHOW` command supports:
