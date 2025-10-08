@@ -338,12 +338,74 @@ When developing resources, you'll work with:
 4. **Schema files** - See [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc) for schema development
 5. **Test files** - See [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc) for acceptance testing
 
+## Resource Registration
+
+When adding a new resource, it must be properly registered in the provider:
+
+### 1. Add Resource Constant
+**Location**: `pkg/provider/resources/resources.go`
+
+Add the new resource constant to the `const` block:
+```go
+const (
+    // ... existing resources
+    NewResource resource = "snowflake_new_resource"
+)
+```
+
+### 2. Add Preview Feature (if applicable)
+**Location**: `pkg/provider/previewfeatures/preview_features.go`
+
+For new resources, add the preview feature constant and include it in the `allPreviewFeatures` slice:
+```go
+const (
+    // ... existing features
+    NewResourceResource feature = "snowflake_new_resource_resource"
+)
+
+var allPreviewFeatures = []feature{
+    // ... existing features
+    NewResourceResource,
+}
+```
+
+### 3. Test Provider Registration
+**Location**: `pkg/testacc/1_setup_provider_test.go`
+
+During testing, add the resource to the test provider instance:
+```go
+func setUpProvider() error {
+    // ... existing setup
+    TestAccProvider = provider.Provider()
+    TestAccProvider.ResourcesMap["snowflake_new_resource"] = resources.NewResource()
+    // ... rest of setup
+}
+```
+
+### 4. Register in Provider
+**Location**: `pkg/provider/provider.go`
+
+After testing phase is done, remove the resource registration from the previous point and add the resource to the `getResources()` function:
+```go
+func getResources() map[string]*schema.Resource {
+    return map[string]*schema.Resource{
+        // ... existing resources
+        "snowflake_new_resource": resources.NewResource(),
+    }
+}
+```
+
 ## Development Checklist
 
 - [ ] **First**: Analyze SDK object interface for available operations
 - [ ] Define main resource schema in [@resources/](mdc:pkg/resources/) based on SDK object analysis
 - [ ] Generate or define schemas for SHOW and DESC outputs according to [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc)
+- [ ] Add resource constant to `pkg/provider/resources/resources.go`
+- [ ] Add preview feature constant to `pkg/provider/previewfeatures/preview_features.go`
 - [ ] Implement CRUD functions in [@resources/](mdc:pkg/resources/)
+- [ ] Add resource to test provider in `pkg/testacc/1_setup_provider_test.go`
 - [ ] Write acceptance tests according to [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc)
 - [ ] Run full test suite
 - [ ] Update documentation if needed
+- [ ] Remove resource registration from `pkg/testacc/1_setup_provider_test.go`
+- [ ] Register resource in provider `pkg/provider/provider.go` (ready for production)

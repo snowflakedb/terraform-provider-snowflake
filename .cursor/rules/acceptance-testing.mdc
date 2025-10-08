@@ -98,6 +98,51 @@ func TestAcc_ResourceName_basic(t *testing.T) {
 }
 ```
 
+### Configuration Approach
+
+**IMPORTANT**: Always use the `Config` field with generated models. The `ConfigDirectory` approach is deprecated and should not be used in new tests.
+
+**Correct approach**:
+```go
+{
+    Config: accconfig.FromModels(t, modelBasic),
+}
+```
+
+**Deprecated approach** (do not use):
+```go
+{
+    ConfigDirectory: config.TestNameDirectory(),
+    ConfigVariables: variables,
+}
+```
+
+### Assertion Approach
+
+**IMPORTANT**: Always use generated assertions instead of `resource.Check` functions. Generated assertions provide type safety, better error messages, and are more maintainable.
+
+**Correct approach** (using generated assertions):
+```go
+Check: assertThat(t,
+    resourceassert.ResourceNameResource(t, model.ResourceReference()).
+        HasNameString(id.Name()).
+        HasCommentString(comment).
+        HasListFieldCount(2),
+    resourceshowoutputassert.ResourceNameShowOutput(t, model.ResourceReference()).
+        HasName(id.Name()).
+        HasCreatedOn(),
+)
+```
+
+**Deprecated approach** (do not use):
+```go
+Check: resource.ComposeTestCheckFunc(
+    resource.TestCheckResourceAttr("snowflake_resource_name.test", "name", id.Name()),
+    resource.TestCheckResourceAttr("snowflake_resource_name.test", "comment", comment),
+    resource.TestCheckResourceAttr("snowflake_resource_name.test", "list_field.#", "2"),
+)
+```
+
 ## Test Patterns
 
 ### Model Builders
