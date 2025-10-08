@@ -5,6 +5,7 @@ package testacc
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -100,6 +101,57 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment("").
 						HasExtension(""),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.#", "10")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.object_kind", "TABLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.object_name", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.parent_entity", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.property", "BASE_TABLE_DATABASE_NAME")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.property_value", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.1.object_kind", "TABLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.1.object_name", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.1.parent_entity", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.1.property", "BASE_TABLE_SCHEMA_NAME")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.1.property_value", id.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.2.object_kind", "TABLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.2.object_name", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.2.parent_entity", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.2.property", "BASE_TABLE_NAME")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.2.property_value", table1.Name)),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.3.object_kind", "TABLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.3.object_name", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.3.parent_entity", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.3.property", "COMMENT")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.3.property_value", "logical table 1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.4.object_kind", "METRIC")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.4.object_name", "SE1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.4.parent_entity", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.4.property", "TABLE")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.4.property_value", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.5.object_kind", "METRIC")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.5.object_name", "SE1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.5.parent_entity", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.5.property", "EXPRESSION")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.5.property_value", "SUM(lt1.a1)")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.6.object_kind", "METRIC")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.6.object_name", "SE1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.6.parent_entity", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.6.property", "DATA_TYPE")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.6.property_value", "NUMBER(38,0)")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.7.object_kind", "METRIC")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.7.object_name", "SE1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.7.parent_entity", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.7.property", "SYNONYMS")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.7.property_value", "[\"sem1\",\"baseSem\"]")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.8.object_kind", "METRIC")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.8.object_name", "SE1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.8.parent_entity", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.8.property", "COMMENT")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.8.property_value", "semantic expression 1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.9.object_kind", "METRIC")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.9.object_name", "SE1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.9.parent_entity", "LT1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.9.property", "ACCESS_MODIFIER")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.9.property_value", "PUBLIC")),
 				),
 			},
 			// import minimal state
@@ -144,6 +196,12 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment(comment).
 						HasExtension(""),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.#", "11")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.object_kind", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.object_name", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.parent_entity", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.property", "COMMENT")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.property_value", comment)),
 				),
 			},
 			// alter
@@ -170,6 +228,12 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment(changedComment).
 						HasExtension(""),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.#", "11")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.object_kind", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.object_name", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.parent_entity", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.property", "COMMENT")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.property_value", changedComment)),
 				),
 			},
 			// change externally alter
@@ -199,6 +263,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment(changedComment).
 						HasExtension(""),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.#", "11")),
 				),
 			},
 			// change externally create
@@ -231,6 +296,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment(changedComment).
 						HasExtension(""),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.#", "15")),
 				),
 			},
 			// unset
