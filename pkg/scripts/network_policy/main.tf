@@ -36,31 +36,32 @@ locals {
   extra_ips       = var.extra_ips
   all_allowed_ips = concat(local.extra_ips, local.all_github_ips)
   comment         = "Allows for connections only comming from GitHub Actions or behind VPN"
+  policy_name     = "RESTRICTED_ACCESS"
 }
 
 resource "snowflake_network_policy" "restricted_access_primary" {
-  name            = "RESTRICTED_ACCESS"
+  name            = local.policy_name
   allowed_ip_list = local.all_allowed_ips
   comment         = local.comment
 }
 
-# resource "snowflake_network_policy" "restricted_access_secondary" {
-#   provider        = snowflake.secondary
-#   name            = "RESTRICTED_ACCESS"
-#   allowed_ip_list = local.all_allowed_ips
-#   comment         = local.comment
-# }
+resource "snowflake_network_policy" "restricted_access_secondary" {
+  provider        = snowflake.secondary
+  name            = local.policy_name
+  allowed_ip_list = local.all_allowed_ips
+  comment         = local.comment
+}
 
-# resource "snowflake_network_policy" "restricted_access_third" {
-#   provider        = snowflake.third
-#   name            = "RESTRICTED_ACCESS"
-#   allowed_ip_list = local.all_allowed_ips
-#   comment         = local.comment
-# }
+resource "snowflake_network_policy" "restricted_access_third" {
+  provider        = snowflake.third
+  name            = local.policy_name
+  allowed_ip_list = local.all_allowed_ips
+  comment         = local.comment
+}
 
-# resource "snowflake_network_policy" "restricted_access_fourth" {
-#   provider        = snowflake.fourth
-#   name            = "RESTRICTED_ACCESS"
-#   allowed_ip_list = local.all_allowed_ips
-#   comment         = local.comment
-# }
+resource "snowflake_network_policy" "restricted_access_fourth" {
+  provider        = snowflake.fourth
+  name            = local.policy_name
+  allowed_ip_list = local.all_allowed_ips
+  comment         = local.comment
+}
