@@ -302,7 +302,7 @@ func ReadSemanticView(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	errs := errors.Join(
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.SemanticViewToSchema(semanticView)}),
-		d.Set(DescribeOutputAttributeName, [][]map[string]any{schemas.SemanticViewDetailsToSchema(semanticViewDetails)}),
+		d.Set(DescribeOutputAttributeName, schemas.SemanticViewDetailsToSchema(semanticViewDetails)),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set("comment", semanticView.Comment),
 	)

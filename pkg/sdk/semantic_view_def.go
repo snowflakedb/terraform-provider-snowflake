@@ -25,15 +25,15 @@ var semanticView = g.PlainStruct("SemanticView").
 	OptionalText("Extension")
 
 var semanticViewDetailsDbRow = g.DbStruct("semanticViewDetailsRow").
-	Text("object_kind").
-	Text("object_name").
+	OptionalText("object_kind").
+	OptionalText("object_name").
 	OptionalText("parent_entity").
 	Text("property").
 	Text("property_value")
 
 var semanticViewDetails = g.PlainStruct("SemanticViewDetails").
-	Text("ObjectKind").
-	Text("ObjectName").
+	OptionalText("ObjectKind").
+	OptionalText("ObjectName").
 	OptionalText("ParentEntity").
 	Text("Property").
 	Text("PropertyValue")
