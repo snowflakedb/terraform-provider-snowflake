@@ -130,48 +130,47 @@ var ObjectsDef = g.NewInterface(
 - **Accuracy Requirements**: Only include fields and options explicitly documented in "Syntax" and "Output" sections
 - **Conservative Approach**: When in doubt, ask for clarification rather than making assumptions
 
-**DSL Patterns and DDL Tag System**
+To completely understand how to utilize the SDK generator to end up with expected operations, struct containing fields with corrects types, tags, and modifiers,
+analyze [@pkg/sdk/poc/](mdc:pkg/sdk/poc/) generator and existing definitions [@pkg/sdk/*_def.go](mdc:pkg/sdk/*_def.go) along with unit tests [@pkg/sdk/*_test.go](mdc:pkg/sdk/*_test.go) which shows full path from definition to final SQL.
 
-The SDK uses a sophisticated DDL tag system to generate SQL from Go structs. Understanding these patterns is crucial for accurate implementation:
+**Common mapping patterns**
 
-**Core DDL Tags:**
-- `ddl:"static"` - Fixed SQL keywords (e.g., `CREATE`, `ALTER`, `DROP`)
-- `ddl:"keyword"` - Dynamic keywords with optional quoting and parentheses
-- `ddl:"parameter"` - Parameter assignments with `KEY = value` syntax
-- `ddl:"identifier"` - Snowflake object identifiers with proper escaping
-- `ddl:"list"` - Collections with configurable separators and parentheses
-
-**SQL Generation Modifiers:**
-- Quoting: `single_quotes`, `double_quotes`, `no_quotes`, `double_dollar_quotes`
-- Parentheses: `parentheses`, `no_parentheses`, `must_parentheses`
-- Equals: `no_equals` (for identifiers and special cases)
-- Separators: `comma`, `no_comma` (for lists)
-- Reverse: `reverse` (for reversed parameter syntax)
-
-**DSL Method Mapping:**
-- `SQL("TEXT")` → `ddl:"static" sql:"TEXT"`
-- `OptionalSQL("TEXT")` → `ddl:"keyword" sql:"TEXT"` (optional field)
-- `TextAssignment("FIELD", options)` → `ddl:"parameter" sql:"FIELD"`
-- `Name()` → `ddl:"identifier"` with appropriate identifier type
-- `OptionalComment()` → `ddl:"parameter,single_quotes" sql:"COMMENT"`
-
-**Complex Pattern Examples:**
-```go
-// Generates: ALLOWED_VALUES ('value1', 'value2')
-AllowedValues *AllowedValues `ddl:"keyword" sql:"ALLOWED_VALUES"`
-type AllowedValues struct {
-    Values []AllowedValue `ddl:"list,comma"`
-}
-type AllowedValue struct {
-    Value string `ddl:"keyword,single_quotes"`
-}
-
-// Generates: SET TAG (tag1 = 'value1', tag2 = 'value2')
-SetTags []TagAssociation `ddl:"keyword" sql:"SET TAG"`
-
-// Generates: MODIFY COLUMN "column_name" for column operations
-column *string `ddl:"parameter,no_equals,double_quotes" sql:"MODIFY COLUMN"`
+Here's an example syntax patterns seen in the documentation and how they usually map to the SDK DSL.
+By having the immitation of the CREATE command's syntax documentation:
+```sql
+CREATE [ OR REPLACE ] OBJECT [ IF NOT EXISTS ] <name>
+  [ ARGS = '<string_literal>' ]
+  [ VERSION = { FIRST | LAST } ]
+  [ BOOLEAN = { TRUE | FALSE } ]
+  COMMENT = '<string_literal>'
+  <clustering action>
 ```
+
+where:
+
+```sql
+clusteringAction ::=
+  {
+     CLUSTER BY ( <expr> [ , <expr> , ... ] )
+   | RECLUSTER [ MAX_SIZE = <budget_in_bytes> ] [ WHERE <condition> ]
+   | DROP CLUSTERING KEY
+  }
+```
+
+we can extract a few rules:
+- Static values like `CREATE` or `OBJECT` (not containing any dynamic value and always necessary to be specified when calling a given command) map to DSL's methods like `Create()` or `SQL("OBJECT")` if the static keyword is not directly supported by the DSL
+- Keyword values like `OR REPLACE` or `IF NOT EXISTS` (not containing any dynamic value but optional to be specified when calling a given command) map to DSL's methods like `OrReplace()`, `IfNotExists()`, or `OptionalSQL("KEYWORD")` if the static keyword is not directly supported by the DSL
+- `<name>` after main keywords like `CREATE` or `ALTER` refers to object's identifier, and in all cases maps to `Name()` method
+- Whenever something is wrapped with square brackets `[]` it means it's optional, and maps to DSL's methods like `OptionalXxx()`.
+- Whenever something is wrapped with curly braces `{}` it means it's a choice of one of the options separated by pipe `|`. It can be either express to map simple values as well as more complex structures which should result in nested structs (`QueryStructField`) within DSL.
+- Given structure `( <item> [ , <item>, ... ])` means a list of items separated by comma (it mostly prefixed by some keyword and sometimes equal sign, e.g. `KEYWORD = ( <item> [ , <item>, ... ])`), and most likely maps to `OptionalQueryStructField` (for more comprehensive example, take a look at [@network_policies_def.go](mdc:pkg/sdk/network_policies_def.go) how `AllowedNetworkRuleList` or `AllowedIpList` is defined).
+- Documentation can use angle brackets in different ways. Sometimes it can mean the definition is partial parsing the documentation further is required to understand the full context.
+- Simple dynamic values prefixed by static SQL like `WHERE <condition>` are mapped to DSL's methods like `<type>()` (in this case `Text("WhereCondition", g.KeywordOptions().SQL("WHERE"))`)
+- Assignments like `ARGS = '<string_literal>'` or `COMMENT = '<string_literal>'` (containing a dynamic value to be specified when calling a given command with additional complications like equal sign, or different quoting) map to DSL's methods like `<type>Assignment()` (in this case `TextAssignment("ARGS", g.ParameterOptions().SingleQuotes())`) or `Comment()`
+
+**DDL Tag System Reference**
+
+The SDK uses a sophisticated DDL tag system to generate SQL from Go structs. For complete understanding of all available tags, modifiers, and their behavior, analyze [@sql_builder.go](mdc:pkg/sdk/sql_builder.go).
 
 **Operation Types**
 - `CreateOperation()` - CREATE commands
@@ -226,11 +225,6 @@ The filtering options for `ShowByID` must match the filtering capabilities avail
 - **Application Objects**: `ShowByIDApplicationNameFiltering`
 - **No Filtering**: `ShowByIdOperationWithNoFiltering()` when SHOW has no filtering options
 
-**Common Pattern:**
-```go
-ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering, g.ShowByIDExtendedInFiltering)
-```
-
 **Selection Based on Documentation:**
 - Check SHOW command "Syntax" section for available clauses (`LIKE`, `IN`, `STARTS WITH`)
 - Prefer LIKE + IN combination when both are available for optimal performance
@@ -246,10 +240,6 @@ ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering, g.ShowByIDExtendedInFilt
 
 **Identifier Types:** Choose based on Snowflake hierarchy (see [Object Hierarchies](sdk-development.mdc#object-hierarchies)):
 - `AccountObjectIdentifier`, `DatabaseObjectIdentifier`, `SchemaObjectIdentifier`, `SchemaObjectIdentifierWithArguments`
-
-**Edge Cases and Considerations:**
-- Document privilege requirements when relevant (CREATE, ALTER, DROP, SHOW operations)
-- Consider ownership transfer, grants, and access patterns for complex objects
 
 ## Generator Workflow
 
@@ -276,14 +266,15 @@ If missing, create definition files and add it to the mapping in `pkg/sdk/poc/ma
 - When uncertain about DSL mapping, ask for guidance rather than guessing
 
 ### 4. Generation and Validation
+**Pre-generation check:**
+- Before running the generator you have to make sure all the previous changes regarding a given SDK object were commited as any re-generation may result in lost changes
+
 ```bash
 make run-generator-<object_name>  # Uses filename without _def suffix
 ```
-
-**Post-Generation Validation:**
-- Verify generated SQL matches documented Snowflake syntax
-- Test unit tests with realistic parameter combinations
-- Validate all DDL tags produce expected output
+**Post-generation check:**
+- If the generated files were previously existing, compare the newly generated content with previous one and revert the lines where adjustments are expected (filled generated unit tests,
+  filled convert functions, etc.) or where the manual adjustments were applied (places with `// manual adjustments` comment)
 
 ### 5. Generated Files Structure
 The generator creates files following the [File Organization Patterns](sdk-development.mdc#file-organization-patterns):
@@ -301,34 +292,8 @@ The generator creates files following the [File Organization Patterns](sdk-devel
 
 ## Common Patterns
 
-### Basic Object with CRUD
-```go
-var ObjectsDef = g.NewInterface("Objects", "Object", g.KindOfT[SchemaObjectIdentifier]()).
-    CreateOperation(url, createStruct).
-    AlterOperation(url, alterStruct).
-    DropOperation(url, dropStruct).
-    ShowOperation(url, dbRow, plainStruct, showStruct)
-```
-
-### Complex ALTER with SET/UNSET
-```go
-AlterOperation(url,
-    g.NewQueryStruct("AlterObject").
-        Alter().SQL("OBJECT").Name().
-        OptionalQueryStructField("Set",
-            g.NewQueryStruct("ObjectSet").
-                OptionalComment().
-                OptionalTextAssignment("FIELD", options),
-            g.KeywordOptions().SQL("SET"),
-        ).
-        OptionalQueryStructField("Unset",
-            g.NewQueryStruct("ObjectUnset").
-                OptionalSQL("COMMENT").
-                OptionalSQL("FIELD"),
-            g.ListOptions().NoParentheses().SQL("UNSET"),
-        ),
-)
-```
+Reference existing object definitions in [@sdk/](mdc:pkg/sdk/) for common patterns and DSL usage examples.
+The generator codebase contains comprehensive examples of all supported operation types and DSL patterns.
 
 ## Post-Generation Tasks
 
