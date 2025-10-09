@@ -149,18 +149,20 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
 
-		parentEntity := "TABLE1"
-		tableDatabaseName1 := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
-		tableSchemaName1 := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
-		tableName1 := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "BASE_TABLE_NAME", table1.Name)
-		pk := objectassert.NewSemanticViewDetails("TABLE", "TABLE1", nil, "PRIMARY_KEY", "[\"FIRST_C\"]")
-		metricTable := objectassert.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "TABLE", "TABLE1")
-		metricExpression := objectassert.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "EXPRESSION", "SUM(table1.FIRST_A)")
-		metricDataType := objectassert.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "DATA_TYPE", "NUMBER(38,0)")
-		metricAccessModifier := objectassert.NewSemanticViewDetails("METRIC", "METRIC1", &parentEntity, "ACCESS_MODIFIER", "PUBLIC")
-		tableDatabaseName2 := objectassert.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_DATABASE_NAME", table2.DatabaseName)
-		tableSchemaName2 := objectassert.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_SCHEMA_NAME", table2.SchemaName)
-		tableName2 := objectassert.NewSemanticViewDetails("TABLE", "TABLE2", nil, "BASE_TABLE_NAME", table2.Name)
+		tableKind, metricKind := "TABLE", "METRIC"
+		t1Name, t2Name, metricName := "TABLE1", "TABLE2", "METRIC1"
+
+		tableDatabaseName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
+		tableSchemaName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
+		tableName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_NAME", table1.Name)
+		pk := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "PRIMARY_KEY", "[\"FIRST_C\"]")
+		metricTable := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "TABLE", "TABLE1")
+		metricExpression := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "EXPRESSION", "SUM(table1.FIRST_A)")
+		metricDataType := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "DATA_TYPE", "NUMBER(38,0)")
+		metricAccessModifier := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "ACCESS_MODIFIER", "PUBLIC")
+		tableDatabaseName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_DATABASE_NAME", table2.DatabaseName)
+		tableSchemaName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_SCHEMA_NAME", table2.SchemaName)
+		tableName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_NAME", table2.Name)
 
 		// confirm the semantic view details are correct
 		assertThatObject(t, objectassert.SemanticViewDetails(t, id).

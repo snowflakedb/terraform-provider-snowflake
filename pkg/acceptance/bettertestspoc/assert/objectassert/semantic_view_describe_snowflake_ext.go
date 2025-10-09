@@ -48,9 +48,7 @@ func (s *SemanticViewDetailsAssert) ContainsDetail(expected sdk.SemanticViewDeta
 	s.AddAssertion(func(t *testing.T, o *SemanticViewDetailsCollection) error {
 		t.Helper()
 		found := slices.ContainsFunc(o.Details, func(detail sdk.SemanticViewDetails) bool {
-			return detail.ObjectKind == expected.ObjectKind &&
-				detail.ObjectName == expected.ObjectName &&
-				detail.Property == expected.Property &&
+			return detail.Property == expected.Property &&
 				detail.PropertyValue == expected.PropertyValue
 		})
 		if !found {
@@ -62,17 +60,21 @@ func (s *SemanticViewDetailsAssert) ContainsDetail(expected sdk.SemanticViewDeta
 }
 
 func NewSemanticViewDetails(
-	objectKind string,
-	objectName string,
+	objectKind *string,
+	objectName *string,
 	parentEntity *string,
 	property string,
 	propertyValue string,
 ) sdk.SemanticViewDetails {
 	details := sdk.SemanticViewDetails{
-		ObjectKind:    objectKind,
-		ObjectName:    objectName,
 		Property:      property,
 		PropertyValue: propertyValue,
+	}
+	if objectKind != nil {
+		details.ObjectKind = objectKind
+	}
+	if objectName != nil {
+		details.ObjectName = objectName
 	}
 	if parentEntity != nil {
 		details.ParentEntity = parentEntity

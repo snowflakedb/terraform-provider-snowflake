@@ -41,3 +41,45 @@ func (l *LogicalTable) SetSynonyms(synonyms []Synonym) {
 		WithSynonyms: synonyms,
 	}
 }
+
+func (m *MetricDefinition) GetSemanticExpression() *SemanticExpression {
+	return m.semanticExpression
+}
+
+func (m *MetricDefinition) SetSemanticExpression(semExp *SemanticExpression) {
+	m.semanticExpression = semExp
+}
+
+func (m *MetricDefinition) GetWindowFunctionMetricDefinition() *WindowFunctionMetricDefinition {
+	return m.windowFunctionMetricDefinition
+}
+
+func (m *MetricDefinition) SetWindowFunctionMetricDefinition(windowFunc *WindowFunctionMetricDefinition) {
+	m.windowFunctionMetricDefinition = windowFunc
+}
+
+func (s *SemanticExpression) GetQualifiedExpressionName() *QualifiedExpressionName {
+	return s.qualifiedExpressionName
+}
+
+func (s *SemanticExpression) SetQualifiedExpressionName(qExName string) {
+	s.qualifiedExpressionName = &QualifiedExpressionName{QualifiedExpressionName: qExName}
+}
+
+func (s *SemanticExpression) GetSqlExpression() *SemanticSqlExpression {
+	return s.sqlExpression
+}
+
+func (s *SemanticExpression) SetSqlExpression(SqlExpression string) {
+	s.sqlExpression = &SemanticSqlExpression{SqlExpression: SqlExpression}
+}
+
+func (s *SemanticExpression) GetSynonyms() *Synonyms {
+	return s.synonyms
+}
+
+func (s *SemanticExpression) SetSynonyms(synonyms []Synonym) {
+	s.synonyms = &Synonyms{
+		WithSynonyms: synonyms,
+	}
+}

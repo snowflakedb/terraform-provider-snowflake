@@ -200,11 +200,18 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 				s[i].windowFunctionMetricDefinition = &WindowFunctionMetricDefinition{
 					WindowFunction: v.windowFunctionMetricDefinition.WindowFunction,
 					Metric:         v.windowFunctionMetricDefinition.Metric,
-					OverClause: &WindowFunctionOverClause{
-						PartitionBy:       v.windowFunctionMetricDefinition.OverClause.PartitionBy,
-						OrderBy:           v.windowFunctionMetricDefinition.OverClause.OrderBy,
-						WindowFrameClause: v.windowFunctionMetricDefinition.OverClause.WindowFrameClause,
-					},
+				}
+				if v.windowFunctionMetricDefinition.OverClause != nil {
+					s[i].windowFunctionMetricDefinition.OverClause = &WindowFunctionOverClause{}
+					if v.windowFunctionMetricDefinition.OverClause.PartitionBy != nil {
+						s[i].windowFunctionMetricDefinition.OverClause.PartitionBy = v.windowFunctionMetricDefinition.OverClause.PartitionBy
+					}
+					if v.windowFunctionMetricDefinition.OverClause.OrderBy != nil {
+						s[i].windowFunctionMetricDefinition.OverClause.OrderBy = v.windowFunctionMetricDefinition.OverClause.OrderBy
+					}
+					if v.windowFunctionMetricDefinition.OverClause.WindowFrameClause != nil {
+						s[i].windowFunctionMetricDefinition.OverClause.WindowFrameClause = v.windowFunctionMetricDefinition.OverClause.WindowFrameClause
+					}
 				}
 			}
 		}
@@ -230,12 +237,15 @@ func (r *DescribeSemanticViewRequest) toOpts() *DescribeSemanticViewOptions {
 
 func (r semanticViewDetailsRow) convert() (*SemanticViewDetails, error) {
 	semanticViewDescribe := &SemanticViewDetails{
-		ObjectKind:    r.ObjectKind,
-		ObjectName:    r.ObjectName,
 		Property:      r.Property,
 		PropertyValue: r.PropertyValue,
 	}
-
+	if r.ObjectKind.Valid {
+		semanticViewDescribe.ObjectKind = String(r.ObjectKind.String)
+	}
+	if r.ObjectName.Valid {
+		semanticViewDescribe.ObjectName = String(r.ObjectName.String)
+	}
 	if r.ParentEntity.Valid {
 		semanticViewDescribe.ParentEntity = String(r.ParentEntity.String)
 	}

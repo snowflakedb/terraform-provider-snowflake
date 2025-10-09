@@ -18,6 +18,7 @@ type SemanticViewModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Tables             tfconfig.Variable `json:"tables,omitempty"`
+	Metrics            tfconfig.Variable `json:"metrics,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -33,13 +34,15 @@ func SemanticView(
 	database string,
 	schema string,
 	name string,
-	tables []sdk.LogicalTable,
+	tables []sdk.LogicalTable, // manually adjusted
+	metrics []sdk.MetricDefinition, // manually adjusted
 ) *SemanticViewModel {
 	s := &SemanticViewModel{ResourceModelMeta: config.Meta(resourceName, resources.SemanticView)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
-	s.WithTables(tables)
+	s.WithTables(tables)   // manually adjusted
+	s.WithMetrics(metrics) //manually adjusted
 	return s
 }
 
@@ -47,13 +50,15 @@ func SemanticViewWithDefaultMeta(
 	database string,
 	schema string,
 	name string,
-	tables []sdk.LogicalTable,
+	tables []sdk.LogicalTable, // manually adjusted
+	metrics []sdk.MetricDefinition, // manually adjusted
 ) *SemanticViewModel {
 	s := &SemanticViewModel{ResourceModelMeta: config.DefaultMeta(resources.SemanticView)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
-	s.WithTables(tables)
+	s.WithTables(tables)   // manually adjusted
+	s.WithMetrics(metrics) //manually adjusted
 	return s
 }
 
@@ -144,5 +149,10 @@ func (s *SemanticViewModel) WithFullyQualifiedNameValue(value tfconfig.Variable)
 
 func (s *SemanticViewModel) WithTablesValue(value tfconfig.Variable) *SemanticViewModel {
 	s.Tables = value
+	return s
+}
+
+func (s *SemanticViewModel) WithMetricsValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Metrics = value
 	return s
 }

@@ -95,6 +95,100 @@ var semanticViewsSchema = map[string]*schema.Schema{
 			},
 		},
 	},
+	"metrics": {
+		Type:     schema.TypeList,
+		Required: true,
+		Description: blocklistedCharactersFieldDescription("Specify a list of metrics for the semantic view. " +
+			"Each metric can have either a semantic expression or a window function in its definition."),
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				// TODO(SNOW-2396311): update the SDK with the newly added/updated fields for semantic expressions, then add them here
+				// TODO(SNOW-2396371): add PUBLIC/PRIVATE field
+				// TODO(SNOW-2398097): add table_alias
+				// TODO(SNOW-2398097): add fact_or_metric
+				"semantic_expression": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Description: blocklistedCharactersFieldDescription("Specifies a semantic expression for a metric definition." +
+						"Cannot be used in combination with a window function."),
+					MaxItems: 1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"qualified_expression_name": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: blocklistedCharactersFieldDescription("Specifies a name for the semantic expression"),
+							},
+							"sql_expression": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: blocklistedCharactersFieldDescription("Specifies the sql expression used to compute the metric."),
+							},
+							"synonym": {
+								Type:        schema.TypeSet,
+								Optional:    true,
+								Description: blocklistedCharactersFieldDescription("List of synonyms for this semantic expression."),
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+							},
+							"comment": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: blocklistedCharactersFieldDescription("Specifies a comment for the semantic expression."),
+							},
+						},
+					},
+				},
+				// TODO(SNOW-2396397): update the sdk and the model with the newly added/updated fields for window functions
+				"window_function": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Description: blocklistedCharactersFieldDescription("Specifies a window function for a metric definition." +
+						"Cannot be used in combination with a semantic expression."),
+					MaxItems: 1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"window_function": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: blocklistedCharactersFieldDescription("Specifies a name for the window function."),
+							},
+							"metric": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: blocklistedCharactersFieldDescription("Specifies a metric expression for this window function."),
+							},
+							"over_clause": {
+								Type:     schema.TypeList,
+								Required: true,
+								MaxItems: 1,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"partition_by": {
+											Type:        schema.TypeString,
+											Optional:    true,
+											Description: blocklistedCharactersFieldDescription("Specifies a partition by clause"),
+										},
+										"order_by": {
+											Type:        schema.TypeString,
+											Optional:    true,
+											Description: blocklistedCharactersFieldDescription("Specifies an order by clause"),
+										},
+										"window_frame_clause": {
+											Type:        schema.TypeString,
+											Optional:    true,
+											Description: blocklistedCharactersFieldDescription("Specifies a window frame clause"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -156,10 +250,14 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	metricDefinitionRequests, err := getMetricDefinitionRequests(d.Get("metrics").([]any))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	semanticViewName := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	request := sdk.NewCreateSemanticViewRequest(semanticViewName, logicalTableRequests)
+	request := sdk.NewCreateSemanticViewRequest(semanticViewName, logicalTableRequests).
+		WithSemanticViewMetrics(metricDefinitionRequests)
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
@@ -204,7 +302,7 @@ func ReadSemanticView(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	errs := errors.Join(
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.SemanticViewToSchema(semanticView)}),
-		d.Set(DescribeOutputAttributeName, [][]map[string]any{schemas.SemanticViewDetailsToSchema(semanticViewDetails)}),
+		d.Set(DescribeOutputAttributeName, schemas.SemanticViewDetailsToSchema(semanticViewDetails)),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set("comment", semanticView.Comment),
 	)
@@ -302,6 +400,59 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 	return logicalTableRequest, nil
 }
 
+func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) {
+	c := from.(map[string]any)
+	metricDefinitionRequest := sdk.NewMetricDefinitionRequest()
+	if len(c["semantic_expression"].([]any)) > 0 {
+		semanticExpression := c["semantic_expression"].([]any)[0].(map[string]any)
+		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
+			WithQualifiedExpressionName(semanticExpression["qualified_expression_name"].(string))
+		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
+			WithSqlExpression(semanticExpression["sql_expression"].(string))
+		semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
+
+		if semanticExpression["comment"] != nil && semanticExpression["comment"].(string) != "" {
+			semExpRequest = semExpRequest.WithComment(semanticExpression["comment"].(string))
+		}
+
+		if semanticExpression["synonym"] != nil {
+			if synonyms, ok := semanticExpression["synonym"].(*schema.Set); ok && synonyms.Len() > 0 {
+				var syns []sdk.Synonym
+				for _, s := range synonyms.List() {
+					syns = append(syns, sdk.Synonym{Synonym: s.(string)})
+				}
+				sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
+				semExpRequest = semExpRequest.WithSynonyms(sRequest)
+			}
+		}
+		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
+	} else if len(c["window_function"].([]any)) > 0 {
+		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
+		windowFunction := windowFunctionDefinition["window_function"].(string)
+		metric := windowFunctionDefinition["metric"].(string)
+		windowFuncRequest := sdk.NewWindowFunctionMetricDefinitionRequest(windowFunction, metric)
+		if len(windowFunctionDefinition["over_clause"].([]any)) > 0 {
+			overClause, ok := windowFunctionDefinition["over_clause"].([]any)[0].(map[string]any)
+			if ok {
+				overClauseRequest := sdk.NewWindowFunctionOverClauseRequest()
+				if overClause["partition_by"] != nil {
+					overClauseRequest = overClauseRequest.WithPartitionBy(overClause["partition_by"].(string))
+				}
+				if overClause["order_by"] != nil {
+					overClauseRequest = overClauseRequest.WithOrderBy(overClause["order_by"].(string))
+				}
+				if overClause["window_frame_clause"] != nil {
+					overClauseRequest = overClauseRequest.WithWindowFrameClause(overClause["window_frame_clause"].(string))
+				}
+				windowFuncRequest = windowFuncRequest.WithOverClause(*overClauseRequest)
+			}
+		}
+		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest), nil
+	} else {
+		return nil, fmt.Errorf("either semantic expression or window function is required")
+	}
+}
+
 func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
@@ -310,6 +461,22 @@ func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 	to := make([]sdk.LogicalTableRequest, len(cols))
 	for i, c := range cols {
 		cReq, err := getLogicalTableRequest(c)
+		if err != nil {
+			return nil, err
+		}
+		to[i] = *cReq
+	}
+	return to, nil
+}
+
+func getMetricDefinitionRequests(from any) ([]sdk.MetricDefinitionRequest, error) {
+	cols, ok := from.([]any)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failure")
+	}
+	to := make([]sdk.MetricDefinitionRequest, len(cols))
+	for i, c := range cols {
+		cReq, err := getMetricDefinitionRequest(c)
 		if err != nil {
 			return nil, err
 		}
