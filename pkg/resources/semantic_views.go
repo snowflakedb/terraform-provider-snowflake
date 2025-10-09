@@ -569,13 +569,13 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 			overClause, ok := windowFunctionDefinition["over_clause"].([]any)[0].(map[string]any)
 			if ok {
 				overClauseRequest := sdk.NewWindowFunctionOverClauseRequest()
-				if overClause["partition_by"] != nil {
+				if overClause["partition_by"] != nil && overClause["partition_by"] != "" {
 					overClauseRequest = overClauseRequest.WithPartitionBy(overClause["partition_by"].(string))
 				}
-				if overClause["order_by"] != nil {
+				if overClause["order_by"] != nil && overClause["order_by"] != "" {
 					overClauseRequest = overClauseRequest.WithOrderBy(overClause["order_by"].(string))
 				}
-				if overClause["window_frame_clause"] != nil {
+				if overClause["window_frame_clause"] != nil && overClause["window_frame_clause"] != "" {
 					overClauseRequest = overClauseRequest.WithWindowFrameClause(overClause["window_frame_clause"].(string))
 				}
 				windowFuncRequest = windowFuncRequest.WithOverClause(*overClauseRequest)
