@@ -33,6 +33,8 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 		},
 	})
 	t.Cleanup(userCleanup)
+	testClient().Role.GrantRoleToUser(t, snowflakeroles.Restricted, user.ID())
+
 	url := testClient().Context.AccountURL(t)
 
 	securityIntegrationId := testClient().Ids.RandomAccountObjectIdentifier()
@@ -46,7 +48,7 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 			[]sdk.TokenUserMappingClaim{{Claim: "sub"}},
 			sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
 		).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: oauthJwsKeysUrl}}).
-			WithExternalOauthAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{snowflakeroles.Public}}).
+			WithExternalOauthAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{snowflakeroles.Restricted}}).
 			WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: url}}}),
 	)
 	t.Cleanup(securityIntegrationCleanup)
@@ -54,7 +56,7 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 	userHelper := helpers.TmpUser{
 		UserId:    user.ID(),
 		AccountId: testClient().Context.CurrentAccountId(t),
-		RoleId:    snowflakeroles.Public,
+		RoleId:    snowflakeroles.Restricted,
 	}
 	userConfig := testClient().TempTomlConfigForServiceUserWithOauthClientCredentials(t, &userHelper, oauthClientId, oauthClientSecret, oauthTokenRequestUrl)
 
