@@ -215,7 +215,27 @@ func (s *LegacyConfigDTO) WithOauthClientSecret(OauthClientSecret string) *Legac
 	return s
 }
 
+func (s *LegacyConfigDTO) WithOauthAuthorizationURL(OauthAuthorizationURL string) *LegacyConfigDTO {
+	s.OauthAuthorizationURL = &OauthAuthorizationURL
+	return s
+}
+
 func (s *LegacyConfigDTO) WithOauthTokenRequestURL(OauthTokenRequestURL string) *LegacyConfigDTO {
 	s.OauthTokenRequestURL = &OauthTokenRequestURL
+	return s
+}
+
+func (s *LegacyConfigDTO) WithOauthRedirectURI(OauthRedirectURI string) *LegacyConfigDTO {
+	s.OauthRedirectURI = &OauthRedirectURI
+	return s
+}
+
+func (s *LegacyConfigDTO) WithOauthScope(OauthScope string) *LegacyConfigDTO {
+	s.OauthScope = &OauthScope
+	return s
+}
+
+func (s *LegacyConfigDTO) WithEnableSingleUseRefreshTokens(EnableSingleUseRefreshTokens bool) *LegacyConfigDTO {
+	s.EnableSingleUseRefreshTokens = &EnableSingleUseRefreshTokens
 	return s
 }

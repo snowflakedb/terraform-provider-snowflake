@@ -348,6 +348,10 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
 					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
 					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
+					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 
 					return nil
 				},
@@ -544,6 +548,10 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
 					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
 					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
+					t.Setenv(snowflakeenvs.OauthAuthorizationUrl, "oauth_authorization_url")
+					t.Setenv(snowflakeenvs.OauthRedirectUri, "oauth_redirect_uri")
+					t.Setenv(snowflakeenvs.OauthScope, "oauth_scope")
+					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -588,7 +596,10 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
 					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
 					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
-
+					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
 			},
@@ -656,6 +667,10 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
 					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
 					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
+					t.Setenv(snowflakeenvs.OauthAuthorizationUrl, "oauth_authorization_url")
+					t.Setenv(snowflakeenvs.OauthRedirectUri, "oauth_redirect_uri")
+					t.Setenv(snowflakeenvs.OauthScope, "oauth_scope")
+					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -700,7 +715,10 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
 					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
 					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
-
+					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
 			},

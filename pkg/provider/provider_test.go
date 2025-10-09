@@ -65,6 +65,10 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Empty(t, config.OauthClientID)
 	assert.Empty(t, config.OauthClientSecret)
 	assert.Empty(t, config.OauthTokenRequestURL)
+	assert.Empty(t, config.OauthAuthorizationURL)
+	assert.Empty(t, config.OauthRedirectURI)
+	assert.Empty(t, config.OauthScope)
+	assert.Empty(t, config.EnableSingleUseRefreshTokens)
 }
 
 func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
@@ -105,9 +109,13 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 			"QUERY_TAG": "test_tag",
 			"TIMEZONE":  "UTC",
 		},
-		"oauth_client_id":         "oauth_client_id",
-		"oauth_client_secret":     "oauth_client_secret",
-		"oauth_token_request_url": "oauth_token_request_url",
+		"oauth_client_id":                  "oauth_client_id",
+		"oauth_client_secret":              "oauth_client_secret",
+		"oauth_token_request_url":          "oauth_token_request_url",
+		"oauth_authorization_url":          "oauth_authorization_url",
+		"oauth_redirect_uri":               "oauth_redirect_uri",
+		"oauth_scope":                      "oauth_scope",
+		"enable_single_use_refresh_tokens": "true",
 	})
 
 	config, err := getDriverConfigFromTerraform(d)
@@ -153,4 +161,8 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "oauth_client_id", config.OauthClientID)
 	assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
 	assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
+	assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+	assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+	assert.Equal(t, "oauth_scope", config.OauthScope)
+	assert.True(t, config.EnableSingleUseRefreshTokens)
 }

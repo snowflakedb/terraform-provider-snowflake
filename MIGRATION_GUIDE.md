@@ -26,13 +26,20 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### v2.8.x ➞ v2.9.0
 
-## *(new feature)* New authentication option for Oauth with Client Credentials flow
+## *(new feature)* New authentication options for Oauth with Client Credentials and Oauth with Authorization Code flows
 
-We added a new `OAUTH_CLIENT_CREDENTIALS` option to the `authenticator` field in the provider. Additionally, the provider has new `oauth_client_id`, `oauth_client_secret`, and `oauth_token_request_url` fields that directly pass the values to the Go driver. This feature enables authentication with `OAUTH_CLIENT_CREDENTIALS` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+We added new `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` options to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
+- `oauth_client_id`,
+- `oauth_client_secret`,
+- `oauth_token_request_url`,
+- `oauth_authorization_url`,
+- `oauth_redirect_uri`,
+- `oauth_scope`,
+- `enable_single_use_refresh_tokens`.
+
+This feature enables authentication with `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` authenticators in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/oauth-intro) for more information on Oauth authentication.
-
-Flow for Oauth with Authorization Code will be added soon.
 
 ## v2.7.x ➞ v2.8.0
 

@@ -51,6 +51,7 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 		Attributes: pluginFrameworkPocProviderSchemaV0,
 		Blocks: map[string]schema.Block{
 			"token_accessor": schema.ListNestedBlock{
+				Description: "If you are using the OAuth authentication flows, use the dedicated `authenticator` and `oauth...` fields instead. See our [authentication methods guide](./guides/authentication_methods) for more information.",
 				Validators: []validator.List{
 					listvalidator.SizeAtMost(1),
 				},

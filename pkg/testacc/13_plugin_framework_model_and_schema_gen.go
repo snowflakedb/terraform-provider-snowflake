@@ -19,6 +19,7 @@ type pluginFrameworkPocProviderModelV0 struct {
 	DisableQueryContextCache           types.Bool   `tfsdk:"disable_query_context_cache"`
 	DisableTelemetry                   types.Bool   `tfsdk:"disable_telemetry"`
 	DriverTracing                      types.String `tfsdk:"driver_tracing"`
+	EnableSingleUseRefreshTokens       types.Bool   `tfsdk:"enable_single_use_refresh_tokens"`
 	ExternalBrowserTimeout             types.Int64  `tfsdk:"external_browser_timeout"`
 	Host                               types.String `tfsdk:"host"`
 	IncludeRetryReason                 types.String `tfsdk:"include_retry_reason"`
@@ -28,8 +29,11 @@ type pluginFrameworkPocProviderModelV0 struct {
 	KeepSessionAlive                   types.Bool   `tfsdk:"keep_session_alive"`
 	LoginTimeout                       types.Int64  `tfsdk:"login_timeout"`
 	MaxRetryCount                      types.Int64  `tfsdk:"max_retry_count"`
+	OauthAuthorizationUrl              types.String `tfsdk:"oauth_authorization_url"`
 	OauthClientId                      types.String `tfsdk:"oauth_client_id"`
 	OauthClientSecret                  types.String `tfsdk:"oauth_client_secret"`
+	OauthRedirectUri                   types.String `tfsdk:"oauth_redirect_uri"`
+	OauthScope                         types.String `tfsdk:"oauth_scope"`
 	OauthTokenRequestUrl               types.String `tfsdk:"oauth_token_request_url"`
 	OcspFailOpen                       types.String `tfsdk:"ocsp_fail_open"`
 	OktaUrl                            types.String `tfsdk:"okta_url"`
@@ -109,6 +113,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   false,
 	},
+	"enable_single_use_refresh_tokens": schema.BoolAttribute{
+		Description: existingSchema["enable_single_use_refresh_tokens"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"external_browser_timeout": schema.Int64Attribute{
 		Description: existingSchema["external_browser_timeout"].Description,
 		Optional:    true,
@@ -154,6 +163,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   false,
 	},
+	"oauth_authorization_url": schema.StringAttribute{
+		Description: existingSchema["oauth_authorization_url"].Description,
+		Optional:    true,
+		Sensitive:   true,
+	},
 	"oauth_client_id": schema.StringAttribute{
 		Description: existingSchema["oauth_client_id"].Description,
 		Optional:    true,
@@ -163,6 +177,16 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["oauth_client_secret"].Description,
 		Optional:    true,
 		Sensitive:   true,
+	},
+	"oauth_redirect_uri": schema.StringAttribute{
+		Description: existingSchema["oauth_redirect_uri"].Description,
+		Optional:    true,
+		Sensitive:   true,
+	},
+	"oauth_scope": schema.StringAttribute{
+		Description: existingSchema["oauth_scope"].Description,
+		Optional:    true,
+		Sensitive:   false,
 	},
 	"oauth_token_request_url": schema.StringAttribute{
 		Description: existingSchema["oauth_token_request_url"].Description,
