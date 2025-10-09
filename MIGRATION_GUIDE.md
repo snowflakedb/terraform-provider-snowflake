@@ -24,6 +24,23 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+### v2.8.x ➞ v2.9.0
+
+## *(new feature)* New authentication options for Oauth with Client Credentials and Oauth with Authorization Code flows
+
+We added new `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` options to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
+- `oauth_client_id`,
+- `oauth_client_secret`,
+- `oauth_token_request_url`,
+- `oauth_authorization_url`,
+- `oauth_redirect_uri`,
+- `oauth_scope`,
+- `enable_single_use_refresh_tokens`.
+
+This feature enables authentication with `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` authenticators in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/oauth-intro) for more information on Oauth authentication.
+
 ## v2.7.x ➞ v2.8.0
 
 ### *(new feature)* Added handling private link in S3 and Azure storage integrations

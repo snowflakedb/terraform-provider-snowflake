@@ -11,6 +11,8 @@ var (
 	UserAdmin      = sdk.NewAccountObjectIdentifier("USERADMIN")
 	Public         = sdk.NewAccountObjectIdentifier("PUBLIC")
 	PentestingRole = sdk.NewAccountObjectIdentifier("PENTESTING_ROLE")
+	// RESTRICTED is a role that has no grants. It can be used instead of PUBLIC role, so that it's not granted to any users by default.
+	Restricted = sdk.NewAccountObjectIdentifier("RESTRICTED")
 
 	OktaProvisioner        = sdk.NewAccountObjectIdentifier("OKTA_PROVISIONER")
 	AadProvisioner         = sdk.NewAccountObjectIdentifier("AAD_PROVISIONER")

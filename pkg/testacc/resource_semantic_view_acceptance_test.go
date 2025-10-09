@@ -77,7 +77,6 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		[]sdk.LogicalTable{*logicalTable1},
 		[]sdk.MetricDefinition{*metric1},
 	)
-	_ = modelBasic
 
 	modelComplete := model.SemanticView(
 		"test",
@@ -102,8 +101,6 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithRelationships([]sdk.SemanticViewRelationship{*rel1}).
 		WithFacts([]sdk.SemanticExpression{*fact1}).
 		WithDimensions([]sdk.SemanticExpression{*dimension1})
-
-	_ = modelCompleteWithDifferentValues
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
