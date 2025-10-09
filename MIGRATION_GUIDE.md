@@ -29,13 +29,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ## *(new feature)* New authentication options for Oauth with Client Credentials and Oauth with Authorization Code flows
 
 We added new `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` options to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
-- `oauth_client_id`,
-- `oauth_client_secret`,
-- `oauth_token_request_url`,
-- `oauth_authorization_url`,
-- `oauth_redirect_uri`,
-- `oauth_scope`,
-- `enable_single_use_refresh_tokens`.
+- Fields for both authenticators
+  - `oauth_client_id` - required,
+  - `oauth_client_secret` - required,
+  - `oauth_token_request_url` - required,
+  - `oauth_scope` - optional,
+- Fields only for `OAUTH_AUTHORIZATION_CODE`
+  - `oauth_authorization_url` - required,
+  - `oauth_redirect_uri` - required,
+  - `enable_single_use_refresh_tokens` - optional, only for Snowflake IdP,
+The provider does not validate these fields, but a number of them is required by the OAuth specification.
 
 This feature enables authentication with `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` authenticators in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
 
