@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build account_level_tests
 
 package testacc
 

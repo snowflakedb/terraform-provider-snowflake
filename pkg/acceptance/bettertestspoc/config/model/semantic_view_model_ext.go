@@ -60,19 +60,26 @@ func (s *SemanticViewModel) WithRelationships(relationships []sdk.SemanticViewRe
 	for i, v := range relationships {
 		m := map[string]tfconfig.Variable{}
 		tableNameOrAlias := v.GetTableNameOrAlias()
-		if tableNameOrAlias.RelationshipTableName != nil {
-			m["table_name"] = tfconfig.StringVariable(tableNameOrAlias.RelationshipTableName.FullyQualifiedName())
-		}
-		if tableNameOrAlias.RelationshipTableAlias != nil {
-			m["table_alias"] = tfconfig.StringVariable(*tableNameOrAlias.RelationshipTableAlias)
+		if tableNameOrAlias != nil {
+			tableNameOrAliasVar := map[string]tfconfig.Variable{}
+			if tableNameOrAlias.RelationshipTableAlias != nil {
+				tableNameOrAliasVar["table_alias"] = tfconfig.StringVariable(*tableNameOrAlias.RelationshipTableAlias)
+			} else if tableNameOrAlias.RelationshipTableName != nil {
+				tableNameOrAliasVar["table_name"] = tfconfig.StringVariable(tableNameOrAlias.RelationshipTableName.FullyQualifiedName())
+			}
+
+			m["table_name_or_alias"] = tfconfig.ListVariable(tfconfig.ObjectVariable(tableNameOrAliasVar))
 		}
 
 		refTableNameOrAlias := v.GetRefTableNameOrAlias()
-		if refTableNameOrAlias.RelationshipTableName != nil {
-			m["referenced_table_name"] = tfconfig.StringVariable(refTableNameOrAlias.RelationshipTableName.FullyQualifiedName())
-		}
-		if refTableNameOrAlias.RelationshipTableAlias != nil {
-			m["referenced_table_alias"] = tfconfig.StringVariable(*refTableNameOrAlias.RelationshipTableAlias)
+		if refTableNameOrAlias != nil {
+			refTableNameOrAliasVar := map[string]tfconfig.Variable{}
+			if refTableNameOrAlias.RelationshipTableAlias != nil {
+				refTableNameOrAliasVar["table_alias"] = tfconfig.StringVariable(*refTableNameOrAlias.RelationshipTableAlias)
+			} else if refTableNameOrAlias.RelationshipTableName != nil {
+				refTableNameOrAliasVar["table_name"] = tfconfig.StringVariable(refTableNameOrAlias.RelationshipTableName.FullyQualifiedName())
+			}
+			m["referenced_table_name_or_alias"] = tfconfig.ListVariable(tfconfig.ObjectVariable(refTableNameOrAliasVar))
 		}
 
 		relColumnNames := v.GetRelationshipColumnsNames()
@@ -95,7 +102,7 @@ func (s *SemanticViewModel) WithRelationships(relationships []sdk.SemanticViewRe
 
 		relationshipAlias := v.GetRelationshipAlias()
 		if relationshipAlias != nil {
-			m["relationship_alias"] = tfconfig.StringVariable(relationshipAlias.RelationshipAlias)
+			m["relationship_identifier"] = tfconfig.StringVariable(relationshipAlias.RelationshipAlias)
 		}
 
 		maps[i] = tfconfig.ObjectVariable(m)

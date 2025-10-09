@@ -38,8 +38,9 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"tables": {
-		Type:     schema.TypeList,
-		Required: true,
+		Type:        schema.TypeList,
+		Required:    true,
+		Description: blocklistedCharactersFieldDescription("The list of logical tables in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"table_alias": {
@@ -96,23 +97,33 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		},
 	},
 	"relationships": {
-		Type:     schema.TypeList,
-		Optional: true,
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: blocklistedCharactersFieldDescription("The list of relationships between the logical tables in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"relationship_alias": {
+				"relationship_identifier": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies an alias for the relationship."),
+					Description: blocklistedCharactersFieldDescription("Specifies an optional identifier for the relationship."),
 				},
-				"table_name": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-				},
-				"table_alias": {
-					Type:     schema.TypeString,
-					Optional: true,
+				"table_name_or_alias": {
+					Type:     schema.TypeList,
+					Required: true,
+					MaxItems: 1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"table_name": {
+								Type:             schema.TypeString,
+								Optional:         true,
+								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+							},
+							"table_alias": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
 				},
 				"relationship_columns": {
 					Type:     schema.TypeList,
@@ -121,14 +132,23 @@ var semanticViewsSchema = map[string]*schema.Schema{
 						Type: schema.TypeString,
 					},
 				},
-				"referenced_table_name": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-				},
-				"referenced_table_alias": {
-					Type:     schema.TypeString,
-					Optional: true,
+				"referenced_table_name_or_alias": {
+					Type:     schema.TypeList,
+					Required: true,
+					MaxItems: 1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"table_name": {
+								Type:             schema.TypeString,
+								Optional:         true,
+								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+							},
+							"table_alias": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
 				},
 				"referenced_relationship_columns": {
 					Type:     schema.TypeList,
@@ -141,8 +161,9 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		},
 	},
 	"facts": {
-		Type:     schema.TypeList,
-		Optional: true,
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: blocklistedCharactersFieldDescription("The list of facts in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
@@ -170,8 +191,9 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		},
 	},
 	"dimensions": {
-		Type:     schema.TypeList,
-		Optional: true,
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: blocklistedCharactersFieldDescription("The list of dimensions in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
@@ -206,7 +228,6 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type: schema.TypeList,
 		Description: blocklistedCharactersFieldDescription("Specify a list of metrics for the semantic view. " +
 			"Each metric can have either a semantic expression or a window function in its definition."),
-
 		Optional: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -624,15 +645,19 @@ func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, err
 func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, error) {
 	c := from.(map[string]any)
 	tableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
-	if c["table_name"] != nil && c["table_name"].(string) != "" {
-		tableName, err := sdk.ParseSchemaObjectIdentifier(c["table_name"].(string))
-		if err != nil {
-			return nil, err
+	if len(c["table_name_or_alias"].([]any)) > 0 {
+		tableNameOrAlias := c["table_name_or_alias"].([]any)[0].(map[string]any)
+		if tableNameOrAlias["table_name"] != nil && tableNameOrAlias["table_name"].(string) != "" {
+			tableName, err := sdk.ParseSchemaObjectIdentifier(tableNameOrAlias["table_name"].(string))
+			if err != nil {
+				return nil, err
+			}
+			tableNameOrAliasRequest.WithRelationshipTableName(tableName)
+		} else if tableNameOrAlias["table_alias"] != nil && tableNameOrAlias["table_alias"].(string) != "" {
+			tableNameOrAliasRequest.WithRelationshipTableAlias(tableNameOrAlias["table_alias"].(string))
+		} else {
+			return nil, fmt.Errorf("exactly one of table_name or table_alias is required in a relationship")
 		}
-		tableNameOrAliasRequest.WithRelationshipTableName(tableName)
-	}
-	if c["table_alias"] != nil && c["table_alias"].(string) != "" {
-		tableNameOrAliasRequest.WithRelationshipTableAlias(c["table_alias"].(string))
 	}
 
 	var relationshipColumnRequests []sdk.SemanticViewColumnRequest
@@ -641,21 +666,25 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 	}
 
 	refTableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
-	if c["referenced_table_name"] != nil && c["referenced_table_name"].(string) != "" {
-		refTableName, err := sdk.ParseSchemaObjectIdentifier(c["referenced_table_name"].(string))
-		if err != nil {
-			return nil, err
+	if len(c["referenced_table_name_or_alias"].([]any)) > 0 {
+		refTableNameOrAlias := c["referenced_table_name_or_alias"].([]any)[0].(map[string]any)
+		if refTableNameOrAlias["table_name"] != nil && refTableNameOrAlias["table_name"].(string) != "" {
+			tableName, err := sdk.ParseSchemaObjectIdentifier(refTableNameOrAlias["table_name"].(string))
+			if err != nil {
+				return nil, err
+			}
+			tableNameOrAliasRequest.WithRelationshipTableName(tableName)
+		} else if refTableNameOrAlias["table_alias"] != nil && refTableNameOrAlias["table_alias"].(string) != "" {
+			refTableNameOrAliasRequest.WithRelationshipTableAlias(refTableNameOrAlias["table_alias"].(string))
+		} else {
+			return nil, fmt.Errorf("exactly one of table_name or table_alias is required in a relationship")
 		}
-		refTableNameOrAliasRequest.WithRelationshipTableName(refTableName)
-	}
-	if c["referenced_table_alias"] != nil && c["referenced_table_alias"].(string) != "" {
-		refTableNameOrAliasRequest.WithRelationshipTableAlias(c["referenced_table_alias"].(string))
 	}
 
 	request := sdk.NewSemanticViewRelationshipRequest(tableNameOrAliasRequest, relationshipColumnRequests, refTableNameOrAliasRequest)
 
-	if c["relationship_alias"] != nil && c["relationship_alias"].(string) != "" {
-		relAliasRequest := sdk.NewRelationshipAliasRequest().WithRelationshipAlias(c["relationship_alias"].(string))
+	if c["relationship_identifier"] != nil && c["relationship_identifier"].(string) != "" {
+		relAliasRequest := sdk.NewRelationshipAliasRequest().WithRelationshipAlias(c["relationship_identifier"].(string))
 		request.WithRelationshipAlias(*relAliasRequest)
 	}
 
