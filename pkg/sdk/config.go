@@ -49,7 +49,7 @@ func DefaultConfig(opts ...func(*FileReaderConfig)) *gosnowflake.Config {
 	config, err := ProfileConfig("default", opts...)
 	if err != nil || config == nil {
 		log.Printf("[DEBUG] No Snowflake config file found, proceeding with empty config, err = %v", err)
-		config = &gosnowflake.Config{}
+		config = &gosnowflake.Config{Authenticator: GosnowflakeAuthTypeEmpty}
 	}
 	return config
 }

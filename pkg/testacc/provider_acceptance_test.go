@@ -726,6 +726,43 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 	})
 }
 
+func TestAcc_Provider_testFixedDefaultAuthenticatorForToken(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	accountId := testClient().Context.CurrentAccountId(t)
+	// TODO(SNOW-1791729): Use a proper user.
+	providerConfig := config.FromModels(t, providermodel.SnowflakeProvider().
+		WithAccountName(accountId.AccountName()).
+		WithOrganizationName(accountId.OrganizationName()).
+		WithUser(random.String()).
+		WithToken(random.String()),
+		datasourceModel(),
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			// Make sure to use a non-existent config path.
+			t.Setenv(snowflakeenvs.ConfigPath, random.String())
+		},
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.8.0"),
+				Config:            providerConfig,
+				ExpectError:       regexp.MustCompile("Error: 260002: password is empty"),
+			},
+			// TODO(SNOW-1791729): Make better assertions here.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   providerConfig,
+				ExpectError:              regexp.MustCompile(`390303 \(08004\): Invalid OAuth access token.`),
+			},
+		},
+	})
+}
+
 func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
