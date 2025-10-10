@@ -552,7 +552,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment("").
 						HasExtension(""),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.#", "11")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.#", "11")),
 				),
 			},
 		},

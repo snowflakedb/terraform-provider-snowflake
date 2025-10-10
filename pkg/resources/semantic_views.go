@@ -673,7 +673,7 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 			if err != nil {
 				return nil, err
 			}
-			tableNameOrAliasRequest.WithRelationshipTableName(tableName)
+			refTableNameOrAliasRequest.WithRelationshipTableName(tableName)
 		} else if refTableNameOrAlias["table_alias"] != nil && refTableNameOrAlias["table_alias"].(string) != "" {
 			refTableNameOrAliasRequest.WithRelationshipTableAlias(refTableNameOrAlias["table_alias"].(string))
 		} else {
