@@ -1,0 +1,305 @@
+---
+description: "Rules for creating and using test client helpers in acceptance tests"
+globs:
+    - "pkg/acceptance/helpers/*.go"
+    - "pkg/testacc/*.go"
+alwaysApply: false
+---
+
+# Test Client Helpers Guide
+
+This guide covers creating and using test client helpers for acceptance tests in the Snowflake provider.
+
+## Test Client Structure
+
+### Main Test Client
+```go
+// Access test client in tests
+testClient() // Returns the main test client instance
+```
+
+### Test Client Components
+- **`testClient().Ids`** - Random identifier generators
+- **`testClient().ResourceName`** - Resource-specific helper methods
+- **`testClient().Dependency`** - Dependency creation helpers
+- **`testClient().Grant`** - Grant management helpers
+
+## Creating New Test Client Helpers
+
+### 1. Define Helper Interface
+```go
+// pkg/acceptance/helpers/resource_name.go
+type ResourceNameHelper interface {
+    Create(t *testing.T) (sdk.ResourceNameIdentifier, func())
+    CreateWithOptions(t *testing.T, opts *CreateOptions) (sdk.ResourceNameIdentifier, func())
+    Alter(t *testing.T, req *sdk.AlterResourceNameRequest)
+    DropSafely(t *testing.T, id sdk.ResourceNameIdentifier) func()
+    SampleData(t *testing.T) string
+    SampleDataWithOptions(t *testing.T, opts *DataOptions) string
+}
+```
+
+### 2. Implement Helper Methods
+```go
+// pkg/acceptance/helpers/resource_name.go
+type resourceNameHelper struct {
+    client *sdk.Client
+    ids    *IdHelpers
+}
+
+func (h *resourceNameHelper) Create(t *testing.T) (sdk.ResourceNameIdentifier, func()) {
+    t.Helper()
+
+    id := h.ids.RandomResourceNameIdentifier()
+
+    req := sdk.NewCreateResourceNameRequest(id)
+    err := h.client.ResourceNames.Create(context.Background(), req)
+    require.NoError(t, err)
+
+    cleanup := func() {
+        err := h.client.ResourceNames.Drop(context.Background(), sdk.NewDropResourceNameRequest(id))
+        if err != nil {
+            t.Logf("Failed to cleanup resource name %s: %v", id.FullyQualifiedName(), err)
+        }
+    }
+
+    return id, cleanup
+}
+
+func (h *resourceNameHelper) CreateWithOptions(t *testing.T, opts *CreateOptions) (sdk.ResourceNameIdentifier, func()) {
+    t.Helper()
+
+    id := h.ids.RandomResourceNameIdentifier()
+
+    req := sdk.NewCreateResourceNameRequest(id)
+    if opts.Comment != "" {
+        req.WithComment(opts.Comment)
+    }
+    if opts.Option != "" {
+        req.WithOption(opts.Option)
+    }
+
+    err := h.client.ResourceNames.Create(context.Background(), req)
+    require.NoError(t, err)
+
+    cleanup := func() {
+        err := h.client.ResourceNames.Drop(context.Background(), sdk.NewDropResourceNameRequest(id))
+        if err != nil {
+            t.Logf("Failed to cleanup resource name %s: %v", id.FullyQualifiedName(), err)
+        }
+    }
+
+    return id, cleanup
+}
+
+func (h *resourceNameHelper) Alter(t *testing.T, req *sdk.AlterResourceNameRequest) {
+    t.Helper()
+
+    err := h.client.ResourceNames.Alter(context.Background(), req)
+    require.NoError(t, err)
+}
+
+func (h *resourceNameHelper) DropSafely(t *testing.T, id sdk.ResourceNameIdentifier) func() {
+    t.Helper()
+
+    return func() {
+        err := h.client.ResourceNames.Drop(context.Background(), sdk.NewDropResourceNameRequest(id))
+        if err != nil {
+            t.Logf("Failed to cleanup resource name %s: %v", id.FullyQualifiedName(), err)
+        }
+    }
+}
+
+func (h *resourceNameHelper) SampleData(t *testing.T) string {
+    t.Helper()
+
+    return `{
+        "name": "sample_resource",
+        "comment": "Sample resource for testing"
+    }`
+}
+
+func (h *resourceNameHelper) SampleDataWithOptions(t *testing.T, opts *DataOptions) string {
+    t.Helper()
+
+    data := map[string]interface{}{
+        "name": "sample_resource",
+    }
+
+    if opts.Comment != "" {
+        data["comment"] = opts.Comment
+    }
+
+    if opts.Option != "" {
+        data["option"] = opts.Option
+    }
+
+    jsonData, err := json.Marshal(data)
+    require.NoError(t, err)
+
+    return string(jsonData)
+}
+```
+
+### 3. Register Helper in Test Client
+```go
+// pkg/acceptance/helpers/client.go
+type TestClient struct {
+    Client *sdk.Client
+    Ids    *IdHelpers
+    ResourceName ResourceNameHelper
+    // ... other helpers
+}
+
+func NewTestClient() *TestClient {
+    client := sdk.NewClient(...) // Initialize SDK client
+
+    return &TestClient{
+        Client: client,
+        Ids:    NewIdHelpers(),
+        ResourceName: &resourceNameHelper{
+            client: client,
+            ids:    NewIdHelpers(),
+        },
+        // ... other helpers
+    }
+}
+```
+
+## Using Test Client Helpers
+
+### Basic Usage Pattern
+```go
+func TestAcc_ResourceName_basic(t *testing.T) {
+    // Create dependency using helper
+    dependency, dependencyCleanup := testClient().Dependency.Create(t)
+    t.Cleanup(dependencyCleanup)
+
+    // Create resource using helper
+    resource, resourceCleanup := testClient().ResourceName.Create(t)
+    t.Cleanup(resourceCleanup)
+
+    // Use in test
+    id := testClient().Ids.RandomResourceNameIdentifier()
+    modelBasic := model.ResourceName("test", id.Name()).WithDependency(dependency.ID().Name())
+
+    // ... rest of test
+}
+```
+
+### Advanced Usage Patterns
+```go
+func TestAcc_ResourceName_complete(t *testing.T) {
+    // Create with options
+    resource, resourceCleanup := testClient().ResourceName.CreateWithOptions(t, &CreateOptions{
+        Comment: "Test comment",
+        Option:  "test_option",
+    })
+    t.Cleanup(resourceCleanup)
+
+    // Alter resource externally
+    testClient().ResourceName.Alter(t, sdk.NewAlterResourceNameRequest(resource.ID()).WithSet(*sdk.NewResourceNameSetRequest().WithComment("external_comment")))
+
+    // Get sample data
+    sampleData := testClient().ResourceName.SampleData(t)
+
+    // ... rest of test
+}
+```
+
+## Helper Method Patterns
+
+### Creation Methods
+```go
+// Basic creation
+Create(t *testing.T) (Identifier, func())
+
+// Creation with options
+CreateWithOptions(t *testing.T, opts *Options) (Identifier, func())
+
+// Creation with specific configuration
+CreateWithConfig(t *testing.T, config *Config) (Identifier, func())
+```
+
+### Manipulation Methods
+```go
+// Alter resource
+Alter(t *testing.T, req *sdk.AlterRequest)
+
+// Drop resource safely
+DropSafely(t *testing.T, id Identifier) func()
+
+// Grant privileges
+GrantPrivilege(t *testing.T, id Identifier, privilege Privilege)
+```
+
+### Data Generation Methods
+```go
+// Generate sample data
+SampleData(t *testing.T) string
+
+// Generate data with options
+SampleDataWithOptions(t *testing.T, opts *DataOptions) string
+
+// Generate test configuration
+SampleConfig(t *testing.T) string
+```
+
+## Best Practices
+
+### Error Handling
+- Use `require.NoError(t, err)` for critical operations
+- Use `t.Logf()` for cleanup failures instead of failing the test
+- Always provide cleanup functions
+
+### Resource Management
+- Always return cleanup functions from creation methods
+- Use `t.Cleanup()` to register cleanup functions
+- Handle cleanup failures gracefully
+
+### Test Isolation
+- Use random identifiers to avoid conflicts
+- Clean up resources in reverse creation order
+- Handle dependencies properly
+
+### Helper Organization
+- Group related methods in the same helper
+- Use consistent naming patterns
+- Provide both basic and advanced methods
+
+## Common Helper Types
+
+### Resource Helpers
+- **Database helpers** - Create databases, schemas
+- **User helpers** - Create users, roles
+- **Warehouse helpers** - Create warehouses
+- **Grant helpers** - Manage privileges
+
+### Data Helpers
+- **Sample data generators** - Generate test data
+- **Configuration generators** - Generate test configs
+- **Manifest generators** - Generate manifest files
+
+### Utility Helpers
+- **ID generators** - Random identifier creation
+- **Stage helpers** - File upload to stages
+- **Network helpers** - Network rule management
+
+## File Dependencies
+
+When creating test client helpers, you'll work with:
+1. **Helper files** in [@acceptance/helpers/](mdc:pkg/acceptance/helpers/) - Helper implementations
+2. **Test files** in [@testacc/](mdc:pkg/testacc/) - Usage in acceptance tests
+3. **SDK files** in [@sdk/](mdc:pkg/sdk/) - Snowflake API integration
+4. **Acceptance tests** - See [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc) for test patterns
+
+## Development Checklist
+
+- [ ] Define helper interface with required methods
+- [ ] Implement basic creation and cleanup methods
+- [ ] Add advanced methods for complex scenarios
+- [ ] Register helper in test client
+- [ ] Write tests using the helper
+- [ ] Verify cleanup works correctly
+- [ ] Test error handling scenarios
+- [ ] Document helper usage patterns

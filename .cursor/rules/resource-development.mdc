@@ -1,0 +1,411 @@
+---
+description: "Rules for developing Terraform resources in the Snowflake provider"
+globs:
+    - "pkg/resources/*.go"
+alwaysApply: false
+---
+
+# Resource Development Guide
+
+This guide covers the complete workflow for developing Terraform resources in the Snowflake provider.
+
+## Project Structure Overview
+
+- **[@resources/](mdc:pkg/resources/)** - Main resource implementations
+- **[@helpers/](mdc:pkg/helpers/)** - Shared helper functions
+- **[@internal/](mdc:pkg/internal/)** - Internal utilities and provider logic
+- **[@acceptance/](mdc:pkg/acceptance/)** - Acceptance test infrastructure
+- **[@manual_tests/](mdc:pkg/manual_tests/)** - Manual tests
+- **[@testfunctional/](mdc:pkg/testfunctional/)** - Functional tests
+
+**Note**: For schema definitions, see [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc). For acceptance testing, see [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc).
+
+## Resource Development Workflow
+
+### 1. SDK Object Analysis
+
+**Location**: [@sdk/](mdc:pkg/sdk/) directory
+
+- Identify the corresponding SDK object interface
+- **This is the foundation for schema definition** - understand the SDK object first
+- **Primary focus**: Analyze `Create()` and `Alter()` operations for resource schema definition
+  - These operations define what fields are available for the Terraform resource
+  - There can be more than on Create or Alter operations, in this case ask if those operations should result in multiple resources or still should be kept as one resource (an example of multiple resources can be found )
+  - Determine which fields are Required vs Optional based on the SDK object/DTO builder
+- **Secondary focus**: Check if the SDK object has `Show()` and/or `Describe()` functions
+  - `Show()` analysis: Only check for existence (generators handle Show schema creation)
+  - `Describe()` analysis: May be needed for detailed resource information
+
+**SDK Object Analysis**:
+```go
+// Example SDK interface analysis
+type ResourceName interface {
+    Create(ctx context.Context, id ObjectIdentifier, opts *CreateOptions) error  // ← Primary focus
+    Alter(ctx context.Context, id ObjectIdentifier, opts *AlterOptions) error   // ← Primary focus
+    Show(ctx context.Context, opts *ShowOptions) ([]ResourceObject, error)      // ← Check existence only
+    Describe(ctx context.Context, id ObjectIdentifier) (*ResourceObjectDetails, error)  // ← Check for particular fields within ResourceObjectDetails may be needed in schema generation
+    // ... other methods
+}
+```
+
+### 2. Resource Specification (Schema Definition)
+
+**Location**: [@resources/](mdc:pkg/resources/) directory
+
+- Define main resource schema directly in the resource file **based on the SDK object analysis**
+- This is the primary schema that defines the Terraform resource structure
+- Try to keep the initial resource schema as simple as possible
+- Only specific validation functions should be added
+  - `IsValidIdentifier` - For fields that accept fully qualified identifiers
+  - `sdkValidation` - For fields that are represented by enum value with mapping function
+- Diff suppress functions should be added to avoid unnecessary changes
+  - `suppressIdentifierQuoting` - For identifier fields that may be quoted
+  - `suppressCaseSensitivity` - For case-insensitive fields
+  - `suppressWhitespace` - For fields that may have trailing/leading whitespace
+  - `SuppressIfAny` - For combining multiple diff suppress functions whenever any of the functions should result in skipped changes
+  - `NormalizeAndCompare` - Usually used in combination with `sdkValidation` whenever enum value is used and mapping function could be used in diff suppression
+  - `IgnoreChangeToCurrentSnowflakeValueInShow` - Used whenever a field that is passed in the Create or Alter operation is returned by Show command
+  - `IgnoreChangeToCurrentSnowflakeValueInDescribe` - Used whenever a field that is passed in the Create or Alter operation is returned by Desc command
+- Use `Description` fields for all schema attributes and use common docs functions when applicable
+  - `externalChangesNotDetectedFieldDescription()` - For fields that are not set in the Read Terraform operation (because the field is neither returned from Show nor Desc Snowflake command)
+  - `docs.PossibleValuesListed()` - Used usually with enums to document all possible values
+- Whenever field groupping is needed from the SDK side, in Terrafrom this could be expressed as field of TypeList with MaxItems set to one.
+- If SDK analysis showed that the object has Show or Desc operations, the schemas should be generated according to [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc) rule
+- The `FullyQualifiedNameAttributeName` is always added as a computed field
+
+**Example Pattern**:
+```go
+var resourceNameSchema = map[string]*schema.Schema{
+    "name": {
+        Type:             schema.TypeString,
+        Required:         true,
+        DiffSuppressFunc: suppressIdentifierQuoting,
+        ValidateDiagFunc: IsValidResourceName,
+        Description:      "Specifies the resource identifier (name).",
+    },
+    // other fields based on SDK object Create/Alter options ...
+}
+```
+
+**When in doubt**:
+1. Use the [SDKv2 Terraform documentation](https://developer.hashicorp.com/terraform/plugin/sdkv2) to see if solves the problem you're having
+2. If still unsure, ask the developer to clarify how certain things should be mapped from SDK to Terraform schema or to provide an example in exsiting resource
+
+### 3. Resource Implementation
+
+**Location**: [@resources/](mdc:pkg/resources/) directory
+
+**Required Functions**:
+- `ResourceResourceName()` - Main resource definition
+- `resourceResourceNameCreate()` - CREATE operation
+- `resourceResourceNameRead()` - READ operation
+- `resourceResourceNameUpdate()` - UPDATE operation
+- `resourceResourceNameDelete()` - DELETE operation
+- `resourceResourceNameImport()` - IMPORT operation
+
+**Implementation Guidelines**:
+- Use SDK client methods from [@sdk/](mdc:pkg/sdk/) package
+- Follow error handling patterns from existing resources
+- Use helper functions from [@helpers/](mdc:pkg/helpers/)
+- Use mapping helpers, e.g. `stringAttributeCreateBuilder` from `resource_helpers_create.go` for improved readability and more concise code (same for update and other Terraform CRUD operations with their corresponding helper functions)
+- Add proper logging and diagnostics
+- Function wrapping: In the main resource definition we wrap operations with the following functions
+  - `PreviewFeature<operation>ContextWrapper` whenever a given resource is in preview state (every newly added resource is in preview state)
+  - `Tracking<operation>Wrapper` always added for usage tracking purposes
+
+**Common Patterns (Main resource definition / Delete operation)**:
+Currently, we only define dedicated Delete operation function if it contains more complex handling.
+For most cases the common pattern can be applied (if in doubt, ask which approach should be chosen).
+Here's an example from listing resource definition:
+```go
+func Listing() *schema.Resource {
+    // Create delete operation function based on the provided helper
+	deleteFunc := ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier, // Use identifier parsing function depending on the type of identifier a given object operates with (can be identified based on either SDK Definition field for a given object or its implementation in SDK)
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Listings.DropSafely // Use Safe version of Drop function
+		},
+	)
+
+	return &schema.Resource{
+		Description: "Resource used to manage listing objects. For more information, check [listing documentation](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about).", // Provide generic description for an object with a link to Snowflake guide regarding typcial resource usage (leave TODO comment if you cannot find such link)
+
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ListingResource), TrackingCreateWrapper(resources.Listing, CreateListing)), // <- uses dedicated function
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ListingResource), TrackingReadWrapper(resources.Listing, ReadListing)), // <- uses dedicated function
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ListingResource), TrackingUpdateWrapper(resources.Listing, UpdateListing)), // <- uses dedicated function
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ListingResource), TrackingDeleteWrapper(resources.Listing, deleteFunc)), // <- here we use the function defined above
+
+		Schema: listingSchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: TrackingImportWrapper(resources.Listing, ImportName[sdk.AccountObjectIdentifier]), // <- The ImportName could be a starting point, but leave a comment for developer to check if a dedicated function should be provided
+		},
+
+		Timeouts: defaultTimeouts, // <- default timeouts should be always added
+	}
+}
+```
+
+**Common Patterns (Create operation)**:
+In our case, the Create operation mostly consists of mapping Terraform configuration (based on schema) into Snowflake requests.
+Usually, only Create request needs to be created, but sometimes due to Snowflake limitations, some fields are only available in Alter command,
+which means we need to create request and call Alter right after Create command. The Create command also always sets the Id of the resource
+(usually with Snowflake identifier utilizing helpers.EncodeResourceIdentifier function) and calls Read operation at the end.
+If possible, the request should utilize helper functions like `stringAttributeCreateBuilder` for concise config mapping.
+Here's the example from listing resource showing the usual structure of create function:
+```go
+func CreateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	req := sdk.NewCreateListingRequest(id)
+
+    // Map Terraform config and set corresponding fields for create command request `req` ...
+
+	if err := client.Listings.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+
+    // If any of the fields in the configuration can be only set by Alter command, the alter request should be created and called here (after setting the identifier of the resource)
+
+	return ReadListing(ctx, d, meta)
+}
+```
+
+**Common Patterns (Update operation)**:
+The Update operation's purpose is to create the alter requests and call Alter commands on Snowflake according to Terraform state changes.
+As in the case of every other operation the helper functions (like in the example below) should be utilized for concise and clear code structure.
+In case no field changed, we don't want to call the Alter commands with empty requests. We skip them by comparing the final request with its default value.
+At the end, like in the case of Create operation, we call Read operation at the end.
+Here's the example from service resource:
+```go
+func UpdateService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	set, unset := sdk.NewServiceSetRequest(), sdk.NewServiceUnsetRequest()
+	errs := errors.Join(
+		// name, schema, database, and compute_pool are handled by ForceNew. <- Any unhandled parameters (e.g. because they're marked by ForceNew) should be documented in code
+		intAttributeWithSpecialDefaultUpdate(d, "auto_suspend_secs", &set.AutoSuspendSecs, &unset.AutoSuspendSecs),
+		intAttributeUpdate(d, "min_instances", &set.MinInstances, &unset.MinInstances),
+		intAttributeUpdate(d, "max_instances", &set.MaxInstances, &unset.MaxInstances),
+		intAttributeUpdate(d, "min_ready_instances", &set.MinReadyInstances, &unset.MinReadyInstances),
+		accountObjectIdentifierAttributeUpdate(d, "query_warehouse", &set.QueryWarehouse, &unset.QueryWarehouse),
+		booleanStringAttributeUpdate(d, "auto_resume", &set.AutoResume, &unset.AutoResume),
+		attributeMappedValueUpdate(d, "external_access_integrations", &set.ExternalAccessIntegrations, &unset.ExternalAccessIntegrations, ToServiceExternalAccessIntegrationsRequest),
+		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if (*set != sdk.ServiceSetRequest{}) {
+		if err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithSet(*set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if (*unset != sdk.ServiceUnsetRequest{}) {
+		if err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithUnset(*unset)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return ReadServiceFunc(false)(ctx, d, meta)
+}
+```
+
+**Common Patterns (Update operation - handling renames)**:
+As renames are usually the main part of a given resource's identifier, it's important to handle the name change properly in the Update operation.
+The rename can be handled only if the Alter rename operation is supported by object in the SDK. Otherwise the name should be marked as ForceNew
+and there's no need to handle renames in the Update operation (as on name change the resource will be destroyed and created with correct name).
+Here's the rename handling example in the listing resource:
+```go
+func UpdateListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+    // Rename change has to be handled separately as usually it's not allowed to Alter the object and rename it at the same time
+	if d.HasChange("name") {
+		newId, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
+		if err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
+
+		if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithRenameTo(newId)); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
+
+        // This is important. After successful rename, we have to adjust the identifier to a new identifier (because they are usually based on the object's identifier in Snowflake)
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+        // We also have to override the `id` variable which is usually used below in other Alter requests
+		id = newId
+	}
+
+    // The rest of the Update handling ...
+
+	return ReadListing(ctx, d, meta)
+}
+```
+
+**Common Patterns (Read operation calling Show)**:
+When providing a new resource the pattern of querying data in Read operation will be mostly similar to the one described below.
+Firstly, we get our client from metadata provided in the function as parameter. Then, we use this client (it's a sdk.Client)
+to query our object from Snowflake. The most common queries we use are Show and Desc (if available) commands
+the development should start with (later on the developer will decide if more information is needed).
+The Show command should use the "safe" version of function and provide error handling in the same way as presented in the example.
+Here's the example from listing resource:
+```go
+func ReadListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id()) // <- Use correct identntifier (can be identified based on the SDK definition or implementation of a given SDK object)
+	if err != nil {
+		return diag.FromErr(err) // <- For most cases use basic error wrapping like this
+	}
+
+	listing, err := client.Listings.ShowByIDSafely(ctx, id) // <- Use safe version of ShowById and handle in a similar fashion chaning only references from listing to implemented object
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query listing. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Listing id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
+	}
+
+	listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id)) // <- Retrieve Describe details only if supported by SDK
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+    // Setting the state based on the query results ...
+
+	return nil
+}
+```
+
+**Common Patterns (Setting the state in the Read operation)**:
+After retrieving data from Snowflake, this data should be used to set the state, so that Terraform could then internally compare both states to plan the following actions accordingly.
+Set the state preferrably using helper functions and concise syntax using errors.Join.
+
+For Show and Desc outputs that were defined in the Terraform schema for a given resource set the output computed fields with predefined mapping functions in schemas package:
+```go
+d.Set(ShowOutputAttributeName, []map[string]any{schemas.ListingToSchema(listing)}),
+```
+
+Always set the FullyQualifiedNameAttributeName computed field with identifier fully qualified name:
+```go
+d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+```
+
+This part of resource implementation should be compared against other resources to find the best fit, also take a look at the following files to get the idea what current implementation standards are:
+- user.go
+- function_*.go
+- procedure_*.go
+- service.go
+
+### 4. Acceptance Testing
+
+See [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc) for comprehensive acceptance testing guidelines and patterns.
+
+## File Dependencies
+
+When developing resources, you'll work with:
+1. **Resource files** in [@resources/](mdc:pkg/resources/) - Implement CRUD operations
+2. **SDK files** in [@sdk/](mdc:pkg/sdk/) - Snowflake API integration
+3. **Helper files** in [@helpers/](mdc:pkg/helpers/) - Common utilities
+4. **Schema files** - See [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc) for schema development
+5. **Test files** - See [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc) for acceptance testing
+
+## Resource Registration
+
+When adding a new resource, it must be properly registered in the provider:
+
+### 1. Add Resource Constant
+**Location**: `pkg/provider/resources/resources.go`
+
+Add the new resource constant to the `const` block:
+```go
+const (
+    // ... existing resources
+    NewResource resource = "snowflake_new_resource"
+)
+```
+
+### 2. Add Preview Feature (if applicable)
+**Location**: `pkg/provider/previewfeatures/preview_features.go`
+
+For new resources, add the preview feature constant and include it in the `allPreviewFeatures` slice:
+```go
+const (
+    // ... existing features
+    NewResourceResource feature = "snowflake_new_resource_resource"
+)
+
+var allPreviewFeatures = []feature{
+    // ... existing features
+    NewResourceResource,
+}
+```
+
+### 3. Test Provider Registration
+**Location**: `pkg/testacc/1_setup_provider_test.go`
+
+During testing, add the resource to the test provider instance:
+```go
+func setUpProvider() error {
+    // ... existing setup
+    TestAccProvider = provider.Provider()
+    TestAccProvider.ResourcesMap["snowflake_new_resource"] = resources.NewResource()
+    // ... rest of setup
+}
+```
+
+### 4. Register in Provider
+**Location**: `pkg/provider/provider.go`
+
+After testing phase is done, remove the resource registration from the previous point and add the resource to the `getResources()` function:
+```go
+func getResources() map[string]*schema.Resource {
+    return map[string]*schema.Resource{
+        // ... existing resources
+        "snowflake_new_resource": resources.NewResource(),
+    }
+}
+```
+
+## Development Checklist
+
+- [ ] **First**: Analyze SDK object interface for available operations
+- [ ] Define main resource schema in [@resources/](mdc:pkg/resources/) based on SDK object analysis
+- [ ] Generate or define schemas for SHOW and DESC outputs according to [query-command-schema-generation](mdc:.cursor/rules/query-command-schema-generation.mdc)
+- [ ] Add resource constant to `pkg/provider/resources/resources.go`
+- [ ] Add preview feature constant to `pkg/provider/previewfeatures/preview_features.go`
+- [ ] Implement CRUD functions in [@resources/](mdc:pkg/resources/)
+- [ ] Add resource to test provider in `pkg/testacc/1_setup_provider_test.go`
+- [ ] Write acceptance tests according to [acceptance-testing](mdc:.cursor/rules/acceptance-testing.mdc)
+- [ ] Run full test suite
+- [ ] Update documentation if needed
+- [ ] Remove resource registration from `pkg/testacc/1_setup_provider_test.go`
+- [ ] Register resource in provider `pkg/provider/provider.go` (ready for production)
