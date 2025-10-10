@@ -67,7 +67,8 @@ func TestSemanticViews_Create(t *testing.T) {
 			name: id,
 			semanticViewRelationships: []SemanticViewRelationship{
 				{
-					tableNameOrAlias: &RelationshipTableAlias{},
+					tableNameOrAlias:    &RelationshipTableAlias{},
+					refTableNameOrAlias: &RelationshipTableAlias{},
 				},
 			},
 		}
@@ -80,6 +81,10 @@ func TestSemanticViews_Create(t *testing.T) {
 			semanticViewRelationships: []SemanticViewRelationship{
 				{
 					tableNameOrAlias: &RelationshipTableAlias{
+						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
+						RelationshipTableAlias: String("alias"),
+					},
+					refTableNameOrAlias: &RelationshipTableAlias{
 						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
 						RelationshipTableAlias: String("alias"),
 					},
