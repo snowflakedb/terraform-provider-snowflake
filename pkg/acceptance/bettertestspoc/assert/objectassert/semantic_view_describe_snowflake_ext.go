@@ -2,6 +2,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -49,7 +50,10 @@ func (s *SemanticViewDetailsAssert) ContainsDetail(expected sdk.SemanticViewDeta
 		t.Helper()
 		found := slices.ContainsFunc(o.Details, func(detail sdk.SemanticViewDetails) bool {
 			return detail.Property == expected.Property &&
-				detail.PropertyValue == expected.PropertyValue
+				detail.PropertyValue == expected.PropertyValue &&
+				reflect.DeepEqual(detail.ObjectName, expected.ObjectName) &&
+				reflect.DeepEqual(detail.ObjectKind, expected.ObjectKind) &&
+				reflect.DeepEqual(detail.ParentEntity, expected.ParentEntity)
 		})
 		if !found {
 			return fmt.Errorf("expected semantic view to contain a detail row matching %v", expected)
