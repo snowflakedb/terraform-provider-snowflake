@@ -95,7 +95,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		completeID.SchemaName(),
 		completeID.Name(),
 		[]sdk.LogicalTable{*logicalTable1, *logicalTable2},
-		[]sdk.MetricDefinition{*metric1},
+		[]sdk.MetricDefinition{*metric1, *metric2},
 	).WithComment(changedComment).
 		WithRelationships([]sdk.SemanticViewRelationship{*rel1}).
 		WithFacts([]sdk.SemanticExpression{*fact1}).
