@@ -20,7 +20,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the semantic view; must be unique for the schema in which the semantic view is created."),
+		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the semantic view; must be unique within the schema."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"database": {
@@ -40,13 +40,13 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"tables": {
 		Type:        schema.TypeList,
 		Required:    true,
-		Description: blocklistedCharactersFieldDescription("The list of logical tables in the semantic view."),
+		Description: "The list of logical tables in the semantic view.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"table_alias": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies an alias for a logical table in the semantic view."),
+					Description: "Specifies an alias for a logical table in the semantic view.",
 				},
 				"table_name": {
 					Type:             schema.TypeString,
@@ -58,7 +58,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"primary_key": {
 					Type:        schema.TypeList,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Definitions of primary keys in the logical table."),
+					Description: "Definitions of primary keys in the logical table.",
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
@@ -66,7 +66,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"unique": {
 					Type:        schema.TypeList,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Definitions of unique key combinations in the logical table."),
+					Description: "Definitions of unique key combinations in the logical table.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"values": {
@@ -75,7 +75,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								Elem: &schema.Schema{
 									Type: schema.TypeString,
 								},
-								Description: blocklistedCharactersFieldDescription("Unique key combinations in the logical table"),
+								Description: "Unique key combinations in the logical table",
 							},
 						},
 					},
@@ -83,7 +83,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"synonym": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("List of synonyms for the logical table."),
+					Description: "List of synonyms for the logical table.",
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
@@ -99,28 +99,32 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"relationships": {
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: blocklistedCharactersFieldDescription("The list of relationships between the logical tables in the semantic view."),
+		Description: "The list of relationships between the logical tables in the semantic view.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"relationship_identifier": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies an optional identifier for the relationship."),
+					Description: "Specifies an optional identifier for the relationship.",
 				},
 				"table_name_or_alias": {
 					Type:     schema.TypeList,
 					Required: true,
 					MaxItems: 1,
+					Description: "Specifies one of the logical tables that refers to columns in another logical table." +
+						"Each table can have either a table_name or a table_alias, not both.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"table_name": {
 								Type:             schema.TypeString,
 								Optional:         true,
 								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+								Description:      "The name of the logical table, cannot be used in combination with the table_alias",
 							},
 							"table_alias": {
-								Type:     schema.TypeString,
-								Optional: true,
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The alias used for the logical table, cannot be used in combination with the table_name",
 							},
 						},
 					},
@@ -131,21 +135,26 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
+					Description: "Specifies one or more columns in the first logical table that refers to columns in another logical table.",
 				},
 				"referenced_table_name_or_alias": {
 					Type:     schema.TypeList,
 					Required: true,
 					MaxItems: 1,
+					Description: "Specifies the other logical table and one or more of its columns that are referred to by the first logical table." +
+						"Each referenced table can have either a table_name or a table_alias, not both.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"table_name": {
 								Type:             schema.TypeString,
 								Optional:         true,
 								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+								Description:      "The name of the logical table, cannot be used in combination with the table_alias",
 							},
 							"table_alias": {
-								Type:     schema.TypeString,
-								Optional: true,
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The alias used for the logical table, cannot be used in combination with the table_name",
 							},
 						},
 					},
@@ -156,6 +165,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
+					Description: "Specifies one or more columns in the second logical table that are referred to by the first logical table.",
 				},
 			},
 		},
@@ -163,21 +173,23 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"facts": {
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: blocklistedCharactersFieldDescription("The list of facts in the semantic view."),
+		Description: "The list of facts in the semantic view.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
-					Type:     schema.TypeString,
-					Required: true,
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Specifies a qualified name for the fact, including the table name and a unique identifier for the fact.",
 				},
 				"sql_expression": {
-					Type:     schema.TypeString,
-					Required: true,
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "The SQL expression used to compute the fact.",
 				},
 				"synonym": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("List of synonyms for the fact."),
+					Description: "List of synonyms for the fact.",
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
@@ -185,7 +197,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"comment": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies a comment for the fact."),
+					Description: "Specifies a comment for the fact.",
 				},
 			},
 		},
@@ -193,21 +205,23 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"dimensions": {
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: blocklistedCharactersFieldDescription("The list of dimensions in the semantic view."),
+		Description: "The list of dimensions in the semantic view.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
-					Type:     schema.TypeString,
-					Required: true,
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension.",
 				},
 				"sql_expression": {
-					Type:     schema.TypeString,
-					Required: true,
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "The SQL expression used to compute the dimension.",
 				},
 				"synonym": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("List of synonyms for the dimension."),
+					Description: "List of synonyms for the dimension.",
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
@@ -215,7 +229,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"comment": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: blocklistedCharactersFieldDescription("Specifies a comment for the dimension."),
+					Description: "Specifies a comment for the dimension.",
 				},
 			},
 		},
@@ -226,8 +240,8 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	},
 	"metrics": {
 		Type: schema.TypeList,
-		Description: blocklistedCharactersFieldDescription("Specify a list of metrics for the semantic view. " +
-			"Each metric can have either a semantic expression or a window function in its definition."),
+		Description: "Specify a list of metrics for the semantic view. " +
+			"Each metric can have either a semantic expression or a window function in its definition.",
 		Optional: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -238,25 +252,25 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"semantic_expression": {
 					Type:     schema.TypeList,
 					Optional: true,
-					Description: blocklistedCharactersFieldDescription("Specifies a semantic expression for a metric definition." +
-						"Cannot be used in combination with a window function."),
+					Description: "Specifies a semantic expression for a metric definition." +
+						"Cannot be used in combination with a window function.",
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"qualified_expression_name": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: blocklistedCharactersFieldDescription("Specifies a name for the semantic expression"),
+								Description: "Specifies a name for the semantic expression",
 							},
 							"sql_expression": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: blocklistedCharactersFieldDescription("Specifies the sql expression used to compute the metric."),
+								Description: "The SQL expression used to compute the metric.",
 							},
 							"synonym": {
 								Type:        schema.TypeSet,
 								Optional:    true,
-								Description: blocklistedCharactersFieldDescription("List of synonyms for this semantic expression."),
+								Description: "List of synonyms for this semantic expression.",
 								Elem: &schema.Schema{
 									Type: schema.TypeString,
 								},
@@ -264,7 +278,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 							"comment": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: blocklistedCharactersFieldDescription("Specifies a comment for the semantic expression."),
+								Description: "Specifies a comment for the semantic expression.",
 							},
 						},
 					},
@@ -273,41 +287,42 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"window_function": {
 					Type:     schema.TypeList,
 					Optional: true,
-					Description: blocklistedCharactersFieldDescription("Specifies a window function for a metric definition." +
-						"Cannot be used in combination with a semantic expression."),
+					Description: "Specifies a window function for a metric definition." +
+						"Cannot be used in combination with a semantic expression.",
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"window_function": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: blocklistedCharactersFieldDescription("Specifies a name for the window function."),
+								Description: "Specifies a name for the window function.",
 							},
 							"metric": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: blocklistedCharactersFieldDescription("Specifies a metric expression for this window function."),
+								Description: "Specifies a metric expression for this window function.",
 							},
 							"over_clause": {
-								Type:     schema.TypeList,
-								Required: true,
-								MaxItems: 1,
+								Type:        schema.TypeList,
+								Required:    true,
+								MaxItems:    1,
+								Description: "Specify the partition by, order by or frame over which the window function is to be computed",
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
 										"partition_by": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: blocklistedCharactersFieldDescription("Specifies a partition by clause"),
+											Description: "Specifies a partition by clause",
 										},
 										"order_by": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: blocklistedCharactersFieldDescription("Specifies an order by clause"),
+											Description: "Specifies an order by clause",
 										},
 										"window_frame_clause": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: blocklistedCharactersFieldDescription("Specifies a window frame clause"),
+											Description: "Specifies a window frame clause",
 										},
 									},
 								},
@@ -325,7 +340,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: blocklistedCharactersFieldDescription("Specifies a comment for the semantic view."),
+		Description: "Specifies a comment for the semantic view.",
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
@@ -413,6 +428,7 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 		request.WithSemanticViewDimensions(dimensionsRequests)
 	}
+	// TODO(SNOW-2405571): use custom wrappers and set these fields in errors.Join like below
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
