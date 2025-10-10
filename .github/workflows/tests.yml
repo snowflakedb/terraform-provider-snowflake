@@ -159,7 +159,7 @@ jobs:
 
       - name: Create or update comment
         if: ${{ always() }}
-        uses: peter-evans/create-or-update-comment@3383acd359705b10cb1eeef05c0e88c056ea4666 # v3.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           issue-number: ${{ github.event.pull_request.number || github.event.client_payload.pull_request.number }}
           body: |
