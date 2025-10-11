@@ -278,6 +278,8 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreate(d, sdk.TaskParameterUserTaskTimeoutMs, &createOpts.UserTaskTimeoutMs),
 		handleParameterCreate(d, sdk.TaskParameterSuspendTaskAfterNumFailures, &createOpts.SuspendTaskAfterNumFailures),
 		handleParameterCreate(d, sdk.TaskParameterTargetCompletionInterval, &createOpts.TargetCompletionInterval),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterServerlessTaskMinStatementSize, &createOpts.ServerlessTaskMinStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterServerlessTaskMaxStatementSize, &createOpts.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		handleParameterCreate(d, sdk.TaskParameterTaskAutoRetryAttempts, &createOpts.TaskAutoRetryAttempts),
 		handleParameterCreate(d, sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, &createOpts.UserTaskMinimumTriggerIntervalInSeconds),
 		// session parameters
@@ -350,6 +352,8 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 		handleParameterUpdate(d, sdk.TaskParameterUserTaskTimeoutMs, &set.UserTaskTimeoutMs, &unset.UserTaskTimeoutMs),
 		handleParameterUpdate(d, sdk.TaskParameterSuspendTaskAfterNumFailures, &set.SuspendTaskAfterNumFailures, &unset.SuspendTaskAfterNumFailures),
 		handleParameterUpdate(d, sdk.TaskParameterTargetCompletionInterval, &set.TargetCompletionInterval, &unset.TargetCompletionInterval),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterServerlessTaskMinStatementSize, &set.ServerlessTaskMinStatementSize, &unset.ServerlessTaskMinStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterServerlessTaskMaxStatementSize, &set.ServerlessTaskMaxStatementSize, &unset.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		handleParameterUpdate(d, sdk.TaskParameterTaskAutoRetryAttempts, &set.TaskAutoRetryAttempts, &unset.TaskAutoRetryAttempts),
 		handleParameterUpdate(d, sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, &set.UserTaskMinimumTriggerIntervalInSeconds, &unset.UserTaskMinimumTriggerIntervalInSeconds),
 		// session parameters

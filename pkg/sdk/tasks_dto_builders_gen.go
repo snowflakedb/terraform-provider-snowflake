@@ -94,6 +94,16 @@ func (s *CreateTaskRequest) WithTargetCompletionInterval(TargetCompletionInterva
 	return s
 }
 
+func (s *CreateTaskRequest) WithServerlessTaskMinStatementSize(ServerlessTaskMinStatementSize WarehouseSize) *CreateTaskRequest {
+	s.ServerlessTaskMinStatementSize = &ServerlessTaskMinStatementSize
+	return s
+}
+
+func (s *CreateTaskRequest) WithServerlessTaskMaxStatementSize(ServerlessTaskMaxStatementSize WarehouseSize) *CreateTaskRequest {
+	s.ServerlessTaskMaxStatementSize = &ServerlessTaskMaxStatementSize
+	return s
+}
+
 func (s *CreateTaskRequest) WithAfter(After []SchemaObjectIdentifier) *CreateTaskRequest {
 	s.After = After
 	return s
@@ -360,6 +370,16 @@ func (s *TaskSetRequest) WithTargetCompletionInterval(TargetCompletionInterval s
 	return s
 }
 
+func (s *TaskSetRequest) WithServerlessTaskMinStatementSize(ServerlessTaskMinStatementSize WarehouseSize) *TaskSetRequest {
+	s.ServerlessTaskMinStatementSize = &ServerlessTaskMinStatementSize
+	return s
+}
+
+func (s *TaskSetRequest) WithServerlessTaskMaxStatementSize(ServerlessTaskMaxStatementSize WarehouseSize) *TaskSetRequest {
+	s.ServerlessTaskMaxStatementSize = &ServerlessTaskMaxStatementSize
+	return s
+}
+
 func NewTaskUnsetRequest() *TaskUnsetRequest {
 	return &TaskUnsetRequest{}
 }
@@ -421,6 +441,16 @@ func (s *TaskUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(UserTaskM
 
 func (s *TaskUnsetRequest) WithTargetCompletionInterval(TargetCompletionInterval bool) *TaskUnsetRequest {
 	s.TargetCompletionInterval = &TargetCompletionInterval
+	return s
+}
+
+func (s *TaskUnsetRequest) WithServerlessTaskMinStatementSize(ServerlessTaskMinStatementSize bool) *TaskUnsetRequest {
+	s.ServerlessTaskMinStatementSize = &ServerlessTaskMinStatementSize
+	return s
+}
+
+func (s *TaskUnsetRequest) WithServerlessTaskMaxStatementSize(ServerlessTaskMaxStatementSize bool) *TaskUnsetRequest {
+	s.ServerlessTaskMaxStatementSize = &ServerlessTaskMaxStatementSize
 	return s
 }
 
