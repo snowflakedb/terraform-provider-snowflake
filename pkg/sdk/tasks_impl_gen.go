@@ -199,6 +199,9 @@ func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 		TaskAutoRetryAttempts:                   r.TaskAutoRetryAttempts,
 		Tag:                                     r.Tag,
 		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
+		TargetCompletionInterval:                r.TargetCompletionInterval,
+		ServerlessTaskMinStatementSize:          r.ServerlessTaskMinStatementSize,
+		ServerlessTaskMaxStatementSize:          r.ServerlessTaskMaxStatementSize,
 		After:                                   r.After,
 		When:                                    r.When,
 		sql:                                     r.sql,
@@ -283,6 +286,9 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			SessionParameters:                       r.Set.SessionParameters,
 			TaskAutoRetryAttempts:                   r.Set.TaskAutoRetryAttempts,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Set.UserTaskMinimumTriggerIntervalInSeconds,
+			TargetCompletionInterval:                r.Set.TargetCompletionInterval,
+			ServerlessTaskMinStatementSize:          r.Set.ServerlessTaskMinStatementSize,
+			ServerlessTaskMaxStatementSize:          r.Set.ServerlessTaskMaxStatementSize,
 		}
 		if r.Set.Config != nil {
 			opts.Set.Config = String(fmt.Sprintf("$$%s$$", *r.Set.Config))
@@ -301,6 +307,9 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			Comment:                                 r.Unset.Comment,
 			TaskAutoRetryAttempts:                   r.Unset.TaskAutoRetryAttempts,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Unset.UserTaskMinimumTriggerIntervalInSeconds,
+			TargetCompletionInterval:                r.Unset.TargetCompletionInterval,
+			ServerlessTaskMinStatementSize:          r.Unset.ServerlessTaskMinStatementSize,
+			ServerlessTaskMaxStatementSize:          r.Unset.ServerlessTaskMaxStatementSize,
 			SessionParametersUnset:                  r.Unset.SessionParametersUnset,
 		}
 	}
