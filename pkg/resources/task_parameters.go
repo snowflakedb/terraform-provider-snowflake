@@ -18,6 +18,7 @@ var (
 		taskParametersProvider,
 		// task parameters
 		parameter[sdk.TaskParameter]{sdk.TaskParameterSuspendTaskAfterNumFailures, valueTypeInt, sdk.ParameterTypeTask},
+		parameter[sdk.TaskParameter]{sdk.TaskParameterTargetCompletionInterval, valueTypeString, sdk.ParameterTypeTask},
 		parameter[sdk.TaskParameter]{sdk.TaskParameterTaskAutoRetryAttempts, valueTypeInt, sdk.ParameterTypeTask},
 		parameter[sdk.TaskParameter]{sdk.TaskParameterUserTaskManagedInitialWarehouseSize, valueTypeString, sdk.ParameterTypeTask},
 		parameter[sdk.TaskParameter]{sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, valueTypeInt, sdk.ParameterTypeTask},
@@ -84,6 +85,7 @@ func init() {
 	TaskParameterFields := []parameterDef[sdk.TaskParameter]{
 		// task parameters
 		{Name: sdk.TaskParameterSuspendTaskAfterNumFailures, Type: schema.TypeInt, ValidateDiag: validation.ToDiagFunc(validation.IntAtLeast(0)), Description: "Specifies the number of consecutive failed task runs after which the current task is suspended automatically. The default is 0 (no automatic suspension)."},
+		{Name: sdk.TaskParameterTargetCompletionInterval, Type: schema.TypeString, Description: "Specifies the target completion interval for serverless tasks. Format: '<num> { HOURS | MINUTES | SECONDS }' (e.g., '10 MINUTES')."},
 		{Name: sdk.TaskParameterTaskAutoRetryAttempts, Type: schema.TypeInt, ValidateDiag: validation.ToDiagFunc(validation.IntAtLeast(0)), Description: "Specifies the number of automatic task graph retry attempts. If any task graphs complete in a FAILED state, Snowflake can automatically retry the task graphs from the last task in the graph that failed."},
 		{Name: sdk.TaskParameterUserTaskManagedInitialWarehouseSize, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToWarehouseSize), DiffSuppress: NormalizeAndCompare(sdk.ToWarehouseSize), ConflictsWith: []string{"warehouse"}, Description: "Specifies the size of the compute resources to provision for the first run of the task, before a task history is available for Snowflake to determine an ideal size. Once a task has successfully completed a few runs, Snowflake ignores this parameter setting. Valid values are (case-insensitive): %s. (Conflicts with warehouse). For more information about warehouses, see [docs](./warehouse)."},
 		{Name: sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, Type: schema.TypeInt, ValidateDiag: validation.ToDiagFunc(validation.IntAtLeast(0)), Description: "Minimum amount of time between Triggered Task executions in seconds"},
@@ -198,6 +200,7 @@ func handleTaskParameterRead(d *schema.ResourceData, taskParameters []*sdk.Param
 				return err
 			}
 		case
+			string(sdk.TaskParameterTargetCompletionInterval),
 			string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize),
 			string(sdk.TaskParameterBinaryInputFormat),
 			string(sdk.TaskParameterBinaryOutputFormat),

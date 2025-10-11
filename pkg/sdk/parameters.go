@@ -847,6 +847,7 @@ type TaskParameter string
 const (
 	// Task Parameters
 	TaskParameterSuspendTaskAfterNumFailures             TaskParameter = "SUSPEND_TASK_AFTER_NUM_FAILURES"
+	TaskParameterTargetCompletionInterval                TaskParameter = "TARGET_COMPLETION_INTERVAL"
 	TaskParameterTaskAutoRetryAttempts                   TaskParameter = "TASK_AUTO_RETRY_ATTEMPTS"
 	TaskParameterUserTaskManagedInitialWarehouseSize     TaskParameter = "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"
 	TaskParameterUserTaskMinimumTriggerIntervalInSeconds TaskParameter = "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"
@@ -911,6 +912,7 @@ const (
 var AllTaskParameters = []TaskParameter{
 	// Task Parameters
 	TaskParameterSuspendTaskAfterNumFailures,
+	TaskParameterTargetCompletionInterval,
 	TaskParameterTaskAutoRetryAttempts,
 	TaskParameterUserTaskManagedInitialWarehouseSize,
 	TaskParameterUserTaskMinimumTriggerIntervalInSeconds,
