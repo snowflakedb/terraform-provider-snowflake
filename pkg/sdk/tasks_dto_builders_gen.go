@@ -89,6 +89,11 @@ func (s *CreateTaskRequest) WithUserTaskMinimumTriggerIntervalInSeconds(UserTask
 	return s
 }
 
+func (s *CreateTaskRequest) WithTargetCompletionInterval(TargetCompletionInterval string) *CreateTaskRequest {
+	s.TargetCompletionInterval = &TargetCompletionInterval
+	return s
+}
+
 func (s *CreateTaskRequest) WithAfter(After []SchemaObjectIdentifier) *CreateTaskRequest {
 	s.After = After
 	return s
@@ -350,6 +355,11 @@ func (s *TaskSetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(UserTaskMin
 	return s
 }
 
+func (s *TaskSetRequest) WithTargetCompletionInterval(TargetCompletionInterval string) *TaskSetRequest {
+	s.TargetCompletionInterval = &TargetCompletionInterval
+	return s
+}
+
 func NewTaskUnsetRequest() *TaskUnsetRequest {
 	return &TaskUnsetRequest{}
 }
@@ -406,6 +416,11 @@ func (s *TaskUnsetRequest) WithTaskAutoRetryAttempts(TaskAutoRetryAttempts bool)
 
 func (s *TaskUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(UserTaskMinimumTriggerIntervalInSeconds bool) *TaskUnsetRequest {
 	s.UserTaskMinimumTriggerIntervalInSeconds = &UserTaskMinimumTriggerIntervalInSeconds
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTargetCompletionInterval(TargetCompletionInterval bool) *TaskUnsetRequest {
+	s.TargetCompletionInterval = &TargetCompletionInterval
 	return s
 }
 

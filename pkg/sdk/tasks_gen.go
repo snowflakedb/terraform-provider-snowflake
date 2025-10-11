@@ -45,6 +45,7 @@ type CreateTaskOptions struct {
 	TaskAutoRetryAttempts                   *int                     `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
 	Tag                                     []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
 	UserTaskMinimumTriggerIntervalInSeconds *int                     `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	TargetCompletionInterval                *string                  `ddl:"parameter,single_quotes" sql:"TARGET_COMPLETION_INTERVAL"`
 	After                                   []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"AFTER"`
 	When                                    *string                  `ddl:"parameter,no_quotes,no_equals" sql:"WHEN"`
 	as                                      bool                     `ddl:"static" sql:"AS"`
@@ -123,6 +124,7 @@ type TaskSet struct {
 	SessionParameters                       *SessionParameters       `ddl:"list,no_parentheses"`
 	TaskAutoRetryAttempts                   *int                     `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
 	UserTaskMinimumTriggerIntervalInSeconds *int                     `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	TargetCompletionInterval                *string                  `ddl:"parameter,single_quotes" sql:"TARGET_COMPLETION_INTERVAL"`
 }
 
 type TaskUnset struct {
@@ -137,6 +139,7 @@ type TaskUnset struct {
 	Comment                                 *bool                   `ddl:"keyword" sql:"COMMENT"`
 	TaskAutoRetryAttempts                   *bool                   `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
 	UserTaskMinimumTriggerIntervalInSeconds *bool                   `ddl:"keyword" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	TargetCompletionInterval                *bool                   `ddl:"keyword" sql:"TARGET_COMPLETION_INTERVAL"`
 	SessionParametersUnset                  *SessionParametersUnset `ddl:"list,no_parentheses"`
 }
 

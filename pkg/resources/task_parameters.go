@@ -277,6 +277,7 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		// task parameters
 		handleParameterCreate(d, sdk.TaskParameterUserTaskTimeoutMs, &createOpts.UserTaskTimeoutMs),
 		handleParameterCreate(d, sdk.TaskParameterSuspendTaskAfterNumFailures, &createOpts.SuspendTaskAfterNumFailures),
+		handleParameterCreate(d, sdk.TaskParameterTargetCompletionInterval, &createOpts.TargetCompletionInterval),
 		handleParameterCreate(d, sdk.TaskParameterTaskAutoRetryAttempts, &createOpts.TaskAutoRetryAttempts),
 		handleParameterCreate(d, sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, &createOpts.UserTaskMinimumTriggerIntervalInSeconds),
 		// session parameters
@@ -348,6 +349,7 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 		handleParameterUpdateWithMapping(d, sdk.TaskParameterUserTaskManagedInitialWarehouseSize, &set.UserTaskManagedInitialWarehouseSize, &unset.UserTaskManagedInitialWarehouseSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		handleParameterUpdate(d, sdk.TaskParameterUserTaskTimeoutMs, &set.UserTaskTimeoutMs, &unset.UserTaskTimeoutMs),
 		handleParameterUpdate(d, sdk.TaskParameterSuspendTaskAfterNumFailures, &set.SuspendTaskAfterNumFailures, &unset.SuspendTaskAfterNumFailures),
+		handleParameterUpdate(d, sdk.TaskParameterTargetCompletionInterval, &set.TargetCompletionInterval, &unset.TargetCompletionInterval),
 		handleParameterUpdate(d, sdk.TaskParameterTaskAutoRetryAttempts, &set.TaskAutoRetryAttempts, &unset.TaskAutoRetryAttempts),
 		handleParameterUpdate(d, sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, &set.UserTaskMinimumTriggerIntervalInSeconds, &unset.UserTaskMinimumTriggerIntervalInSeconds),
 		// session parameters

@@ -199,6 +199,7 @@ func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 		TaskAutoRetryAttempts:                   r.TaskAutoRetryAttempts,
 		Tag:                                     r.Tag,
 		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
+		TargetCompletionInterval:                r.TargetCompletionInterval,
 		After:                                   r.After,
 		When:                                    r.When,
 		sql:                                     r.sql,
@@ -283,6 +284,7 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			SessionParameters:                       r.Set.SessionParameters,
 			TaskAutoRetryAttempts:                   r.Set.TaskAutoRetryAttempts,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Set.UserTaskMinimumTriggerIntervalInSeconds,
+			TargetCompletionInterval:                r.Set.TargetCompletionInterval,
 		}
 		if r.Set.Config != nil {
 			opts.Set.Config = String(fmt.Sprintf("$$%s$$", *r.Set.Config))
@@ -301,6 +303,7 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			Comment:                                 r.Unset.Comment,
 			TaskAutoRetryAttempts:                   r.Unset.TaskAutoRetryAttempts,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Unset.UserTaskMinimumTriggerIntervalInSeconds,
+			TargetCompletionInterval:                r.Unset.TargetCompletionInterval,
 			SessionParametersUnset:                  r.Unset.SessionParametersUnset,
 		}
 	}
