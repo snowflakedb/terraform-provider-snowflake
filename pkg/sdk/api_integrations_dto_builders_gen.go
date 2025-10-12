@@ -16,28 +16,28 @@ func NewCreateApiIntegrationRequest(
 	return &s
 }
 
-func (s *CreateApiIntegrationRequest) WithOrReplace(OrReplace *bool) *CreateApiIntegrationRequest {
-	s.OrReplace = OrReplace
+func (s *CreateApiIntegrationRequest) WithOrReplace(OrReplace bool) *CreateApiIntegrationRequest {
+	s.OrReplace = &OrReplace
 	return s
 }
 
-func (s *CreateApiIntegrationRequest) WithIfNotExists(IfNotExists *bool) *CreateApiIntegrationRequest {
-	s.IfNotExists = IfNotExists
+func (s *CreateApiIntegrationRequest) WithIfNotExists(IfNotExists bool) *CreateApiIntegrationRequest {
+	s.IfNotExists = &IfNotExists
 	return s
 }
 
-func (s *CreateApiIntegrationRequest) WithAwsApiProviderParams(AwsApiProviderParams *AwsApiParamsRequest) *CreateApiIntegrationRequest {
-	s.AwsApiProviderParams = AwsApiProviderParams
+func (s *CreateApiIntegrationRequest) WithAwsApiProviderParams(AwsApiProviderParams AwsApiParamsRequest) *CreateApiIntegrationRequest {
+	s.AwsApiProviderParams = &AwsApiProviderParams
 	return s
 }
 
-func (s *CreateApiIntegrationRequest) WithAzureApiProviderParams(AzureApiProviderParams *AzureApiParamsRequest) *CreateApiIntegrationRequest {
-	s.AzureApiProviderParams = AzureApiProviderParams
+func (s *CreateApiIntegrationRequest) WithAzureApiProviderParams(AzureApiProviderParams AzureApiParamsRequest) *CreateApiIntegrationRequest {
+	s.AzureApiProviderParams = &AzureApiProviderParams
 	return s
 }
 
-func (s *CreateApiIntegrationRequest) WithGoogleApiProviderParams(GoogleApiProviderParams *GoogleApiParamsRequest) *CreateApiIntegrationRequest {
-	s.GoogleApiProviderParams = GoogleApiProviderParams
+func (s *CreateApiIntegrationRequest) WithGoogleApiProviderParams(GoogleApiProviderParams GoogleApiParamsRequest) *CreateApiIntegrationRequest {
+	s.GoogleApiProviderParams = &GoogleApiProviderParams
 	return s
 }
 
@@ -46,8 +46,8 @@ func (s *CreateApiIntegrationRequest) WithApiBlockedPrefixes(ApiBlockedPrefixes 
 	return s
 }
 
-func (s *CreateApiIntegrationRequest) WithComment(Comment *string) *CreateApiIntegrationRequest {
-	s.Comment = Comment
+func (s *CreateApiIntegrationRequest) WithComment(Comment string) *CreateApiIntegrationRequest {
+	s.Comment = &Comment
 	return s
 }
 
@@ -61,8 +61,8 @@ func NewAwsApiParamsRequest(
 	return &s
 }
 
-func (s *AwsApiParamsRequest) WithApiKey(ApiKey *string) *AwsApiParamsRequest {
-	s.ApiKey = ApiKey
+func (s *AwsApiParamsRequest) WithApiKey(ApiKey string) *AwsApiParamsRequest {
+	s.ApiKey = &ApiKey
 	return s
 }
 
@@ -76,8 +76,8 @@ func NewAzureApiParamsRequest(
 	return &s
 }
 
-func (s *AzureApiParamsRequest) WithApiKey(ApiKey *string) *AzureApiParamsRequest {
-	s.ApiKey = ApiKey
+func (s *AzureApiParamsRequest) WithApiKey(ApiKey string) *AzureApiParamsRequest {
+	s.ApiKey = &ApiKey
 	return s
 }
 
@@ -97,18 +97,18 @@ func NewAlterApiIntegrationRequest(
 	return &s
 }
 
-func (s *AlterApiIntegrationRequest) WithIfExists(IfExists *bool) *AlterApiIntegrationRequest {
-	s.IfExists = IfExists
+func (s *AlterApiIntegrationRequest) WithIfExists(IfExists bool) *AlterApiIntegrationRequest {
+	s.IfExists = &IfExists
 	return s
 }
 
-func (s *AlterApiIntegrationRequest) WithSet(Set *ApiIntegrationSetRequest) *AlterApiIntegrationRequest {
-	s.Set = Set
+func (s *AlterApiIntegrationRequest) WithSet(Set ApiIntegrationSetRequest) *AlterApiIntegrationRequest {
+	s.Set = &Set
 	return s
 }
 
-func (s *AlterApiIntegrationRequest) WithUnset(Unset *ApiIntegrationUnsetRequest) *AlterApiIntegrationRequest {
-	s.Unset = Unset
+func (s *AlterApiIntegrationRequest) WithUnset(Unset ApiIntegrationUnsetRequest) *AlterApiIntegrationRequest {
+	s.Unset = &Unset
 	return s
 }
 
@@ -126,23 +126,23 @@ func NewApiIntegrationSetRequest() *ApiIntegrationSetRequest {
 	return &ApiIntegrationSetRequest{}
 }
 
-func (s *ApiIntegrationSetRequest) WithAwsParams(AwsParams *SetAwsApiParamsRequest) *ApiIntegrationSetRequest {
-	s.AwsParams = AwsParams
+func (s *ApiIntegrationSetRequest) WithAwsParams(AwsParams SetAwsApiParamsRequest) *ApiIntegrationSetRequest {
+	s.AwsParams = &AwsParams
 	return s
 }
 
-func (s *ApiIntegrationSetRequest) WithAzureParams(AzureParams *SetAzureApiParamsRequest) *ApiIntegrationSetRequest {
-	s.AzureParams = AzureParams
+func (s *ApiIntegrationSetRequest) WithAzureParams(AzureParams SetAzureApiParamsRequest) *ApiIntegrationSetRequest {
+	s.AzureParams = &AzureParams
 	return s
 }
 
-func (s *ApiIntegrationSetRequest) WithGoogleParams(GoogleParams *SetGoogleApiParamsRequest) *ApiIntegrationSetRequest {
-	s.GoogleParams = GoogleParams
+func (s *ApiIntegrationSetRequest) WithGoogleParams(GoogleParams SetGoogleApiParamsRequest) *ApiIntegrationSetRequest {
+	s.GoogleParams = &GoogleParams
 	return s
 }
 
-func (s *ApiIntegrationSetRequest) WithEnabled(Enabled *bool) *ApiIntegrationSetRequest {
-	s.Enabled = Enabled
+func (s *ApiIntegrationSetRequest) WithEnabled(Enabled bool) *ApiIntegrationSetRequest {
+	s.Enabled = &Enabled
 	return s
 }
 
@@ -156,8 +156,8 @@ func (s *ApiIntegrationSetRequest) WithApiBlockedPrefixes(ApiBlockedPrefixes []A
 	return s
 }
 
-func (s *ApiIntegrationSetRequest) WithComment(Comment *string) *ApiIntegrationSetRequest {
-	s.Comment = Comment
+func (s *ApiIntegrationSetRequest) WithComment(Comment string) *ApiIntegrationSetRequest {
+	s.Comment = &Comment
 	return s
 }
 
@@ -165,13 +165,13 @@ func NewSetAwsApiParamsRequest() *SetAwsApiParamsRequest {
 	return &SetAwsApiParamsRequest{}
 }
 
-func (s *SetAwsApiParamsRequest) WithApiAwsRoleArn(ApiAwsRoleArn *string) *SetAwsApiParamsRequest {
-	s.ApiAwsRoleArn = ApiAwsRoleArn
+func (s *SetAwsApiParamsRequest) WithApiAwsRoleArn(ApiAwsRoleArn string) *SetAwsApiParamsRequest {
+	s.ApiAwsRoleArn = &ApiAwsRoleArn
 	return s
 }
 
-func (s *SetAwsApiParamsRequest) WithApiKey(ApiKey *string) *SetAwsApiParamsRequest {
-	s.ApiKey = ApiKey
+func (s *SetAwsApiParamsRequest) WithApiKey(ApiKey string) *SetAwsApiParamsRequest {
+	s.ApiKey = &ApiKey
 	return s
 }
 
@@ -179,18 +179,18 @@ func NewSetAzureApiParamsRequest() *SetAzureApiParamsRequest {
 	return &SetAzureApiParamsRequest{}
 }
 
-func (s *SetAzureApiParamsRequest) WithAzureTenantId(AzureTenantId *string) *SetAzureApiParamsRequest {
-	s.AzureTenantId = AzureTenantId
+func (s *SetAzureApiParamsRequest) WithAzureTenantId(AzureTenantId string) *SetAzureApiParamsRequest {
+	s.AzureTenantId = &AzureTenantId
 	return s
 }
 
-func (s *SetAzureApiParamsRequest) WithAzureAdApplicationId(AzureAdApplicationId *string) *SetAzureApiParamsRequest {
-	s.AzureAdApplicationId = AzureAdApplicationId
+func (s *SetAzureApiParamsRequest) WithAzureAdApplicationId(AzureAdApplicationId string) *SetAzureApiParamsRequest {
+	s.AzureAdApplicationId = &AzureAdApplicationId
 	return s
 }
 
-func (s *SetAzureApiParamsRequest) WithApiKey(ApiKey *string) *SetAzureApiParamsRequest {
-	s.ApiKey = ApiKey
+func (s *SetAzureApiParamsRequest) WithApiKey(ApiKey string) *SetAzureApiParamsRequest {
+	s.ApiKey = &ApiKey
 	return s
 }
 
@@ -206,23 +206,23 @@ func NewApiIntegrationUnsetRequest() *ApiIntegrationUnsetRequest {
 	return &ApiIntegrationUnsetRequest{}
 }
 
-func (s *ApiIntegrationUnsetRequest) WithApiKey(ApiKey *bool) *ApiIntegrationUnsetRequest {
-	s.ApiKey = ApiKey
+func (s *ApiIntegrationUnsetRequest) WithApiKey(ApiKey bool) *ApiIntegrationUnsetRequest {
+	s.ApiKey = &ApiKey
 	return s
 }
 
-func (s *ApiIntegrationUnsetRequest) WithEnabled(Enabled *bool) *ApiIntegrationUnsetRequest {
-	s.Enabled = Enabled
+func (s *ApiIntegrationUnsetRequest) WithEnabled(Enabled bool) *ApiIntegrationUnsetRequest {
+	s.Enabled = &Enabled
 	return s
 }
 
-func (s *ApiIntegrationUnsetRequest) WithApiBlockedPrefixes(ApiBlockedPrefixes *bool) *ApiIntegrationUnsetRequest {
-	s.ApiBlockedPrefixes = ApiBlockedPrefixes
+func (s *ApiIntegrationUnsetRequest) WithApiBlockedPrefixes(ApiBlockedPrefixes bool) *ApiIntegrationUnsetRequest {
+	s.ApiBlockedPrefixes = &ApiBlockedPrefixes
 	return s
 }
 
-func (s *ApiIntegrationUnsetRequest) WithComment(Comment *bool) *ApiIntegrationUnsetRequest {
-	s.Comment = Comment
+func (s *ApiIntegrationUnsetRequest) WithComment(Comment bool) *ApiIntegrationUnsetRequest {
+	s.Comment = &Comment
 	return s
 }
 
@@ -234,8 +234,8 @@ func NewDropApiIntegrationRequest(
 	return &s
 }
 
-func (s *DropApiIntegrationRequest) WithIfExists(IfExists *bool) *DropApiIntegrationRequest {
-	s.IfExists = IfExists
+func (s *DropApiIntegrationRequest) WithIfExists(IfExists bool) *DropApiIntegrationRequest {
+	s.IfExists = &IfExists
 	return s
 }
 
