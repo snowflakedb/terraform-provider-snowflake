@@ -40,6 +40,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"tables": {
 		Type:        schema.TypeList,
 		Required:    true,
+		ForceNew:    true,
 		Description: "The list of logical tables in the semantic view.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -99,6 +100,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"relationships": {
 		Type:        schema.TypeList,
 		Optional:    true,
+		ForceNew:    true,
 		Description: "The list of relationships between the logical tables in the semantic view.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -173,6 +175,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"facts": {
 		Type:        schema.TypeList,
 		Optional:    true,
+		ForceNew:    true,
 		Description: "The list of facts in the semantic view.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -205,6 +208,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"dimensions": {
 		Type:        schema.TypeList,
 		Optional:    true,
+		ForceNew:    true,
 		Description: "The list of dimensions in the semantic view.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -243,6 +247,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Description: "Specify a list of metrics for the semantic view. " +
 			"Each metric can have either a semantic expression or a window function in its definition.",
 		Optional: true,
+		ForceNew: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				// TODO(SNOW-2396311): update the SDK with the newly added/updated fields for semantic expressions, then add them here
