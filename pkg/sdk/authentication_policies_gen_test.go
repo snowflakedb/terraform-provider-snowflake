@@ -208,14 +208,32 @@ func TestAuthenticationPolicies_Show(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "SHOW AUTHENTICATION POLICIES")
 	})
 
+	t.Run("show on account", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.On = &On{
+			Account: Pointer(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW AUTHENTICATION POLICIES ON ACCOUNT")
+	})
+
+	t.Run("show on user", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.On = &On{
+			User: NewAccountObjectIdentifier("user_name"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW AUTHENTICATION POLICIES ON USER "user_name"`)
+	})
+
 	t.Run("complete", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
 			Pattern: String("like-pattern"),
 		}
 		opts.StartsWith = String("starts-with-pattern")
-		opts.In = &In{
-			Schema: id.SchemaId(),
+		opts.In = &ExtendedIn{
+			In: In{
+				Schema: id.SchemaId(),
+			},
 		}
 		opts.Limit = &LimitFrom{
 			Rows: Int(10),

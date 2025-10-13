@@ -67,7 +67,7 @@ var AllClientTypes = []ClientTypesOption{
 
 var (
 	AuthenticationMethodsOptionDef    = g.NewQueryStruct("AuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[AuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
-	MfaAuthenticationMethodsOptionDef = g.NewQueryStruct("MfaAuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[MfaAuthenticationMethods](), g.KeywordOptions().SingleQuotes().Required())
+	MfaAuthenticationMethodsOptionDef = g.NewQueryStruct("MfaAuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[MfaAuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
 	ClientTypesOptionDef              = g.NewQueryStruct("ClientTypes").PredefinedQueryStructField("ClientType", g.KindOfT[ClientTypesOption](), g.KeywordOptions().SingleQuotes().Required())
 	SecurityIntegrationsOptionDef     = g.NewQueryStruct("SecurityIntegrationsOption").Identifier("Name", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required())
 )
@@ -146,34 +146,37 @@ var AuthenticationPoliciesDef = g.NewInterface(
 	ShowOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies",
 		g.DbStruct("showAuthenticationPolicyDBRow").
-			Field("created_on", "string").
-			Field("name", "string").
-			Field("comment", "string").
-			Field("database_name", "string").
-			Field("schema_name", "string").
-			Field("owner", "string").
-			Field("owner_role_type", "string").
-			Field("options", "string"),
+			Time("created_on").
+			Text("name").
+			Text("comment").
+			Text("database_name").
+			Text("schema_name").
+			Text("kind").
+			Text("owner").
+			Text("owner_role_type").
+			Text("options"),
 		g.PlainStruct("AuthenticationPolicy").
-			Field("CreatedOn", "string").
-			Field("Name", "string").
-			Field("Comment", "string").
-			Field("DatabaseName", "string").
-			Field("SchemaName", "string").
-			Field("Owner", "string").
-			Field("OwnerRoleType", "string").
-			Field("Options", "string"),
+			Time("CreatedOn").
+			Text("Name").
+			Text("Comment").
+			Text("DatabaseName").
+			Text("SchemaName").
+			Text("Kind").
+			Text("Owner").
+			Text("OwnerRoleType").
+			Text("Options"),
 		g.NewQueryStruct("ShowAuthenticationPolicies").
 			Show().
 			SQL("AUTHENTICATION POLICIES").
 			OptionalLike().
-			OptionalIn().
+			OptionalExtendedIn().
+			OptionalOn().
 			OptionalStartsWith().
 			OptionalLimit(),
 	).
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
-		g.ShowByIDInFiltering,
+		g.ShowByIDExtendedInFiltering,
 	).
 	DescribeOperation(
 		g.DescriptionMappingKindSlice,

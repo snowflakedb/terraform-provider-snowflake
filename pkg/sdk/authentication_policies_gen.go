@@ -1,6 +1,9 @@
 package sdk
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type AuthenticationPolicies interface {
 	Create(ctx context.Context, request *CreateAuthenticationPolicyRequest) error
@@ -83,31 +86,34 @@ type DropAuthenticationPolicyOptions struct {
 
 // ShowAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies.
 type ShowAuthenticationPolicyOptions struct {
-	show                   bool       `ddl:"static" sql:"SHOW"`
-	authenticationPolicies bool       `ddl:"static" sql:"AUTHENTICATION POLICIES"`
-	Like                   *Like      `ddl:"keyword" sql:"LIKE"`
-	In                     *In        `ddl:"keyword" sql:"IN"`
-	StartsWith             *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit                  *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+	show                   bool        `ddl:"static" sql:"SHOW"`
+	authenticationPolicies bool        `ddl:"static" sql:"AUTHENTICATION POLICIES"`
+	Like                   *Like       `ddl:"keyword" sql:"LIKE"`
+	In                     *ExtendedIn `ddl:"keyword" sql:"IN"`
+	On                     *On         `ddl:"keyword" sql:"ON"`
+	StartsWith             *string     `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit                  *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
 type showAuthenticationPolicyDBRow struct {
-	CreatedOn     string `db:"created_on"`
-	Name          string `db:"name"`
-	Comment       string `db:"comment"`
-	DatabaseName  string `db:"database_name"`
-	SchemaName    string `db:"schema_name"`
-	Owner         string `db:"owner"`
-	OwnerRoleType string `db:"owner_role_type"`
-	Options       string `db:"options"`
+	CreatedOn     time.Time `db:"created_on"`
+	Name          string    `db:"name"`
+	Comment       string    `db:"comment"`
+	DatabaseName  string    `db:"database_name"`
+	SchemaName    string    `db:"schema_name"`
+	Kind          string    `db:"kind"`
+	Owner         string    `db:"owner"`
+	OwnerRoleType string    `db:"owner_role_type"`
+	Options       string    `db:"options"`
 }
 
 type AuthenticationPolicy struct {
-	CreatedOn     string
+	CreatedOn     time.Time
 	Name          string
 	Comment       string
 	DatabaseName  string
 	SchemaName    string
+	Kind          string
 	Owner         string
 	OwnerRoleType string
 	Options       string
@@ -115,6 +121,9 @@ type AuthenticationPolicy struct {
 
 func (v *AuthenticationPolicy) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}
+func (v *AuthenticationPolicy) ObjectType() ObjectType {
+	return ObjectTypeAuthenticationPolicy
 }
 
 // DescribeAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-authentication-policy.

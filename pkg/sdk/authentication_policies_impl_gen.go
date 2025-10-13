@@ -6,8 +6,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+var _ AuthenticationPolicies = (*authenticationPolicies)(nil)
+
 var (
-	_ AuthenticationPolicies                          = (*authenticationPolicies)(nil)
 	_ convertibleRow[AuthenticationPolicy]            = new(showAuthenticationPolicyDBRow)
 	_ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
 )
@@ -46,8 +47,8 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {
 	request := NewShowAuthenticationPolicyRequest().
-		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(In{Schema: id.SchemaId()})
+		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithLike(Like{Pattern: String(id.Name())})
 	authenticationPolicies, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
@@ -92,7 +93,6 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 
 		RenameTo: r.RenameTo,
 	}
-
 	if r.Set != nil {
 		opts.Set = &AuthenticationPolicySet{
 			AuthenticationMethods:    r.Set.AuthenticationMethods,
@@ -103,7 +103,6 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 			Comment:                  r.Set.Comment,
 		}
 	}
-
 	if r.Unset != nil {
 		opts.Unset = &AuthenticationPolicyUnset{
 			ClientTypes:              r.Unset.ClientTypes,
@@ -114,7 +113,6 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 			Comment:                  r.Unset.Comment,
 		}
 	}
-
 	return opts
 }
 
@@ -130,6 +128,7 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 	opts := &ShowAuthenticationPolicyOptions{
 		Like:       r.Like,
 		In:         r.In,
+		On:         r.On,
 		StartsWith: r.StartsWith,
 		Limit:      r.Limit,
 	}
@@ -142,6 +141,7 @@ func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) 
 		Name:          r.Name,
 		DatabaseName:  r.DatabaseName,
 		SchemaName:    r.SchemaName,
+		Kind:          r.Kind,
 		Owner:         r.Owner,
 		OwnerRoleType: r.OwnerRoleType,
 		Options:       r.Options,
