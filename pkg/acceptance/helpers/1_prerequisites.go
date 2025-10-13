@@ -42,7 +42,7 @@ func (c *TestClient) EnsureEssentialRolesExist(ctx context.Context) error {
 	for _, roleGrant := range roleGrants {
 		_, err := c.context.client.Roles.ShowByID(ctx, roleGrant.RoleID)
 		if err != nil {
-			return err
+			return fmt.Errorf("showing role %s: %w", roleGrant.RoleID.Name(), err)
 		}
 		grants, err := c.context.client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			Of: &sdk.ShowGrantsOf{
@@ -50,7 +50,7 @@ func (c *TestClient) EnsureEssentialRolesExist(ctx context.Context) error {
 			},
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("showing grants for role %s: %w", roleGrant.RoleID.Name(), err)
 		}
 		isGranted := hasGranteeName(grants, currentRoleID)
 		if roleGrant.ShouldBeGranted && !isGranted {
