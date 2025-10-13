@@ -41,6 +41,6 @@ If you are not pinning your provider versions, you may find it useful to forcefu
 terraform init -upgrade
 ```
 
-You can verify the required providers with their namespaces and versions in your deployments with the [terraform providers](https://developer.hashicorp.com/terraform/cli/commands/providers) command.
+To verify if all namespaces in the current working directory have been replaced, you can run the [terraform providers](https://developer.hashicorp.com/terraform/cli/commands/providers) command. Then, filter the outputs and ensure there are no `Snowflake-Labs` entries.
 
 >**Note**:  0.34 is the first version published after the transfer. When the provider was transferred over not all of the older releases were transferred. Only versions 0.28 and newer were transferred. If you are using a version older than 0.28, it is highly recommended to upgrade to a newer version.
