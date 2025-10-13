@@ -342,7 +342,7 @@ We generally recommend splitting the creation and deletion of both resources int
 ### *(bugfix)* Fixed incorrect authenticator when using the `token` field
 
 > [!TIP]
-> This change introduced a regression: after the fix, when the TOML profile is empty, the `authenticator` is not set to `OAUTH` when it is not in the Terraform configuration. As a workaround, you can manually set the `authenticator` field in the provider configuration to `OAUTH`. This bug is fixed in [v2.9.0](#v28x--v290).
+> This change introduced a regression: after the fix, when the TOML profile is empty, the `authenticator` is not set to `OAUTH` when it is not in the Terraform configuration (the default `SNOWFLAKE` is used instead). This could result in errors like `Error: 260002: password is empty`. As a workaround, you can manually set the `authenticator` field in the provider configuration to `OAUTH`. This bug is fixed in [v2.9.0](#v28x--v290).
 
 Previously, the provider incorrectly set the default authenticator to `OAUTH` when the `token` field was specified in the Terraform configuration, or environmental variables, without possibility to override it. This resulted in errors like:
 ```
