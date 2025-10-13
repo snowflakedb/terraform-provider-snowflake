@@ -65,6 +65,11 @@ type ExtendedIn struct {
 	ApplicationPackage AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
 }
 
+type On struct {
+	Account *bool                   `ddl:"keyword" sql:"ACCOUNT"`
+	User    AccountObjectIdentifier `ddl:"identifier" sql:"USER"`
+}
+
 type ServiceIn struct {
 	In
 	ComputePool AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
