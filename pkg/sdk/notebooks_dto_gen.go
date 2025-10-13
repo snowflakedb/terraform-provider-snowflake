@@ -22,7 +22,7 @@ type CreateNotebookRequest struct {
 	Warehouse                   *AccountObjectIdentifier
 	RuntimeName                 *string
 	ComputePool                 *AccountObjectIdentifier
-	Externalaccessintegrations  []AccountObjectIdentifier
+	ExternalAccessIntegrations  []AccountObjectIdentifier
 	RuntimeEnvironmentVersion   *string
 	DefaultVersion              *string
 }
@@ -44,7 +44,7 @@ type NotebookSetRequest struct {
 	Warehouse                   *AccountObjectIdentifier
 	RuntimeName                 *string
 	ComputePool                 *AccountObjectIdentifier
-	Externalaccessintegrations  []AccountObjectIdentifier
+	ExternalAccessIntegrations  []AccountObjectIdentifier
 	RuntimeEnvironmentVersion   *string
 }
 

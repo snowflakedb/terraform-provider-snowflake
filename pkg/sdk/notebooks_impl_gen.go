@@ -6,10 +6,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Notebooks = (*notebooks)(nil)
-
 var (
-	_ convertibleRow[Notebook] = new(notebooksRow)
+	_ Notebooks                = (*notebooks)(nil)
 	_ convertibleRow[Notebook] = new(notebooksRow)
 )
 
@@ -84,7 +82,7 @@ func (r *CreateNotebookRequest) toOpts() *CreateNotebookOptions {
 		Warehouse:                   r.Warehouse,
 		RuntimeName:                 r.RuntimeName,
 		ComputePool:                 r.ComputePool,
-		Externalaccessintegrations:  r.Externalaccessintegrations,
+		Externalaccessintegrations:  r.ExternalAccessIntegrations,
 		RuntimeEnvironmentVersion:   r.RuntimeEnvironmentVersion,
 		DefaultVersion:              r.DefaultVersion,
 	}
@@ -107,7 +105,7 @@ func (r *AlterNotebookRequest) toOpts() *AlterNotebookOptions {
 			Warehouse:                  r.Set.Warehouse,
 			RuntimeName:                r.Set.RuntimeName,
 			ComputePool:                r.Set.ComputePool,
-			Externalaccessintegrations: r.Set.Externalaccessintegrations,
+			Externalaccessintegrations: r.Set.ExternalAccessIntegrations,
 			RuntimeEnvironmentVersion:  r.Set.RuntimeEnvironmentVersion,
 		}
 		if r.Set.SecretsList != nil {

@@ -61,7 +61,7 @@ func (s *CreateNotebookRequest) WithComputePool(ComputePool AccountObjectIdentif
 }
 
 func (s *CreateNotebookRequest) WithExternalaccessintegrations(Externalaccessintegrations []AccountObjectIdentifier) *CreateNotebookRequest {
-	s.Externalaccessintegrations = Externalaccessintegrations
+	s.ExternalAccessIntegrations = Externalaccessintegrations
 	return s
 }
 
@@ -148,7 +148,7 @@ func (s *NotebookSetRequest) WithComputePool(ComputePool AccountObjectIdentifier
 }
 
 func (s *NotebookSetRequest) WithExternalaccessintegrations(Externalaccessintegrations []AccountObjectIdentifier) *NotebookSetRequest {
-	s.Externalaccessintegrations = Externalaccessintegrations
+	s.ExternalAccessIntegrations = Externalaccessintegrations
 	return s
 }
 

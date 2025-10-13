@@ -58,7 +58,7 @@ func (opts *AlterNotebookOptions) validate() error {
 		}
 		// Validation added manually.
 		if opts.Set.IdleAutoShutdownTimeSeconds != nil && !validateIntInRangeInclusive(*opts.Set.IdleAutoShutdownTimeSeconds, 60, 259200) {
-			errs = append(errs, errIntBetween("CreateNotebookOptions", "IdleAutoShutdownTimeSeconds", 60, 259200))
+			errs = append(errs, errIntBetween("AlterNotebookOptions", "IdleAutoShutdownTimeSeconds", 60, 259200))
 		}
 	}
 	return JoinErrors(errs...)
