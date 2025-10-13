@@ -1,0 +1,132 @@
+package sdk
+
+import (
+	"context"
+	"database/sql"
+	"time"
+)
+
+type Notebooks interface {
+	Create(ctx context.Context, request *CreateNotebookRequest) error
+	Alter(ctx context.Context, request *AlterNotebookRequest) error
+	Drop(ctx context.Context, request *DropNotebookRequest) error
+	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
+	Describe(ctx context.Context, id SchemaObjectIdentifier) (*Notebook, error)
+	Show(ctx context.Context, request *ShowNotebookRequest) ([]Notebook, error)
+	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Notebook, error)
+	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Notebook, error)
+}
+
+// CreateNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-notebook.
+type CreateNotebookOptions struct {
+	create                      bool                      `ddl:"static" sql:"CREATE"`
+	OrReplace                   *bool                     `ddl:"keyword" sql:"OR REPLACE"`
+	notebook                    bool                      `ddl:"static" sql:"NOTEBOOK"`
+	IfNotExists                 *bool                     `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                        SchemaObjectIdentifier    `ddl:"identifier"`
+	From                        Location                  `ddl:"parameter,single_quotes,no_equals"`
+	Mainfile                    *string                   `ddl:"parameter,single_quotes" sql:"MainFile"`
+	Comment                     *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	QueryWarehouse              *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
+	IdleAutoShutdownTimeSeconds *int                      `ddl:"keyword" sql:"IDLE_AUTO_SHUTDOWN_TIME_SECONDS"`
+	Warehouse                   *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"WAREHOUSE"`
+	RuntimeName                 *string                   `ddl:"keyword,single_quotes" sql:"RUNTIME_NAME"`
+	ComputePool                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"COMPUTE_POOL"`
+	Externalaccessintegrations  []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"ExternalAccessIntegrations"`
+	RuntimeEnvironmentVersion   *string                   `ddl:"keyword,single_quotes" sql:"RUNTIME_ENVIRONMENT_VERSION"`
+	DefaultVersion              *string                   `ddl:"keyword" sql:"DEFAULT_VERSION"`
+}
+
+// AlterNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-notebook.
+type AlterNotebookOptions struct {
+	alter    bool                    `ddl:"static" sql:"ALTER"`
+	notebook bool                    `ddl:"static" sql:"NOTEBOOK"`
+	IfExists *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	name     SchemaObjectIdentifier  `ddl:"identifier"`
+	RenameTo *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	Set      *NotebookSet            `ddl:"keyword" sql:"SET"`
+	Unset    *NotebookUnset          `ddl:"list,no_parentheses" sql:"UNSET"`
+}
+
+type NotebookSet struct {
+	Comment                     *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	QueryWarehouse              *AccountObjectIdentifier  `ddl:"identifier" sql:"QUERY_WAREHOUSE"`
+	IdleAutoShutdownTimeSeconds *int                      `ddl:"keyword" sql:"IDLE_AUTO_SHUTDOWN_TIME_SECONDS"`
+	SecretsList                 *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
+	Mainfile                    *string                   `ddl:"parameter,single_quotes" sql:"MainFile"`
+	Warehouse                   *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"WAREHOUSE"`
+	RuntimeName                 *string                   `ddl:"keyword,single_quotes" sql:"RUNTIME_NAME"`
+	ComputePool                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"COMPUTE_POOL"`
+	Externalaccessintegrations  []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"ExternalAccessIntegrations"`
+	RuntimeEnvironmentVersion   *string                   `ddl:"keyword,single_quotes" sql:"RUNTIME_ENVIRONMENT_VERSION"`
+}
+
+type NotebookUnset struct {
+	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
+	QueryWarehouse             *bool `ddl:"keyword" sql:"QUERY_WAREHOUSE"`
+	Secrets                    *bool `ddl:"keyword" sql:"SECRETS"`
+	Warehouse                  *bool `ddl:"keyword" sql:"WAREHOUSE"`
+	RuntimeName                *bool `ddl:"keyword" sql:"RUNTIME_NAME"`
+	ComputePool                *bool `ddl:"keyword" sql:"COMPUTE_POOL"`
+	ExternalAccessIntegrations *bool `ddl:"keyword" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	RuntimeEnvironmentVersion  *bool `ddl:"keyword" sql:"RUNTIME_ENVIRONMENT_VERSION"`
+}
+
+// DropNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-notebook.
+type DropNotebookOptions struct {
+	drop     bool                   `ddl:"static" sql:"DROP"`
+	notebook bool                   `ddl:"static" sql:"NOTEBOOK"`
+	IfExists *bool                  `ddl:"keyword" sql:"IF EXISTS"`
+	name     SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+// DescribeNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-notebook.
+type DescribeNotebookOptions struct {
+	describe bool                   `ddl:"static" sql:"DESCRIBE"`
+	notebook bool                   `ddl:"static" sql:"NOTEBOOK"`
+	name     SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type notebooksRow struct {
+	CreatedOn      time.Time      `db:"created_on"`
+	Name           string         `db:"name"`
+	DatabaseName   string         `db:"database_name"`
+	SchemaName     string         `db:"schema_name"`
+	Comment        sql.NullString `db:"comment"`
+	Owner          string         `db:"owner"`
+	QueryWarehouse sql.NullString `db:"query_warehouse"`
+	UrlId          string         `db:"url_id"`
+	OwnerRoleType  string         `db:"owner_role_type"`
+	CodeWarehouse  string         `db:"code_warehouse"`
+}
+
+type Notebook struct {
+	CreatedOn      time.Time
+	Name           string
+	DatabaseName   string
+	SchemaName     string
+	Comment        *string
+	Owner          string
+	QueryWarehouse *AccountObjectIdentifier
+	UrlId          string
+	OwnerRoleType  string
+	CodeWarehouse  AccountObjectIdentifier
+}
+
+// ShowNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-notebooks.
+type ShowNotebookOptions struct {
+	show       bool       `ddl:"static" sql:"SHOW"`
+	notebook   bool       `ddl:"static" sql:"NOTEBOOK"`
+	Like       *Like      `ddl:"keyword" sql:"LIKE"`
+	In         *In        `ddl:"keyword" sql:"IN"`
+	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+}
+
+func (v *Notebook) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}
+
+func (v *Notebook) ObjectType() ObjectType {
+	return ObjectTypeNotebook
+}
