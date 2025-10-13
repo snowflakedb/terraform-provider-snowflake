@@ -41,6 +41,18 @@ This feature enables authentication with `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_A
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/oauth-intro) for more information on Oauth authentication.
 
+### *(bugfix)* Fixed setting the default authenticator for the `token`field
+
+In [v2.5.0](#bugfix-fixed-incorrect-authenticator-when-using-the-token-field), we fixed a bug: when the `token` and the `authenticator` fields were both set, the provider always set the `authenticator` to `OAUTH` regardless of the `authenticator` config value.
+
+Unfortunately, this change introduced a regression. After the fix, when the TOML profile is empty, the `authenticator` is not set to `OAUTH` when it is not in the Terraform configuration. This behavior occurred only when the TOML configuration file could not be read during initialization, and the `profile` was unset or set to `default`.
+
+Now, the behavior is the following:
+- When only `token` is set, the provider sets the default authenticator to `OAUTH`.
+- When both `token` and `authenticator` are set, the `authenticator` value overrides the provider's default.
+
+Note that in v3, we are planning to remove the logic for setting the default authenticator in the provider based on other fields.
+
 ## v2.7.x ➞ v2.8.0
 
 ### *(new feature)* Added handling private link in S3 and Azure storage integrations
@@ -328,6 +340,9 @@ We generally recommend splitting the creation and deletion of both resources int
 ## v2.4.x ➞ v2.5.0
 
 ### *(bugfix)* Fixed incorrect authenticator when using the `token` field
+
+> [!TIP]
+> This change introduced a regression: after the fix, when the TOML profile is empty, the `authenticator` is not set to `OAUTH` when it is not in the Terraform configuration. As a workaround, you can manually set the `authenticator` field in the provider configuration to `OAUTH`. This bug is fixed in [v2.9.0](#v28x--v290).
 
 Previously, the provider incorrectly set the default authenticator to `OAUTH` when the `token` field was specified in the Terraform configuration, or environmental variables, without possibility to override it. This resulted in errors like:
 ```
