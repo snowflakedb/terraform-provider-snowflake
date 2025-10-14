@@ -130,9 +130,3 @@ var NotebooksDef = g.NewInterface(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 )
-
-// runtime_name A
-// compute_pool A
-// external_access_integrations A
-// runtime_environment_version A
-// default_version A
