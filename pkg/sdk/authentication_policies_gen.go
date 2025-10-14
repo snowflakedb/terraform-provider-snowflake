@@ -122,6 +122,7 @@ type AuthenticationPolicy struct {
 func (v *AuthenticationPolicy) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
+
 func (v *AuthenticationPolicy) ObjectType() ObjectType {
 	return ObjectTypeAuthenticationPolicy
 }
