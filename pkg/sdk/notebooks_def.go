@@ -41,7 +41,7 @@ var NotebooksDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		PredefinedQueryStructField("From", "Location", g.ParameterOptions().SQL("FROM").SingleQuotes().NoEquals()).
-		OptionalTextAssignment("MainFile", g.ParameterOptions().SQL("MAIN_FILE").SingleQuotes()).
+		OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
 		OptionalComment().
 		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
 		OptionalNumberAssignment("IDLE_AUTO_SHUTDOWN_TIME_SECONDS", g.ParameterOptions().NoQuotes()).

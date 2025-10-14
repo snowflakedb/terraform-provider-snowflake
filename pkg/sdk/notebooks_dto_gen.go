@@ -15,7 +15,7 @@ type CreateNotebookRequest struct {
 	IfNotExists                 *bool
 	name                        SchemaObjectIdentifier // required
 	From                        Location
-	Mainfile                    *string
+	MainFile                    *string
 	Comment                     *string
 	QueryWarehouse              *AccountObjectIdentifier
 	IdleAutoShutdownTimeSeconds *int

@@ -25,8 +25,8 @@ func (s *CreateNotebookRequest) WithFrom(From Location) *CreateNotebookRequest {
 	return s
 }
 
-func (s *CreateNotebookRequest) WithMainfile(Mainfile string) *CreateNotebookRequest {
-	s.Mainfile = &Mainfile
+func (s *CreateNotebookRequest) WithMainFile(MainFile string) *CreateNotebookRequest {
+	s.MainFile = &MainFile
 	return s
 }
 

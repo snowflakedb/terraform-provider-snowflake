@@ -75,7 +75,7 @@ func (r *CreateNotebookRequest) toOpts() *CreateNotebookOptions {
 		IfNotExists:                 r.IfNotExists,
 		name:                        r.name,
 		From:                        r.From,
-		Mainfile:                    r.Mainfile,
+		MainFile:                    r.MainFile,
 		Comment:                     r.Comment,
 		QueryWarehouse:              r.QueryWarehouse,
 		IdleAutoShutdownTimeSeconds: r.IdleAutoShutdownTimeSeconds,
