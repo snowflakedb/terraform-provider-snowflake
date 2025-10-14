@@ -2098,3 +2098,37 @@ resource "snowflake_task" "test" {
 		comment,
 	)
 }
+
+func TestAcc_Task_TargetCompletionInterval(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+	targetCompletionInterval := "10 MINUTES"
+
+	configModel := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium).
+		WithTargetCompletionInterval(targetCompletionInterval)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium).
+						HasTargetCompletionIntervalString(targetCompletionInterval).
+						HasSqlStatementString(statement),
+				),
+			},
+		},
+	})
+}

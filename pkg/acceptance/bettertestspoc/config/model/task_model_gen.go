@@ -60,6 +60,7 @@ type TaskModel struct {
 	StatementTimeoutInSeconds                tfconfig.Variable `json:"statement_timeout_in_seconds,omitempty"`
 	StrictJsonOutput                         tfconfig.Variable `json:"strict_json_output,omitempty"`
 	SuspendTaskAfterNumFailures              tfconfig.Variable `json:"suspend_task_after_num_failures,omitempty"`
+	TargetCompletionInterval                 tfconfig.Variable `json:"target_completion_interval,omitempty"`
 	TaskAutoRetryAttempts                    tfconfig.Variable `json:"task_auto_retry_attempts,omitempty"`
 	TimeInputFormat                          tfconfig.Variable `json:"time_input_format,omitempty"`
 	TimeOutputFormat                         tfconfig.Variable `json:"time_output_format,omitempty"`
@@ -392,6 +393,11 @@ func (t *TaskModel) WithStrictJsonOutput(strictJsonOutput bool) *TaskModel {
 
 func (t *TaskModel) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *TaskModel {
 	t.SuspendTaskAfterNumFailures = tfconfig.IntegerVariable(suspendTaskAfterNumFailures)
+	return t
+}
+
+func (t *TaskModel) WithTargetCompletionInterval(targetCompletionInterval string) *TaskModel {
+	t.TargetCompletionInterval = tfconfig.StringVariable(targetCompletionInterval)
 	return t
 }
 
@@ -761,6 +767,11 @@ func (t *TaskModel) WithStrictJsonOutputValue(value tfconfig.Variable) *TaskMode
 
 func (t *TaskModel) WithSuspendTaskAfterNumFailuresValue(value tfconfig.Variable) *TaskModel {
 	t.SuspendTaskAfterNumFailures = value
+	return t
+}
+
+func (t *TaskModel) WithTargetCompletionIntervalValue(value tfconfig.Variable) *TaskModel {
+	t.TargetCompletionInterval = value
 	return t
 }
 
