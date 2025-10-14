@@ -1,6 +1,11 @@
 package sdk
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
 
 func TestAuthenticationPolicies_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
@@ -267,4 +272,147 @@ func TestAuthenticationPolicies_Describe(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE AUTHENTICATION POLICY %s", id.FullyQualifiedName())
 	})
+}
+
+func Test_ToAuthenticationMethodsOption(t *testing.T) {
+	type test struct {
+		input string
+		want  AuthenticationMethodsOption
+	}
+	valid := []test{
+		// case insensitive.
+		{input: "all", want: AuthenticationMethodsAll},
+
+		// supported values.
+		{input: "ALL", want: AuthenticationMethodsAll},
+		{input: "SAML", want: AuthenticationMethodsSaml},
+		{input: "PASSWORD", want: AuthenticationMethodsPassword},
+		{input: "OAUTH", want: AuthenticationMethodsOauth},
+		{input: "KEYPAIR", want: AuthenticationMethodsKeyPair},
+		{input: "PROGRAMMATIC_ACCESS_TOKEN", want: AuthenticationMethodsProgrammaticAccessToken},
+		{input: "WORKLOAD_IDENTITY", want: AuthenticationMethodsWorkloadIdentity},
+	}
+	invalid := []test{
+		{input: "foo"},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToAuthenticationMethodsOption(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToAuthenticationMethodsOption(tt.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ToMfaAuthenticationMethodsOption(t *testing.T) {
+	type test struct {
+		input string
+		want  MfaAuthenticationMethodsOption
+	}
+	valid := []test{
+		// case insensitive.
+		{input: "all", want: MfaAuthenticationMethodsAll},
+
+		// supported values.
+		{input: "ALL", want: MfaAuthenticationMethodsAll},
+		{input: "SAML", want: MfaAuthenticationMethodsSaml},
+		{input: "PASSWORD", want: MfaAuthenticationMethodsPassword},
+	}
+	invalid := []test{
+		{input: "foo"},
+		{input: "OAUTH"},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToMfaAuthenticationMethodsOption(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToMfaAuthenticationMethodsOption(tt.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ToMfaEnrollmentOption(t *testing.T) {
+	type test struct {
+		input string
+		want  MfaEnrollmentOption
+	}
+	valid := []test{
+		// case insensitive.
+		{input: "required", want: MfaEnrollmentRequired},
+		{input: "required_password_only", want: MfaEnrollmentRequiredPasswordOnly},
+		{input: "optional", want: MfaEnrollmentOptional},
+
+		// supported values.
+		{input: "REQUIRED", want: MfaEnrollmentRequired},
+		{input: "REQUIRED_PASSWORD_ONLY", want: MfaEnrollmentRequiredPasswordOnly},
+		{input: "OPTIONAL", want: MfaEnrollmentOptional},
+	}
+	invalid := []test{
+		{input: "foo"},
+		{input: "ALL"},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToMfaEnrollmentOption(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToMfaEnrollmentOption(tt.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ToClientTypesOption(t *testing.T) {
+	type test struct {
+		input string
+		want  ClientTypesOption
+	}
+	valid := []test{
+		// case insensitive.
+		{input: "all", want: ClientTypesAll},
+		{input: "snowflake_ui", want: ClientTypesSnowflakeUi},
+		{input: "drivers", want: ClientTypesDrivers},
+		{input: "snowsql", want: ClientTypesSnowSql},
+		{input: "snowflake_cli", want: ClientTypesSnowflakeCli},
+
+		// supported values.
+		{input: "ALL", want: ClientTypesAll},
+		{input: "SNOWFLAKE_UI", want: ClientTypesSnowflakeUi},
+		{input: "DRIVERS", want: ClientTypesDrivers},
+		{input: "SNOWSQL", want: ClientTypesSnowSql},
+		{input: "SNOWFLAKE_CLI", want: ClientTypesSnowflakeCli},
+	}
+	invalid := []test{
+		{input: "foo"},
+		{input: "PASSWORD"},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToClientTypesOption(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToClientTypesOption(tt.input)
+			require.Error(t, err)
+		})
+	}
 }
