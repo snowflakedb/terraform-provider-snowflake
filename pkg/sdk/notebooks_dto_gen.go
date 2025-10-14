@@ -14,7 +14,7 @@ type CreateNotebookRequest struct {
 	OrReplace                   *bool
 	IfNotExists                 *bool
 	name                        SchemaObjectIdentifier // required
-	From                        Location
+	From                        *Location
 	MainFile                    *string
 	Comment                     *string
 	QueryWarehouse              *AccountObjectIdentifier

@@ -21,7 +21,7 @@ func (s *CreateNotebookRequest) WithIfNotExists(IfNotExists bool) *CreateNoteboo
 }
 
 func (s *CreateNotebookRequest) WithFrom(From Location) *CreateNotebookRequest {
-	s.From = From
+	s.From = &From
 	return s
 }
 

@@ -24,7 +24,7 @@ type CreateNotebookOptions struct {
 	notebook                    bool                      `ddl:"static" sql:"NOTEBOOK"`
 	IfNotExists                 *bool                     `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                        SchemaObjectIdentifier    `ddl:"identifier"`
-	From                        Location                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
+	From                        *Location                 `ddl:"parameter,no_quotes,no_equals" sql:"FROM"`
 	MainFile                    *string                   `ddl:"parameter,single_quotes" sql:"MAIN_FILE"`
 	Comment                     *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	QueryWarehouse              *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
