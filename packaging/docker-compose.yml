@@ -1,0 +1,10 @@
+services:
+  run-build-verification-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./../:/terraform-provider-snowflake
+      - ${SNOWFLAKE_CONFIG_PATH}:/root/.snowflake/config
+    working_dir: /terraform-provider-snowflake
+    command: [ "make", "test-build-verification" ]
