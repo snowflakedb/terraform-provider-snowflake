@@ -81,13 +81,13 @@ func ReadSemanticViews(ctx context.Context, d *schema.ResourceData, meta any) di
 	flattenedSemanticViews := make([]map[string]any, len(semanticViews))
 	for i, semanticView := range semanticViews {
 		semanticView := semanticView
-		var semanticViewDetails [][]map[string]any
+		var semanticViewDetails []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.SemanticViews.Describe(ctx, semanticView.ID())
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			semanticViewDetails = [][]map[string]any{schemas.SemanticViewDetailsToSchema(describeResult)}
+			semanticViewDetails = schemas.SemanticViewDetailsToSchema(describeResult)
 		}
 		flattenedSemanticViews[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.SemanticViewToSchema(&semanticView)},
