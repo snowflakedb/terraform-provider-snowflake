@@ -247,6 +247,16 @@ func (t *TaskResourceAssert) HasSearchPathString(expected string) *TaskResourceA
 	return t
 }
 
+func (t *TaskResourceAssert) HasServerlessTaskMaxStatementSizeString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("serverless_task_max_statement_size", expected))
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMinStatementSizeString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("serverless_task_min_statement_size", expected))
+	return t
+}
+
 func (t *TaskResourceAssert) HasSqlStatementString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("sql_statement", expected))
 	return t
@@ -611,6 +621,16 @@ func (t *TaskResourceAssert) HasNoSearchPath() *TaskResourceAssert {
 	return t
 }
 
+func (t *TaskResourceAssert) HasNoServerlessTaskMaxStatementSize() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("serverless_task_max_statement_size"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasNoServerlessTaskMinStatementSize() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("serverless_task_min_statement_size"))
+	return t
+}
+
 func (t *TaskResourceAssert) HasNoSqlStatement() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("sql_statement"))
 	return t
@@ -970,6 +990,16 @@ func (t *TaskResourceAssert) HasSearchPathEmpty() *TaskResourceAssert {
 	return t
 }
 
+func (t *TaskResourceAssert) HasServerlessTaskMaxStatementSizeEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("serverless_task_max_statement_size", ""))
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMinStatementSizeEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("serverless_task_min_statement_size", ""))
+	return t
+}
+
 func (t *TaskResourceAssert) HasStatementQueuedTimeoutInSecondsEmpty() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", ""))
 	return t
@@ -1321,6 +1351,16 @@ func (t *TaskResourceAssert) HasS3StageVpceDnsNameNotEmpty() *TaskResourceAssert
 
 func (t *TaskResourceAssert) HasSearchPathNotEmpty() *TaskResourceAssert {
 	t.AddAssertion(assert.ValuePresent("search_path"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMaxStatementSizeNotEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValuePresent("serverless_task_max_statement_size"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMinStatementSizeNotEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValuePresent("serverless_task_min_statement_size"))
 	return t
 }
 

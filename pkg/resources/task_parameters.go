@@ -17,6 +17,8 @@ var (
 	taskParametersCustomDiff = ParametersCustomDiff(
 		taskParametersProvider,
 		// task parameters
+		parameter[sdk.TaskParameter]{sdk.TaskParameterServerlessTaskMaxStatementSize, valueTypeString, sdk.ParameterTypeTask},
+		parameter[sdk.TaskParameter]{sdk.TaskParameterServerlessTaskMinStatementSize, valueTypeString, sdk.ParameterTypeTask},
 		parameter[sdk.TaskParameter]{sdk.TaskParameterSuspendTaskAfterNumFailures, valueTypeInt, sdk.ParameterTypeTask},
 		parameter[sdk.TaskParameter]{sdk.TaskParameterTargetCompletionInterval, valueTypeString, sdk.ParameterTypeTask},
 		parameter[sdk.TaskParameter]{sdk.TaskParameterTaskAutoRetryAttempts, valueTypeInt, sdk.ParameterTypeTask},
@@ -84,6 +86,8 @@ func init() {
 	// TODO [SNOW-1645342]: move to the SDK
 	TaskParameterFields := []parameterDef[sdk.TaskParameter]{
 		// task parameters
+		{Name: sdk.TaskParameterServerlessTaskMaxStatementSize, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToWarehouseSize), DiffSuppress: NormalizeAndCompare(sdk.ToWarehouseSize), Description: "Specifies the maximum warehouse size for serverless tasks. Valid values are (case-insensitive): %s."},
+		{Name: sdk.TaskParameterServerlessTaskMinStatementSize, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToWarehouseSize), DiffSuppress: NormalizeAndCompare(sdk.ToWarehouseSize), Description: "Specifies the minimum warehouse size for serverless tasks. Valid values are (case-insensitive): %s."},
 		{Name: sdk.TaskParameterSuspendTaskAfterNumFailures, Type: schema.TypeInt, ValidateDiag: validation.ToDiagFunc(validation.IntAtLeast(0)), Description: "Specifies the number of consecutive failed task runs after which the current task is suspended automatically. The default is 0 (no automatic suspension)."},
 		{Name: sdk.TaskParameterTargetCompletionInterval, Type: schema.TypeString, Description: "Specifies the target completion interval for serverless tasks. Format: '<num> { HOURS | MINUTES | SECONDS }' (e.g., '10 MINUTES')."},
 		{Name: sdk.TaskParameterTaskAutoRetryAttempts, Type: schema.TypeInt, ValidateDiag: validation.ToDiagFunc(validation.IntAtLeast(0)), Description: "Specifies the number of automatic task graph retry attempts. If any task graphs complete in a FAILED state, Snowflake can automatically retry the task graphs from the last task in the graph that failed."},

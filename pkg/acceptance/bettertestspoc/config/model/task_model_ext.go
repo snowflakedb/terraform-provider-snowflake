@@ -72,6 +72,16 @@ func (t *TaskModel) WithUserTaskManagedInitialWarehouseSizeEnum(warehouseSize sd
 	return t
 }
 
+func (t *TaskModel) WithServerlessTaskMinStatementSizeEnum(warehouseSize sdk.WarehouseSize) *TaskModel {
+	t.ServerlessTaskMinStatementSize = tfconfig.StringVariable(string(warehouseSize))
+	return t
+}
+
+func (t *TaskModel) WithServerlessTaskMaxStatementSizeEnum(warehouseSize sdk.WarehouseSize) *TaskModel {
+	t.ServerlessTaskMaxStatementSize = tfconfig.StringVariable(string(warehouseSize))
+	return t
+}
+
 func (t *TaskModel) WithScheduleMinutes(minutes int) *TaskModel{
 	t.Schedule = tfconfig.MapVariable(map[string]tfconfig.Variable{
 		"minutes": tfconfig.IntegerVariable(minutes),

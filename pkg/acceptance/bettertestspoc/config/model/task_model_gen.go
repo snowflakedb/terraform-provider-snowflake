@@ -54,6 +54,8 @@ type TaskModel struct {
 	S3StageVpceDnsName                       tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
 	Schedule                                 tfconfig.Variable `json:"schedule,omitempty"`
 	SearchPath                               tfconfig.Variable `json:"search_path,omitempty"`
+	ServerlessTaskMaxStatementSize           tfconfig.Variable `json:"serverless_task_max_statement_size,omitempty"`
+	ServerlessTaskMinStatementSize           tfconfig.Variable `json:"serverless_task_min_statement_size,omitempty"`
 	SqlStatement                             tfconfig.Variable `json:"sql_statement,omitempty"`
 	Started                                  tfconfig.Variable `json:"started,omitempty"`
 	StatementQueuedTimeoutInSeconds          tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
@@ -363,6 +365,16 @@ func (t *TaskModel) WithS3StageVpceDnsName(s3StageVpceDnsName string) *TaskModel
 
 func (t *TaskModel) WithSearchPath(searchPath string) *TaskModel {
 	t.SearchPath = tfconfig.StringVariable(searchPath)
+	return t
+}
+
+func (t *TaskModel) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize string) *TaskModel {
+	t.ServerlessTaskMaxStatementSize = tfconfig.StringVariable(serverlessTaskMaxStatementSize)
+	return t
+}
+
+func (t *TaskModel) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize string) *TaskModel {
+	t.ServerlessTaskMinStatementSize = tfconfig.StringVariable(serverlessTaskMinStatementSize)
 	return t
 }
 
@@ -737,6 +749,16 @@ func (t *TaskModel) WithScheduleValue(value tfconfig.Variable) *TaskModel {
 
 func (t *TaskModel) WithSearchPathValue(value tfconfig.Variable) *TaskModel {
 	t.SearchPath = value
+	return t
+}
+
+func (t *TaskModel) WithServerlessTaskMaxStatementSizeValue(value tfconfig.Variable) *TaskModel {
+	t.ServerlessTaskMaxStatementSize = value
+	return t
+}
+
+func (t *TaskModel) WithServerlessTaskMinStatementSizeValue(value tfconfig.Variable) *TaskModel {
+	t.ServerlessTaskMinStatementSize = value
 	return t
 }
 
