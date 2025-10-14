@@ -116,7 +116,7 @@ type Notebook struct {
 // ShowNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-notebooks.
 type ShowNotebookOptions struct {
 	show       bool       `ddl:"static" sql:"SHOW"`
-	notebook   bool       `ddl:"static" sql:"NOTEBOOK"`
+	notebooks  bool       `ddl:"static" sql:"NOTEBOOKS"`
 	Like       *Like      `ddl:"keyword" sql:"LIKE"`
 	In         *In        `ddl:"keyword" sql:"IN"`
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`

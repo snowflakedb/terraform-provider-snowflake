@@ -177,20 +177,19 @@ func TestNotebooks_Drop(t *testing.T) {
 	})
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "DROP NOTEBOOK %s", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.IfExists = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "DROP NOTEBOOK IF EXISTS %s", id.FullyQualifiedName())
 	})
 }
 
@@ -209,20 +208,13 @@ func TestNotebooks_Describe(t *testing.T) {
 	})
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE NOTEBOOK %s", id.FullyQualifiedName())
 	})
 }
 
@@ -239,13 +231,21 @@ func TestNotebooks_Show(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "SHOW NOTEBOOKS")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Like = &Like{
+			Pattern: String("notebook-name"),
+		}
+		opts.In = &In{
+			Database: NewAccountObjectIdentifier("database-name"),
+		}
+		opts.Limit = &LimitFrom{
+			Rows: Int(10),
+		}
+		opts.StartsWith = String("prefix")
+		assertOptsValidAndSQLEquals(t, opts, "SHOW NOTEBOOKS LIKE 'notebook-name' IN DATABASE \"database-name\" LIMIT 10 STARTS WITH 'prefix'")
 	})
 }

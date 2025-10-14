@@ -121,7 +121,7 @@ var NotebooksDef = g.NewInterface(
 	notebook,
 	g.NewQueryStruct("ShowNotebooks").
 		Show().
-		SQL("NOTEBOOK").
+		SQL("NOTEBOOKS").
 		OptionalLike().
 		OptionalIn().
 		OptionalLimitFrom().
