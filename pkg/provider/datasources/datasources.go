@@ -35,6 +35,7 @@ const (
 	Schemas                        datasource = "snowflake_schemas"
 	Secrets                        datasource = "snowflake_secrets"
 	SecurityIntegrations           datasource = "snowflake_security_integrations"
+	SemanticViews                  datasource = "snowflake_semantic_views"
 	Services                       datasource = "snowflake_services"
 	Sequences                      datasource = "snowflake_sequences"
 	Shares                         datasource = "snowflake_shares"
