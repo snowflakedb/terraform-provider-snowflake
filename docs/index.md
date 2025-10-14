@@ -749,7 +749,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_pipes](./docs/data-sources/pipes)
 - [snowflake_procedures](./docs/data-sources/procedures)
 - [snowflake_sequences](./docs/data-sources/sequences)
-- - [snowflake_semantic_view](./docs/data-sources/semantic_views)
+- [snowflake_semantic_view](./docs/data-sources/semantic_views)
 - [snowflake_services](./docs/data-sources/services)
 - [snowflake_shares](./docs/data-sources/shares)
 - [snowflake_stages](./docs/data-sources/stages)
