@@ -397,9 +397,9 @@ func TestTasks_Alter(t *testing.T) {
 	t.Run("alter set multiple serverless task parameters", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TaskSet{
-			TargetCompletionInterval:        String("20 MINUTES"),
-			ServerlessTaskMinStatementSize:  Pointer(WarehouseSizeSmall),
-			ServerlessTaskMaxStatementSize:  Pointer(WarehouseSizeLarge),
+			TargetCompletionInterval:       String("20 MINUTES"),
+			ServerlessTaskMinStatementSize: Pointer(WarehouseSizeSmall),
+			ServerlessTaskMaxStatementSize: Pointer(WarehouseSizeLarge),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET TARGET_COMPLETION_INTERVAL = '20 MINUTES', SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL', SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE'", id.FullyQualifiedName())
 	})

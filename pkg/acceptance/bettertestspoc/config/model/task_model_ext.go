@@ -82,7 +82,7 @@ func (t *TaskModel) WithServerlessTaskMaxStatementSizeEnum(warehouseSize sdk.War
 	return t
 }
 
-func (t *TaskModel) WithScheduleMinutes(minutes int) *TaskModel{
+func (t *TaskModel) WithScheduleMinutes(minutes int) *TaskModel {
 	t.Schedule = tfconfig.MapVariable(map[string]tfconfig.Variable{
 		"minutes": tfconfig.IntegerVariable(minutes),
 	})
