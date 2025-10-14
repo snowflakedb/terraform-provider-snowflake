@@ -1,8 +1,6 @@
 package sdk
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNotebooks_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
@@ -95,44 +93,72 @@ func TestNotebooks_Alter(t *testing.T) {
 	})
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.Set] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set opts.Unset] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset"))
+
+		opts.Set = &NotebookSet{
+			Comment: String("comment"),
+		}
+
+		opts.Unset = &NotebookUnset{
+			Comment: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset"))
 	})
 
 	t.Run("validation: valid identifier for [opts.Set.QueryWarehouse] if set", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Set = &NotebookSet{
+			QueryWarehouse: &emptyAccountObjectIdentifier,
+		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: valid identifier for [opts.Set.Warehouse] if set", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Set = &NotebookSet{
+			Warehouse: &emptyAccountObjectIdentifier,
+		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: valid identifier for [opts.Set.ComputePool] if set", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Set = &NotebookSet{
+			ComputePool: &emptyAccountObjectIdentifier,
+		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Set = &NotebookSet{
+			Comment: String("comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTEBOOK %s SET COMMENT = 'comment'", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Set = &NotebookSet{
+			Comment:                     String("comment"),
+			QueryWarehouse:              &AccountObjectIdentifier{"sample_qwh"},
+			IdleAutoShutdownTimeSeconds: Int(3600),
+			SecretsList:                 &SecretsList{[]SecretReference{{"var_name", true, SchemaObjectIdentifier{}}}},
+			MainFile:                    String("main_file"),
+			Warehouse:                   &AccountObjectIdentifier{"sample_wh"},
+			RuntimeName:                 String("runtime_name"),
+			ComputePool:                 &AccountObjectIdentifier{"sample_cp"},
+			ExternalAccessIntegrations:  []AccountObjectIdentifier{{"test"}},
+			RuntimeEnvironmentVersion:   String("WH-RUNTIME-2.0"),
+		}
+
+		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTEBOOK %s SET COMMENT = 'comment' QUERY_WAREHOUSE = \"sample_qwh\" IDLE_AUTO_SHUTDOWN_TIME_SECONDS = 3600 SECRETS = ('var_name' =) MAIN_FILE = 'main_file' WAREHOUSE = \"sample_wh\" RUNTIME_NAME = 'runtime_name' COMPUTE_POOL = \"sample_cp\" EXTERNAL_ACCESS_INTEGRATIONS = (\"test\") RUNTIME_ENVIRONMENT_VERSION = 'WH-RUNTIME-2.0'", id.FullyQualifiedName())
 	})
 }
 

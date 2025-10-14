@@ -96,7 +96,7 @@ var NotebooksDef = g.NewInterface(
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Set"),
+		WithValidation(g.ExactlyOneValueSet, "Set", "Unset"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-notebook",
 	g.NewQueryStruct("DropNotebook").

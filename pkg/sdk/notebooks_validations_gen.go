@@ -43,8 +43,8 @@ func (opts *AlterNotebookOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Set) {
-		errs = append(errs, errExactlyOneOf("AlterNotebookOptions", "Set"))
+	if !exactlyOneValueSet(opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset"))
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
