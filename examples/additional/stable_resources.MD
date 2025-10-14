@@ -35,6 +35,7 @@
 - [snowflake_secret_with_basic_authentication](./docs/resources/secret_with_basic_authentication)
 - [snowflake_secret_with_client_credentials](./docs/resources/secret_with_client_credentials)
 - [snowflake_secret_with_generic_string](./docs/resources/secret_with_generic_string)
+- [snowflake_semantic_view](./docs/resources/semantic_view)
 - [snowflake_service_user](./docs/resources/service_user)
 - [snowflake_shared_database](./docs/resources/shared_database)
 - [snowflake_stream_on_directory_table](./docs/resources/stream_on_directory_table)
