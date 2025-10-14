@@ -24,7 +24,7 @@ func TestInt_AuthenticationPolicies_AccountLevel(t *testing.T) {
 	})
 
 	t.Run("Alter - set and unset options deprecated in 2025_06", func(t *testing.T) {
-		authenticationPolicy, cleanupAuthPolicy := testClientHelper().AuthenticationPolicy.Create(t)
+		authenticationPolicy, cleanupAuthPolicy := secondaryTestClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(cleanupAuthPolicy)
 
 		err := client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicy.ID()).
@@ -33,17 +33,11 @@ func TestInt_AuthenticationPolicies_AccountLevel(t *testing.T) {
 					{Method: sdk.MfaAuthenticationMethodsPassword},
 					{Method: sdk.MfaAuthenticationMethodsSaml},
 				})))
-		require.NoError(t, err)
-
-		_, err = client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
-		require.ErrorContains(t, err, "asf")
+		require.ErrorContains(t, err, "003639 (01P01): SQL Compilation Error: MFA_AUTHENTICATION_METHODS is deprecated, please use MFA_POLICY=(ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL | NONE) instead.")
 
 		err = client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicy.ID()).
 			WithUnset(*sdk.NewAuthenticationPolicyUnsetRequest().
 				WithMfaAuthenticationMethods(true)))
-		require.NoError(t, err)
-
-		_, err = client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
-		require.ErrorContains(t, err, "asf")
+		require.ErrorContains(t, err, "003639 (01P01): SQL Compilation Error: MFA_AUTHENTICATION_METHODS is deprecated, please use MFA_POLICY=(ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL | NONE) instead.")
 	})
 }
