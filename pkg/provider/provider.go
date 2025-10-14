@@ -528,6 +528,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_secret_with_basic_authentication":                             resources.SecretWithBasicAuthentication(),
 		"snowflake_secret_with_client_credentials":                               resources.SecretWithClientCredentials(),
 		"snowflake_secret_with_generic_string":                                   resources.SecretWithGenericString(),
+		"snowflake_semantic_view":                                                resources.SemanticView(),
 		"snowflake_service":                                                      resources.Service(),
 		"snowflake_sequence":                                                     resources.Sequence(),
 		"snowflake_service_user":                                                 resources.ServiceUser(),
