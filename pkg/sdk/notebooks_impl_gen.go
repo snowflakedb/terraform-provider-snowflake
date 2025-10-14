@@ -82,7 +82,7 @@ func (r *CreateNotebookRequest) toOpts() *CreateNotebookOptions {
 		Warehouse:                   r.Warehouse,
 		RuntimeName:                 r.RuntimeName,
 		ComputePool:                 r.ComputePool,
-		Externalaccessintegrations:  r.ExternalAccessIntegrations,
+		ExternalAccessIntegrations:  r.ExternalAccessIntegrations,
 		RuntimeEnvironmentVersion:   r.RuntimeEnvironmentVersion,
 		DefaultVersion:              r.DefaultVersion,
 	}
@@ -101,11 +101,11 @@ func (r *AlterNotebookRequest) toOpts() *AlterNotebookOptions {
 			QueryWarehouse:              r.Set.QueryWarehouse,
 			IdleAutoShutdownTimeSeconds: r.Set.IdleAutoShutdownTimeSeconds,
 
-			Mainfile:                   r.Set.Mainfile,
+			MainFile:                   r.Set.MainFile,
 			Warehouse:                  r.Set.Warehouse,
 			RuntimeName:                r.Set.RuntimeName,
 			ComputePool:                r.Set.ComputePool,
-			Externalaccessintegrations: r.Set.ExternalAccessIntegrations,
+			ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations,
 			RuntimeEnvironmentVersion:  r.Set.RuntimeEnvironmentVersion,
 		}
 		if r.Set.SecretsList != nil {

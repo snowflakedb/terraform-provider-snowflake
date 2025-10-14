@@ -24,17 +24,17 @@ type CreateNotebookOptions struct {
 	notebook                    bool                      `ddl:"static" sql:"NOTEBOOK"`
 	IfNotExists                 *bool                     `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                        SchemaObjectIdentifier    `ddl:"identifier"`
-	From                        Location                  `ddl:"parameter,single_quotes,no_equals"`
+	From                        Location                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
 	Mainfile                    *string                   `ddl:"parameter,single_quotes" sql:"MainFile"`
 	Comment                     *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	QueryWarehouse              *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
-	IdleAutoShutdownTimeSeconds *int                      `ddl:"keyword" sql:"IDLE_AUTO_SHUTDOWN_TIME_SECONDS"`
+	IdleAutoShutdownTimeSeconds *int                      `ddl:"parameter,no_quotes" sql:"IDLE_AUTO_SHUTDOWN_TIME_SECONDS"`
 	Warehouse                   *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"WAREHOUSE"`
-	RuntimeName                 *string                   `ddl:"keyword,single_quotes" sql:"RUNTIME_NAME"`
+	RuntimeName                 *string                   `ddl:"parameter,single_quotes" sql:"RUNTIME_NAME"`
 	ComputePool                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"COMPUTE_POOL"`
-	Externalaccessintegrations  []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"ExternalAccessIntegrations"`
-	RuntimeEnvironmentVersion   *string                   `ddl:"keyword,single_quotes" sql:"RUNTIME_ENVIRONMENT_VERSION"`
-	DefaultVersion              *string                   `ddl:"keyword" sql:"DEFAULT_VERSION"`
+	ExternalAccessIntegrations  []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	RuntimeEnvironmentVersion   *string                   `ddl:"parameter,single_quotes" sql:"RUNTIME_ENVIRONMENT_VERSION"`
+	DefaultVersion              *string                   `ddl:"parameter,no_quotes" sql:"DEFAULT_VERSION"`
 }
 
 // AlterNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-notebook.
@@ -50,15 +50,15 @@ type AlterNotebookOptions struct {
 
 type NotebookSet struct {
 	Comment                     *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	QueryWarehouse              *AccountObjectIdentifier  `ddl:"identifier" sql:"QUERY_WAREHOUSE"`
-	IdleAutoShutdownTimeSeconds *int                      `ddl:"keyword" sql:"IDLE_AUTO_SHUTDOWN_TIME_SECONDS"`
+	QueryWarehouse              *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
+	IdleAutoShutdownTimeSeconds *int                      `ddl:"parameter,no_quotes" sql:"IDLE_AUTO_SHUTDOWN_TIME_SECONDS"`
 	SecretsList                 *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
-	Mainfile                    *string                   `ddl:"parameter,single_quotes" sql:"MainFile"`
+	MainFile                    *string                   `ddl:"parameter,single_quotes" sql:"MAIN_FILE"`
 	Warehouse                   *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"WAREHOUSE"`
-	RuntimeName                 *string                   `ddl:"keyword,single_quotes" sql:"RUNTIME_NAME"`
+	RuntimeName                 *string                   `ddl:"parameter,single_quotes" sql:"RUNTIME_NAME"`
 	ComputePool                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"COMPUTE_POOL"`
-	Externalaccessintegrations  []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"ExternalAccessIntegrations"`
-	RuntimeEnvironmentVersion   *string                   `ddl:"keyword,single_quotes" sql:"RUNTIME_ENVIRONMENT_VERSION"`
+	ExternalAccessIntegrations  []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	RuntimeEnvironmentVersion   *string                   `ddl:"parameter,single_quotes" sql:"RUNTIME_ENVIRONMENT_VERSION"`
 }
 
 type NotebookUnset struct {

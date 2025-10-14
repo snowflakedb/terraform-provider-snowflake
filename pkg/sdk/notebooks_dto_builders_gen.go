@@ -60,8 +60,8 @@ func (s *CreateNotebookRequest) WithComputePool(ComputePool AccountObjectIdentif
 	return s
 }
 
-func (s *CreateNotebookRequest) WithExternalaccessintegrations(Externalaccessintegrations []AccountObjectIdentifier) *CreateNotebookRequest {
-	s.ExternalAccessIntegrations = Externalaccessintegrations
+func (s *CreateNotebookRequest) WithExternalAccessIntegrations(ExternalAccessIntegrations []AccountObjectIdentifier) *CreateNotebookRequest {
+	s.ExternalAccessIntegrations = ExternalAccessIntegrations
 	return s
 }
 
@@ -127,8 +127,8 @@ func (s *NotebookSetRequest) WithSecretsList(SecretsList SecretsListRequest) *No
 	return s
 }
 
-func (s *NotebookSetRequest) WithMainfile(Mainfile string) *NotebookSetRequest {
-	s.Mainfile = &Mainfile
+func (s *NotebookSetRequest) WithMainFile(MainFile string) *NotebookSetRequest {
+	s.MainFile = &MainFile
 	return s
 }
 
@@ -147,8 +147,8 @@ func (s *NotebookSetRequest) WithComputePool(ComputePool AccountObjectIdentifier
 	return s
 }
 
-func (s *NotebookSetRequest) WithExternalaccessintegrations(Externalaccessintegrations []AccountObjectIdentifier) *NotebookSetRequest {
-	s.ExternalAccessIntegrations = Externalaccessintegrations
+func (s *NotebookSetRequest) WithExternalAccessIntegrations(ExternalAccessIntegrations []AccountObjectIdentifier) *NotebookSetRequest {
+	s.ExternalAccessIntegrations = ExternalAccessIntegrations
 	return s
 }
 

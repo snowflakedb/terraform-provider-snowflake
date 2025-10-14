@@ -40,17 +40,17 @@ var NotebooksDef = g.NewInterface(
 		SQL("NOTEBOOK").
 		IfNotExists().
 		Name().
-		PredefinedQueryStructField("From", "Location", g.ParameterOptions().SingleQuotes().NoEquals()).
-		OptionalTextAssignment("MainFile", g.ParameterOptions().SingleQuotes()).
+		PredefinedQueryStructField("From", "Location", g.ParameterOptions().SQL("FROM").SingleQuotes().NoEquals()).
+		OptionalTextAssignment("MainFile", g.ParameterOptions().SQL("MAIN_FILE").SingleQuotes()).
 		OptionalComment().
 		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
-		OptionalNumber("IdleAutoShutdownTimeSeconds", g.KeywordOptions().SQL("IDLE_AUTO_SHUTDOWN_TIME_SECONDS")).
+		OptionalNumberAssignment("IDLE_AUTO_SHUTDOWN_TIME_SECONDS", g.ParameterOptions().NoQuotes()).
 		OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("WAREHOUSE").Equals()).
-		OptionalText("RuntimeName", g.KeywordOptions().SQL("RUNTIME_NAME").SingleQuotes()).
+		OptionalTextAssignment("RUNTIME_NAME", g.ParameterOptions().SingleQuotes()).
 		OptionalIdentifier("ComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("COMPUTE_POOL").Equals()).
-		ListAssignment("ExternalAccessIntegrations", g.KindOfT[AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
-		OptionalText("RuntimeEnvironmentVersion", g.KeywordOptions().SQL("RUNTIME_ENVIRONMENT_VERSION").SingleQuotes()).
-		OptionalText("DefaultVersion", g.KeywordOptions().SQL("DEFAULT_VERSION")).
+		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
+		OptionalTextAssignment("RUNTIME_ENVIRONMENT_VERSION", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("DEFAULT_VERSION", g.ParameterOptions().NoQuotes()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 		WithValidation(g.ValidIdentifierIfSet, "Warehouse").
@@ -68,15 +68,15 @@ var NotebooksDef = g.NewInterface(
 			"Set",
 			g.NewQueryStruct("NotebookSet").
 				OptionalComment().
-				OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE")).
-				OptionalNumber("IdleAutoShutdownTimeSeconds", g.KeywordOptions().SQL("IDLE_AUTO_SHUTDOWN_TIME_SECONDS")).
+				OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
+				OptionalNumberAssignment("IDLE_AUTO_SHUTDOWN_TIME_SECONDS", g.ParameterOptions().NoQuotes()).
 				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
-				OptionalTextAssignment("MainFile", g.ParameterOptions().SingleQuotes()).
+				OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
 				OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("WAREHOUSE").Equals()).
-				OptionalText("RuntimeName", g.KeywordOptions().SQL("RUNTIME_NAME").SingleQuotes()).
+				OptionalTextAssignment("RUNTIME_NAME", g.ParameterOptions().SingleQuotes()).
 				OptionalIdentifier("ComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("COMPUTE_POOL").Equals()).
-				ListAssignment("ExternalAccessIntegrations", g.KindOfT[AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
-				OptionalText("RuntimeEnvironmentVersion", g.KeywordOptions().SQL("RUNTIME_ENVIRONMENT_VERSION").SingleQuotes()).
+				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
+				OptionalTextAssignment("RUNTIME_ENVIRONMENT_VERSION", g.ParameterOptions().SingleQuotes()).
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 				WithValidation(g.ValidIdentifierIfSet, "Warehouse").
 				WithValidation(g.ValidIdentifierIfSet, "ComputePool"),

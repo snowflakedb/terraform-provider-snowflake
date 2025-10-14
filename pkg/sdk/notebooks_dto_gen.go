@@ -40,7 +40,7 @@ type NotebookSetRequest struct {
 	QueryWarehouse              *AccountObjectIdentifier
 	IdleAutoShutdownTimeSeconds *int
 	SecretsList                 *SecretsListRequest
-	Mainfile                    *string
+	MainFile                    *string
 	Warehouse                   *AccountObjectIdentifier
 	RuntimeName                 *string
 	ComputePool                 *AccountObjectIdentifier
