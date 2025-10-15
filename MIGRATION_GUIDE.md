@@ -44,7 +44,7 @@ This feature enables authentication with `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_A
 
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/oauth-intro) for more information on Oauth authentication.
 
-### *(bugfix)* Fixed setting the default authenticator for the `token`field
+### *(bugfix)* Fixed setting the default authenticator for the `token` field
 
 In [v2.5.0](#bugfix-fixed-incorrect-authenticator-when-using-the-token-field), we fixed a bug: when the `token` and the `authenticator` fields were both set, the provider always set the `authenticator` to `OAUTH` regardless of the `authenticator` config value.
 
