@@ -49,7 +49,7 @@ func DefaultConfig(opts ...func(*FileReaderConfig)) *gosnowflake.Config {
 	config, err := ProfileConfig("default", opts...)
 	if err != nil || config == nil {
 		log.Printf("[DEBUG] No Snowflake config file found, proceeding with empty config, err = %v", err)
-		config = &gosnowflake.Config{}
+		config = EmptyDriverConfig()
 	}
 	return config
 }
@@ -96,7 +96,7 @@ func ProfileConfig(profile string, opts ...func(*FileReaderConfig)) (*gosnowflak
 }
 
 func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
-	driverCfg := gosnowflake.Config{}
+	driverCfg := EmptyDriverConfig()
 	if c.AccountName != nil && c.OrganizationName != nil {
 		driverCfg.Account = fmt.Sprintf("%s-%s", *c.OrganizationName, *c.AccountName)
 	}
@@ -114,7 +114,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.PasscodeInPassword, &driverCfg.PasscodeInPassword)
 	err := pointerUrlAttributeSet(c.OktaUrl, &driverCfg.OktaURL)
 	if err != nil {
-		return gosnowflake.Config{}, err
+		return *EmptyDriverConfig(), err
 	}
 	pointerTimeInSecondsAttributeSet(c.ClientTimeout, &driverCfg.ClientTimeout)
 	pointerTimeInSecondsAttributeSet(c.JwtClientTimeout, &driverCfg.JWTClientTimeout)
@@ -126,11 +126,9 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	if c.Authenticator != nil {
 		authenticator, err := ToAuthenticatorType(*c.Authenticator)
 		if err != nil {
-			return gosnowflake.Config{}, err
+			return *EmptyDriverConfig(), err
 		}
 		driverCfg.Authenticator = authenticator
-	} else {
-		driverCfg.Authenticator = GosnowflakeAuthTypeEmpty
 	}
 	pointerAttributeSet(c.InsecureMode, &driverCfg.InsecureMode) //nolint:staticcheck
 	if c.OcspFailOpen != nil {
@@ -149,7 +147,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 		privKey, err := ParsePrivateKey([]byte(*c.PrivateKey), passphrase)
 		if err != nil {
-			return gosnowflake.Config{}, err
+			return *EmptyDriverConfig(), err
 		}
 		driverCfg.PrivateKey = privKey
 	}
@@ -170,7 +168,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.OauthScope, &driverCfg.OauthScope)
 	pointerAttributeSet(c.EnableSingleUseRefreshTokens, &driverCfg.EnableSingleUseRefreshTokens)
 
-	return driverCfg, nil
+	return *driverCfg, nil
 }
 
 func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config) *gosnowflake.Config {
@@ -545,5 +543,22 @@ func ToDriverLogLevel(s string) (DriverLogLevel, error) {
 		return DriverLogLevel(lowerCase), nil
 	default:
 		return "", fmt.Errorf("invalid driver log level: %s", s)
+	}
+}
+
+// EmptyDriverConfig returns a default driver config with the Authenticator set to GosnowflakeAuthTypeEmpty.
+// This is used when no config is found in the config file.
+func EmptyDriverConfig() *gosnowflake.Config {
+	return &gosnowflake.Config{
+		Authenticator: GosnowflakeAuthTypeEmpty,
+	}
+}
+
+// EmptyDriverConfigWithApplication returns a default driver config with the Authenticator set to GosnowflakeAuthTypeEmpty,
+// and the passed application name.
+func EmptyDriverConfigWithApplication(application string) *gosnowflake.Config {
+	return &gosnowflake.Config{
+		Application:   application,
+		Authenticator: GosnowflakeAuthTypeEmpty,
 	}
 }

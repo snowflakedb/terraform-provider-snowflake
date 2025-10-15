@@ -697,9 +697,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 }
 
 func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, error) {
-	config := &gosnowflake.Config{
-		Application: "terraform-provider-snowflake",
-	}
+	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
 
 	err := errors.Join(
 		// account_name and organization_name are handled below
