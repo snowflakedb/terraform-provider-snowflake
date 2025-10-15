@@ -68,10 +68,6 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		err := client.AuthenticationPolicies.Create(ctx, sdk.NewCreateAuthenticationPolicyRequest(id).
 			WithComment(comment).
 			WithMfaEnrollment(sdk.MfaEnrollmentOptional).
-			WithMfaAuthenticationMethods([]sdk.MfaAuthenticationMethods{
-				{Method: sdk.MfaAuthenticationMethodsPassword},
-				{Method: sdk.MfaAuthenticationMethodsSaml},
-			}).
 			WithSecurityIntegrations([]sdk.SecurityIntegrationsOption{
 				{Name: samlIntegration.ID()},
 			}).
@@ -93,7 +89,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		assertProperty(t, desc, "COMMENT", comment)
 		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentRequiredPasswordOnly))
-		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
+		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL]")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
@@ -112,10 +108,6 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			WithSet(*sdk.NewAuthenticationPolicySetRequest().
 				WithComment(comment).
 				WithMfaEnrollment(sdk.MfaEnrollmentRequired).
-				WithMfaAuthenticationMethods([]sdk.MfaAuthenticationMethods{
-					{Method: sdk.MfaAuthenticationMethodsPassword},
-					{Method: sdk.MfaAuthenticationMethodsSaml},
-				}).
 				WithSecurityIntegrations([]sdk.SecurityIntegrationsOption{
 					{Name: samlIntegration.ID()},
 				}).
@@ -135,7 +127,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		assertProperty(t, desc, "COMMENT", comment)
 		assertProperty(t, desc, "MFA_ENROLLMENT", "REQUIRED")
-		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
+		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL, SNOWFLAKE_UI]")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
@@ -144,7 +136,6 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			WithUnset(*sdk.NewAuthenticationPolicyUnsetRequest().
 				WithComment(true).
 				WithMfaEnrollment(true).
-				WithMfaAuthenticationMethods(true).
 				WithSecurityIntegrations(true).
 				WithClientTypes(true).
 				WithAuthenticationMethods(true)))
