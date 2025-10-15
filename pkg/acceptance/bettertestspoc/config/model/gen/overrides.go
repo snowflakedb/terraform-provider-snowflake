@@ -29,6 +29,6 @@ var complexListAttributesOverrides = map[string]map[string]string{
 	"TagAssociation":  {"object_identifiers": "sdk.ObjectIdentifier"},
 	// TODO [SNOW-1348114]: use better type for override (not null and default are currently not supported)
 	"Table":        {"column": "sdk.TableColumnSignature"},
-	"SemanticView": {"tables": "sdk.LogicalTable", "metrics": "sdk.MetricDefinition"},
+	"SemanticView": {"tables": "sdk.LogicalTable", "metrics": "sdk.MetricDefinition", "facts": "sdk.SemanticExpression", "dimensions": "sdk.SemanticExpression", "relationships": "sdk.SemanticViewRelationship"},
 	"DynamicTable": {"target_lag": "sdk.TargetLag"},
 }
