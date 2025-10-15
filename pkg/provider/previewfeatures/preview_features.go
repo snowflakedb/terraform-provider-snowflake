@@ -144,7 +144,6 @@ var allPreviewFeatures = []feature{
 	PipeResource,
 	PipesDatasource,
 	CurrentRoleDatasource,
-	SemanticViewsDatasource,
 	ServiceResource,
 	ServicesDatasource,
 	SequenceResource,
