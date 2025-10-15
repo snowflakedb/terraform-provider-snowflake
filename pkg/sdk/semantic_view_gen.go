@@ -197,6 +197,7 @@ type SemanticView struct {
 func (v *SemanticView) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
+
 func (v *SemanticView) ObjectType() ObjectType {
 	return ObjectTypeSemanticView
 }

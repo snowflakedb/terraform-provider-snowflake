@@ -20,6 +20,7 @@ const (
 	CurrentOrganizationAccount                             resource = "snowflake_current_organization_account"
 	Database                                               resource = "snowflake_database"
 	DatabaseRole                                           resource = "snowflake_database_role"
+	DbtProject                                             resource = "snowflake_dbt_project"
 	DynamicTable                                           resource = "snowflake_dynamic_table"
 	EmailNotificationIntegration                           resource = "snowflake_email_notification_integration"
 	Execute                                                resource = "snowflake_execute"

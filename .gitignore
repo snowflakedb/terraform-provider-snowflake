@@ -33,3 +33,6 @@ test.env
 
 # Test sensitive values
 pkg/manual_tests/authentication_methods/**/*.tfvars
+
+# dbt fork
+test_project/

@@ -6,11 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var (
-	_ ApiIntegrations                        = (*apiIntegrations)(nil)
-	_ convertibleRow[ApiIntegration]         = new(showApiIntegrationsDbRow)
-	_ convertibleRow[ApiIntegrationProperty] = new(descApiIntegrationsDbRow)
-)
+var _ ApiIntegrations = (*apiIntegrations)(nil)
+
+var _ convertibleRow[ApiIntegration] = new(showApiIntegrationsDbRow)
+var _ convertibleRow[ApiIntegrationProperty] = new(descApiIntegrationsDbRow)
 
 type apiIntegrations struct {
 	client *Client
@@ -32,7 +31,7 @@ func (v *apiIntegrations) Drop(ctx context.Context, request *DropApiIntegrationR
 }
 
 func (v *apiIntegrations) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropApiIntegrationRequest(id).WithIfExists(Bool(true))) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropApiIntegrationRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
 func (v *apiIntegrations) Show(ctx context.Context, request *ShowApiIntegrationRequest) ([]ApiIntegration, error) {
@@ -112,6 +111,7 @@ func (r *AlterApiIntegrationRequest) toOpts() *AlterApiIntegrationOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &ApiIntegrationSet{
+
 			Enabled:            r.Set.Enabled,
 			ApiAllowedPrefixes: r.Set.ApiAllowedPrefixes,
 			ApiBlockedPrefixes: r.Set.ApiBlockedPrefixes,
@@ -163,17 +163,8 @@ func (r *ShowApiIntegrationRequest) toOpts() *ShowApiIntegrationOptions {
 }
 
 func (r showApiIntegrationsDbRow) convert() (*ApiIntegration, error) {
-	s := &ApiIntegration{
-		Name:      r.Name,
-		ApiType:   r.Type,
-		Category:  r.Category,
-		Enabled:   r.Enabled,
-		CreatedOn: r.CreatedOn,
-	}
-	if r.Comment.Valid {
-		s.Comment = r.Comment.String
-	}
-	return s, nil
+	// TODO: Mapping
+	return &ApiIntegration{}, nil
 }
 
 func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions {
@@ -184,10 +175,6 @@ func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions 
 }
 
 func (r descApiIntegrationsDbRow) convert() (*ApiIntegrationProperty, error) {
-	return &ApiIntegrationProperty{
-		Name:    r.Property,
-		Type:    r.PropertyType,
-		Value:   r.PropertyValue,
-		Default: r.PropertyDefault,
-	}, nil
+	// TODO: Mapping
+	return &ApiIntegrationProperty{}, nil
 }

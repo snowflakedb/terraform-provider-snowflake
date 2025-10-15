@@ -136,6 +136,10 @@ func (v *ApiIntegration) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
 
+func (v *ApiIntegration) ObjectType() ObjectType {
+	return ObjectTypeIntegration
+}
+
 // DescribeApiIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-integration.
 type DescribeApiIntegrationOptions struct {
 	describe       bool                    `ddl:"static" sql:"DESCRIBE"`
