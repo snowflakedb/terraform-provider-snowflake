@@ -24,9 +24,9 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-### v2.8.x ➞ v2.9.0
+## v2.8.x ➞ v2.9.0
 
-## *(preview feature/deprecation)* Deprecated `mfa_authentication_methods` field in authentication policies
+### *(preview feature/deprecation)* Deprecated `mfa_authentication_methods` field in authentication policies
 
 The `mfa_authentication_methods` field in authentication policies is already deprecated in Snowflake since 2025_06 BCR - [check our BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies).
 
@@ -34,7 +34,7 @@ Please follow the linked guide for more information and migration steps.
 
 This field will be removed in the future. The new field `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` will be added in the next versions of the provider.
 
-## *(new feature)* New authentication options for Oauth with Client Credentials and Oauth with Authorization Code flows
+### *(new feature)* New authentication options for Oauth with Client Credentials and Oauth with Authorization Code flows
 
 We added new `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` options to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
 - Fields for both authenticators
