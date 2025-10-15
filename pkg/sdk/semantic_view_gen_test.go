@@ -67,8 +67,7 @@ func TestSemanticViews_Create(t *testing.T) {
 			name: id,
 			semanticViewRelationships: []SemanticViewRelationship{
 				{
-					tableNameOrAlias:    &RelationshipTableAlias{},
-					refTableNameOrAlias: &RelationshipTableAlias{},
+					tableNameOrAlias: &RelationshipTableAlias{},
 				},
 			},
 		}
@@ -84,31 +83,10 @@ func TestSemanticViews_Create(t *testing.T) {
 						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
 						RelationshipTableAlias: String("alias"),
 					},
-					refTableNameOrAlias: &RelationshipTableAlias{
-						RelationshipTableName: Pointer(randomSchemaObjectIdentifier()),
-					},
 				},
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
-	})
-
-	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias RelationshipTableName or RelationshipTableAlias] both set", func(t *testing.T) {
-		opts := &CreateSemanticViewOptions{
-			name: id,
-			semanticViewRelationships: []SemanticViewRelationship{
-				{
-					tableNameOrAlias: &RelationshipTableAlias{
-						RelationshipTableName: Pointer(randomSchemaObjectIdentifier()),
-					},
-					refTableNameOrAlias: &RelationshipTableAlias{
-						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
-						RelationshipTableAlias: String("alias"),
-					},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
