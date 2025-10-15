@@ -6,9 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+var _ Notebooks = (*notebooks)(nil)
+
 var (
-	_ Notebooks                = (*notebooks)(nil)
-	_ convertibleRow[Notebook] = new(notebooksRow)
+	_ convertibleRow[NotebookDetails] = new(NotebooksDetailsRow)
+	_ convertibleRow[Notebook]        = new(notebooksRow)
 )
 
 type notebooks struct {
@@ -34,11 +36,11 @@ func (v *notebooks) DropSafely(ctx context.Context, id SchemaObjectIdentifier) e
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropNotebookRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
-func (v *notebooks) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Notebook, error) {
+func (v *notebooks) Describe(ctx context.Context, id SchemaObjectIdentifier) (*NotebookDetails, error) {
 	opts := &DescribeNotebookOptions{
 		name: id,
 	}
-	result, err := validateAndQueryOne[notebooksRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[NotebooksDetailsRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +77,7 @@ func (r *CreateNotebookRequest) toOpts() *CreateNotebookOptions {
 		IfNotExists:                 r.IfNotExists,
 		name:                        r.name,
 		From:                        r.From,
+		Title:                       r.Title,
 		MainFile:                    r.MainFile,
 		Comment:                     r.Comment,
 		QueryWarehouse:              r.QueryWarehouse,
@@ -94,6 +97,9 @@ func (r *AlterNotebookRequest) toOpts() *AlterNotebookOptions {
 		IfExists: r.IfExists,
 		name:     r.name,
 		RenameTo: r.RenameTo,
+
+		SetTags:   r.SetTags,
+		UnsetTags: r.UnsetTags,
 	}
 	if r.Set != nil {
 		opts.Set = &NotebookSet{
@@ -144,19 +150,68 @@ func (r *DescribeNotebookRequest) toOpts() *DescribeNotebookOptions {
 	return opts
 }
 
-func (r notebooksRow) convert() (*Notebook, error) {
-	return &Notebook{
-		CreatedOn:      r.CreatedOn,
-		Name:           r.Name,
-		DatabaseName:   r.DatabaseName,
-		SchemaName:     r.SchemaName,
-		Comment:        &r.Comment.String,
-		Owner:          r.Owner,
-		QueryWarehouse: &AccountObjectIdentifier{r.QueryWarehouse.String},
-		UrlId:          r.UrlId,
-		OwnerRoleType:  r.OwnerRoleType,
-		CodeWarehouse:  AccountObjectIdentifier{r.CodeWarehouse},
-	}, nil
+func (r NotebooksDetailsRow) convert() (*NotebookDetails, error) {
+	n := &NotebookDetails{
+		MainFile:                    r.MainFile,
+		UrlId:                       r.UrlId,
+		DefaultPackages:             r.DefaultPackages,
+		Owner:                       r.Owner,
+		ImportUrls:                  r.ImportUrls,
+		ExternalAccessIntegrations:  r.ExternalAccessIntegrations,
+		ExternalAccessSecrets:       r.ExternalAccessSecrets,
+		CodeWarehouse:               r.CodeWarehouse,
+		IdleAutoShutdownTimeSeconds: r.IdleAutoShutdownTimeSeconds,
+		RuntimeEnvironmentVersion:   r.RuntimeEnvironmentVersion,
+		Name:                        r.Name,
+		DefaultVersion:              r.DefaultVersion,
+		DefaultVersionName:          r.DefaultVersionName,
+		DefaultVersionLocationUri:   r.DefaultVersionLocationUri,
+		LastVersionName:             r.LastVersionName,
+		LastVersionLocationUri:      r.LastVersionLocationUri,
+	}
+
+	// Optionals.
+	if r.Title.Valid {
+		n.Title = &r.Title.String
+	}
+	if r.QueryWarehouse.Valid {
+		n.QueryWarehouse = &AccountObjectIdentifier{r.QueryWarehouse.String}
+	}
+	if r.UserPackages.Valid {
+		n.UserPackages = &r.UserPackages.String
+	}
+	if r.RuntimeName.Valid {
+		n.RuntimeName = &r.RuntimeName.String
+	}
+	if r.ComputePool.Valid {
+		n.ComputePool = &r.ComputePool.String
+	}
+	if r.Comment.Valid {
+		n.Comment = &r.Comment.String
+	}
+	if r.DefaultVersionAlias.Valid {
+		n.DefaultVersionAlias = &r.DefaultVersionAlias.String
+	}
+	if r.DefaultVersionSourceLocationUri.Valid {
+		n.DefaultVersionSourceLocationUri = &r.DefaultVersionSourceLocationUri.String
+	}
+	if r.DefaultVersionGitCommitHash.Valid {
+		n.DefaultVersionGitCommitHash = &r.DefaultVersionGitCommitHash.String
+	}
+	if r.LastVersionAlias.Valid {
+		n.LastVersionAlias = &r.LastVersionAlias.String
+	}
+	if r.LastVersionSourceLocationUri.Valid {
+		n.LastVersionSourceLocationUri = &r.LastVersionSourceLocationUri.String
+	}
+	if r.LastVersionGitCommitHash.Valid {
+		n.LastVersionGitCommitHash = &r.LastVersionGitCommitHash.String
+	}
+	if r.LiveVersionLocationUri.Valid {
+		n.LiveVersionLocationUri = &r.LiveVersionLocationUri.String
+	}
+
+	return n, nil
 }
 
 func (r *ShowNotebookRequest) toOpts() *ShowNotebookOptions {
@@ -167,4 +222,24 @@ func (r *ShowNotebookRequest) toOpts() *ShowNotebookOptions {
 		StartsWith: r.StartsWith,
 	}
 	return opts
+}
+
+func (r notebooksRow) convert() (*Notebook, error) {
+	return &Notebook{
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+		Comment:      &r.Comment.String,
+		Owner:        r.Owner,
+		QueryWarehouse: func() *AccountObjectIdentifier {
+			if r.QueryWarehouse.Valid {
+				return &AccountObjectIdentifier{r.QueryWarehouse.String}
+			}
+			return nil
+		}(),
+		UrlId:         r.UrlId,
+		OwnerRoleType: r.OwnerRoleType,
+		CodeWarehouse: AccountObjectIdentifier{r.CodeWarehouse},
+	}, nil
 }

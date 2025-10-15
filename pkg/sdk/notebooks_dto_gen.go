@@ -15,6 +15,7 @@ type CreateNotebookRequest struct {
 	IfNotExists                 *bool
 	name                        SchemaObjectIdentifier // required
 	From                        *Location
+	Title                       *string
 	MainFile                    *string
 	Comment                     *string
 	QueryWarehouse              *AccountObjectIdentifier
@@ -28,11 +29,13 @@ type CreateNotebookRequest struct {
 }
 
 type AlterNotebookRequest struct {
-	IfExists *bool
-	name     SchemaObjectIdentifier // required
-	RenameTo *SchemaObjectIdentifier
-	Set      *NotebookSetRequest
-	Unset    *NotebookUnsetRequest
+	IfExists  *bool
+	name      SchemaObjectIdentifier // required
+	RenameTo  *SchemaObjectIdentifier
+	Set       *NotebookSetRequest
+	Unset     *NotebookUnsetRequest
+	SetTags   []TagAssociation
+	UnsetTags []ObjectIdentifier
 }
 
 type NotebookSetRequest struct {

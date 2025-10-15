@@ -29,8 +29,8 @@ func (opts *CreateNotebookOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	// Validation added manually.
-	if opts.IdleAutoShutdownTimeSeconds != nil && !validateIntInRangeInclusive(*opts.IdleAutoShutdownTimeSeconds, 60, 259200) {
-		errs = append(errs, errIntBetween("CreateNotebookOptions", "IdleAutoShutdownTimeSeconds", 60, 259200))
+	if opts.IdleAutoShutdownTimeSeconds != nil && !validateIntGreaterThan(*opts.IdleAutoShutdownTimeSeconds, 0) {
+		errs = append(errs, errIntValue("CreateNotebookOptions", "IdleAutoShutdownTimeSeconds", IntErrGreater, 0))
 	}
 	return JoinErrors(errs...)
 }
@@ -43,8 +43,11 @@ func (opts *AlterNotebookOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Set, opts.Unset) {
-		errs = append(errs, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset"))
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
@@ -56,9 +59,17 @@ func (opts *AlterNotebookOptions) validate() error {
 		if opts.Set.ComputePool != nil && !ValidObjectIdentifier(opts.Set.ComputePool) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
+		if !anyValueSet(opts.Set.Comment, opts.Set.QueryWarehouse, opts.Set.IdleAutoShutdownTimeSeconds, opts.Set.SecretsList, opts.Set.MainFile, opts.Set.Warehouse, opts.Set.RuntimeName, opts.Set.ComputePool, opts.Set.ExternalAccessIntegrations, opts.Set.RuntimeEnvironmentVersion) {
+			errs = append(errs, errAtLeastOneOf("AlterNotebookOptions.Set", "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "SecretsList", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
+		}
 		// Validation added manually.
-		if opts.Set.IdleAutoShutdownTimeSeconds != nil && !validateIntInRangeInclusive(*opts.Set.IdleAutoShutdownTimeSeconds, 60, 259200) {
-			errs = append(errs, errIntBetween("AlterNotebookOptions", "IdleAutoShutdownTimeSeconds", 60, 259200))
+		if opts.Set.IdleAutoShutdownTimeSeconds != nil && !validateIntGreaterThan(*opts.Set.IdleAutoShutdownTimeSeconds, 0) {
+			errs = append(errs, errIntValue("AlterNotebookOptions", "IdleAutoShutdownTimeSeconds", IntErrGreater, 0))
+		}
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.Comment, opts.Unset.QueryWarehouse, opts.Unset.Secrets, opts.Unset.Warehouse, opts.Unset.RuntimeName, opts.Unset.ComputePool, opts.Unset.ExternalAccessIntegrations, opts.Unset.RuntimeEnvironmentVersion) {
+			errs = append(errs, errAtLeastOneOf("AlterNotebookOptions.Unset", "Comment", "QueryWarehouse", "Secrets", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
 		}
 	}
 	return JoinErrors(errs...)

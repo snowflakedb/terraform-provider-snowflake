@@ -25,6 +25,11 @@ func (s *CreateNotebookRequest) WithFrom(From Location) *CreateNotebookRequest {
 	return s
 }
 
+func (s *CreateNotebookRequest) WithTitle(Title string) *CreateNotebookRequest {
+	s.Title = &Title
+	return s
+}
+
 func (s *CreateNotebookRequest) WithMainFile(MainFile string) *CreateNotebookRequest {
 	s.MainFile = &MainFile
 	return s
@@ -100,6 +105,16 @@ func (s *AlterNotebookRequest) WithSet(Set NotebookSetRequest) *AlterNotebookReq
 
 func (s *AlterNotebookRequest) WithUnset(Unset NotebookUnsetRequest) *AlterNotebookRequest {
 	s.Unset = &Unset
+	return s
+}
+
+func (s *AlterNotebookRequest) WithSetTags(SetTags []TagAssociation) *AlterNotebookRequest {
+	s.SetTags = SetTags
+	return s
+}
+
+func (s *AlterNotebookRequest) WithUnsetTags(UnsetTags []ObjectIdentifier) *AlterNotebookRequest {
+	s.UnsetTags = UnsetTags
 	return s
 }
 

@@ -28,6 +28,68 @@ var notebook = g.PlainStruct("Notebook").
 	Text("OwnerRoleType").
 	Field("CodeWarehouse", "AccountObjectIdentifier")
 
+var notebookDetailsDbRow = g.DbStruct("NotebooksDetailsRow").
+	OptionalText("title").
+	Text("main_file").
+	OptionalText("query_warehouse").
+	Text("url_id").
+	Text("default_packages").
+	OptionalText("user_packages").
+	OptionalText("runtime_name").
+	OptionalText("compute_pool").
+	Text("owner").
+	Text("import_urls").
+	Text("external_access_integrations").
+	Text("external_access_secrets").
+	Text("code_warehouse").
+	Number("idle_auto_shutdown_time_seconds").
+	Text("runtime_environment_version").
+	Text("name").
+	OptionalText("comment").
+	Text("default_version").
+	Text("default_version_name").
+	OptionalText("default_version_alias").
+	Text("default_version_location_uri").
+	OptionalText("default_version_source_location_uri").
+	OptionalText("default_version_git_commit_hash").
+	Text("last_version_name").
+	OptionalText("last_version_alias").
+	Text("last_version_location_uri").
+	OptionalText("last_version_source_location_uri").
+	OptionalText("last_version_git_commit_hash").
+	OptionalText("live_version_location_uri")
+
+var notebookDetails = g.PlainStruct("NotebookDetails").
+	OptionalText("Title").
+	Text("MainFile").
+	Field("QueryWarehouse", "*AccountObjectIdentifier").
+	Text("UrlId").
+	Text("DefaultPackages").
+	OptionalText("UserPackages").
+	OptionalText("RuntimeName").
+	OptionalText("ComputePool").
+	Text("Owner").
+	Text("ImportUrls").
+	Text("ExternalAccessIntegrations").
+	Text("ExternalAccessSecrets").
+	Text("CodeWarehouse").
+	Number("IdleAutoShutdownTimeSeconds").
+	Text("RuntimeEnvironmentVersion").
+	Text("Name").
+	OptionalText("Comment").
+	Text("DefaultVersion").
+	Text("DefaultVersionName").
+	OptionalText("DefaultVersionAlias").
+	Text("DefaultVersionLocationUri").
+	OptionalText("DefaultVersionSourceLocationUri").
+	OptionalText("DefaultVersionGitCommitHash").
+	Text("LastVersionName").
+	OptionalText("LastVersionAlias").
+	Text("LastVersionLocationUri").
+	OptionalText("LastVersionSourceLocationUri").
+	OptionalText("LastVersionGitCommitHash").
+	OptionalText("LiveVersionLocationUri")
+
 var NotebooksDef = g.NewInterface(
 	"Notebooks",
 	"Notebook",
@@ -41,6 +103,7 @@ var NotebooksDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		PredefinedQueryStructField("From", "*Location", g.ParameterOptions().SQL("FROM").NoQuotes().NoEquals()).
+		OptionalTextAssignment("TITLE", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
 		OptionalComment().
 		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
@@ -79,7 +142,8 @@ var NotebooksDef = g.NewInterface(
 				OptionalTextAssignment("RUNTIME_ENVIRONMENT_VERSION", g.ParameterOptions().SingleQuotes()).
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 				WithValidation(g.ValidIdentifierIfSet, "Warehouse").
-				WithValidation(g.ValidIdentifierIfSet, "ComputePool"),
+				WithValidation(g.ValidIdentifierIfSet, "ComputePool").
+				WithValidation(g.AtLeastOneValueSet, "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "SecretsList", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -92,11 +156,15 @@ var NotebooksDef = g.NewInterface(
 				OptionalSQL("RUNTIME_NAME").
 				OptionalSQL("COMPUTE_POOL").
 				OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
-				OptionalSQL("RUNTIME_ENVIRONMENT_VERSION"),
+				OptionalSQL("RUNTIME_ENVIRONMENT_VERSION").
+				WithValidation(g.AtLeastOneValueSet, "Comment", "QueryWarehouse", "Secrets", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
+		OptionalSetTags().
+		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Set", "Unset"),
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
+		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-notebook",
 	g.NewQueryStruct("DropNotebook").
@@ -108,8 +176,8 @@ var NotebooksDef = g.NewInterface(
 ).DescribeOperation(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-notebook",
-	notebookDbRow,
-	notebook,
+	notebookDetailsDbRow,
+	notebookDetails,
 	g.NewQueryStruct("DescribeNotebook").
 		Describe().
 		SQL("NOTEBOOK").
