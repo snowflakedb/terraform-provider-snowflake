@@ -48,6 +48,12 @@ The `MFA_AUTHENTICATION_METHODS` property is deprecated. Setting the `MFA_AUTHEN
 and have this bundle enabled, the provider will return an error.
 The new way of handling authentication methods is `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` which will be handled in this resource in the next versions.
 
+If you get errors like `MFA_AUTHENTICATION_METHODS is deprecated`, then:
+1. Disable the 2025_06 bundle.
+1. Remove the `mfa_authentication_methods` field from the configuration.
+1. Enable the 2025_06 bundle.
+1. If you get a non-empty plan on the `mfa_authentication_methods` (it's still in the state), use the [ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments) attribute.
+
 Additionally, the allowed values for `MFA_ENROLLMENT` are changed: `OPTIONAL` is removed and `REQUIRED_PASSWORD_ONLY` and `REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY` are added.
 
 
