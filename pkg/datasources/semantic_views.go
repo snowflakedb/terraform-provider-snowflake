@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -52,7 +51,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 
 func SemanticViews() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper("snowflake_semantic_views", TrackingReadWrapper(datasources.SemanticViews, ReadSemanticViews)),
+		ReadContext: ReadSemanticViews,
 		Schema:      semanticViewsSchema,
 		Description: "Data source used to get details of filtered semantic views. Filtering is aligned with the current possibilities for [SHOW SEMANTIC VIEWS](https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views) query." +
 			" The results of SHOW and DESCRIBE are encapsulated in one output collection `semantic_views`.",
