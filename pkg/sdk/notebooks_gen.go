@@ -90,7 +90,7 @@ type DescribeNotebookOptions struct {
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-type NotebooksDetailsRow struct {
+type NotebookDetailsRow struct {
 	Title                           sql.NullString `db:"title"`
 	MainFile                        string         `db:"main_file"`
 	QueryWarehouse                  sql.NullString `db:"query_warehouse"`
@@ -164,7 +164,7 @@ type ShowNotebookOptions struct {
 	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 }
 
-type notebooksRow struct {
+type notebookRow struct {
 	CreatedOn      time.Time      `db:"created_on"`
 	Name           string         `db:"name"`
 	DatabaseName   string         `db:"database_name"`

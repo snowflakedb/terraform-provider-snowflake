@@ -74,6 +74,14 @@ func (opts *AlterNotebookOptions) validate() error {
 		if opts.Set.IdleAutoShutdownTimeSeconds != nil && !validateIntGreaterThan(*opts.Set.IdleAutoShutdownTimeSeconds, 0) {
 			errs = append(errs, errIntValue("AlterNotebookOptions", "IdleAutoShutdownTimeSeconds", IntErrGreater, 0))
 		}
+		// Validation added manually.
+		if opts.Set.ExternalAccessIntegrations != nil {
+			for _, integration := range opts.Set.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(integration) {
+					errs = append(errs, ErrInvalidObjectIdentifier)
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Comment, opts.Unset.QueryWarehouse, opts.Unset.Secrets, opts.Unset.Warehouse, opts.Unset.RuntimeName, opts.Unset.ComputePool, opts.Unset.ExternalAccessIntegrations, opts.Unset.RuntimeEnvironmentVersion) {

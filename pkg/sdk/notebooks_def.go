@@ -4,7 +4,7 @@ import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/gen
 
 //go:generate go run ./poc/main.go
 
-var notebookDbRow = g.DbStruct("notebooksRow").
+var notebookDbRow = g.DbStruct("notebookRow").
 	Time("created_on").
 	Text("name").
 	Text("database_name").
@@ -28,7 +28,7 @@ var notebook = g.PlainStruct("Notebook").
 	Text("OwnerRoleType").
 	Field("CodeWarehouse", "AccountObjectIdentifier")
 
-var notebookDetailsDbRow = g.DbStruct("NotebooksDetailsRow").
+var notebookDetailsDbRow = g.DbStruct("NotebookDetailsRow").
 	OptionalText("title").
 	Text("main_file").
 	OptionalText("query_warehouse").

@@ -9,8 +9,8 @@ import (
 var _ Notebooks = (*notebooks)(nil)
 
 var (
-	_ convertibleRow[NotebookDetails] = new(NotebooksDetailsRow)
-	_ convertibleRow[Notebook]        = new(notebooksRow)
+	_ convertibleRow[NotebookDetails] = new(NotebookDetailsRow)
+	_ convertibleRow[Notebook]        = new(notebookRow)
 )
 
 type notebooks struct {
@@ -40,7 +40,7 @@ func (v *notebooks) Describe(ctx context.Context, id SchemaObjectIdentifier) (*N
 	opts := &DescribeNotebookOptions{
 		name: id,
 	}
-	result, err := validateAndQueryOne[NotebooksDetailsRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[NotebookDetailsRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -49,11 +49,11 @@ func (v *notebooks) Describe(ctx context.Context, id SchemaObjectIdentifier) (*N
 
 func (v *notebooks) Show(ctx context.Context, request *ShowNotebookRequest) ([]Notebook, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[notebooksRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[notebookRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[notebooksRow, Notebook](dbRows)
+	return convertRows[notebookRow, Notebook](dbRows)
 }
 
 func (v *notebooks) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Notebook, error) {
@@ -150,7 +150,7 @@ func (r *DescribeNotebookRequest) toOpts() *DescribeNotebookOptions {
 	return opts
 }
 
-func (r NotebooksDetailsRow) convert() (*NotebookDetails, error) {
+func (r NotebookDetailsRow) convert() (*NotebookDetails, error) {
 	n := &NotebookDetails{
 		MainFile:                    r.MainFile,
 		UrlId:                       r.UrlId,
@@ -198,7 +198,7 @@ func (r *ShowNotebookRequest) toOpts() *ShowNotebookOptions {
 	return opts
 }
 
-func (r notebooksRow) convert() (*Notebook, error) {
+func (r notebookRow) convert() (*Notebook, error) {
 	n := &Notebook{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
