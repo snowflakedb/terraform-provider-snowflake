@@ -87,7 +87,7 @@ To run the tests we have the following commands:
 
 The tests distinction between account-level and non-account-level tests is currently achieved by go build directive:
 - `//go:build account_level_tests` for account-level tests;
-- `//go:build !account_level_tests` for non-account-level tests.
+- `//go:build non_account_level_tests` for non-account-level tests.
 Make sure you specify the correct directive when adding new integration or acceptance test file.
 
 You can run the particular tests from inside your chosen IDE but remember that you have to set `TF_ACC=1` environment variable to run any acceptance tests (the above commands set it for you). There are more environment variables set in the above Makefile rules, so familiarize with them before using them. It is also worth setting up more verbose logging (check [this section](FAQ.md#how-can-i-turn-on-logs) for more details).

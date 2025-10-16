@@ -60,7 +60,7 @@ As preview resources are reportedly adoption blockers, we have decided to target
 This is the continuation work connected with Snowflake’s goal to have all users strongly authenticated.
 We want to provide a wide choice of stronger options from the provider.
 The underlying Go driver has been recently [released](https://docs.snowflake.com/en/release-notes/clients-drivers/golang-2025#version-1-14-0-april-30-2025) with support for OAuth2 authorization code and client credential flows.
-We want to enable them through the provider. Workflow Identity Federation will be supported before the end of 2025.
+We want to enable them through the provider. Workload Identity Federation will be supported before the end of 2025.
 
 ### Early detection of changes introduced in Snowflake
 

@@ -25,15 +25,15 @@ var semanticView = g.PlainStruct("SemanticView").
 	OptionalText("Extension")
 
 var semanticViewDetailsDbRow = g.DbStruct("semanticViewDetailsRow").
-	Text("object_kind").
-	Text("object_name").
+	OptionalText("object_kind").
+	OptionalText("object_name").
 	OptionalText("parent_entity").
 	Text("property").
 	Text("property_value")
 
 var semanticViewDetails = g.PlainStruct("SemanticViewDetails").
-	Text("ObjectKind").
-	Text("ObjectName").
+	OptionalText("ObjectKind").
+	OptionalText("ObjectName").
 	OptionalText("ParentEntity").
 	Text("Property").
 	Text("PropertyValue")
@@ -163,6 +163,8 @@ var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
 var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
 	Text("SqlExpression", g.KeywordOptions().NoQuotes().Required())
 
+// TODO(SNOW-2396371): add PUBLIC/PRIVATE optional field
+// TODO(SNOW-2398097): replace qualifiedExpressionName with table_alias and fact_or_metric fields
 var semanticExpression = g.NewQueryStruct("SemanticExpression").
 	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
 	SQL("AS").

@@ -47,7 +47,14 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
 			"foo": sdk.Pointer("bar"),
-		}),
+		}).
+		WithOauthClientID("oauth_client_id").
+		WithOauthClientSecret("oauth_client_secret").
+		WithOauthTokenRequestURL("oauth_token_request_url").
+		WithOauthAuthorizationURL("oauth_authorization_url").
+		WithOauthRedirectURI("oauth_redirect_uri").
+		WithOauthScope("oauth_scope").
+		WithEnableSingleUseRefreshTokens(true),
 	)
 }
 
@@ -90,7 +97,14 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
 			"foo": sdk.Pointer("bar"),
-		})
+		}).
+		WithOauthClientID("invalid").
+		WithOauthClientSecret("invalid").
+		WithOauthTokenRequestURL("invalid").
+		WithOauthAuthorizationURL("invalid").
+		WithOauthRedirectURI("invalid").
+		WithOauthScope("invalid").
+		WithEnableSingleUseRefreshTokens(true)
 	return configDtoToTomlString(t, profile, dto)
 }
 
@@ -183,6 +197,29 @@ func TomlConfigForServiceUserWithModifiers(t *testing.T, profile string, service
 		WithAuthenticator(string(sdk.AuthenticationTypeJwt))
 
 	return configDtoToTomlString(t, profile, configDtoModifier(configDto))
+}
+
+// TomlConfigForServiceUserWithOauthClientCredentials is a temporary function used to test provider configuration
+func TomlConfigForServiceUserWithOauthClientCredentials(
+	t *testing.T,
+	profile string,
+	roleId sdk.AccountObjectIdentifier,
+	accountIdentifier sdk.AccountIdentifier,
+	oauthClientId string,
+	oauthClientSecret string,
+	oauthTokenRequestURL string,
+) string {
+	t.Helper()
+
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithOauthClientID(oauthClientId).
+		WithOauthClientSecret(oauthClientSecret).
+		WithOauthTokenRequestURL(oauthTokenRequestURL).
+		WithAuthenticator(string(sdk.AuthenticationTypeOauthClientCredentials)),
+	)
 }
 
 func configDtoToTomlString(t *testing.T, profile string, config *sdk.ConfigDTO) string {

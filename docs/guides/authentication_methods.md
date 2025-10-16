@@ -34,6 +34,9 @@ Read more on Snowflake's password protection: https://docs.snowflake.com/en/user
 * [MFA authenticator flow](#mfa-authenticator-flow)
   * [MFA token caching](#mfa-token-caching)
 * [Okta authenticator flow](#okta-authenticator-flow)
+* [OAuth Client Credentials authenticator flow](#oauth-client-credentials-authenticator-flow)
+* [OAuth Authorization Code authenticator flow - External IdP](#oauth-authorization-code-authenticator-flow---external-idp)
+* [OAuth Authorization Code authenticator flow - Snowflake IdP](#oauth-authorization-code-authenticator-flow---snowflake-idp)
 * [Common issues](#common-issues)
   * [How can I get my organization name?](#how-can-i-get-my-organization-name)
   * [How can I get my account name?](#how-can-i-get-my-account-name)
@@ -336,6 +339,145 @@ variable "password" {
   sensitive = true
 }
 ```
+
+### OAuth Client Credentials authenticator flow
+
+To set up a new Okta account for this flow, follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-okta). You can also setup other OAuth providers.
+If you already have an Okta account and the security integration, skip the first point and follow the next steps.
+
+!> **Note** In Okta, the auth scope is case sensitive. This means that the casing in role configuration in the provider, and the allowed scope in Okta setup must match.
+
+The guide includes writing the provider configuration in the TOML file, but here's what it should look like fully in HCL:
+
+```terraform
+provider "snowflake" {
+  organization_name       = "<organization_name>"
+  account_name            = "<account_name>"
+  role                    = "PUBLIC"
+  authenticator           = "OAUTH_CLIENT_CREDENTIALS"
+  oauth_client_id         = var.oauth_client_id
+  oauth_client_secret     = var.oauth_client_secret
+  oauth_token_request_url = var.oauth_token_request_url
+}
+
+# Client ID from the Okta application.
+variable "oauth_client_id" {
+  type      = string
+  sensitive = true
+}
+
+# Client Secret from the Okta application.
+variable "oauth_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+# Client Token Request URL from the Okta API Authorization Server.
+variable "oauth_token_request_url" {
+  type      = string
+  sensitive = true
+}
+```
+
+### OAuth Authorization Code authenticator flow - External IdP
+
+To set up a new Okta account for this flow, follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-okta) with the changes listed below. You can also setup other OAuth providers.
+- Set the grant types as `Authorization Code`, `Refresh Token` and `Resource Owner Password` in application.
+- Set the grant types as `Authorization Code`, and `Resource Owner Password` in the API access policy rule.
+- Use Okta URL issue instead of Dynamic.
+If you already have an Okta account and the security integration, skip the first point and follow the next steps.
+
+!> **Note** In Okta, the auth scope is case sensitive. This means that the casing in role configuration in the provider, and the allowed scope in Okta setup must match.
+
+The TF configuration should look like this:
+```terraform
+provider "snowflake" {
+  organization_name       = "<organization_name>"
+  account_name            = "<account_name>"
+  user                    = "<user_name>" # Must match the login name in Snowflake and the login name in Okta.
+  role                    = "PUBLIC"
+  authenticator           = "OAUTH_AUTHORIZATION_CODE"
+  oauth_client_id         = var.oauth_client_id
+  oauth_client_secret     = var.oauth_client_secret
+  oauth_token_request_url = var.oauth_token_request_url
+  oauth_authorization_url = var.oauth_authorization_url
+  oauth_redirect_uri      = "http://localhost:8001"
+  oauth_scope             = "session:role:PUBLIC"
+}
+
+# Client ID from the Okta application.
+variable "oauth_client_id" {
+  type      = string
+  sensitive = true
+}
+
+# Client Secret from the Okta application.
+variable "oauth_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+# Client Token Request URL from the Okta API Authorization Server.
+variable "oauth_token_request_url" {
+  type      = string
+  sensitive = true
+}
+
+# Authorization URL from the Okta API Authorization Server.
+variable "oauth_authorization_url" {
+  type      = string
+  sensitive = true
+}
+```
+
+Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
+
+### OAuth Authorization Code authenticator flow - Snowflake IdP
+
+To set up new Snowflake IdP objects for this flow, follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-custom).
+You can then use [SYSTEM$SHOW_OAUTH_CLIENT_SECRETS](https://docs.snowflake.com/en/sql-reference/functions/system_show_oauth_client_secrets) to get `oauth_client_id` and `oauth_client_secret`.
+
+The TF configuration should look like this:
+```terraform
+provider "snowflake" {
+  organization_name       = "<organization_name>"
+  account_name            = "<account_name>"
+  user                    = "<user_name>"
+  authenticator           = "OAUTH_AUTHORIZATION_CODE"
+  oauth_client_id         = var.oauth_client_id
+  oauth_client_secret     = var.oauth_client_secret
+  oauth_token_request_url = var.oauth_token_request_url
+  oauth_authorization_url = var.oauth_authorization_url
+  oauth_redirect_uri      = "http://localhost:8001" # Make sure this value is the same as OAUTH_REDIRECT_URI in the Oauth security integration.
+  oauth_scope             = "session:role:PUBLIC"
+}
+
+# Client ID from the SHOW_OAUTH_CLIENT_SECRETS output.
+variable "oauth_client_id" {
+  type      = string
+  sensitive = true
+}
+
+# Client Secret from the SHOW_OAUTH_CLIENT_SECRETS output.
+variable "oauth_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+# Authorization URL. It should be in format <account_url>/oauth/authorize.
+variable "oauth_authorization_url" {
+  type      = string
+  sensitive = true
+}
+
+# Token request URL. It should be in format <account_url>/oauth/token-request.
+variable "oauth_token_request_url" {
+  type      = string
+  sensitive = true
+}
+```
+
+Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
 
 ## Common issues
 

@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -2045,10 +2045,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnFutureModels_issue3050(t *testing.T)
 		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
-				ExternalProviders:  ExternalProviderWithExactVersion("0.95.0"),
-				Config:             grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeModels, databaseName),
-				ExpectNonEmptyPlan: true,
+				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
+				Config:            grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeModels, databaseName),
+				// Previously, we expected a non-empty plan, because Snowflake returned MODULE instead of MODEL in SHOW FUTURE GRANTS.
+				// Now, this behavior is fixed in Snowflake, and the plan is empty.
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
