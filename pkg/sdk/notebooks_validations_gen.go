@@ -32,6 +32,14 @@ func (opts *CreateNotebookOptions) validate() error {
 	if opts.IdleAutoShutdownTimeSeconds != nil && !validateIntGreaterThan(*opts.IdleAutoShutdownTimeSeconds, 0) {
 		errs = append(errs, errIntValue("CreateNotebookOptions", "IdleAutoShutdownTimeSeconds", IntErrGreater, 0))
 	}
+	// Validation added manually.
+	if opts.ExternalAccessIntegrations != nil {
+		for _, integration := range opts.ExternalAccessIntegrations {
+			if !ValidObjectIdentifier(integration) {
+				errs = append(errs, ErrInvalidObjectIdentifier)
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

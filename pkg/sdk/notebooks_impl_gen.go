@@ -171,45 +171,19 @@ func (r NotebooksDetailsRow) convert() (*NotebookDetails, error) {
 	}
 
 	// Optionals.
-	if r.Title.Valid {
-		n.Title = &r.Title.String
-	}
-	if r.QueryWarehouse.Valid {
-		n.QueryWarehouse = &AccountObjectIdentifier{r.QueryWarehouse.String}
-	}
-	if r.UserPackages.Valid {
-		n.UserPackages = &r.UserPackages.String
-	}
-	if r.RuntimeName.Valid {
-		n.RuntimeName = &r.RuntimeName.String
-	}
-	if r.ComputePool.Valid {
-		n.ComputePool = &r.ComputePool.String
-	}
-	if r.Comment.Valid {
-		n.Comment = &r.Comment.String
-	}
-	if r.DefaultVersionAlias.Valid {
-		n.DefaultVersionAlias = &r.DefaultVersionAlias.String
-	}
-	if r.DefaultVersionSourceLocationUri.Valid {
-		n.DefaultVersionSourceLocationUri = &r.DefaultVersionSourceLocationUri.String
-	}
-	if r.DefaultVersionGitCommitHash.Valid {
-		n.DefaultVersionGitCommitHash = &r.DefaultVersionGitCommitHash.String
-	}
-	if r.LastVersionAlias.Valid {
-		n.LastVersionAlias = &r.LastVersionAlias.String
-	}
-	if r.LastVersionSourceLocationUri.Valid {
-		n.LastVersionSourceLocationUri = &r.LastVersionSourceLocationUri.String
-	}
-	if r.LastVersionGitCommitHash.Valid {
-		n.LastVersionGitCommitHash = &r.LastVersionGitCommitHash.String
-	}
-	if r.LiveVersionLocationUri.Valid {
-		n.LiveVersionLocationUri = &r.LiveVersionLocationUri.String
-	}
+	mapNullString(&n.Title, r.Title)
+	mapNullStringWithMapping(&n.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
+	mapNullString(&n.UserPackages, r.UserPackages)
+	mapNullString(&n.RuntimeName, r.RuntimeName)
+	mapNullString(&n.ComputePool, r.ComputePool)
+	mapNullString(&n.Comment, r.Comment)
+	mapNullString(&n.DefaultVersionAlias, r.DefaultVersionAlias)
+	mapNullString(&n.DefaultVersionSourceLocationUri, r.DefaultVersionSourceLocationUri)
+	mapNullString(&n.DefaultVersionGitCommitHash, r.DefaultVersionGitCommitHash)
+	mapNullString(&n.LastVersionAlias, r.LastVersionAlias)
+	mapNullString(&n.LastVersionSourceLocationUri, r.LastVersionSourceLocationUri)
+	mapNullString(&n.LastVersionGitCommitHash, r.LastVersionGitCommitHash)
+	mapNullString(&n.LiveVersionLocationUri, r.LiveVersionLocationUri)
 
 	return n, nil
 }
@@ -225,21 +199,19 @@ func (r *ShowNotebookRequest) toOpts() *ShowNotebookOptions {
 }
 
 func (r notebooksRow) convert() (*Notebook, error) {
-	return &Notebook{
-		CreatedOn:    r.CreatedOn,
-		Name:         r.Name,
-		DatabaseName: r.DatabaseName,
-		SchemaName:   r.SchemaName,
-		Comment:      &r.Comment.String,
-		Owner:        r.Owner,
-		QueryWarehouse: func() *AccountObjectIdentifier {
-			if r.QueryWarehouse.Valid {
-				return &AccountObjectIdentifier{r.QueryWarehouse.String}
-			}
-			return nil
-		}(),
+	n := &Notebook{
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		DatabaseName:  r.DatabaseName,
+		SchemaName:    r.SchemaName,
+		Owner:         r.Owner,
 		UrlId:         r.UrlId,
 		OwnerRoleType: r.OwnerRoleType,
 		CodeWarehouse: AccountObjectIdentifier{r.CodeWarehouse},
-	}, nil
+	}
+
+	mapNullString(&n.Comment, r.Comment)
+	mapNullStringWithMapping(&n.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
+
+	return n, nil
 }
