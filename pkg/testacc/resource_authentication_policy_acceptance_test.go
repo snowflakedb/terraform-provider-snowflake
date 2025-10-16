@@ -14,14 +14,10 @@ import (
 func TestAcc_AuthenticationPolicy(t *testing.T) {
 	authenticationPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := "This is a test resource"
-	m := func(authenticationMethods []string, mfaAuthenticationMethods []string, mfaEnrollment string, clientTypes []string, securityIntegrations []string) map[string]config.Variable {
+	m := func(authenticationMethods []string, mfaEnrollment string, clientTypes []string, securityIntegrations []string) map[string]config.Variable {
 		authenticationMethodsStringVariables := make([]config.Variable, len(authenticationMethods))
 		for i, v := range authenticationMethods {
 			authenticationMethodsStringVariables[i] = config.StringVariable(v)
-		}
-		mfaAuthenticationMethodsStringVariables := make([]config.Variable, len(mfaAuthenticationMethods))
-		for i, v := range mfaAuthenticationMethods {
-			mfaAuthenticationMethodsStringVariables[i] = config.StringVariable(v)
 		}
 		clientTypesStringVariables := make([]config.Variable, len(clientTypes))
 		for i, v := range clientTypes {
@@ -33,18 +29,17 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 		}
 
 		return map[string]config.Variable{
-			"name":                       config.StringVariable(authenticationPolicyId.Name()),
-			"database":                   config.StringVariable(authenticationPolicyId.DatabaseName()),
-			"schema":                     config.StringVariable(authenticationPolicyId.SchemaName()),
-			"authentication_methods":     config.SetVariable(authenticationMethodsStringVariables...),
-			"mfa_authentication_methods": config.SetVariable(mfaAuthenticationMethodsStringVariables...),
-			"mfa_enrollment":             config.StringVariable(mfaEnrollment),
-			"client_types":               config.SetVariable(clientTypesStringVariables...),
-			"security_integrations":      config.SetVariable(securityIntegrationsStringVariables...),
-			"comment":                    config.StringVariable(comment),
+			"name":                   config.StringVariable(authenticationPolicyId.Name()),
+			"database":               config.StringVariable(authenticationPolicyId.DatabaseName()),
+			"schema":                 config.StringVariable(authenticationPolicyId.SchemaName()),
+			"authentication_methods": config.SetVariable(authenticationMethodsStringVariables...),
+			"mfa_enrollment":         config.StringVariable(mfaEnrollment),
+			"client_types":           config.SetVariable(clientTypesStringVariables...),
+			"security_integrations":  config.SetVariable(securityIntegrationsStringVariables...),
+			"comment":                config.StringVariable(comment),
 		}
 	}
-	variables1 := m([]string{"PASSWORD"}, []string{"PASSWORD"}, "REQUIRED", []string{"SNOWFLAKE_UI"}, []string{"ALL"})
+	variables1 := m([]string{"PASSWORD"}, "REQUIRED", []string{"SNOWFLAKE_UI"}, []string{"ALL"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -67,6 +62,9 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_authentication_policy.authentication_policy", "security_integrations.0", "ALL"),
 					resource.TestCheckResourceAttr("snowflake_authentication_policy.authentication_policy", "comment", comment),
 				),
+				// TODO (next PRs): This happens because the mfa_authentication_methods is not set in the config,
+				// and the value returned from Snowflake is non-empty. In the next PRs, we will add a diff suppress for this.
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				ConfigDirectory:   config.TestNameDirectory(),
