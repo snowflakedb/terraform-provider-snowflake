@@ -57,6 +57,7 @@ var definitionMapping = map[string]*generator.Interface{
 	"listings_def.go":                        sdk.ListingsDef,
 	"organization_accounts_def.go":           sdk.OrganizationAccountsDef,
 	"semantic_view_def.go":                   sdk.SemanticViewsDef,
+	"notebooks_def.go":                       sdk.NotebooksDef,
 }
 
 func main() {
