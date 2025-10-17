@@ -27,22 +27,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ## v2.9.x ➞ v2.10.0
 
 ### *(new feature)* Reworked `authentication_policy` resource
-<<<<<<< HEAD
 In this version we reworked the `authentication_policy` resource. This includes adding missing features. Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
 
 #### Missing values
 We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
 - `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
-||||||| parent of 058c833d (Improve enums)
-=======
-In this version we reworked the [authentication_policy] resource. This includes adding missing features. Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
-
-#### Missing values
-We added missing values to the following fields:
-- `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
-- `client_types` now allows setting ``, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
->>>>>>> 058c833d (Improve enums)
 
 ## v2.8.x ➞ v2.9.0
 
