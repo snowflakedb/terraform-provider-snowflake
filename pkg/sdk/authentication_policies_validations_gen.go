@@ -19,6 +19,11 @@ func (opts *CreateAuthenticationPolicyOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateAuthenticationPolicyOptions", "IfNotExists", "OrReplace"))
 	}
+	if valueSet(opts.MfaPolicy) {
+		if !anyValueSet(opts.MfaPolicy.EnforceMfaOnExternalAuthentication, opts.MfaPolicy.AllowedMethods) {
+			errs = append(errs, errAtLeastOneOf("CreateAuthenticationPolicyOptions.MfaPolicy", "EnforceMfaOnExternalAuthentication", "AllowedMethods"))
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -37,13 +42,18 @@ func (opts *AlterAuthenticationPolicyOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.AuthenticationMethods, opts.Set.MfaAuthenticationMethods, opts.Set.MfaEnrollment, opts.Set.ClientTypes, opts.Set.SecurityIntegrations, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaAuthenticationMethods", "MfaEnrollment", "ClientTypes", "SecurityIntegrations", "Comment"))
+		if !anyValueSet(opts.Set.AuthenticationMethods, opts.Set.MfaAuthenticationMethods, opts.Set.MfaEnrollment, opts.Set.ClientTypes, opts.Set.SecurityIntegrations, opts.Set.Comment, opts.Set.MfaPolicy, opts.Set.PatPolicy, opts.Set.WorkloadIdentityPolicy) {
+			errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaAuthenticationMethods", "MfaEnrollment", "ClientTypes", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
+		}
+		if valueSet(opts.Set.MfaPolicy) {
+			if !anyValueSet(opts.Set.MfaPolicy.EnforceMfaOnExternalAuthentication, opts.Set.MfaPolicy.AllowedMethods) {
+				errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.MfaPolicy", "EnforceMfaOnExternalAuthentication", "AllowedMethods"))
+			}
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.ClientTypes, opts.Unset.AuthenticationMethods, opts.Unset.Comment, opts.Unset.SecurityIntegrations, opts.Unset.MfaAuthenticationMethods, opts.Unset.MfaEnrollment) {
-			errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaAuthenticationMethods", "MfaEnrollment"))
+		if !anyValueSet(opts.Unset.ClientTypes, opts.Unset.AuthenticationMethods, opts.Unset.Comment, opts.Unset.SecurityIntegrations, opts.Unset.MfaAuthenticationMethods, opts.Unset.MfaEnrollment, opts.Unset.MfaPolicy, opts.Unset.PatPolicy, opts.Unset.WorkloadIdentityPolicy) {
+			errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaAuthenticationMethods", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
 		}
 	}
 	return JoinErrors(errs...)

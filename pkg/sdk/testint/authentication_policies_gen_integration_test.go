@@ -62,6 +62,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[ALL]")
+		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")
+		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED}")
+		assertProperty(t, desc, "WORKLOAD_IDENTITY_POLICY", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}")
 	})
 
 	t.Run("Create - complete", func(t *testing.T) {
@@ -74,9 +77,11 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		err := client.AuthenticationPolicies.Create(ctx, sdk.NewCreateAuthenticationPolicyRequest(id).
 			WithComment(comment).
 			WithMfaEnrollment(sdk.MfaEnrollmentOptional).
-			WithSecurityIntegrations([]sdk.SecurityIntegrationsOption{
-				{Name: samlIntegration.ID()},
-			}).
+			WithSecurityIntegrations(*sdk.NewSecurityIntegrationsOptionRequest().
+				WithSecurityIntegrations([]sdk.AccountObjectIdentifier{
+					samlIntegration.ID(),
+				}),
+			).
 			WithClientTypes([]sdk.ClientTypes{
 				{ClientType: sdk.ClientTypesDrivers},
 				{ClientType: sdk.ClientTypesSnowSql},
@@ -84,7 +89,33 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			WithAuthenticationMethods([]sdk.AuthenticationMethods{
 				{Method: sdk.AuthenticationMethodsPassword},
 				{Method: sdk.AuthenticationMethodsSaml},
-			}))
+			}).
+			WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyPassAllowedMethodPassKey},
+					{Method: sdk.MfaPolicyAllowedMethodDuo},
+				}),
+			).
+			WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
+				WithDefaultExpiryInDays(1).
+				WithMaxExpiryInDays(30).
+				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
+			).
+			WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderAll},
+				}).
+				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+					{Value: "111122223333"},
+				}).
+				WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
+				}).
+				WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://example.com"},
+				}),
+			))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().AuthenticationPolicy.DropFunc(t, id))
 
@@ -95,10 +126,13 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		assertProperty(t, desc, "COMMENT", comment)
 		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentRequiredPasswordOnly))
-		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD]")
+		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL]")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
+		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")
+		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED}")
+		assertProperty(t, desc, "WORKLOAD_IDENTITY_POLICY", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")
 	})
 
 	t.Run("Alter - set and unset properties", func(t *testing.T) {
@@ -114,9 +148,11 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			WithSet(*sdk.NewAuthenticationPolicySetRequest().
 				WithComment(comment).
 				WithMfaEnrollment(sdk.MfaEnrollmentRequired).
-				WithSecurityIntegrations([]sdk.SecurityIntegrationsOption{
-					{Name: samlIntegration.ID()},
-				}).
+				WithSecurityIntegrations(*sdk.NewSecurityIntegrationsOptionRequest().
+					WithSecurityIntegrations([]sdk.AccountObjectIdentifier{
+						samlIntegration.ID(),
+					}),
+				).
 				WithClientTypes([]sdk.ClientTypes{
 					{ClientType: sdk.ClientTypesDrivers},
 					{ClientType: sdk.ClientTypesSnowSql},
@@ -125,7 +161,34 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				WithAuthenticationMethods([]sdk.AuthenticationMethods{
 					{Method: sdk.AuthenticationMethodsPassword},
 					{Method: sdk.AuthenticationMethodsSaml},
-				})))
+				}).
+				WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+					WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
+					WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+						{Method: sdk.MfaPolicyPassAllowedMethodPassKey},
+						{Method: sdk.MfaPolicyAllowedMethodDuo},
+					}),
+				).
+				WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
+					WithDefaultExpiryInDays(1).
+					WithMaxExpiryInDays(30).
+					WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
+				).
+				WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+					WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+						{Provider: sdk.AllowedProviderAll},
+					}).
+					WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+						{Value: "111122223333"},
+					}).
+					WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+						{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
+					}).
+					WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+						{Value: "https://example.com"},
+					}),
+				)),
+		)
 		require.NoError(t, err)
 
 		desc, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
@@ -133,10 +196,13 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		assertProperty(t, desc, "COMMENT", comment)
 		assertProperty(t, desc, "MFA_ENROLLMENT", "REQUIRED")
-		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD]")
+		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL, SNOWFLAKE_UI]")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
+		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")
+		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED}")
+		assertProperty(t, desc, "WORKLOAD_IDENTITY_POLICY", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")
 
 		err = client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicy.ID()).
 			WithUnset(*sdk.NewAuthenticationPolicyUnsetRequest().
@@ -144,7 +210,11 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				WithMfaEnrollment(true).
 				WithSecurityIntegrations(true).
 				WithClientTypes(true).
-				WithAuthenticationMethods(true)))
+				WithAuthenticationMethods(true).
+				WithMfaPolicy(true).
+				WithPatPolicy(true).
+				WithWorkloadIdentityPolicy(true),
+			))
 		require.NoError(t, err)
 
 		desc, err = client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
@@ -156,6 +226,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[ALL]")
+		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")
+		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED}")
+		assertProperty(t, desc, "WORKLOAD_IDENTITY_POLICY", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}")
 	})
 
 	t.Run("Alter - rename", func(t *testing.T) {

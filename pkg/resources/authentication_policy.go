@@ -239,11 +239,11 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 
 	if v, ok := d.GetOk("security_integrations"); ok {
 		securityIntegrationsRawList := expandStringList(v.(*schema.Set).List())
-		securityIntegrations := make([]sdk.SecurityIntegrationsOption, len(securityIntegrationsRawList))
+		securityIntegrations := make([]sdk.AccountObjectIdentifier, len(securityIntegrationsRawList))
 		for i, v := range securityIntegrationsRawList {
-			securityIntegrations[i] = sdk.SecurityIntegrationsOption{Name: sdk.NewAccountObjectIdentifier(v)}
+			securityIntegrations[i] = sdk.NewAccountObjectIdentifier(v)
 		}
-		req.WithSecurityIntegrations(securityIntegrations)
+		req.WithSecurityIntegrations(*sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations))
 	}
 
 	if v, ok := d.GetOk("comment"); ok {
@@ -447,12 +447,12 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("security_integrations") {
 		if v, ok := d.GetOk("security_integrations"); ok {
 			securityIntegrations := expandStringList(v.(*schema.Set).List())
-			securityIntegrationsValues := make([]sdk.SecurityIntegrationsOption, len(securityIntegrations))
+			securityIntegrationsValues := make([]sdk.AccountObjectIdentifier, len(securityIntegrations))
 			for i, v := range securityIntegrations {
-				securityIntegrationsValues[i] = sdk.SecurityIntegrationsOption{Name: sdk.NewAccountObjectIdentifier(v)}
+				securityIntegrationsValues[i] = sdk.NewAccountObjectIdentifier(v)
 			}
 
-			set.WithSecurityIntegrations(securityIntegrationsValues)
+			set.WithSecurityIntegrations(*sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrationsValues))
 		} else {
 			unset.WithSecurityIntegrations(true)
 		}
