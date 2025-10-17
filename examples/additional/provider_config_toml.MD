@@ -29,6 +29,13 @@ tmp_dir_path = '/tmp/terraform-provider/'
 disable_query_context_cache = true
 include_retry_reason = true
 disable_console_login = true
+oauth_client_id = 'oauth_client_id'
+oauth_client_secret = 'oauth_client_secret'
+oauth_token_request_url = 'oauth_token_request_url'
+oauth_authorization_url = 'oauth_authorization_url'
+oauth_redirect_uri = 'oauth_redirect_uri'
+oauth_scope = 'oauth_scope'
+enable_single_use_refresh_tokens = true
 
 [example.params]
 param_key = 'param_value'

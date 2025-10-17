@@ -457,6 +457,7 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 		snowflakeroles.UserAdmin,
 		snowflakeroles.Public,
 		snowflakeroles.PentestingRole,
+		snowflakeroles.Restricted,
 		snowflakeroles.OktaProvisioner,
 		snowflakeroles.AadProvisioner,
 		snowflakeroles.GenericScimProvisioner,

@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.9.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.8.0...v2.9.0) (2025-10-16)
+
+
+### 🎉 **What's new:**
+
+* Add new Oauth authorization code flow ([#4069](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4069)) ([4f1bb1e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4f1bb1e69f2ab111bacd33f98ca5edfee41e4920))
+* Add new Oauth client credentials flow ([#4065](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4065)) ([4402ce3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4402ce314b9d1884ce2274dfcfe12f6bdddc13a3))
+* add semantic view resource - 2 ([#4051](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4051)) ([b3a87ad](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b3a87adb797f532c81addbbe4db9137c81398fdd))
+* add semantic view resource - 3 ([#4061](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4061)) ([a8695c3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a8695c3a9643a6858404f2e996d113122beaab2a))
+
+
+### 🔧 **Misc**
+
+* Add a new protected role ([#4073](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4073)) ([02d9393](https://github.com/snowflakedb/terraform-provider-snowflake/commit/02d9393183f3cf16a1952ec94baeee016739bc61))
+* Add new tests command ([#4077](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4077)) ([63d153b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/63d153b1c34730ef93454bc13b7aac35d2a1c85d))
+* Add the note about terraform providers command to the namespace migration guides ([#4085](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4085)) ([11411aa](https://github.com/snowflakedb/terraform-provider-snowflake/commit/11411aa599cdfa68bafbd45b8ef0a92c35873a89))
+* Fix a typo in the roadmap ([#4095](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4095)) ([00162a0](https://github.com/snowflakedb/terraform-provider-snowflake/commit/00162a028cf4ae5705934b888119ddd226ecad90))
+* Fix future grant tests ([#4100](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4100)) ([a4c03fe](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a4c03fe71045683809a378b45450073497564fe5))
+* Fix tests after new Snowflake release ([#4098](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4098)) ([75a385f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/75a385f235672bcbe5e663211adda82802cf86f9))
+* Introduce a new build tag for tests ([#4054](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4054)) ([a019d82](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a019d82e5fe9bc3ab5627739f3de3e74d0957f8a))
+* Passthrough environment variables in docker compose ([#4097](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4097)) ([7c58fd1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7c58fd18cfbee76cc08dce76766919ff63a3aedc))
+* Use a custom role instead of PUBLIC in OAuth with client credentials test ([#4070](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4070)) ([33d7c61](https://github.com/snowflakedb/terraform-provider-snowflake/commit/33d7c61447f2aa4987bebcf93fdb7c238e8be84c))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix token authenticator for the token field ([#4081](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4081)) ([886258e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/886258e8fae7ba3a24e31b24c22df3fd05c99eaf))
+
 ## [2.8.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.7.0...v2.8.0) (2025-10-06)
 
 

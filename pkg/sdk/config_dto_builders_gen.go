@@ -2,8 +2,6 @@
 
 package sdk
 
-import ()
-
 func NewConfigFile() *ConfigFile {
 	return &ConfigFile{}
 }
@@ -204,5 +202,40 @@ func (s *ConfigDTO) WithIncludeRetryReason(IncludeRetryReason bool) *ConfigDTO {
 
 func (s *ConfigDTO) WithDisableConsoleLogin(DisableConsoleLogin bool) *ConfigDTO {
 	s.DisableConsoleLogin = &DisableConsoleLogin
+	return s
+}
+
+func (s *ConfigDTO) WithOauthClientID(OauthClientID string) *ConfigDTO {
+	s.OauthClientID = &OauthClientID
+	return s
+}
+
+func (s *ConfigDTO) WithOauthClientSecret(OauthClientSecret string) *ConfigDTO {
+	s.OauthClientSecret = &OauthClientSecret
+	return s
+}
+
+func (s *ConfigDTO) WithOauthAuthorizationURL(OauthAuthorizationURL string) *ConfigDTO {
+	s.OauthAuthorizationURL = &OauthAuthorizationURL
+	return s
+}
+
+func (s *ConfigDTO) WithOauthTokenRequestURL(OauthTokenRequestURL string) *ConfigDTO {
+	s.OauthTokenRequestURL = &OauthTokenRequestURL
+	return s
+}
+
+func (s *ConfigDTO) WithOauthRedirectURI(OauthRedirectURI string) *ConfigDTO {
+	s.OauthRedirectURI = &OauthRedirectURI
+	return s
+}
+
+func (s *ConfigDTO) WithOauthScope(OauthScope string) *ConfigDTO {
+	s.OauthScope = &OauthScope
+	return s
+}
+
+func (s *ConfigDTO) WithEnableSingleUseRefreshTokens(EnableSingleUseRefreshTokens bool) *ConfigDTO {
+	s.EnableSingleUseRefreshTokens = &EnableSingleUseRefreshTokens
 	return s
 }

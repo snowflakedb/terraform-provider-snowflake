@@ -146,16 +146,16 @@ type DescribeSemanticViewOptions struct {
 }
 
 type semanticViewDetailsRow struct {
-	ObjectKind    string         `db:"object_kind"`
-	ObjectName    string         `db:"object_name"`
+	ObjectKind    sql.NullString `db:"object_kind"`
+	ObjectName    sql.NullString `db:"object_name"`
 	ParentEntity  sql.NullString `db:"parent_entity"`
 	Property      string         `db:"property"`
 	PropertyValue string         `db:"property_value"`
 }
 
 type SemanticViewDetails struct {
-	ObjectKind    string
-	ObjectName    string
+	ObjectKind    *string
+	ObjectName    *string
 	ParentEntity  *string
 	Property      string
 	PropertyValue string
@@ -197,7 +197,6 @@ type SemanticView struct {
 func (v *SemanticView) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
-
 func (v *SemanticView) ObjectType() ObjectType {
 	return ObjectTypeSemanticView
 }

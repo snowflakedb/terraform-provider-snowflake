@@ -51,3 +51,33 @@ This test checks `UsernamePasswordMFA` authenticator option with using `passcode
     - The first two notifications are just test setups, also present in other acceptance tests.
     - The first step asks for permission to access your device keychain.
     - For the second test step we are caching MFA token, so there is not any notification.
+
+## OAUTH_AUTHORIZATION_CODE with Snowflake and External IdPs test
+This test checks `OAUTH_AUTHORIZATION_CODE` authenticator option for both IdPs providers. They require manual steps (signing in Snowflake or giving access to secret store).
+
+The `oauth_authorization_code_external_idp` directory contains setup and test required for the Okta flow. Run it as following:
+1. Fill the following values in `main.tfvars` file:
+- `issuer` - the value from the Okta Authorization Server API.
+- `audience` - the account url.
+- `login_name` - the user login name. Must be the same as the login name in Okta.
+- `password` - a password for the new user.
+- `oauth_client_id` - the value from the Okta application.
+- `oauth_client_secret` - the value from the Okta application.
+- `organization_name` - the organization name of the account.
+- `account_name` - the account name.
+2. Run terraform commands like `terraform apply -var-file="main.tfvars"` to include these variables.
+3. Run the test steps.
+4. Remember to destroy created resources.
+
+The `oauth_authorization_code_snowflake_idp` directory contains setup and test required for the Snowflake flow. Run it as following:
+1. Run the Step 1 and 2 to get the credentials for the security integration
+2. Fill the following values in `main.tfvars` file:
+- `login_name` - the login name for the user in Snowflake.
+- `oauth_client_id` - the oauth client id from the `snowflake_execute` resource.
+- `oauth_client_secret` - the oauth client secret from the `snowflake_execute` resource.
+- `issuer` - the account url.
+- `organization_name` - the organization name of the account.
+- `account_name` - the account name.
+2. Run terraform commands like `terraform apply -var-file="main.tfvars"` to include these variables.
+3. Run the test steps.
+4. Remember to destroy created resources.
