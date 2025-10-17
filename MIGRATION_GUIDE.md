@@ -32,7 +32,7 @@ In this version we reworked the [authentication_policy] resource. This includes 
 #### Missing values
 We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
-- `client_types` now allows setting ``, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
+- `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
 
 ## v2.8.x ➞ v2.9.0
 
