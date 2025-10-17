@@ -18,7 +18,7 @@ const (
 	AuthenticationMethodsPassword                AuthenticationMethodsOption = "PASSWORD"
 	AuthenticationMethodsOauth                   AuthenticationMethodsOption = "OAUTH"
 	AuthenticationMethodsKeyPair                 AuthenticationMethodsOption = "KEYPAIR"
-	AuthenticationMethodsProgrammaticAccessToken AuthenticationMethodsOption = "PROGRAMMATIC_ACCESS_TOKEN"
+	AuthenticationMethodsProgrammaticAccessToken AuthenticationMethodsOption = "PROGRAMMATIC_ACCESS_TOKEN" //nolint:gosec
 	AuthenticationMethodsWorkloadIdentity        AuthenticationMethodsOption = "WORKLOAD_IDENTITY"
 )
 

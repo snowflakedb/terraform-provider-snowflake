@@ -579,7 +579,9 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) {
 	c := from.(map[string]any)
 	metricDefinitionRequest := sdk.NewMetricDefinitionRequest()
-	if len(c["semantic_expression"].([]any)) > 0 {
+
+	// TODO(SNOW-2344309): remove the nolint tag
+	if len(c["semantic_expression"].([]any)) > 0 { //nolint:gocritic
 		semanticExpression := c["semantic_expression"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
 			WithQualifiedExpressionName(semanticExpression["qualified_expression_name"].(string))
@@ -666,9 +668,10 @@ func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, err
 func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, error) {
 	c := from.(map[string]any)
 	tableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
-	if len(c["table_name_or_alias"].([]any)) > 0 {
+	// TODO(SNOW-2344309): remove the nolint tag
+	if len(c["table_name_or_alias"].([]any)) > 0 { //nolint:gocritic
 		tableNameOrAlias := c["table_name_or_alias"].([]any)[0].(map[string]any)
-		if tableNameOrAlias["table_name"] != nil && tableNameOrAlias["table_name"].(string) != "" {
+		if tableNameOrAlias["table_name"] != nil && tableNameOrAlias["table_name"].(string) != "" { //nolint:gocritic
 			tableName, err := sdk.ParseSchemaObjectIdentifier(tableNameOrAlias["table_name"].(string))
 			if err != nil {
 				return nil, err
@@ -681,15 +684,16 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 		}
 	}
 
-	var relationshipColumnRequests []sdk.SemanticViewColumnRequest
-	for _, relationshipColumn := range c["relationship_columns"].([]any) {
-		relationshipColumnRequests = append(relationshipColumnRequests, *sdk.NewSemanticViewColumnRequest(relationshipColumn.(string)))
+	relationshipColumnRequests := make([]sdk.SemanticViewColumnRequest, len(c["relationship_columns"].([]any)))
+	for i, relationshipColumn := range c["relationship_columns"].([]any) {
+		relationshipColumnRequests[i] = *sdk.NewSemanticViewColumnRequest(relationshipColumn.(string))
 	}
 
 	refTableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
-	if len(c["referenced_table_name_or_alias"].([]any)) > 0 {
+	// TODO(SNOW-2344309): remove the nolint tag
+	if len(c["referenced_table_name_or_alias"].([]any)) > 0 { //nolint:gocritic
 		refTableNameOrAlias := c["referenced_table_name_or_alias"].([]any)[0].(map[string]any)
-		if refTableNameOrAlias["table_name"] != nil && refTableNameOrAlias["table_name"].(string) != "" {
+		if refTableNameOrAlias["table_name"] != nil && refTableNameOrAlias["table_name"].(string) != "" { //nolint:gocritic
 			tableName, err := sdk.ParseSchemaObjectIdentifier(refTableNameOrAlias["table_name"].(string))
 			if err != nil {
 				return nil, err
