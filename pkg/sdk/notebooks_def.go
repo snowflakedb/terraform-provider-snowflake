@@ -102,7 +102,7 @@ var NotebooksDef = g.NewInterface(
 		SQL("NOTEBOOK").
 		IfNotExists().
 		Name().
-		PredefinedQueryStructField("From", "*Location", g.ParameterOptions().SQL("FROM").NoQuotes().NoEquals()).
+		PredefinedQueryStructField("From", "*Location", g.ParameterOptions().SQL("FROM").SingleQuotes().NoEquals()).
 		OptionalTextAssignment("TITLE", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
 		OptionalComment().
