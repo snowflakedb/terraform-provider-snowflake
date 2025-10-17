@@ -18,17 +18,7 @@ const (
 	AuthenticationMethodsPassword                AuthenticationMethodsOption = "PASSWORD"
 	AuthenticationMethodsOauth                   AuthenticationMethodsOption = "OAUTH"
 	AuthenticationMethodsKeyPair                 AuthenticationMethodsOption = "KEYPAIR"
-<<<<<<< HEAD
 	AuthenticationMethodsProgrammaticAccessToken AuthenticationMethodsOption = "PROGRAMMATIC_ACCESS_TOKEN" //nolint:gosec
-||||||| parent of 058c833d (Improve enums)
-	AuthenticationMethodsAll      AuthenticationMethodsOption = "ALL"
-	AuthenticationMethodsSaml     AuthenticationMethodsOption = "SAML"
-	AuthenticationMethodsPassword AuthenticationMethodsOption = "PASSWORD"
-	AuthenticationMethodsOauth    AuthenticationMethodsOption = "OAUTH"
-	AuthenticationMethodsKeyPair  AuthenticationMethodsOption = "KEYPAIR"
-=======
-	AuthenticationMethodsProgrammaticAccessToken AuthenticationMethodsOption = "PROGRAMMATIC_ACCESS_TOKEN"
->>>>>>> 058c833d (Improve enums)
 	AuthenticationMethodsWorkloadIdentity        AuthenticationMethodsOption = "WORKLOAD_IDENTITY"
 )
 
@@ -86,7 +76,6 @@ var AllClientTypes = []ClientTypesOption{
 	ClientTypesDrivers,
 	ClientTypesSnowSql,
 	ClientTypesSnowflakeCli,
-<<<<<<< HEAD
 }
 
 type MfaPolicyAllowedMethodsOption string
@@ -147,9 +136,6 @@ const (
 var AllEnforceMfaOnExternalAuthenticationOptions = []EnforceMfaOnExternalAuthenticationOption{
 	EnforceMfaOnExternalAuthenticationAll,
 	EnforceMfaOnExternalAuthenticationNone,
-||||||| parent of 058c833d (Improve enums)
-=======
->>>>>>> 058c833d (Improve enums)
 }
 
 var (
