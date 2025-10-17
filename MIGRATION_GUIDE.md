@@ -24,6 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+<<<<<<< HEAD
 ## v2.9.x ➞ v2.10.0
 
 ### *(new feature)* Reworked `authentication_policy` resource
@@ -33,6 +34,11 @@ In this version we reworked the `authentication_policy` resource. This includes 
 We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
 - `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
+
+### *(new feature)* snowflake_semantic_view resource
+Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_semantic_view_resource` to `preview_features_enabled` field in the provider configuration.
 
 ## v2.8.x ➞ v2.9.0
 
