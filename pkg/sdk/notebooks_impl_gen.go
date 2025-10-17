@@ -114,9 +114,9 @@ func (r *AlterNotebookRequest) toOpts() *AlterNotebookOptions {
 			ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations,
 			RuntimeEnvironmentVersion:  r.Set.RuntimeEnvironmentVersion,
 		}
-		if r.Set.SecretsList != nil {
-			opts.Set.SecretsList = &SecretsList{
-				SecretsList: r.Set.SecretsList.SecretsList,
+		if r.Set.Secrets != nil {
+			opts.Set.Secrets = &SecretsList{
+				SecretsList: r.Set.Secrets.SecretsList,
 			}
 		}
 	}

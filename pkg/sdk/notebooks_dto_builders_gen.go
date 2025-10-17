@@ -138,7 +138,7 @@ func (s *NotebookSetRequest) WithIdleAutoShutdownTimeSeconds(IdleAutoShutdownTim
 }
 
 func (s *NotebookSetRequest) WithSecretsList(SecretsList SecretsListRequest) *NotebookSetRequest {
-	s.SecretsList = &SecretsList
+	s.Secrets = &SecretsList
 	return s
 }
 

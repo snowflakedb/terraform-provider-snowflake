@@ -55,7 +55,7 @@ type NotebookSet struct {
 	Comment                     *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	QueryWarehouse              *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
 	IdleAutoShutdownTimeSeconds *int                      `ddl:"parameter,no_quotes" sql:"IDLE_AUTO_SHUTDOWN_TIME_SECONDS"`
-	SecretsList                 *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
+	Secrets                     *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
 	MainFile                    *string                   `ddl:"parameter,single_quotes" sql:"MAIN_FILE"`
 	Warehouse                   *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"WAREHOUSE"`
 	RuntimeName                 *string                   `ddl:"parameter,single_quotes" sql:"RUNTIME_NAME"`

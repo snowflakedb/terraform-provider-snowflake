@@ -99,7 +99,7 @@ func TestNotebooks_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present (too many)", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 
 		opts.Set = &NotebookSet{}
@@ -108,7 +108,7 @@ func TestNotebooks_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present (none)", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
@@ -163,7 +163,7 @@ func TestNotebooks_Alter(t *testing.T) {
 			Comment:                     String("comment"),
 			QueryWarehouse:              &AccountObjectIdentifier{"sample_qwh"},
 			IdleAutoShutdownTimeSeconds: Int(3600),
-			SecretsList: &SecretsList{[]SecretReference{{"var_name", true, SchemaObjectIdentifier{
+			Secrets: &SecretsList{[]SecretReference{{"var_name", true, SchemaObjectIdentifier{
 				databaseName: "db_name",
 				schemaName:   "sc_name",
 				name:         "n_name",

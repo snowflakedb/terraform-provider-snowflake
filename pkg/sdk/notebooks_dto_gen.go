@@ -42,7 +42,7 @@ type NotebookSetRequest struct {
 	Comment                     *string
 	QueryWarehouse              *AccountObjectIdentifier
 	IdleAutoShutdownTimeSeconds *int
-	SecretsList                 *SecretsListRequest
+	Secrets                     *SecretsListRequest
 	MainFile                    *string
 	Warehouse                   *AccountObjectIdentifier
 	RuntimeName                 *string

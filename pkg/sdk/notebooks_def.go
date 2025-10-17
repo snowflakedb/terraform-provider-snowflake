@@ -133,7 +133,7 @@ var NotebooksDef = g.NewInterface(
 				OptionalComment().
 				OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
 				OptionalNumberAssignment("IDLE_AUTO_SHUTDOWN_TIME_SECONDS", g.ParameterOptions().NoQuotes()).
-				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
+				OptionalQueryStructField("Secrets", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 				OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
 				OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("WAREHOUSE").Equals()).
 				OptionalTextAssignment("RUNTIME_NAME", g.ParameterOptions().SingleQuotes()).
