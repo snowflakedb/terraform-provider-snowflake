@@ -59,7 +59,7 @@ type ConfigDTO struct {
 	OauthTokenRequestURL           *string             `toml:"oauth_token_request_url"`
 	OauthRedirectURI               *string             `toml:"oauth_redirect_uri"`
 	OauthScope                     *string             `toml:"oauth_scope"`
-	EnableSingleUseRefreshTokens   *bool               `toml:"enable_single_use_refresh_tokens"`
 	WorkloadIdentityProvider       *string             `toml:"workload_identity_provider"`
 	WorkloadIdentityEntraResource  *string             `toml:"workload_identity_entra_resource"`
+	EnableSingleUseRefreshTokens   *bool               `toml:"enable_single_use_refresh_tokens"`
 }
