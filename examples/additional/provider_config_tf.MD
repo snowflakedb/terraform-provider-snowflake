@@ -35,6 +35,7 @@ provider "snowflake" {
 	oauth_authorization_url = var.oauth_authorization_url
 	oauth_redirect_uri = var.oauth_redirect_uri
 	oauth_scope = "session:role:PUBLIC"
+	workload_identity_provider = "azure"
 	enable_single_use_refresh_tokens = true
 
 	params = {

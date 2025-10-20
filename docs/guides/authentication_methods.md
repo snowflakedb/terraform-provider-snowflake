@@ -37,6 +37,7 @@ Read more on Snowflake's password protection: https://docs.snowflake.com/en/user
 * [OAuth Client Credentials authenticator flow](#oauth-client-credentials-authenticator-flow)
 * [OAuth Authorization Code authenticator flow - External IdP](#oauth-authorization-code-authenticator-flow---external-idp)
 * [OAuth Authorization Code authenticator flow - Snowflake IdP](#oauth-authorization-code-authenticator-flow---snowflake-idp)
+* [Workload Identity Federation (WIF) authenticator flow](#workload-identity-federation-wif-authenticator-flow)
 * [Common issues](#common-issues)
   * [How can I get my organization name?](#how-can-i-get-my-organization-name)
   * [How can I get my account name?](#how-can-i-get-my-account-name)
@@ -478,6 +479,39 @@ variable "oauth_token_request_url" {
 ```
 
 Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
+
+### Workload Identity Federation (WIF) authenticator flow
+
+To setup WIF authentication, follow [this guide](https://docs.snowflake.com/user-guide/workload-identity-federation) 
+in the official Snowflake documentation.
+
+The TF configuration should e.g. look like this:
+
+```terraform
+provider "snowflake" {
+  organization_name                = "<organization_name>"
+  account_name                     = "<account_name>"
+  user                             = "<user_name>"
+  authenticator                    = "WORKLOAD_IDENTITY"
+  workload_identity_provider       = "<workload_identity_provider>"
+}
+```
+
+For cases like [Authenticate to Snowflake using OpenID Connect (OIDC) issuer from Elastic Kubernetes Service (EKS)](https://docs.snowflake.com/user-guide/workload-identity-federation#authenticate-to-snowflake-using-openid-connect-oidc-issuer-from-aws-kubernetes)
+where an additional parameter is needed, you can set it like so:
+
+```terraform
+provider "snowflake" {
+  organization_name                = "<organization_name>"
+  account_name                     = "<account_name>"
+  user                             = "<user_name>"
+  authenticator                    = "WORKLOAD_IDENTITY"
+  workload_identity_provider       = "OIDC"
+  params = {
+    token_file_path = "<service_account_token_path>"
+  }
+}
+```
 
 ## Common issues
 
