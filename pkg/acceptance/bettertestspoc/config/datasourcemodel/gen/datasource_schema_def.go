@@ -91,6 +91,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.SecurityIntegrations().Schema,
 	},
 	{
+		name:   "SemanticViews",
+		schema: datasources.SemanticViews().Schema,
+	},
+	{
 		name:   "Services",
 		schema: datasources.Services().Schema,
 	},
