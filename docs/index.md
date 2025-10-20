@@ -665,7 +665,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_schemas](./docs/data-sources/schemas)
 - [snowflake_secrets](./docs/data-sources/secrets)
 - [snowflake_security_integrations](./docs/data-sources/security_integrations)
-- [snowflake_semantic_view](./docs/data-sources/semantic_view)
+- [snowflake_semantic_views](./docs/data-sources/semantic_views)
 - [snowflake_streamlits](./docs/data-sources/streamlits)
 - [snowflake_streams](./docs/data-sources/streams)
 - [snowflake_tags](./docs/data-sources/tags)
