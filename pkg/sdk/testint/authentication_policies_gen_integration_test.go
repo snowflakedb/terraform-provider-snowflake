@@ -255,7 +255,8 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		})
 
 		t.Run("on_user", func(t *testing.T) {
-			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithOn(sdk.On{User: sdk.NewAccountObjectIdentifier("user_name")}))
+			currentUserId := testClientHelper().Context.CurrentUser(t)
+			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithOn(sdk.On{User: currentUserId}))
 			require.NoError(t, err)
 			assert.Len(t, authenticationPolicies, 1)
 		})
