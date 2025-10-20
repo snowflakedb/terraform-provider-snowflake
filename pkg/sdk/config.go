@@ -167,6 +167,8 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.OauthRedirectURI, &driverCfg.OauthRedirectURI)
 	pointerAttributeSet(c.OauthScope, &driverCfg.OauthScope)
 	pointerAttributeSet(c.EnableSingleUseRefreshTokens, &driverCfg.EnableSingleUseRefreshTokens)
+	pointerAttributeSet(c.WorkloadIdentityProvider, &driverCfg.WorkloadIdentityProvider)
+	pointerAttributeSet(c.WorkloadIdentityEntraResource, &driverCfg.WorkloadIdentityEntraResource)
 
 	return *driverCfg, nil
 }
@@ -307,6 +309,13 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if !baseConfig.EnableSingleUseRefreshTokens {
 		baseConfig.EnableSingleUseRefreshTokens = mergeConfig.EnableSingleUseRefreshTokens
 	}
+
+	if baseConfig.WorkloadIdentityProvider == "" {
+		baseConfig.WorkloadIdentityProvider = mergeConfig.WorkloadIdentityProvider
+	}
+	if baseConfig.WorkloadIdentityEntraResource == "" {
+		baseConfig.WorkloadIdentityEntraResource = mergeConfig.WorkloadIdentityEntraResource
+	}
 	return baseConfig
 }
 
@@ -437,16 +446,17 @@ func ParsePrivateKey(privateKeyBytes []byte, passphrase []byte) (*rsa.PrivateKey
 type AuthenticationType string
 
 const (
-	AuthenticationTypeSnowflake               AuthenticationType = "SNOWFLAKE"
-	AuthenticationTypeOauth                   AuthenticationType = "OAUTH"
-	AuthenticationTypeExternalBrowser         AuthenticationType = "EXTERNALBROWSER"
-	AuthenticationTypeOkta                    AuthenticationType = "OKTA"
-	AuthenticationTypeJwt                     AuthenticationType = "SNOWFLAKE_JWT"
-	AuthenticationTypeTokenAccessor           AuthenticationType = "TOKENACCESSOR"
-	AuthenticationTypeUsernamePasswordMfa     AuthenticationType = "USERNAMEPASSWORDMFA"
-	AuthenticationTypeProgrammaticAccessToken AuthenticationType = "PROGRAMMATIC_ACCESS_TOKEN" //nolint:gosec
-	AuthenticationTypeOauthClientCredentials  AuthenticationType = "OAUTH_CLIENT_CREDENTIALS"  //nolint:gosec
-	AuthenticationTypeOauthAuthorizationCode  AuthenticationType = "OAUTH_AUTHORIZATION_CODE"
+	AuthenticationTypeSnowflake                  AuthenticationType = "SNOWFLAKE"
+	AuthenticationTypeOauth                      AuthenticationType = "OAUTH"
+	AuthenticationTypeExternalBrowser            AuthenticationType = "EXTERNALBROWSER"
+	AuthenticationTypeOkta                       AuthenticationType = "OKTA"
+	AuthenticationTypeJwt                        AuthenticationType = "SNOWFLAKE_JWT"
+	AuthenticationTypeTokenAccessor              AuthenticationType = "TOKENACCESSOR"
+	AuthenticationTypeUsernamePasswordMfa        AuthenticationType = "USERNAMEPASSWORDMFA"
+	AuthenticationTypeProgrammaticAccessToken    AuthenticationType = "PROGRAMMATIC_ACCESS_TOKEN" //nolint:gosec
+	AuthenticationTypeOauthClientCredentials     AuthenticationType = "OAUTH_CLIENT_CREDENTIALS"  //nolint:gosec
+	AuthenticationTypeOauthAuthorizationCode     AuthenticationType = "OAUTH_AUTHORIZATION_CODE"
+	AuthenticationTypeWorkloadIdentityFederation AuthenticationType = "WORKLOAD_IDENTITY"
 
 	AuthenticationTypeEmpty AuthenticationType = ""
 )
@@ -462,6 +472,7 @@ var AllAuthenticationTypes = []AuthenticationType{
 	AuthenticationTypeProgrammaticAccessToken,
 	AuthenticationTypeOauthClientCredentials,
 	AuthenticationTypeOauthAuthorizationCode,
+	AuthenticationTypeWorkloadIdentityFederation,
 }
 
 func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
@@ -486,6 +497,8 @@ func ToAuthenticatorType(s string) (gosnowflake.AuthType, error) {
 		return gosnowflake.AuthTypeOAuthClientCredentials, nil
 	case string(AuthenticationTypeOauthAuthorizationCode):
 		return gosnowflake.AuthTypeOAuthAuthorizationCode, nil
+	case string(AuthenticationTypeWorkloadIdentityFederation):
+		return gosnowflake.AuthTypeWorkloadIdentityFederation, nil
 	default:
 		return gosnowflake.AuthType(0), fmt.Errorf("invalid authenticator type: %s", s)
 	}

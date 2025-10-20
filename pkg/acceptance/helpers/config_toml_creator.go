@@ -54,6 +54,7 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithOauthAuthorizationURL("oauth_authorization_url").
 		WithOauthRedirectURI("oauth_redirect_uri").
 		WithOauthScope("oauth_scope").
+		WithWorkloadIdentityProvider("workload_identity_provider").
 		WithEnableSingleUseRefreshTokens(true),
 	)
 }

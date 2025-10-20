@@ -35,6 +35,7 @@ oauthtokenrequesturl = 'oauth_token_request_url'
 oauthauthorizationurl = 'oauth_authorization_url'
 oauthredirecturi = 'oauth_redirect_uri'
 oauthscope = 'oauth_scope'
+workload_identity_provider = 'azure'
 enablesingleuserefreshtokens = true
 
 [example.params]
