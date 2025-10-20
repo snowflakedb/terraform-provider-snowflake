@@ -38,8 +38,7 @@ func TestAcc_SemanticViews_Basic(t *testing.T) {
 		id.SchemaName(),
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable1},
-		[]sdk.MetricDefinition{*metric1},
-	).WithComment(comment)
+	).WithComment(comment).WithMetrics([]sdk.MetricDefinition{*metric1})
 
 	dataSourceModel := datasourcemodel.SemanticViews("test").
 		WithLike(id.Name()).
@@ -191,9 +190,9 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id3 := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	model1 := model.SemanticView("test1", id1.DatabaseName(), id1.SchemaName(), id1.Name(), []sdk.LogicalTable{*logicalTable1}, []sdk.MetricDefinition{*metric1})
-	model2 := model.SemanticView("test2", id2.DatabaseName(), id2.SchemaName(), id2.Name(), []sdk.LogicalTable{*logicalTable1}, []sdk.MetricDefinition{*metric1})
-	model3 := model.SemanticView("test3", id3.DatabaseName(), id3.SchemaName(), id3.Name(), []sdk.LogicalTable{*logicalTable1}, []sdk.MetricDefinition{*metric1})
+	model1 := model.SemanticView("test1", id1.DatabaseName(), id1.SchemaName(), id1.Name(), []sdk.LogicalTable{*logicalTable1}).WithMetrics([]sdk.MetricDefinition{*metric1})
+	model2 := model.SemanticView("test2", id2.DatabaseName(), id2.SchemaName(), id2.Name(), []sdk.LogicalTable{*logicalTable1}).WithMetrics([]sdk.MetricDefinition{*metric1})
+	model3 := model.SemanticView("test3", id3.DatabaseName(), id3.SchemaName(), id3.Name(), []sdk.LogicalTable{*logicalTable1}).WithMetrics([]sdk.MetricDefinition{*metric1})
 
 	dataSourceModelLikeFirstOne := datasourcemodel.SemanticViews("test").
 		WithLike(id1.Name()).
