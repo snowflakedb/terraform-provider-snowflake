@@ -12,19 +12,19 @@ description: |-
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 <!-- TODO(SNOW-2344309): address follow ups in semantic view SDK and resource -->
--> **Note** The `snowflake_semantic_view` resource currently does not handle external changes. It will be added during the resource rework.
+-> **Note** The `snowflake_semantic_view` resource currently does not handle external changes. It will be added during the resource stabilization.
 
--> **Note** Object renaming is currently not supported. It will be added during resource rework.
+-> **Note** Object renaming is currently not supported. It will be added during resource stabilization.
 
--> **Note** Copy Grants is currently not supported. It will be added during resource rework.
+-> **Note** Copy Grants is currently not supported. It will be added during resource stabilization.
 
--> **Note** Lowercase IDs are not currently supported. It will be added during resource rework.
+-> **Note** Lowercase IDs are not currently supported. It will be added during resource stabilization.
 
--> **Note** PRIVATE/ PUBLIC qualifiers for semantic expressions are not currently supported. They are treated as PUBLIC by default. It will be added during resource rework.
+-> **Note** PRIVATE/ PUBLIC qualifiers for semantic expressions are not currently supported. They are treated as PUBLIC by default. It will be added during resource stabilization.
 
--> **Note** Excluding dimensions in `window_function:over_clause:partition_by` clause is not currently supported. It will be added during resource rework.
+-> **Note** Excluding dimensions in `window_function:over_clause:partition_by` clause is not currently supported. It will be added during resource stabilization.
 
--> **Note** The `window_function:over_clause:order_by` clause must be a complete SQL expression, including any `[ ASC | DESC ] [ NULLS { FIRST | LAST } ]` modifiers. Support to break it down will be added during resource rework.
+-> **Note** The `window_function:over_clause:order_by` clause must be a complete SQL expression, including any `[ ASC | DESC ] [ NULLS { FIRST | LAST } ]` modifiers. Support to break it down will be added during resource stabilization.
 
 # {{.Name}} ({{.Type}})
 
