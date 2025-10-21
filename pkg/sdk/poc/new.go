@@ -12,16 +12,12 @@ import (
 
 // TODO [SNOW-2324252]: rename this file and move it (can't be moved currently due to import cycle: sdk needs gen fro definition and , generator needs all the definitions list
 
-type SdkObjectDef struct {
-	definition *generator.Interface
-}
-
 func GetSdkDefinitions() []*generator.Interface {
 	allDefinitions := allSdkObjectDefinitions
 	interfaces := make([]*generator.Interface, len(allDefinitions))
-	for idx, s := range allDefinitions {
-		preprocessDefinition(s.definition)
-		interfaces[idx] = s.definition
+	for idx, def := range allDefinitions {
+		preprocessDefinition(def)
+		interfaces[idx] = def
 	}
 	return interfaces
 }
@@ -124,119 +120,43 @@ func ExtendInterface(path string) func(*generator.Interface, *genhelpers.Preambl
 	}
 }
 
-var allSdkObjectDefinitions = []SdkObjectDef{
-	{
-		definition: sdk.NetworkPoliciesDef,
-	},
-	{
-		definition: sdk.SessionPoliciesDef,
-	},
-	{
-		definition: sdk.StreamsDef,
-	},
-	{
-		definition: sdk.TasksDef,
-	},
-	{
-		definition: sdk.ApplicationRolesDef,
-	},
-	{
-		definition: sdk.ViewsDef,
-	},
-	{
-		definition: sdk.StagesDef,
-	},
-	{
-		definition: sdk.FunctionsDef,
-	},
-	{
-		definition: sdk.ProceduresDef,
-	},
-	{
-		definition: sdk.EventTablesDef,
-	},
-	{
-		definition: sdk.ApplicationPackagesDef,
-	},
-	{
-		definition: sdk.StorageIntegrationDef,
-	},
-	{
-		definition: sdk.ManagedAccountsDef,
-	},
-	{
-		definition: sdk.RowAccessPoliciesDef,
-	},
-	{
-		definition: sdk.ApplicationsDef,
-	},
-	{
-		definition: sdk.SequencesDef,
-	},
-	{
-		definition: sdk.MaterializedViewsDef,
-	},
-	{
-		definition: sdk.ApiIntegrationsDef,
-	},
-	{
-		definition: sdk.NotificationIntegrationsDef,
-	},
-	{
-		definition: sdk.ExternalFunctionsDef,
-	},
-	{
-		definition: sdk.StreamlitsDef,
-	},
-	{
-		definition: sdk.NetworkRuleDef,
-	},
-	{
-		definition: sdk.SecurityIntegrationsDef,
-	},
-	{
-		definition: sdk.CortexSearchServiceDef,
-	},
-	{
-		definition: sdk.DataMetricFunctionReferenceDef,
-	},
-	{
-		definition: sdk.ExternalVolumesDef,
-	},
-	{
-		definition: sdk.AuthenticationPoliciesDef,
-	},
-	{
-		definition: sdk.SecretsDef,
-	},
-	{
-		definition: sdk.ConnectionDef,
-	},
-	{
-		definition: sdk.ImageRepositoriesDef,
-	},
-	{
-		definition: sdk.ComputePoolsDef,
-	},
-	{
-		definition: sdk.GitRepositoriesDef,
-	},
-	{
-		definition: sdk.ServicesDef,
-	},
-	{
-		definition: sdk.UserProgrammaticAccessTokensDef,
-	},
-	{
-		definition: sdk.ListingsDef,
-	},
-	{
-		definition: sdk.OrganizationAccountsDef,
-	},
-	{
-		definition: sdk.SemanticViewsDef,
-	},
-	{
-		definition: sdk.NotebooksDef,
-	},
+var allSdkObjectDefinitions = []*generator.Interface{
+	sdk.ApiIntegrationsDef,
+	sdk.ApplicationPackagesDef,
+	sdk.ApplicationRolesDef,
+	sdk.ApplicationsDef,
+	sdk.AuthenticationPoliciesDef,
+	sdk.ComputePoolsDef,
+	sdk.ConnectionDef,
+	sdk.CortexSearchServiceDef,
+	sdk.DataMetricFunctionReferenceDef,
+	sdk.EventTablesDef,
+	sdk.ExternalFunctionsDef,
+	sdk.ExternalVolumesDef,
+	sdk.FunctionsDef,
+	sdk.GitRepositoriesDef,
+	sdk.ImageRepositoriesDef,
+	sdk.ListingsDef,
+	sdk.ManagedAccountsDef,
+	sdk.MaterializedViewsDef,
+	sdk.NetworkPoliciesDef,
+	sdk.NetworkRuleDef,
+	sdk.NotebooksDef,
+	sdk.NotificationIntegrationsDef,
+	sdk.OrganizationAccountsDef,
+	sdk.ProceduresDef,
+	sdk.RowAccessPoliciesDef,
+	sdk.SecretsDef,
+	sdk.SecurityIntegrationsDef,
+	sdk.SemanticViewsDef,
+	sdk.SequencesDef,
+	sdk.ServicesDef,
+	sdk.SessionPoliciesDef,
+	sdk.StagesDef,
+	sdk.StorageIntegrationDef,
+	sdk.StreamlitsDef,
+	sdk.StreamsDef,
+	sdk.TasksDef,
+	sdk.UserProgrammaticAccessTokensDef,
+	sdk.ViewsDef,
 }
