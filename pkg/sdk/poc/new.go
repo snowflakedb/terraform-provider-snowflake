@@ -13,7 +13,6 @@ import (
 // TODO [SNOW-2324252]: rename this file and move it (can't be moved currently due to import cycle: sdk needs gen fro definition and , generator needs all the definitions list
 
 type SdkObjectDef struct {
-	name       string
 	definition *generator.Interface
 }
 
@@ -127,155 +126,117 @@ func ExtendInterface(path string) func(*generator.Interface, *genhelpers.Preambl
 
 var allSdkObjectDefinitions = []SdkObjectDef{
 	{
-		name:       "NetworkPolicies",
 		definition: sdk.NetworkPoliciesDef,
 	},
 	{
-		name:       "SessionPolicies",
 		definition: sdk.SessionPoliciesDef,
 	},
 	{
-		name:       "Tasks",
-		definition: sdk.TasksDef,
-	},
-	{
-		name:       "Streams",
 		definition: sdk.StreamsDef,
 	},
 	{
-		name:       "ApplicationRoles",
+		definition: sdk.TasksDef,
+	},
+	{
 		definition: sdk.ApplicationRolesDef,
 	},
 	{
-		name:       "Views",
 		definition: sdk.ViewsDef,
 	},
 	{
-		name:       "Stages",
 		definition: sdk.StagesDef,
 	},
 	{
-		name:       "Functions",
 		definition: sdk.FunctionsDef,
 	},
 	{
-		name:       "Procedures",
 		definition: sdk.ProceduresDef,
 	},
 	{
-		name:       "EventTables",
 		definition: sdk.EventTablesDef,
 	},
 	{
-		name:       "ApplicationPackages",
 		definition: sdk.ApplicationPackagesDef,
 	},
 	{
-		name:       "StorageIntegration",
 		definition: sdk.StorageIntegrationDef,
 	},
 	{
-		name:       "ManagedAccounts",
 		definition: sdk.ManagedAccountsDef,
 	},
 	{
-		name:       "RowAccessPolicies",
 		definition: sdk.RowAccessPoliciesDef,
 	},
 	{
-		name:       "Applications",
 		definition: sdk.ApplicationsDef,
 	},
 	{
-		name:       "Sequences",
 		definition: sdk.SequencesDef,
 	},
 	{
-		name:       "MaterializedViews",
 		definition: sdk.MaterializedViewsDef,
 	},
 	{
-		name:       "ApiIntegrations",
 		definition: sdk.ApiIntegrationsDef,
 	},
 	{
-		name:       "NotificationIntegrations",
 		definition: sdk.NotificationIntegrationsDef,
 	},
 	{
-		name:       "ExternalFunctions",
 		definition: sdk.ExternalFunctionsDef,
 	},
 	{
-		name:       "Streamlits",
 		definition: sdk.StreamlitsDef,
 	},
 	{
-		name:       "NetworkRule",
 		definition: sdk.NetworkRuleDef,
 	},
 	{
-		name:       "SecurityIntegrations",
 		definition: sdk.SecurityIntegrationsDef,
 	},
 	{
-		name:       "CortexSearchService",
 		definition: sdk.CortexSearchServiceDef,
 	},
 	{
-		name:       "DataMetricFunctionReference",
 		definition: sdk.DataMetricFunctionReferenceDef,
 	},
 	{
-		name:       "ExternalVolumes",
 		definition: sdk.ExternalVolumesDef,
 	},
 	{
-		name:       "AuthenticationPolicies",
 		definition: sdk.AuthenticationPoliciesDef,
 	},
 	{
-		name:       "Secrets",
 		definition: sdk.SecretsDef,
 	},
 	{
-		name:       "Connection",
 		definition: sdk.ConnectionDef,
 	},
 	{
-		name:       "ImageRepositories",
 		definition: sdk.ImageRepositoriesDef,
 	},
 	{
-		name:       "ComputePools",
 		definition: sdk.ComputePoolsDef,
 	},
 	{
-		name:       "GitRepositories",
 		definition: sdk.GitRepositoriesDef,
 	},
 	{
-		name:       "Services",
 		definition: sdk.ServicesDef,
 	},
 	{
-		name:       "UserProgrammaticAccessTokens",
 		definition: sdk.UserProgrammaticAccessTokensDef,
 	},
 	{
-		name:       "Listings",
 		definition: sdk.ListingsDef,
 	},
 	{
-		name:       "OrganizationAccounts",
 		definition: sdk.OrganizationAccountsDef,
 	},
 	{
-		name:       "SemanticViews",
 		definition: sdk.SemanticViewsDef,
 	},
 	{
-		name:       "Notebooks",
 		definition: sdk.NotebooksDef,
 	},
 }
