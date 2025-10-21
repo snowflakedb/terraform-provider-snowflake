@@ -38,3 +38,8 @@ make clean-sdk generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names
 # show usage
 make generate-sdk SF_TF_GENERATOR_ARGS='-h'
 ```
+
+There is also a dedicated command to only generate the example SDK objects used during the rework:
+```shell
+make generate-examples
+```
