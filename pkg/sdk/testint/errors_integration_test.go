@@ -167,7 +167,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeEventTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).EventTables.Drop, sdk.NewDropEventTableRequest(id).WithIfExists(sdk.Bool(true)))},
 		{ObjectType: sdk.ObjectTypeView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Views.Drop, sdk.NewDropViewRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeMaterializedView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).MaterializedViews.Drop, sdk.NewDropMaterializedViewRequest(id).WithIfExists(sdk.Bool(true)))},
-		{ObjectType: sdk.ObjectTypeSequence, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Sequences.Drop, sdk.NewDropSequenceRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeSequence, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Sequences.Drop, sdk.NewDropSequenceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeStream, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streams.Drop, sdk.NewDropStreamRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTask, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tasks.Drop, sdk.NewDropTaskRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeMaskingPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
@@ -243,7 +243,7 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeEventTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).EventTables.Drop, sdk.NewDropEventTableRequest(id).WithIfExists(sdk.Bool(true)))},
 		{ObjectType: sdk.ObjectTypeView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Views.Drop, sdk.NewDropViewRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeMaterializedView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).MaterializedViews.Drop, sdk.NewDropMaterializedViewRequest(id).WithIfExists(sdk.Bool(true)))},
-		{ObjectType: sdk.ObjectTypeSequence, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Sequences.Drop, sdk.NewDropSequenceRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeSequence, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Sequences.Drop, sdk.NewDropSequenceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeStream, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streams.Drop, sdk.NewDropStreamRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTask, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tasks.Drop, sdk.NewDropTaskRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeMaskingPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
