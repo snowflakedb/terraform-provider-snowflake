@@ -48,6 +48,28 @@ func (c *GrantClient) GrantGlobalPrivilegesOnAccount(
 	require.NoError(t, err)
 }
 
+func (c *GrantClient) RevokeGlobalPrivilegesFromAccount(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges []sdk.GlobalPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().RevokePrivilegesFromAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			GlobalPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			Account: sdk.Bool(true),
+		},
+		accountRoleId,
+		&sdk.RevokePrivilegesFromAccountRoleOptions{},
+	)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) GrantOnSchemaToAccountRole(t *testing.T, schemaId sdk.DatabaseObjectIdentifier, accountRoleId sdk.AccountObjectIdentifier, privileges ...sdk.SchemaPrivilege) {
 	t.Helper()
 	ctx := context.Background()
@@ -65,6 +87,32 @@ func (c *GrantClient) GrantOnSchemaToAccountRole(t *testing.T, schemaId sdk.Data
 		accountRoleId,
 		new(sdk.GrantPrivilegesToAccountRoleOptions),
 	)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) RevokePrivilegesOnSchemaFromAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	schemaId sdk.DatabaseObjectIdentifier,
+	privileges []sdk.SchemaPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().RevokePrivilegesFromAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			Schema: &sdk.GrantOnSchema{
+				Schema: &schemaId,
+			},
+		},
+		accountRoleId,
+		new(sdk.RevokePrivilegesFromAccountRoleOptions),
+	)
+
 	require.NoError(t, err)
 }
 
