@@ -13,9 +13,7 @@ import (
 // TODO [SNOW-2324252]: rename this file and move it (can't be moved currently due to import cycle: sdk needs gen fro definition and , generator needs all the definitions list
 
 type SdkObjectDef struct {
-	name string
-	// TODO [SNOW-2324252]: can be removed?
-	file       string
+	name       string
 	definition *generator.Interface
 }
 
@@ -130,12 +128,10 @@ func ExtendInterface(path string) func(*generator.Interface, *genhelpers.Preambl
 var allSdkObjectDefinitions = []SdkObjectDef{
 	{
 		name:       "Sequences",
-		file:       "sequences_def.go",
 		definition: sdk.SequencesDef,
 	},
 	{
 		name:       "Streamlits",
-		file:       "streamlits_def.go",
 		definition: sdk.StreamlitsDef,
 	},
 }
