@@ -35,8 +35,7 @@ func TestSequences_Create(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEQUENCE %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -73,7 +72,7 @@ func TestSequences_Alter(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.RenameTo = &emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
@@ -199,14 +198,22 @@ func TestSequences_Drop(t *testing.T) {
 
 	t.Run("validation: exactly one field from [opts.Constraint.Cascade opts.Constraint.Restrict] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Constraint = &SequenceConstraint{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Constraint.Cascade opts.Constraint.Restrict] should be present - multiple", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Constraint = &SequenceConstraint{
+			Cascade:  Bool(true),
+			Restrict: Bool(true),
+		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `DROP SEQUENCE %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
