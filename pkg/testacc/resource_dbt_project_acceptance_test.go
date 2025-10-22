@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -24,6 +27,17 @@ func TestAcc_DbtProject_basic(t *testing.T) {
 	stageName := random.AlphaN(12)
 	projectName := random.AlphaN(12)
 
+	configModels := []config.ConfigModel{
+		model.Database("test_db", databaseName),
+		model.Schema("test_schema", databaseName, schemaName).
+			WithDependsOn("snowflake_database.test_db"),
+		model.Stage("test_stage", databaseName, schemaName, stageName).
+			WithDependsOn("snowflake_schema.test_schema"),
+		model.BasicDbtProjectModel("test", databaseName, schemaName, projectName).
+			WithFromStage("${snowflake_stage.test_stage.fully_qualified_name}").
+			WithDependsOn("snowflake_stage.test_stage"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: provider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -33,13 +47,15 @@ func TestAcc_DbtProject_basic(t *testing.T) {
 		CheckDestroy: testAccCheckDbtProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDbtProjectConfig_basic(databaseName, schemaName, stageName, projectName),
+				Config: config.FromModels(t, configModels...),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "name", projectName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "database", databaseName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "schema", schemaName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "from.0.stage", stageName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "default_version", "LAST"),
+					resourceassert.DbtProjectResource(t, "snowflake_dbt_project.test").
+						HasNameString(projectName).
+						HasDatabaseString(databaseName).
+						HasSchemaString(schemaName).
+						HasFromStage("${snowflake_stage.test_stage.fully_qualified_name}").
+						HasDefaultVersionString("LAST").
+						HasCommentString("Test DBT project"),
 				),
 			},
 		},
@@ -54,6 +70,23 @@ func TestAcc_DbtProject_gitSource(t *testing.T) {
 	stageName := random.AlphaN(12)
 	projectName := random.AlphaN(12)
 
+	configModels := []config.ConfigModel{
+		model.Database("test_db", databaseName),
+		model.Schema("test_schema", databaseName, schemaName).
+			WithDependsOn("snowflake_database.test_db"),
+		model.Stage("test_stage", databaseName, schemaName, stageName).
+			WithDependsOn("snowflake_schema.test_schema"),
+		model.BasicDbtProjectModel("test", databaseName, schemaName, projectName).
+			WithGitSource(
+				"https://github.com/Snowflake-Labs/getting-started-with-dbt-on-snowflake.git",
+				"${snowflake_stage.test_stage.fully_qualified_name}",
+				"main",
+				"tasty_bytes_dbt_demo",
+				"dbt_demo",
+			).
+			WithDependsOn("snowflake_stage.test_stage"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: provider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -63,17 +96,21 @@ func TestAcc_DbtProject_gitSource(t *testing.T) {
 		CheckDestroy: testAccCheckDbtProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDbtProjectConfig_gitSource(databaseName, schemaName, stageName, projectName),
+				Config: config.FromModels(t, configModels...),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "name", projectName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "database", databaseName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "schema", schemaName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.repository_url", "https://github.com/Snowflake-Labs/getting-started-with-dbt-on-snowflake.git"),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.branch", "main"),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.path", "tasty_bytes_dbt_demo"),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.stage", stageName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.stage_path", "dbt_demo"),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "default_version", "LAST"),
+					resourceassert.DbtProjectResource(t, "snowflake_dbt_project.test").
+						HasNameString(projectName).
+						HasDatabaseString(databaseName).
+						HasSchemaString(schemaName).
+						HasGitSourceWithBranch(
+							"https://github.com/Snowflake-Labs/getting-started-with-dbt-on-snowflake.git",
+							"main",
+							"${snowflake_stage.test_stage.fully_qualified_name}",
+						).
+						HasGitSourcePath("tasty_bytes_dbt_demo").
+						HasGitSourceStagePath("dbt_demo").
+						HasDefaultVersionString("LAST").
+						HasCommentString("Test DBT project"),
 				),
 			},
 		},
@@ -88,6 +125,23 @@ func TestAcc_DbtProject_gitSourceWithTag(t *testing.T) {
 	stageName := random.AlphaN(12)
 	projectName := random.AlphaN(12)
 
+	configModels := []config.ConfigModel{
+		model.Database("test_db", databaseName),
+		model.Schema("test_schema", databaseName, schemaName).
+			WithDependsOn("snowflake_database.test_db"),
+		model.Stage("test_stage", databaseName, schemaName, stageName).
+			WithDependsOn("snowflake_schema.test_schema"),
+		model.BasicDbtProjectModel("test", databaseName, schemaName, projectName).
+			WithGitSourceTag(
+				"https://github.com/Snowflake-Labs/getting-started-with-dbt-on-snowflake.git",
+				"${snowflake_stage.test_stage.fully_qualified_name}",
+				"v0",
+				"tasty_bytes_dbt_demo",
+				"",
+			).
+			WithDependsOn("snowflake_stage.test_stage"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: provider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -97,16 +151,20 @@ func TestAcc_DbtProject_gitSourceWithTag(t *testing.T) {
 		CheckDestroy: testAccCheckDbtProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDbtProjectConfig_gitSourceWithTag(databaseName, schemaName, stageName, projectName),
+				Config: config.FromModels(t, configModels...),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "name", projectName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "database", databaseName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "schema", schemaName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.repository_url", "https://github.com/Snowflake-Labs/getting-started-with-dbt-on-snowflake.git"),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.tag", "v0"),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.path", "tasty_bytes_dbt_demo"),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "git_source.0.stage", stageName),
-					resource.TestCheckResourceAttr("snowflake_dbt_project.test", "default_version", "LAST"),
+					resourceassert.DbtProjectResource(t, "snowflake_dbt_project.test").
+						HasNameString(projectName).
+						HasDatabaseString(databaseName).
+						HasSchemaString(schemaName).
+						HasGitSourceWithTag(
+							"https://github.com/Snowflake-Labs/getting-started-with-dbt-on-snowflake.git",
+							"v0",
+							"${snowflake_stage.test_stage.fully_qualified_name}",
+						).
+						HasGitSourcePath("tasty_bytes_dbt_demo").
+						HasDefaultVersionString("LAST").
+						HasCommentString("Test DBT project"),
 				),
 			},
 		},
@@ -127,107 +185,4 @@ func testAccCheckDbtProjectDestroy(s *terraform.State) error {
 		}
 	}
 	return nil
-}
-
-func testAccDbtProjectConfig_basic(databaseName, schemaName, stageName, projectName string) string {
-	return fmt.Sprintf(`
-resource "snowflake_database" "test" {
-  name = "%s"
-}
-
-resource "snowflake_schema" "test" {
-  database = snowflake_database.test.name
-  name     = "%s"
-}
-
-resource "snowflake_stage" "test" {
-  database = snowflake_database.test.name
-  schema   = snowflake_schema.test.name
-  name     = "%s"
-}
-
-resource "snowflake_dbt_project" "test" {
-  database = snowflake_database.test.name
-  schema   = snowflake_schema.test.name
-  name     = "%s"
-
-  from {
-    stage = snowflake_stage.test.fully_qualified_name
-  }
-
-  default_version = "LAST"
-  comment         = "Test DBT project"
-}
-`, databaseName, schemaName, stageName, projectName)
-}
-
-func testAccDbtProjectConfig_gitSource(databaseName, schemaName, stageName, projectName string) string {
-	return fmt.Sprintf(`
-resource "snowflake_database" "test" {
-  name = "%s"
-}
-
-resource "snowflake_schema" "test" {
-  database = snowflake_database.test.name
-  name     = "%s"
-}
-
-resource "snowflake_stage" "test" {
-  database = snowflake_database.test.name
-  schema   = snowflake_schema.test.name
-  name     = "%s"
-}
-
-resource "snowflake_dbt_project" "test" {
-  database = snowflake_database.test.name
-  schema   = snowflake_schema.test.name
-  name     = "%s"
-
-  git_source {
-    repository_url = "https://github.com/Snowflake-Labs/getting-started-with-dbt-on-snowflake.git"
-    branch         = "main"
-    path           = "tasty_bytes_dbt_demo"
-    stage          = snowflake_stage.test.fully_qualified_name
-    stage_path     = "dbt_demo"
-  }
-
-  default_version = "LAST"
-  comment         = "Test DBT project with Git integration"
-}
-`, databaseName, schemaName, stageName, projectName)
-}
-
-func testAccDbtProjectConfig_gitSourceWithTag(databaseName, schemaName, stageName, projectName string) string {
-	return fmt.Sprintf(`
-resource "snowflake_database" "test" {
-  name = "%s"
-}
-
-resource "snowflake_schema" "test" {
-  database = snowflake_database.test.name
-  name     = "%s"
-}
-
-resource "snowflake_stage" "test" {
-  database = snowflake_database.test.name
-  schema   = snowflake_schema.test.name
-  name     = "%s"
-}
-
-resource "snowflake_dbt_project" "test" {
-  database = snowflake_database.test.name
-  schema   = snowflake_schema.test.name
-  name     = "%s"
-
-  git_source {
-    repository_url = "https://github.com/Snowflake-Labs/getting-started-with-dbt-on-snowflake.git"
-    tag            = "v0"
-    path           = "tasty_bytes_dbt_demo"
-    stage          = snowflake_stage.test.fully_qualified_name
-  }
-
-  default_version = "LAST"
-  comment         = "Test DBT project with Git tag"
-}
-`, databaseName, schemaName, stageName, projectName)
 }

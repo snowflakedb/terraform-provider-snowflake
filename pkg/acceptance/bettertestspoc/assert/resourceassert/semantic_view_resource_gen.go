@@ -57,6 +57,16 @@ func (s *SemanticViewResourceAssert) HasFullyQualifiedNameString(expected string
 	return s
 }
 
+func (s *SemanticViewResourceAssert) HasMetricsString(expected string) *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("metrics", expected))
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasTablesString(expected string) *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("tables", expected))
+	return s
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////

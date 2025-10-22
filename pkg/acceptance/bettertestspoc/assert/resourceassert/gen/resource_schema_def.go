@@ -62,6 +62,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.DatabaseRole().Schema,
 	},
 	{
+		name:   "DbtProject",
+		schema: resources.DbtProject().Schema,
+	},
+	{
 		name:   "Execute",
 		schema: resources.Execute().Schema,
 	},
