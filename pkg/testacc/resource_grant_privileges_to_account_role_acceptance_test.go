@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_GrantPrivilegesToAccountRole_OnAccount_CompleteUseCase(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_OnAccount_BasicUseCase(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -100,7 +100,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_CompleteUseCase(t *testing.T
 			{
 				PreConfig: func() {
 					// We are not granting anything as new privileges won't be detected (authoritative grants would be used for this)
-					testClient().Grant.RevokeGlobalPrivilegesFromAccount(t, role.ID(), []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateDatabase})
+					testClient().Grant.RevokeGlobalPrivilegesFromAccountRole(t, role.ID(), []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateDatabase})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -364,7 +364,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_PrivilegesReversed(t *testin
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_CompleteUseCase(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_BasicUseCase(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -550,7 +550,7 @@ func TestAcc_GrantPrivilegesToApplicationRole_OnAccountObject_InfinitePlan(t *te
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_OnSchema_CompleteUseCase(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_OnSchema_BasicUseCase(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
