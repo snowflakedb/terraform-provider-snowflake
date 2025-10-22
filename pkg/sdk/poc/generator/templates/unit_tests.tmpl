@@ -5,25 +5,25 @@ import "testing"
 {{ range .Operations }}
     {{- if .OptsField }}
         func Test{{ .ObjectInterface.Name }}_{{ .Name }}(t *testing.T) {
-            {{ if not (eq .Name "Show") }}
+            {{ if not (eq .Name "Show") -}}
                 id := random{{ .ObjectInterface.IdentifierKind }}()
             {{ end -}}
 
             // Minimal valid {{ .OptsField.KindNoPtr }}
             defaultOpts := func() *{{ .OptsField.KindNoPtr }} {
                 return &{{ .OptsField.KindNoPtr }}{
-                    {{ if not (eq .Name "Show") }}
+                    {{ if not (eq .Name "Show") -}}
                         name: id,
                     {{ end -}}
                 }
             }
 
             t.Run("validation: nil options", func(t *testing.T) {
-                var opts *{{ .OptsField.KindNoPtr }} = nil
+                opts := (*{{ .OptsField.KindNoPtr }})(nil)
                 assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
             })
 
-            {{- template "validationTests" .OptsField }}
+            {{ template "validationTests" .OptsField }}
 
             t.Run("basic", func(t *testing.T) {
                 opts := defaultOpts()

@@ -7,20 +7,19 @@ import (
 )
 
 func TestSequences_Create(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid CreateSequenceOptions
 	defaultOpts := func() *CreateSequenceOptions {
 		return &CreateSequenceOptions{
-
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *CreateSequenceOptions = nil
+		opts := (*CreateSequenceOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
@@ -47,20 +46,19 @@ func TestSequences_Create(t *testing.T) {
 }
 
 func TestSequences_Alter(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid AlterSequenceOptions
 	defaultOpts := func() *AlterSequenceOptions {
 		return &AlterSequenceOptions{
-
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *AlterSequenceOptions = nil
+		opts := (*AlterSequenceOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
@@ -99,7 +97,7 @@ func TestSequences_Show(t *testing.T) {
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *ShowSequenceOptions = nil
+		opts := (*ShowSequenceOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -117,20 +115,19 @@ func TestSequences_Show(t *testing.T) {
 }
 
 func TestSequences_Describe(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid DescribeSequenceOptions
 	defaultOpts := func() *DescribeSequenceOptions {
 		return &DescribeSequenceOptions{
-
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *DescribeSequenceOptions = nil
+		opts := (*DescribeSequenceOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
@@ -151,20 +148,19 @@ func TestSequences_Describe(t *testing.T) {
 }
 
 func TestSequences_Drop(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid DropSequenceOptions
 	defaultOpts := func() *DropSequenceOptions {
 		return &DropSequenceOptions{
-
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *DropSequenceOptions = nil
+		opts := (*DropSequenceOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me

@@ -2,8 +2,6 @@
 
 package rework
 
-//go:generate go run ../../../dto-builder-generator/main.go
-
 var (
 	_ optionsProvider[CreateSequenceOptions]   = new(CreateSequenceRequest)
 	_ optionsProvider[AlterSequenceOptions]    = new(AlterSequenceRequest)
