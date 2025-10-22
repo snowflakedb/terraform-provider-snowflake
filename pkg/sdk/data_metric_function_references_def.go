@@ -85,6 +85,22 @@ func ToDataMetricScheduleStatusOption(s string) (DataMetricScheduleStatusOption,
 	}
 }
 
+var dataMetricFunctionReferenceParametersDef = g.NewQueryStruct("dataMetricFunctionReferenceParameters").
+	SQLWithCustomFieldName("functionFullyQualifiedName", "SNOWFLAKE.INFORMATION_SCHEMA.DATA_METRIC_FUNCTION_REFERENCES").
+	OptionalQueryStructField(
+		"arguments",
+		dataMetricFunctionReferenceFunctionArgumentsDef,
+		g.ListOptions().Parentheses(),
+	)
+
+var dataMetricFunctionReferenceFunctionArgumentsDef = g.NewQueryStruct("dataMetricFunctionReferenceFunctionArguments").
+	PredefinedQueryStructField("refEntityName", "[]ObjectIdentifier", g.ParameterOptions().ArrowEquals().SingleQuotes().SQL("REF_ENTITY_NAME")).
+	OptionalAssignment(
+		"REF_ENTITY_DOMAIN",
+		g.KindOfT[DataMetricFunctionRefEntityDomainOption](),
+		g.ParameterOptions().SingleQuotes().ArrowEquals().Required(),
+	)
+
 var DataMetricFunctionReferenceDef = g.NewInterface(
 	"DataMetricFunctionReferences",
 	"DataMetricFunctionReference",
@@ -93,15 +109,14 @@ var DataMetricFunctionReferenceDef = g.NewInterface(
 	"GetForEntity",
 	"https://docs.snowflake.com/en/sql-reference/functions/data_metric_function_references",
 	g.NewQueryStruct("GetForEntity").
-		SQL("SELECT * FROM TABLE(REF_ENTITY_NAME => ").
-		Identifier("refEntityName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-		SQL(", ").
-		Assignment(
-			"REF_ENTITY_DOMAIN",
-			g.KindOfT[DataMetricFunctionRefEntityDomainOption](),
-			g.ParameterOptions().SingleQuotes().ArrowEquals().Required(),
-		).
-		SQL(")"),
+		SQLWithCustomFieldName("selectEverythingFrom", "SELECT * FROM TABLE").
+		OptionalQueryStructField(
+			"parameters",
+			dataMetricFunctionReferenceParametersDef,
+			g.ListOptions().Parentheses().NoComma(),
+		),
+	dataMetricFunctionReferenceParametersDef,
+	dataMetricFunctionReferenceFunctionArgumentsDef,
 	g.DbStruct("dataMetricFunctionReferencesRow").
 		Text("metric_database_name").
 		Text("metric_schema_name").
