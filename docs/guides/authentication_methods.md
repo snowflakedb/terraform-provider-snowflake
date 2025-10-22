@@ -497,8 +497,14 @@ provider "snowflake" {
 }
 ```
 
-For cases like [Authenticate to Snowflake using OpenID Connect (OIDC) issuer from Elastic Kubernetes Service (EKS)](https://docs.snowflake.com/user-guide/workload-identity-federation#authenticate-to-snowflake-using-openid-connect-oidc-issuer-from-aws-kubernetes)
-where an additional parameter is needed, you can set it like so:
+For the case of [Authenticate to Snowflake using OpenID Connect (OIDC) issuer from Elastic Kubernetes Service (EKS)](https://docs.snowflake.com/user-guide/workload-identity-federation#authenticate-to-snowflake-using-openid-connect-oidc-issuer-from-aws-kubernetes)
+the token from the token file is needed, which is stored at `token_file_path` (the exact path may vary depending on the setup).
+
+To provide the token to the provider, it must be exposed via environment variable `SNOWFLAKE_TOKEN` before running Terraform:
+
+```bash
+export SNOWFLAKE_TOKEN=$(cat <token_file_path>)
+```
 
 ```terraform
 provider "snowflake" {
@@ -507,9 +513,6 @@ provider "snowflake" {
   user                             = "<user_name>"
   authenticator                    = "WORKLOAD_IDENTITY"
   workload_identity_provider       = "OIDC"
-  params = {
-    token_file_path = "<service_account_token_path>"
-  }
 }
 ```
 
