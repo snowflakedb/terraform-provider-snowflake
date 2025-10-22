@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_GrantPrivilegesToAccountRole_OnAccount(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_OnAccount_BasicUseCase(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -37,6 +37,15 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount(t *testing.T) {
 		"with_grant_option": config.BoolVariable(true),
 	}
 
+	configVariablesUpdated := config.Variables{
+		"name": config.StringVariable(roleFullyQualifiedName),
+		"privileges": config.ListVariable(
+			config.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
+			config.StringVariable(string(sdk.GlobalPrivilegeCreateNetworkPolicy)),
+		),
+		"with_grant_option": config.BoolVariable(true),
+	}
+
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -45,6 +54,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount(t *testing.T) {
 		},
 		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
+			// Create
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccount"),
 				ConfigVariables: configVariables,
@@ -58,12 +68,56 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|true|false|CREATE DATABASE,CREATE ROLE|OnAccount", roleFullyQualifiedName)),
 				),
 			},
+			// Import
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccount"),
 				ConfigVariables:   configVariables,
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			// Update - configuration change
+			{
+				// always_apply is not tested here as it is covered in other tests and produces non-empty plans which may interfere with incorrect resource behavior
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccount"),
+				ConfigVariables: configVariablesUpdated,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", roleFullyQualifiedName),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.GlobalPrivilegeCreateDatabase)),
+					resource.TestCheckResourceAttr(resourceName, "privileges.1", string(sdk.GlobalPrivilegeCreateNetworkPolicy)),
+					resource.TestCheckResourceAttr(resourceName, "on_account", "true"),
+					resource.TestCheckResourceAttr(resourceName, "with_grant_option", "true"),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|true|false|CREATE NETWORK POLICY,CREATE DATABASE|OnAccount", roleFullyQualifiedName)),
+				),
+			},
+			// Update - external change
+			{
+				PreConfig: func() {
+					// We are not granting anything as new privileges won't be detected (authoritative grants would be used for this)
+					testClient().Grant.RevokeGlobalPrivilegesFromAccountRole(t, role.ID(), []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateDatabase})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccount"),
+				ConfigVariables: configVariablesUpdated,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", roleFullyQualifiedName),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.GlobalPrivilegeCreateDatabase)),
+					resource.TestCheckResourceAttr(resourceName, "privileges.1", string(sdk.GlobalPrivilegeCreateNetworkPolicy)),
+					resource.TestCheckResourceAttr(resourceName, "on_account", "true"),
+					resource.TestCheckResourceAttr(resourceName, "with_grant_option", "true"),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|true|false|CREATE NETWORK POLICY,CREATE DATABASE|OnAccount", roleFullyQualifiedName)),
+				),
 			},
 		},
 	})
@@ -310,7 +364,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_PrivilegesReversed(t *testin
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_BasicUseCase(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -326,6 +380,16 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject(t *testing.T) {
 		"with_grant_option": config.BoolVariable(true),
 	}
 
+	configVariablesUpdated := config.Variables{
+		"name":     config.StringVariable(roleFullyQualifiedName),
+		"database": config.StringVariable(databaseName),
+		"privileges": config.ListVariable(
+			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
+			config.StringVariable(string(sdk.AccountObjectPrivilegeMonitor)),
+		),
+		"with_grant_option": config.BoolVariable(true),
+	}
+
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -334,6 +398,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject(t *testing.T) {
 		},
 		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
+			// Create
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
 				ConfigVariables: configVariables,
@@ -349,6 +414,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|true|false|CREATE DATABASE ROLE,CREATE SCHEMA|OnAccountObject|DATABASE|%s", roleFullyQualifiedName, testClient().Ids.DatabaseId().FullyQualifiedName())),
 				),
 			},
+			// Import
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
@@ -360,6 +426,53 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			// Update - config changes
+			{
+				// always_apply is not tested here as it is covered in other tests and produces non-empty plans which may interfere with incorrect resource behavior
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
+				ConfigVariables: configVariablesUpdated,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", roleFullyQualifiedName),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
+					resource.TestCheckResourceAttr(resourceName, "privileges.1", string(sdk.AccountObjectPrivilegeMonitor)),
+					resource.TestCheckResourceAttr(resourceName, "with_grant_option", "true"),
+					resource.TestCheckResourceAttr(resourceName, "on_account_object.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "on_account_object.0.object_type", "DATABASE"),
+					resource.TestCheckResourceAttr(resourceName, "on_account_object.0.object_name", databaseName),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|true|false|CREATE DATABASE ROLE,MONITOR|OnAccountObject|DATABASE|%s", roleFullyQualifiedName, testClient().Ids.DatabaseId().FullyQualifiedName())),
+				),
+			},
+			// Update - external changes
+			{
+				PreConfig: func() {
+					// We are not granting anything as new privileges won't be detected (authoritative grants would be used for this)
+					testClient().Grant.RevokePrivilegesOnDatabaseFromAccountRole(t, role.ID(), testClient().Ids.DatabaseId(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateDatabaseRole})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
+				ConfigVariables: configVariablesUpdated,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", roleFullyQualifiedName),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
+					resource.TestCheckResourceAttr(resourceName, "privileges.1", string(sdk.AccountObjectPrivilegeMonitor)),
+					resource.TestCheckResourceAttr(resourceName, "with_grant_option", "true"),
+					resource.TestCheckResourceAttr(resourceName, "on_account_object.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "on_account_object.0.object_type", "DATABASE"),
+					resource.TestCheckResourceAttr(resourceName, "on_account_object.0.object_name", databaseName),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|true|false|CREATE DATABASE ROLE,MONITOR|OnAccountObject|DATABASE|%s", roleFullyQualifiedName, testClient().Ids.DatabaseId().FullyQualifiedName())),
+				),
 			},
 		},
 	})
@@ -437,7 +550,7 @@ func TestAcc_GrantPrivilegesToApplicationRole_OnAccountObject_InfinitePlan(t *te
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_OnSchema(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_OnSchema_BasicUseCase(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -454,6 +567,17 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema(t *testing.T) {
 		"with_grant_option": config.BoolVariable(false),
 	}
 
+	configVariablesUpdated := config.Variables{
+		"name": config.StringVariable(roleFullyQualifiedName),
+		"privileges": config.ListVariable(
+			config.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
+			config.StringVariable(string(sdk.SchemaPrivilegeCreateAlert)),
+		),
+		"database":          config.StringVariable(schemaId.DatabaseName()),
+		"schema":            config.StringVariable(schemaId.Name()),
+		"with_grant_option": config.BoolVariable(false),
+	}
+
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -462,6 +586,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema(t *testing.T) {
 		},
 		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
+			// Create
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnSchema"),
 				ConfigVariables: configVariables,
@@ -476,12 +601,58 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE TABLE,MODIFY|OnSchema|OnSchema|%s", roleFullyQualifiedName, schemaId.FullyQualifiedName())),
 				),
 			},
+			// Import
 			{
 				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnSchema"),
 				ConfigVariables:   configVariables,
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			// Update - config changes
+			{
+				// always_apply is not tested here as it is covered in other tests and produces non-empty plans which may interfere with incorrect resource behavior
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnSchema"),
+				ConfigVariables: configVariablesUpdated,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", roleFullyQualifiedName),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.SchemaPrivilegeCreateAlert)),
+					resource.TestCheckResourceAttr(resourceName, "privileges.1", string(sdk.SchemaPrivilegeCreateTable)),
+					resource.TestCheckResourceAttr(resourceName, "on_schema.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "on_schema.0.schema_name", schemaId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "with_grant_option", "false"),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE ALERT,CREATE TABLE|OnSchema|OnSchema|%s", roleFullyQualifiedName, schemaId.FullyQualifiedName())),
+				),
+			},
+			// Update - external changes
+			{
+				PreConfig: func() {
+					// We are not granting anything as new privileges won't be detected (authoritative grants would be used for this)
+					testClient().Grant.RevokePrivilegesOnSchemaFromAccountRole(t, role.ID(), testClient().Ids.SchemaId(), []sdk.SchemaPrivilege{sdk.SchemaPrivilegeCreateTable})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnSchema"),
+				ConfigVariables: configVariablesUpdated,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_role_name", roleFullyQualifiedName),
+					resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.SchemaPrivilegeCreateAlert)),
+					resource.TestCheckResourceAttr(resourceName, "privileges.1", string(sdk.SchemaPrivilegeCreateTable)),
+					resource.TestCheckResourceAttr(resourceName, "on_schema.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "on_schema.0.schema_name", schemaId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "with_grant_option", "false"),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|false|false|CREATE ALERT,CREATE TABLE|OnSchema|OnSchema|%s", roleFullyQualifiedName, schemaId.FullyQualifiedName())),
+				),
 			},
 		},
 	})

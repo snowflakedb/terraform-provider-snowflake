@@ -24,7 +24,7 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
-	testClient().Grant.GrantGlobalPrivilegesOnAccount(t, userWithPat.RoleId, []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateWarehouse})
+	testClient().Grant.GrantGlobalPrivilegesOnAccountRole(t, userWithPat.RoleId, []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateWarehouse})
 
 	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
 	providerModel := providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile)
