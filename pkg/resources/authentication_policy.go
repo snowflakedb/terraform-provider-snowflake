@@ -314,11 +314,18 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			var securityIntegrationsStrings []string
+			if securityIntegrations != nil {
+				securityIntegrationsStrings = make([]string, len(securityIntegrations))
+				for i, v := range securityIntegrations {
+					securityIntegrationsStrings[i] = v.Name()
+				}
+			}
 			if err = handleExternalChangesToObjectInDescribe(d,
 				describeMapping{"authentication_methods", "authentication_methods", authenticationPolicyDescriptions.Raw("AUTHENTICATION_METHODS"), authenticationMethods, nil},
 				describeMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
 				describeMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
-				describeMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrations, nil},
+				describeMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -349,10 +356,7 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 
 	// change to name
 	if d.HasChange("name") {
-		newId, err := sdk.ParseSchemaObjectIdentifier(d.Get("name").(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
 		err = client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithRenameTo(newId))
 		if err != nil {
@@ -430,7 +434,6 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	// TODO(next PR): use the helper functions for the other fields.
 	if err := errors.Join(
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		attributeMappedValueUpdate(d, "security_integrations", &set.SecurityIntegrations, &unset.SecurityIntegrations, ToSecurityIntegrationsRequest),

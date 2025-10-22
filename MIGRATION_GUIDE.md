@@ -27,12 +27,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ## v2.9.x ➞ v2.10.0
 
 ### *(new feature)* Reworked `authentication_policy` resource
-In this version we reworked the `authentication_policy` resource. This includes adding missing features. Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
+In this version we reworked the `authentication_policy` resource. This includes adding missing features, and fixing bugs. The object has been adjusted to our [design decisions](./v1-preparations/CHANGES_BEFORE_V1.md). Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
 
 #### Missing values
 We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
 - `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
+
+#### Fixed renaming
+This object supports renaming. It was also available in the provider, but did not work correctly due to a bug in name parsing. This has been fixed.
 
 ## v2.8.x ➞ v2.9.0
 
