@@ -68,7 +68,7 @@ func (v *streamlits) Describe(ctx context.Context, id SchemaObjectIdentifier) (*
 	if err != nil {
 		return nil, err
 	}
-	return result.convert()
+	return conversionErrorWrapped(result.convert())
 }
 
 func (r *CreateStreamlitRequest) toOpts() *CreateStreamlitOptions {

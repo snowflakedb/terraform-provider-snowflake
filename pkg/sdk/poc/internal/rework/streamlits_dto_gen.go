@@ -2,8 +2,6 @@
 
 package rework
 
-//go:generate go run ../../../dto-builder-generator/main.go
-
 var (
 	_ optionsProvider[CreateStreamlitOptions]   = new(CreateStreamlitRequest)
 	_ optionsProvider[AlterStreamlitOptions]    = new(AlterStreamlitRequest)
