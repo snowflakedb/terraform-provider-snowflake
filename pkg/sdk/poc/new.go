@@ -10,7 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
-// TODO [SNOW-2324252]: rename this file and move it (can't be moved currently due to import cycle: sdk needs gen fro definition and , generator needs all the definitions list
+// TODO [SNOW-2324252]: rename this file and move it (can't be moved currently due to import cycle: sdk needs gen for definition, and generator needs all the definitions list)
 
 func GetSdkDefinitions() []*generator.Interface {
 	allDefinitions := allSdkObjectDefinitions
