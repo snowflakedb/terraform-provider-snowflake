@@ -144,7 +144,8 @@ var (
 	ClientTypesOptionDef              = g.NewQueryStruct("ClientTypes").PredefinedQueryStructField("ClientType", g.KindOfT[ClientTypesOption](), g.KeywordOptions().SingleQuotes().Required())
 	SecurityIntegrationsOptionDef     = g.NewQueryStruct("SecurityIntegrationsOption").
 						OptionalSQLWithCustomFieldName("All", "('ALL')").
-						UnnamedList("SecurityIntegrations", g.KindOfT[AccountObjectIdentifier](), g.KeywordOptions().Parentheses())
+						UnnamedList("SecurityIntegrations", g.KindOfT[AccountObjectIdentifier](), g.KeywordOptions().Parentheses()).
+						WithValidation(g.ExactlyOneValueSet, "All", "SecurityIntegrations")
 	AuthenticationPolicyMfaPolicyDef = g.NewQueryStruct("AuthenticationPolicyMfaPolicy").
 						PredefinedQueryStructField("EnforceMfaOnExternalAuthentication", g.KindOfTPointer[EnforceMfaOnExternalAuthenticationOption](), g.ParameterOptions().SQL("ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION")).
 						ListAssignment("ALLOWED_METHODS", "AuthenticationPolicyMfaPolicyListItem", g.ParameterOptions().Parentheses()).
@@ -157,13 +158,15 @@ var (
 			"NETWORK_POLICY_EVALUATION",
 			g.KindOfT[NetworkPolicyEvaluationOption](),
 			g.ParameterOptions().NoQuotes(),
-		)
+		).
+		WithValidation(g.AtLeastOneValueSet, "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation")
 	AuthenticationPolicyAllowedProviderListItemDef = g.NewQueryStruct("AuthenticationPolicyAllowedProviderListItem").PredefinedQueryStructField("Provider", g.KindOfT[AllowedProviderOption](), g.KeywordOptions().SingleQuotes().Required())
 	AuthenticationPolicyWorkloadIdentityPolicyDef  = g.NewQueryStruct("AuthenticationPolicyWorkloadIdentityPolicy").
 							ListAssignment("ALLOWED_PROVIDERS", "AuthenticationPolicyAllowedProviderListItem", g.ParameterOptions().Parentheses()).
 							ListAssignment("ALLOWED_AWS_ACCOUNTS", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
 							ListAssignment("ALLOWED_AZURE_ISSUERS", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
-							ListAssignment("ALLOWED_OIDC_ISSUERS", "StringListItemWrapper", g.ParameterOptions().Parentheses())
+							ListAssignment("ALLOWED_OIDC_ISSUERS", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
+							WithValidation(g.AtLeastOneValueSet, "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers")
 )
 
 var AuthenticationPoliciesDef = g.NewInterface(

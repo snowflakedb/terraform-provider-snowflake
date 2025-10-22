@@ -24,6 +24,21 @@ func (opts *CreateAuthenticationPolicyOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("CreateAuthenticationPolicyOptions.MfaPolicy", "EnforceMfaOnExternalAuthentication", "AllowedMethods"))
 		}
 	}
+	if valueSet(opts.SecurityIntegrations) {
+		if !exactlyOneValueSet(opts.SecurityIntegrations.All, opts.SecurityIntegrations.SecurityIntegrations) {
+			errs = append(errs, errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"))
+		}
+	}
+	if valueSet(opts.PatPolicy) {
+		if !anyValueSet(opts.PatPolicy.DefaultExpiryInDays, opts.PatPolicy.MaxExpiryInDays, opts.PatPolicy.NetworkPolicyEvaluation) {
+			errs = append(errs, errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation"))
+		}
+	}
+	if valueSet(opts.WorkloadIdentityPolicy) {
+		if !anyValueSet(opts.WorkloadIdentityPolicy.AllowedProviders, opts.WorkloadIdentityPolicy.AllowedAwsAccounts, opts.WorkloadIdentityPolicy.AllowedAzureIssuers, opts.WorkloadIdentityPolicy.AllowedOidcIssuers) {
+			errs = append(errs, errAtLeastOneOf("CreateAuthenticationPolicyOptions.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"))
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -48,6 +63,21 @@ func (opts *AlterAuthenticationPolicyOptions) validate() error {
 		if valueSet(opts.Set.MfaPolicy) {
 			if !anyValueSet(opts.Set.MfaPolicy.EnforceMfaOnExternalAuthentication, opts.Set.MfaPolicy.AllowedMethods) {
 				errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.MfaPolicy", "EnforceMfaOnExternalAuthentication", "AllowedMethods"))
+			}
+		}
+		if valueSet(opts.Set.SecurityIntegrations) {
+			if !exactlyOneValueSet(opts.Set.SecurityIntegrations.All, opts.Set.SecurityIntegrations.SecurityIntegrations) {
+				errs = append(errs, errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"))
+			}
+		}
+		if valueSet(opts.Set.PatPolicy) {
+			if !anyValueSet(opts.Set.PatPolicy.DefaultExpiryInDays, opts.Set.PatPolicy.MaxExpiryInDays, opts.Set.PatPolicy.NetworkPolicyEvaluation) {
+				errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation"))
+			}
+		}
+		if valueSet(opts.Set.WorkloadIdentityPolicy) {
+			if !anyValueSet(opts.Set.WorkloadIdentityPolicy.AllowedProviders, opts.Set.WorkloadIdentityPolicy.AllowedAwsAccounts, opts.Set.WorkloadIdentityPolicy.AllowedAzureIssuers, opts.Set.WorkloadIdentityPolicy.AllowedOidcIssuers) {
+				errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"))
 			}
 		}
 	}
