@@ -1,5 +1,4 @@
-
-# Step 1: create needed objects
+# Step 1: create needed objects (e.g. locally)
 provider "snowflake" {
   profile = "default"
 }
@@ -13,84 +12,51 @@ terraform {
   }
 }
 
-resource "snowflake_user" "test" {
+resource "snowflake_service_user" "auth_test" {
   name                 = "AUTH_TEST"
-  login_name           = var.login_name
-  password             = var.password
-  must_change_password = false
 }
 
-variable "password" {
-  type      = string
-  sensitive = true
+# the provider doesn't support WORKLOAD_IDENTITY yet, so we use raw sql execution
+resource "snowflake_execute" "workload_identity_federation_oidc" {
+  execute = <<-SQL
+    ALTER USER ${snowflake_service_user.auth_test.name}
+      SET WORKLOAD_IDENTITY = (
+        TYPE = OIDC
+        ISSUER = '${var.workload_identity_oidc.oidc_issuer_url}'
+        SUBJECT = 'system:serviceaccount:${var.workload_identity_oidc.namespace}:${var.workload_identity_oidc.service_account}'
+      )
+  SQL
+  revert  = <<-SQL
+    ALTER USER IF EXISTS ${snowflake_service_user.auth_test.name}
+      UNSET WORKLOAD_IDENTITY;
+  SQL
+
+  depends_on = [snowflake_service_user.auth_test]
 }
 
-variable "login_name" {
-  type      = string
-  sensitive = true
-}
-
-resource "snowflake_external_oauth_integration" "test" {
-  name                                            = "EXTERNAL_OAUTH_CODE"
-  enabled                                         = true
-  external_oauth_type                             = "OKTA"
-  external_oauth_issuer                           = var.issuer
-  external_oauth_jws_keys_url                     = ["${var.issuer}/v1/keys"]
-  external_oauth_audience_list                    = [var.audience]
-  external_oauth_snowflake_user_mapping_attribute = "LOGIN_NAME"
-  external_oauth_token_user_mapping_claim         = ["sub"]
-}
-
-variable "issuer" {
-  type      = string
-  sensitive = true
-}
-
-variable "audience" {
-  type      = string
-  sensitive = true
+variable "workload_identity_oidc" {
+  type = object({
+    oidc_issuer_url = string
+    namespace       = string
+    service_account = string
+  })
 }
 
 # Step 2: check the authentication
+# usually this needs to run in an environment which has access to the infrastructure of the cloud provider, e.g. in a gitlab runner running in an EKS cluster
+# for the `AWS EKS Workload Identity Federation with OIDC` case, the token from the token_file has to be provided as an env var
+# export SNOWFLAKE_TOKEN=$(cat <token_file_path>)
 
 provider "snowflake" {
-  alias                   = "oauth"
-  organization_name       = var.organization_name
-  account_name            = var.account_name
-  authenticator           = "OAUTH_AUTHORIZATION_CODE"
-  role                    = "PUBLIC"
-  user                    = var.login_name
-  oauth_client_id         = var.oauth_client_id
-  oauth_client_secret     = var.oauth_client_secret
-  oauth_authorization_url = "${var.issuer}/v1/authorize"
-  oauth_token_request_url = "${var.issuer}/v1/token"
-  oauth_redirect_uri      = "http://localhost:8001"
-  oauth_scope             = "session:role:PUBLIC"
-}
-
-variable "organization_name" {
-  type      = string
-  sensitive = true
-}
-
-variable "account_name" {
-  type      = string
-  sensitive = true
-}
-
-variable "oauth_client_id" {
-  type      = string
-  sensitive = true
-}
-
-variable "oauth_client_secret" {
-  type      = string
-  sensitive = true
+  organization_name          = "auxmoney"
+  account_name               = "terraformtest"
+  user                       = "TERRAFORM_WIF"
+  authenticator              = "WORKLOAD_IDENTITY"
+  workload_identity_provider = "OIDC"
+  role                       = "ACCOUNTADMIN"
 }
 
 resource "snowflake_execute" "test" {
-  provider   = snowflake.oauth
   execute    = "SELECT CURRENT_USER()"
   revert     = "SELECT CURRENT_USER()"
-  depends_on = [snowflake_external_oauth_integration.test, snowflake_user.test]
 }
