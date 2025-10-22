@@ -27,7 +27,7 @@ func (c *GrantClient) client() sdk.Grants {
 	return c.context.client.Grants
 }
 
-func (c *GrantClient) GrantGlobalPrivilegesOnAccount(
+func (c *GrantClient) GrantGlobalPrivilegesOnAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
 	privileges []sdk.GlobalPrivilege,
@@ -48,7 +48,7 @@ func (c *GrantClient) GrantGlobalPrivilegesOnAccount(
 	require.NoError(t, err)
 }
 
-func (c *GrantClient) RevokeGlobalPrivilegesFromAccount(
+func (c *GrantClient) RevokeGlobalPrivilegesFromAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
 	privileges []sdk.GlobalPrivilege,
