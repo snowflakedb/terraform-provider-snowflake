@@ -668,8 +668,7 @@ func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, err
 func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, error) {
 	c := from.(map[string]any)
 	tableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
-	// TODO(SNOW-2344309): remove the nolint tag
-	if len(c["table_name_or_alias"].([]any)) > 0 { //nolint:gocritic
+	if len(c["table_name_or_alias"].([]any)) > 0 {
 		tableNameOrAlias := c["table_name_or_alias"].([]any)[0].(map[string]any)
 		switch {
 		case tableNameOrAlias["table_name"] != nil && tableNameOrAlias["table_name"].(string) != "":
@@ -691,8 +690,7 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 	}
 
 	refTableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
-	// TODO(SNOW-2344309): remove the nolint tag
-	if len(c["referenced_table_name_or_alias"].([]any)) > 0 { //nolint:gocritic
+	if len(c["referenced_table_name_or_alias"].([]any)) > 0 {
 		refTableNameOrAlias := c["referenced_table_name_or_alias"].([]any)[0].(map[string]any)
 		switch {
 		case refTableNameOrAlias["table_name"] != nil && refTableNameOrAlias["table_name"].(string) != "":
