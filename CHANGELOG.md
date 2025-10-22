@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.9.0...v2.9.1) (2025-10-22)
+
+
+### 🐛 **Bug fixes:**
+
+* Fix handling results during account creation ([#4105](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4105)) ([d07ea0f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d07ea0f2edae433bdb8d5d08603e1a6f3564043a))
+
 ## [2.9.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.8.0...v2.9.0) (2025-10-16)
 
 
