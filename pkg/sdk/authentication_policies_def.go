@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
@@ -12,11 +13,13 @@ import (
 type AuthenticationMethodsOption string
 
 const (
-	AuthenticationMethodsAll      AuthenticationMethodsOption = "ALL"
-	AuthenticationMethodsSaml     AuthenticationMethodsOption = "SAML"
-	AuthenticationMethodsPassword AuthenticationMethodsOption = "PASSWORD"
-	AuthenticationMethodsOauth    AuthenticationMethodsOption = "OAUTH"
-	AuthenticationMethodsKeyPair  AuthenticationMethodsOption = "KEYPAIR"
+	AuthenticationMethodsAll                     AuthenticationMethodsOption = "ALL"
+	AuthenticationMethodsSaml                    AuthenticationMethodsOption = "SAML"
+	AuthenticationMethodsPassword                AuthenticationMethodsOption = "PASSWORD"
+	AuthenticationMethodsOauth                   AuthenticationMethodsOption = "OAUTH"
+	AuthenticationMethodsKeyPair                 AuthenticationMethodsOption = "KEYPAIR"
+	AuthenticationMethodsProgrammaticAccessToken AuthenticationMethodsOption = "PROGRAMMATIC_ACCESS_TOKEN" //nolint:gosec
+	AuthenticationMethodsWorkloadIdentity        AuthenticationMethodsOption = "WORKLOAD_IDENTITY"
 )
 
 var AllAuthenticationMethods = []AuthenticationMethodsOption{
@@ -25,6 +28,8 @@ var AllAuthenticationMethods = []AuthenticationMethodsOption{
 	AuthenticationMethodsPassword,
 	AuthenticationMethodsOauth,
 	AuthenticationMethodsKeyPair,
+	AuthenticationMethodsProgrammaticAccessToken,
+	AuthenticationMethodsWorkloadIdentity,
 }
 
 type MfaAuthenticationMethodsOption string
@@ -49,13 +54,20 @@ const (
 	MfaEnrollmentOptional             MfaEnrollmentOption = "OPTIONAL"
 )
 
+var AllMfaEnrollmentOptions = []MfaEnrollmentOption{
+	MfaEnrollmentRequired,
+	MfaEnrollmentRequiredPasswordOnly,
+	MfaEnrollmentOptional,
+}
+
 type ClientTypesOption string
 
 const (
-	ClientTypesAll         ClientTypesOption = "ALL"
-	ClientTypesSnowflakeUi ClientTypesOption = "SNOWFLAKE_UI"
-	ClientTypesDrivers     ClientTypesOption = "DRIVERS"
-	ClientTypesSnowSql     ClientTypesOption = "SNOWSQL"
+	ClientTypesAll          ClientTypesOption = "ALL"
+	ClientTypesSnowflakeUi  ClientTypesOption = "SNOWFLAKE_UI"
+	ClientTypesDrivers      ClientTypesOption = "DRIVERS"
+	ClientTypesSnowSql      ClientTypesOption = "SNOWSQL"
+	ClientTypesSnowflakeCli ClientTypesOption = "SNOWFLAKE_CLI"
 )
 
 var AllClientTypes = []ClientTypesOption{
@@ -63,11 +75,12 @@ var AllClientTypes = []ClientTypesOption{
 	ClientTypesSnowflakeUi,
 	ClientTypesDrivers,
 	ClientTypesSnowSql,
+	ClientTypesSnowflakeCli,
 }
 
 var (
 	AuthenticationMethodsOptionDef    = g.NewQueryStruct("AuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[AuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
-	MfaAuthenticationMethodsOptionDef = g.NewQueryStruct("MfaAuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[MfaAuthenticationMethods](), g.KeywordOptions().SingleQuotes().Required())
+	MfaAuthenticationMethodsOptionDef = g.NewQueryStruct("MfaAuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[MfaAuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
 	ClientTypesOptionDef              = g.NewQueryStruct("ClientTypes").PredefinedQueryStructField("ClientType", g.KindOfT[ClientTypesOption](), g.KeywordOptions().SingleQuotes().Required())
 	SecurityIntegrationsOptionDef     = g.NewQueryStruct("SecurityIntegrationsOption").Identifier("Name", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required())
 )
@@ -146,34 +159,37 @@ var AuthenticationPoliciesDef = g.NewInterface(
 	ShowOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies",
 		g.DbStruct("showAuthenticationPolicyDBRow").
-			Field("created_on", "string").
-			Field("name", "string").
-			Field("comment", "string").
-			Field("database_name", "string").
-			Field("schema_name", "string").
-			Field("owner", "string").
-			Field("owner_role_type", "string").
-			Field("options", "string"),
+			Time("created_on").
+			Text("name").
+			Text("comment").
+			Text("database_name").
+			Text("schema_name").
+			Text("kind").
+			Text("owner").
+			Text("owner_role_type").
+			Text("options"),
 		g.PlainStruct("AuthenticationPolicy").
-			Field("CreatedOn", "string").
-			Field("Name", "string").
-			Field("Comment", "string").
-			Field("DatabaseName", "string").
-			Field("SchemaName", "string").
-			Field("Owner", "string").
-			Field("OwnerRoleType", "string").
-			Field("Options", "string"),
+			Time("CreatedOn").
+			Text("Name").
+			Text("Comment").
+			Text("DatabaseName").
+			Text("SchemaName").
+			Text("Kind").
+			Text("Owner").
+			Text("OwnerRoleType").
+			Text("Options"),
 		g.NewQueryStruct("ShowAuthenticationPolicies").
 			Show().
 			SQL("AUTHENTICATION POLICIES").
 			OptionalLike().
-			OptionalIn().
+			OptionalExtendedIn().
+			OptionalOn().
 			OptionalStartsWith().
 			OptionalLimit(),
 	).
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
-		g.ShowByIDInFiltering,
+		g.ShowByIDExtendedInFiltering,
 	).
 	DescribeOperation(
 		g.DescriptionMappingKindSlice,
@@ -195,49 +211,34 @@ var AuthenticationPoliciesDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name"),
 	)
 
-func ToAuthenticationMethodsOption(s string) (*AuthenticationMethodsOption, error) {
-	switch authenticationMethodsOption := AuthenticationMethodsOption(strings.ToUpper(s)); authenticationMethodsOption {
-	case AuthenticationMethodsAll,
-		AuthenticationMethodsSaml,
-		AuthenticationMethodsPassword,
-		AuthenticationMethodsOauth,
-		AuthenticationMethodsKeyPair:
-		return &authenticationMethodsOption, nil
-	default:
-		return nil, fmt.Errorf("invalid authentication method type: %s", s)
+func ToAuthenticationMethodsOption(s string) (AuthenticationMethodsOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllAuthenticationMethods, AuthenticationMethodsOption(s)) {
+		return "", fmt.Errorf("invalid authentication method: %s", s)
 	}
+	return AuthenticationMethodsOption(s), nil
 }
 
-func ToMfaAuthenticationMethodsOption(s string) (*MfaAuthenticationMethodsOption, error) {
-	switch mfaAuthenticationMethodsOption := MfaAuthenticationMethodsOption(strings.ToUpper(s)); mfaAuthenticationMethodsOption {
-	case MfaAuthenticationMethodsAll,
-		MfaAuthenticationMethodsSaml,
-		MfaAuthenticationMethodsPassword:
-		return &mfaAuthenticationMethodsOption, nil
-	default:
-		return nil, fmt.Errorf("invalid MFA authentication method type: %s", s)
+func ToMfaAuthenticationMethodsOption(s string) (MfaAuthenticationMethodsOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllMfaAuthenticationMethods, MfaAuthenticationMethodsOption(s)) {
+		return "", fmt.Errorf("invalid MFA authentication method: %s", s)
 	}
+	return MfaAuthenticationMethodsOption(s), nil
 }
 
-func ToMfaEnrollmentOption(s string) (*MfaEnrollmentOption, error) {
-	switch mfaEnrollmentOption := MfaEnrollmentOption(strings.ToUpper(s)); mfaEnrollmentOption {
-	case MfaEnrollmentRequired,
-		MfaEnrollmentRequiredPasswordOnly,
-		MfaEnrollmentOptional:
-		return &mfaEnrollmentOption, nil
-	default:
-		return nil, fmt.Errorf("invalid enrollment option type: %s", s)
+func ToMfaEnrollmentOption(s string) (MfaEnrollmentOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllMfaEnrollmentOptions, MfaEnrollmentOption(s)) {
+		return "", fmt.Errorf("invalid MFA enrollment option: %s", s)
 	}
+	return MfaEnrollmentOption(s), nil
 }
 
-func ToClientTypesOption(s string) (*ClientTypesOption, error) {
-	switch clientTypesOption := ClientTypesOption(strings.ToUpper(s)); clientTypesOption {
-	case ClientTypesAll,
-		ClientTypesSnowflakeUi,
-		ClientTypesDrivers,
-		ClientTypesSnowSql:
-		return &clientTypesOption, nil
-	default:
-		return nil, fmt.Errorf("invalid client type: %s", s)
+func ToClientTypesOption(s string) (ClientTypesOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllClientTypes, ClientTypesOption(s)) {
+		return "", fmt.Errorf("invalid client type: %s", s)
 	}
+	return ClientTypesOption(s), nil
 }

@@ -170,8 +170,13 @@ func (s *ShowAuthenticationPolicyRequest) WithLike(Like Like) *ShowAuthenticatio
 	return s
 }
 
-func (s *ShowAuthenticationPolicyRequest) WithIn(In In) *ShowAuthenticationPolicyRequest {
+func (s *ShowAuthenticationPolicyRequest) WithIn(In ExtendedIn) *ShowAuthenticationPolicyRequest {
 	s.In = &In
+	return s
+}
+
+func (s *ShowAuthenticationPolicyRequest) WithOn(On On) *ShowAuthenticationPolicyRequest {
+	s.On = &On
 	return s
 }
 

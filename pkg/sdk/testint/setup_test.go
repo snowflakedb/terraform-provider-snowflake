@@ -270,6 +270,11 @@ func testSecondaryClient(t *testing.T) *sdk.Client {
 	return itc.secondaryClient
 }
 
+func testSecondaryContext(t *testing.T) context.Context {
+	t.Helper()
+	return itc.secondaryCtx
+}
+
 func testClientHelper() *helpers.TestClient {
 	return itc.testClient
 }

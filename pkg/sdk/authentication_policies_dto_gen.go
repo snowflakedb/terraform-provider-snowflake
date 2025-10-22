@@ -55,7 +55,8 @@ type DropAuthenticationPolicyRequest struct {
 
 type ShowAuthenticationPolicyRequest struct {
 	Like       *Like
-	In         *In
+	In         *ExtendedIn
+	On         *On
 	StartsWith *string
 	Limit      *LimitFrom
 }
