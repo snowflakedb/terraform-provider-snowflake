@@ -68,7 +68,7 @@ func TestInt_Sequences(t *testing.T) {
 
 		comment := random.Comment()
 		request := sdk.NewCreateSequenceRequest(id).
-			WithStart(sdk.Int(1)).
+			WithStart(1).
 			WithIncrement(1).
 			WithIfNotExists(true).
 			WithValuesBehavior(sdk.ValuesBehaviorOrder).
