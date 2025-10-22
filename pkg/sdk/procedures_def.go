@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 var procedureArgument = g.NewQueryStruct("ProcedureArgument").
 	Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
 	PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).

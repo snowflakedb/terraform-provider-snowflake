@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 var externalFunctionArgument = g.NewQueryStruct("ExternalFunctionArgument").
 	Text("ArgName", g.KeywordOptions().NoQuotes().Required()).
 	PredefinedQueryStructField("ArgDataType", g.KindOfT[DataType](), g.KeywordOptions().NoQuotes().Required())

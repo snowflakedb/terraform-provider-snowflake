@@ -4,8 +4,6 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
-//go:generate go run ./poc/main.go
-
 var StorageLocationDef = g.NewQueryStruct("StorageLocation").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
 var StorageIntegrationDef = g.NewInterface(

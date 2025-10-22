@@ -7,8 +7,6 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
-//go:generate go run ./poc/main.go
-
 const (
 	SecurityIntegrationCategory                                     = "SECURITY"
 	ApiAuthenticationSecurityIntegrationOauthGrantAuthorizationCode = "AUTHORIZATION_CODE"
