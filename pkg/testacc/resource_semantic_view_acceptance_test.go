@@ -91,34 +91,35 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	m1Request := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*seRequest)
 	m2Request := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*wfRequest)
 
-	modelBasic := model.SemanticView(
+	modelBasic := model.SemanticViewWithMetrics(
 		"test",
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable1},
-	).WithMetrics([]sdk.MetricDefinition{*metric1})
+		[]sdk.MetricDefinition{*metric1},
+	)
 
-	modelComplete := model.SemanticView(
+	modelComplete := model.SemanticViewWithMetrics(
 		"test",
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable1, *logicalTable2},
+		[]sdk.MetricDefinition{*metric1},
 	).WithComment(comment).
-		WithMetrics([]sdk.MetricDefinition{*metric1}).
 		WithRelationships([]sdk.SemanticViewRelationship{*rel1}).
 		WithFacts([]sdk.SemanticExpression{*fact1}).
 		WithDimensions([]sdk.SemanticExpression{*dimension1})
 
-	modelCompleteWithDifferentValues := model.SemanticView(
+	modelCompleteWithDifferentValues := model.SemanticViewWithMetrics(
 		"test",
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
 		[]sdk.LogicalTable{*logicalTable1, *logicalTable2},
+		[]sdk.MetricDefinition{*metric1, *metric2},
 	).WithComment(changedComment).
-		WithMetrics([]sdk.MetricDefinition{*metric1, *metric2}).
 		WithRelationships([]sdk.SemanticViewRelationship{*rel2}).
 		WithFacts([]sdk.SemanticExpression{*fact2}).
 		WithDimensions([]sdk.SemanticExpression{*dimension2})

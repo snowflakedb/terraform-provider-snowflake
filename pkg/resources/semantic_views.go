@@ -580,8 +580,8 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 	c := from.(map[string]any)
 	metricDefinitionRequest := sdk.NewMetricDefinitionRequest()
 
-	// TODO(SNOW-2344309): remove the nolint tag
-	if len(c["semantic_expression"].([]any)) > 0 { //nolint:gocritic
+	switch {
+	case len(c["semantic_expression"].([]any)) > 0:
 		semanticExpression := c["semantic_expression"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
 			WithQualifiedExpressionName(semanticExpression["qualified_expression_name"].(string))
@@ -604,7 +604,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 			}
 		}
 		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
-	} else if len(c["window_function"].([]any)) > 0 {
+	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
 		windowFunction := windowFunctionDefinition["window_function"].(string)
 		metric := windowFunctionDefinition["metric"].(string)
@@ -626,7 +626,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 			}
 		}
 		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest), nil
-	} else {
+	default:
 		return nil, fmt.Errorf("either semantic expression or window function is required")
 	}
 }
@@ -668,18 +668,18 @@ func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, err
 func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, error) {
 	c := from.(map[string]any)
 	tableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
-	// TODO(SNOW-2344309): remove the nolint tag
-	if len(c["table_name_or_alias"].([]any)) > 0 { //nolint:gocritic
+	if len(c["table_name_or_alias"].([]any)) > 0 {
 		tableNameOrAlias := c["table_name_or_alias"].([]any)[0].(map[string]any)
-		if tableNameOrAlias["table_name"] != nil && tableNameOrAlias["table_name"].(string) != "" { //nolint:gocritic
+		switch {
+		case tableNameOrAlias["table_name"] != nil && tableNameOrAlias["table_name"].(string) != "":
 			tableName, err := sdk.ParseSchemaObjectIdentifier(tableNameOrAlias["table_name"].(string))
 			if err != nil {
 				return nil, err
 			}
 			tableNameOrAliasRequest.WithRelationshipTableName(tableName)
-		} else if tableNameOrAlias["table_alias"] != nil && tableNameOrAlias["table_alias"].(string) != "" {
+		case tableNameOrAlias["table_alias"] != nil && tableNameOrAlias["table_alias"].(string) != "":
 			tableNameOrAliasRequest.WithRelationshipTableAlias(tableNameOrAlias["table_alias"].(string))
-		} else {
+		default:
 			return nil, fmt.Errorf("exactly one of table_name or table_alias is required in a relationship")
 		}
 	}
@@ -690,18 +690,18 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 	}
 
 	refTableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
-	// TODO(SNOW-2344309): remove the nolint tag
-	if len(c["referenced_table_name_or_alias"].([]any)) > 0 { //nolint:gocritic
+	if len(c["referenced_table_name_or_alias"].([]any)) > 0 {
 		refTableNameOrAlias := c["referenced_table_name_or_alias"].([]any)[0].(map[string]any)
-		if refTableNameOrAlias["table_name"] != nil && refTableNameOrAlias["table_name"].(string) != "" { //nolint:gocritic
+		switch {
+		case refTableNameOrAlias["table_name"] != nil && refTableNameOrAlias["table_name"].(string) != "":
 			tableName, err := sdk.ParseSchemaObjectIdentifier(refTableNameOrAlias["table_name"].(string))
 			if err != nil {
 				return nil, err
 			}
 			refTableNameOrAliasRequest.WithRelationshipTableName(tableName)
-		} else if refTableNameOrAlias["table_alias"] != nil && refTableNameOrAlias["table_alias"].(string) != "" {
+		case refTableNameOrAlias["table_alias"] != nil && refTableNameOrAlias["table_alias"].(string) != "":
 			refTableNameOrAliasRequest.WithRelationshipTableAlias(refTableNameOrAlias["table_alias"].(string))
-		} else {
+		default:
 			return nil, fmt.Errorf("exactly one of table_name or table_alias is required in a relationship")
 		}
 	}

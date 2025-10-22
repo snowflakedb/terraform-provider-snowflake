@@ -27,7 +27,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ## v2.9.x ➞ v2.10.0
 
 ### *(new feature)* Reworked `authentication_policy` resource
-In this version we reworked the [authentication_policy] resource. This includes adding missing features. Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
+In this version we reworked the `authentication_policy` resource. This includes adding missing features. Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
 
 #### Missing values
 We added missing values to the following fields:
