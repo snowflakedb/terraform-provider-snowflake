@@ -42,6 +42,43 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 	t.Cleanup(catalogCleanup)
 
 	basic := model.Database("test", id.Name())
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.Database(t, id).
+			HasName(id.Name()).
+			HasTransient(false).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasOptions("").
+			HasComment("").
+			HasRetentionTime(1).
+			HasResourceGroup("").
+			HasKind("STANDARD"),
+		objectparametersassert.DatabaseParameters(t, id).
+			HasDefaultDataRetentionTimeInDaysValueExplicit().
+			HasDefaultMaxDataExtensionTimeInDaysValueExplicit().
+			HasDefaultExternalVolumeValueExplicit().
+			HasDefaultCatalogValueExplicit().
+			HasDefaultReplaceInvalidCharactersValueExplicit().
+			HasDefaultDefaultDdlCollationValueExplicit().
+			HasDefaultStorageSerializationPolicyValueExplicit().
+			HasDefaultLogLevelValueExplicit().
+			HasDefaultTraceLevelValueExplicit().
+			HasDefaultSuspendTaskAfterNumFailuresValueExplicit().
+			HasDefaultTaskAutoRetryAttemptsValueExplicit().
+			HasUserTaskManagedInitialWarehouseSize("Medium").
+			HasDefaultUserTaskTimeoutMsValueExplicit().
+			HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit().
+			HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
+			HasDefaultEnableConsoleOutputValueExplicit(),
+		resourceassert.DatabaseResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasIsTransientString("false").
+			HasReplicationEmpty().
+			HasCommentEmpty().
+			HasAllDefaultParameters(),
+	}
+
 	complete := model.Database("test", newId.Name()).
 		WithDropPublicSchemaOnCreation(true).
 		WithReplication(secondaryAccountId, true, true).
@@ -63,6 +100,57 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 		WithQuotedIdentifiersIgnoreCase(false).
 		WithEnableConsoleOutput(true)
 
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Database(t, newId).
+			HasName(newId.Name()).
+			HasTransient(false).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasOptions("").
+			HasComment(comment).
+			HasRetentionTime(2).
+			HasResourceGroup("").
+			HasKind("STANDARD"),
+		objectparametersassert.DatabaseParameters(t, newId).
+			HasDataRetentionTimeInDays(2).
+			HasMaxDataExtensionTimeInDays(15).
+			HasExternalVolume(externalVolumeId.Name()).
+			HasCatalog(catalogId.Name()).
+			HasReplaceInvalidCharacters(true).
+			HasDefaultDdlCollation("en_US").
+			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+			HasLogLevel(sdk.LogLevelInfo).
+			HasTraceLevel(sdk.TraceLevelAlways).
+			HasSuspendTaskAfterNumFailures(11).
+			HasTaskAutoRetryAttempts(1).
+			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+			HasUserTaskTimeoutMs(3600001).
+			HasUserTaskMinimumTriggerIntervalInSeconds(31).
+			HasQuotedIdentifiersIgnoreCase(false).
+			HasEnableConsoleOutput(true),
+		resourceassert.DatabaseResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasIsTransientString("false").
+			HasReplication(secondaryAccountId, true, true).
+			HasCommentString(comment).
+			HasDataRetentionTimeInDaysString("2").
+			HasMaxDataExtensionTimeInDaysString("15").
+			HasExternalVolumeString(externalVolumeId.Name()).
+			HasCatalogString(catalogId.Name()).
+			HasReplaceInvalidCharactersString("true").
+			HasDefaultDdlCollationString("en_US").
+			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
+			HasLogLevelString(string(sdk.LogLevelInfo)).
+			HasTraceLevelString(string(sdk.TraceLevelAlways)).
+			HasSuspendTaskAfterNumFailuresString("11").
+			HasTaskAutoRetryAttemptsString("1").
+			HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeSmall)).
+			HasUserTaskTimeoutMsString("3600001").
+			HasUserTaskMinimumTriggerIntervalInSecondsString("31").
+			HasQuotedIdentifiersIgnoreCaseString("false").
+			HasEnableConsoleOutputString("true"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -73,14 +161,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			// Create - without optionals
 			{
 				Config: accconfig.FromModels(t, basic),
-				Check: assertThat(t,
-					resourceassert.DatabaseResource(t, basic.ResourceReference()).
-						HasNameString(id.Name()).
-						HasIsTransientString("false").
-						HasReplicationEmpty().
-						HasCommentEmpty().
-						HasAllDefaultParameters(),
-				),
+				Check:  assertThat(t, assertBasic...),
 			},
 			// Import - without optionals
 			{
@@ -100,101 +181,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
-					resourceassert.DatabaseResource(t, complete.ResourceReference()).
-						HasNameString(newId.Name()).
-						HasIsTransientString("false").
-						HasReplication(secondaryAccountId, true, true).
-						HasCommentString(comment).
-						HasDataRetentionTimeInDaysString("2").
-						HasMaxDataExtensionTimeInDaysString("15").
-						HasExternalVolumeString(externalVolumeId.Name()).
-						HasCatalogString(catalogId.Name()).
-						HasReplaceInvalidCharactersString("true").
-						HasDefaultDdlCollationString("en_US").
-						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
-						HasLogLevelString(string(sdk.LogLevelInfo)).
-						HasTraceLevelString(string(sdk.TraceLevelAlways)).
-						HasSuspendTaskAfterNumFailuresString("11").
-						HasTaskAutoRetryAttemptsString("1").
-						HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeSmall)).
-						HasUserTaskTimeoutMsString("3600001").
-						HasUserTaskMinimumTriggerIntervalInSecondsString("31").
-						HasQuotedIdentifiersIgnoreCaseString("false").
-						HasEnableConsoleOutputString("true"),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Database_CompleteUseCase(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	newId := testClient().Ids.RandomAccountObjectIdentifier()
-	comment := random.Comment()
-	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
-
-	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
-	t.Cleanup(externalVolumeCleanup)
-
-	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
-	t.Cleanup(catalogCleanup)
-
-	basic := model.Database("test", id.Name())
-	complete := model.Database("test", newId.Name()).
-		WithDropPublicSchemaOnCreation(true).
-		WithReplication(secondaryAccountId, true, true).
-		WithComment(comment).
-		WithDataRetentionTimeInDays(2).
-		WithMaxDataExtensionTimeInDays(15).
-		WithExternalVolume(externalVolumeId.Name()).
-		WithCatalog(catalogId.Name()).
-		WithReplaceInvalidCharacters(true).
-		WithDefaultDdlCollation("en_US").
-		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
-		WithLogLevel(string(sdk.LogLevelInfo)).
-		WithTraceLevel(string(sdk.TraceLevelAlways)).
-		WithSuspendTaskAfterNumFailures(11).
-		WithTaskAutoRetryAttempts(1).
-		WithUserTaskManagedInitialWarehouseSize(string(sdk.WarehouseSizeSmall)).
-		WithUserTaskTimeoutMs(3600001).
-		WithUserTaskMinimumTriggerIntervalInSeconds(31).
-		WithQuotedIdentifiersIgnoreCase(false).
-		WithEnableConsoleOutput(true)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Database),
-		Steps: []resource.TestStep{
-			// Create - with optionals
-			{
-				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
-					resourceassert.DatabaseResource(t, complete.ResourceReference()).
-						HasNameString(newId.Name()).
-						HasIsTransientString("false").
-						HasReplication(secondaryAccountId, true, true).
-						HasCommentString(comment).
-						HasDataRetentionTimeInDaysString("2").
-						HasMaxDataExtensionTimeInDaysString("15").
-						HasExternalVolumeString(externalVolumeId.Name()).
-						HasCatalogString(catalogId.Name()).
-						HasReplaceInvalidCharactersString("true").
-						HasDefaultDdlCollationString("en_US").
-						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
-						HasLogLevelString(string(sdk.LogLevelInfo)).
-						HasTraceLevelString(string(sdk.TraceLevelAlways)).
-						HasSuspendTaskAfterNumFailuresString("11").
-						HasTaskAutoRetryAttemptsString("1").
-						HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeSmall)).
-						HasUserTaskTimeoutMsString("3600001").
-						HasUserTaskMinimumTriggerIntervalInSecondsString("31").
-						HasQuotedIdentifiersIgnoreCaseString("false").
-						HasEnableConsoleOutputString("true"),
-				),
+				Check:  assertThat(t, assertComplete...),
 			},
 			// Import - with optionals
 			{
@@ -211,18 +198,11 @@ func TestAcc_Database_CompleteUseCase(t *testing.T) {
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
-				Check: assertThat(t,
-					resourceassert.DatabaseResource(t, basic.ResourceReference()).
-						HasNameString(id.Name()).
-						HasIsTransientString("false").
-						HasReplicationEmpty().
-						HasCommentEmpty().
-						HasAllDefaultParameters(),
-				),
+				Check:  assertThat(t, assertBasic...),
 			},
 			// Update - detect external changes
 			{
@@ -265,14 +245,18 @@ func TestAcc_Database_CompleteUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
-				Check: assertThat(t,
-					resourceassert.DatabaseResource(t, basic.ResourceReference()).
-						HasNameString(id.Name()).
-						HasIsTransientString("false").
-						HasReplicationEmpty().
-						HasCommentEmpty().
-						HasAllDefaultParameters(),
-				),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Create - with optionals
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
 			},
 		},
 	})
