@@ -18,17 +18,20 @@ type AuthenticationPolicies interface {
 
 // CreateAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy.
 type CreateAuthenticationPolicyOptions struct {
-	create                   bool                         `ddl:"static" sql:"CREATE"`
-	OrReplace                *bool                        `ddl:"keyword" sql:"OR REPLACE"`
-	authenticationPolicy     bool                         `ddl:"static" sql:"AUTHENTICATION POLICY"`
-	IfNotExists              *bool                        `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                     SchemaObjectIdentifier       `ddl:"identifier"`
-	AuthenticationMethods    []AuthenticationMethods      `ddl:"parameter,parentheses" sql:"AUTHENTICATION_METHODS"`
-	MfaAuthenticationMethods []MfaAuthenticationMethods   `ddl:"parameter,parentheses" sql:"MFA_AUTHENTICATION_METHODS"`
-	MfaEnrollment            *MfaEnrollmentOption         `ddl:"parameter" sql:"MFA_ENROLLMENT"`
-	ClientTypes              []ClientTypes                `ddl:"parameter,parentheses" sql:"CLIENT_TYPES"`
-	SecurityIntegrations     []SecurityIntegrationsOption `ddl:"parameter,parentheses" sql:"SECURITY_INTEGRATIONS"`
-	Comment                  *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                   bool                                        `ddl:"static" sql:"CREATE"`
+	OrReplace                *bool                                       `ddl:"keyword" sql:"OR REPLACE"`
+	authenticationPolicy     bool                                        `ddl:"static" sql:"AUTHENTICATION POLICY"`
+	IfNotExists              *bool                                       `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                     SchemaObjectIdentifier                      `ddl:"identifier"`
+	AuthenticationMethods    []AuthenticationMethods                     `ddl:"parameter,parentheses" sql:"AUTHENTICATION_METHODS"`
+	MfaAuthenticationMethods []MfaAuthenticationMethods                  `ddl:"parameter,parentheses" sql:"MFA_AUTHENTICATION_METHODS"`
+	MfaEnrollment            *MfaEnrollmentOption                        `ddl:"parameter" sql:"MFA_ENROLLMENT"`
+	MfaPolicy                *AuthenticationPolicyMfaPolicy              `ddl:"list,parentheses,no_comma" sql:"MFA_POLICY ="`
+	ClientTypes              []ClientTypes                               `ddl:"parameter,parentheses" sql:"CLIENT_TYPES"`
+	SecurityIntegrations     *SecurityIntegrationsOption                 `ddl:"parameter" sql:"SECURITY_INTEGRATIONS"`
+	PatPolicy                *AuthenticationPolicyPatPolicy              `ddl:"list,parentheses,no_comma" sql:"PAT_POLICY ="`
+	WorkloadIdentityPolicy   *AuthenticationPolicyWorkloadIdentityPolicy `ddl:"list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY_POLICY ="`
+	Comment                  *string                                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type AuthenticationMethods struct {
@@ -44,7 +47,34 @@ type ClientTypes struct {
 }
 
 type SecurityIntegrationsOption struct {
-	Name AccountObjectIdentifier `ddl:"identifier"`
+	All                  *bool                     `ddl:"keyword" sql:"('ALL')"`
+	SecurityIntegrations []AccountObjectIdentifier `ddl:"keyword,parentheses"`
+}
+
+type AuthenticationPolicyMfaPolicyListItem struct {
+	Method MfaPolicyAllowedMethodsOption `ddl:"keyword,single_quotes"`
+}
+
+type AuthenticationPolicyMfaPolicy struct {
+	EnforceMfaOnExternalAuthentication *EnforceMfaOnExternalAuthenticationOption `ddl:"parameter" sql:"ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION"`
+	AllowedMethods                     []AuthenticationPolicyMfaPolicyListItem   `ddl:"parameter,parentheses" sql:"ALLOWED_METHODS"`
+}
+
+type AuthenticationPolicyAllowedProviderListItem struct {
+	Provider AllowedProviderOption `ddl:"keyword,single_quotes"`
+}
+
+type AuthenticationPolicyWorkloadIdentityPolicy struct {
+	AllowedProviders    []AuthenticationPolicyAllowedProviderListItem `ddl:"parameter,parentheses" sql:"ALLOWED_PROVIDERS"`
+	AllowedAwsAccounts  []StringListItemWrapper                       `ddl:"parameter,parentheses" sql:"ALLOWED_AWS_ACCOUNTS"`
+	AllowedAzureIssuers []StringListItemWrapper                       `ddl:"parameter,parentheses" sql:"ALLOWED_AZURE_ISSUERS"`
+	AllowedOidcIssuers  []StringListItemWrapper                       `ddl:"parameter,parentheses" sql:"ALLOWED_OIDC_ISSUERS"`
+}
+
+type AuthenticationPolicyPatPolicy struct {
+	DefaultExpiryInDays     *int                           `ddl:"parameter,no_quotes" sql:"DEFAULT_EXPIRY_IN_DAYS"`
+	MaxExpiryInDays         *int                           `ddl:"parameter,no_quotes" sql:"MAX_EXPIRY_IN_DAYS"`
+	NetworkPolicyEvaluation *NetworkPolicyEvaluationOption `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY_EVALUATION"`
 }
 
 // AlterAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-authentication-policy.
@@ -59,12 +89,15 @@ type AlterAuthenticationPolicyOptions struct {
 }
 
 type AuthenticationPolicySet struct {
-	AuthenticationMethods    []AuthenticationMethods      `ddl:"parameter,parentheses" sql:"AUTHENTICATION_METHODS"`
-	MfaAuthenticationMethods []MfaAuthenticationMethods   `ddl:"parameter,parentheses" sql:"MFA_AUTHENTICATION_METHODS"`
-	MfaEnrollment            *MfaEnrollmentOption         `ddl:"parameter" sql:"MFA_ENROLLMENT"`
-	ClientTypes              []ClientTypes                `ddl:"parameter,parentheses" sql:"CLIENT_TYPES"`
-	SecurityIntegrations     []SecurityIntegrationsOption `ddl:"parameter,parentheses" sql:"SECURITY_INTEGRATIONS"`
-	Comment                  *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	AuthenticationMethods    []AuthenticationMethods                     `ddl:"parameter,parentheses" sql:"AUTHENTICATION_METHODS"`
+	MfaAuthenticationMethods []MfaAuthenticationMethods                  `ddl:"parameter,parentheses" sql:"MFA_AUTHENTICATION_METHODS"`
+	MfaEnrollment            *MfaEnrollmentOption                        `ddl:"parameter" sql:"MFA_ENROLLMENT"`
+	MfaPolicy                *AuthenticationPolicyMfaPolicy              `ddl:"list,parentheses,no_comma" sql:"MFA_POLICY ="`
+	ClientTypes              []ClientTypes                               `ddl:"parameter,parentheses" sql:"CLIENT_TYPES"`
+	SecurityIntegrations     *SecurityIntegrationsOption                 `ddl:"parameter" sql:"SECURITY_INTEGRATIONS"`
+	PatPolicy                *AuthenticationPolicyPatPolicy              `ddl:"list,parentheses,no_comma" sql:"PAT_POLICY ="`
+	WorkloadIdentityPolicy   *AuthenticationPolicyWorkloadIdentityPolicy `ddl:"list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY_POLICY ="`
+	Comment                  *string                                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type AuthenticationPolicyUnset struct {
@@ -73,6 +106,9 @@ type AuthenticationPolicyUnset struct {
 	SecurityIntegrations     *bool `ddl:"keyword" sql:"SECURITY_INTEGRATIONS"`
 	MfaAuthenticationMethods *bool `ddl:"keyword" sql:"MFA_AUTHENTICATION_METHODS"`
 	MfaEnrollment            *bool `ddl:"keyword" sql:"MFA_ENROLLMENT"`
+	MfaPolicy                *bool `ddl:"keyword" sql:"MFA_POLICY"`
+	PatPolicy                *bool `ddl:"keyword" sql:"PAT_POLICY"`
+	WorkloadIdentityPolicy   *bool `ddl:"keyword" sql:"WORKLOAD_IDENTITY_POLICY"`
 	Comment                  *bool `ddl:"keyword" sql:"COMMENT"`
 }
 

@@ -79,9 +79,37 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 		AuthenticationMethods:    r.AuthenticationMethods,
 		MfaAuthenticationMethods: r.MfaAuthenticationMethods,
 		MfaEnrollment:            r.MfaEnrollment,
-		ClientTypes:              r.ClientTypes,
-		SecurityIntegrations:     r.SecurityIntegrations,
-		Comment:                  r.Comment,
+
+		ClientTypes: r.ClientTypes,
+
+		Comment: r.Comment,
+	}
+	if r.MfaPolicy != nil {
+		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
+			EnforceMfaOnExternalAuthentication: r.MfaPolicy.EnforceMfaOnExternalAuthentication,
+			AllowedMethods:                     r.MfaPolicy.AllowedMethods,
+		}
+	}
+	if r.SecurityIntegrations != nil {
+		opts.SecurityIntegrations = &SecurityIntegrationsOption{
+			All:                  r.SecurityIntegrations.All,
+			SecurityIntegrations: r.SecurityIntegrations.SecurityIntegrations,
+		}
+	}
+	if r.PatPolicy != nil {
+		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
+			DefaultExpiryInDays:     r.PatPolicy.DefaultExpiryInDays,
+			MaxExpiryInDays:         r.PatPolicy.MaxExpiryInDays,
+			NetworkPolicyEvaluation: r.PatPolicy.NetworkPolicyEvaluation,
+		}
+	}
+	if r.WorkloadIdentityPolicy != nil {
+		opts.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{
+			AllowedProviders:    r.WorkloadIdentityPolicy.AllowedProviders,
+			AllowedAwsAccounts:  r.WorkloadIdentityPolicy.AllowedAwsAccounts,
+			AllowedAzureIssuers: r.WorkloadIdentityPolicy.AllowedAzureIssuers,
+			AllowedOidcIssuers:  r.WorkloadIdentityPolicy.AllowedOidcIssuers,
+		}
 	}
 	return opts
 }
@@ -98,9 +126,37 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 			AuthenticationMethods:    r.Set.AuthenticationMethods,
 			MfaAuthenticationMethods: r.Set.MfaAuthenticationMethods,
 			MfaEnrollment:            r.Set.MfaEnrollment,
-			ClientTypes:              r.Set.ClientTypes,
-			SecurityIntegrations:     r.Set.SecurityIntegrations,
-			Comment:                  r.Set.Comment,
+
+			ClientTypes: r.Set.ClientTypes,
+
+			Comment: r.Set.Comment,
+		}
+		if r.Set.MfaPolicy != nil {
+			opts.Set.MfaPolicy = &AuthenticationPolicyMfaPolicy{
+				EnforceMfaOnExternalAuthentication: r.Set.MfaPolicy.EnforceMfaOnExternalAuthentication,
+				AllowedMethods:                     r.Set.MfaPolicy.AllowedMethods,
+			}
+		}
+		if r.Set.SecurityIntegrations != nil {
+			opts.Set.SecurityIntegrations = &SecurityIntegrationsOption{
+				All:                  r.Set.SecurityIntegrations.All,
+				SecurityIntegrations: r.Set.SecurityIntegrations.SecurityIntegrations,
+			}
+		}
+		if r.Set.PatPolicy != nil {
+			opts.Set.PatPolicy = &AuthenticationPolicyPatPolicy{
+				DefaultExpiryInDays:     r.Set.PatPolicy.DefaultExpiryInDays,
+				MaxExpiryInDays:         r.Set.PatPolicy.MaxExpiryInDays,
+				NetworkPolicyEvaluation: r.Set.PatPolicy.NetworkPolicyEvaluation,
+			}
+		}
+		if r.Set.WorkloadIdentityPolicy != nil {
+			opts.Set.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{
+				AllowedProviders:    r.Set.WorkloadIdentityPolicy.AllowedProviders,
+				AllowedAwsAccounts:  r.Set.WorkloadIdentityPolicy.AllowedAwsAccounts,
+				AllowedAzureIssuers: r.Set.WorkloadIdentityPolicy.AllowedAzureIssuers,
+				AllowedOidcIssuers:  r.Set.WorkloadIdentityPolicy.AllowedOidcIssuers,
+			}
 		}
 	}
 	if r.Unset != nil {
@@ -110,6 +166,9 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 			SecurityIntegrations:     r.Unset.SecurityIntegrations,
 			MfaAuthenticationMethods: r.Unset.MfaAuthenticationMethods,
 			MfaEnrollment:            r.Unset.MfaEnrollment,
+			MfaPolicy:                r.Unset.MfaPolicy,
+			PatPolicy:                r.Unset.PatPolicy,
+			WorkloadIdentityPolicy:   r.Unset.WorkloadIdentityPolicy,
 			Comment:                  r.Unset.Comment,
 		}
 	}
