@@ -27,15 +27,14 @@ resource "snowflake_authentication_policy" "basic" {
 
 ## Complete (with every optional set)
 resource "snowflake_authentication_policy" "complete" {
-  database                   = "database_name"
-  schema                     = "schema_name"
-  name                       = "network_policy_name"
-  authentication_methods     = ["ALL"]
-  mfa_authentication_methods = ["SAML", "PASSWORD"]
-  mfa_enrollment             = "OPTIONAL"
-  client_types               = ["ALL"]
-  security_integrations      = ["ALL"]
-  comment                    = "My authentication policy."
+  database               = "database_name"
+  schema                 = "schema_name"
+  name                   = "network_policy_name"
+  authentication_methods = ["ALL"]
+  mfa_enrollment         = "OPTIONAL"
+  client_types           = ["ALL"]
+  security_integrations  = ["ALL"]
+  comment                = "My authentication policy."
 }
 ```
 
@@ -55,12 +54,12 @@ resource "snowflake_authentication_policy" "complete" {
 
 ### Optional
 
-- `authentication_methods` (Set of String) A list of authentication methods that are allowed during login. This parameter accepts one or more of the following values: `ALL` | `SAML` | `PASSWORD` | `OAUTH` | `KEYPAIR` | `PROGRAMMATIC_ACCESS_TOKEN` | `WORKLOAD_IDENTITY`
-- `client_types` (Set of String) A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid CLIENT_TYPES, then the login attempt fails. Allowed values are `ALL` | `SNOWFLAKE_UI` | `DRIVERS` | `SNOWSQL` | `SNOWFLAKE_CLI`. The CLIENT_TYPES property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.
+- `authentication_methods` (Set of String) A list of authentication methods that are allowed during login. Valid values are (case-insensitive): `ALL` | `SAML` | `PASSWORD` | `OAUTH` | `KEYPAIR` | `PROGRAMMATIC_ACCESS_TOKEN` | `WORKLOAD_IDENTITY`.
+- `client_types` (Set of String) A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): `ALL` | `SNOWFLAKE_UI` | `DRIVERS` | `SNOWSQL` | `SNOWFLAKE_CLI`. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.
 - `comment` (String) Specifies a comment for the authentication policy.
 - `mfa_authentication_methods` (Set of String, Deprecated) A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are `ALL` | `SAML` | `PASSWORD`.
-- `mfa_enrollment` (String) (Default: `OPTIONAL`) Determines whether a user must enroll in multi-factor authentication. Allowed values are REQUIRED and OPTIONAL. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the CLIENT_TYPES parameter must include SNOWFLAKE_UI, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).
-- `security_integrations` (Set of String) A list of security integrations the authentication policy is associated with. This parameter has no effect when SAML or OAUTH are not in the AUTHENTICATION_METHODS list. All values in the SECURITY_INTEGRATIONS list must be compatible with the values in the AUTHENTICATION_METHODS list. For example, if SECURITY_INTEGRATIONS contains a SAML security integration, and AUTHENTICATION_METHODS contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use ALL as parameter.
+- `mfa_enrollment` (String) Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): `REQUIRED` | `REQUIRED_PASSWORD_ONLY` | `OPTIONAL`. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).
+- `security_integrations` (Set of String) A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `all` as parameter.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -86,14 +85,102 @@ Optional:
 
 Read-Only:
 
-- `authentication_methods` (String)
-- `client_types` (String)
-- `comment` (String)
-- `mfa_authentication_methods` (String)
-- `mfa_enrollment` (String)
-- `name` (String)
-- `owner` (String)
-- `security_integrations` (String)
+- `authentication_methods` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--authentication_methods))
+- `client_types` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--client_types))
+- `comment` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--comment))
+- `mfa_authentication_methods` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--mfa_authentication_methods))
+- `mfa_enrollment` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--mfa_enrollment))
+- `name` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--name))
+- `owner` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--owner))
+- `security_integrations` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--security_integrations))
+
+<a id="nestedobjatt--describe_output--authentication_methods"></a>
+### Nested Schema for `describe_output.authentication_methods`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `property` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--client_types"></a>
+### Nested Schema for `describe_output.client_types`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `property` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--comment"></a>
+### Nested Schema for `describe_output.comment`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `property` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--mfa_authentication_methods"></a>
+### Nested Schema for `describe_output.mfa_authentication_methods`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `property` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--mfa_enrollment"></a>
+### Nested Schema for `describe_output.mfa_enrollment`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `property` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--name"></a>
+### Nested Schema for `describe_output.name`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `property` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--owner"></a>
+### Nested Schema for `describe_output.owner`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `property` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--security_integrations"></a>
+### Nested Schema for `describe_output.security_integrations`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `property` (String)
+- `value` (String)
+
 
 
 <a id="nestedatt--show_output"></a>
@@ -104,6 +191,7 @@ Read-Only:
 - `comment` (String)
 - `created_on` (String)
 - `database_name` (String)
+- `kind` (String)
 - `name` (String)
 - `options` (String)
 - `owner` (String)

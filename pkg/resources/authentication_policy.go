@@ -128,7 +128,7 @@ func AuthenticationPolicy() *schema.Resource {
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingDeleteWrapper(resources.AuthenticationPolicy, deleteFunc)),
 		Description:   "Resource used to manage authentication policy objects. For more information, check [authentication policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy).",
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.ComputePool, customdiff.All(
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.AuthenticationPolicy, customdiff.All(
 			// For now, the set/list fields have to be excluded.
 			// TODO [SNOW-1648997]: address the above comment
 			ComputedIfAnyAttributeChanged(authenticationPolicySchema, ShowOutputAttributeName, "name", "comment"),
@@ -344,7 +344,6 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			); err != nil {
 				return diag.FromErr(err)
 			}
-
 		}
 
 		if err := errors.Join(
