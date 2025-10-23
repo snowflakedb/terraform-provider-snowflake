@@ -14,10 +14,150 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
+	// Generate identifiers and random values needed for "complete" (with optional fields set) version of the resource
+	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+	newId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(id.DatabaseId())
+	comment := random.Comment()
+
+	// Basic model - only required fields
+	basic := model.DatabaseRole("test", id.DatabaseName(), id.Name())
+
+	// Complete model - all optional fields set
+	// Force-new parameter: database (must be same in both models)
+	// Non-force-new: name (can be renamed), so using newId with different name but same database
+	complete := model.DatabaseRole("test", newId.DatabaseName(), newId.Name()).
+		WithComment(comment)
+
+	// Extract assertions for basic configuration
+	assertBasic := assertThat(t,
+		resourceassert.DatabaseRoleResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasCommentString("").
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		resourceshowoutputassert.DatabaseRoleShowOutput(t, basic.ResourceReference()).
+			HasName(id.Name()).
+			HasComment(""),
+		objectassert.DatabaseRole(t, id).
+			HasName(id.Name()).
+			HasComment(""),
+	)
+
+	// Extract assertions for complete configuration
+	assertComplete := assertThat(t,
+		resourceassert.DatabaseRoleResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasDatabaseString(newId.DatabaseName()).
+			HasCommentString(comment).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()),
+		resourceshowoutputassert.DatabaseRoleShowOutput(t, complete.ResourceReference()).
+			HasName(newId.Name()).
+			HasComment(comment),
+		objectassert.DatabaseRole(t, newId).
+			HasName(newId.Name()).
+			HasComment(comment),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.DatabaseRole),
+		Steps: []resource.TestStep{
+			// Step 1: Create - without optionals
+			{
+				Config: config.FromModels(t, basic),
+				Check:  assertBasic,
+			},
+
+			// Step 2: Import - without optionals
+			{
+				Config:       config.FromModels(t, basic),
+				ResourceName: basic.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedDatabaseRoleResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNameString(id.Name()).
+						HasCommentString(""),
+					resourceshowoutputassert.ImportedWarehouseShowOutput(t, helpers.EncodeResourceIdentifier(id)).
+						HasName(id.Name()).
+						HasComment(""),
+				),
+			},
+
+			// Step 3: Update - set optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, complete),
+				Check:  assertComplete,
+			},
+
+			// Step 4: Import - with optionals
+			{
+				Config:       config.FromModels(t, complete),
+				ResourceName: complete.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedDatabaseRoleResource(t, helpers.EncodeResourceIdentifier(newId)).
+						HasNameString(newId.Name()).
+						HasCommentString(comment),
+					resourceshowoutputassert.ImportedWarehouseShowOutput(t, helpers.EncodeResourceIdentifier(newId)).
+						HasName(newId.Name()).
+						HasComment(comment),
+				),
+			},
+
+			// Step 5: Update - unset optionals (back to basic)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertBasic,
+			},
+
+			// Step 6: Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().DatabaseRole.Alter(t, sdk.NewAlterDatabaseRoleRequest(id).WithSet(*sdk.NewDatabaseRoleSetRequest(random.Comment())))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertBasic,
+			},
+
+			// Step 7: Create - with optionals
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, complete),
+				Check:  assertComplete,
+			},
+		},
+	})
+}
 
 func TestAcc_DatabaseRole_Basic(t *testing.T) {
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()

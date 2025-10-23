@@ -20,10 +20,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_NetworkPolicy_Basic(t *testing.T) {
+func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
+	// Generate identifiers and random values needed for "complete" (with optional fields set) version of the resource
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	newId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
+	// Create required dependencies with cleanup
 	allowedNetworkRule1, allowedNetworkRule1Cleanup := testClient().NetworkRule.CreateIngress(t)
 	t.Cleanup(allowedNetworkRule1Cleanup)
 
@@ -41,13 +44,67 @@ func TestAcc_NetworkPolicy_Basic(t *testing.T) {
 	blockedNetworkRuleId1 := blockedNetworkRule1.ID()
 	blockedNetworkRuleId2 := blockedNetworkRule2.ID()
 
-	networkPolicyModelBasic := model.NetworkPolicy("test", id.Name())
-	networkPolicyModelComplete := model.NetworkPolicy("test", id.Name()).
+	// Basic model - only required fields
+	basic := model.NetworkPolicy("test", id.Name())
+
+	// Complete model - all optional fields set
+	// NO force-new parameters for network_policy (name can be renamed)
+	complete := model.NetworkPolicy("test", newId.Name()).
 		WithComment(comment).
 		WithAllowedNetworkRules(allowedNetworkRuleId1, allowedNetworkRuleId2).
 		WithBlockedNetworkRules(blockedNetworkRuleId1, blockedNetworkRuleId2).
 		WithAllowedIps("1.1.1.1", "2.2.2.2").
 		WithBlockedIps("3.3.3.3", "4.4.4.4")
+
+	// Extract assertions for basic configuration
+	assertBasic := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "name", id.Name()),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "allowed_ip_list.#", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "blocked_ip_list.#", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "allowed_network_rule_list.#", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "blocked_network_rule_list.#", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "comment", ""),
+
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.#", "1"),
+		resource.TestCheckResourceAttrSet(basic.ResourceReference(), "show_output.0.created_on"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.name", id.Name()),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.comment", ""),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.entries_in_allowed_ip_list", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.entries_in_blocked_ip_list", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.entries_in_allowed_network_rules", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.entries_in_blocked_network_rules", "0"),
+
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1"),
+		resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
+		resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
+		resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_ip_list"),
+		resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_ip_list"),
+	)
+
+	// Extract assertions for complete configuration
+	assertComplete := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "name", newId.Name()),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "allowed_ip_list.#", "2"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "blocked_ip_list.#", "2"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "allowed_network_rule_list.#", "2"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "blocked_network_rule_list.#", "2"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "comment", comment),
+
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.#", "1"),
+		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "show_output.0.created_on"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.name", newId.Name()),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.comment", comment),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.entries_in_allowed_ip_list", "2"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.entries_in_blocked_ip_list", "2"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.entries_in_allowed_network_rules", "2"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.entries_in_blocked_network_rules", "2"),
+
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1"),
+		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
+		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
+		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.allowed_ip_list"),
+		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.blocked_ip_list"),
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -56,37 +113,16 @@ func TestAcc_NetworkPolicy_Basic(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.NetworkPolicy),
 		Steps: []resource.TestStep{
-			// create with empty optionals
+			// Step 1: Create - without optionals
 			{
-				Config: accconfig.FromModels(t, networkPolicyModelBasic),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "allowed_ip_list.#", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "blocked_ip_list.#", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "allowed_network_rule_list.#", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "blocked_network_rule_list.#", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "comment", ""),
-
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelBasic.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.comment", ""),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.entries_in_allowed_ip_list", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.entries_in_blocked_ip_list", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.entries_in_allowed_network_rules", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.entries_in_blocked_network_rules", "0"),
-
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckNoResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
-					resource.TestCheckNoResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
-					resource.TestCheckNoResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.0.allowed_ip_list"),
-					resource.TestCheckNoResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.0.blocked_ip_list"),
-				),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertBasic,
 			},
-			// import - without optionals
+
+			// Step 2: Import - without optionals
 			{
-				Config:       accconfig.FromModels(t, networkPolicyModelBasic),
-				ResourceName: "snowflake_network_policy.test",
+				Config:       accconfig.FromModels(t, basic),
+				ResourceName: basic.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
@@ -97,53 +133,45 @@ func TestAcc_NetworkPolicy_Basic(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", ""),
 				),
 			},
-			// set optionals
+
+			// Step 3: Update - set optionals
 			{
-				Config: accconfig.FromModels(t, networkPolicyModelComplete),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(networkPolicyModelComplete.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "allowed_ip_list.#", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "blocked_ip_list.#", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "allowed_network_rule_list.#", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "blocked_network_rule_list.#", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.comment", comment),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.entries_in_allowed_ip_list", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.entries_in_blocked_ip_list", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.entries_in_allowed_network_rules", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.entries_in_blocked_network_rules", "2"),
-
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "describe_output.0.allowed_ip_list"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "describe_output.0.blocked_ip_list"),
-				),
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertComplete,
 			},
-			// import - complete
+
+			// Step 4: Import - with optionals
 			{
-				Config:       accconfig.FromModels(t, networkPolicyModelComplete),
-				ResourceName: "snowflake_network_policy.test",
+				Config:       accconfig.FromModels(t, complete),
+				ResourceName: complete.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_ip_list.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "blocked_ip_list.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_network_rule_list.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "blocked_network_rule_list.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", comment),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "name", newId.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "allowed_ip_list.#", "2"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "blocked_ip_list.#", "2"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "allowed_network_rule_list.#", "2"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "blocked_network_rule_list.#", "2"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "comment", comment),
 				),
 			},
-			// change externally
+
+			// Step 5: Update - unset optionals (back to basic)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertBasic,
+			},
+
+			// Step 6: Update - detect external changes
 			{
 				PreConfig: func() {
 					testClient().NetworkPolicy.Update(t, sdk.NewAlterNetworkPolicyRequest(id).WithUnset(
@@ -155,73 +183,31 @@ func TestAcc_NetworkPolicy_Basic(t *testing.T) {
 							WithComment(true),
 					))
 				},
-				Config: accconfig.FromModels(t, networkPolicyModelComplete),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(networkPolicyModelComplete.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "allowed_ip_list.#", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "blocked_ip_list.#", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "allowed_network_rule_list.#", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "blocked_network_rule_list.#", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.comment", comment),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.entries_in_allowed_ip_list", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.entries_in_blocked_ip_list", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.entries_in_allowed_network_rules", "2"),
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "show_output.0.entries_in_blocked_network_rules", "2"),
-
-					resource.TestCheckResourceAttr(networkPolicyModelComplete.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "describe_output.0.allowed_ip_list"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelComplete.ResourceReference(), "describe_output.0.blocked_ip_list"),
-				),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertBasic,
 			},
-			// unset
+
+			// Step 7: Create - with optionals
 			{
-				Config: accconfig.FromModels(t, networkPolicyModelBasic),
+				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(networkPolicyModelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "allowed_ip_list.#", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "blocked_ip_list.#", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "allowed_network_rule_list.#", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "blocked_network_rule_list.#", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "comment", ""),
-
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(networkPolicyModelBasic.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.comment", ""),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.entries_in_allowed_ip_list", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.entries_in_blocked_ip_list", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.entries_in_allowed_network_rules", "0"),
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "show_output.0.entries_in_blocked_network_rules", "0"),
-
-					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckNoResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
-					resource.TestCheckNoResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
-					resource.TestCheckNoResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.0.allowed_ip_list"),
-					resource.TestCheckNoResourceAttr(networkPolicyModelBasic.ResourceReference(), "describe_output.0.blocked_ip_list"),
-				),
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertComplete,
 			},
 		},
 	})
 }
 
-func TestAcc_NetworkPolicy_Complete(t *testing.T) {
+func TestAcc_NetworkPolicy_Basic(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 

@@ -93,3 +93,11 @@ func (c *RoleClient) GrantRoleToUser(t *testing.T, id sdk.AccountObjectIdentifie
 	}))
 	require.NoError(t, err)
 }
+
+func (c *RoleClient) Alter(t *testing.T, req *sdk.AlterRoleRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}

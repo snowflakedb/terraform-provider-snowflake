@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -17,6 +18,144 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
+	// Generate identifiers and random values needed for "complete" (with optional fields set) version of the resource
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+	currentRole := testClient().Context.CurrentRole(t)
+
+	// Basic model - only required fields
+	basic := model.AccountRole("test", id.Name())
+
+	// Complete model - all optional fields set (comment is the only optional field for account_role)
+	// Note: There are no force-new parameters for account_role (name can be updated in place via rename)
+	complete := model.AccountRole("test", id.Name()).
+		WithComment(comment)
+
+	// Extract assertions for basic configuration
+	assertBasic := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "name", id.Name()),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "comment", ""),
+
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.#", "1"),
+		resource.TestCheckResourceAttrSet(basic.ResourceReference(), "show_output.0.created_on"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.name", id.Name()),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.is_default", "false"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.is_current", "false"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.is_inherited", "false"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.assigned_to_users", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.granted_to_roles", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.granted_roles", "0"),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.owner", currentRole.Name()),
+		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.comment", ""),
+	)
+
+	// Extract assertions for complete configuration
+	assertComplete := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "name", id.Name()),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "comment", comment),
+
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.#", "1"),
+		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "show_output.0.created_on"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.name", id.Name()),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.is_default", "false"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.is_current", "false"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.is_inherited", "false"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.assigned_to_users", "0"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.granted_to_roles", "0"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.granted_roles", "0"),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.owner", currentRole.Name()),
+		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.comment", comment),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.AccountRole),
+		Steps: []resource.TestStep{
+			// Step 1: Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertBasic,
+			},
+
+			// Step 2: Import - without optionals
+			{
+				Config:       accconfig.FromModels(t, basic),
+				ResourceName: basic.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", ""),
+				),
+			},
+
+			// Step 3: Update - set optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertComplete,
+			},
+
+			// Step 4: Import - with optionals
+			{
+				Config:       accconfig.FromModels(t, complete),
+				ResourceName: complete.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "fully_qualified_name", id.FullyQualifiedName()),
+					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", comment),
+				),
+			},
+
+			// Step 5: Update - unset optionals (back to basic)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertBasic,
+			},
+
+			// Step 6: Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().Role.Alter(t, sdk.NewAlterRoleRequest(id).WithSetComment(random.Comment()))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertBasic,
+			},
+
+			// Step 7: Create - with optionals
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertComplete,
+			},
+		},
+	})
+}
 
 func TestAcc_AccountRole_Basic(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
