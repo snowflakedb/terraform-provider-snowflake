@@ -10,6 +10,10 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
@@ -21,12 +25,10 @@ import (
 )
 
 func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
-	// Generate identifiers and random values needed for "complete" (with optional fields set) version of the resource
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	// Create required dependencies with cleanup
 	allowedNetworkRule1, allowedNetworkRule1Cleanup := testClient().NetworkRule.CreateIngress(t)
 	t.Cleanup(allowedNetworkRule1Cleanup)
 
@@ -44,11 +46,8 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 	blockedNetworkRuleId1 := blockedNetworkRule1.ID()
 	blockedNetworkRuleId2 := blockedNetworkRule2.ID()
 
-	// Basic model - only required fields
 	basic := model.NetworkPolicy("test", id.Name())
 
-	// Complete model - all optional fields set
-	// NO force-new parameters for network_policy (name can be renamed)
 	complete := model.NetworkPolicy("test", newId.Name()).
 		WithComment(comment).
 		WithAllowedNetworkRules(allowedNetworkRuleId1, allowedNetworkRuleId2).
@@ -56,55 +55,77 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 		WithAllowedIps("1.1.1.1", "2.2.2.2").
 		WithBlockedIps("3.3.3.3", "4.4.4.4")
 
-	// Extract assertions for basic configuration
-	assertBasic := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "name", id.Name()),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "allowed_ip_list.#", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "blocked_ip_list.#", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "allowed_network_rule_list.#", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "blocked_network_rule_list.#", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "comment", ""),
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.NetworkPolicy(t, id).
+			HasName(id.Name()).
+			HasComment("").
+			HasEntriesInAllowedIpList(0).
+			HasEntriesInBlockedIpList(0).
+			HasEntriesInAllowedNetworkRules(0).
+			HasEntriesInBlockedNetworkRules(0),
 
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.#", "1"),
-		resource.TestCheckResourceAttrSet(basic.ResourceReference(), "show_output.0.created_on"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.name", id.Name()),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.comment", ""),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.entries_in_allowed_ip_list", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.entries_in_blocked_ip_list", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.entries_in_allowed_network_rules", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.entries_in_blocked_network_rules", "0"),
+		resourceassert.NetworkPolicyResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasCommentString("").
+			HasAllowedIpListLength(0).
+			HasBlockedIpListLength(0).
+			HasAllowedNetworkRuleListLength(0).
+			HasBlockedNetworkRuleListLength(0),
 
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1"),
-		resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
-		resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
-		resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_ip_list"),
-		resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_ip_list"),
-	)
+		resourceshowoutputassert.NetworkPolicyShowOutput(t, basic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasComment("").
+			HasEntriesInAllowedIpList(0).
+			HasEntriesInBlockedIpList(0).
+			HasEntriesInAllowedNetworkRules(0).
+			HasEntriesInBlockedNetworkRules(0),
 
-	// Extract assertions for complete configuration
-	assertComplete := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "name", newId.Name()),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "allowed_ip_list.#", "2"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "blocked_ip_list.#", "2"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "allowed_network_rule_list.#", "2"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "blocked_network_rule_list.#", "2"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "comment", comment),
+		assert.Check(resource.ComposeAggregateTestCheckFunc(
+			resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1"),
+			resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
+			resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
+			resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_ip_list"),
+			resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_ip_list"),
+		)),
+	}
 
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.#", "1"),
-		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "show_output.0.created_on"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.name", newId.Name()),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.comment", comment),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.entries_in_allowed_ip_list", "2"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.entries_in_blocked_ip_list", "2"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.entries_in_allowed_network_rules", "2"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.entries_in_blocked_network_rules", "2"),
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.NetworkPolicy(t, newId).
+			HasName(newId.Name()).
+			HasComment(comment).
+			HasEntriesInAllowedIpList(2).
+			HasEntriesInBlockedIpList(2).
+			HasEntriesInAllowedNetworkRules(2).
+			HasEntriesInBlockedNetworkRules(2),
 
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1"),
-		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
-		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
-		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.allowed_ip_list"),
-		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.blocked_ip_list"),
-	)
+		resourceassert.NetworkPolicyResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+			HasCommentString(comment).
+			HasAllowedIpListLength(2).
+			HasBlockedIpListLength(2).
+			HasAllowedNetworkRuleListLength(2).
+			HasBlockedNetworkRuleListLength(2),
+
+		resourceshowoutputassert.NetworkPolicyShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(newId.Name()).
+			HasComment(comment).
+			HasEntriesInAllowedIpList(2).
+			HasEntriesInBlockedIpList(2).
+			HasEntriesInAllowedNetworkRules(2).
+			HasEntriesInBlockedNetworkRules(2),
+
+		assert.Check(resource.ComposeAggregateTestCheckFunc(
+			resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1"),
+			resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
+			resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
+			resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.allowed_ip_list"),
+			resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.blocked_ip_list"),
+		)),
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -113,28 +134,19 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.NetworkPolicy),
 		Steps: []resource.TestStep{
-			// Step 1: Create - without optionals
+			// Create - without optionals
 			{
 				Config: accconfig.FromModels(t, basic),
-				Check:  assertBasic,
+				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 2: Import - without optionals
+			// Import - without optionals
 			{
-				Config:       accconfig.FromModels(t, basic),
-				ResourceName: basic.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_ip_list"),
-					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "blocked_ip_list"),
-					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_network_rule_list"),
-					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "blocked_network_rule_list"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", ""),
-				),
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
-
-			// Step 3: Update - set optionals
+			// Update - set optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -142,25 +154,16 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
-				Check:  assertComplete,
+				Check:  assertThat(t, assertComplete...),
 			},
-
-			// Step 4: Import - with optionals
+			// Import - with optionals
 			{
-				Config:       accconfig.FromModels(t, complete),
-				ResourceName: complete.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "name", newId.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "allowed_ip_list.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "blocked_ip_list.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "allowed_network_rule_list.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "blocked_network_rule_list.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "comment", comment),
-				),
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
-
-			// Step 5: Update - unset optionals (back to basic)
+			// Update - unset optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -168,10 +171,9 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
-				Check:  assertBasic,
+				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 6: Update - detect external changes
+			// Update - detect external changes
 			{
 				PreConfig: func() {
 					testClient().NetworkPolicy.Update(t, sdk.NewAlterNetworkPolicyRequest(id).WithUnset(
@@ -189,10 +191,9 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
-				Check:  assertBasic,
+				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 7: Create - with optionals
+			// Create - with optionals
 			{
 				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -201,7 +202,7 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
-				Check:  assertComplete,
+				Check:  assertThat(t, assertComplete...),
 			},
 		},
 	})
