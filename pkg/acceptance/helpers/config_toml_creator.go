@@ -55,6 +55,7 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithOauthRedirectURI("oauth_redirect_uri").
 		WithOauthScope("oauth_scope").
 		WithWorkloadIdentityProvider("workload_identity_provider").
+		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 		WithEnableSingleUseRefreshTokens(true),
 	)
 }
@@ -105,6 +106,8 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithOauthAuthorizationURL("invalid").
 		WithOauthRedirectURI("invalid").
 		WithOauthScope("invalid").
+		WithWorkloadIdentityProvider("invalid").
+		WithWorkloadIdentityEntraResource("invalid").
 		WithEnableSingleUseRefreshTokens(true)
 	return configDtoToTomlString(t, profile, dto)
 }

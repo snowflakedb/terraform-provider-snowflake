@@ -36,6 +36,7 @@ oauth_authorization_url = 'oauth_authorization_url'
 oauth_redirect_uri = 'oauth_redirect_uri'
 oauth_scope = 'oauth_scope'
 workload_identity_provider = 'azure'
+workload_identity_entra_resource = 'workload_identity_entra_resource'
 enable_single_use_refresh_tokens = true
 
 [example.params]

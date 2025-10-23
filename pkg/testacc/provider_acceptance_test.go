@@ -603,6 +603,8 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+					assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
