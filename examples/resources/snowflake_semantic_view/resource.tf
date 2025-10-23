@@ -23,7 +23,9 @@ resource "snowflake_semantic_view" "complete" {
   tables {
     comment = "comment"
     primary_key = ["COL1"]
-    unique = ["COL2"]
+    unique {
+      values = ["COL2"]
+    }
     table_alias = "TABLE_ALIAS"
     table_name = "TABLE_NAME"
     synonym = ["synonym", "synonym"]
@@ -31,7 +33,9 @@ resource "snowflake_semantic_view" "complete" {
   tables {
     comment = "comment"
     primary_key = ["COL1"]
-    unique = ["COL2"]
+    unique {
+      values = ["COL2"]
+    }
     table_alias = "TABLE_ALIAS"
     table_name = "TABLE_NAME"
     synonym = ["synonym"]
