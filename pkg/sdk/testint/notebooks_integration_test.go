@@ -40,19 +40,6 @@ func TestInt_Notebooks(t *testing.T) {
 	t.Run("create - complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		// db, dbCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
-		// t.Cleanup(dbCleanup)
-
-		// schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, db.ID())
-		// t.Cleanup(schemaCleanup)
-
-		// stage, stageCleanup := testClientHelper().Stage.CreateStageInSchema(t, schema.ID())
-		// t.Cleanup(stageCleanup)
-		// location := sdk.NewStageLocation(stage.ID(), "")
-
-		// computePool := sdk.NewAccountObjectIdentifier("pool")
-		// externalAccessIntegrations := []sdk.AccountObjectIdentifier{}
-
 		computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
 		t.Cleanup(computePoolCleanup)
 
