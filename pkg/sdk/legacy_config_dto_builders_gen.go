@@ -235,6 +235,16 @@ func (s *LegacyConfigDTO) WithOauthScope(OauthScope string) *LegacyConfigDTO {
 	return s
 }
 
+func (s *LegacyConfigDTO) WithWorkloadIdentityProvider(WorkloadIdentityProvider string) *LegacyConfigDTO {
+	s.WorkloadIdentityProvider = &WorkloadIdentityProvider
+	return s
+}
+
+func (s *LegacyConfigDTO) WithWorkloadIdentityEntraResource(WorkloadIdentityEntraResource string) *LegacyConfigDTO {
+	s.WorkloadIdentityEntraResource = &WorkloadIdentityEntraResource
+	return s
+}
+
 func (s *LegacyConfigDTO) WithEnableSingleUseRefreshTokens(EnableSingleUseRefreshTokens bool) *LegacyConfigDTO {
 	s.EnableSingleUseRefreshTokens = &EnableSingleUseRefreshTokens
 	return s
