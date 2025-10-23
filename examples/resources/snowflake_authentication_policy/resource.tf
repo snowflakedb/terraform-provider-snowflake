@@ -7,13 +7,12 @@ resource "snowflake_authentication_policy" "basic" {
 
 ## Complete (with every optional set)
 resource "snowflake_authentication_policy" "complete" {
-  database                   = "database_name"
-  schema                     = "schema_name"
-  name                       = "network_policy_name"
-  authentication_methods     = ["ALL"]
-  mfa_authentication_methods = ["SAML", "PASSWORD"]
-  mfa_enrollment             = "OPTIONAL"
-  client_types               = ["ALL"]
-  security_integrations      = ["ALL"]
-  comment                    = "My authentication policy."
+  database               = "database_name"
+  schema                 = "schema_name"
+  name                   = "network_policy_name"
+  authentication_methods = ["ALL"]
+  mfa_enrollment         = "OPTIONAL"
+  client_types           = ["ALL"]
+  security_integrations  = ["ALL"]
+  comment                = "My authentication policy."
 }
