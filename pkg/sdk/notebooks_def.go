@@ -67,7 +67,7 @@ var notebookDetails = g.PlainStruct("NotebookDetails").
 	Text("DefaultPackages").
 	OptionalText("UserPackages").
 	OptionalText("RuntimeName").
-	OptionalText("ComputePool").
+	Field("ComputePool", "AccountObjectIdentifier").
 	Text("Owner").
 	Text("ImportUrls").
 	Text("ExternalAccessIntegrations").

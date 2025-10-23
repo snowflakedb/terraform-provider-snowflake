@@ -58,3 +58,10 @@ func (c *NotebookClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk
 
 	return c.client().ShowByID(ctx, id)
 }
+
+func (c *NotebookClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.NotebookDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Describe(ctx, id)
+}

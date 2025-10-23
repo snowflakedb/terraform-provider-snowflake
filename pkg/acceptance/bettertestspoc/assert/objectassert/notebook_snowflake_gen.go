@@ -76,14 +76,20 @@ func (n *NotebookAssert) HasSchemaName(expected string) *NotebookAssert {
 	return n
 }
 
-func (n *NotebookAssert) HasComment(expected string) *NotebookAssert {
+func (n *NotebookAssert) HasComment(expected *string) *NotebookAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
 		t.Helper()
-		if o.Comment == nil {
-			return fmt.Errorf("expected comment to have value; got: nil")
+		if o.Comment == nil && expected == nil {
+			return nil
 		}
-		if *o.Comment != expected {
-			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
+		if o.Comment == nil {
+			return fmt.Errorf("expected comment: %v; got nil", *expected)
+		}
+		if expected == nil {
+			return fmt.Errorf("expected nil; got %v", *o.Comment)
+		}
+		if *o.Comment != *expected {
+			return fmt.Errorf("expected comment: %v; got: %v", *expected, *o.Comment)
 		}
 		return nil
 	})
