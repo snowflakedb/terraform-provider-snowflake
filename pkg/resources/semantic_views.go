@@ -552,10 +552,6 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 			var ukRequests []sdk.UniqueKeysRequest
 			for _, ukSet := range uniqueKeys {
 				var uniqueKeyColumns []sdk.SemanticViewColumn
-				//for _, uk := range ukSet.(map[string]any) {
-				//	actualUK := uk.([]any)
-				//	uniqueKeyColumns = append(uniqueKeyColumns, sdk.SemanticViewColumn{Name: actualUK[0].(string)})
-				//}
 				values, ok := ukSet.(map[string]any)["values"].([]any)
 				if ok {
 					for _, uk := range values {
