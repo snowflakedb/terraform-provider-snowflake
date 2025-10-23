@@ -10,6 +10,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -19,6 +20,8 @@ import (
 )
 
 func TestInt_AuthenticationPolicies_AccountLevel(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
 	client := secondaryTestClient()
 	client.BcrBundles.DisableBcrBundle(t, "2025_06")
 
