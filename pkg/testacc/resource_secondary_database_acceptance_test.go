@@ -24,24 +24,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestAcc_SecondaryDatabase_BasicUseCase is the standard comprehensive acceptance test following the BasicUseCase pattern.
-// This test consolidates the functionality of the old _basic and _complete tests.
-//
-// Resource Schema Analysis (from pkg/resources/secondary_database.go):
-// - name: NOT force-new (line 22) - can be renamed in place
-// - as_replica_of: ForceNew: true (line 30) - CRITICAL: must stay the same
-// - is_transient: ForceNew: true (line 38) - CRITICAL: must stay the same
-// - comment: Optional, NOT force-new (line 41)
-// - database parameters: NOT force-new (inherited from databaseParametersSchema)
-//
-// ID Strategy: Since name is NOT force-new, use id and newId with DIFFERENT names but SAME as_replica_of
 func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
-	// Setup: Generate identifiers and test values
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	// Create primary database on secondary account
 	primaryDatabase, externalPrimaryId, _ := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
 		testClient().Account.GetAccountIdentifier(t),
 	})
@@ -50,25 +37,20 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 		require.Eventually(t, func() bool { return secondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
 	})
 
-	// Create external volume and catalog for complete configuration
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
 
 	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
 
-	// Basic model - only required fields
 	basic := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName())
 
-	// Assertions for basic configuration
 	assertBasic := []assert.TestCheckFuncProvider{
-		// Check actual Snowflake object state
 		objectassert.Database(t, id).
 			HasName(id.Name()).
 			HasTransient(false).
 			HasComment(""),
 
-		// Check parameters on the Snowflake object
 		objectparametersassert.DatabaseParameters(t, id).
 			HasDefaultDataRetentionTimeInDaysValueExplicit().
 			HasDefaultMaxDataExtensionTimeInDaysValueExplicit().
@@ -87,7 +69,6 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
 			HasDefaultEnableConsoleOutputValueExplicit(),
 
-		// Check Terraform resource state
 		resourceassert.SecondaryDatabaseResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -95,8 +76,6 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasCommentString(""),
 	}
 
-	// Complete model - all optional fields set
-	// Using newId.Name() because name is NOT force-new, but same as_replica_of because it IS force-new
 	complete := model.SecondaryDatabase("test", newId.Name(), externalPrimaryId.FullyQualifiedName()).
 		WithComment(comment).
 		WithDataRetentionTimeInDays(20).
@@ -116,16 +95,13 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 		WithQuotedIdentifiersIgnoreCase(true).
 		WithEnableConsoleOutput(true)
 
-	// Assertions for complete configuration
 	assertComplete := []assert.TestCheckFuncProvider{
-		// Check actual Snowflake object state
 		objectassert.Database(t, newId).
 			HasName(newId.Name()).
 			HasTransient(false).
 			HasComment(comment).
 			HasRetentionTime(20),
 
-		// Check parameters on the Snowflake object
 		objectparametersassert.DatabaseParameters(t, newId).
 			HasDataRetentionTimeInDays(20).
 			HasMaxDataExtensionTimeInDays(25).
@@ -144,7 +120,6 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasQuotedIdentifiersIgnoreCase(true).
 			HasEnableConsoleOutput(true),
 
-		// Check Terraform resource state
 		resourceassert.SecondaryDatabaseResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
 			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
@@ -175,21 +150,19 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.SecondaryDatabase),
 		Steps: []resource.TestStep{
-			// Step 1: Create - without optionals
+			// Create - without optionals
 			{
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 2: Import - without optionals
+			// Import - without optionals
 			{
 				Config:            accconfig.FromModels(t, basic),
 				ResourceName:      basic.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-
-			// Step 3: Update - set optionals (including rename)
+			// Update - set optionals (including rename)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -199,16 +172,14 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
 			},
-
-			// Step 4: Import - with optionals
+			// Import - with optionals
 			{
 				Config:            accconfig.FromModels(t, complete),
 				ResourceName:      complete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-
-			// Step 5: Update - unset optionals (back to basic, with rename back)
+			// Update - unset optionals (back to basic, with rename back)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -218,8 +189,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 6: Update - detect external changes
+			// Update - detect external changes
 			{
 				PreConfig: func() {
 					testClient().Database.Alter(t, id, &sdk.AlterDatabaseOptions{
@@ -236,8 +206,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 7: Create - with optionals (from scratch via taint)
+			// Create - with optionals (from scratch via taint)
 			{
 				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
