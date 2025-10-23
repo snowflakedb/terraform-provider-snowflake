@@ -16,6 +16,16 @@ func (a *AuthenticationPolicyModel) WithAuthenticationMethods(authenticationMeth
 	)
 }
 
+func (a *AuthenticationPolicyModel) WithMfaAuthenticationMethods(mfaAuthenticationMethods ...sdk.MfaAuthenticationMethodsOption) *AuthenticationPolicyModel {
+	return a.WithMfaAuthenticationMethodsValue(
+		tfconfig.SetVariable(
+			collections.Map(mfaAuthenticationMethods, func(mfaAuthenticationMethod sdk.MfaAuthenticationMethodsOption) tfconfig.Variable {
+				return tfconfig.StringVariable(string(mfaAuthenticationMethod))
+			})...,
+		),
+	)
+}
+
 func (a *AuthenticationPolicyModel) WithClientTypes(clientTypes ...sdk.ClientTypesOption) *AuthenticationPolicyModel {
 	return a.WithClientTypesValue(
 		tfconfig.SetVariable(

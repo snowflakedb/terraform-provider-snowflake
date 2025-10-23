@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -119,6 +120,8 @@ func AuthenticationPolicy() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingCreateWrapper(resources.AuthenticationPolicy, CreateContextAuthenticationPolicy)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingReadWrapper(resources.AuthenticationPolicy, ReadContextAuthenticationPolicy(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingUpdateWrapper(resources.AuthenticationPolicy, UpdateContextAuthenticationPolicy)),
@@ -138,6 +141,13 @@ func AuthenticationPolicy() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.AuthenticationPolicy, ImportAuthenticationPolicy),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_9_0_AuthenticationPolicyStateUpgrader,
+			},
+		},
 	}
 }
 
@@ -214,7 +224,7 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		req.WithAuthenticationMethods(authenticationMethods)
 	}
 
-	// TODO(XXX): Remove this once the 2025_06 is generally enabled.
+	// TODO(SNOW-2454947): Remove this once the 2025_06 is generally enabled.
 	if v, ok := d.GetOk("mfa_authentication_methods"); ok {
 		mfaAuthenticationMethodsRawList := expandStringList(v.(*schema.Set).List())
 		mfaAuthenticationMethods := make([]sdk.MfaAuthenticationMethods, len(mfaAuthenticationMethodsRawList))
@@ -264,7 +274,7 @@ func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionReq
 	for i, v := range raw {
 		securityIntegrations[i] = sdk.NewAccountObjectIdentifier(v)
 	}
-	// TODO: handle ALL
+	// TODO(next PR): handle ALL separately
 	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
 }
 
@@ -314,6 +324,10 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			mfaAuthenticationMethods, err := authenticationPolicyDescriptions.GetMfaAuthenticationMethods()
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			var securityIntegrationsStrings []string
 			if securityIntegrations != nil {
 				securityIntegrationsStrings = make([]string, len(securityIntegrations))
@@ -326,6 +340,7 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 				describeMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
 				describeMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
 				describeMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
+				describeMapping{"mfa_authentication_methods", "mfa_authentication_methods", authenticationPolicyDescriptions.Raw("MFA_AUTHENTICATION_METHODS"), mfaAuthenticationMethods, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -386,7 +401,7 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	// TODO(XXX): Remove this once the 2025_06 is generally enabled.
+	// TODO(SNOW-2454947): Remove this once the 2025_06 is generally enabled.
 	// change to mfa authentication methods
 	if d.HasChange("mfa_authentication_methods") {
 		if v, ok := d.GetOk("mfa_authentication_methods"); ok {

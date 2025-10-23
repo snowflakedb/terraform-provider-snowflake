@@ -163,10 +163,6 @@ func (v *AuthenticationPolicy) ObjectType() ObjectType {
 	return ObjectTypeAuthenticationPolicy
 }
 
-func (v *AuthenticationPolicy) ObjectType() ObjectType {
-	return ObjectTypeAuthenticationPolicy
-}
-
 // DescribeAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-authentication-policy.
 type DescribeAuthenticationPolicyOptions struct {
 	describe             bool                   `ddl:"static" sql:"DESCRIBE"`

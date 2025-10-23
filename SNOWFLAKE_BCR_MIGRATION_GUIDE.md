@@ -35,16 +35,28 @@ Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bu
 ## [Bundle 2025_06](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06_bundle)
 
 ### Changes in authentication policies
+<!-- TODO(SNOW-2187814): Update this entry. -->
+
 > [!IMPORTANT]
 > The [BCR-2086](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2086) change has been rolled back from the BCR 2025_04 and was moved to 2025_06.
 
 > [!IMPORTANT]
-> These changes has been addressed in the v2.10.0 version.
+> These changes are partially addressed in the v2.10.0 version.
 > If you use an older version, please upgrade to v2.10.0, or use the instructions below as a workaround.
 
-The `MFA_AUTHENTICATION_METHODS` property is deprecated. Setting the `MFA_AUTHENTICATION_METHODS` property returns an error. If you use the [authentication_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) resource with `mfa_authentication_methods` field
-and have this bundle enabled, the provider will return an error.
-The new way of handling authentication methods is `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` which has been added in v2.10.0. For older versions, you can set this field with [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+#### `MFA_AUTHENTICATION_METHODS` property deprecation
+##### Change
+The `MFA_AUTHENTICATION_METHODS` property is deprecated. Setting the `MFA_AUTHENTICATION_METHODS` property returns an error. The new way of handling authentication methods is with `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` field. Note that the `MFA_AUTHENTICATION_METHODS` is still returned in the `DESCRIBE` output.
+
+##### Provider impact
+If you:
+- Use the [authentication_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) resource with `mfa_authentication_methods` field different than Snowflake default, or not set, and
+- Have this bundle enabled and
+- Use versions before v2.10.0,
+The provider can return errors like `invalid property 'mfa_AUTHENTICATION_METHODS' for 'AUTHENTICATION_POLICY'` or `MFA_AUTHENTICATION_METHODS is deprecated`. Also, the provider could cause a permadiff on this field due to incorrect handling.
+
+##### Required changes
+Upgrade provider to v2.10.0. This version fixes the permadiff and upgrades the state automatically. For older versions, you can set this field to a Snowflake default with [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
 
 If you get errors like `MFA_AUTHENTICATION_METHODS is deprecated`, then:
 1. Disable the 2025_06 bundle.

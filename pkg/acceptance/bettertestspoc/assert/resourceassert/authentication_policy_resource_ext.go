@@ -15,6 +15,14 @@ func (s *AuthenticationPolicyResourceAssert) HasAuthenticationMethods(expected .
 	return s
 }
 
+func (s *AuthenticationPolicyResourceAssert) HasMfaAuthenticationMethods(expected ...sdk.MfaAuthenticationMethodsOption) *AuthenticationPolicyResourceAssert {
+	s.AddAssertion(assert.ValueSet("mfa_authentication_methods.#", fmt.Sprintf("%d", len(expected))))
+	for i, v := range expected {
+		s.AddAssertion(assert.ValueSet(fmt.Sprintf("mfa_authentication_methods.%d", i), string(v)))
+	}
+	return s
+}
+
 func (s *AuthenticationPolicyResourceAssert) HasClientTypes(expected ...sdk.ClientTypesOption) *AuthenticationPolicyResourceAssert {
 	s.AddAssertion(assert.ValueSet("client_types.#", fmt.Sprintf("%d", len(expected))))
 	for i, v := range expected {
