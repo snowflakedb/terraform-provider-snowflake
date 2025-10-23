@@ -240,6 +240,22 @@ func (c *DatabaseClient) Alter(t *testing.T, id sdk.AccountObjectIdentifier, opt
 	require.NoError(t, err)
 }
 
+func (c *DatabaseClient) AlterReplication(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.AlterDatabaseReplicationOptions) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterReplication(ctx, id, opts)
+	require.NoError(t, err)
+}
+
+func (c *DatabaseClient) AlterFailover(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.AlterDatabaseFailoverOptions) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterFailover(ctx, id, opts)
+	require.NoError(t, err)
+}
+
 func (c *DatabaseClient) TestDatabaseDataRetentionTimeInDays() int {
 	return testDatabaseDataRetentionTimeInDays
 }
