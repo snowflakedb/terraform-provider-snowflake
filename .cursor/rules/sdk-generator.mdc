@@ -1,0 +1,312 @@
+---
+description: Rules for using the SDK generator to create Snowflake object definitions
+globs:
+  - "pkg/sdk/**/*_def.go"
+  - "pkg/sdk/poc/**/*.go"
+alwaysApply: false
+---
+
+# SDK Generator Usage
+
+You are working with the SDK generator that creates Go types and methods for Snowflake SQL commands using a custom DSL.
+
+**Scope**: This document covers the SDK generator workflow, DSL patterns, DDL tag system, testing requirements, and best practices for implementing new SDK objects.
+
+**Prerequisites**: Understand the SDK architecture and patterns from [SDK Development Rules](sdk-development.mdc) before using the generator.
+
+## Creating SDK Object Definitions
+
+### Definition File Structure
+Create `<object_name>_def.go` files with this pattern:
+
+```go
+package sdk
+
+import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+
+//go:generate go run ./poc/main.go
+
+// Define output structures separately above main definition
+var objectDbRow = g.DbStruct("objectDBRow").
+    Text("created_on").
+    Text("name").
+    Text("owner").
+    Text("comment")
+
+var object = g.PlainStruct("Object").
+    Time("CreatedOn").
+    Text("Name").
+    Text("Owner").
+    Text("Comment")
+
+var describeObjectDbRow = g.DbStruct("describeObjectDBRow").
+    Text("property").
+    Text("value")
+
+var objectDetails = g.PlainStruct("ObjectDetails").
+    Text("Property").
+    Text("Value")
+
+var ObjectsDef = g.NewInterface(
+    "Objects",           // Interface name (plural)
+    "Object",           // Struct name (singular)
+    g.KindOfT[SchemaObjectIdentifier](), // Identifier type
+).
+    CreateOperation("https://docs.snowflake.com/...",
+        g.NewQueryStruct("CreateObject").
+            Create().
+            SQL("OBJECT").
+            Name().
+            OptionalComment(),
+    ).
+	AlterOperation(
+		"https://docs.snowflake.com/...",
+		g.NewQueryStruct("AlterObject").
+			Alter().
+			SQL("OBJECT").
+			IfExists().
+			Name().
+			OptionalSQL("PUBLISH").
+			OptionalIdentifier("RenameTo", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			OptionalQueryStructField(
+				"Set",
+				g.NewQueryStruct("ObjectSet").
+					OptionalComment(),
+				g.KeywordOptions().SQL("SET"),
+			).
+			OptionalQueryStructField(
+				"Unset",
+				g.NewQueryStruct("ObjectUnset").
+					OptionalSQL("COMMENT"),
+				g.KeywordOptions().SQL("UNSET"),
+			).
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ExactlyOneValueSet, "Publish", "RenameTo", "Set", "Unset"),
+	).
+	DropOperation(
+		"https://docs.snowflake.com/...",
+		g.NewQueryStruct("DropObject").
+			Drop().
+			SQL("OBJECT").
+			IfExists().
+			Name().
+			WithValidation(g.ValidIdentifier, "name"),
+	).
+    ShowOperation("https://docs.snowflake.com/...",
+        objectDbRow, object,
+        g.NewQueryStruct("ShowObjects").
+            Show().
+            SQL("OBJECTS").
+            OptionalLike().
+            OptionalExtendedIn(),
+    ).
+    ShowByIdOperationWithFiltering(
+        g.ShowByIDLikeFiltering,
+        g.ShowByIDExtendedInFiltering,
+    ).
+    DescribeOperation(
+        g.DescriptionMappingKindSingleValue,
+        "https://docs.snowflake.com/...",
+        describeObjectDbRow,
+        objectDetails,
+        g.NewQueryStruct("DescribeObject").
+            Describe().
+            SQL("OBJECT").
+            Name(),
+    )
+```
+
+### DSL Guidelines
+
+**Documentation-Based Development:**
+- Use Snowflake documentation as the source of truth, map SQL syntax directly to DSL operations
+- **CRITICAL**: Examine EXACT syntax from specific command documentation pages
+- **Documentation Verification Workflow**:
+  1. **Verify each documentation URL** is accessible and contains expected content
+  2. **Check for "Syntax" sections** with command structure
+  3. **Check for "Output" sections** with field specifications for SHOW/DESCRIBE commands
+  4. **Ask for help** if any links are broken or sections are missing
+  5. **Never proceed** with made-up fields or syntax
+- **Accuracy Requirements**: Only include fields and options explicitly documented in "Syntax" and "Output" sections
+- **Conservative Approach**: When in doubt, ask for clarification rather than making assumptions
+
+To completely understand how to utilize the SDK generator to end up with expected operations, struct containing fields with corrects types, tags, and modifiers,
+analyze [@pkg/sdk/poc/](mdc:pkg/sdk/poc/) generator and existing definitions [@pkg/sdk/*_def.go](mdc:pkg/sdk/*_def.go) along with unit tests [@pkg/sdk/*_test.go](mdc:pkg/sdk/*_test.go) which shows full path from definition to final SQL.
+
+**Common mapping patterns**
+
+Here's an example syntax patterns seen in the documentation and how they usually map to the SDK DSL.
+By having the immitation of the CREATE command's syntax documentation:
+```sql
+CREATE [ OR REPLACE ] OBJECT [ IF NOT EXISTS ] <name>
+  [ ARGS = '<string_literal>' ]
+  [ VERSION = { FIRST | LAST } ]
+  [ BOOLEAN = { TRUE | FALSE } ]
+  COMMENT = '<string_literal>'
+  <clustering action>
+```
+
+where:
+
+```sql
+clusteringAction ::=
+  {
+     CLUSTER BY ( <expr> [ , <expr> , ... ] )
+   | RECLUSTER [ MAX_SIZE = <budget_in_bytes> ] [ WHERE <condition> ]
+   | DROP CLUSTERING KEY
+  }
+```
+
+we can extract a few rules:
+- Static values like `CREATE` or `OBJECT` (not containing any dynamic value and always necessary to be specified when calling a given command) map to DSL's methods like `Create()` or `SQL("OBJECT")` if the static keyword is not directly supported by the DSL
+- Keyword values like `OR REPLACE` or `IF NOT EXISTS` (not containing any dynamic value but optional to be specified when calling a given command) map to DSL's methods like `OrReplace()`, `IfNotExists()`, or `OptionalSQL("KEYWORD")` if the static keyword is not directly supported by the DSL
+- `<name>` after main keywords like `CREATE` or `ALTER` refers to object's identifier, and in all cases maps to `Name()` method
+- Whenever something is wrapped with square brackets `[]` it means it's optional, and maps to DSL's methods like `OptionalXxx()`.
+- Whenever something is wrapped with curly braces `{}` it means it's a choice of one of the options separated by pipe `|`. It can be either express to map simple values as well as more complex structures which should result in nested structs (`QueryStructField`) within DSL.
+- Given structure `( <item> [ , <item>, ... ])` means a list of items separated by comma (it mostly prefixed by some keyword and sometimes equal sign, e.g. `KEYWORD = ( <item> [ , <item>, ... ])`), and most likely maps to `OptionalQueryStructField` (for more comprehensive example, take a look at [@network_policies_def.go](mdc:pkg/sdk/network_policies_def.go) how `AllowedNetworkRuleList` or `AllowedIpList` is defined).
+- Documentation can use angle brackets in different ways. Sometimes it can mean the definition is partial parsing the documentation further is required to understand the full context.
+- Simple dynamic values prefixed by static SQL like `WHERE <condition>` are mapped to DSL's methods like `<type>()` (in this case `Text("WhereCondition", g.KeywordOptions().SQL("WHERE"))`)
+- Assignments like `ARGS = '<string_literal>'` or `COMMENT = '<string_literal>'` (containing a dynamic value to be specified when calling a given command with additional complications like equal sign, or different quoting) map to DSL's methods like `<type>Assignment()` (in this case `TextAssignment("ARGS", g.ParameterOptions().SingleQuotes())`) or `Comment()`
+
+**DDL Tag System Reference**
+
+The SDK uses a sophisticated DDL tag system to generate SQL from Go structs. For complete understanding of all available tags, modifiers, and their behavior, analyze [@sql_builder.go](mdc:pkg/sdk/sql_builder.go).
+
+**Operation Types**
+- `CreateOperation()` - CREATE commands
+- `AlterOperation()` - ALTER commands
+- `DropOperation()` - DROP commands
+- `ShowOperation()` - SHOW commands
+- `ShowByIdOperationWithFiltering()` - ShowByID with filtering options
+- `ShowByIdOperationWithNoFiltering()` - ShowByID without filtering
+- `DescribeOperation()` - DESCRIBE commands with mapping kind selection
+- `CustomOperation()` - Non-standard commands
+
+**DescriptionMappingKind Selection:**
+The `DescribeOperation()` requires a `DescriptionMappingKind` parameter that determines the return type and implementation:
+
+- **`DescriptionMappingKindSingleValue`**: Returns a single object (`*ObjectDetails`)
+  - **Use when**: DESCRIBE returns object metadata as a single record (name, owner, comment, etc.)
+  - **Generated method**: `Describe(ctx context.Context, id Identifier) (*ObjectDetails, error)`
+  - **Examples**: Tasks, Streams, Services, Git Repositories, Secrets
+
+- **`DescriptionMappingKindSlice`**: Returns a slice of objects (`[]ObjectProperty`)
+  - **Use when**: DESCRIBE returns property-value pairs or multiple configuration entries
+  - **Generated method**: `Describe(ctx context.Context, id Identifier) ([]ObjectProperty, error)`
+  - **Examples**: Procedures, Functions, Views, Storage Integrations, Network Policies
+
+**Pattern Recognition:**
+- **Single Value**: Object has fixed metadata structure (created_on, name, owner, comment, specific config fields)
+- **Slice**: Object has variable properties returned as key-value pairs (property, value, description columns)
+
+### ShowByID Operation
+
+The `ShowByID` operation provides a convenient method to retrieve a single object by its identifier.
+It internally uses the `Show` operation with appropriate filtering to find the specific object.
+
+**Generated methods:**
+`ShowByID(ctx context.Context, id Identifier) (*Object, error)` and `ShowByIDSafely(ctx context.Context, id Identifier) (*Object, error)`
+
+**Filtering Strategy Selection:**
+The filtering options for `ShowByID` must match the filtering capabilities available in the corresponding `Show` operation. Choose based on what the Snowflake `SHOW` command supports:
+
+**Available Filtering Types:**
+- **`ShowByIDLikeFiltering`**: `LIKE` pattern matching (`WithLike(Like{Pattern: String(id.Name())})`) - Universal for all objects
+- **`ShowByIDInFiltering`**: `IN` clause filtering (`WithIn(In{Schema: id.SchemaId()})`) - For hierarchical objects
+- **`ShowByIDExtendedInFiltering`**: Extended `IN` syntax (`WithIn(ExtendedIn{...})`) - Complex hierarchical filtering
+- **`ShowByIDServiceInFiltering`**: Service-specific filtering (`WithIn(ServiceIn{...})`) - For service objects
+- **`ShowByIDApplicationNameFiltering`**: Application filtering (`WithApplicationName(id.DatabaseId())`) - For application objects
+
+**Selection by Object Hierarchy:**
+- **Account-Level** (Users, Roles): `ShowByIDLikeFiltering` only
+- **Database-Level** (Schemas): `ShowByIDLikeFiltering` + `ShowByIDInFiltering`
+- **Schema-Level** (Views, Functions): `ShowByIDLikeFiltering` + `ShowByIDExtendedInFiltering` (most common)
+- **Service Objects**: `ShowByIDLikeFiltering` + `ShowByIDServiceInFiltering`
+- **Application Objects**: `ShowByIDApplicationNameFiltering`
+- **No Filtering**: `ShowByIdOperationWithNoFiltering()` when SHOW has no filtering options
+
+**Selection Based on Documentation:**
+- Check SHOW command "Syntax" section for available clauses (`LIKE`, `IN`, `STARTS WITH`)
+- Prefer LIKE + IN combination when both are available for optimal performance
+
+**Query Output Structure Definition Guidelines:**
+- **Define separately** above main interface (see example above)
+- **Naming**: `<object>DbRow`, `<object>`, `describe<Object>DbRow`, `<object>Details`
+- **Field Mapping**: Use documented OUTPUT sections exactly. Only add TODO comments when genuinely unsure:
+  ```go
+  // TODO: Fields not documented - examine actual output and update
+  var objectDbRow = g.DbStruct("objectDBRow")
+  ```
+
+**Identifier Types:** Choose based on Snowflake hierarchy (see [Object Hierarchies](sdk-development.mdc#object-hierarchies)):
+- `AccountObjectIdentifier`, `DatabaseObjectIdentifier`, `SchemaObjectIdentifier`, `SchemaObjectIdentifierWithArguments`
+
+## Generator Workflow
+
+### 1. Setup
+If missing, create definition files and add it to the mapping in `pkg/sdk/poc/main.go`:
+```go
+"your_object_def.go": sdk.YourObjectDef,
+```
+
+### 2. Documentation Analysis
+**Critical Phase - Must Be Thorough:**
+- Request documentation URLs for ALL operations (CREATE, ALTER, DROP, SHOW, DESCRIBE)
+- Follow the **Documentation Verification Workflow** from DSL Guidelines section
+- Note ALL optional vs required parameters
+- **Analyze SHOW command filtering options** for ShowByID operation (LIKE, IN, STARTS WITH)
+- Note object hierarchy level for appropriate filtering selection
+- Identify privilege requirements and edge cases
+- **Consult with developers** for unknown or complex scenarios
+
+### 3. Implementation and Verification
+**Based on Documentation Analysis:**
+- Map each documented syntax element to appropriate DSL pattern
+- Reference similar existing objects for complex patterns
+- When uncertain about DSL mapping, ask for guidance rather than guessing
+
+### 4. Generation and Validation
+**Pre-generation check:**
+- Before running the generator you have to make sure all the previous changes regarding a given SDK object were commited as any re-generation may result in lost changes
+
+```bash
+make run-generator-<object_name>  # Uses filename without _def suffix
+```
+**Post-generation check:**
+- If the generated files were previously existing, compare the newly generated content with previous one and revert the lines where adjustments are expected (filled generated unit tests,
+  filled convert functions, etc.) or where the manual adjustments were applied (places with `// manual adjustments` comment)
+
+### 5. Generated Files Structure
+The generator creates files following the [File Organization Patterns](sdk-development.mdc#file-organization-patterns):
+- `*_gen.go` - Interface and option structs with DDL tags
+- `*_impl_gen.go` - Implementation methods (SQL execution)
+- `*_dto_gen.go` - Request DTOs for builder pattern
+- `*_dto_builders_gen.go` - Constructor and builder methods
+- `*_validations_gen.go` - Validation functions for all parameters
+- `*_gen_test.go` - Unit test templates with TODO placeholders
+
+### 6. Manual Completion
+- **NEVER** edit generated files directly (except conversions/unit tests)
+- Create `<object_name>_ext.go` for custom extensions
+- See **Post-Generation Tasks** section for required manual work
+
+## Common Patterns
+
+Reference existing object definitions in [@sdk/](mdc:pkg/sdk/) for common patterns and DSL usage examples.
+The generator codebase contains comprehensive examples of all supported operation types and DSL patterns.
+
+## Post-Generation Tasks
+
+**Testing:** Complete generated unit test TODOs and implement integration tests following [Testing Strategy](sdk-development.mdc#testing-strategy).
+
+**Manual Work:**
+- Fill conversion mappings in `*_impl_gen.go`
+- Verify SQL output matches Snowflake documentation
+- Test comprehensive parameter combinations
+
+
+## Best Practices
+
+- **Documentation-driven**: Start with official Snowflake docs, map syntax exactly
+- **Quality assurance**: Complete all TODOs, validate SQL output, test comprehensive combinations
+- **Architecture**: Use appropriate identifier types, follow [SDK Development Rules](sdk-development.mdc)

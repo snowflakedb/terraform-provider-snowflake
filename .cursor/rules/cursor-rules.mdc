@@ -1,0 +1,56 @@
+---
+description: How to add or edit Cursor rules in our project
+globs:
+  - ".cursor/rules/*.mdc"
+alwaysApply: false
+---
+# Cursor Rules Location
+
+How to add new cursor rules to the project
+
+1. **ALWAYS** place rule files in PROJECT_ROOT/.cursor/rules/*:
+    ```
+    .cursor/rules/
+    ├── your-rule-name.mdc
+    └── another-rule.mdc
+    ```
+
+2. Follow the conventions:
+    - Use kebab-case for filenames
+    - Always use .mdc extension
+    - Make names descriptive of the rule's purpose
+    - Small, never bigger than 500 lines
+    - Concise and easy to understand
+    - Rules should be written like technical documentation explaining everything step by step with similar content being groupped
+    - Rules should be composable, meaning, if a given topic is mentioned in more than one rule, the common topic should be extracted into its own rule
+
+3. Cursor rules have the following structure:
+
+---
+description: Short description of the rule's purpose
+globs: optional/path/pattern/**/*
+alwaysApply: false
+---
+# Rule Title
+
+Main content explaining the rule with markdown formatting.
+
+1. Step-by-step instructions
+2. Code examples
+3. Guidelines
+
+Example:
+
+When you see a similar pattern:
+```go
+func Example() string {
+  return "1" + "-" + "2"
+}
+```
+
+Apply the following change:
+```go
+func Example() string {
+  return fmt.Sprintf("%[1]s-%[2]s", "1", "2")
+}
+```
