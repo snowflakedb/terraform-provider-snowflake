@@ -69,6 +69,8 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Empty(t, config.OauthRedirectURI)
 	assert.Empty(t, config.OauthScope)
 	assert.Empty(t, config.EnableSingleUseRefreshTokens)
+	assert.Empty(t, config.WorkloadIdentityProvider)
+	assert.Empty(t, config.WorkloadIdentityEntraResource)
 }
 
 func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
@@ -116,6 +118,8 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"oauth_redirect_uri":               "oauth_redirect_uri",
 		"oauth_scope":                      "oauth_scope",
 		"enable_single_use_refresh_tokens": "true",
+		"workload_identity_provider":       "workload_identity_provider",
+		"workload_identity_entra_resource": "workload_identity_entra_resource",
 	})
 
 	config, err := getDriverConfigFromTerraform(d)
@@ -165,4 +169,6 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 	assert.Equal(t, "oauth_scope", config.OauthScope)
 	assert.True(t, config.EnableSingleUseRefreshTokens)
+	assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+	assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 }

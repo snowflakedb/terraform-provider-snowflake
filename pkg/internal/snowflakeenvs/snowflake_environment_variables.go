@@ -47,6 +47,8 @@ const (
 	DisableConsoleLogin                = "SNOWFLAKE_DISABLE_CONSOLE_LOGIN"
 	SkipTomlFilePermissionVerification = "SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION"
 	UseLegacyTomlFile                  = "SNOWFLAKE_USE_LEGACY_TOML_FILE"
+	WorkloadIdentityProvider           = "SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER"
+	WorkloadIdentityEntraResource      = "SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE"
 
 	OauthClientId                = "SNOWFLAKE_OAUTH_CLIENT_ID"
 	OauthClientSecret            = "SNOWFLAKE_OAUTH_CLIENT_SECRET" //nolint:gosec
