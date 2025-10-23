@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -374,10 +375,10 @@ func SemanticView() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: CreateSemanticView,
-		ReadContext:   ReadSemanticView,
-		UpdateContext: UpdateSemanticView,
-		DeleteContext: deleteFunc,
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingCreateWrapper(resources.SemanticView, CreateSemanticView)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.SemanticViewResource), TrackingReadWrapper(resources.SemanticView, ReadSemanticView)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingUpdateWrapper(resources.SemanticView, UpdateSemanticView)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.SemanticViewResource), TrackingDeleteWrapper(resources.SemanticView, deleteFunc)),
 		Description:   "Resource used to manage semantic views. For more information, check [semantic views documentation](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SemanticView, customdiff.All(
@@ -551,8 +552,11 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 			var ukRequests []sdk.UniqueKeysRequest
 			for _, ukSet := range uniqueKeys {
 				var uniqueKeyColumns []sdk.SemanticViewColumn
-				for _, uk := range ukSet.([]any) {
-					uniqueKeyColumns = append(uniqueKeyColumns, sdk.SemanticViewColumn{Name: uk.(string)})
+				values, ok := ukSet.(map[string]any)["values"].([]any)
+				if ok {
+					for _, uk := range values {
+						uniqueKeyColumns = append(uniqueKeyColumns, sdk.SemanticViewColumn{Name: uk.(string)})
+					}
 				}
 				ukRequest := sdk.UniqueKeysRequest{Unique: uniqueKeyColumns}
 				ukRequests = append(ukRequests, ukRequest)
