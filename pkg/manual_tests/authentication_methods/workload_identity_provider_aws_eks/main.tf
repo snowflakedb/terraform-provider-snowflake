@@ -16,7 +16,7 @@ resource "snowflake_service_user" "auth_test" {
   name                 = "AUTH_TEST"
 }
 
-# the provider doesn't support WORKLOAD_IDENTITY yet, so we use raw sql execution
+// TODO(SNOW-2272350): Update the example once WIF management is supported in users resources
 resource "snowflake_execute" "workload_identity_federation_oidc" {
   execute = <<-SQL
     ALTER USER ${snowflake_service_user.auth_test.name}
@@ -40,6 +40,7 @@ variable "workload_identity_oidc" {
     namespace       = string
     service_account = string
   })
+  sensitive = true
 }
 
 # Step 2: check the authentication
@@ -48,15 +49,17 @@ variable "workload_identity_oidc" {
 # export SNOWFLAKE_TOKEN=$(cat <token_file_path>)
 
 provider "snowflake" {
+  alias                      = "wif_auth"
   organization_name          = "auxmoney"
   account_name               = "terraformtest"
-  user                       = "TERRAFORM_WIF"
+  user                       = snowflake_service_user.auth_test.name
   authenticator              = "WORKLOAD_IDENTITY"
   workload_identity_provider = "OIDC"
   role                       = "ACCOUNTADMIN"
 }
 
 resource "snowflake_execute" "test" {
+  provider   = snowflake.wif_auth
   execute    = "SELECT CURRENT_USER()"
   revert     = "SELECT CURRENT_USER()"
 }
