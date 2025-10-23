@@ -19,6 +19,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Database{},
 	},
 	{
+		IdType:       "sdk.DatabaseObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeSchema,
+		ObjectStruct: sdk.Schema{},
+	},
+	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeConnection,
 		ObjectStruct: sdk.Connection{},

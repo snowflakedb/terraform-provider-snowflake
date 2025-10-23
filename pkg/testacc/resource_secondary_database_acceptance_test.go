@@ -8,9 +8,13 @@ import (
 	"time"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -19,6 +23,234 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 	"github.com/stretchr/testify/require"
 )
+
+// TestAcc_SecondaryDatabase_BasicUseCase is the standard comprehensive acceptance test following the BasicUseCase pattern.
+// This test consolidates the functionality of the old _basic and _complete tests.
+//
+// Resource Schema Analysis (from pkg/resources/secondary_database.go):
+// - name: NOT force-new (line 22) - can be renamed in place
+// - as_replica_of: ForceNew: true (line 30) - CRITICAL: must stay the same
+// - is_transient: ForceNew: true (line 38) - CRITICAL: must stay the same
+// - comment: Optional, NOT force-new (line 41)
+// - database parameters: NOT force-new (inherited from databaseParametersSchema)
+//
+// ID Strategy: Since name is NOT force-new, use id and newId with DIFFERENT names but SAME as_replica_of
+func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
+	// Setup: Generate identifiers and test values
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	newId := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	// Create primary database on secondary account
+	primaryDatabase, externalPrimaryId, _ := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
+		testClient().Account.GetAccountIdentifier(t),
+	})
+	t.Cleanup(func() {
+		// TODO(SNOW-1562172): Create a better solution for this type of situations
+		require.Eventually(t, func() bool { return secondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
+	})
+
+	// Create external volume and catalog for complete configuration
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
+	t.Cleanup(externalVolumeCleanup)
+
+	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
+	t.Cleanup(catalogCleanup)
+
+	// Basic model - only required fields
+	basic := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName())
+
+	// Assertions for basic configuration
+	assertBasic := []assert.TestCheckFuncProvider{
+		// Check actual Snowflake object state
+		objectassert.Database(t, id).
+			HasName(id.Name()).
+			HasTransient(false).
+			HasComment(""),
+
+		// Check parameters on the Snowflake object
+		objectparametersassert.DatabaseParameters(t, id).
+			HasDefaultDataRetentionTimeInDaysValueExplicit().
+			HasDefaultMaxDataExtensionTimeInDaysValueExplicit().
+			HasDefaultExternalVolumeValueExplicit().
+			HasDefaultCatalogValueExplicit().
+			HasDefaultReplaceInvalidCharactersValueExplicit().
+			HasDefaultDefaultDdlCollationValueExplicit().
+			HasDefaultStorageSerializationPolicyValueExplicit().
+			HasDefaultLogLevelValueExplicit().
+			HasDefaultTraceLevelValueExplicit().
+			HasDefaultSuspendTaskAfterNumFailuresValueExplicit().
+			HasDefaultTaskAutoRetryAttemptsValueExplicit().
+			HasUserTaskManagedInitialWarehouseSize("Medium").
+			HasDefaultUserTaskTimeoutMsValueExplicit().
+			HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit().
+			HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
+			HasDefaultEnableConsoleOutputValueExplicit(),
+
+		// Check Terraform resource state
+		resourceassert.SecondaryDatabaseResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasAsReplicaOfString(externalPrimaryId.FullyQualifiedName()).
+			HasCommentString(""),
+	}
+
+	// Complete model - all optional fields set
+	// Using newId.Name() because name is NOT force-new, but same as_replica_of because it IS force-new
+	complete := model.SecondaryDatabase("test", newId.Name(), externalPrimaryId.FullyQualifiedName()).
+		WithComment(comment).
+		WithDataRetentionTimeInDays(20).
+		WithMaxDataExtensionTimeInDays(25).
+		WithExternalVolume(externalVolumeId.Name()).
+		WithCatalog(catalogId.Name()).
+		WithReplaceInvalidCharacters(true).
+		WithDefaultDdlCollation("en_US").
+		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
+		WithLogLevel(string(sdk.LogLevelDebug)).
+		WithTraceLevel(string(sdk.TraceLevelAlways)).
+		WithSuspendTaskAfterNumFailures(20).
+		WithTaskAutoRetryAttempts(20).
+		WithUserTaskManagedInitialWarehouseSize(string(sdk.WarehouseSizeLarge)).
+		WithUserTaskTimeoutMs(1200000).
+		WithUserTaskMinimumTriggerIntervalInSeconds(60).
+		WithQuotedIdentifiersIgnoreCase(true).
+		WithEnableConsoleOutput(true)
+
+	// Assertions for complete configuration
+	assertComplete := []assert.TestCheckFuncProvider{
+		// Check actual Snowflake object state
+		objectassert.Database(t, newId).
+			HasName(newId.Name()).
+			HasTransient(false).
+			HasComment(comment).
+			HasRetentionTime(20),
+
+		// Check parameters on the Snowflake object
+		objectparametersassert.DatabaseParameters(t, newId).
+			HasDataRetentionTimeInDays(20).
+			HasMaxDataExtensionTimeInDays(25).
+			HasExternalVolume(externalVolumeId.Name()).
+			HasCatalog(catalogId.Name()).
+			HasReplaceInvalidCharacters(true).
+			HasDefaultDdlCollation("en_US").
+			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+			HasLogLevel(sdk.LogLevelDebug).
+			HasTraceLevel(sdk.TraceLevelAlways).
+			HasSuspendTaskAfterNumFailures(20).
+			HasTaskAutoRetryAttempts(20).
+			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeLarge).
+			HasUserTaskTimeoutMs(1200000).
+			HasUserTaskMinimumTriggerIntervalInSeconds(60).
+			HasQuotedIdentifiersIgnoreCase(true).
+			HasEnableConsoleOutput(true),
+
+		// Check Terraform resource state
+		resourceassert.SecondaryDatabaseResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+			HasAsReplicaOfString(externalPrimaryId.FullyQualifiedName()).
+			HasCommentString(comment).
+			HasDataRetentionTimeInDaysString("20").
+			HasMaxDataExtensionTimeInDaysString("25").
+			HasExternalVolumeString(externalVolumeId.Name()).
+			HasCatalogString(catalogId.Name()).
+			HasReplaceInvalidCharactersString("true").
+			HasDefaultDdlCollationString("en_US").
+			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
+			HasLogLevelString(string(sdk.LogLevelDebug)).
+			HasTraceLevelString(string(sdk.TraceLevelAlways)).
+			HasSuspendTaskAfterNumFailuresString("20").
+			HasTaskAutoRetryAttemptsString("20").
+			HasUserTaskManagedInitialWarehouseSizeString("LARGE").
+			HasUserTaskTimeoutMsString("1200000").
+			HasUserTaskMinimumTriggerIntervalInSecondsString("60").
+			HasQuotedIdentifiersIgnoreCaseString("true").
+			HasEnableConsoleOutputString("true"),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.SecondaryDatabase),
+		Steps: []resource.TestStep{
+			// Step 1: Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+
+			// Step 2: Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+
+			// Step 3: Update - set optionals (including rename)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+
+			// Step 4: Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+
+			// Step 5: Update - unset optionals (back to basic, with rename back)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+
+			// Step 6: Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().Database.Alter(t, id, &sdk.AlterDatabaseOptions{
+						Set: &sdk.DatabaseSet{
+							Comment: sdk.String(random.Comment()),
+						},
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+
+			// Step 7: Create - with optionals (from scratch via taint)
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
 
 func TestAcc_CreateSecondaryDatabase_Basic(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()

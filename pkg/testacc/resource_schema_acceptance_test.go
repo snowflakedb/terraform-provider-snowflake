@@ -16,7 +16,9 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
@@ -30,6 +32,202 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 	"github.com/stretchr/testify/require"
 )
+
+// TestAcc_Schema_BasicUseCase is the standard comprehensive acceptance test following the BasicUseCase pattern.
+// This test consolidates the functionality of the old _basic and _complete tests.
+//
+// Resource Schema Analysis (from pkg/resources/schema.go):
+// - name: NOT force-new (line 25) - can be renamed in place
+// - database: ForceNew: true (line 35) - CRITICAL: must stay the same
+// - with_managed_access: Optional, NOT force-new (line 38)
+// - is_transient: ForceNew: true (line 51) - CRITICAL: must stay the same
+// - comment: Optional, NOT force-new (line 59)
+// - schema parameters: NOT force-new (inherited from schemaParametersSchema)
+//
+// ID Strategy: Since name is NOT force-new, use id and newId with DIFFERENT names in SAME database
+func TestAcc_Schema_BasicUseCase(t *testing.T) {
+	// Setup: Generate identifiers and test values
+	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+	newId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(id.DatabaseId())
+	comment := random.Comment()
+
+	// Create external volume and catalog for complete configuration
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
+	t.Cleanup(externalVolumeCleanup)
+
+	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
+	t.Cleanup(catalogCleanup)
+
+	// Basic model - only required fields
+	basic := model.Schema("test", id.DatabaseName(), id.Name())
+
+	// Assertions for basic configuration
+	assertBasic := []assert.TestCheckFuncProvider{
+		// Check actual Snowflake object state
+		objectassert.Schema(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasComment(""),
+
+		// Check parameters on the Snowflake object
+		objectparametersassert.SchemaParameters(t, id).
+			HasDefaultDefaultDdlCollationValueExplicit(),
+
+		// Check Terraform resource state
+		resourceassert.SchemaResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasWithManagedAccessString(r.BooleanDefault).
+			HasIsTransientString(r.BooleanDefault).
+			HasCommentString(""),
+	}
+
+	// Complete model - all optional fields set
+	// Using newId.Name() because name is NOT force-new, same database because database IS force-new
+	complete := model.Schema("test", newId.DatabaseName(), newId.Name()).
+		WithComment(comment).
+		WithWithManagedAccess(r.BooleanTrue).
+		WithDataRetentionTimeInDays(5).
+		WithMaxDataExtensionTimeInDays(3).
+		WithExternalVolume(externalVolumeId.Name()).
+		WithCatalog(catalogId.Name()).
+		WithReplaceInvalidCharacters(true).
+		WithDefaultDdlCollation("en_US").
+		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
+		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithTraceLevel(string(sdk.TraceLevelPropagate)).
+		WithSuspendTaskAfterNumFailures(20).
+		WithTaskAutoRetryAttempts(20).
+		WithUserTaskManagedInitialWarehouseSize(string(sdk.WarehouseSizeXLarge)).
+		WithUserTaskTimeoutMs(1200000).
+		WithUserTaskMinimumTriggerIntervalInSeconds(120).
+		WithQuotedIdentifiersIgnoreCase(true).
+		WithEnableConsoleOutput(true).
+		WithPipeExecutionPaused(true)
+
+	// Assertions for complete configuration
+	assertComplete := []assert.TestCheckFuncProvider{
+		// Check actual Snowflake object state
+		objectassert.Schema(t, newId).
+			HasName(newId.Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasComment(comment),
+
+		// Check parameters on the Snowflake object
+		objectparametersassert.SchemaParameters(t, newId).
+			HasDefaultDdlCollation("en_US"),
+
+		// Check Terraform resource state
+		resourceassert.SchemaResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasDatabaseString(newId.DatabaseName()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+			HasWithManagedAccessString(r.BooleanTrue).
+			HasIsTransientString(r.BooleanDefault).
+			HasCommentString(comment).
+			HasDataRetentionTimeInDaysString("5").
+			HasMaxDataExtensionTimeInDaysString("3").
+			HasExternalVolumeString(externalVolumeId.Name()).
+			HasCatalogString(catalogId.Name()).
+			HasReplaceInvalidCharactersString("true").
+			HasDefaultDdlCollationString("en_US").
+			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
+			HasLogLevelString(string(sdk.LogLevelInfo)).
+			HasTraceLevelString(string(sdk.TraceLevelPropagate)).
+			HasSuspendTaskAfterNumFailuresString("20").
+			HasTaskAutoRetryAttemptsString("20").
+			HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeXLarge)).
+			HasUserTaskTimeoutMsString("1200000").
+			HasUserTaskMinimumTriggerIntervalInSecondsString("120").
+			HasQuotedIdentifiersIgnoreCaseString("true").
+			HasEnableConsoleOutputString("true").
+			HasPipeExecutionPausedString("true"),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Schema),
+		Steps: []resource.TestStep{
+			// Step 1: Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+
+			// Step 2: Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+
+			// Step 3: Update - set optionals (including rename)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+
+			// Step 4: Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+
+			// Step 5: Update - unset optionals (back to basic, with rename back)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+
+			// Step 6: Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().Schema.Alter(t, id, &sdk.AlterSchemaOptions{
+						Set: &sdk.SchemaSet{
+							Comment: sdk.String(random.Comment()),
+						},
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+
+			// Step 7: Create - with optionals (from scratch via taint)
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
 
 func TestAcc_Schema_basic(t *testing.T) {
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
