@@ -9,10 +9,12 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -20,55 +22,75 @@ import (
 )
 
 func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
-	// Generate identifiers and random values needed for "complete" (with optional fields set) version of the resource
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	newId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	currentRole := testClient().Context.CurrentRole(t)
 
-	// Basic model - only required fields
 	basic := model.AccountRole("test", id.Name())
 
-	// Complete model - all optional fields set (comment is the only optional field for account_role)
-	// Note: There are no force-new parameters for account_role (name can be updated in place via rename)
-	complete := model.AccountRole("test", id.Name()).
+	complete := model.AccountRole("test", newId.Name()).
 		WithComment(comment)
 
-	// Extract assertions for basic configuration
-	assertBasic := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "name", id.Name()),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "comment", ""),
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.Role(t, id).
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasIsInherited(false).
+			HasAssignedToUsers(0).
+			HasGrantedToRoles(0).
+			HasGrantedRoles(0).
+			HasOwner(currentRole.Name()).
+			HasComment(""),
 
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.#", "1"),
-		resource.TestCheckResourceAttrSet(basic.ResourceReference(), "show_output.0.created_on"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.name", id.Name()),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.is_default", "false"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.is_current", "false"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.is_inherited", "false"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.assigned_to_users", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.granted_to_roles", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.granted_roles", "0"),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.owner", currentRole.Name()),
-		resource.TestCheckResourceAttr(basic.ResourceReference(), "show_output.0.comment", ""),
-	)
+		resourceassert.AccountRoleResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasCommentString(""),
 
-	// Extract assertions for complete configuration
-	assertComplete := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "name", id.Name()),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "comment", comment),
+		resourceshowoutputassert.RoleShowOutput(t, basic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasIsInherited(false).
+			HasAssignedToUsers(0).
+			HasGrantedToRoles(0).
+			HasGrantedRoles(0).
+			HasOwner(currentRole.Name()).
+			HasComment(""),
+	}
 
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.#", "1"),
-		resource.TestCheckResourceAttrSet(complete.ResourceReference(), "show_output.0.created_on"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.name", id.Name()),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.is_default", "false"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.is_current", "false"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.is_inherited", "false"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.assigned_to_users", "0"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.granted_to_roles", "0"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.granted_roles", "0"),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.owner", currentRole.Name()),
-		resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.comment", comment),
-	)
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Role(t, newId).
+			HasName(newId.Name()).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasIsInherited(false).
+			HasAssignedToUsers(0).
+			HasGrantedToRoles(0).
+			HasGrantedRoles(0).
+			HasOwner(currentRole.Name()).
+			HasComment(comment),
+
+		resourceassert.AccountRoleResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+			HasCommentString(comment),
+
+		resourceshowoutputassert.RoleShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(newId.Name()).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasIsInherited(false).
+			HasAssignedToUsers(0).
+			HasGrantedToRoles(0).
+			HasGrantedRoles(0).
+			HasOwner(currentRole.Name()).
+			HasComment(comment),
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -77,24 +99,20 @@ func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.AccountRole),
 		Steps: []resource.TestStep{
-			// Step 1: Create - without optionals
+			// Create - without optionals
 			{
 				Config: accconfig.FromModels(t, basic),
-				Check:  assertBasic,
+				Check:  assertThat(t, assertBasic...),
 			},
 
-			// Step 2: Import - without optionals
+			// Import - without optionals
 			{
-				Config:       accconfig.FromModels(t, basic),
-				ResourceName: basic.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", ""),
-				),
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
-
-			// Step 3: Update - set optionals
+			// Update - set optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -102,22 +120,16 @@ func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
-				Check:  assertComplete,
+				Check:  assertThat(t, assertComplete...),
 			},
-
-			// Step 4: Import - with optionals
+			// Import - with optionals
 			{
-				Config:       accconfig.FromModels(t, complete),
-				ResourceName: complete.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "fully_qualified_name", id.FullyQualifiedName()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", comment),
-				),
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
-
-			// Step 5: Update - unset optionals (back to basic)
+			// Update - unset optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -125,10 +137,9 @@ func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
-				Check:  assertBasic,
+				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 6: Update - detect external changes
+			// Update - detect external changes
 			{
 				PreConfig: func() {
 					testClient().Role.Alter(t, sdk.NewAlterRoleRequest(id).WithSetComment(random.Comment()))
@@ -139,10 +150,9 @@ func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
-				Check:  assertBasic,
+				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 7: Create - with optionals
+			// Create - with optionals
 			{
 				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -151,194 +161,7 @@ func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
-				Check:  assertComplete,
-			},
-		},
-	})
-}
-
-func TestAcc_AccountRole_Basic(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	comment := random.Comment()
-	currentRole := testClient().Context.CurrentRole(t)
-
-	accountRoleModel := model.AccountRole("role", id.Name())
-	accountRoleModelWithComment := model.AccountRole("role", id.Name()).
-		WithComment(comment)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.AccountRole),
-		Steps: []resource.TestStep{
-			// create with empty optionals
-			{
-				Config: accconfig.FromModels(t, accountRoleModel),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "comment", ""),
-
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(accountRoleModel.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.is_default", "false"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.is_current", "false"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.is_inherited", "false"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.assigned_to_users", "0"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.granted_to_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.granted_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.owner", currentRole.Name()),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.comment", ""),
-				),
-			},
-			// import - without optionals
-			{
-				Config:       accconfig.FromModels(t, accountRoleModel),
-				ResourceName: accountRoleModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", ""),
-				),
-			},
-			// set optionals
-			{
-				Config: accconfig.FromModels(t, accountRoleModelWithComment),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(accountRoleModelWithComment.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(accountRoleModelWithComment.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.is_default", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.is_current", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.is_inherited", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.assigned_to_users", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.granted_to_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.granted_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.owner", currentRole.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.comment", comment),
-				),
-			},
-			// import - complete
-			{
-				Config:       accconfig.FromModels(t, accountRoleModel),
-				ResourceName: accountRoleModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", comment),
-				),
-			},
-			// unset
-			{
-				Config: accconfig.FromModels(t, accountRoleModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(accountRoleModel.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "comment", ""),
-
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(accountRoleModel.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.is_default", "false"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.is_current", "false"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.is_inherited", "false"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.assigned_to_users", "0"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.granted_to_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.granted_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.owner", currentRole.Name()),
-					resource.TestCheckResourceAttr(accountRoleModel.ResourceReference(), "show_output.0.comment", ""),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_AccountRole_Complete(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	comment := random.Comment()
-
-	newId := testClient().Ids.RandomAccountObjectIdentifier()
-	newComment := random.Comment()
-
-	currentRole := testClient().Context.CurrentRole(t)
-
-	accountRoleModel := model.AccountRole("role", id.Name())
-	accountRoleModelWithComment := model.AccountRole("role", id.Name()).
-		WithComment(comment)
-	accountRoleModelNewIdAndNewComment := model.AccountRole("role", newId.Name()).
-		WithComment(newComment)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.AccountRole),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, accountRoleModelWithComment),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(accountRoleModelWithComment.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.is_default", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.is_current", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.is_inherited", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.assigned_to_users", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.granted_to_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.granted_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.owner", currentRole.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelWithComment.ResourceReference(), "show_output.0.comment", comment),
-				),
-			},
-			{
-				Config:       accconfig.FromModels(t, accountRoleModel),
-				ResourceName: accountRoleModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "fully_qualified_name", id.FullyQualifiedName()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", comment),
-				),
-			},
-			// rename + comment change
-			{
-				Config: accconfig.FromModels(t, accountRoleModelNewIdAndNewComment),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "name", newId.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "fully_qualified_name", newId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "comment", newComment),
-
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.name", newId.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.is_default", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.is_current", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.is_inherited", "false"),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.assigned_to_users", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.granted_to_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.granted_roles", "0"),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.owner", currentRole.Name()),
-					resource.TestCheckResourceAttr(accountRoleModelNewIdAndNewComment.ResourceReference(), "show_output.0.comment", newComment),
-				),
+				Check:  assertThat(t, assertComplete...),
 			},
 		},
 	})

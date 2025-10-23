@@ -25,6 +25,11 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeRole,
+		ObjectStruct: sdk.Role{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeConnection,
 		ObjectStruct: sdk.Connection{},
 	},
@@ -57,6 +62,11 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeResourceMonitor,
 		ObjectStruct: sdk.ResourceMonitor{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeNetworkPolicy,
+		ObjectStruct: sdk.NetworkPolicy{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
