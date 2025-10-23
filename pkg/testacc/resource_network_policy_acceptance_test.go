@@ -176,6 +176,7 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
+					// TODO: Change
 					testClient().NetworkPolicy.Update(t, sdk.NewAlterNetworkPolicyRequest(id).WithUnset(
 						*sdk.NewNetworkPolicyUnsetRequest().
 							WithAllowedIpList(true).

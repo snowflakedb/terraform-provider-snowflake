@@ -19,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
@@ -33,47 +34,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestAcc_Schema_BasicUseCase is the standard comprehensive acceptance test following the BasicUseCase pattern.
-// This test consolidates the functionality of the old _basic and _complete tests.
-//
-// Resource Schema Analysis (from pkg/resources/schema.go):
-// - name: NOT force-new (line 25) - can be renamed in place
-// - database: ForceNew: true (line 35) - CRITICAL: must stay the same
-// - with_managed_access: Optional, NOT force-new (line 38)
-// - is_transient: ForceNew: true (line 51) - CRITICAL: must stay the same
-// - comment: Optional, NOT force-new (line 59)
-// - schema parameters: NOT force-new (inherited from schemaParametersSchema)
-//
-// ID Strategy: Since name is NOT force-new, use id and newId with DIFFERENT names in SAME database
 func TestAcc_Schema_BasicUseCase(t *testing.T) {
-	// Setup: Generate identifiers and test values
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
 	newId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(id.DatabaseId())
 	comment := random.Comment()
 
-	// Create external volume and catalog for complete configuration
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
 
 	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
 
-	// Basic model - only required fields
 	basic := model.Schema("test", id.DatabaseName(), id.Name())
 
-	// Assertions for basic configuration
 	assertBasic := []assert.TestCheckFuncProvider{
-		// Check actual Snowflake object state
 		objectassert.Schema(t, id).
+			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
+			HasIsDefault(false).
 			HasDatabaseName(id.DatabaseName()).
-			HasComment(""),
+			HasOwnerNotEmpty().
+			HasComment("").
+			HasOptions("").
+			HasRetentionTime("").
+			HasOwnerRoleTypeNotEmpty(),
 
-		// Check parameters on the Snowflake object
 		objectparametersassert.SchemaParameters(t, id).
 			HasDefaultDefaultDdlCollationValueExplicit(),
 
-		// Check Terraform resource state
 		resourceassert.SchemaResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasDatabaseString(id.DatabaseName()).
@@ -81,10 +69,18 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasWithManagedAccessString(r.BooleanDefault).
 			HasIsTransientString(r.BooleanDefault).
 			HasCommentString(""),
+
+		resourceshowoutputassert.SchemaShowOutput(t, basic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasDatabaseName(id.DatabaseName()).
+			HasOwnerNotEmpty().
+			HasComment("").
+			HasOptions("").
+			HasOwnerRoleTypeNotEmpty(),
 	}
 
-	// Complete model - all optional fields set
-	// Using newId.Name() because name is NOT force-new, same database because database IS force-new
 	complete := model.Schema("test", newId.DatabaseName(), newId.Name()).
 		WithComment(comment).
 		WithWithManagedAccess(r.BooleanTrue).
@@ -106,19 +102,21 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 		WithEnableConsoleOutput(true).
 		WithPipeExecutionPaused(true)
 
-	// Assertions for complete configuration
 	assertComplete := []assert.TestCheckFuncProvider{
-		// Check actual Snowflake object state
 		objectassert.Schema(t, newId).
+			HasCreatedOnNotEmpty().
 			HasName(newId.Name()).
+			HasIsDefault(false).
 			HasDatabaseName(newId.DatabaseName()).
-			HasComment(comment),
+			HasOwnerNotEmpty().
+			HasComment(comment).
+			HasOptions("MANAGED ACCESS").
+			HasRetentionTime("").
+			HasOwnerRoleTypeNotEmpty(),
 
-		// Check parameters on the Snowflake object
 		objectparametersassert.SchemaParameters(t, newId).
 			HasDefaultDdlCollation("en_US"),
 
-		// Check Terraform resource state
 		resourceassert.SchemaResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
 			HasDatabaseString(newId.DatabaseName()).
@@ -143,6 +141,16 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasQuotedIdentifiersIgnoreCaseString("true").
 			HasEnableConsoleOutputString("true").
 			HasPipeExecutionPausedString("true"),
+
+		resourceshowoutputassert.SchemaShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(newId.Name()).
+			HasIsDefault(false).
+			HasDatabaseName(newId.DatabaseName()).
+			HasOwnerNotEmpty().
+			HasComment(comment).
+			HasOptions("MANAGED ACCESS").
+			HasOwnerRoleTypeNotEmpty(),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -152,21 +160,19 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
-			// Step 1: Create - without optionals
+			// Create - without optionals
 			{
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 2: Import - without optionals
+			// Import - without optionals
 			{
 				Config:            accconfig.FromModels(t, basic),
 				ResourceName:      basic.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-
-			// Step 3: Update - set optionals (including rename)
+			// Update - set optionals (including rename)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -176,16 +182,14 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
 			},
-
-			// Step 4: Import - with optionals
+			// Import - with optionals
 			{
 				Config:            accconfig.FromModels(t, complete),
 				ResourceName:      complete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-
-			// Step 5: Update - unset optionals (back to basic, with rename back)
+			// Update - unset optionals (back to basic, with rename back)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -195,8 +199,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 6: Update - detect external changes
+			// Update - detect external changes
 			{
 				PreConfig: func() {
 					testClient().Schema.Alter(t, id, &sdk.AlterSchemaOptions{
@@ -213,8 +216,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 7: Create - with optionals (from scratch via taint)
+			// Create - with optionals (from scratch via taint)
 			{
 				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{

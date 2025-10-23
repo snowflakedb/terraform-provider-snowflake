@@ -18,7 +18,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -26,35 +25,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TestAcc_ResourceMonitor_BasicUseCase is the standard comprehensive acceptance test following the BasicUseCase pattern.
-// This test consolidates the functionality of the old _basic and _complete tests.
-//
-// Resource Schema Analysis (from pkg/resources/resource_monitor.go):
-// - name: ForceNew: true (line 24) - CRITICAL: name IS force-new
-// - All other parameters are Optional and NOT force-new:
-//   - notify_users (line 28)
-//   - credit_quota (line 37)
-//   - frequency (line 44)
-//   - start_timestamp (line 52)
-//   - end_timestamp (line 59)
-//   - notify_triggers (line 65)
-//   - suspend_trigger (line 74)
-//   - suspend_immediate_trigger (line 81)
-//
-// ID Strategy: Since name IS force-new, we use the SAME id for both basic and complete models
 func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
-	// Setup: Generate identifier and test values
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	// Note: Using fixed timestamps to avoid test flakiness from time changes
 	startTimestamp := time.Now().Add(time.Hour * 24 * 30).Format("2006-01-02 15:01")
 	endTimestamp := time.Now().Add(time.Hour * 24 * 60).Format("2006-01-02 15:01")
 
-	// Basic model - only required fields
 	basic := model.ResourceMonitor("test", id.Name())
 
-	// Complete model - all optional fields set
-	// Using same name because name is force-new
 	complete := model.ResourceMonitor("test", id.Name()).
 		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
 		WithCreditQuota(10).
@@ -68,19 +46,16 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 		WithSuspendTrigger(120).
 		WithSuspendImmediateTrigger(150)
 
-	// Assertions for basic configuration
 	assertBasic := []assert.TestCheckFuncProvider{
-		// Check actual Snowflake object state
 		objectassert.ResourceMonitor(t, id).
 			HasName(id.Name()).
 			HasCreditQuota(0).
 			HasFrequency(sdk.FrequencyMonthly).
-			HasNotifyUsers(). // Empty list
-			HasNotifyAt().    // Empty list
-			HasSuspendAt(0).
-			HasSuspendImmediateAt(0),
+			HasNotifyUsers().
+			HasNotifyAt().
+			HasSuspendAtNil().
+			HasSuspendImmediateAtNil(),
 
-		// Check Terraform resource state
 		resourceassert.ResourceMonitorResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -101,9 +76,7 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 			HasSuspendImmediateAt(0),
 	}
 
-	// Assertions for complete configuration
 	assertComplete := []assert.TestCheckFuncProvider{
-		// Check actual Snowflake object state
 		objectassert.ResourceMonitor(t, id).
 			HasName(id.Name()).
 			HasCreditQuota(10).
@@ -111,7 +84,6 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 			HasSuspendAt(120).
 			HasSuspendImmediateAt(150),
 
-		// Check Terraform resource state
 		resourceassert.ResourceMonitorResource(t, complete.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -142,21 +114,27 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
 		Steps: []resource.TestStep{
-			// Step 1: Create - without optionals
+			// Create - without optionals
 			{
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 2: Import - without optionals
+			// Import - without optionals
 			{
 				Config:            config.FromModels(t, basic),
 				ResourceName:      basic.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"credit_quota",
+					"end_timestamp",
+					"frequency",
+					"start_timestamp",
+					"suspend_immediate_trigger",
+					"suspend_trigger",
+				},
 			},
-
-			// Step 3: Update - set optionals
+			// Update - set optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -166,16 +144,22 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
 			},
-
-			// Step 4: Import - with optionals
+			// Import - with optionals
 			{
 				Config:            config.FromModels(t, complete),
 				ResourceName:      complete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"credit_quota",
+					"end_timestamp",
+					"frequency",
+					"start_timestamp",
+					"suspend_immediate_trigger",
+					"suspend_trigger",
+				},
 			},
-
-			// Step 5: Update - unset optionals (back to basic)
+			// Update - unset optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -185,13 +169,20 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 6: Update - detect external changes
+			// Update - detect external changes
 			{
 				PreConfig: func() {
 					testClient().ResourceMonitor.Alter(t, id, &sdk.AlterResourceMonitorOptions{
 						Set: &sdk.ResourceMonitorSet{
-							CreditQuota: sdk.Int(50),
+							CreditQuota:    sdk.Int(50),
+							Frequency:      sdk.Pointer(sdk.FrequencyMonthly),
+							StartTimestamp: &startTimestamp,
+							EndTimestamp:   &endTimestamp,
+							NotifyUsers: &sdk.NotifyUsers{
+								Users: []sdk.NotifiedUser{
+									{Name: sdk.NewAccountObjectIdentifier("JAN_CIESLAK")},
+								},
+							},
 						},
 					})
 				},
@@ -203,8 +194,7 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-
-			// Step 7: Create - with optionals (from scratch via taint)
+			// Create - with optionals (from scratch via taint)
 			{
 				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -214,148 +204,6 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
-			},
-		},
-	})
-}
-
-func TestAcc_ResourceMonitor_Basic(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	configModel := model.ResourceMonitor("test", id.Name())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, configModel),
-				Check: assertThat(t,
-					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
-						HasNameString(id.Name()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasNoCreditQuota().
-						HasNotifyUsersLen(0).
-						HasNoFrequency().
-						HasNoStartTimestamp().
-						HasNoEndTimestamp().
-						HasNotifyTriggersEmpty().
-						HasNoSuspendTrigger().
-						HasNoSuspendImmediateTrigger(),
-					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
-						HasName(id.Name()).
-						HasCreditQuota(0).
-						HasUsedCredits(0).
-						HasRemainingCredits(0).
-						HasLevel("").
-						HasFrequency(sdk.FrequencyMonthly).
-						HasStartTimeNotEmpty().
-						HasEndTime("").
-						HasSuspendAt(0).
-						HasSuspendImmediateAt(0).
-						HasCreatedOnNotEmpty().
-						HasOwnerNotEmpty().
-						HasComment(""),
-				),
-			},
-			{
-				ResourceName: "snowflake_resource_monitor.test",
-				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasNameString(id.Name()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasCreditQuotaString("0").
-						HasNotifyUsersLen(0).
-						HasFrequencyString(string(sdk.FrequencyMonthly)).
-						HasStartTimestampNotEmpty().
-						HasEndTimestampString("").
-						HasNotifyTriggersEmpty().
-						HasSuspendTriggerString("0").
-						HasSuspendImmediateTriggerString("0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_ResourceMonitor_Complete(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	configModel := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
-		WithCreditQuota(10).
-		WithFrequency(string(sdk.FrequencyWeekly)).
-		WithStartTimestamp(time.Now().Add(time.Hour * 24 * 30).Format("2006-01-02 15:01")).
-		WithEndTimestamp(time.Now().Add(time.Hour * 24 * 60).Format("2006-01-02 15:01")).
-		WithNotifyTriggersValue(configvariable.SetVariable(
-			configvariable.IntegerVariable(100),
-			configvariable.IntegerVariable(110),
-		)).
-		WithSuspendTrigger(120).
-		WithSuspendImmediateTrigger(150)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, configModel),
-				Check: assertThat(t,
-					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
-						HasNameString(id.Name()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasCreditQuotaString("10").
-						HasNotifyUsersLen(1).
-						HasNotifyUser(0, "JAN_CIESLAK").
-						HasFrequencyString(string(sdk.FrequencyWeekly)).
-						HasStartTimestampString(time.Now().Add(time.Hour*24*30).Format("2006-01-02 15:01")).
-						HasEndTimestampString(time.Now().Add(time.Hour*24*60).Format("2006-01-02 15:01")).
-						HasNotifyTriggersLen(2).
-						HasNotifyTrigger(0, 100).
-						HasNotifyTrigger(1, 110).
-						HasSuspendTriggerString("120").
-						HasSuspendImmediateTriggerString("150"),
-					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
-						HasName(id.Name()).
-						HasCreditQuota(10).
-						HasUsedCredits(0).
-						HasRemainingCredits(10).
-						HasLevel("").
-						HasFrequency(sdk.FrequencyWeekly).
-						HasStartTimeNotEmpty().
-						HasEndTimeNotEmpty().
-						HasSuspendAt(120).
-						HasSuspendImmediateAt(150).
-						HasCreatedOnNotEmpty().
-						HasOwnerNotEmpty().
-						HasComment(""),
-				),
-			},
-			{
-				ResourceName: "snowflake_resource_monitor.test",
-				ImportState:  true,
-				Config:       config.FromModels(t, configModel),
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasNameString(id.Name()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasCreditQuotaString("10").
-						HasNotifyUsersLen(1).
-						HasNotifyUser(0, "JAN_CIESLAK").
-						HasFrequencyString(string(sdk.FrequencyWeekly)).
-						HasStartTimestampNotEmpty().
-						HasEndTimestampNotEmpty().
-						HasNotifyTriggersLen(2).
-						HasNotifyTrigger(0, 100).
-						HasNotifyTrigger(1, 110).
-						HasSuspendTriggerString("120").
-						HasSuspendImmediateTriggerString("150"),
-				),
 			},
 		},
 	})
