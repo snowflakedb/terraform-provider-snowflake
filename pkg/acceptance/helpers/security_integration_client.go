@@ -210,3 +210,33 @@ func (c *SecurityIntegrationClient) DropSecurityIntegrationFunc(t *testing.T, id
 		require.NoError(t, err)
 	}
 }
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithAuthorizationCodeGrantFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithAuthorizationCodeGrantFlow(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithClientCredentialsFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithClientCredentialsFlow(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithJwtBearerFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithJwtBearerFlow(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *SecurityIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SecurityIntegration, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
+}
