@@ -16,7 +16,6 @@ type ApiAuthenticationIntegrationWithJwtBearerModel struct {
 	Enabled                    tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	OauthAccessTokenValidity   tfconfig.Variable `json:"oauth_access_token_validity,omitempty"`
-	OauthAllowedScopes         tfconfig.Variable `json:"oauth_allowed_scopes,omitempty"`
 	OauthAssertionIssuer       tfconfig.Variable `json:"oauth_assertion_issuer,omitempty"`
 	OauthAuthorizationEndpoint tfconfig.Variable `json:"oauth_authorization_endpoint,omitempty"`
 	OauthClientAuthMethod      tfconfig.Variable `json:"oauth_client_auth_method,omitempty"`
@@ -37,138 +36,53 @@ type ApiAuthenticationIntegrationWithJwtBearerModel struct {
 func ApiAuthenticationIntegrationWithJwtBearer(
 	resourceName string,
 	name string,
+	enabled bool,
+	oauthAssertionIssuer string,
+	oauthClientId string,
+	oauthClientSecret string,
 ) *ApiAuthenticationIntegrationWithJwtBearerModel {
 	a := &ApiAuthenticationIntegrationWithJwtBearerModel{ResourceModelMeta: config.Meta(resourceName, resources.ApiAuthenticationIntegrationWithJwtBearer)}
 	a.WithName(name)
+	a.WithEnabled(enabled)
+	a.WithOauthAssertionIssuer(oauthAssertionIssuer)
+	a.WithOauthClientId(oauthClientId)
+	a.WithOauthClientSecret(oauthClientSecret)
 	return a
 }
 
-/////////////////////////////////////////////////
-// Field setters //
-/////////////////////////////////////////////////
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithName(name string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.Name = tfconfig.StringVariable(name)
+func ApiAuthenticationIntegrationWithJwtBearerWithDefaultMeta(
+	name string,
+	enabled bool,
+	oauthAssertionIssuer string,
+	oauthClientId string,
+	oauthClientSecret string,
+) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a := &ApiAuthenticationIntegrationWithJwtBearerModel{ResourceModelMeta: config.DefaultMeta(resources.ApiAuthenticationIntegrationWithJwtBearer)}
+	a.WithName(name)
+	a.WithEnabled(enabled)
+	a.WithOauthAssertionIssuer(oauthAssertionIssuer)
+	a.WithOauthClientId(oauthClientId)
+	a.WithOauthClientSecret(oauthClientSecret)
 	return a
 }
 
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithNameVariable(name tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.Name = name
-	return a
+///////////////////////////////////////////////////////////////////////
+// set proper json marshalling, handle depends on and dynamic blocks //
+///////////////////////////////////////////////////////////////////////
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) MarshalJSON() ([]byte, error) {
+	type Alias ApiAuthenticationIntegrationWithJwtBearerModel
+	return json.Marshal(&struct {
+		*Alias
+		DependsOn []string `json:"depends_on,omitempty"`
+	}{
+		Alias:     (*Alias)(a),
+		DependsOn: a.DependsOn(),
+	})
 }
 
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithComment(comment string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.Comment = tfconfig.StringVariable(comment)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithCommentVariable(comment tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.Comment = comment
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithEnabled(enabled bool) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.Enabled = tfconfig.BoolVariable(enabled)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithEnabledVariable(enabled tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.Enabled = enabled
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithFullyQualifiedName(fullyQualifiedName string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithFullyQualifiedNameVariable(fullyQualifiedName tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.FullyQualifiedName = fullyQualifiedName
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAccessTokenValidity(oauthAccessTokenValidity int) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthAccessTokenValidity = tfconfig.IntegerVariable(oauthAccessTokenValidity)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAccessTokenValidityVariable(oauthAccessTokenValidity tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthAccessTokenValidity = oauthAccessTokenValidity
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAllowedScopesValue(oauthAllowedScopes tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthAllowedScopes = oauthAllowedScopes
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAssertionIssuer(oauthAssertionIssuer string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthAssertionIssuer = tfconfig.StringVariable(oauthAssertionIssuer)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAssertionIssuerVariable(oauthAssertionIssuer tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthAssertionIssuer = oauthAssertionIssuer
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAuthorizationEndpoint(oauthAuthorizationEndpoint string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthAuthorizationEndpoint = tfconfig.StringVariable(oauthAuthorizationEndpoint)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAuthorizationEndpointVariable(oauthAuthorizationEndpoint tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthAuthorizationEndpoint = oauthAuthorizationEndpoint
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientAuthMethod(oauthClientAuthMethod string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthClientAuthMethod = tfconfig.StringVariable(oauthClientAuthMethod)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientAuthMethodVariable(oauthClientAuthMethod tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthClientAuthMethod = oauthClientAuthMethod
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientId(oauthClientId string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthClientId = tfconfig.StringVariable(oauthClientId)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientIdVariable(oauthClientId tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthClientId = oauthClientId
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientSecret(oauthClientSecret string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthClientSecret = tfconfig.StringVariable(oauthClientSecret)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientSecretVariable(oauthClientSecret tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthClientSecret = oauthClientSecret
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthRefreshTokenValidity(oauthRefreshTokenValidity int) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthRefreshTokenValidity = tfconfig.IntegerVariable(oauthRefreshTokenValidity)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthRefreshTokenValidityVariable(oauthRefreshTokenValidity tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthRefreshTokenValidity = oauthRefreshTokenValidity
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthTokenEndpoint(oauthTokenEndpoint string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthTokenEndpoint = tfconfig.StringVariable(oauthTokenEndpoint)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthTokenEndpointVariable(oauthTokenEndpoint tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.OauthTokenEndpoint = oauthTokenEndpoint
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithDependsOn(values ...string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.SetDependsOn(values...)
 	return a
 }
 
@@ -177,11 +91,130 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithDynamicBlock(dynami
 	return a
 }
 
-/////////////////////////////////////////////////
-// JSON marshaling //
-/////////////////////////////////////////////////
+/////////////////////////////////
+// below all the proper values //
+/////////////////////////////////
 
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) MarshalJSON() ([]byte, error) {
-	type Alias ApiAuthenticationIntegrationWithJwtBearerModel
-	return json.Marshal((*Alias)(a))
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithName(name string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.Name = tfconfig.StringVariable(name)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithComment(comment string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.Comment = tfconfig.StringVariable(comment)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithEnabled(enabled bool) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.Enabled = tfconfig.BoolVariable(enabled)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithFullyQualifiedName(fullyQualifiedName string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAccessTokenValidity(oauthAccessTokenValidity int) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthAccessTokenValidity = tfconfig.IntegerVariable(oauthAccessTokenValidity)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAssertionIssuer(oauthAssertionIssuer string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthAssertionIssuer = tfconfig.StringVariable(oauthAssertionIssuer)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAuthorizationEndpoint(oauthAuthorizationEndpoint string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthAuthorizationEndpoint = tfconfig.StringVariable(oauthAuthorizationEndpoint)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientAuthMethod(oauthClientAuthMethod string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthClientAuthMethod = tfconfig.StringVariable(oauthClientAuthMethod)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientId(oauthClientId string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthClientId = tfconfig.StringVariable(oauthClientId)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientSecret(oauthClientSecret string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthClientSecret = tfconfig.StringVariable(oauthClientSecret)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthRefreshTokenValidity(oauthRefreshTokenValidity int) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthRefreshTokenValidity = tfconfig.IntegerVariable(oauthRefreshTokenValidity)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthTokenEndpoint(oauthTokenEndpoint string) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthTokenEndpoint = tfconfig.StringVariable(oauthTokenEndpoint)
+	return a
+}
+
+//////////////////////////////////////////
+// below it's possible to set any value //
+//////////////////////////////////////////
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithNameValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.Name = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithCommentValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.Comment = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithEnabledValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.Enabled = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.FullyQualifiedName = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAccessTokenValidityValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthAccessTokenValidity = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAssertionIssuerValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthAssertionIssuer = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthAuthorizationEndpointValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthAuthorizationEndpoint = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientAuthMethodValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthClientAuthMethod = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientIdValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthClientId = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthClientSecretValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthClientSecret = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthRefreshTokenValidityValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthRefreshTokenValidity = value
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithOauthTokenEndpointValue(value tfconfig.Variable) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.OauthTokenEndpoint = value
+	return a
 }
