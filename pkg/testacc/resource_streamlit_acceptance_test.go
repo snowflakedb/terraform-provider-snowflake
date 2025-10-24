@@ -27,19 +27,6 @@ import (
 )
 
 func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
-	// Schema analysis (from pkg/resources/streamlit.go):
-	// - name: NOT force-new (can be renamed)
-	// - database: ForceNew: true (cannot be changed)
-	// - schema: ForceNew: true (cannot be changed)
-	// - stage: NOT force-new (can be updated)
-	// - directory_location: Optional, NOT force-new
-	// - main_file: Required, NOT force-new
-	// - query_warehouse: Optional, NOT force-new
-	// - external_access_integrations: Optional, NOT force-new
-	// - title: Optional, NOT force-new
-	// - comment: Optional, NOT force-new
-	// Result: Use different names for basic/complete (name is not force-new), no additional force-new fields to handle
-
 	database, databaseCleanup := testClient().Database.CreateDatabase(t)
 	t.Cleanup(databaseCleanup)
 

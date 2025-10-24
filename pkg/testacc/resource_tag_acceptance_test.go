@@ -9,6 +9,7 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -23,156 +24,174 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-//func TestAcc_Tag_BasicUseCase(t *testing.T) {
-//	// Schema analysis (from pkg/resources/tag.go):
-//	// - name: NOT force-new (can be renamed)
-//	// - database: ForceNew: true (cannot be changed)
-//	// - schema: ForceNew: true (cannot be changed)
-//	// - comment: Optional, NOT force-new
-//	// - allowed_values: Optional, NOT force-new
-//	// Result: Use different names for basic/complete (name is not force-new), no additional force-new fields to handle
-//
-//	database, databaseCleanup := testClient().Database.Create(t)
-//	t.Cleanup(databaseCleanup)
-//
-//	schema, schemaCleanup := testClient().Schema.Create(t, database.ID())
-//	t.Cleanup(schemaCleanup)
-//
-//	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-//	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-//	comment := random.Comment()
-//
-//	basic := model.Tag("test", id.Name()).
-//		WithDatabase(database.ID().Name()).
-//		WithSchema(schema.ID().Name())
-//
-//	complete := model.Tag("test", newId.Name()).
-//		WithDatabase(database.ID().Name()).
-//		WithSchema(schema.ID().Name()).
-//		WithComment(comment).
-//		WithAllowedValues([]string{"value1", "value2"})
-//
-//	assertBasic := []assert.TestCheckFuncProvider{
-//		objectassert.Tag(t, id).
-//			HasName(id.Name()).
-//			HasDatabaseName(database.ID().Name()).
-//			HasSchemaName(schema.ID().Name()).
-//			HasComment("").
-//			HasAllowedValues([]string{}),
-//
-//		resourceassert.TagResource(t, basic.ResourceReference()).
-//			HasNameString(id.Name()).
-//			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-//			HasDatabaseString(database.ID().Name()).
-//			HasSchemaString(schema.ID().Name()).
-//			HasCommentString("").
-//			HasAllowedValuesString(""),
-//
-//		resourceshowoutputassert.TagShowOutput(t, basic.ResourceReference()).
-//			HasName(id.Name()).
-//			HasDatabaseName(database.ID().Name()).
-//			HasSchemaName(schema.ID().Name()).
-//			HasComment("").
-//			HasAllowedValues([]string{}),
-//	}
-//
-//	assertComplete := []assert.TestCheckFuncProvider{
-//		objectassert.Tag(t, newId).
-//			HasName(newId.Name()).
-//			HasDatabaseName(database.ID().Name()).
-//			HasSchemaName(schema.ID().Name()).
-//			HasComment(comment).
-//			HasAllowedValues([]string{"value1", "value2"}),
-//
-//		resourceassert.TagResource(t, complete.ResourceReference()).
-//			HasNameString(newId.Name()).
-//			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
-//			HasDatabaseString(database.ID().Name()).
-//			HasSchemaString(schema.ID().Name()).
-//			HasCommentString(comment).
-//			HasAllowedValuesString("value1,value2"),
-//
-//		resourceshowoutputassert.TagShowOutput(t, complete.ResourceReference()).
-//			HasName(newId.Name()).
-//			HasDatabaseName(database.ID().Name()).
-//			HasSchemaName(schema.ID().Name()).
-//			HasComment(comment).
-//			HasAllowedValues([]string{"value1", "value2"}),
-//	}
-//
-//	resource.Test(t, resource.TestCase{
-//		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-//		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-//			tfversion.RequireAbove(tfversion.Version1_5_0),
-//		},
-//		CheckDestroy: CheckDestroy(t, resources.Tag),
-//		Steps: []resource.TestStep{
-//			// Create - without optionals
-//			{
-//				Config: config.FromModels(t, basic),
-//				Check:  assertThat(t, assertBasic...),
-//			},
-//			// Import - without optionals
-//			{
-//				Config:            config.FromModels(t, basic),
-//				ResourceName:      basic.ResourceReference(),
-//				ImportState:       true,
-//				ImportStateVerify: true,
-//			},
-//			// Update - set optionals
-//			{
-//				ConfigPlanChecks: resource.ConfigPlanChecks{
-//					PreApply: []plancheck.PlanCheck{
-//						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
-//					},
-//				},
-//				Config: config.FromModels(t, complete),
-//				Check:  assertThat(t, assertComplete...),
-//			},
-//			// Import - with optionals
-//			{
-//				Config:            config.FromModels(t, complete),
-//				ResourceName:      complete.ResourceReference(),
-//				ImportState:       true,
-//				ImportStateVerify: true,
-//			},
-//			// Update - unset optionals
-//			{
-//				ConfigPlanChecks: resource.ConfigPlanChecks{
-//					PreApply: []plancheck.PlanCheck{
-//						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
-//					},
-//				},
-//				Config: config.FromModels(t, basic),
-//				Check:  assertThat(t, assertBasic...),
-//			},
-//			// Update - detect external changes
-//			{
-//				PreConfig: func() {
-//					testClient().Tag.SetComment(t, id, comment)
-//				},
-//				ConfigPlanChecks: resource.ConfigPlanChecks{
-//					PreApply: []plancheck.PlanCheck{
-//						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-//					},
-//				},
-//				Config: config.FromModels(t, basic),
-//				Check:  assertThat(t, assertBasic...),
-//			},
-//			// Create - with optionals (from scratch via taint)
-//			{
-//				Taint: []string{complete.ResourceReference()},
-//				ConfigPlanChecks: resource.ConfigPlanChecks{
-//					PreApply: []plancheck.PlanCheck{
-//						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-//					},
-//				},
-//				Config: config.FromModels(t, complete),
-//				Check:  assertThat(t, assertComplete...),
-//			},
-//		},
-//	})
-//}
+func TestAcc_Tag_BasicUseCase(t *testing.T) {
+	// Schema analysis (from pkg/resources/tag.go):
+	// - name: NOT force-new (can be renamed)
+	// - database: ForceNew: true (cannot be changed)
+	// - schema: ForceNew: true (cannot be changed)
+	// - comment: Optional, NOT force-new
+	// - allowed_values: Optional, NOT force-new
+	// - masking_policies: Optional, NOT force-new
+	// Result: Use different names for basic/complete (name is not force-new), no additional force-new fields to handle
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicy(t)
+	t.Cleanup(maskingPolicyCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	comment := random.Comment()
+
+	basic := model.TagBase("test", id)
+
+	complete := model.TagBase("test", newId).
+		WithComment(comment).
+		WithAllowedValues("value1", "value2").
+		WithMaskingPolicies(maskingPolicy.ID())
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.Tag(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment("").
+			HasAllowedValues(),
+
+		resourceassert.TagResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(database.ID().Name()).
+			HasSchemaString(schema.ID().Name()).
+			HasCommentString("").
+			HasAllowedValuesEmpty().
+			HasMaskingPoliciesEmpty(),
+
+		resourceshowoutputassert.TagShowOutput(t, basic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment("").
+			HasOwnerRoleType("ROLE").
+			HasNoAllowedValues(),
+	}
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Tag(t, newId).
+			HasName(newId.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment(comment).
+			HasAllowedValuesSet("value1", "value2"),
+
+		resourceassert.TagResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+			HasDatabaseString(database.ID().Name()).
+			HasSchemaString(schema.ID().Name()).
+			HasCommentString(comment).
+			HasAllowedValues("value1", "value2").
+			HasMaskingPolicies(maskingPolicy.ID().FullyQualifiedName()),
+
+		resourceshowoutputassert.TagShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(newId.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE").
+			HasAllowedValues("value1", "value2"),
+
+		// Show output assertions for allowed values
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "show_output.0.allowed_values.#", "2")),
+		assert.Check(resource.TestCheckTypeSetElemAttr(complete.ResourceReference(), "show_output.0.allowed_values.*", "value1")),
+		assert.Check(resource.TestCheckTypeSetElemAttr(complete.ResourceReference(), "show_output.0.allowed_values.*", "value2")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Create - without optionals
+			{
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Import - without optionals
+			{
+				Config:            config.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - set optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with optionals
+			{
+				Config:            config.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - unset optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(
+						sdk.NewTagSetRequest().WithComment(comment),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Create - with optionals (from scratch via taint)
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
 
 func TestAcc_Tag_basic(t *testing.T) {
 	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicy(t)
