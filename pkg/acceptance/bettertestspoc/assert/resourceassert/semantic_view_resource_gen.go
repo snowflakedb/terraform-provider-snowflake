@@ -52,8 +52,33 @@ func (s *SemanticViewResourceAssert) HasCommentString(expected string) *Semantic
 	return s
 }
 
+func (s *SemanticViewResourceAssert) HasDimensionsString(expected string) *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("dimensions", expected))
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasFactsString(expected string) *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("facts", expected))
+	return s
+}
+
 func (s *SemanticViewResourceAssert) HasFullyQualifiedNameString(expected string) *SemanticViewResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasMetricsString(expected string) *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("metrics", expected))
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasRelationshipsString(expected string) *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("relationships", expected))
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasTablesString(expected string) *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("tables", expected))
 	return s
 }
 
@@ -95,8 +120,28 @@ func (s *SemanticViewResourceAssert) HasCommentEmpty() *SemanticViewResourceAsse
 	return s
 }
 
+func (s *SemanticViewResourceAssert) HasDimensionsEmpty() *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("dimensions.#", "0"))
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasFactsEmpty() *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("facts.#", "0"))
+	return s
+}
+
 func (s *SemanticViewResourceAssert) HasFullyQualifiedNameEmpty() *SemanticViewResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasMetricsEmpty() *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("metrics.#", "0"))
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasRelationshipsEmpty() *SemanticViewResourceAssert {
+	s.AddAssertion(assert.ValueSet("relationships.#", "0"))
 	return s
 }
 

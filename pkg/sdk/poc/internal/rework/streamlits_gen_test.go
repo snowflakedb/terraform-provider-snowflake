@@ -7,20 +7,19 @@ import (
 )
 
 func TestStreamlits_Create(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid CreateStreamlitOptions
 	defaultOpts := func() *CreateStreamlitOptions {
 		return &CreateStreamlitOptions{
-
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *CreateStreamlitOptions = nil
+		opts := (*CreateStreamlitOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
@@ -53,20 +52,19 @@ func TestStreamlits_Create(t *testing.T) {
 }
 
 func TestStreamlits_Alter(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid AlterStreamlitOptions
 	defaultOpts := func() *AlterStreamlitOptions {
 		return &AlterStreamlitOptions{
-
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *AlterStreamlitOptions = nil
+		opts := (*AlterStreamlitOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
@@ -117,20 +115,19 @@ func TestStreamlits_Alter(t *testing.T) {
 }
 
 func TestStreamlits_Drop(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid DropStreamlitOptions
 	defaultOpts := func() *DropStreamlitOptions {
 		return &DropStreamlitOptions{
-
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *DropStreamlitOptions = nil
+		opts := (*DropStreamlitOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
@@ -157,7 +154,7 @@ func TestStreamlits_Show(t *testing.T) {
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *ShowStreamlitOptions = nil
+		opts := (*ShowStreamlitOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -175,20 +172,19 @@ func TestStreamlits_Show(t *testing.T) {
 }
 
 func TestStreamlits_Describe(t *testing.T) {
-
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid DescribeStreamlitOptions
 	defaultOpts := func() *DescribeStreamlitOptions {
 		return &DescribeStreamlitOptions{
-
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *DescribeStreamlitOptions = nil
+		opts := (*DescribeStreamlitOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
+
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me

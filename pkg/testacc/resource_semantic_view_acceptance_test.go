@@ -91,7 +91,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	m1Request := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*seRequest)
 	m2Request := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*wfRequest)
 
-	modelBasic := model.SemanticView(
+	modelBasic := model.SemanticViewWithMetrics(
 		"test",
 		id.DatabaseName(),
 		id.SchemaName(),
@@ -100,7 +100,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		[]sdk.MetricDefinition{*metric1},
 	)
 
-	modelComplete := model.SemanticView(
+	modelComplete := model.SemanticViewWithMetrics(
 		"test",
 		id.DatabaseName(),
 		id.SchemaName(),
@@ -112,7 +112,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithFacts([]sdk.SemanticExpression{*fact1}).
 		WithDimensions([]sdk.SemanticExpression{*dimension1})
 
-	modelCompleteWithDifferentValues := model.SemanticView(
+	modelCompleteWithDifferentValues := model.SemanticViewWithMetrics(
 		"test",
 		id.DatabaseName(),
 		id.SchemaName(),

@@ -75,7 +75,7 @@ func TestNotebooks_Create(t *testing.T) {
 		opts.RuntimeEnvironmentVersion = String("WH-RUNTIME-2.0")
 		opts.DefaultVersion = String("FIRST")
 
-		assertOptsValidAndSQLEquals(t, opts, `CREATE NOTEBOOK IF NOT EXISTS %s FROM @%s/dir/subdir MAIN_FILE = 'main_file' COMMENT = 'comment' QUERY_WAREHOUSE = "sample_qwh" IDLE_AUTO_SHUTDOWN_TIME_SECONDS = 3600 WAREHOUSE = "sample_wh" RUNTIME_NAME = 'sample' COMPUTE_POOL = "sample_cp" RUNTIME_ENVIRONMENT_VERSION = 'WH-RUNTIME-2.0' DEFAULT_VERSION = FIRST`, id.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE NOTEBOOK IF NOT EXISTS %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' MAIN_FILE = 'main_file' COMMENT = 'comment' QUERY_WAREHOUSE = "sample_qwh" IDLE_AUTO_SHUTDOWN_TIME_SECONDS = 3600 WAREHOUSE = "sample_wh" RUNTIME_NAME = 'sample' COMPUTE_POOL = "sample_cp" RUNTIME_ENVIRONMENT_VERSION = 'WH-RUNTIME-2.0' DEFAULT_VERSION = FIRST`, id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 }
 

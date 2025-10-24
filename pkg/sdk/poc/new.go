@@ -10,19 +10,14 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
-type SdkObjectDef struct {
-	name string
-	// TODO [SNOW-2324252]: can be removed?
-	file       string
-	definition *generator.Interface
-}
+// TODO [SNOW-2324252]: rename this file and move it (can't be moved currently due to import cycle: sdk needs gen for definition, and generator needs all the definitions list)
 
 func GetSdkDefinitions() []*generator.Interface {
 	allDefinitions := allSdkObjectDefinitions
 	interfaces := make([]*generator.Interface, len(allDefinitions))
-	for idx, s := range allDefinitions {
-		preprocessDefinition(s.definition)
-		interfaces[idx] = s.definition
+	for idx, def := range allDefinitions {
+		preprocessDefinition(def)
+		interfaces[idx] = def
 	}
 	return interfaces
 }
@@ -117,23 +112,50 @@ func addDtoToGenerate(field *generator.Field, dtosToGenerate []*generator.Field,
 	return dtosToGenerate, generatedDtos
 }
 
-func ExtendInterface(path string) func(*generator.Interface, *genhelpers.PreambleModel) *generator.Interface {
+func ExtendInterface() func(*generator.Interface, *genhelpers.PreambleModel) *generator.Interface {
 	return func(i *generator.Interface, preamble *genhelpers.PreambleModel) *generator.Interface {
 		i.PreambleModel = preamble
-		i.PathToDtoBuilderGen = path
 		return i
 	}
 }
 
-var allSdkObjectDefinitions = []SdkObjectDef{
-	{
-		name:       "Sequences",
-		file:       "sequences_def.go",
-		definition: sdk.SequencesDef,
-	},
-	{
-		name:       "Streamlits",
-		file:       "streamlits_def.go",
-		definition: sdk.StreamlitsDef,
-	},
+var allSdkObjectDefinitions = []*generator.Interface{
+	sdk.ApiIntegrationsDef,
+	sdk.ApplicationPackagesDef,
+	sdk.ApplicationRolesDef,
+	sdk.ApplicationsDef,
+	sdk.AuthenticationPoliciesDef,
+	sdk.ComputePoolsDef,
+	sdk.ConnectionDef,
+	sdk.CortexSearchServiceDef,
+	sdk.DataMetricFunctionReferenceDef,
+	sdk.EventTablesDef,
+	sdk.ExternalFunctionsDef,
+	sdk.ExternalVolumesDef,
+	sdk.FunctionsDef,
+	sdk.GitRepositoriesDef,
+	sdk.ImageRepositoriesDef,
+	sdk.ListingsDef,
+	sdk.ManagedAccountsDef,
+	sdk.MaterializedViewsDef,
+	sdk.NetworkPoliciesDef,
+	sdk.NetworkRuleDef,
+	sdk.NotebooksDef,
+	sdk.NotificationIntegrationsDef,
+	sdk.OrganizationAccountsDef,
+	sdk.ProceduresDef,
+	sdk.RowAccessPoliciesDef,
+	sdk.SecretsDef,
+	sdk.SecurityIntegrationsDef,
+	sdk.SemanticViewsDef,
+	sdk.SequencesDef,
+	sdk.ServicesDef,
+	sdk.SessionPoliciesDef,
+	sdk.StagesDef,
+	sdk.StorageIntegrationDef,
+	sdk.StreamlitsDef,
+	sdk.StreamsDef,
+	sdk.TasksDef,
+	sdk.UserProgrammaticAccessTokensDef,
+	sdk.ViewsDef,
 }

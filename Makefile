@@ -136,6 +136,13 @@ run-generator-%: ./pkg/sdk/%_def.go ## Run go generate on given object definitio
 	go generate $<
 	go generate ./pkg/sdk/$*_dto_gen.go
 
+generate-sdk: ## Generate all SDK objects
+	go generate ./pkg/sdk/generate.go
+
+clean-sdk: ## Clean all generated SDK objects
+	rm -f ./pkg/sdk/*_gen.go
+	rm -f ./pkg/sdk/*_gen_test.go
+
 generate-docs-additional-files: ## generate docs additional files
 	go run ./pkg/internal/tools/doc-gen-helper/ $$PWD
 
