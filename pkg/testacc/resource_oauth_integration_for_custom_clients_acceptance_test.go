@@ -1,4 +1,4 @@
-//go:build non_account_level_tests
+//go:build account_level_tests
 
 package testacc
 
@@ -7,6 +7,10 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -22,6 +26,342 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
+	networkPolicy, networkPolicyCleanup := testClient().NetworkPolicy.CreateNetworkPolicyNotEmpty(t)
+	t.Cleanup(networkPolicyCleanup)
+
+	preAuthorizedRole, preauthorizedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(preauthorizedRoleCleanup)
+
+	validUrl := "https://example.com/callback"
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	key, _ := random.GenerateRSAPublicKey(t)
+	comment := random.Comment()
+
+	basic := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl)
+
+	complete := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl).
+		WithNetworkPolicy(networkPolicy.ID().Name()).
+		WithOauthAllowNonTlsRedirectUri(resources.BooleanTrue).
+		WithOauthClientRsaPublicKey(key).
+		WithOauthClientRsaPublicKey2(key).
+		WithOauthEnforcePkce(resources.BooleanTrue).
+		WithEnabled(resources.BooleanTrue).
+		WithOauthIssueRefreshTokens(resources.BooleanTrue).
+		WithOauthRefreshTokenValidity(86400).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
+		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
+		WithComment(comment)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("OAUTH - CUSTOM").
+			HasCategory("SECURITY").
+			HasEnabled(false).
+			HasComment(""),
+
+		resourceassert.OauthIntegrationForCustomClientsResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasOauthClientTypeString("CONFIDENTIAL").
+			HasOauthRedirectUriString(validUrl).
+			HasEnabledString("default").
+			HasOauthAllowNonTlsRedirectUriString("default").
+			HasOauthEnforcePkceString("default").
+			HasOauthIssueRefreshTokensString("default").
+			HasOauthAllowNonTlsRedirectUriString("default").
+			HasPreAuthorizedRolesListLen(0).
+			HasRelatedParametersNotEmpty().
+			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList("true").
+			HasBlockedRolesListEmpty(),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("OAUTH - CUSTOM").
+			HasCategory("SECURITY").
+			HasEnabled(false).
+			HasComment(""),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
+		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "false")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "false")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.network_policy.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_fp.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_2_fp.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.comment.0.value", "")),
+		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.oauth_authorization_endpoint.0.value")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.oauth_allowed_authorization_endpoints.0.value")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.oauth_allowed_token_endpoints.0.value")),
+	}
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("OAUTH - CUSTOM").
+			HasCategory("SECURITY").
+			HasEnabled(true).
+			HasComment(comment),
+
+		resourceassert.OauthIntegrationForCustomClientsResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasOauthClientTypeString("CONFIDENTIAL").
+			HasOauthRedirectUriString(validUrl).
+			HasEnabledString("true").
+			HasOauthAllowNonTlsRedirectUriString("true").
+			HasOauthEnforcePkceString("true").
+			HasOauthIssueRefreshTokensString("true").
+			HasOauthRefreshTokenValidityString("86400").
+			HasOauthUseSecondaryRolesString("IMPLICIT").
+			HasPreAuthorizedRolesListLen(1).
+			HasPreAuthorizedRolesListElem(0, preAuthorizedRole.ID().Name()).
+			HasNetworkPolicyString(networkPolicy.ID().Name()).
+			HasOauthClientRsaPublicKeyString(key).
+			HasOauthClientRsaPublicKey2String(key).
+			HasCommentString(comment).
+			HasRelatedParametersNotEmpty().
+			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList("true").
+			HasBlockedRolesListEmpty(),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("OAUTH - CUSTOM").
+			HasCategory("SECURITY").
+			HasEnabled(true).
+			HasComment(comment),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
+		assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.network_policy.0.value", networkPolicy.ID().Name())),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_fp.0.value")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_2_fp.0.value")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+		assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_authorization_endpoint.0.value")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForCustomClients),
+		Steps: []resource.TestStep{
+			// Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"blocked_roles_list",
+					"enabled",
+					"oauth_allow_non_tls_redirect_uri",
+					"oauth_enforce_pkce",
+					"oauth_issue_refresh_tokens",
+					"oauth_refresh_token_validity",
+				},
+			},
+			// Update - set optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"blocked_roles_list",
+					"enabled",
+					"oauth_allow_non_tls_redirect_uri",
+					"oauth_enforce_pkce",
+					"oauth_issue_refresh_tokens",
+					"oauth_refresh_token_validity",
+					"oauth_use_secondary_roles",
+					"oauth_client_rsa_public_key",
+					"oauth_client_rsa_public_key_2",
+				},
+			},
+			// Update - unset optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - set optionals
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Create - with optionals (from scratch via taint)
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
+
+func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
+	networkPolicy, networkPolicyCleanup := testClient().NetworkPolicy.CreateNetworkPolicyNotEmpty(t)
+	t.Cleanup(networkPolicyCleanup)
+
+	preAuthorizedRole, preauthorizedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(preauthorizedRoleCleanup)
+
+	validUrl := "https://example.com/callback"
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	key, _ := random.GenerateRSAPublicKey(t)
+	comment := random.Comment()
+
+	complete := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypePublic), validUrl).
+		WithNetworkPolicy(networkPolicy.ID().Name()).
+		WithOauthAllowNonTlsRedirectUri(resources.BooleanTrue).
+		WithOauthClientRsaPublicKey(key).
+		WithOauthClientRsaPublicKey2(key).
+		WithOauthEnforcePkce(resources.BooleanTrue).
+		WithEnabled(resources.BooleanTrue).
+		WithOauthIssueRefreshTokens(resources.BooleanTrue).
+		WithOauthRefreshTokenValidity(86400).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
+		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForCustomClients),
+		Steps: []resource.TestStep{
+			// Create - with all optionals (including different ForceNew oauth_client_type)
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(t,
+					objectassert.SecurityIntegration(t, id).
+						HasName(id.Name()).
+						HasIntegrationType("OAUTH - CUSTOM").
+						HasCategory("SECURITY").
+						HasEnabled(true).
+						HasComment(comment),
+
+					resourceassert.OauthIntegrationForCustomClientsResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasOauthClientTypeString("PUBLIC").
+						HasOauthRedirectUriString(validUrl).
+						HasEnabledString("true").
+						HasOauthAllowNonTlsRedirectUriString("true").
+						HasOauthEnforcePkceString("true").
+						HasOauthIssueRefreshTokensString("true").
+						HasOauthRefreshTokenValidityString("86400").
+						HasOauthUseSecondaryRolesString("IMPLICIT").
+						HasPreAuthorizedRolesListLen(1).
+						HasPreAuthorizedRolesListElem(0, preAuthorizedRole.ID().Name()).
+						HasNetworkPolicyString(networkPolicy.ID().Name()).
+						HasOauthClientRsaPublicKeyString(key).
+						HasOauthClientRsaPublicKey2String(key).
+						HasCommentString(comment).
+						HasRelatedParametersNotEmpty().
+						HasRelatedParametersOauthAddPrivilegedRolesToBlockedList("true").
+						HasBlockedRolesListEmpty(),
+
+					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+						HasName(id.Name()).
+						HasIntegrationType("OAUTH - CUSTOM").
+						HasCategory("SECURITY").
+						HasEnabled(true).
+						HasComment(comment),
+
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "PUBLIC")),
+					assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.network_policy.0.value", networkPolicy.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_fp.0.value")),
+					assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_2_fp.0.value")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+					assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
+					assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_authorization_endpoint.0.value")),
+					assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value")),
+					assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_allowed_authorization_endpoints.0.value")),
+					assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_allowed_token_endpoints.0.value")),
+				),
+			},
+			// Import - with all optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"blocked_roles_list",
+					"enabled",
+					"oauth_allow_non_tls_redirect_uri",
+					"oauth_enforce_pkce",
+					"oauth_issue_refresh_tokens",
+					"oauth_refresh_token_validity",
+					"oauth_use_secondary_roles",
+					"related_parameters",
+					"oauth_client_rsa_public_key",
+					"oauth_client_rsa_public_key_2",
+				},
+			},
+		},
+	})
+}
 
 func TestAcc_OauthIntegrationForCustomClients_Basic(t *testing.T) {
 	networkPolicy, networkPolicyCleanup := testClient().NetworkPolicy.CreateNetworkPolicyNotEmpty(t)
