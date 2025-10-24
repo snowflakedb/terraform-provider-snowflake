@@ -42,10 +42,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiAuthenticationIntegrationWithClientCredentials().Schema,
 	},
 	{
-		name:   "ApiAuthenticationIntegrationWithJwtBearer",
-		schema: resources.ApiAuthenticationIntegrationWithJwtBearer().Schema,
-	},
-	{
 		name:   "ComputePool",
 		schema: resources.ComputePool().Schema,
 	},
