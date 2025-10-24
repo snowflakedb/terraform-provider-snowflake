@@ -7,6 +7,10 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	tfjson "github.com/hashicorp/terraform-json"
 
@@ -21,6 +25,241 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
+	// Schema analysis (from pkg/resources/streamlit.go):
+	// - name: NOT force-new (can be renamed)
+	// - database: ForceNew: true (cannot be changed)
+	// - schema: ForceNew: true (cannot be changed)
+	// - stage: NOT force-new (can be updated)
+	// - directory_location: Optional, NOT force-new
+	// - main_file: Required, NOT force-new
+	// - query_warehouse: Optional, NOT force-new
+	// - external_access_integrations: Optional, NOT force-new
+	// - title: Optional, NOT force-new
+	// - comment: Optional, NOT force-new
+	// Result: Use different names for basic/complete (name is not force-new), no additional force-new fields to handle
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	// warehouse is needed because default warehouse uses lowercase, and it fails in snowflake.
+	// TODO(SNOW-1541938): use a default warehouse after fix on snowflake side
+	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(warehouseCleanup)
+
+	networkRule, networkRuleCleanup := testClient().NetworkRule.Create(t)
+	t.Cleanup(networkRuleCleanup)
+
+	externalAccessIntegrationId, externalAccessIntegrationCleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
+	t.Cleanup(externalAccessIntegrationCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	comment := random.Comment()
+	title := random.AlphaN(4)
+	directoryLocation := "abc"
+	mainFile := "foo"
+
+	basic := model.StreamlitWithIds("test", id, mainFile, stage.ID())
+
+	complete := model.StreamlitWithIds("test", newId, mainFile, stage.ID()).
+		WithComment(comment).
+		WithTitle(title).
+		WithDirectoryLocation(directoryLocation).
+		WithQueryWarehouse(warehouse.ID().Name()).
+		WithExternalAccessIntegrations(externalAccessIntegrationId)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.Streamlit(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasTitle("").
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment("").
+			HasQueryWarehouse("").
+			HasUrlIdNotEmpty(),
+
+		resourceassert.StreamlitResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(database.ID().Name()).
+			HasSchemaString(schema.ID().Name()).
+			HasStageString(stage.ID().FullyQualifiedName()).
+			HasMainFileString(mainFile).
+			HasDirectoryLocationString("").
+			HasQueryWarehouseString("").
+			HasTitleString("").
+			HasCommentString("").
+			HasExternalAccessIntegrationsEmpty(),
+
+		resourceshowoutputassert.StreamlitShowOutput(t, basic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasTitle("").
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment("").
+			HasQueryWarehouse("").
+			HasUrlIdNotEmpty().
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.title", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.root_location", stage.Location())),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.main_file", mainFile)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.query_warehouse", "")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.url_id")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.default_packages")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.user_packages.#")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.import_urls.#")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_access_integrations.#", "0")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.external_access_secrets")),
+	}
+
+	rootLocationWithCatalog := fmt.Sprintf("%s/%s", stage.Location(), directoryLocation)
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Streamlit(t, newId).
+			HasName(newId.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasTitle(title).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment(comment).
+			HasQueryWarehouse(warehouse.ID().Name()).
+			HasUrlIdNotEmpty(),
+
+		resourceassert.StreamlitResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+			HasDatabaseString(database.ID().Name()).
+			HasSchemaString(schema.ID().Name()).
+			HasStageString(stage.ID().FullyQualifiedName()).
+			HasMainFileString(mainFile).
+			HasDirectoryLocationString(directoryLocation).
+			HasQueryWarehouseString(warehouse.ID().Name()).
+			HasTitleString(title).
+			HasCommentString(comment).
+			HasExternalAccessIntegrations([]string{externalAccessIntegrationId.Name()}),
+
+		resourceshowoutputassert.StreamlitShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(newId.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasTitle(title).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment(comment).
+			HasQueryWarehouse(warehouse.ID().Name()).
+			HasUrlIdNotEmpty().
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", newId.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.title", title)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.root_location", rootLocationWithCatalog)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.main_file", mainFile)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.query_warehouse", warehouse.ID().Name())),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.url_id")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.default_packages")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.user_packages.#")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.import_urls.#")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegrationId.Name())),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.external_access_secrets")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Streamlit),
+		Steps: []resource.TestStep{
+			// Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - set optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - unset optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().Streamlit.Update(t, sdk.NewAlterStreamlitRequest(id).WithSet(
+						*sdk.NewStreamlitSetRequest().
+							WithRootLocation(fmt.Sprintf("%s/bar", stage.Location())).
+							WithComment("bar"),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(basic.ResourceReference(), "directory_location", sdk.String(""), sdk.String("bar")),
+						planchecks.ExpectChange(basic.ResourceReference(), "directory_location", tfjson.ActionUpdate, sdk.String("bar"), nil),
+						planchecks.ExpectDrift(basic.ResourceReference(), "comment", sdk.String(""), sdk.String("bar")),
+						planchecks.ExpectChange(basic.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.String("bar"), nil),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Create - with optionals (from scratch via taint)
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
 
 func TestAcc_Streamlit_basic(t *testing.T) {
 	stage, stageCleanup := testClient().Stage.CreateStage(t)

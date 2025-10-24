@@ -10,6 +10,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -23,6 +24,409 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
+	// Schema analysis (from pkg/resources/row_access_policy.go):
+	// - name: NOT force-new (can be renamed)
+	// - database: ForceNew: true (cannot be changed)
+	// - schema: ForceNew: true (cannot be changed)
+	// - argument: ForceNew: true (cannot be changed)
+	// - signature: ForceNew: true (cannot be changed)
+	// - return_type: ForceNew: true (cannot be changed)
+	// - body: NOT force-new (can be updated)
+	// - comment: Optional, NOT force-new
+	// Result: Use different names for basic/complete (name is not force-new), no additional force-new fields to handle
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	comment := random.Comment()
+
+	// Use more complex argument signatures like the original test
+	argument := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+		{
+			Name: "B",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+	}
+
+	changedArgument := []sdk.TableColumnSignature{
+		{
+			Name: "C",
+			Type: testdatatypes.DataTypeBoolean,
+		},
+		{
+			Name: "D",
+			Type: testdatatypes.DataTypeTimestampNTZ,
+		},
+	}
+
+	// Use more realistic SQL expressions like the original test
+	body := "case when current_role() in ('ANALYST') then true else false end"
+	changedBody := "case when current_role() in ('CHANGED') then true else false end"
+
+	basic := model.RowAccessPolicy("test", database.ID().Name(), schema.ID().Name(), id.Name(), argument, body)
+
+	complete := model.RowAccessPolicy("test", database.ID().Name(), schema.ID().Name(), newId.Name(), argument, changedBody).
+		WithComment(comment)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.RowAccessPolicy(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasOptions("").
+			HasComment(""),
+
+		resourceassert.RowAccessPolicyResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(database.ID().Name()).
+			HasSchemaString(schema.ID().Name()).
+			HasBodyString(body).
+			HasCommentString("").
+			HasArguments(argument),
+
+		resourceshowoutputassert.RowAccessPolicyShowOutput(t, basic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasOptions("").
+			HasComment(""),
+
+		// Describe output assertions
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.body", body)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.return_type", "BOOLEAN")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.#", "2")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.name", "A")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.1.name", "B")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
+	}
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.RowAccessPolicy(t, newId).
+			HasName(newId.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasOptions("").
+			HasComment(comment),
+
+		resourceassert.RowAccessPolicyResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+			HasDatabaseString(database.ID().Name()).
+			HasSchemaString(schema.ID().Name()).
+			HasBodyString(changedBody).
+			HasCommentString(comment).
+			HasArguments(argument),
+
+		resourceshowoutputassert.RowAccessPolicyShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(newId.Name()).
+			HasDatabaseName(database.ID().Name()).
+			HasSchemaName(schema.ID().Name()).
+			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasOptions("").
+			HasComment(comment),
+
+		// Describe output assertions
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", newId.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.body", changedBody)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.return_type", "BOOLEAN")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.#", "2")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.name", "A")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.name", "B")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.RowAccessPolicy),
+		Steps: []resource.TestStep{
+			// Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - set optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - unset optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().RowAccessPolicy.Alter(t, *sdk.NewAlterRowAccessPolicyRequest(id).WithSetComment(sdk.String(comment)))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Create - with optionals (from scratch via taint)
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Update - change arguments (ForceNew - requires destroy/create)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, model.RowAccessPolicy("test", database.ID().Name(), schema.ID().Name(), newId.Name(), changedArgument, changedBody).WithComment(comment)),
+				Check: assertThat(t,
+					objectassert.RowAccessPolicy(t, newId).
+						HasName(newId.Name()).
+						HasDatabaseName(database.ID().Name()).
+						HasSchemaName(schema.ID().Name()).
+						HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
+						HasOptions("").
+						HasComment(comment),
+
+					resourceassert.RowAccessPolicyResource(t, complete.ResourceReference()).
+						HasNameString(newId.Name()).
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasDatabaseString(database.ID().Name()).
+						HasSchemaString(schema.ID().Name()).
+						HasBodyString(changedBody).
+						HasCommentString(comment).
+						HasArguments(changedArgument),
+
+					resourceshowoutputassert.RowAccessPolicyShowOutput(t, complete.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(newId.Name()).
+						HasDatabaseName(database.ID().Name()).
+						HasSchemaName(schema.ID().Name()).
+						HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
+						HasOptions("").
+						HasComment(comment),
+
+					// Describe output assertions for changed arguments
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", newId.Name())),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.body", changedBody)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.return_type", "BOOLEAN")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.name", "C")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.type", "BOOLEAN")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.name", "D")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.type", "TIMESTAMP_NTZ")),
+				),
+			},
+			// Update - unset comment
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model.RowAccessPolicy("test", database.ID().Name(), schema.ID().Name(), newId.Name(), changedArgument, changedBody).WithComment("")),
+				Check: assertThat(t,
+					objectassert.RowAccessPolicy(t, newId).
+						HasName(newId.Name()).
+						HasDatabaseName(database.ID().Name()).
+						HasSchemaName(schema.ID().Name()).
+						HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
+						HasOptions("").
+						HasComment(""),
+
+					resourceassert.RowAccessPolicyResource(t, complete.ResourceReference()).
+						HasNameString(newId.Name()).
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasDatabaseString(database.ID().Name()).
+						HasSchemaString(schema.ID().Name()).
+						HasBodyString(changedBody).
+						HasCommentString("").
+						HasArguments(changedArgument),
+
+					resourceshowoutputassert.RowAccessPolicyShowOutput(t, complete.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(newId.Name()).
+						HasDatabaseName(database.ID().Name()).
+						HasSchemaName(schema.ID().Name()).
+						HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
+						HasOptions("").
+						HasComment(""),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_RowAccessPolicy_CompleteUseCase(t *testing.T) {
+	// CompleteUseCase test for resources with ForceNew fields
+	// This test creates the resource with all optional fields set from the beginning
+	// to avoid force-new conflicts between basic and complete models
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	comment := random.Comment()
+
+	// Create model with ALL optional fields including force-new ones
+	// Use more complex argument signatures like the original test
+	argument := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+		{
+			Name: "B",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+	}
+
+	// Use more realistic SQL expressions like the original test
+	body := "case when current_role() in ('ANALYST') then true else false end"
+
+	complete := model.RowAccessPolicy("test", database.ID().Name(), schema.ID().Name(), id.Name(), argument, body).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.RowAccessPolicy),
+		Steps: []resource.TestStep{
+			// Create - with all optionals (including force-new fields)
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(t,
+					// Inline assertions (not extracted since not reused)
+					objectassert.RowAccessPolicy(t, id).
+						HasName(id.Name()).
+						HasDatabaseName(database.ID().Name()).
+						HasSchemaName(schema.ID().Name()).
+						HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
+						HasOptions("").
+						HasComment(comment),
+
+					resourceassert.RowAccessPolicyResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(database.ID().Name()).
+						HasSchemaString(schema.ID().Name()).
+						HasBodyString(body).
+						HasCommentString(comment).
+						HasArguments(argument),
+
+					resourceshowoutputassert.RowAccessPolicyShowOutput(t, complete.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasDatabaseName(database.ID().Name()).
+						HasSchemaName(schema.ID().Name()).
+						HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
+						HasOptions("").
+						HasComment(comment),
+
+					// Describe output assertions (manual since no generator)
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.body", body)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.return_type", "BOOLEAN")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.name", "A")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.name", "B")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
+				),
+			},
+			// Import - with all optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
 
 func TestAcc_RowAccessPolicy(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
