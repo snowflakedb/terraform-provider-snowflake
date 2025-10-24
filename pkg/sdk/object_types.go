@@ -91,6 +91,7 @@ const (
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
 	ObjectTypeListing                 ObjectType = "LISTING"
 	ObjectTypeSemanticView            ObjectType = "SEMANTIC VIEW"
+	ObjectTypeSecurityIntegration     ObjectType = "SECURITY INTEGRATION"
 )
 
 func (o ObjectType) String() string {
