@@ -10,6 +10,7 @@ import (
 )
 
 type DataMetricFunctionReferences interface {
+	// Manually edited the return type
 	GetForEntity(ctx context.Context, request *GetForEntityDataMetricFunctionReferenceRequest) ([]DataMetricFunctionReference, error)
 }
 
