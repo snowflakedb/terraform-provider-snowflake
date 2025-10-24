@@ -24,20 +24,6 @@ import (
 )
 
 func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
-	// Schema analysis (from pkg/resources/api_authentication_integration_with_authorization_code_grant.go):
-	// - name: ForceNew: true (cannot be renamed)
-	// - enabled: Required: true, NOT force-new (can be updated)
-	// - oauth_client_id: Required: true, NOT force-new (can be updated)
-	// - oauth_client_secret: Required: true, NOT force-new (can be updated)
-	// - comment: Optional, NOT force-new
-	// - oauth_access_token_validity: Optional, NOT force-new
-	// - oauth_refresh_token_validity: Optional, NOT force-new
-	// - oauth_token_endpoint: Optional, ForceNewIfChangeToEmptyString (cannot change from empty to non-empty)
-	// - oauth_client_auth_method: Optional, ForceNewIfChangeToEmptyString (cannot change from empty to non-empty)
-	// - oauth_authorization_endpoint: Optional, ForceNewIfChangeToEmptyString (cannot change from empty to non-empty)
-	// - oauth_allowed_scopes: Optional, NOT force-new
-	// Result: Use same identifiers for basic/complete (name is force-new), avoid force-new fields in complete model
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
@@ -77,12 +63,12 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_access_token_validity.0.value", "0")),
-		// TODO: assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "0")),
+		// TODO(SNOW-2457144): assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "0")),
 		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_authorization_endpoint.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "")),
-		// TODO: assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "")),
+		// TODO(SNOW-2457144): assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantAuthorizationCode)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.parent_integration.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.auth_type.0.value", "OAUTH2")),
@@ -230,10 +216,6 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase
 }
 
 func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_CompleteUseCase(t *testing.T) {
-	// CompleteUseCase test for resources with ForceNewIfChangeToEmptyString fields
-	// This test creates the resource with all optional fields set from the beginning
-	// to avoid force-new conflicts between basic and complete models
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 

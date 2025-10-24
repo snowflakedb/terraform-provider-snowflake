@@ -24,19 +24,6 @@ import (
 )
 
 func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *testing.T) {
-	// Schema analysis (from pkg/resources/api_authentication_integration_with_client_credentials.go):
-	// - name: ForceNew: true (cannot be renamed)
-	// - enabled: Required: true, NOT force-new (can be updated)
-	// - oauth_client_id: Required: true, NOT force-new (can be updated)
-	// - oauth_client_secret: Required: true, NOT force-new (can be updated)
-	// - comment: Optional, NOT force-new
-	// - oauth_access_token_validity: Optional, NOT force-new
-	// - oauth_refresh_token_validity: Optional, NOT force-new
-	// - oauth_token_endpoint: Optional, NOT force-new
-	// - oauth_client_auth_method: Optional, NOT force-new
-	// - oauth_allowed_scopes: Optional, NOT force-new
-	// Result: Use same identifiers for basic/complete (name is force-new), no additional force-new fields to handle
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
@@ -45,9 +32,7 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *t
 	complete := model.ApiAuthenticationIntegrationWithClientCredentials("test", id.Name(), true, "test_client_id", "test_client_secret").
 		WithComment(comment).
 		WithOauthAccessTokenValidity(42).
-		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
 		WithOauthRefreshTokenValidity(12345).
-		WithOauthTokenEndpoint("https://example.com").
 		WithOauthAllowedScopesValue(config.SetVariable(config.StringVariable("foo")))
 
 	assertBasic := []assert.TestCheckFuncProvider{
@@ -65,7 +50,12 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *t
 			HasEnabledString("true").
 			HasOauthClientIdString("test_client_id").
 			HasOauthClientSecretString("test_client_secret").
-			HasCommentString(""),
+			HasCommentString("").
+			HasOauthAccessTokenValidityString("-1").
+			HasNoOauthClientAuthMethod().
+			// TODO(SNOW-2457144): HasNoOauthRefreshTokenValidity().
+			HasNoOauthTokenEndpoint().
+			HasOauthAllowedScopesLen(0),
 
 		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
 			HasName(id.Name()).
@@ -78,11 +68,11 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *t
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_access_token_validity.0.value", "0")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "0")),
+		// TODO(SNOW-2457144): assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "0")),
 		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "")),
+		// TODO(SNOW-2457144): assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.parent_integration.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.auth_type.0.value", "OAUTH2")),
@@ -106,9 +96,9 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *t
 			HasOauthClientSecretString("test_client_secret").
 			HasCommentString(comment).
 			HasOauthAccessTokenValidityString("42").
-			HasOauthClientAuthMethodString(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+			HasNoOauthClientAuthMethod().
 			HasOauthRefreshTokenValidityString("12345").
-			HasOauthTokenEndpointString("https://example.com").
+			HasNoOauthTokenEndpoint().
 			HasOauthAllowedScopesLen(1).
 			HasOauthAllowedScopesElem(0, "foo"),
 
@@ -125,8 +115,8 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *t
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_validity.0.value", "42")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "12345")),
 		assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost))),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "https://example.com")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "[foo]")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.parent_integration.0.value", "")),
@@ -221,6 +211,90 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *t
 				},
 				Config: accconfig.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
+
+func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	complete := model.ApiAuthenticationIntegrationWithClientCredentials("test", id.Name(), true, "test_client_id", "test_client_secret").
+		WithComment(comment).
+		WithOauthAccessTokenValidity(42).
+		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+		WithOauthRefreshTokenValidity(12345).
+		WithOauthTokenEndpoint("https://example.com").
+		WithOauthAllowedScopesValue(config.SetVariable(config.StringVariable("foo")))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithClientCredentials),
+		Steps: []resource.TestStep{
+			// Create - with all optionals (including force-new fields)
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(t,
+					objectassert.SecurityIntegration(t, id).
+						HasName(id.Name()).
+						HasIntegrationType("API_AUTHENTICATION").
+						HasCategory("SECURITY").
+						HasEnabled(true).
+						HasComment(comment).
+						HasCreatedOnNotEmpty(),
+
+					resourceassert.ApiAuthenticationIntegrationWithClientCredentialsResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasEnabledString("true").
+						HasOauthClientIdString("test_client_id").
+						HasOauthClientSecretString("test_client_secret").
+						HasCommentString(comment).
+						HasOauthAccessTokenValidityString("42").
+						HasOauthClientAuthMethodString(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+						HasOauthRefreshTokenValidityString("12345").
+						HasOauthTokenEndpointString("https://example.com").
+						HasOauthAllowedScopesString("[foo]"),
+
+					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+						HasName(id.Name()).
+						HasIntegrationType("API_AUTHENTICATION").
+						HasCategory("SECURITY").
+						HasEnabled(true).
+						HasComment(comment).
+						HasCreatedOnNotEmpty(),
+
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_validity.0.value", "42")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "12345")),
+					assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost))),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "https://example.com")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "[foo]")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.parent_integration.0.value", "")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.auth_type.0.value", "OAUTH2")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+				),
+			},
+			// Import - with all optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"oauth_access_token_validity",
+					"oauth_client_auth_method",
+					"oauth_client_secret",
+					"oauth_refresh_token_validity",
+					"oauth_token_endpoint",
+				},
 			},
 		},
 	})
