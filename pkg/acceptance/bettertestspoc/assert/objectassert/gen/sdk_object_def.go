@@ -150,7 +150,7 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeIntegration,
+		ObjectType:   sdk.ObjectTypeSecurityIntegration,
 		ObjectStruct: sdk.SecurityIntegration{},
 	},
 }
