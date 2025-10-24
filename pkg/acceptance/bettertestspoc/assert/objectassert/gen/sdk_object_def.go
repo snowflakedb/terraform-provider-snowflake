@@ -163,6 +163,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeStorageIntegration,
 		ObjectStruct: sdk.StorageIntegration{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeIntegration,
+		ObjectStruct: sdk.SecurityIntegration{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
