@@ -54,6 +54,7 @@ type Client struct {
 	MaterializedViews            MaterializedViews
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
+	Notebooks                    Notebooks
 	NotificationIntegrations     NotificationIntegrations
 	OrganizationAccounts         OrganizationAccounts
 	Parameters                   Parameters
@@ -185,6 +186,7 @@ func (c *Client) initialize() {
 	c.MaterializedViews = &materializedViews{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
+	c.Notebooks = &notebooks{client: c}
 	c.NotificationIntegrations = &notificationIntegrations{client: c}
 	c.OrganizationAccounts = &organizationAccounts{client: c}
 	c.Parameters = &parameters{client: c}

@@ -175,7 +175,7 @@ func (r NotebookDetailsRow) convert() (*NotebookDetails, error) {
 	mapNullStringWithMapping(&n.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
 	mapNullString(&n.UserPackages, r.UserPackages)
 	mapNullString(&n.RuntimeName, r.RuntimeName)
-	mapNullString(&n.ComputePool, r.ComputePool)
+	mapNullStringWithMapping(&n.ComputePool, r.ComputePool, ParseAccountObjectIdentifier)
 	mapNullString(&n.Comment, r.Comment)
 	mapNullString(&n.DefaultVersionAlias, r.DefaultVersionAlias)
 	mapNullString(&n.DefaultVersionSourceLocationUri, r.DefaultVersionSourceLocationUri)

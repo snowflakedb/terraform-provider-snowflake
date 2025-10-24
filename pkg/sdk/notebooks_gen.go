@@ -130,7 +130,7 @@ type NotebookDetails struct {
 	DefaultPackages                 string
 	UserPackages                    *string
 	RuntimeName                     *string
-	ComputePool                     *string
+	ComputePool                     *AccountObjectIdentifier
 	Owner                           string
 	ImportUrls                      string
 	ExternalAccessIntegrations      string
