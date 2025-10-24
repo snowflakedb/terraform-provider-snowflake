@@ -11,23 +11,282 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	basic := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientLooker)).
+		WithOauthRedirectUri("https://example.com/callback")
+
+	complete := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientLooker)).
+		WithOauthRedirectUri("https://example.com/callback").
+		WithEnabled(r.BooleanTrue).
+		WithOauthIssueRefreshTokens(r.BooleanTrue).
+		WithOauthRefreshTokenValidity(3600).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesNone)).
+		WithComment(comment)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("OAUTH - LOOKER").
+			HasCategory("SECURITY").
+			HasEnabled(false).
+			HasComment(""),
+
+		resourceassert.OauthIntegrationForPartnerApplicationsResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasOauthClientString("LOOKER").
+			HasOauthRedirectUriString("https://example.com/callback").
+			HasEnabledString("default").
+			HasCommentString(""),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("OAUTH - LOOKER").
+			HasCategory("SECURITY").
+			HasEnabled(false).
+			HasComment(""),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "false")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.comment.0.value", "")),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "related_parameters.#", "1")),
+	}
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("OAUTH - LOOKER").
+			HasCategory("SECURITY").
+			HasEnabled(true).
+			HasComment(comment),
+
+		resourceassert.OauthIntegrationForPartnerApplicationsResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasOauthClientString("LOOKER").
+			HasOauthRedirectUriString("https://example.com/callback").
+			HasEnabledString("true").
+			HasOauthIssueRefreshTokensString("true").
+			HasOauthRefreshTokenValidityString("3600").
+			HasOauthUseSecondaryRolesString("NONE").
+			HasCommentString(comment),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("OAUTH - LOOKER").
+			HasCategory("SECURITY").
+			HasEnabled(true).
+			HasComment(comment),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "3600")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "related_parameters.#", "1")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		Steps: []resource.TestStep{
+			// Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"blocked_roles_list",
+					"enabled",
+					"oauth_issue_refresh_tokens",
+					"oauth_refresh_token_validity",
+					"oauth_use_secondary_roles",
+					"related_parameters",
+				},
+			},
+			// Update - set optionals
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"blocked_roles_list",
+					"enabled",
+					"oauth_issue_refresh_tokens",
+					"oauth_refresh_token_validity",
+					"oauth_use_secondary_roles",
+					"related_parameters",
+				},
+			},
+			// Update - unset optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().SecurityIntegration.UpdateOauthForPartnerApplications(t, sdk.NewAlterOauthForPartnerApplicationsSecurityIntegrationRequest(id).WithSet(
+						*sdk.NewOauthForPartnerApplicationsIntegrationSetRequest().
+							WithEnabled(true).
+							WithBlockedRolesList(*sdk.NewBlockedRolesListRequest([]sdk.AccountObjectIdentifier{snowflakeroles.SysAdmin})).
+							WithComment(comment).
+							WithOauthIssueRefreshTokens(true).
+							WithOauthRefreshTokenValidity(3600),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Create - with optionals (from scratch via taint)
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
+
+func TestAcc_OauthIntegrationForPartnerApplications_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	complete := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauDesktop)).
+		WithEnabled(r.BooleanTrue).
+		WithOauthIssueRefreshTokens(r.BooleanTrue).
+		WithOauthRefreshTokenValidity(3600).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		Steps: []resource.TestStep{
+			// Create - with all optionals (including different ForceNew oauth_client)
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(t,
+					objectassert.SecurityIntegration(t, id).
+						HasName(id.Name()).
+						HasIntegrationType("OAUTH - TABLEAU_DESKTOP").
+						HasCategory("SECURITY").
+						HasEnabled(true).
+						HasComment(comment),
+
+					resourceassert.OauthIntegrationForPartnerApplicationsResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasOauthClientString("TABLEAU_DESKTOP").
+						HasEnabledString("true").
+						HasOauthIssueRefreshTokensString("true").
+						HasOauthRefreshTokenValidityString("3600").
+						HasOauthUseSecondaryRolesString("IMPLICIT").
+						HasCommentString(comment),
+
+					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+						HasName(id.Name()).
+						HasIntegrationType("OAUTH - TABLEAU_DESKTOP").
+						HasCategory("SECURITY").
+						HasEnabled(true).
+						HasComment(comment),
+
+					// Describe output assertions
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "PUBLIC")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "3600")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+
+					// Related parameters assertions
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "related_parameters.#", "1")),
+				),
+			},
+			// Import - with all optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"blocked_roles_list",
+					"enabled",
+					"oauth_issue_refresh_tokens",
+					"oauth_refresh_token_validity",
+					"oauth_use_secondary_roles",
+				},
+			},
+		},
+	})
+}
 
 func TestAcc_OauthIntegrationForPartnerApplications_Basic(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -50,7 +309,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_Basic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			// create with empty optionals
 			{
@@ -303,7 +562,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			// create with empty optionals
 			{
@@ -551,7 +810,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel),
@@ -654,7 +913,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_migrateFromV0941_ensureSmoot
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
 				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
@@ -689,7 +948,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithQuotedName(t *testing.T)
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
 				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
@@ -737,7 +996,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_DetectExternalChangesForOaut
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, configModel),
