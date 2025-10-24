@@ -44,6 +44,7 @@ const (
 	ObjectTypeEventTable           ObjectType = "EVENT TABLE"
 	ObjectTypeView                 ObjectType = "VIEW"
 	ObjectTypeMaterializedView     ObjectType = "MATERIALIZED VIEW"
+	ObjectTypeSecurityIntegration  ObjectType = "SECURITY INTEGRATION"
 	ObjectTypeSequence             ObjectType = "SEQUENCE"
 	ObjectTypeSnapshot             ObjectType = "SNAPSHOT"
 	ObjectTypeSnapshotPolicy       ObjectType = "SNAPSHOT POLICY"
