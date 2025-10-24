@@ -11,6 +11,9 @@ func (opts *GetForEntityDataMetricFunctionReferenceOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !valueSet(opts.parameters) {
+		errs = append(errs, errNotSet("GetForEntityDataMetricFunctionReferenceOptions", "parameters"))
+	}
 	if valueSet(opts.parameters) {
 		if !valueSet(opts.parameters.arguments) {
 			errs = append(errs, errNotSet("GetForEntityDataMetricFunctionReferenceOptions.parameters", "arguments"))

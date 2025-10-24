@@ -14,8 +14,7 @@ func TestDataMetricFunctionReferences_GetForEntity(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	// TODO
-	t.Run("validation: missing parameters", func(t *testing.T) {
+	t.Run("validation: [opts.parameters] should be set", func(t *testing.T) {
 		opts := &GetForEntityDataMetricFunctionReferenceOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityDataMetricFunctionReferenceOptions", "parameters"))
 	})

@@ -115,7 +115,7 @@ var DataMetricFunctionReferenceDef = g.NewInterface(
 			"parameters",
 			dataMetricFunctionReferenceParametersDef,
 			g.ListOptions().Parentheses().NoComma().Required(),
-		),
+		).WithValidation(g.ValidateValueSet, "parameters"),
 	dataMetricFunctionReferenceParametersDef,
 	dataMetricFunctionReferenceFunctionArgumentsDef,
 	g.DbStruct("dataMetricFunctionReferencesRow").
