@@ -127,6 +127,7 @@ var ApplicationPackagesDef = g.NewInterface(
 	g.NewQueryStruct("DropApplicationPackage").
 		Drop().
 		SQL("APPLICATION PACKAGE").
+		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowOperation(
