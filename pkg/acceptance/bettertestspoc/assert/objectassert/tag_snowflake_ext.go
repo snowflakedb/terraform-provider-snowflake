@@ -1,7 +1,6 @@
 package objectassert
 
 import (
-	"errors"
 	"fmt"
 	"slices"
 	"testing"
@@ -9,21 +8,27 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (s *TagAssert) HasAllowedValuesUnordered(expected ...string) *TagAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+// HasAllowedValuesSet checks that the allowed_values field contains the expected values (order independent)
+func (t *TagAssert) HasAllowedValuesSet(expected ...string) *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
 		t.Helper()
 		if len(o.AllowedValues) != len(expected) {
-			return fmt.Errorf("expected allowed values length: %v; got: %v", len(expected), len(o.AllowedValues))
+			return fmt.Errorf("expected allowed values length: %d; got: %d", len(expected), len(o.AllowedValues))
 		}
-		var errs []error
-		for _, wantElem := range expected {
-			if !slices.ContainsFunc(o.AllowedValues, func(gotElem string) bool {
-				return wantElem == gotElem
-			}) {
-				errs = append(errs, fmt.Errorf("expected value: %s, to be in the value list: %v", wantElem, o.AllowedValues))
-			}
+
+		// Sort both slices for comparison
+		actualSorted := make([]string, len(o.AllowedValues))
+		copy(actualSorted, o.AllowedValues)
+		slices.Sort(actualSorted)
+
+		expectedSorted := make([]string, len(expected))
+		copy(expectedSorted, expected)
+		slices.Sort(expectedSorted)
+
+		if !slices.Equal(actualSorted, expectedSorted) {
+			return fmt.Errorf("expected allowed values: %v; got: %v", expected, o.AllowedValues)
 		}
-		return errors.Join(errs...)
+		return nil
 	})
-	return s
+	return t
 }
