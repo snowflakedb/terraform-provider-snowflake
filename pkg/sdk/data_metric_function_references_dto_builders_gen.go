@@ -2,49 +2,43 @@
 
 package sdk
 
-func NewGetForEntityDataMetricFunctionReferenceRequest() *GetForEntityDataMetricFunctionReferenceRequest {
+func NewGetForEntityDataMetricFunctionReferenceRequest(
+	parameters *dataMetricFunctionReferenceParametersRequest,
+) *GetForEntityDataMetricFunctionReferenceRequest {
 	s := GetForEntityDataMetricFunctionReferenceRequest{}
+	s.parameters = parameters
 	return &s
 }
 
-func (s *GetForEntityDataMetricFunctionReferenceRequest) Withparameters(parameters dataMetricFunctionReferenceParametersRequest) *GetForEntityDataMetricFunctionReferenceRequest {
-	s.parameters = &parameters
-	return s
-}
-
-func NewdataMetricFunctionReferenceParametersRequest() *dataMetricFunctionReferenceParametersRequest {
+func NewdataMetricFunctionReferenceParametersRequest(
+	arguments *dataMetricFunctionReferenceFunctionArgumentsRequest,
+) *dataMetricFunctionReferenceParametersRequest {
 	s := dataMetricFunctionReferenceParametersRequest{}
+	s.arguments = arguments
 	return &s
 }
 
-func (s *dataMetricFunctionReferenceParametersRequest) Witharguments(arguments dataMetricFunctionReferenceFunctionArgumentsRequest) *dataMetricFunctionReferenceParametersRequest {
-	s.arguments = &arguments
-	return s
-}
-
-func NewdataMetricFunctionReferenceFunctionArgumentsRequest() *dataMetricFunctionReferenceFunctionArgumentsRequest {
+func NewdataMetricFunctionReferenceFunctionArgumentsRequest(
+	refEntityName []ObjectIdentifier,
+	refEntityDomain *DataMetricFunctionRefEntityDomainOption,
+) *dataMetricFunctionReferenceFunctionArgumentsRequest {
 	s := dataMetricFunctionReferenceFunctionArgumentsRequest{}
-	return &s
-}
-
-func (s *dataMetricFunctionReferenceFunctionArgumentsRequest) WithrefEntityName(refEntityName []ObjectIdentifier) *dataMetricFunctionReferenceFunctionArgumentsRequest {
 	s.refEntityName = refEntityName
-	return s
-}
-
-func (s *dataMetricFunctionReferenceFunctionArgumentsRequest) WithRefEntityDomain(refEntityDomain DataMetricFunctionRefEntityDomainOption) *dataMetricFunctionReferenceFunctionArgumentsRequest {
-	s.RefEntityDomain = &refEntityDomain
-	return s
+	s.RefEntityDomain = refEntityDomain
+	return &s
 }
 
 // Added manually
 func NewGetForEntityDataMetricFunctionReferenceRequestCustom(
 	refEntityName ObjectIdentifier,
-	RefEntityDomain DataMetricFunctionRefEntityDomainOption,
+	refEntityDomain DataMetricFunctionRefEntityDomainOption,
 ) *GetForEntityDataMetricFunctionReferenceRequest {
-	s := GetForEntityDataMetricFunctionReferenceRequest{}
-	// TODO: make compile
-	//s.refEntityName = refEntityName
-	//s.RefEntityDomain = RefEntityDomain
-	return &s
+	return NewGetForEntityDataMetricFunctionReferenceRequest(
+		NewdataMetricFunctionReferenceParametersRequest(
+			NewdataMetricFunctionReferenceFunctionArgumentsRequest(
+				[]ObjectIdentifier{refEntityName},
+				&refEntityDomain,
+			),
+		),
+	)
 }

@@ -7,14 +7,14 @@ var (
 )
 
 type GetForEntityDataMetricFunctionReferenceRequest struct {
-	parameters *dataMetricFunctionReferenceParametersRequest
+	parameters *dataMetricFunctionReferenceParametersRequest // required
 }
 
 type dataMetricFunctionReferenceParametersRequest struct {
-	arguments *dataMetricFunctionReferenceFunctionArgumentsRequest
+	arguments *dataMetricFunctionReferenceFunctionArgumentsRequest // required
 }
 
 type dataMetricFunctionReferenceFunctionArgumentsRequest struct {
-	refEntityName   []ObjectIdentifier
-	RefEntityDomain *DataMetricFunctionRefEntityDomainOption
+	refEntityName   []ObjectIdentifier                       // required
+	RefEntityDomain *DataMetricFunctionRefEntityDomainOption // required
 }

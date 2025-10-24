@@ -90,15 +90,15 @@ var dataMetricFunctionReferenceParametersDef = g.NewQueryStruct("dataMetricFunct
 	OptionalQueryStructField(
 		"arguments",
 		dataMetricFunctionReferenceFunctionArgumentsDef,
-		g.ListOptions().Parentheses(),
+		g.ListOptions().Parentheses().Required(),
 	)
 
 var dataMetricFunctionReferenceFunctionArgumentsDef = g.NewQueryStruct("dataMetricFunctionReferenceFunctionArguments").
-	PredefinedQueryStructField("refEntityName", "[]ObjectIdentifier", g.ParameterOptions().ArrowEquals().SingleQuotes().SQL("REF_ENTITY_NAME")).
+	PredefinedQueryStructField("refEntityName", "[]ObjectIdentifier", g.ParameterOptions().ArrowEquals().SingleQuotes().SQL("REF_ENTITY_NAME").Required()).
 	OptionalAssignment(
 		"REF_ENTITY_DOMAIN",
 		g.KindOfT[DataMetricFunctionRefEntityDomainOption](),
-		g.ParameterOptions().SingleQuotes().ArrowEquals(),
+		g.ParameterOptions().SingleQuotes().ArrowEquals().Required(),
 	)
 
 var DataMetricFunctionReferenceDef = g.NewInterface(
@@ -113,7 +113,7 @@ var DataMetricFunctionReferenceDef = g.NewInterface(
 		OptionalQueryStructField(
 			"parameters",
 			dataMetricFunctionReferenceParametersDef,
-			g.ListOptions().Parentheses().NoComma(),
+			g.ListOptions().Parentheses().NoComma().Required(),
 		),
 	dataMetricFunctionReferenceParametersDef,
 	dataMetricFunctionReferenceFunctionArgumentsDef,
