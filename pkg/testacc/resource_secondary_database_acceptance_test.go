@@ -221,135 +221,6 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 	})
 }
 
-func TestAcc_CreateSecondaryDatabase_Basic(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	comment := random.Comment()
-
-	primaryDatabase, externalPrimaryId, _ := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
-		testClient().Account.GetAccountIdentifier(t),
-	})
-	t.Cleanup(func() {
-		// TODO(SNOW-1562172): Create a better solution for this type of situations
-		require.Eventually(t, func() bool { return secondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
-	})
-
-	newId := testClient().Ids.RandomAccountObjectIdentifier()
-	newComment := random.Comment()
-
-	var (
-		accountDataRetentionTimeInDays                 = new(string)
-		accountMaxDataExtensionTimeInDays              = new(string)
-		accountExternalVolume                          = new(string)
-		accountCatalog                                 = new(string)
-		accountReplaceInvalidCharacters                = new(string)
-		accountDefaultDdlCollation                     = new(string)
-		accountStorageSerializationPolicy              = new(string)
-		accountLogLevel                                = new(string)
-		accountTraceLevel                              = new(string)
-		accountSuspendTaskAfterNumFailures             = new(string)
-		accountTaskAutoRetryAttempts                   = new(string)
-		accountUserTaskMangedInitialWarehouseSize      = new(string)
-		accountUserTaskTimeoutMs                       = new(string)
-		accountUserTaskMinimumTriggerIntervalInSeconds = new(string)
-		accountQuotedIdentifiersIgnoreCase             = new(string)
-		accountEnableConsoleOutput                     = new(string)
-	)
-
-	secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName()).
-		WithComment(comment)
-	renamedSecondaryDatabaseModel := model.SecondaryDatabase("test", newId.Name(), externalPrimaryId.FullyQualifiedName()).
-		WithComment(newComment)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
-		Steps: []resource.TestStep{
-			{
-				PreConfig: func() {
-					params := testClient().Parameter.ShowAccountParameters(t)
-					*accountDataRetentionTimeInDays = helpers.FindParameter(t, params, sdk.AccountParameterDataRetentionTimeInDays).Value
-					*accountMaxDataExtensionTimeInDays = helpers.FindParameter(t, params, sdk.AccountParameterMaxDataExtensionTimeInDays).Value
-					*accountExternalVolume = helpers.FindParameter(t, params, sdk.AccountParameterExternalVolume).Value
-					*accountCatalog = helpers.FindParameter(t, params, sdk.AccountParameterCatalog).Value
-					*accountReplaceInvalidCharacters = helpers.FindParameter(t, params, sdk.AccountParameterReplaceInvalidCharacters).Value
-					*accountDefaultDdlCollation = helpers.FindParameter(t, params, sdk.AccountParameterDefaultDDLCollation).Value
-					*accountStorageSerializationPolicy = helpers.FindParameter(t, params, sdk.AccountParameterStorageSerializationPolicy).Value
-					*accountLogLevel = helpers.FindParameter(t, params, sdk.AccountParameterLogLevel).Value
-					*accountTraceLevel = helpers.FindParameter(t, params, sdk.AccountParameterTraceLevel).Value
-					*accountSuspendTaskAfterNumFailures = helpers.FindParameter(t, params, sdk.AccountParameterSuspendTaskAfterNumFailures).Value
-					*accountTaskAutoRetryAttempts = helpers.FindParameter(t, params, sdk.AccountParameterTaskAutoRetryAttempts).Value
-					*accountUserTaskMangedInitialWarehouseSize = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskManagedInitialWarehouseSize).Value
-					*accountUserTaskTimeoutMs = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskTimeoutMs).Value
-					*accountUserTaskMinimumTriggerIntervalInSeconds = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds).Value
-					*accountQuotedIdentifiersIgnoreCase = helpers.FindParameter(t, params, sdk.AccountParameterQuotedIdentifiersIgnoreCase).Value
-					*accountEnableConsoleOutput = helpers.FindParameter(t, params, sdk.AccountParameterEnableConsoleOutput).Value
-				},
-				Config: accconfig.FromModels(t, secondaryDatabaseModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "as_replica_of", externalPrimaryId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "data_retention_time_in_days", accountDataRetentionTimeInDays),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "max_data_extension_time_in_days", accountMaxDataExtensionTimeInDays),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "external_volume", accountExternalVolume),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "catalog", accountCatalog),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "log_level", accountLogLevel),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "trace_level", accountTraceLevel),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "enable_console_output", accountEnableConsoleOutput),
-				),
-			},
-			// Rename + comment update
-			{
-				Config: accconfig.FromModels(t, renamedSecondaryDatabaseModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(renamedSecondaryDatabaseModel.ResourceReference(), "name", newId.Name()),
-					resource.TestCheckResourceAttr(renamedSecondaryDatabaseModel.ResourceReference(), "fully_qualified_name", newId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(renamedSecondaryDatabaseModel.ResourceReference(), "as_replica_of", externalPrimaryId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(renamedSecondaryDatabaseModel.ResourceReference(), "comment", newComment),
-
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "data_retention_time_in_days", accountDataRetentionTimeInDays),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "max_data_extension_time_in_days", accountMaxDataExtensionTimeInDays),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "external_volume", accountExternalVolume),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "catalog", accountCatalog),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "log_level", accountLogLevel),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "trace_level", accountTraceLevel),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase),
-					resource.TestCheckResourceAttrPtr(renamedSecondaryDatabaseModel.ResourceReference(), "enable_console_output", accountEnableConsoleOutput),
-				),
-			},
-			// Import all values
-			{
-				Config:            accconfig.FromModels(t, renamedSecondaryDatabaseModel),
-				ResourceName:      renamedSecondaryDatabaseModel.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func TestAcc_CreateSecondaryDatabase_complete(t *testing.T) {
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
@@ -395,7 +266,6 @@ func TestAcc_CreateSecondaryDatabase_complete(t *testing.T) {
 		accountEnableConsoleOutput                     = new(string)
 	)
 
-	secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName())
 	secondaryDatabaseModelComplete := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName()).
 		WithComment(comment).
 		WithDataRetentionTimeInDays(20).
@@ -510,65 +380,6 @@ func TestAcc_CreateSecondaryDatabase_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(secondaryDatabaseModelCompleteUpdated.ResourceReference(), "quoted_identifiers_ignore_case", "false"),
 					resource.TestCheckResourceAttr(secondaryDatabaseModelCompleteUpdated.ResourceReference(), "enable_console_output", "false"),
 				),
-			},
-			{
-				Config: accconfig.FromModels(t, secondaryDatabaseModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "is_transient", "false"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "as_replica_of", externalPrimaryId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "comment", ""),
-
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "data_retention_time_in_days", accountDataRetentionTimeInDays),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "max_data_extension_time_in_days", accountMaxDataExtensionTimeInDays),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "external_volume", accountExternalVolume),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "catalog", accountCatalog),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "log_level", accountLogLevel),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "trace_level", accountTraceLevel),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase),
-					resource.TestCheckResourceAttrPtr(secondaryDatabaseModel.ResourceReference(), "enable_console_output", accountEnableConsoleOutput),
-				),
-			},
-			{
-				Config: accconfig.FromModels(t, secondaryDatabaseModelComplete),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "is_transient", "false"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "as_replica_of", externalPrimaryId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "data_retention_time_in_days", "20"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "max_data_extension_time_in_days", "25"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "catalog", catalogId.Name()),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "replace_invalid_characters", "true"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "default_ddl_collation", "en_US"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "log_level", string(sdk.LogLevelDebug)),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "trace_level", string(sdk.TraceLevelAlways)),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "suspend_task_after_num_failures", "20"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "task_auto_retry_attempts", "20"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "user_task_managed_initial_warehouse_size", "LARGE"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "user_task_timeout_ms", "1200000"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", "60"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "quoted_identifiers_ignore_case", "true"),
-					resource.TestCheckResourceAttr(secondaryDatabaseModelComplete.ResourceReference(), "enable_console_output", "true"),
-				),
-			},
-			// Import all values
-			{
-				Config:            accconfig.FromModels(t, secondaryDatabaseModelComplete),
-				ResourceName:      secondaryDatabaseModelComplete.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
