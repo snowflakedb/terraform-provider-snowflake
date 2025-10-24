@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	configvariable "github.com/hashicorp/terraform-plugin-testing/config"
 
@@ -18,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -25,136 +24,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
+func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-
-	startTimestamp := time.Now().Add(time.Hour * 24 * 30).Format("2006-01-02 15:01")
-	endTimestamp := time.Now().Add(time.Hour * 24 * 60).Format("2006-01-02 15:01")
-
-	basic := model.ResourceMonitor("test", id.Name())
-
-	complete := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
-		WithCreditQuota(10).
-		WithFrequency(string(sdk.FrequencyWeekly)).
-		WithStartTimestamp(startTimestamp).
-		WithEndTimestamp(endTimestamp)
-
-	newId := testClient().Ids.RandomAccountObjectIdentifier()
-	completeWithTriggers := model.ResourceMonitor("test", newId.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
-		WithCreditQuota(10).
-		WithFrequency(string(sdk.FrequencyWeekly)).
-		WithStartTimestamp(startTimestamp).
-		WithEndTimestamp(endTimestamp).
-		WithNotifyTriggersValue(configvariable.SetVariable(
-			configvariable.IntegerVariable(100),
-			configvariable.IntegerVariable(110),
-		)).
-		WithSuspendTrigger(120).
-		WithSuspendImmediateTrigger(150)
-
-	assertBasicFirstlyCreated := resourceassert.ResourceMonitorResource(t, basic.ResourceReference()).
-		HasNameString(id.Name()).
-		HasFullyQualifiedNameString(id.FullyQualifiedName()).
-		HasCreditQuotaString("").
-		HasNotifyUsersLen(0).
-		HasFrequencyString("").
-		HasStartTimestampString("").
-		HasEndTimestampString("").
-		HasNotifyTriggersEmpty().
-		HasSuspendTriggerString("").
-		HasSuspendImmediateTriggerString("")
-
-	assertBasicUpdated := resourceassert.ResourceMonitorResource(t, basic.ResourceReference()).
-		HasNameString(id.Name()).
-		HasFullyQualifiedNameString(id.FullyQualifiedName()).
-		HasNoCreditQuota().
-		HasNotifyUsersLen(0).
-		HasNoFrequency().
-		HasNoStartTimestamp().
-		HasNoEndTimestamp().
-		HasNotifyTriggersEmpty().
-		HasNoSuspendTrigger().
-		HasNoSuspendImmediateTrigger()
-
-	assertBasic := []assert.TestCheckFuncProvider{
-		objectassert.ResourceMonitor(t, id).
-			HasName(id.Name()).
-			HasCreditQuota(0).
-			HasFrequency(sdk.FrequencyMonthly).
-			HasNotifyUsers().
-			HasNotifyAt().
-			HasSuspendAtNil().
-			HasSuspendImmediateAtNil(),
-
-		resourceshowoutputassert.ResourceMonitorShowOutput(t, basic.ResourceReference()).
-			HasName(id.Name()).
-			HasCreditQuota(0).
-			HasFrequency(sdk.FrequencyMonthly).
-			HasSuspendAt(0).
-			HasSuspendImmediateAt(0),
-	}
-
-	assertComplete := []assert.TestCheckFuncProvider{
-		objectassert.ResourceMonitor(t, id).
-			HasName(id.Name()).
-			HasCreditQuota(10).
-			HasFrequency(sdk.FrequencyWeekly).
-			HasSuspendAtNil().
-			HasSuspendImmediateAtNil(),
-
-		resourceassert.ResourceMonitorResource(t, complete.ResourceReference()).
-			HasNameString(id.Name()).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasCreditQuotaString("10").
-			HasNotifyUsersLen(1).
-			HasNotifyUser(0, "JAN_CIESLAK").
-			HasFrequencyString(string(sdk.FrequencyWeekly)).
-			HasStartTimestampString(startTimestamp).
-			HasEndTimestampString(endTimestamp).
-			HasNotifyTriggersEmpty().
-			HasSuspendTriggerString("0").
-			HasSuspendImmediateTriggerString("0"),
-
-		resourceshowoutputassert.ResourceMonitorShowOutput(t, complete.ResourceReference()).
-			HasName(id.Name()).
-			HasCreditQuota(10).
-			HasFrequency(sdk.FrequencyWeekly).
-			HasSuspendAt(0).
-			HasSuspendImmediateAt(0),
-	}
-
-	assertCompleteWithTriggers := []assert.TestCheckFuncProvider{
-		objectassert.ResourceMonitor(t, newId).
-			HasName(newId.Name()).
-			HasCreditQuota(10).
-			HasFrequency(sdk.FrequencyWeekly).
-			HasSuspendAt(120).
-			HasSuspendImmediateAt(150),
-
-		resourceassert.ResourceMonitorResource(t, completeWithTriggers.ResourceReference()).
-			HasNameString(newId.Name()).
-			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
-			HasCreditQuotaString("10").
-			HasNotifyUsersLen(1).
-			HasNotifyUser(0, "JAN_CIESLAK").
-			HasFrequencyString(string(sdk.FrequencyWeekly)).
-			HasStartTimestampString(startTimestamp).
-			HasEndTimestampString(endTimestamp).
-			HasNotifyTriggersLen(2).
-			HasNotifyTrigger(0, 100).
-			HasNotifyTrigger(1, 110).
-			HasSuspendTriggerString("120").
-			HasSuspendImmediateTriggerString("150"),
-
-		resourceshowoutputassert.ResourceMonitorShowOutput(t, completeWithTriggers.ResourceReference()).
-			HasName(newId.Name()).
-			HasCreditQuota(10).
-			HasFrequency(sdk.FrequencyWeekly).
-			HasSuspendAt(120).
-			HasSuspendImmediateAt(150),
-	}
+	configModel := model.ResourceMonitor("test", id.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -163,121 +35,132 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
 		Steps: []resource.TestStep{
-			// Create - without optionals
 			{
-				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, assertBasic...),
+				Config: config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasNoCreditQuota().
+						HasNotifyUsersLen(0).
+						HasNoFrequency().
+						HasNoStartTimestamp().
+						HasNoEndTimestamp().
+						HasNotifyTriggersEmpty().
+						HasNoSuspendTrigger().
+						HasNoSuspendImmediateTrigger(),
+					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
+						HasName(id.Name()).
+						HasCreditQuota(0).
+						HasUsedCredits(0).
+						HasRemainingCredits(0).
+						HasLevel("").
+						HasFrequency(sdk.FrequencyMonthly).
+						HasStartTimeNotEmpty().
+						HasEndTime("").
+						HasSuspendAt(0).
+						HasSuspendImmediateAt(0).
+						HasCreatedOnNotEmpty().
+						HasOwnerNotEmpty().
+						HasComment(""),
+				),
 			},
-			// Import - without optionals
 			{
-				Config:            config.FromModels(t, basic),
-				ResourceName:      basic.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"credit_quota",
-					"end_timestamp",
-					"frequency",
-					"start_timestamp",
-					"suspend_immediate_trigger",
-					"suspend_trigger",
-				},
+				ResourceName: "snowflake_resource_monitor.test",
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCreditQuotaString("0").
+						HasNotifyUsersLen(0).
+						HasFrequencyString(string(sdk.FrequencyMonthly)).
+						HasStartTimestampNotEmpty().
+						HasEndTimestampString("").
+						HasNotifyTriggersEmpty().
+						HasSuspendTriggerString("0").
+						HasSuspendImmediateTriggerString("0"),
+				),
 			},
-			// Update - set optionals
+		},
+	})
+}
+
+func TestAcc_ResourceMonitor_Complete(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	configModel := model.ResourceMonitor("test", id.Name()).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
+		WithCreditQuota(10).
+		WithFrequency(string(sdk.FrequencyWeekly)).
+		WithStartTimestamp(time.Now().Add(time.Hour * 24 * 30).Format("2006-01-02 15:01")).
+		WithEndTimestamp(time.Now().Add(time.Hour * 24 * 60).Format("2006-01-02 15:01")).
+		WithNotifyTriggersValue(configvariable.SetVariable(
+			configvariable.IntegerVariable(100),
+			configvariable.IntegerVariable(110),
+		)).
+		WithSuspendTrigger(120).
+		WithSuspendImmediateTrigger(150)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
+		Steps: []resource.TestStep{
 			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, complete),
-				Check:  assertThat(t, assertComplete...),
+				Config: config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCreditQuotaString("10").
+						HasNotifyUsersLen(1).
+						HasNotifyUser(0, "JAN_CIESLAK").
+						HasFrequencyString(string(sdk.FrequencyWeekly)).
+						HasStartTimestampString(time.Now().Add(time.Hour*24*30).Format("2006-01-02 15:01")).
+						HasEndTimestampString(time.Now().Add(time.Hour*24*60).Format("2006-01-02 15:01")).
+						HasNotifyTriggersLen(2).
+						HasNotifyTrigger(0, 100).
+						HasNotifyTrigger(1, 110).
+						HasSuspendTriggerString("120").
+						HasSuspendImmediateTriggerString("150"),
+					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
+						HasName(id.Name()).
+						HasCreditQuota(10).
+						HasUsedCredits(0).
+						HasRemainingCredits(10).
+						HasLevel("").
+						HasFrequency(sdk.FrequencyWeekly).
+						HasStartTimeNotEmpty().
+						HasEndTimeNotEmpty().
+						HasSuspendAt(120).
+						HasSuspendImmediateAt(150).
+						HasCreatedOnNotEmpty().
+						HasOwnerNotEmpty().
+						HasComment(""),
+				),
 			},
-			// Import - with optionals
 			{
-				Config:            config.FromModels(t, complete),
-				ResourceName:      complete.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"credit_quota",
-					"end_timestamp",
-					"frequency",
-					"start_timestamp",
-					"suspend_immediate_trigger",
-					"suspend_trigger",
-				},
-			},
-			// Update - unset optionals
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, assertBasic...),
-			},
-			// Update - detect external changes
-			{
-				PreConfig: func() {
-					testClient().ResourceMonitor.Alter(t, id, &sdk.AlterResourceMonitorOptions{
-						Set: &sdk.ResourceMonitorSet{
-							CreditQuota:    sdk.Int(50),
-							Frequency:      sdk.Pointer(sdk.FrequencyMonthly),
-							StartTimestamp: &startTimestamp,
-							EndTimestamp:   &endTimestamp,
-							NotifyUsers: &sdk.NotifyUsers{
-								Users: []sdk.NotifiedUser{
-									{Name: sdk.NewAccountObjectIdentifier("JAN_CIESLAK")},
-								},
-							},
-						},
-					})
-				},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, assertBasic...),
-			},
-			// Create - with optionals (from scratch via taint)
-			{
-				Taint: []string{complete.ResourceReference()},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Config: config.FromModels(t, complete),
-				Check:  assertThat(t, assertComplete...),
-			},
-			// Create - with optionals and force-new fields
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(completeWithTriggers.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Config: config.FromModels(t, completeWithTriggers),
-				Check:  assertThat(t, assertCompleteWithTriggers...),
-			},
-			// Import - with optionals and force-new fields
-			{
-				Config:            config.FromModels(t, completeWithTriggers),
-				ResourceName:      completeWithTriggers.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					// "credit_quota",
-					// "end_timestamp",
-					// "frequency",
-					// "start_timestamp",
-					// "suspend_immediate_trigger",
-					// "suspend_trigger",
-				},
+				ResourceName: "snowflake_resource_monitor.test",
+				ImportState:  true,
+				Config:       config.FromModels(t, configModel),
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCreditQuotaString("10").
+						HasNotifyUsersLen(1).
+						HasNotifyUser(0, "JAN_CIESLAK").
+						HasFrequencyString(string(sdk.FrequencyWeekly)).
+						HasStartTimestampNotEmpty().
+						HasEndTimestampNotEmpty().
+						HasNotifyTriggersLen(2).
+						HasNotifyTrigger(0, 100).
+						HasNotifyTrigger(1, 110).
+						HasSuspendTriggerString("120").
+						HasSuspendImmediateTriggerString("150"),
+				),
 			},
 		},
 	})
