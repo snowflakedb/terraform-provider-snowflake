@@ -38,6 +38,14 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 		WithCreditQuota(10).
 		WithFrequency(string(sdk.FrequencyWeekly)).
 		WithStartTimestamp(startTimestamp).
+		WithEndTimestamp(endTimestamp)
+
+	newId := testClient().Ids.RandomAccountObjectIdentifier()
+	completeWithTriggers := model.ResourceMonitor("test", newId.Name()).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
+		WithCreditQuota(10).
+		WithFrequency(string(sdk.FrequencyWeekly)).
+		WithStartTimestamp(startTimestamp).
 		WithEndTimestamp(endTimestamp).
 		WithNotifyTriggersValue(configvariable.SetVariable(
 			configvariable.IntegerVariable(100),
@@ -45,6 +53,30 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 		)).
 		WithSuspendTrigger(120).
 		WithSuspendImmediateTrigger(150)
+
+	assertBasicFirstlyCreated := resourceassert.ResourceMonitorResource(t, basic.ResourceReference()).
+		HasNameString(id.Name()).
+		HasFullyQualifiedNameString(id.FullyQualifiedName()).
+		HasCreditQuotaString("").
+		HasNotifyUsersLen(0).
+		HasFrequencyString("").
+		HasStartTimestampString("").
+		HasEndTimestampString("").
+		HasNotifyTriggersEmpty().
+		HasSuspendTriggerString("").
+		HasSuspendImmediateTriggerString("")
+
+	assertBasicUpdated := resourceassert.ResourceMonitorResource(t, basic.ResourceReference()).
+		HasNameString(id.Name()).
+		HasFullyQualifiedNameString(id.FullyQualifiedName()).
+		HasNoCreditQuota().
+		HasNotifyUsersLen(0).
+		HasNoFrequency().
+		HasNoStartTimestamp().
+		HasNoEndTimestamp().
+		HasNotifyTriggersEmpty().
+		HasNoSuspendTrigger().
+		HasNoSuspendImmediateTrigger()
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.ResourceMonitor(t, id).
@@ -55,18 +87,6 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 			HasNotifyAt().
 			HasSuspendAtNil().
 			HasSuspendImmediateAtNil(),
-
-		resourceassert.ResourceMonitorResource(t, basic.ResourceReference()).
-			HasNameString(id.Name()).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasNoCreditQuota().
-			HasNotifyUsersLen(0).
-			HasNoFrequency().
-			HasNoStartTimestamp().
-			HasNoEndTimestamp().
-			HasNotifyTriggersEmpty().
-			HasNoSuspendTrigger().
-			HasNoSuspendImmediateTrigger(),
 
 		resourceshowoutputassert.ResourceMonitorShowOutput(t, basic.ResourceReference()).
 			HasName(id.Name()).
@@ -81,12 +101,41 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasCreditQuota(10).
 			HasFrequency(sdk.FrequencyWeekly).
-			HasSuspendAt(120).
-			HasSuspendImmediateAt(150),
+			HasSuspendAtNil().
+			HasSuspendImmediateAtNil(),
 
 		resourceassert.ResourceMonitorResource(t, complete.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasCreditQuotaString("10").
+			HasNotifyUsersLen(1).
+			HasNotifyUser(0, "JAN_CIESLAK").
+			HasFrequencyString(string(sdk.FrequencyWeekly)).
+			HasStartTimestampString(startTimestamp).
+			HasEndTimestampString(endTimestamp).
+			HasNotifyTriggersEmpty().
+			HasSuspendTriggerString("0").
+			HasSuspendImmediateTriggerString("0"),
+
+		resourceshowoutputassert.ResourceMonitorShowOutput(t, complete.ResourceReference()).
+			HasName(id.Name()).
+			HasCreditQuota(10).
+			HasFrequency(sdk.FrequencyWeekly).
+			HasSuspendAt(0).
+			HasSuspendImmediateAt(0),
+	}
+
+	assertCompleteWithTriggers := []assert.TestCheckFuncProvider{
+		objectassert.ResourceMonitor(t, newId).
+			HasName(newId.Name()).
+			HasCreditQuota(10).
+			HasFrequency(sdk.FrequencyWeekly).
+			HasSuspendAt(120).
+			HasSuspendImmediateAt(150),
+
+		resourceassert.ResourceMonitorResource(t, completeWithTriggers.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
 			HasCreditQuotaString("10").
 			HasNotifyUsersLen(1).
 			HasNotifyUser(0, "JAN_CIESLAK").
@@ -99,8 +148,8 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 			HasSuspendTriggerString("120").
 			HasSuspendImmediateTriggerString("150"),
 
-		resourceshowoutputassert.ResourceMonitorShowOutput(t, complete.ResourceReference()).
-			HasName(id.Name()).
+		resourceshowoutputassert.ResourceMonitorShowOutput(t, completeWithTriggers.ResourceReference()).
+			HasName(newId.Name()).
 			HasCreditQuota(10).
 			HasFrequency(sdk.FrequencyWeekly).
 			HasSuspendAt(120).
@@ -204,6 +253,31 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
+			},
+			// Create - with optionals and force-new fields
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(completeWithTriggers.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, completeWithTriggers),
+				Check:  assertThat(t, assertCompleteWithTriggers...),
+			},
+			// Import - with optionals and force-new fields
+			{
+				Config:            config.FromModels(t, completeWithTriggers),
+				ResourceName:      completeWithTriggers.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					// "credit_quota",
+					// "end_timestamp",
+					// "frequency",
+					// "start_timestamp",
+					// "suspend_immediate_trigger",
+					// "suspend_trigger",
+				},
 			},
 		},
 	})
