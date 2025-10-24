@@ -98,7 +98,7 @@ var dataMetricFunctionReferenceFunctionArgumentsDef = g.NewQueryStruct("dataMetr
 	OptionalAssignment(
 		"REF_ENTITY_DOMAIN",
 		g.KindOfT[DataMetricFunctionRefEntityDomainOption](),
-		g.ParameterOptions().SingleQuotes().ArrowEquals().Required(),
+		g.ParameterOptions().SingleQuotes().ArrowEquals(),
 	)
 
 var DataMetricFunctionReferenceDef = g.NewInterface(
@@ -118,30 +118,30 @@ var DataMetricFunctionReferenceDef = g.NewInterface(
 	dataMetricFunctionReferenceParametersDef,
 	dataMetricFunctionReferenceFunctionArgumentsDef,
 	g.DbStruct("dataMetricFunctionReferencesRow").
-		Text("metric_database_name").
-		Text("metric_schema_name").
-		Text("metric_name").
-		Text("argument_signature").
-		Text("data_type").
-		Text("ref_database_name").
-		Text("ref_schema_name").
-		Text("ref_entity_name").
-		Text("ref_entity_domain").
-		Text("ref_arguments").
-		Text("ref_id").
-		Text("schedule").
-		Text("schedule_status"),
+		Text("METRIC_DATABASE_NAME").
+		Text("METRIC_SCHEMA_NAME").
+		Text("METRIC_NAME").
+		Text("METRIC_SIGNATURE").
+		Text("METRIC_DATA_TYPE").
+		Text("REF_ENTITY_DATABASE_NAME").
+		Text("REF_ENTITY_SCHEMA_NAME").
+		Text("REF_ENTITY_NAME").
+		Text("REF_ENTITY_DOMAIN").
+		Text("REF_ARGUMENTS").
+		Text("REF_ID").
+		Text("SCHEDULE").
+		Text("SCHEDULE_STATUS"),
 	g.PlainStruct("DataMetricFunctionReference").
 		Text("MetricDatabaseName").
 		Text("MetricSchemaName").
 		Text("MetricName").
 		Text("ArgumentSignature").
 		Text("DataType").
-		Text("RefDatabaseName").
-		Text("RefSchemaName").
+		Text("RefEntityDatabaseName").
+		Text("RefEntitySchemaName").
 		Text("RefEntityName").
 		Text("RefEntityDomain").
-		Text("RefArguments").
+		Field("RefArguments", "[]DataMetricFunctionRefArgument").
 		Text("RefId").
 		Text("Schedule").
 		Text("ScheduleStatus"),
