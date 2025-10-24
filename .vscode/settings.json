@@ -2,17 +2,14 @@
     "files.insertFinalNewline": true,
     "go.testEnvFile": "${workspaceFolder}/test.env",
     "go.formatTool": "gofumpt",
-    "go.toolsEnvVars": {
-        "GOFLAGS": "-tags=account_level_tests"
-    },
     "gopls": {
         "buildFlags": [
-            "-tags=non_account_level_tests account_level_tests"
+            "-tags=non_account_level_tests"
         ],
         "formatting.gofumpt": true
     },
     "go.testFlags": [
-        "-v"
+        "-v",
     ],
     "go.testTimeout": "600s",
     "go.lintTool": "golangci-lint",

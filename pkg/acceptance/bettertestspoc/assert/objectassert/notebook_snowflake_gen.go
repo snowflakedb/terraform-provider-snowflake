@@ -76,20 +76,25 @@ func (n *NotebookAssert) HasSchemaName(expected string) *NotebookAssert {
 	return n
 }
 
-func (n *NotebookAssert) HasComment(expected *string) *NotebookAssert {
+func (n *NotebookAssert) HasComment(expected string) *NotebookAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
 		t.Helper()
-		if o.Comment == nil && expected == nil {
-			return nil
-		}
 		if o.Comment == nil {
-			return fmt.Errorf("expected comment: %v; got nil", *expected)
+			return fmt.Errorf("expected comment to be non empty")
 		}
-		if expected == nil {
-			return fmt.Errorf("expected nil; got %v", *o.Comment)
+		if *o.Comment != expected {
+			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
 		}
-		if *o.Comment != *expected {
-			return fmt.Errorf("expected comment: %v; got: %v", *expected, *o.Comment)
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookAssert) HasNoComment() *NotebookAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be empty")
 		}
 		return nil
 	})
@@ -148,6 +153,17 @@ func (n *NotebookAssert) HasCodeWarehouse(expected sdk.AccountObjectIdentifier) 
 		t.Helper()
 		if o.CodeWarehouse.Name() != expected.Name() {
 			return fmt.Errorf("expected code warehouse: %v; got: %v", expected.Name(), o.CodeWarehouse.Name())
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookAssert) HasNoCodeWarehouse() *NotebookAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
+		t.Helper()
+		if o.CodeWarehouse.Name() != "" {
+			return fmt.Errorf("expected code warehouse to be empty")
 		}
 		return nil
 	})

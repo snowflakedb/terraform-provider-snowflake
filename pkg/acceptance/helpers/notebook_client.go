@@ -24,9 +24,10 @@ func (c *NotebookClient) client() sdk.Notebooks {
 	return c.context.client.Notebooks
 }
 
-func (c *NotebookClient) Create(t *testing.T, name sdk.SchemaObjectIdentifier) (*sdk.Notebook, func()) {
+func (c *NotebookClient) Create(t *testing.T) (*sdk.Notebook, func()) {
+	id := c.ids.RandomSchemaObjectIdentifier()
 	t.Helper()
-	return c.CreateWithRequest(t, sdk.NewCreateNotebookRequest(name))
+	return c.CreateWithRequest(t, sdk.NewCreateNotebookRequest(id))
 }
 
 func (c *NotebookClient) CreateWithRequest(t *testing.T, req *sdk.CreateNotebookRequest) (*sdk.Notebook, func()) {
@@ -47,7 +48,7 @@ func (c *NotebookClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) f
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropNotebookRequest(id).WithIfExists(true))
+		err := c.client().DropSafely(ctx, id)
 		require.NoError(t, err)
 	}
 }
