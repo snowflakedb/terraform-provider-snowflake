@@ -10,6 +10,12 @@ import (
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	tfjson "github.com/hashicorp/terraform-json"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
@@ -21,6 +27,280 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
+
+func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+	issuer := random.String()
+
+	basic := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeCustom),
+	).
+		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com")))
+
+	complete := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeCustom),
+	).
+		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com"))).
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+		WithExternalOauthAudienceListValue(config.SetVariable(config.StringVariable("bar"))).
+		WithExternalOauthScopeDelimiter(".").
+		WithComment(comment)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("EXTERNAL_OAUTH - " + string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasEnabled(true).
+			HasComment(""),
+
+		resourceassert.ExternalOauthSecurityIntegrationResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasEnabledString("true").
+			HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasExternalOauthIssuerString(issuer).
+			HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
+			HasCommentString(""),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("EXTERNAL_OAUTH - " + string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasEnabled(true).
+			HasComment(""),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress))),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable))),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ",")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.comment.0.value", "")),
+	}
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("EXTERNAL_OAUTH - " + string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasEnabled(true).
+			HasComment(comment),
+
+		resourceassert.ExternalOauthSecurityIntegrationResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasEnabledString("true").
+			HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasExternalOauthIssuerString(issuer).
+			HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
+			HasExternalOauthAnyRoleModeString(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+			HasExternalOauthScopeDelimiterString(".").
+			HasCommentString(comment),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("EXTERNAL_OAUTH - " + string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasEnabled(true).
+			HasComment(comment),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_audience_list.0.value", "bar")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ".")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
+		Steps: []resource.TestStep{
+			// Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_oauth_jws_keys_url",
+					"external_oauth_rsa_public_key",
+					"external_oauth_rsa_public_key_2",
+					"external_oauth_scope_mapping_attribute",
+					"external_oauth_any_role_mode",
+					"external_oauth_scope_delimiter",
+				},
+			},
+			// Update - set optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_oauth_jws_keys_url",
+					"external_oauth_rsa_public_key",
+					"external_oauth_rsa_public_key_2",
+					"external_oauth_scope_mapping_attribute",
+					"external_oauth_any_role_mode",
+					"external_oauth_scope_delimiter",
+				},
+			},
+			// Update - unset optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().SecurityIntegration.UpdateExternalOauth(t, sdk.NewAlterExternalOauthSecurityIntegrationRequest(id).
+						WithSet(*sdk.NewExternalOauthIntegrationSetRequest().
+							WithComment(sdk.StringAllowEmpty{Value: comment}),
+						),
+					)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Create - with optionals (from scratch via taint)
+			{
+				Taint: []string{complete.ResourceReference()},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
+
+func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+	issuer := random.String()
+
+	complete := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeCustom),
+	).
+		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com"))).
+		WithExternalOauthScopeMappingAttribute("scp").
+		WithExternalOauthAllowedRolesListValue(config.SetVariable(config.StringVariable(role.ID().Name()))).
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+		WithExternalOauthAudienceListValue(config.SetVariable(config.StringVariable("bar"))).
+		WithExternalOauthScopeDelimiter(".").
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
+		Steps: []resource.TestStep{
+			// Create - with all optionals (including force-new fields)
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(t,
+					objectassert.SecurityIntegration(t, id).
+						HasName(id.Name()).
+						HasIntegrationType("EXTERNAL_OAUTH - "+string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+						HasEnabled(true).
+						HasComment(comment),
+
+					resourceassert.ExternalOauthSecurityIntegrationResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasEnabledString("true").
+						HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+						HasExternalOauthIssuerString(issuer).
+						HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
+						HasExternalOauthScopeMappingAttributeString("scp").
+						HasExternalOauthAnyRoleModeString(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+						HasExternalOauthScopeDelimiterString(".").
+						HasCommentString(comment),
+
+					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+						HasName(id.Name()).
+						HasIntegrationType("EXTERNAL_OAUTH - "+string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+						HasEnabled(true).
+						HasComment(comment),
+
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress))),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable))),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_allowed_roles_list.0.value", role.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_audience_list.0.value", "bar")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ".")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+				),
+			},
+			// Import - with all optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_oauth_jws_keys_url",
+					"external_oauth_rsa_public_key",
+					"external_oauth_rsa_public_key_2",
+					"external_oauth_scope_mapping_attribute",
+					"external_oauth_any_role_mode",
+					"external_oauth_scope_delimiter",
+				},
+			},
+		},
+	})
+}
 
 func TestAcc_ExternalOauthIntegration_basic(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
