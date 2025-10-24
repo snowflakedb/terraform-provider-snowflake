@@ -2,8 +2,8 @@
 
 {{ .KindNoPtr }}{
 {{- range .Fields }}
-    {{- if .ShouldBeInDto }}
-        {{ if .IsStruct }}{{ else }}{{ .Name }}: r{{ .Path }},{{ end -}}
+    {{- if and .ShouldBeInDto (not .IsStruct) }}
+        {{ .Name }}: r{{ .Path }},
     {{- end -}}
 {{- end }}
 }
@@ -32,4 +32,4 @@
             {{- end -}}
         {{- end -}}
     {{- end }}
-{{- end }}
+{{- end -}}
