@@ -47,7 +47,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateNotificationIntegrationRequest(id, true).
-			WithAutomatedDataLoadsParams(sdk.NewAutomatedDataLoadsParamsRequest().WithGoogleAutoParams(sdk.NewGoogleAutoParamsRequest(gcpPubsubSubscriptionName)))
+			WithAutomatedDataLoadsParams(*sdk.NewAutomatedDataLoadsParamsRequest().WithGoogleAutoParams(*sdk.NewGoogleAutoParamsRequest(gcpPubsubSubscriptionName)))
 	}
 
 	createNotificationIntegrationAutoAzureRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
@@ -55,7 +55,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateNotificationIntegrationRequest(id, true).
-			WithAutomatedDataLoadsParams(sdk.NewAutomatedDataLoadsParamsRequest().WithAzureAutoParams(sdk.NewAzureAutoParamsRequest(azureStorageQueuePrimaryUri, azureTenantId)))
+			WithAutomatedDataLoadsParams(*sdk.NewAutomatedDataLoadsParamsRequest().WithAzureAutoParams(*sdk.NewAzureAutoParamsRequest(azureStorageQueuePrimaryUri, azureTenantId)))
 	}
 
 	createNotificationIntegrationPushAmazonRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
@@ -63,7 +63,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateNotificationIntegrationRequest(id, true).
-			WithPushNotificationParams(sdk.NewPushNotificationParamsRequest().WithAmazonPushParams(sdk.NewAmazonPushParamsRequest(awsSnsTopicArn, awsSnsRoleArn)))
+			WithPushNotificationParams(*sdk.NewPushNotificationParamsRequest().WithAmazonPushParams(*sdk.NewAmazonPushParamsRequest(awsSnsTopicArn, awsSnsRoleArn)))
 	}
 
 	createNotificationIntegrationPushGoogleRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
@@ -71,7 +71,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateNotificationIntegrationRequest(id, true).
-			WithPushNotificationParams(sdk.NewPushNotificationParamsRequest().WithGooglePushParams(sdk.NewGooglePushParamsRequest(gcpPubsubTopicName)))
+			WithPushNotificationParams(*sdk.NewPushNotificationParamsRequest().WithGooglePushParams(*sdk.NewGooglePushParamsRequest(gcpPubsubTopicName)))
 	}
 
 	createNotificationIntegrationPushAzureRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
@@ -79,7 +79,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateNotificationIntegrationRequest(id, true).
-			WithPushNotificationParams(sdk.NewPushNotificationParamsRequest().WithAzurePushParams(sdk.NewAzurePushParamsRequest(azureEventGridTopicEndpoint, azureTenantId)))
+			WithPushNotificationParams(*sdk.NewPushNotificationParamsRequest().WithAzurePushParams(*sdk.NewAzurePushParamsRequest(azureEventGridTopicEndpoint, azureTenantId)))
 	}
 
 	createNotificationIntegrationEmailRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
@@ -88,7 +88,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 
 		// TODO [SNOW-1007539]: use email of our service user
 		return sdk.NewCreateNotificationIntegrationRequest(id, true).
-			WithEmailParams(sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: "artur.sawicki@snowflake.com"}}))
+			WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: "artur.sawicki@snowflake.com"}}))
 	}
 
 	createNotificationIntegrationWithRequest := func(t *testing.T, request *sdk.CreateNotificationIntegrationRequest) *sdk.NotificationIntegration {
@@ -256,7 +256,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 	t.Run("create and describe notification integration - email, with empty allowed recipients", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewCreateNotificationIntegrationRequest(id, true).
-			WithEmailParams(sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{}))
+			WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{}))
 
 		integration := createNotificationIntegrationWithRequest(t, request)
 
@@ -273,9 +273,9 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 
 		setRequest := sdk.NewAlterNotificationIntegrationRequest(integration.ID()).
 			WithSet(
-				sdk.NewNotificationIntegrationSetRequest().
-					WithEnabled(sdk.Bool(false)).
-					WithComment(sdk.String("changed comment")),
+				*sdk.NewNotificationIntegrationSetRequest().
+					WithEnabled(false).
+					WithComment("changed comment"),
 			)
 		err := client.NotificationIntegrations.Alter(ctx, setRequest)
 		require.NoError(t, err)
@@ -294,10 +294,10 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 
 		setRequest := sdk.NewAlterNotificationIntegrationRequest(integration.ID()).
 			WithSet(
-				sdk.NewNotificationIntegrationSetRequest().
-					WithEnabled(sdk.Bool(false)).
-					WithSetPushParams(sdk.NewSetPushParamsRequest().WithSetAmazonPush(sdk.NewSetAmazonPushRequest(awsSnsOtherTopicArn, awsSnsOtherRoleArn))).
-					WithComment(sdk.String("changed comment")),
+				*sdk.NewNotificationIntegrationSetRequest().
+					WithEnabled(false).
+					WithSetPushParams(*sdk.NewSetPushParamsRequest().WithSetAmazonPush(*sdk.NewSetAmazonPushRequest(awsSnsOtherTopicArn, awsSnsOtherRoleArn))).
+					WithComment("changed comment"),
 			)
 		err := client.NotificationIntegrations.Alter(ctx, setRequest)
 		require.NoError(t, err)
@@ -328,10 +328,10 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 
 		setRequest := sdk.NewAlterNotificationIntegrationRequest(integration.ID()).
 			WithSet(
-				sdk.NewNotificationIntegrationSetRequest().
-					WithEnabled(sdk.Bool(false)).
-					WithSetEmailParams(sdk.NewSetEmailParamsRequest([]sdk.NotificationIntegrationAllowedRecipient{{Email: "jan.cieslak@snowflake.com"}})).
-					WithComment(sdk.String("changed comment")),
+				*sdk.NewNotificationIntegrationSetRequest().
+					WithEnabled(false).
+					WithSetEmailParams(*sdk.NewSetEmailParamsRequest([]sdk.NotificationIntegrationAllowedRecipient{{Email: "jan.cieslak@snowflake.com"}})).
+					WithComment("changed comment"),
 			)
 		err := client.NotificationIntegrations.Alter(ctx, setRequest)
 		require.NoError(t, err)
@@ -345,9 +345,9 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 
 		unsetRequest := sdk.NewAlterNotificationIntegrationRequest(integration.ID()).
 			WithUnsetEmailParams(
-				sdk.NewNotificationIntegrationUnsetEmailParamsRequest().
-					WithAllowedRecipients(sdk.Bool(true)).
-					WithComment(sdk.Bool(true)),
+				*sdk.NewNotificationIntegrationUnsetEmailParamsRequest().
+					WithAllowedRecipients(true).
+					WithComment(true),
 			)
 		err = client.NotificationIntegrations.Alter(ctx, unsetRequest)
 		require.NoError(t, err)
