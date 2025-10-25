@@ -70,11 +70,11 @@ func TestMaterializedViews_Create(t *testing.T) {
 		maskingPolicy2Id := randomSchemaObjectIdentifier()
 
 		req := NewCreateMaterializedViewRequest(id, sql).
-			WithOrReplace(Bool(true)).
-			WithSecure(Bool(true)).
+			WithOrReplace(true).
+			WithSecure(true).
 			WithColumns([]MaterializedViewColumnRequest{
 				*NewMaterializedViewColumnRequest("column_without_comment"),
-				*NewMaterializedViewColumnRequest("column_with_comment").WithComment(String("column 2 comment")),
+				*NewMaterializedViewColumnRequest("column_with_comment").WithComment("column 2 comment"),
 			}).
 			WithColumnsMaskingPolicies([]MaterializedViewColumnMaskingPolicyRequest{
 				*NewMaterializedViewColumnMaskingPolicyRequest("column", maskingPolicy1Id).
@@ -85,14 +85,14 @@ func TestMaterializedViews_Create(t *testing.T) {
 					}}),
 				*NewMaterializedViewColumnMaskingPolicyRequest("column 2", maskingPolicy2Id),
 			}).
-			WithCopyGrants(Bool(true)).
-			WithComment(String("comment")).
-			WithRowAccessPolicy(NewMaterializedViewRowAccessPolicyRequest(rowAccessPolicyId, []string{"c", "d"})).
+			WithCopyGrants(true).
+			WithComment("comment").
+			WithRowAccessPolicy(*NewMaterializedViewRowAccessPolicyRequest(rowAccessPolicyId, []string{"c", "d"})).
 			WithTag([]TagAssociation{{
 				Name:  tag2Id,
 				Value: "v2",
 			}}).
-			WithClusterBy(NewMaterializedViewClusterByRequest().WithExpressions([]MaterializedViewClusterByExpressionRequest{{"column_without_comment"}, {"column_with_comment"}}))
+			WithClusterBy(*NewMaterializedViewClusterByRequest().WithExpressions([]MaterializedViewClusterByExpressionRequest{{"column_without_comment"}, {"column_with_comment"}}))
 
 		assertOptsValidAndSQLEquals(t, req.toOpts(), `CREATE OR REPLACE SECURE MATERIALIZED VIEW %s COPY GRANTS ("column_without_comment", "column_with_comment" COMMENT 'column 2 comment') column MASKING POLICY %s USING (a, b) TAG (%s = 'v1'), column 2 MASKING POLICY %s COMMENT = 'comment' ROW ACCESS POLICY %s ON (c, d) TAG (%s = 'v2') CLUSTER BY ("column_without_comment", "column_with_comment") AS %s`, id.FullyQualifiedName(), maskingPolicy1Id.FullyQualifiedName(), tag1Id.FullyQualifiedName(), maskingPolicy2Id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), tag2Id.FullyQualifiedName(), sql)
 	})
