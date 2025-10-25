@@ -82,7 +82,7 @@ type ShowNetworkRulesRow struct {
 	Type         string    `db:"type"`
 	Mode         string    `db:"mode"`
 	// adjusted manually
-	EntriesInValuelist int    `db:"entries_in_valuelist"`
+	EntriesInValueList int    `db:"entries_in_valuelist"`
 	OwnerRoleType      string `db:"owner_role_type"`
 }
 
