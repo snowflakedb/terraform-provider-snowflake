@@ -28,7 +28,7 @@ func (c *ApplicationClient) CreateApplication(t *testing.T, packageId sdk.Accoun
 	t.Helper()
 	ctx := context.Background()
 	id := c.ids.RandomAccountObjectIdentifier()
-	err := c.client().Create(ctx, sdk.NewCreateApplicationRequest(id, packageId).WithVersion(sdk.NewApplicationVersionRequest().WithVersionAndPatch(sdk.NewVersionAndPatchRequest(version, nil))))
+	err := c.client().Create(ctx, sdk.NewCreateApplicationRequest(id, packageId).WithVersion(*sdk.NewApplicationVersionRequest().WithVersionAndPatch(*sdk.NewVersionAndPatchRequest(version, nil))))
 	require.NoError(t, err)
 
 	application, err := c.client().ShowByID(ctx, id)
@@ -42,7 +42,7 @@ func (c *ApplicationClient) DropApplicationFunc(t *testing.T, id sdk.AccountObje
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropApplicationRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropApplicationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }
