@@ -14,6 +14,15 @@ func (v *QueryStruct) Assignment(sqlPrefix string, kind string, transformer *Par
 	return v.assignment(sqlToFieldName(sqlPrefix, true), kind, transformer)
 }
 
+func (v *QueryStruct) AssignmentWithFieldName(sqlPrefix string, kind string, transformer *ParameterTransformer, fieldName string) *QueryStruct {
+	if transformer != nil {
+		transformer = transformer.SQL(sqlPrefix)
+	} else {
+		transformer = ParameterOptions().SQL(sqlPrefix)
+	}
+	return v.assignment(fieldName, kind, transformer)
+}
+
 func (v *QueryStruct) OptionalAssignment(sqlPrefix string, kind string, transformer *ParameterTransformer) *QueryStruct {
 	if len(kind) > 0 && kind[0] != '*' {
 		kind = KindOfPointer(kind)

@@ -31,7 +31,7 @@ var NetworkRuleDef = g.NewInterface(
 			OrReplace().
 			SQL("NETWORK RULE").
 			Name().
-			Assignment("TYPE", g.KindOfT[NetworkRuleType](), g.ParameterOptions().Required().NoQuotes()).
+			AssignmentWithFieldName("TYPE", g.KindOfT[NetworkRuleType](), g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
 			ListAssignment("VALUE_LIST", "NetworkRuleValue", g.ParameterOptions().Required().Parentheses()).
 			Assignment("MODE", g.KindOfT[NetworkRuleMode](), g.ParameterOptions().Required().NoQuotes()).
 			OptionalComment().
@@ -94,8 +94,8 @@ var NetworkRuleDef = g.NewInterface(
 			Text("SchemaName").
 			Text("Owner").
 			Text("Comment").
-			Text("Type").
-			Text("Mode").
+			Field("Type", "NetworkRuleType").
+			Field("Mode", "NetworkRuleMode").
 			Number("EntriesInValueList").
 			Text("OwnerRoleType"),
 		g.NewQueryStruct("ShowNetworkRules").
@@ -130,8 +130,8 @@ var NetworkRuleDef = g.NewInterface(
 			Text("SchemaName").
 			Text("Owner").
 			Text("Comment").
-			Text("Type").
-			Text("Mode").
+			Field("Type", "NetworkRuleType").
+			Field("Mode", "NetworkRuleMode").
 			Field("ValueList", "[]string"),
 		g.NewQueryStruct("ShowNetworkRules").
 			Describe().
