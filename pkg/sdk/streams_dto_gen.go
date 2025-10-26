@@ -114,11 +114,6 @@ type ShowStreamRequest struct {
 	Limit      *LimitFrom
 }
 
-// added manually
-type ShowByIdStreamRequest struct {
-	name SchemaObjectIdentifier // required
-}
-
 type DescribeStreamRequest struct {
 	name SchemaObjectIdentifier // required
 }
