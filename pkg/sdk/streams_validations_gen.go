@@ -35,7 +35,7 @@ func (opts *CreateOnTableStreamOptions) validate() error {
 		if valueSet(opts.On.Statement) {
 			if !exactlyOneValueSet(opts.On.Statement.Timestamp, opts.On.Statement.Offset, opts.On.Statement.Statement, opts.On.Statement.Stream) {
 				// adjusted manually
-				errs = append(errs, errExactlyOneOf("CreateOnViewStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
+				errs = append(errs, errExactlyOneOf("CreateOnTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
 			}
 		}
 	}
@@ -63,7 +63,7 @@ func (opts *CreateOnExternalTableStreamOptions) validate() error {
 		if valueSet(opts.On.Statement) {
 			if !exactlyOneValueSet(opts.On.Statement.Timestamp, opts.On.Statement.Offset, opts.On.Statement.Statement, opts.On.Statement.Stream) {
 				// adjusted manually
-				errs = append(errs, errExactlyOneOf("CreateOnViewStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
+				errs = append(errs, errExactlyOneOf("CreateOnExternalTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
 			}
 		}
 	}
