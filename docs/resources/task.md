@@ -40,22 +40,6 @@ resource "snowflake_task" "serverless_task" {
   sql_statement = "select 1"
 }
 
-# Serverless task with serverless parameters
-resource "snowflake_task" "serverless_task_with_params" {
-  database                                 = "database"
-  schema                                   = "schema"
-  name                                     = "serverless_task"
-  user_task_managed_initial_warehouse_size = "MEDIUM"
-  target_completion_interval               = "10 MINUTES"
-  serverless_task_min_statement_size       = "SMALL"
-  serverless_task_max_statement_size       = "LARGE"
-  started                                  = true
-  schedule {
-    minutes = 15
-  }
-  sql_statement = "CALL my_stored_procedure()"
-}
-
 # Basic child task
 resource "snowflake_task" "child_task" {
   database  = "database"
@@ -78,6 +62,44 @@ resource "snowflake_task" "child_task" {
   # You can do it by referring to task by computed fully_qualified_name field or write the task name in manually if it's not managed by Terraform
   finalize      = snowflake_task.root_task.fully_qualified_name
   sql_statement = "select 1"
+}
+
+# Complete child task
+resource "snowflake_task" "complete_child_task" {
+  database      = "database"
+  schema        = "schema"
+  name          = "complete_child_task"
+  started       = true
+  sql_statement = "CALL my_stored_procedure()"
+
+  after                       = [snowflake_task.root_task.fully_qualified_name]
+  config                      = "{\"output_dir\": \"/temp/\", \"learning_rate\": 0.1}"
+  allow_overlapping_execution = true
+  error_integration           = snowflake_notification_integration.example.fully_qualified_name
+  when                        = "SYSTEM$STREAM_HAS_DATA('my_stream')"
+  comment                     = "complete child task with all parameters"
+  target_completion_interval  = "10 MINUTES"
+
+  # Task Parameters
+  suspend_task_after_num_failures               = 5
+  task_auto_retry_attempts                      = 3
+  user_task_managed_initial_warehouse_size      = "MEDIUM"
+  user_task_minimum_trigger_interval_in_seconds = 60
+  user_task_timeout_ms                          = 7200000
+  serverless_task_min_statement_size            = "SMALL"
+  serverless_task_max_statement_size            = "LARGE"
+
+  # Session Parameters
+  abort_detached_query         = false
+  autocommit                   = true
+  binary_input_format          = "HEX"
+  binary_output_format         = "HEX"
+  json_indent                  = 4
+  lock_timeout                 = 21600
+  log_level                    = "INFO"
+  query_tag                    = "child_task_query"
+  statement_timeout_in_seconds = 86400
+  timezone                     = "America/New_York"
 }
 
 # Complete standalone task
@@ -216,13 +238,13 @@ resource "snowflake_task" "test" {
 - `s3_stage_vpce_dns_name` (String) Specifies the DNS name of an Amazon S3 interface endpoint. Requests sent to the internal stage of an account via [AWS PrivateLink for Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/privatelink-interface-endpoints.html) use this endpoint to connect. For more information, see [Accessing Internal stages with dedicated interface endpoints](https://docs.snowflake.com/en/user-guide/private-internal-stages-aws.html#label-aws-privatelink-internal-stage-network-isolation). For more information, check [S3_STAGE_VPCE_DNS_NAME docs](https://docs.snowflake.com/en/sql-reference/parameters#s3-stage-vpce-dns-name).
 - `schedule` (Block List, Max: 1) The schedule for periodically running the task. This can be a cron or interval in minutes. (Conflicts with finalize and after; when set, one of the sub-fields `minutes` or `using_cron` should be set) (see [below for nested schema](#nestedblock--schedule))
 - `search_path` (String) Specifies the path to search to resolve unqualified object names in queries. For more information, see [Name resolution in queries](https://docs.snowflake.com/en/sql-reference/name-resolution.html#label-object-name-resolution-search-path). Comma-separated list of identifiers. An identifier can be a fully or partially qualified schema name. For more information, check [SEARCH_PATH docs](https://docs.snowflake.com/en/sql-reference/parameters#search-path).
-- `serverless_task_max_statement_size` (String) Specifies the maximum warehouse size for serverless tasks. Valid values are (case-insensitive): %s. For more information, check [SERVERLESS_TASK_MAX_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-max-statement-size).
-- `serverless_task_min_statement_size` (String) Specifies the minimum warehouse size for serverless tasks. Valid values are (case-insensitive): %s. For more information, check [SERVERLESS_TASK_MIN_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-min-statement-size).
+- `serverless_task_max_statement_size` (String) Specifies the maximum warehouse size for serverless tasks. Valid values are (case-insensitive): `XSMALL` | `X-SMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `X-LARGE` | `XXLARGE` | `X2LARGE` | `2X-LARGE` | `XXXLARGE` | `X3LARGE` | `3X-LARGE` | `X4LARGE` | `4X-LARGE` | `X5LARGE` | `5X-LARGE` | `X6LARGE` | `6X-LARGE`. For more information, check [SERVERLESS_TASK_MAX_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-max-statement-size).
+- `serverless_task_min_statement_size` (String) Specifies the minimum warehouse size for serverless tasks. Valid values are (case-insensitive): `XSMALL` | `X-SMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `X-LARGE` | `XXLARGE` | `X2LARGE` | `2X-LARGE` | `XXXLARGE` | `X3LARGE` | `3X-LARGE` | `X4LARGE` | `4X-LARGE` | `X5LARGE` | `5X-LARGE` | `X6LARGE` | `6X-LARGE`. For more information, check [SERVERLESS_TASK_MIN_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-min-statement-size).
 - `statement_queued_timeout_in_seconds` (Number) Amount of time, in seconds, a SQL statement (query, DDL, DML, etc.) remains queued for a warehouse before it is canceled by the system. This parameter can be used in conjunction with the [MAX_CONCURRENCY_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#label-max-concurrency-level) parameter to ensure a warehouse is never backlogged. For more information, check [STATEMENT_QUEUED_TIMEOUT_IN_SECONDS docs](https://docs.snowflake.com/en/sql-reference/parameters#statement-queued-timeout-in-seconds).
 - `statement_timeout_in_seconds` (Number) Amount of time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system. For more information, check [STATEMENT_TIMEOUT_IN_SECONDS docs](https://docs.snowflake.com/en/sql-reference/parameters#statement-timeout-in-seconds).
 - `strict_json_output` (Boolean) This parameter specifies whether JSON output in a session is compatible with the general standard (as described by [http://json.org](http://json.org)). By design, Snowflake allows JSON input that contains non-standard values; however, these non-standard values might result in Snowflake outputting JSON that is incompatible with other platforms and languages. This parameter, when enabled, ensures that Snowflake outputs valid/compatible JSON. For more information, check [STRICT_JSON_OUTPUT docs](https://docs.snowflake.com/en/sql-reference/parameters#strict-json-output).
 - `suspend_task_after_num_failures` (Number) Specifies the number of consecutive failed task runs after which the current task is suspended automatically. The default is 0 (no automatic suspension). For more information, check [SUSPEND_TASK_AFTER_NUM_FAILURES docs](https://docs.snowflake.com/en/sql-reference/parameters#suspend-task-after-num-failures).
-- `target_completion_interval` (String) Specifies the target completion interval for serverless tasks. Format: '<num> { HOURS | MINUTES | SECONDS }' (e.g., '10 MINUTES'). For more information, check [TARGET_COMPLETION_INTERVAL docs](https://docs.snowflake.com/en/sql-reference/parameters#target-completion-interval).
+- `target_completion_interval` (String) Specifies the target completion interval for serverless tasks. Format: '<num> { HOURS | MINUTES | SECONDS }' (e.g., '10 MINUTES'). Only applicable to serverless tasks.
 - `task_auto_retry_attempts` (Number) Specifies the number of automatic task graph retry attempts. If any task graphs complete in a FAILED state, Snowflake can automatically retry the task graphs from the last task in the graph that failed. For more information, check [TASK_AUTO_RETRY_ATTEMPTS docs](https://docs.snowflake.com/en/sql-reference/parameters#task-auto-retry-attempts).
 - `time_input_format` (String) Specifies the input format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). Any valid, supported time format or AUTO (AUTO specifies that Snowflake attempts to automatically detect the format of times stored in the system during the session). For more information, check [TIME_INPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#time-input-format).
 - `time_output_format` (String) Specifies the display format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). For more information, check [TIME_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#time-output-format).
