@@ -70,8 +70,8 @@ func (s *SemanticExpression) GetSqlExpression() *SemanticSqlExpression {
 	return s.sqlExpression
 }
 
-func (s *SemanticExpression) SetSqlExpression(SqlExpression string) {
-	s.sqlExpression = &SemanticSqlExpression{SqlExpression: SqlExpression}
+func (s *SemanticExpression) SetSqlExpression(sqlExpression string) {
+	s.sqlExpression = &SemanticSqlExpression{SqlExpression: sqlExpression}
 }
 
 func (s *SemanticExpression) GetSynonyms() *Synonyms {

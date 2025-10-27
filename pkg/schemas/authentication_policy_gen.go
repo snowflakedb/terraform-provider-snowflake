@@ -47,7 +47,7 @@ var _ = ShowAuthenticationPolicySchema
 
 func AuthenticationPolicyToSchema(authenticationPolicy *sdk.AuthenticationPolicy) map[string]any {
 	authenticationPolicySchema := make(map[string]any)
-	authenticationPolicySchema["created_on"] = authenticationPolicy.CreatedOn
+	authenticationPolicySchema["created_on"] = authenticationPolicy.CreatedOn.String()
 	authenticationPolicySchema["name"] = authenticationPolicy.Name
 	authenticationPolicySchema["comment"] = authenticationPolicy.Comment
 	authenticationPolicySchema["database_name"] = authenticationPolicy.DatabaseName

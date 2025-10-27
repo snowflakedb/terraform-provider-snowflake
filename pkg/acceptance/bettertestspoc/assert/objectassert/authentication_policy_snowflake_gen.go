@@ -5,6 +5,7 @@ package objectassert
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -31,7 +32,7 @@ func AuthenticationPolicyFromObject(t *testing.T, authenticationPolicy *sdk.Auth
 	}
 }
 
-func (a *AuthenticationPolicyAssert) HasCreatedOn(expected string) *AuthenticationPolicyAssert {
+func (a *AuthenticationPolicyAssert) HasCreatedOn(expected time.Time) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
 		if o.CreatedOn != expected {
@@ -80,6 +81,17 @@ func (a *AuthenticationPolicyAssert) HasSchemaName(expected string) *Authenticat
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyAssert) HasKind(expected string) *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.Kind != expected {
+			return fmt.Errorf("expected kind: %v; got: %v", expected, o.Kind)
 		}
 		return nil
 	})

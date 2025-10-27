@@ -4,6 +4,7 @@ package resourceshowoutputassert
 
 import (
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
@@ -36,8 +37,8 @@ func ImportedAuthenticationPolicyShowOutput(t *testing.T, id string) *Authentica
 // Attribute value checks //
 ////////////////////////////
 
-func (a *AuthenticationPolicyShowOutputAssert) HasCreatedOn(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+func (a *AuthenticationPolicyShowOutputAssert) HasCreatedOn(expected time.Time) *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
 	return a
 }
 
@@ -58,6 +59,11 @@ func (a *AuthenticationPolicyShowOutputAssert) HasDatabaseName(expected string) 
 
 func (a *AuthenticationPolicyShowOutputAssert) HasSchemaName(expected string) *AuthenticationPolicyShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasKind(expected string) *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
 	return a
 }
 
@@ -102,6 +108,11 @@ func (a *AuthenticationPolicyShowOutputAssert) HasNoDatabaseName() *Authenticati
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoSchemaName() *AuthenticationPolicyShowOutputAssert {
 	a.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	return a
+}
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoKind() *AuthenticationPolicyShowOutputAssert {
+	a.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
 	return a
 }
 

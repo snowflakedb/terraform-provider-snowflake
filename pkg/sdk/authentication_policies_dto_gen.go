@@ -17,9 +17,35 @@ type CreateAuthenticationPolicyRequest struct {
 	AuthenticationMethods    []AuthenticationMethods
 	MfaAuthenticationMethods []MfaAuthenticationMethods
 	MfaEnrollment            *MfaEnrollmentOption
+	MfaPolicy                *AuthenticationPolicyMfaPolicyRequest
 	ClientTypes              []ClientTypes
-	SecurityIntegrations     []SecurityIntegrationsOption
+	SecurityIntegrations     *SecurityIntegrationsOptionRequest
+	PatPolicy                *AuthenticationPolicyPatPolicyRequest
+	WorkloadIdentityPolicy   *AuthenticationPolicyWorkloadIdentityPolicyRequest
 	Comment                  *string
+}
+
+type AuthenticationPolicyMfaPolicyRequest struct {
+	EnforceMfaOnExternalAuthentication *EnforceMfaOnExternalAuthenticationOption
+	AllowedMethods                     []AuthenticationPolicyMfaPolicyListItem
+}
+
+type SecurityIntegrationsOptionRequest struct {
+	All                  *bool
+	SecurityIntegrations []AccountObjectIdentifier
+}
+
+type AuthenticationPolicyPatPolicyRequest struct {
+	DefaultExpiryInDays     *int
+	MaxExpiryInDays         *int
+	NetworkPolicyEvaluation *NetworkPolicyEvaluationOption
+}
+
+type AuthenticationPolicyWorkloadIdentityPolicyRequest struct {
+	AllowedProviders    []AuthenticationPolicyAllowedProviderListItem
+	AllowedAwsAccounts  []StringListItemWrapper
+	AllowedAzureIssuers []StringListItemWrapper
+	AllowedOidcIssuers  []StringListItemWrapper
 }
 
 type AlterAuthenticationPolicyRequest struct {
@@ -34,8 +60,11 @@ type AuthenticationPolicySetRequest struct {
 	AuthenticationMethods    []AuthenticationMethods
 	MfaAuthenticationMethods []MfaAuthenticationMethods
 	MfaEnrollment            *MfaEnrollmentOption
+	MfaPolicy                *AuthenticationPolicyMfaPolicyRequest
 	ClientTypes              []ClientTypes
-	SecurityIntegrations     []SecurityIntegrationsOption
+	SecurityIntegrations     *SecurityIntegrationsOptionRequest
+	PatPolicy                *AuthenticationPolicyPatPolicyRequest
+	WorkloadIdentityPolicy   *AuthenticationPolicyWorkloadIdentityPolicyRequest
 	Comment                  *string
 }
 
@@ -45,6 +74,9 @@ type AuthenticationPolicyUnsetRequest struct {
 	SecurityIntegrations     *bool
 	MfaAuthenticationMethods *bool
 	MfaEnrollment            *bool
+	MfaPolicy                *bool
+	PatPolicy                *bool
+	WorkloadIdentityPolicy   *bool
 	Comment                  *bool
 }
 
@@ -55,7 +87,8 @@ type DropAuthenticationPolicyRequest struct {
 
 type ShowAuthenticationPolicyRequest struct {
 	Like       *Like
-	In         *In
+	In         *ExtendedIn
+	On         *On
 	StartsWith *string
 	Limit      *LimitFrom
 }
