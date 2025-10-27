@@ -31,7 +31,7 @@ type CreateTaskRequest struct {
 	Tag                                     []TagAssociation
 	UserTaskMinimumTriggerIntervalInSeconds *int
 	TargetCompletionInterval                *string
-	AFTER                                   []SchemaObjectIdentifier
+	After                                   []SchemaObjectIdentifier
 	When                                    *string
 	sql                                     string // required
 }
@@ -58,7 +58,7 @@ type CreateOrAlterTaskRequest struct {
 	Comment                     *string
 	Finalize                    *SchemaObjectIdentifier
 	TaskAutoRetryAttempts       *int
-	AFTER                       []SchemaObjectIdentifier
+	After                       []SchemaObjectIdentifier
 	When                        *string
 	sql                         string // required
 }

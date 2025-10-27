@@ -88,7 +88,7 @@ func (s *CreateTaskRequest) WithTargetCompletionInterval(TargetCompletionInterva
 }
 
 func (s *CreateTaskRequest) WithAFTER(AFTER []SchemaObjectIdentifier) *CreateTaskRequest {
-	s.AFTER = AFTER
+	s.After = AFTER
 	return s
 }
 
@@ -177,7 +177,7 @@ func (s *CreateOrAlterTaskRequest) WithTaskAutoRetryAttempts(TaskAutoRetryAttemp
 }
 
 func (s *CreateOrAlterTaskRequest) WithAFTER(AFTER []SchemaObjectIdentifier) *CreateOrAlterTaskRequest {
-	s.AFTER = AFTER
+	s.After = AFTER
 	return s
 }
 

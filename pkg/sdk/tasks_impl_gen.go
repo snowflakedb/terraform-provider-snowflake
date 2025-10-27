@@ -200,7 +200,7 @@ func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 		Tag:                                     r.Tag,
 		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
 		TargetCompletionInterval:                r.TargetCompletionInterval,
-		After:                                   r.AFTER,
+		After:                                   r.After,
 		When:                                    r.When,
 		sql:                                     r.sql,
 	}
@@ -228,7 +228,7 @@ func (r *CreateOrAlterTaskRequest) toOpts() *CreateOrAlterTaskOptions {
 		Comment:                     r.Comment,
 		Finalize:                    r.Finalize,
 		TaskAutoRetryAttempts:       r.TaskAutoRetryAttempts,
-		After:                       r.AFTER,
+		After:                       r.After,
 		When:                        r.When,
 		sql:                         r.sql,
 	}
