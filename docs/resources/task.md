@@ -40,6 +40,22 @@ resource "snowflake_task" "serverless_task" {
   sql_statement = "select 1"
 }
 
+# Serverless task with serverless parameters
+resource "snowflake_task" "serverless_task_with_params" {
+  database                                 = "database"
+  schema                                   = "schema"
+  name                                     = "serverless_task"
+  user_task_managed_initial_warehouse_size = "MEDIUM"
+  target_completion_interval               = "10 MINUTES"
+  serverless_task_min_statement_size       = "SMALL"
+  serverless_task_max_statement_size       = "LARGE"
+  started                                  = true
+  schedule {
+    minutes = 15
+  }
+  sql_statement = "CALL my_stored_procedure()"
+}
+
 # Basic child task
 resource "snowflake_task" "child_task" {
   database  = "database"
