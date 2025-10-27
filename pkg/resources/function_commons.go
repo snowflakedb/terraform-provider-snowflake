@@ -564,7 +564,7 @@ func parseFunctionImportsCommon(d *schema.ResourceData) ([]sdk.FunctionImportReq
 		for _, imp := range v.(*schema.Set).List() {
 			stageLocation := imp.(map[string]any)["stage_location"].(string)
 			pathOnStage := imp.(map[string]any)["path_on_stage"].(string)
-			imports = append(imports, *sdk.NewFunctionImportRequest().WithImport(fmt.Sprintf("@%s/%s", stageLocation, pathOnStage)))
+			imports = append(imports, *sdk.NewFunctionImportRequest().WithFunctionImport(fmt.Sprintf("@%s/%s", stageLocation, pathOnStage)))
 		}
 	}
 	return imports, nil
@@ -574,7 +574,7 @@ func parseFunctionPackagesCommon(d *schema.ResourceData) ([]sdk.FunctionPackageR
 	packages := make([]sdk.FunctionPackageRequest, 0)
 	if v, ok := d.GetOk("packages"); ok {
 		for _, pkg := range v.(*schema.Set).List() {
-			packages = append(packages, *sdk.NewFunctionPackageRequest().WithPackage(pkg.(string)))
+			packages = append(packages, *sdk.NewFunctionPackageRequest().WithFunctionPackage(pkg.(string)))
 		}
 	}
 	return packages, nil

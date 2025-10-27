@@ -176,7 +176,7 @@ func (c *FunctionClient) CreateScalaStaged(t *testing.T, id sdk.SchemaObjectIden
 
 	request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
 		WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-		WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(importPath)})
+		WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(importPath)})
 
 	err := c.client().CreateForScala(ctx, request)
 	require.NoError(t, err)

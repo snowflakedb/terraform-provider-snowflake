@@ -166,10 +166,10 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithRuntimeVersion("11").
 			WithComment("comment").
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpJavaFunction.JarLocation())}).
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpJavaFunction.JarLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:snowpark:1.14.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:telemetry:0.1.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:snowpark:1.14.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:telemetry:0.1.0"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}}).
@@ -258,7 +258,7 @@ func TestInt_Functions(t *testing.T) {
 
 		requestStaged := sdk.NewCreateForJavaFunctionRequest(id.SchemaObjectId(), *returns, handler).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(importPath)})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(importPath)})
 
 		err := client.Functions.CreateForJava(ctx, requestStaged)
 		require.NoError(t, err)
@@ -343,10 +343,10 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithRuntimeVersion("11").
 			WithComment("comment").
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpJavaFunction.JarLocation())}).
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpJavaFunction.JarLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:snowpark:1.14.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:telemetry:0.1.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:snowpark:1.14.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:telemetry:0.1.0"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}})
@@ -434,7 +434,7 @@ func TestInt_Functions(t *testing.T) {
 
 		requestStaged := sdk.NewCreateForJavaFunctionRequest(id.SchemaObjectId(), *returns, handler).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(importPath)})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(importPath)})
 
 		err := client.Functions.CreateForJava(ctx, requestStaged)
 		require.NoError(t, err)
@@ -737,10 +737,10 @@ func TestInt_Functions(t *testing.T) {
 			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())}).
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpPythonFunction.PythonModuleLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("absl-py==0.12.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("about-time==4.2.1"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("absl-py==0.12.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("about-time==4.2.1"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}}).
@@ -821,7 +821,7 @@ func TestInt_Functions(t *testing.T) {
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, tmpPythonFunction.PythonHandler()).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpPythonFunction.PythonModuleLocation())})
 
 		err := client.Functions.CreateForPython(ctx, request)
 		require.NoError(t, err)
@@ -904,12 +904,12 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("absl-py==0.12.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("about-time==4.2.1"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("absl-py==0.12.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("about-time==4.2.1"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpPythonFunction.PythonModuleLocation())})
 
 		err := client.Functions.CreateForPython(ctx, request)
 		require.NoError(t, err)
@@ -1074,10 +1074,10 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithComment("comment").
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpJavaFunction.JarLocation())}).
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpJavaFunction.JarLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:snowpark:1.14.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:telemetry:0.1.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:snowpark:1.14.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:telemetry:0.1.0"),
 			}).
 			WithTargetPath(targetPath).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
@@ -1165,7 +1165,7 @@ func TestInt_Functions(t *testing.T) {
 
 		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(importPath)})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(importPath)})
 
 		err := client.Functions.CreateForScala(ctx, requestStaged)
 		require.NoError(t, err)
@@ -1248,12 +1248,12 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithComment("comment").
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:snowpark:1.14.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:telemetry:0.1.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:snowpark:1.14.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:telemetry:0.1.0"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpJavaFunction.JarLocation())})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpJavaFunction.JarLocation())})
 
 		err := client.Functions.CreateForScala(ctx, requestStaged)
 		require.NoError(t, err)
