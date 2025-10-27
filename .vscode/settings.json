@@ -3,9 +3,6 @@
     "go.testEnvFile": "${workspaceFolder}/test.env",
     "go.formatTool": "gofumpt",
     "gopls": {
-        "buildFlags": [
-            "-tags=non_account_level_tests"
-        ],
         "formatting.gofumpt": true
     },
     "go.testFlags": [

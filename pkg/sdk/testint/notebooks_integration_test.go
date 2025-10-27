@@ -33,7 +33,7 @@ func TestInt_Notebooks(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasNoComment().
-			HasOwner(snowflakeroles.PentestingRole.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasNoQueryWarehouse().
 			HasOwnerRoleType("ROLE"),
 		)
@@ -47,6 +47,9 @@ func TestInt_Notebooks(t *testing.T) {
 
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
+
+		queryWarehouse, queryWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(queryWarehouseCleanup)
 
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
@@ -64,7 +67,7 @@ func TestInt_Notebooks(t *testing.T) {
 			WithIdleAutoShutdownTimeSeconds(3600).
 			WithDefaultVersion("FIRST").
 			WithWarehouse(warehouse.ID()).
-			WithQueryWarehouse(warehouse.ID())
+			WithQueryWarehouse(queryWarehouse.ID())
 
 		err := client.Notebooks.Create(ctx, request)
 		require.NoError(t, err)
@@ -79,8 +82,8 @@ func TestInt_Notebooks(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasComment("comment").
-			HasOwner(snowflakeroles.PentestingRole.Name()).
-			HasQueryWarehouse(warehouse.ID()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasQueryWarehouse(queryWarehouse.ID()).
 			HasOwnerRoleType("ROLE").
 			HasCodeWarehouse(warehouse.ID()),
 		)
@@ -88,12 +91,12 @@ func TestInt_Notebooks(t *testing.T) {
 		assertThatObject(t, objectassert.NotebookDetails(t, notebook.ID()).
 			HasTitle("title").
 			HasMainFile("example.ipynb").
-			HasQueryWarehouse(warehouse.ID()).
+			HasQueryWarehouse(queryWarehouse.ID()).
 			HasUrlId().
 			HasNonEmptyDefaultPackages().
 			HasUserPackages("").
 			HasComputePool(computePool.ID()).
-			HasOwner(snowflakeroles.PentestingRole.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasImportUrls("[]").
 			HasExternalAccessIntegrations("[]").
 			HasExternalAccessSecrets("{}").
@@ -122,14 +125,16 @@ func TestInt_Notebooks(t *testing.T) {
 
 		request := sdk.NewCreateNotebookRequest(id)
 
-		_, notebookCleanup := testClientHelper().Notebook.CreateWithRequest(t, request)
-		t.Cleanup(notebookCleanup)
+		err := client.Notebooks.Create(ctx, request)
 
 		computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
 		t.Cleanup(computePoolCleanup)
 
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
+
+		queryWarehouse, queryWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(queryWarehouseCleanup)
 
 		// secret, secreteCleanup := testClientHelper().Secret.CreateRandomPasswordSecret(t)
 		// t.Cleanup(secreteCleanup)
@@ -142,7 +147,7 @@ func TestInt_Notebooks(t *testing.T) {
 		// TODO: Investigate the 'Secrets' field (not present in both SHOW and DESC).
 		setRequest := sdk.NewNotebookSetRequest().
 			WithComment("comment").
-			WithQueryWarehouse(warehouse.ID()).
+			WithQueryWarehouse(queryWarehouse.ID()).
 			WithIdleAutoShutdownTimeSeconds(3600).
 			WithMainFile("example.ipynb").
 			WithWarehouse(warehouse.ID()).
@@ -150,7 +155,7 @@ func TestInt_Notebooks(t *testing.T) {
 
 		alterRequest := sdk.NewAlterNotebookRequest(id).WithSet(*setRequest)
 
-		err := client.Notebooks.Alter(ctx, alterRequest)
+		err = client.Notebooks.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
 		updatedNotebook, err := client.Notebooks.ShowByID(ctx, id)
@@ -162,8 +167,8 @@ func TestInt_Notebooks(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasComment("comment").
-			HasOwner(snowflakeroles.PentestingRole.Name()).
-			HasQueryWarehouse(warehouse.ID()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasQueryWarehouse(queryWarehouse.ID()).
 			HasOwnerRoleType("ROLE").
 			HasCodeWarehouse(warehouse.ID()),
 		)
@@ -171,12 +176,12 @@ func TestInt_Notebooks(t *testing.T) {
 		assertThatObject(t, objectassert.NotebookDetails(t, updatedNotebook.ID()).
 			HasNoTitle().
 			HasMainFile("example.ipynb").
-			HasQueryWarehouse(warehouse.ID()).
+			HasQueryWarehouse(queryWarehouse.ID()).
 			HasUrlId().
 			HasNonEmptyDefaultPackages().
 			HasUserPackages("").
 			HasComputePool(computePool.ID()).
-			HasOwner(snowflakeroles.PentestingRole.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasImportUrls("[]").
 			HasExternalAccessIntegrations("[]").
 			HasExternalAccessSecrets("{}").
@@ -209,6 +214,9 @@ func TestInt_Notebooks(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
 
+		queryWarehouse, queryWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(queryWarehouseCleanup)
+
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
@@ -224,7 +232,7 @@ func TestInt_Notebooks(t *testing.T) {
 			WithIdleAutoShutdownTimeSeconds(3600).
 			WithDefaultVersion("FIRST").
 			WithWarehouse(warehouse.ID()).
-			WithQueryWarehouse(warehouse.ID())
+			WithQueryWarehouse(queryWarehouse.ID())
 
 		_, notebookCleanup := testClientHelper().Notebook.CreateWithRequest(t, createRequest)
 		t.Cleanup(notebookCleanup)
@@ -258,7 +266,7 @@ func TestInt_Notebooks(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasNoComment().
-			HasOwner(snowflakeroles.PentestingRole.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasNoQueryWarehouse().
 			HasOwnerRoleType("ROLE").
 			HasCodeWarehouse(warehouse.ID()),
@@ -272,7 +280,7 @@ func TestInt_Notebooks(t *testing.T) {
 			HasNonEmptyDefaultPackages().
 			HasUserPackages("").
 			HasNoComputePool().
-			HasOwner(snowflakeroles.PentestingRole.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasImportUrls("[]").
 			HasExternalAccessIntegrations("[]").
 			HasExternalAccessSecrets("{}").
@@ -319,7 +327,7 @@ func TestInt_Notebooks(t *testing.T) {
 			HasNonEmptyDefaultPackages().
 			HasUserPackages("").
 			HasNoComputePool().
-			HasOwner(snowflakeroles.PentestingRole.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasImportUrls("[]").
 			HasExternalAccessIntegrations("[]").
 			HasExternalAccessSecrets("{}").
