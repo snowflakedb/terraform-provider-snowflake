@@ -31,6 +31,8 @@ type CreateTaskRequest struct {
 	Tag                                     []TagAssociation
 	UserTaskMinimumTriggerIntervalInSeconds *int
 	TargetCompletionInterval                *string
+	ServerlessTaskMinStatementSize          *WarehouseSize
+	ServerlessTaskMaxStatementSize          *WarehouseSize
 	After                                   []SchemaObjectIdentifier
 	When                                    *string
 	sql                                     string // required

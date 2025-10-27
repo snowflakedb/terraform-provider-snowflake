@@ -200,6 +200,8 @@ func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 		Tag:                                     r.Tag,
 		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
 		TargetCompletionInterval:                r.TargetCompletionInterval,
+		ServerlessTaskMinStatementSize:          r.ServerlessTaskMinStatementSize,
+		ServerlessTaskMaxStatementSize:          r.ServerlessTaskMaxStatementSize,
 		After:                                   r.After,
 		When:                                    r.When,
 		sql:                                     r.sql,

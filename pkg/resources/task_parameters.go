@@ -281,6 +281,8 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreate(d, sdk.TaskParameterSuspendTaskAfterNumFailures, &createOpts.SuspendTaskAfterNumFailures),
 		handleParameterCreate(d, sdk.TaskParameterTaskAutoRetryAttempts, &createOpts.TaskAutoRetryAttempts),
 		handleParameterCreate(d, sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, &createOpts.UserTaskMinimumTriggerIntervalInSeconds),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterServerlessTaskMinStatementSize, &createOpts.ServerlessTaskMinStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterServerlessTaskMaxStatementSize, &createOpts.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		// session parameters
 		handleParameterCreate(d, sdk.TaskParameterAbortDetachedQuery, &createOpts.SessionParameters.AbortDetachedQuery),
 		handleParameterCreate(d, sdk.TaskParameterAutocommit, &createOpts.SessionParameters.Autocommit),

@@ -87,6 +87,16 @@ func (s *CreateTaskRequest) WithTargetCompletionInterval(TargetCompletionInterva
 	return s
 }
 
+func (s *CreateTaskRequest) WithServerlessTaskMinStatementSize(ServerlessTaskMinStatementSize WarehouseSize) *CreateTaskRequest {
+	s.ServerlessTaskMinStatementSize = &ServerlessTaskMinStatementSize
+	return s
+}
+
+func (s *CreateTaskRequest) WithServerlessTaskMaxStatementSize(ServerlessTaskMaxStatementSize WarehouseSize) *CreateTaskRequest {
+	s.ServerlessTaskMaxStatementSize = &ServerlessTaskMaxStatementSize
+	return s
+}
+
 func (s *CreateTaskRequest) WithAFTER(AFTER []SchemaObjectIdentifier) *CreateTaskRequest {
 	s.After = AFTER
 	return s
