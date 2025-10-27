@@ -1193,4 +1193,94 @@ func TestInt_TasksShowByID(t *testing.T) {
 			HasNoTargetCompletionInterval(),
 		)
 	})
+
+	t.Run("serverless task parameters on non-serverless task", func(t *testing.T) {
+		warehouseId := testClientHelper().Ids.WarehouseId()
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		// Create a non-serverless task (with regular warehouse)
+		err := testClient(t).Tasks.Create(ctx, sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").
+			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithWarehouse(warehouseId)))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Task.DropFunc(t, id))
+
+		// Verify task was created with warehouse (not serverless)
+		task, err := testClientHelper().Task.Show(t, id)
+		require.NoError(t, err)
+		require.NotNil(t, task)
+		assert.Equal(t, warehouseId.Name(), task.Warehouse)
+
+		// Try to set serverless task parameters on a non-serverless task
+		// These parameters should still be settable, but may not have effect
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
+			WithTargetCompletionInterval("10 MINUTES").
+			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		))
+		require.NoError(t, err)
+
+		// Verify parameters can be set even on non-serverless tasks
+		// Note: These parameters may not have any effect when using a regular warehouse
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasTargetCompletionInterval("10 MINUTES"),
+		)
+
+		// Convert task from warehouse-based to serverless
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
+			WithUserTaskManagedInitialWarehouseSize(sdk.Pointer(sdk.WarehouseSizeMedium)),
+		))
+		require.NoError(t, err)
+
+		// Verify task is now serverless and parameters are still set
+		taskAfterConversion, err := testClientHelper().Task.Show(t, id)
+		require.NoError(t, err)
+		assert.Empty(t, taskAfterConversion.Warehouse) // Warehouse should be empty for serverless tasks
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasTargetCompletionInterval("10 MINUTES"),
+		)
+
+		// Convert back to warehouse-based task
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
+			WithWarehouse(warehouseId),
+		))
+		require.NoError(t, err)
+
+		// Verify task is back to warehouse-based and parameters are still set
+		taskAfterReversion, err := testClientHelper().Task.Show(t, id)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId.Name(), taskAfterReversion.Warehouse)
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasTargetCompletionInterval("10 MINUTES"),
+		)
+
+		// Unset the serverless parameters on the warehouse-based task
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
+			WithTargetCompletionInterval(true).
+			WithServerlessTaskMinStatementSize(true).
+			WithServerlessTaskMaxStatementSize(true),
+		))
+		require.NoError(t, err)
+
+		// Verify parameters were unset
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasDefaultServerlessTaskMinStatementSizeValue().
+			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasNoTargetCompletionInterval(),
+		)
+	})
 }
