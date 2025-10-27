@@ -1139,28 +1139,16 @@ func TestInt_TasksShowByID(t *testing.T) {
 		// Verify task was created successfully
 		assert.Equal(t, id.Name(), task.Name)
 
-		// Verify parameters were set by checking ShowParameters
-		params, err := client.Tasks.ShowParameters(ctx, id)
-		require.NoError(t, err)
-
-		// Find and verify the parameters
-		var minSize, maxSize *sdk.Parameter
-		for _, p := range params {
-			switch p.Key {
-			case string(sdk.TaskParameterServerlessTaskMinStatementSize):
-				minSize = p
-			case string(sdk.TaskParameterServerlessTaskMaxStatementSize):
-				maxSize = p
-			}
-		}
-
-		if minSize != nil {
-			assert.Equal(t, string(sdk.WarehouseSizeSmall), minSize.Value)
-		}
-
-		if maxSize != nil {
-			assert.Equal(t, string(sdk.WarehouseSizeLarge), maxSize.Value)
-		}
+		// Verify parameters were set
+		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
+			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		)
+		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
+		assertThatObject(t, objectassert.Task(t, id).
+			HasTargetCompletionInterval("10 MINUTES"),
+		)
 	})
 
 	t.Run("alter task: set and unset serverless task parameters", func(t *testing.T) {
@@ -1179,38 +1167,30 @@ func TestInt_TasksShowByID(t *testing.T) {
 		require.NoError(t, err)
 
 		// Verify parameters were set
-		params, err := client.Tasks.ShowParameters(ctx, task.ID())
-		require.NoError(t, err)
-
-		var minSize, maxSize *sdk.Parameter
-		for _, p := range params {
-			switch p.Key {
-			case string(sdk.TaskParameterServerlessTaskMinStatementSize):
-				minSize = p
-			case string(sdk.TaskParameterServerlessTaskMaxStatementSize):
-				maxSize = p
-			}
-		}
-
-		// Note: Parameters may not always appear in SHOW PARAMETERS
-		// So we just verify the ALTER command succeeded
-		if minSize != nil {
-			assert.Equal(t, string(sdk.WarehouseSizeSmall), minSize.Value)
-		}
-
-		if maxSize != nil {
-			assert.Equal(t, string(sdk.WarehouseSizeLarge), maxSize.Value)
-		}
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		)
+		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasTargetCompletionInterval("15 MINUTES"),
+		)
 
 		// Unset the serverless task parameters
 		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
+			WithTargetCompletionInterval(true).
 			WithServerlessTaskMinStatementSize(true).
 			WithServerlessTaskMaxStatementSize(true),
 		))
 		require.NoError(t, err)
 
-		// Note: UNSET may revert parameters to system defaults rather than empty values
-		// The important thing is that the UNSET command succeeded without error
-		// Snowflake may keep default values for these parameters even after UNSET
+		// Verify parameters were unset (reverted to defaults)
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasDefaultServerlessTaskMinStatementSizeValue().
+			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasNoTargetCompletionInterval(),
+		)
 	})
 }
