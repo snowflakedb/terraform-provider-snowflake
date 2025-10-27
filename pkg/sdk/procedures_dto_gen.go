@@ -179,9 +179,7 @@ type ProcedureSetRequest struct {
 	TraceLevel                 *TraceLevel
 }
 
-type SecretsListRequest struct {
-	SecretsList []SecretReference // required
-}
+// SecretsListRequest removed manually - redeclaration with function
 
 type ProcedureUnsetRequest struct {
 	Comment                    *bool
