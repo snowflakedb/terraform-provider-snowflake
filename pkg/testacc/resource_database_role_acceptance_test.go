@@ -113,7 +113,6 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertBasic,
 			},
-
 			// Import - without optionals
 			{
 				Config:       config.FromModels(t, basic),
@@ -128,7 +127,6 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 						HasComment(""),
 				),
 			},
-
 			// Update - set optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -139,7 +137,6 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, complete),
 				Check:  assertComplete,
 			},
-
 			// Import - with optionals
 			{
 				Config:       config.FromModels(t, complete),
@@ -154,7 +151,6 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 						HasComment(comment),
 				),
 			},
-
 			// Update - unset optionals (back to basic)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -165,7 +161,6 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertBasic,
 			},
-
 			// Update - detect external changes
 			{
 				PreConfig: func() {
@@ -179,13 +174,18 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertBasic,
 			},
-
+			// Empty config - ensure database role is destroyed
+			{
+				Config: " ",
+				Check: assertThat(t,
+					objectassert.DatabaseRoleIsMissing(t, id),
+				),
+			},
 			// Create - with optionals
 			{
-				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: config.FromModels(t, complete),

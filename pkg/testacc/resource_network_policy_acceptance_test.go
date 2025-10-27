@@ -173,14 +173,13 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					// TODO: Change
-					testClient().NetworkPolicy.Update(t, sdk.NewAlterNetworkPolicyRequest(id).WithUnset(
-						*sdk.NewNetworkPolicyUnsetRequest().
-							WithAllowedIpList(true).
-							WithBlockedIpList(true).
-							WithAllowedNetworkRuleList(true).
-							WithBlockedNetworkRuleList(true).
-							WithComment(true),
+					testClient().NetworkPolicy.Update(t, sdk.NewAlterNetworkPolicyRequest(id).WithSet(
+						*sdk.NewNetworkPolicySetRequest().
+							WithAllowedIpList(*sdk.NewAllowedIPListRequest().WithAllowedIPList([]sdk.IPRequest{{"1.1.1.1"}, {"2.2.2.2"}})).
+							WithBlockedIpList(*sdk.NewBlockedIPListRequest().WithBlockedIPList([]sdk.IPRequest{{"3.3.3.3"}, {"4.4.4.4"}})).
+							WithAllowedNetworkRuleList(*sdk.NewAllowedNetworkRuleListRequest().WithAllowedNetworkRuleList([]sdk.SchemaObjectIdentifier{allowedNetworkRuleId1, allowedNetworkRuleId2})).
+							WithBlockedNetworkRuleList(*sdk.NewBlockedNetworkRuleListRequest().WithBlockedNetworkRuleList([]sdk.SchemaObjectIdentifier{blockedNetworkRuleId1, blockedNetworkRuleId2})).
+							WithComment(comment),
 					))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -191,12 +190,18 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
+			// Empty config - ensure network policy is destroyed
+			{
+				Config: " ",
+				Check: assertThat(t,
+					objectassert.NetworkPolicyIsMissing(t, id),
+				),
+			},
 			// Create - with optionals
 			{
-				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: accconfig.FromModels(t, complete),

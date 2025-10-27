@@ -156,12 +156,11 @@ func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
 			{
 				Config: " ",
 				Check: assertThat(t,
-					objectassert.AccountRoleMissing(t, id),
+					objectassert.AccountRoleIsMissing(t, id),
 				),
 			},
 			// Create - with optionals
 			{
-				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),

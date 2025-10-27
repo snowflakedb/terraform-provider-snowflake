@@ -15,6 +15,7 @@ func DatabaseIsMissing(t *testing.T, id sdk.AccountObjectIdentifier) *DatabaseAs
 	return &DatabaseAssert{
 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeDatabase, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Database, sdk.AccountObjectIdentifier] {
 			return func(t *testing.T, identifier sdk.AccountObjectIdentifier) (*sdk.Database, error) {
+				t.Helper()
 				db, err := testClient.Database.Show(t, id)
 				if err != nil {
 					if errors.Is(err, sdk.ErrObjectNotFound) {

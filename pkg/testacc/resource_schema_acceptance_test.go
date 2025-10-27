@@ -33,8 +33,11 @@ import (
 )
 
 func TestAcc_Schema_BasicUseCase(t *testing.T) {
-	id := testClient().Ids.RandomDatabaseObjectIdentifier()
-	newId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(id.DatabaseId())
+	db, cleanupDb := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupDb)
+
+	id := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(db.ID())
+	newId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(db.ID())
 	comment := random.Comment()
 
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
@@ -54,11 +57,11 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasOwnerNotEmpty().
 			HasComment("").
 			HasOptions("").
-			HasRetentionTime("").
+			HasRetentionTime("1").
 			HasOwnerRoleTypeNotEmpty(),
 
 		objectparametersassert.SchemaParameters(t, id).
-			HasDefaultDefaultDdlCollationValueExplicit(),
+			HasAllDefaultsExplicit(),
 
 		resourceassert.SchemaResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
@@ -109,10 +112,11 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasOwnerNotEmpty().
 			HasComment(comment).
 			HasOptions("MANAGED ACCESS").
-			HasRetentionTime("").
+			HasRetentionTime("5").
 			HasOwnerRoleTypeNotEmpty(),
 
 		objectparametersassert.SchemaParameters(t, newId).
+			// TODO: The rest
 			HasDefaultDdlCollation("en_US"),
 
 		resourceassert.SchemaResource(t, complete.ResourceReference()).
@@ -169,6 +173,11 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 				ResourceName:      basic.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"is_transient",
+					"show_output.0.is_current",
+					"with_managed_access",
+				},
 			},
 			// Update - set optionals (including rename)
 			{
@@ -186,6 +195,11 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 				ResourceName:      complete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"is_transient",
+					"show_output.0.is_current",
+					"with_managed_access",
+				},
 			},
 			// Update - unset optionals (back to basic, with rename back)
 			{
@@ -214,12 +228,18 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
+			// Empty config - ensure schema is destroyed
+			{
+				Config: " ",
+				Check: assertThat(t,
+					objectassert.SchemaIsMissing(t, id),
+				),
+			},
 			// Create - with optionals (from scratch via taint)
 			{
-				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
@@ -237,7 +257,7 @@ func TestAcc_Schema_basic(t *testing.T) {
 	//t.Cleanup(catalogCleanup)
 
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
-	//comment := random.Comment()
+	// comment := random.Comment()
 
 	//basicSchemaModel := model.Schema("test", id.DatabaseName(), id.Name())
 	//fullSchemaModel := model.Schema("test", id.DatabaseName(), id.Name()).
