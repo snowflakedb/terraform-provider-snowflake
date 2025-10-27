@@ -20,7 +20,6 @@
 - [snowflake_parameters](./docs/data-sources/parameters)
 - [snowflake_pipes](./docs/data-sources/pipes)
 - [snowflake_procedures](./docs/data-sources/procedures)
-- [snowflake_semantic_views](./docs/data-sources/semantic_views)
 - [snowflake_sequences](./docs/data-sources/sequences)
 - [snowflake_services](./docs/data-sources/services)
 - [snowflake_shares](./docs/data-sources/shares)
