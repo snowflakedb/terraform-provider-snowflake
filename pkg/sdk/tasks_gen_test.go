@@ -314,10 +314,13 @@ func TestTasks_Alter(t *testing.T) {
 	t.Run("alter set: multiple", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TaskSet{
-			UserTaskTimeoutMs: Int(2000),
-			Comment:           String("some comment"),
+			UserTaskTimeoutMs:              Int(2000),
+			Comment:                        String("some comment"),
+			TargetCompletionInterval:       String("15 MINUTES"),
+			ServerlessTaskMinStatementSize: Pointer(WarehouseSizeXSmall),
+			ServerlessTaskMaxStatementSize: Pointer(WarehouseSizeXLarge),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET USER_TASK_TIMEOUT_MS = 2000, COMMENT = 'some comment'", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET USER_TASK_TIMEOUT_MS = 2000, COMMENT = 'some comment', TARGET_COMPLETION_INTERVAL = '15 MINUTES', SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'XSMALL', SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'XLARGE'", id.FullyQualifiedName())
 	})
 
 	t.Run("alter set warehouse", func(t *testing.T) {
@@ -339,40 +342,6 @@ func TestTasks_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET JSON_INDENT = 15", id.FullyQualifiedName())
 	})
 
-	t.Run("alter set target completion interval", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			TargetCompletionInterval: String("15 MINUTES"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET TARGET_COMPLETION_INTERVAL = '15 MINUTES'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter set serverless task min statement size", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			ServerlessTaskMinStatementSize: Pointer(WarehouseSizeXSmall),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'XSMALL'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter set serverless task max statement size", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			ServerlessTaskMaxStatementSize: Pointer(WarehouseSizeXLarge),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'XLARGE'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter set multiple serverless task parameters", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			TargetCompletionInterval:       String("20 MINUTES"),
-			ServerlessTaskMinStatementSize: Pointer(WarehouseSizeSmall),
-			ServerlessTaskMaxStatementSize: Pointer(WarehouseSizeLarge),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET TARGET_COMPLETION_INTERVAL = '20 MINUTES', SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL', SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE'", id.FullyQualifiedName())
-	})
-
 	t.Run("alter unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TaskUnset{
@@ -384,44 +353,13 @@ func TestTasks_Alter(t *testing.T) {
 	t.Run("alter unset: multiple", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TaskUnset{
-			UserTaskTimeoutMs: Bool(true),
-			Comment:           Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET USER_TASK_TIMEOUT_MS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset target completion interval", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &TaskUnset{
-			TargetCompletionInterval: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET TARGET_COMPLETION_INTERVAL", id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset serverless task min statement size", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &TaskUnset{
-			ServerlessTaskMinStatementSize: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET SERVERLESS_TASK_MIN_STATEMENT_SIZE", id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset serverless task max statement size", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &TaskUnset{
-			ServerlessTaskMaxStatementSize: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET SERVERLESS_TASK_MAX_STATEMENT_SIZE", id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset multiple serverless task parameters", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &TaskUnset{
+			UserTaskTimeoutMs:              Bool(true),
+			Comment:                        Bool(true),
 			TargetCompletionInterval:       Bool(true),
 			ServerlessTaskMinStatementSize: Bool(true),
 			ServerlessTaskMaxStatementSize: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET TARGET_COMPLETION_INTERVAL, SERVERLESS_TASK_MIN_STATEMENT_SIZE, SERVERLESS_TASK_MAX_STATEMENT_SIZE", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET USER_TASK_TIMEOUT_MS, COMMENT, TARGET_COMPLETION_INTERVAL, SERVERLESS_TASK_MIN_STATEMENT_SIZE, SERVERLESS_TASK_MAX_STATEMENT_SIZE", id.FullyQualifiedName())
 	})
 
 	t.Run("alter set tags", func(t *testing.T) {
