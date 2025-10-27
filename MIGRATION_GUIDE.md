@@ -24,6 +24,46 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.8.x ➞ v2.9.0
+
+### *(preview feature/deprecation)* Deprecated `mfa_authentication_methods` field in authentication policies
+
+The `mfa_authentication_methods` field in authentication policies is already deprecated in Snowflake since 2025_06 BCR - [check our BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies).
+
+Please follow the linked guide for more information and migration steps.
+
+This field will be removed in the future. The new field `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` will be added in the next versions of the provider.
+
+### *(new feature)* New authentication options for Oauth with Client Credentials and Oauth with Authorization Code flows
+
+We added new `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` options to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
+- Fields for both authenticators
+  - `oauth_client_id` - required,
+  - `oauth_client_secret` - required,
+  - `oauth_token_request_url` - required,
+  - `oauth_scope` - optional,
+- Fields only for `OAUTH_AUTHORIZATION_CODE`
+  - `oauth_authorization_url` - required,
+  - `oauth_redirect_uri` - required,
+  - `enable_single_use_refresh_tokens` - optional, only for Snowflake IdP,
+The provider does not validate these fields, but a number of them is required by the OAuth specification.
+
+This feature enables authentication with `OAUTH_CLIENT_CREDENTIALS` and `OAUTH_AUTHORIZATION_CODE` authenticators in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/oauth-intro) for more information on Oauth authentication.
+
+### *(bugfix)* Fixed setting the default authenticator for the `token` field
+
+In [v2.5.0](#bugfix-fixed-incorrect-authenticator-when-using-the-token-field), we fixed a bug: when the `token` and the `authenticator` fields were both set, the provider always set the `authenticator` to `OAUTH` regardless of the `authenticator` config value.
+
+Unfortunately, this change introduced a regression. After the fix, when the TOML profile is empty, the `authenticator` is not set to `OAUTH` when it is not in the Terraform configuration. This behavior occurred only when the TOML configuration file could not be read during initialization, and the `profile` was unset or set to `default`.
+
+Now, the behavior is the following:
+- When only `token` is set, the provider sets the default authenticator to `OAUTH`.
+- When both `token` and `authenticator` are set, the `authenticator` value overrides the provider's default.
+
+Note that in v3, we are planning to remove the logic for setting the default authenticator in the provider based on other fields.
+
 ## v2.7.x ➞ v2.8.0
 
 ### *(new feature)* Added handling private link in S3 and Azure storage integrations
@@ -311,6 +351,9 @@ We generally recommend splitting the creation and deletion of both resources int
 ## v2.4.x ➞ v2.5.0
 
 ### *(bugfix)* Fixed incorrect authenticator when using the `token` field
+
+> [!TIP]
+> This change introduced a regression: after the fix, when the TOML profile is empty, the `authenticator` is not set to `OAUTH` when it is not in the Terraform configuration (the default `SNOWFLAKE` is used instead). This could result in errors like `Error: 260002: password is empty`. As a workaround, you can manually set the `authenticator` field in the provider configuration to `OAUTH`. This bug is fixed in [v2.9.0](#v28x--v290).
 
 Previously, the provider incorrectly set the default authenticator to `OAUTH` when the `token` field was specified in the Terraform configuration, or environmental variables, without possibility to override it. This resulted in errors like:
 ```

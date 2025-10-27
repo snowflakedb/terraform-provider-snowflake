@@ -220,13 +220,13 @@ func (itc *integrationTestContext) initialize() error {
 
 		// TODO(SNOW-1842271): Adjust test setup to work properly with Accountadmin role for object tests and Orgadmin for account tests
 		if os.Getenv(string(testenvs.TestAccountCreate)) == "" {
-			err = testClientHelper().EnsureScimProvisionerRolesExist(itc.ctx)
+			err = testClientHelper().EnsureEssentialRolesExist(itc.ctx)
 			if err != nil {
-				return err
+				return fmt.Errorf("ensuring essential roles exist in the test client: %w", err)
 			}
-			err = secondaryTestClientHelper().EnsureScimProvisionerRolesExist(itc.secondaryCtx)
+			err = secondaryTestClientHelper().EnsureEssentialRolesExist(itc.secondaryCtx)
 			if err != nil {
-				return err
+				return fmt.Errorf("ensuring essential roles exist in the secondary test client: %w", err)
 			}
 		}
 

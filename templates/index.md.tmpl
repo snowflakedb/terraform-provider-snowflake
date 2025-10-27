@@ -67,8 +67,10 @@ The Snowflake provider supports multiple ways to authenticate:
 * Browser Auth
 * Private Key
 * Config File
+* Oauth with Client Credentials
+* Oauth with Authorization Code
 
-In all cases `organization_name`, `account_name` and `user` are required.
+In all cases `organization_name`, and `account_name` are required. In all cases except for Oauth with Client Credentials, `user` is required.
 
 -> **Note** Storing the credentials and other secret values safely is on the users' side. Read more in [Authentication Methods guide](./guides/authentication_methods).
 
@@ -147,12 +149,34 @@ export SNOWFLAKE_USER='...'
 export SNOWFLAKE_PASSWORD='...'
 ```
 
+### Oauth with Client Credentials Environment Variables
+
+If you choose to use Oauth with Client Credentials Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_OAUTH_CLIENT_ID='...'
+export SNOWFLAKE_OAUTH_CLIENT_SECRET='...'
+export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
+```
+
+### Oauth with Authorization Code Environment Variables
+
+If you choose to use Oauth with Authorization Code Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_OAUTH_CLIENT_ID='...'
+export SNOWFLAKE_OAUTH_CLIENT_SECRET='...'
+export SNOWFLAKE_OAUTH_AUTHORIZATION_URL='...'
+export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
+export SNOWFLAKE_OAUTH_REDIRECT_URI='...'
+export SNOWFLAKE_OAUTH_SCOPE='...'
+```
 ## Order Precedence
 
 Currently, the provider can be configured in three ways:
 1. In a Terraform file located in the Terraform module with other resources.
 2. In environmental variables (envs). This is mainly used to provide sensitive values.
-3. In a TOML file (default in ~/.snowflake/config).
+3. In a TOML file (default in `~/.snowflake/config`).
 
 ### Terraform file located in the Terraform module with other resources
 One of the methods of configuring the provider is in the Terraform module. Read more in the [Terraform docs](https://developer.hashicorp.com/terraform/language/providers/configuration).
@@ -182,7 +206,7 @@ When a `default` profile is not present in the TOML file, it is treated as "empt
 
 Read [TOML](https://toml.io/en/) specification for more details on the syntax.
 
--> **Note**: This configuration file is distinct from the ones used to configure [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/connecting/configure-cli) or [SnowSQL](https://docs.snowflake.com/en/user-guide/snowsql-config).
+-> **Note** This configuration file is distinct from the ones used to configure [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/connecting/configure-cli) or [SnowSQL](https://docs.snowflake.com/en/user-guide/snowsql-config).
 
 Example content of the Terraform file configuration:
 
@@ -213,9 +237,9 @@ role='ACCOUNTADMIN'
 #### TOML file limitations
 To ensure a better security of the provider, the following limitations are introduced:
 
--> **Note**: TOML file size is limited to 10MB.
+-> **Note** TOML file size is limited to 10MB.
 
--> **Note**: Only TOML file with restricted privileges can be read. Any privileges for group or others cannot be set (the maximum valid privilege is `700`). You can set the expected privileges like `chmod 0600 ~/.snowflake/config`. This is checked only on non-Windows platforms. If you are using the provider on Windows, please make sure that your configuration file has not too permissive privileges.
+-> **Note** Only TOML file with restricted privileges can be read. Any privileges for group or others cannot be set (the maximum valid privilege is `700`). You can set the expected privileges like `chmod 0600 ~/.snowflake/config`. This is checked only on non-Windows platforms. If you are using the provider on Windows, please make sure that your configuration file has not too permissive privileges.
 
 ### Source Hierarchy
 Not all fields must be configured in one source; users can choose which fields are configured in which source.

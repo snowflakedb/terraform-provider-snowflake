@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -345,6 +345,13 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
+					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 
 					return nil
 				},
@@ -538,6 +545,13 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.DriverTracing, string(sdk.DriverLogLevelWarning))
 					t.Setenv(snowflakeenvs.TmpDirectoryPath, "../")
 					t.Setenv(snowflakeenvs.DisableConsoleLogin, "false")
+					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
+					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
+					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
+					t.Setenv(snowflakeenvs.OauthAuthorizationUrl, "oauth_authorization_url")
+					t.Setenv(snowflakeenvs.OauthRedirectUri, "oauth_redirect_uri")
+					t.Setenv(snowflakeenvs.OauthScope, "oauth_scope")
+					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -579,7 +593,13 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
-
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
+					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
 			},
@@ -644,6 +664,13 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.DriverTracing, "invalid")
 					t.Setenv(snowflakeenvs.TmpDirectoryPath, "../")
 					t.Setenv(snowflakeenvs.DisableConsoleLogin, "false")
+					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
+					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
+					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
+					t.Setenv(snowflakeenvs.OauthAuthorizationUrl, "oauth_authorization_url")
+					t.Setenv(snowflakeenvs.OauthRedirectUri, "oauth_redirect_uri")
+					t.Setenv(snowflakeenvs.OauthScope, "oauth_scope")
+					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -685,9 +712,52 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 						"foo": sdk.Pointer("piyo"),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
-
+					assert.Equal(t, "oauth_client_id", config.OauthClientID)
+					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
+					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_testFixedDefaultAuthenticatorForToken(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
+	accountId := testClient().Context.CurrentAccountId(t)
+	// TODO(SNOW-1791729): Use a proper user.
+	providerConfig := config.FromModels(t, providermodel.SnowflakeProvider().
+		WithAccountName(accountId.AccountName()).
+		WithOrganizationName(accountId.OrganizationName()).
+		WithUser(random.String()).
+		WithToken(random.String()),
+		datasourceModel(),
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			// Make sure to use a non-existent config path.
+			t.Setenv(snowflakeenvs.ConfigPath, random.String())
+		},
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.8.0"),
+				Config:            providerConfig,
+				ExpectError:       regexp.MustCompile("Error: 260002: password is empty"),
+			},
+			// TODO(SNOW-1791729): Make better assertions here.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   providerConfig,
+				ExpectError:              regexp.MustCompile(`390303 \(08004\): Invalid OAuth access token.`),
 			},
 		},
 	})
