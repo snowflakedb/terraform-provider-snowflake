@@ -9,6 +9,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -72,7 +73,7 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 	comment := random.Comment()
 	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
 
-	databaseModel := model.DatabaseWithParametersSet("test", databaseName).
+	databaseModel := model.Database("test", databaseName).
 		WithComment(comment).
 		WithReplication(secondaryAccountId, true, true)
 	databasesModel := datasourcemodel.Databases("test").
@@ -115,25 +116,16 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 
 					assert.Check(resource.TestCheckResourceAttr(databasesModel.DatasourceReference(), "databases.0.describe_output.#", "2")),
 					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.describe_output.0.name")),
+
+					assert.Check(resource.TestCheckResourceAttr(databasesModel.DatasourceReference(), "databases.0.describe_output.0.name", "INFORMATION_SCHEMA")),
 					assert.Check(resource.TestCheckResourceAttr(databasesModel.DatasourceReference(), "databases.0.describe_output.0.kind", "SCHEMA")),
 
-					assert.Check(resource.TestCheckResourceAttr(databasesModel.DatasourceReference(), "databases.0.parameters.#", "1")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.data_retention_time_in_days.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.max_data_extension_time_in_days.0.value")),
-					assert.Check(resource.TestCheckResourceAttr(databasesModel.DatasourceReference(), "databases.0.parameters.0.external_volume.0.value", "")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.catalog.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.replace_invalid_characters.0.value")),
-					assert.Check(resource.TestCheckResourceAttr(databasesModel.DatasourceReference(), "databases.0.parameters.0.default_ddl_collation.0.value", "")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.storage_serialization_policy.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.log_level.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.trace_level.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.suspend_task_after_num_failures.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.task_auto_retry_attempts.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.user_task_managed_initial_warehouse_size.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.user_task_minimum_trigger_interval_in_seconds.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.quoted_identifiers_ignore_case.0.value")),
-					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.parameters.0.enable_console_output.0.value")),
+					assert.Check(resource.TestCheckResourceAttrSet(databasesModel.DatasourceReference(), "databases.0.describe_output.1.created_on")),
+					assert.Check(resource.TestCheckResourceAttr(databasesModel.DatasourceReference(), "databases.0.describe_output.1.name", "PUBLIC")),
+					assert.Check(resource.TestCheckResourceAttr(databasesModel.DatasourceReference(), "databases.0.describe_output.1.kind", "SCHEMA")),
+
+					resourceparametersassert.DatabasesDatasourceParameters(t, databasesModel.DatasourceReference()).
+						HasAllDefaultParameters(),
 				),
 			},
 			{
@@ -145,7 +137,7 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 						HasKind("STANDARD").
 						HasTransient(false).
 						HasIsDefault(false).
-						HasIsCurrent(true).
+						HasIsCurrent(false).
 						HasOriginEmpty().
 						HasOwnerNotEmpty().
 						HasComment(comment).

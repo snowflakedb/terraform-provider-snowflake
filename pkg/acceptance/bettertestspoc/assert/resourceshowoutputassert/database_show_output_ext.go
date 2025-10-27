@@ -22,11 +22,6 @@ func (s *DatabaseShowOutputAssert) HasCreatedOnNotEmpty() *DatabaseShowOutputAss
 	return s
 }
 
-func (s *DatabaseShowOutputAssert) HasOriginEmpty() *DatabaseShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValuePresent("origin"))
-	return s
-}
-
 func (s *DatabaseShowOutputAssert) HasOwnerNotEmpty() *DatabaseShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValuePresent("owner"))
 	return s
@@ -39,5 +34,10 @@ func (s *DatabaseShowOutputAssert) HasRetentionTimeNotEmpty() *DatabaseShowOutpu
 
 func (s *DatabaseShowOutputAssert) HasOwnerRoleTypeNotEmpty() *DatabaseShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValuePresent("owner_role_type"))
+	return s
+}
+
+func (s *DatabaseShowOutputAssert) HasOriginEmpty() *DatabaseShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValueSet("origin", ""))
 	return s
 }
