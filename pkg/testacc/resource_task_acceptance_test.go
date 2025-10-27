@@ -2108,6 +2108,9 @@ func TestAcc_Task_TargetCompletionInterval(t *testing.T) {
 		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium).
 		WithTargetCompletionInterval(targetCompletionInterval)
 
+	configModelWithoutParam := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2115,6 +2118,7 @@ func TestAcc_Task_TargetCompletionInterval(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
+			// CREATE with target_completion_interval
 			{
 				Config: config.FromModels(t, configModel),
 				Check: assertThat(t,
@@ -2125,6 +2129,26 @@ func TestAcc_Task_TargetCompletionInterval(t *testing.T) {
 						HasNameString(id.Name()).
 						HasStartedString(r.BooleanFalse).
 						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium).
+						HasTargetCompletionIntervalString(targetCompletionInterval).
+						HasSqlStatementString(statement),
+				),
+			},
+			// ALTER UNSET target_completion_interval
+			{
+				Config: config.FromModels(t, configModelWithoutParam),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithoutParam.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasNoTargetCompletionInterval().
+						HasSqlStatementString(statement),
+				),
+			},
+			// ALTER SET target_completion_interval back
+			{
+				Config: config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasTargetCompletionIntervalString(targetCompletionInterval).
 						HasSqlStatementString(statement),
 				),
@@ -2143,6 +2167,9 @@ func TestAcc_Task_ServerlessTaskParameters(t *testing.T) {
 		WithServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
 		WithServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge)
 
+	configModelWithoutParams := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2150,6 +2177,7 @@ func TestAcc_Task_ServerlessTaskParameters(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
+			// CREATE with all serverless task parameters
 			{
 				Config: config.FromModels(t, configModel),
 				Check: assertThat(t,
@@ -2160,6 +2188,30 @@ func TestAcc_Task_ServerlessTaskParameters(t *testing.T) {
 						HasNameString(id.Name()).
 						HasStartedString(r.BooleanFalse).
 						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium).
+						HasTargetCompletionIntervalString("10 MINUTES").
+						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
+						HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeLarge)).
+						HasSqlStatementString(statement),
+				),
+			},
+			// ALTER UNSET all serverless task parameters
+			{
+				Config: config.FromModels(t, configModelWithoutParams),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithoutParams.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasNoTargetCompletionInterval().
+						HasNoServerlessTaskMinStatementSize().
+						HasNoServerlessTaskMaxStatementSize().
+						HasSqlStatementString(statement),
+				),
+			},
+			// ALTER SET all serverless task parameters back
+			{
+				Config: config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasTargetCompletionIntervalString("10 MINUTES").
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 						HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeLarge)).
