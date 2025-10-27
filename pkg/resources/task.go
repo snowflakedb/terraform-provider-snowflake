@@ -149,6 +149,12 @@ var taskSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: SuppressIfAny(DiffSuppressStatement, IgnoreChangeToCurrentSnowflakeValueInShow("definition")),
 		Description:      "Any single SQL statement, or a call to a stored procedure, executed when the task runs.",
 	},
+	"target_completion_interval": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("target_lag"),
+		Description:      "Specifies the target completion interval for serverless tasks. Format: '<num> { HOURS | MINUTES | SECONDS }' (e.g., '10 MINUTES'). Only applicable to serverless tasks.",
+	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -182,7 +188,7 @@ func Task() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Task, customdiff.All(
-			ComputedIfAnyAttributeChanged(taskSchema, ShowOutputAttributeName, "name", "started", "warehouse", "user_task_managed_initial_warehouse_size", "schedule", "config", "allow_overlapping_execution", "error_integration", "comment", "finalize", "after", "when"),
+			ComputedIfAnyAttributeChanged(taskSchema, ShowOutputAttributeName, "name", "started", "warehouse", "user_task_managed_initial_warehouse_size", "schedule", "config", "allow_overlapping_execution", "error_integration", "comment", "finalize", "after", "when", "target_completion_interval"),
 			ComputedIfAnyAttributeChanged(taskParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllTaskParameters), strings.ToLower)...),
 			ComputedIfAnyAttributeChanged(taskSchema, FullyQualifiedNameAttributeName, "name"),
 			taskParametersCustomDiff,
@@ -241,7 +247,7 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 			if err != nil {
 				return nil, err
 			}
-			return sdk.NewCreateTaskWarehouseRequest().WithWarehouse(warehouseId), nil
+			return sdk.NewCreateTaskWarehouseRequest().WithWarehouse(&warehouseId), nil
 		}),
 		attributeMappedValueCreate(d, "schedule", &req.Schedule, func(v any) (*string, error) {
 			if len(v.([]any)) > 0 {
@@ -260,6 +266,7 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		accountObjectIdentifierAttributeCreate(d, "error_integration", &req.ErrorIntegration),
 		stringAttributeCreate(d, "comment", &req.Comment),
 		stringAttributeCreate(d, "when", &req.When),
+		stringAttributeCreate(d, "target_completion_interval", &req.TargetCompletionInterval),
 	); errs != nil {
 		return diag.FromErr(errs)
 	}
@@ -300,7 +307,7 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 			}
 			precedingTasks = append(precedingTasks, parentTaskId)
 		}
-		req.WithAfter(precedingTasks)
+		req.WithAFTER(precedingTasks)
 	}
 
 	if parameterCreateDiags := handleTaskParametersCreate(d, req); len(parameterCreateDiags) > 0 {
@@ -374,6 +381,7 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		booleanStringAttributeUpdate(d, "allow_overlapping_execution", &set.AllowOverlappingExecution, &unset.AllowOverlappingExecution),
 		accountObjectIdentifierAttributeUpdate(d, "error_integration", &set.ErrorIntegration, &unset.ErrorIntegration),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+		stringAttributeUpdate(d, "target_completion_interval", &set.TargetCompletionInterval, &unset.TargetCompletionInterval),
 	)
 	if err != nil {
 		return diag.FromErr(err)

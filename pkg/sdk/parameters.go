@@ -849,7 +849,6 @@ const (
 	TaskParameterServerlessTaskMaxStatementSize          TaskParameter = "SERVERLESS_TASK_MAX_STATEMENT_SIZE"
 	TaskParameterServerlessTaskMinStatementSize          TaskParameter = "SERVERLESS_TASK_MIN_STATEMENT_SIZE"
 	TaskParameterSuspendTaskAfterNumFailures             TaskParameter = "SUSPEND_TASK_AFTER_NUM_FAILURES"
-	TaskParameterTargetCompletionInterval                TaskParameter = "TARGET_COMPLETION_INTERVAL"
 	TaskParameterTaskAutoRetryAttempts                   TaskParameter = "TASK_AUTO_RETRY_ATTEMPTS"
 	TaskParameterUserTaskManagedInitialWarehouseSize     TaskParameter = "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"
 	TaskParameterUserTaskMinimumTriggerIntervalInSeconds TaskParameter = "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"
@@ -916,7 +915,6 @@ var AllTaskParameters = []TaskParameter{
 	TaskParameterServerlessTaskMaxStatementSize,
 	TaskParameterServerlessTaskMinStatementSize,
 	TaskParameterSuspendTaskAfterNumFailures,
-	TaskParameterTargetCompletionInterval,
 	TaskParameterTaskAutoRetryAttempts,
 	TaskParameterUserTaskManagedInitialWarehouseSize,
 	TaskParameterUserTaskMinimumTriggerIntervalInSeconds,

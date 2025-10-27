@@ -1144,22 +1144,14 @@ func TestInt_TasksShowByID(t *testing.T) {
 		require.NoError(t, err)
 
 		// Find and verify the parameters
-		var targetCompletionInterval, minSize, maxSize *sdk.Parameter
+		var minSize, maxSize *sdk.Parameter
 		for _, p := range params {
 			switch p.Key {
-			case string(sdk.TaskParameterTargetCompletionInterval):
-				targetCompletionInterval = p
 			case string(sdk.TaskParameterServerlessTaskMinStatementSize):
 				minSize = p
 			case string(sdk.TaskParameterServerlessTaskMaxStatementSize):
 				maxSize = p
 			}
-		}
-
-		// Note: TARGET_COMPLETION_INTERVAL may not appear in SHOW PARAMETERS if it's at default
-		// So we just verify the task was created without error
-		if targetCompletionInterval != nil {
-			assert.Equal(t, "10 MINUTES", targetCompletionInterval.Value)
 		}
 
 		if minSize != nil {
@@ -1190,11 +1182,9 @@ func TestInt_TasksShowByID(t *testing.T) {
 		params, err := client.Tasks.ShowParameters(ctx, task.ID())
 		require.NoError(t, err)
 
-		var targetCompletionInterval, minSize, maxSize *sdk.Parameter
+		var minSize, maxSize *sdk.Parameter
 		for _, p := range params {
 			switch p.Key {
-			case string(sdk.TaskParameterTargetCompletionInterval):
-				targetCompletionInterval = p
 			case string(sdk.TaskParameterServerlessTaskMinStatementSize):
 				minSize = p
 			case string(sdk.TaskParameterServerlessTaskMaxStatementSize):
@@ -1204,10 +1194,6 @@ func TestInt_TasksShowByID(t *testing.T) {
 
 		// Note: Parameters may not always appear in SHOW PARAMETERS
 		// So we just verify the ALTER command succeeded
-		if targetCompletionInterval != nil {
-			assert.Equal(t, "15 MINUTES", targetCompletionInterval.Value)
-		}
-
 		if minSize != nil {
 			assert.Equal(t, string(sdk.WarehouseSizeSmall), minSize.Value)
 		}
@@ -1218,7 +1204,6 @@ func TestInt_TasksShowByID(t *testing.T) {
 
 		// Unset the serverless task parameters
 		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
-			WithTargetCompletionInterval(true).
 			WithServerlessTaskMinStatementSize(true).
 			WithServerlessTaskMaxStatementSize(true),
 		))
