@@ -41,10 +41,7 @@ As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATIO
 This object supports renaming. It was also available in the provider, but did not work correctly due to a bug in name parsing. This has been fixed.
 
 #### Changes in output fields
-We adjusted the `show_output` and `describe_output` to our redesign guidelines:
-- Added missing `kind` field to `show_output`.
-- Nested `describe_output` values in the `value` subfield.
-- Added remaining `describe_output` subfields (`property`, `default`, and `description`).
+We adjusted the `show_output` by adding the missing `kind` field.
 
 The state is migrated automatically.
 

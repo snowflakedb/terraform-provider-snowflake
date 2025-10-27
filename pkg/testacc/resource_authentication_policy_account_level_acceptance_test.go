@@ -44,7 +44,7 @@ func TestInt_AuthenticationPolicies_AccountLevel(t *testing.T) {
 					resourceassert.AuthenticationPolicyResource(t, basicModel.ResourceReference()).
 						HasMfaAuthenticationMethodsEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.mfa_authentication_methods.0.value", "[PASSWORD]")),
+					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[PASSWORD]")),
 				),
 			},
 			{
@@ -53,7 +53,7 @@ func TestInt_AuthenticationPolicies_AccountLevel(t *testing.T) {
 					resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
 						HasMfaAuthenticationMethods(sdk.MfaAuthenticationMethodsPassword, sdk.MfaAuthenticationMethodsSaml),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_authentication_methods.0.value", "[SAML, PASSWORD]")),
+					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[SAML, PASSWORD]")),
 				),
 			},
 			{
@@ -63,7 +63,7 @@ func TestInt_AuthenticationPolicies_AccountLevel(t *testing.T) {
 					resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
 						HasMfaAuthenticationMethods(sdk.MfaAuthenticationMethodsPassword, sdk.MfaAuthenticationMethodsSaml),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_authentication_methods.0.value", "[SAML, PASSWORD]")),
+					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[SAML, PASSWORD]")),
 				),
 			},
 			{
@@ -83,7 +83,7 @@ func TestInt_AuthenticationPolicies_AccountLevel(t *testing.T) {
 					resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
 						HasMfaAuthenticationMethods(sdk.MfaAuthenticationMethodsPassword, sdk.MfaAuthenticationMethodsSaml),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_authentication_methods.0.value", "[SAML, PASSWORD]")),
+					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[SAML, PASSWORD]")),
 				),
 			},
 		},

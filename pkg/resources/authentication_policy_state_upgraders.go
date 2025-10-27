@@ -24,12 +24,12 @@ func v2_9_0_AuthenticationPolicyStateUpgrader(ctx context.Context, rawState map[
 	}
 
 	client := meta.(*provider.Context).Client
-	authenticationPolicyInSnowflake, err := client.AuthenticationPolicies.Describe(ctx, id)
+	authenticationPolicyInSnowflake, err := client.AuthenticationPolicies.ShowByIDSafely(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	descOutput := schemas.AuthenticationPolicyDescriptionToSchema(authenticationPolicyInSnowflake)
-	rawState[DescribeOutputAttributeName] = []any{descOutput}
+	showOutput := schemas.AuthenticationPolicyToSchema(authenticationPolicyInSnowflake)
+	rawState[ShowOutputAttributeName] = []any{showOutput}
 	delete(rawState, "mfa_authentication_methods")
 
 	return rawState, nil

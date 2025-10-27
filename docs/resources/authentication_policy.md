@@ -85,102 +85,14 @@ Optional:
 
 Read-Only:
 
-- `authentication_methods` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--authentication_methods))
-- `client_types` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--client_types))
-- `comment` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--comment))
-- `mfa_authentication_methods` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--mfa_authentication_methods))
-- `mfa_enrollment` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--mfa_enrollment))
-- `name` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--name))
-- `owner` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--owner))
-- `security_integrations` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--security_integrations))
-
-<a id="nestedobjatt--describe_output--authentication_methods"></a>
-### Nested Schema for `describe_output.authentication_methods`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `property` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--client_types"></a>
-### Nested Schema for `describe_output.client_types`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `property` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--comment"></a>
-### Nested Schema for `describe_output.comment`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `property` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--mfa_authentication_methods"></a>
-### Nested Schema for `describe_output.mfa_authentication_methods`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `property` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--mfa_enrollment"></a>
-### Nested Schema for `describe_output.mfa_enrollment`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `property` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--name"></a>
-### Nested Schema for `describe_output.name`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `property` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--owner"></a>
-### Nested Schema for `describe_output.owner`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `property` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--describe_output--security_integrations"></a>
-### Nested Schema for `describe_output.security_integrations`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `property` (String)
-- `value` (String)
-
+- `authentication_methods` (String)
+- `client_types` (String)
+- `comment` (String)
+- `mfa_authentication_methods` (String)
+- `mfa_enrollment` (String)
+- `name` (String)
+- `owner` (String)
+- `security_integrations` (String)
 
 
 <a id="nestedatt--show_output"></a>

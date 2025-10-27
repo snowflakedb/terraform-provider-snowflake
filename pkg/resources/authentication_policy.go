@@ -335,15 +335,25 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 					securityIntegrationsStrings[i] = v.Name()
 				}
 			}
-			if err = handleExternalChangesToObjectInDescribe(d,
-				describeMapping{"authentication_methods", "authentication_methods", authenticationPolicyDescriptions.Raw("AUTHENTICATION_METHODS"), authenticationMethods, nil},
-				describeMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
-				describeMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
-				describeMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
-				describeMapping{"mfa_authentication_methods", "mfa_authentication_methods", authenticationPolicyDescriptions.Raw("MFA_AUTHENTICATION_METHODS"), mfaAuthenticationMethods, nil},
+			if err = handleExternalChangesToObjectInFlatDescribe(d,
+				outputMapping{"authentication_methods", "authentication_methods", authenticationPolicyDescriptions.Raw("AUTHENTICATION_METHODS"), authenticationMethods, nil},
+				outputMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
+				outputMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
+				outputMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
+				outputMapping{"mfa_authentication_methods", "mfa_authentication_methods", authenticationPolicyDescriptions.Raw("MFA_AUTHENTICATION_METHODS"), mfaAuthenticationMethods, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
+		}
+
+		if err = setStateToValuesFromConfig(d, authenticationPolicySchema, []string{
+			"authentication_methods",
+			"mfa_enrollment",
+			"client_types",
+			"security_integrations",
+			"mfa_authentication_methods",
+		}); err != nil {
+			return diag.FromErr(err)
 		}
 
 		if err := errors.Join(
