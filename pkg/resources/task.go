@@ -153,7 +153,7 @@ var taskSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("target_lag"),
-		Description:      "Specifies the target completion interval for serverless tasks. Format: '<num> { HOURS | MINUTES | SECONDS }' (e.g., '10 MINUTES'). Only applicable to serverless tasks.",
+		Description:      "Specifies the target completion interval for tasks. Format: '<num> { HOURS | MINUTES | SECONDS }' (e.g., '10 MINUTES'). For more information, check [TARGET_COMPLETION_INTERVAL docs](https://docs.snowflake.com/en/sql-reference/parameters#target-completion-interval).",
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
