@@ -179,6 +179,24 @@ We added missing values to the following fields:
 Also, we added support for the following features: `pat_policy`, `mfa_policy` and `workload_identity_policy`. Check the resource documentation for more details.
 
 #### Handling deprecated `mfa_authentication_methods` field
+As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods are handled in a different way. Now, the provider does not cause a permadiff caused by the `mfa_authentication_methods` field. If you used the `ignore_changes` attribute, you may now remove it. Configuring this field is still possible, but only with disabled 2025_06.
+
+#### Fixed renaming
+This object supports renaming. It was also available in the provider, but did not work correctly due to a bug in name parsing. This has been fixed.
+
+#### Changes in output fields
+We adjusted the `show_output` by adding the missing `kind` field.
+
+The state is migrated automatically.
+
+#### Miscellaneous changes
+- Improved the resource documentation.
+- Added a diff suppression on `mfa_enrollment` field. This field is now case-insensitive.
+- Added a trigger for showing changes `show_output`, `describe_output` and `fully_qualified_name` fields. Now, when a related field is changed in the plan, the output field may be shown as `known after apply`.
+- Improved importing - now, `authentication_methods`, `mfa_enrollment`, `client_types`, and `security_integrations` are set in import.
+- Improved detecting of external changes.
+
+#### Handling deprecated `mfa_authentication_methods` field
 As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods are handled in a different way.
 Now, the provider does not cause a permadiff caused by the `mfa_authentication_methods` field.
 If you used the `ignore_changes` attribute, you may now remove it.
