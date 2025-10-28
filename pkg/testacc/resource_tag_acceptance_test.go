@@ -80,7 +80,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasSchemaName(schema.ID().Name()).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
-			HasAllowedValuesSet("value1", "value2"),
+			HasAllowedValuesUnordered("value1", "value2"),
 
 		resourceassert.TagResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
@@ -152,7 +152,9 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(
-						sdk.NewTagSetRequest().WithComment(comment),
+						sdk.NewTagSetRequest().
+							WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()}).
+							WithComment(comment),
 					))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -212,7 +214,7 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(database.ID().Name()).
 						HasSchemaName(schema.ID().Name()).
-						HasAllowedValuesSet("", "bar", "foo"),
+						HasAllowedValuesUnordered("", "bar", "foo"),
 
 					resourceassert.TagResource(t, basic.ResourceReference()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -245,7 +247,7 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 						HasName(id.Name()).
 						HasDatabaseName(database.ID().Name()).
 						HasSchemaName(schema.ID().Name()).
-						HasAllowedValuesSet("", "bar", "foo"),
+						HasAllowedValuesUnordered("", "bar", "foo"),
 
 					resourceassert.TagResource(t, basicWithDifferentValues.ResourceReference()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).

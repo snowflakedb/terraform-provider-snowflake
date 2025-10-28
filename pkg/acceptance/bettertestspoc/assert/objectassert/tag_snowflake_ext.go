@@ -40,27 +40,21 @@ func TagDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.TestChe
 	return &tagNonExistenceCheck{id: id}
 }
 
-// HasAllowedValuesSet checks that the allowed_values field contains the expected values (order independent)
-func (t *TagAssert) HasAllowedValuesSet(expected ...string) *TagAssert {
+func (t *TagAssert) HasAllowedValuesUnordered(expected ...string) *TagAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
 		t.Helper()
 		if len(o.AllowedValues) != len(expected) {
-			return fmt.Errorf("expected allowed values length: %d; got: %d", len(expected), len(o.AllowedValues))
+			return fmt.Errorf("expected allowed values length: %v; got: %v", len(expected), len(o.AllowedValues))
 		}
-
-		// Sort both slices for comparison
-		actualSorted := make([]string, len(o.AllowedValues))
-		copy(actualSorted, o.AllowedValues)
-		slices.Sort(actualSorted)
-
-		expectedSorted := make([]string, len(expected))
-		copy(expectedSorted, expected)
-		slices.Sort(expectedSorted)
-
-		if !slices.Equal(actualSorted, expectedSorted) {
-			return fmt.Errorf("expected allowed values: %v; got: %v", expected, o.AllowedValues)
+		var errs []error
+		for _, wantElem := range expected {
+			if !slices.ContainsFunc(o.AllowedValues, func(gotElem string) bool {
+				return wantElem == gotElem
+			}) {
+				errs = append(errs, fmt.Errorf("expected value: %s, to be in the value list: %v", wantElem, o.AllowedValues))
+			}
 		}
-		return nil
+		return errors.Join(errs...)
 	})
 	return t
 }
