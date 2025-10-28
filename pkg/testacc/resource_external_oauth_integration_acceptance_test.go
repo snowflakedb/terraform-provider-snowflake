@@ -198,9 +198,16 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Create - with optionals (from scratch via taint)
+			// Destroy - ensure external oauth integration is deleted
 			{
-				Taint: []string{complete.ResourceReference()},
+				Destroy: true,
+				Config: accconfig.FromModels(t,
+					asdf
+				),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Create - with optionals
+			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
