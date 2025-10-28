@@ -18,8 +18,11 @@ func (opts *CreateTaskOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	if err := opts.SessionParameters.validate(); err != nil {
-		errs = append(errs, err)
+	// adjusted manually
+	if valueSet(opts.SessionParameters) {
+		if err := opts.SessionParameters.validate(); err != nil {
+			errs = append(errs, err)
+		}
 	}
 	// added manually
 	if valueSet(opts.Warehouse) {
@@ -44,8 +47,11 @@ func (opts *CreateOrAlterTaskOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	if err := opts.SessionParameters.validate(); err != nil {
-		errs = append(errs, err)
+	// adjusted manually
+	if valueSet(opts.SessionParameters) {
+		if err := opts.SessionParameters.validate(); err != nil {
+			errs = append(errs, err)
+		}
 	}
 	// added manually
 	if valueSet(opts.Warehouse) {
@@ -88,8 +94,11 @@ func (opts *AlterTaskOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"))
 	}
 	if valueSet(opts.Set) {
-		if err := opts.Set.SessionParameters.validate(); err != nil {
-			errs = append(errs, err)
+		// adjusted manually
+		if valueSet(opts.Set.SessionParameters) {
+			if err := opts.Set.SessionParameters.validate(); err != nil {
+				errs = append(errs, err)
+			}
 		}
 		if !anyValueSet(opts.Set.Warehouse, opts.Set.UserTaskManagedInitialWarehouseSize, opts.Set.Schedule, opts.Set.Config, opts.Set.AllowOverlappingExecution, opts.Set.UserTaskTimeoutMs, opts.Set.SuspendTaskAfterNumFailures, opts.Set.ErrorIntegration, opts.Set.Comment, opts.Set.SessionParameters, opts.Set.TaskAutoRetryAttempts, opts.Set.UserTaskMinimumTriggerIntervalInSeconds) {
 			errs = append(errs, errAtLeastOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds"))
