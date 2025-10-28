@@ -987,7 +987,7 @@ func TestInt_Functions(t *testing.T) {
 		definition := testClientHelper().Function.SampleScalaDefinition(t, className, funcName, argName)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		handler := fmt.Sprintf("%s.%s", className, funcName)
-		request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
+		request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, "2.12", handler).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithFunctionDefinitionWrapped(definition)
 
@@ -1066,7 +1066,7 @@ func TestInt_Functions(t *testing.T) {
 		handler := fmt.Sprintf("%s.%s", className, funcName)
 		jarName := fmt.Sprintf("tf-%d-%s.jar", time.Now().Unix(), random.AlphaN(5))
 		targetPath := fmt.Sprintf("@~/%s", jarName)
-		request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
+		request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, "2.12", handler).
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -1163,7 +1163,7 @@ func TestInt_Functions(t *testing.T) {
 		handler := tmpJavaFunction.JavaHandler()
 		importPath := tmpJavaFunction.JarLocation()
 
-		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
+		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, "2.12", handler).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(importPath)})
 
@@ -1239,7 +1239,7 @@ func TestInt_Functions(t *testing.T) {
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		handler := tmpJavaFunction.JavaHandler()
 
-		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
+		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, "2.12", handler).
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
