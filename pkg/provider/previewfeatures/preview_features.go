@@ -146,8 +146,9 @@ var allPreviewFeatures = []feature{
 	PipeResource,
 	PipesDatasource,
 	CurrentRoleDatasource,
-	SemanticViewResource,
-	SemanticViewDatasource,
+	// TODO(SNOW-2108211): Uncomment after adjusting resource and data source
+	// SemanticViewResource,
+	// SemanticViewDatasource,
 	ServiceResource,
 	ServicesDatasource,
 	SequenceResource,

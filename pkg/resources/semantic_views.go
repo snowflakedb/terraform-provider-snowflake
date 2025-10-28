@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -566,14 +567,10 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 	}
 
 	if c["synonym"] != nil {
-		synonyms, ok := c["synonym"].([]any)
-		if ok && len(synonyms) > 0 {
-			var syns []sdk.Synonym
-			for _, s := range synonyms {
-				syns = append(syns, sdk.Synonym{Synonym: s.(string)})
-			}
-			sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
-			logicalTableRequest = logicalTableRequest.WithSynonyms(sRequest)
+		synonyms := c["synonym"].(*schema.Set).List()
+		if len(synonyms) > 0 {
+			synonymList := collections.Map(synonyms, func(s any) sdk.Synonym { return sdk.Synonym{Synonym: s.(string)} })
+			logicalTableRequest = logicalTableRequest.WithSynonyms(*sdk.NewSynonymsRequest().WithWithSynonyms(synonymList))
 		}
 	}
 

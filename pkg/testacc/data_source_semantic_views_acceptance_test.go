@@ -19,6 +19,8 @@ import (
 )
 
 func TestAcc_SemanticViews_Basic(t *testing.T) {
+	t.Skip("TODO(SNOW-2108211): Skipping until semantic view resource and data source is adjusted")
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
@@ -182,6 +184,8 @@ func TestAcc_SemanticViews_Basic(t *testing.T) {
 }
 
 func TestAcc_SemanticViews_Filtering(t *testing.T) {
+	t.Skip("TODO(SNOW-2108211): Skipping until semantic view resource and data source is adjusted")
+
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
 		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
@@ -256,6 +260,8 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 }
 
 func TestAcc_SemanticViews_emptyIn(t *testing.T) {
+	t.Skip("TODO(SNOW-2108211): Skipping until semantic view resource and data source is adjusted")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -272,6 +278,8 @@ func TestAcc_SemanticViews_emptyIn(t *testing.T) {
 }
 
 func TestAcc_SemanticViews_NotFound_WithPostConditions(t *testing.T) {
+	t.Skip("TODO(SNOW-2108211): Skipping until semantic view resource and data source is adjusted")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
