@@ -247,12 +247,19 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
+			// Destroy - ensure database is destroyed before the next step
+			{
+				Destroy: true,
+				Config:  accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.DatabaseDoesNotExist(t, id),
+				),
+			},
 			// Create - with optionals
 			{
-				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
