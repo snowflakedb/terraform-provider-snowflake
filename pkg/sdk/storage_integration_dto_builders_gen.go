@@ -69,7 +69,6 @@ func (s *S3StorageParamsRequest) WithStorageAwsObjectAcl(storageAwsObjectAcl str
 	return s
 }
 
-// TODO old usages WithUsePrivateLinkEndpoint
 func (s *S3StorageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *S3StorageParamsRequest {
 	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
@@ -88,7 +87,6 @@ func NewAzureStorageParamsRequest(
 	return &s
 }
 
-// TODO old usages WithUsePrivateLinkEndpoint
 func (s *AzureStorageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *AzureStorageParamsRequest {
 	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
@@ -180,7 +178,6 @@ func (s *SetS3StorageParamsRequest) WithStorageAwsObjectAcl(storageAwsObjectAcl 
 	return s
 }
 
-// TODO old usages WithUsePrivateLinkEndpoint
 func (s *SetS3StorageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *SetS3StorageParamsRequest {
 	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
@@ -194,7 +191,6 @@ func NewSetAzureStorageParamsRequest(
 	return &s
 }
 
-// TODO old usages WithUsePrivateLinkEndpoint
 func (s *SetAzureStorageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *SetAzureStorageParamsRequest {
 	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
@@ -230,7 +226,6 @@ func (s *StorageIntegrationUnsetRequest) WithComment(comment bool) *StorageInteg
 	return s
 }
 
-// TODO old usages WithUsePrivateLinkEndpoint
 func (s *StorageIntegrationUnsetRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *StorageIntegrationUnsetRequest {
 	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
