@@ -136,15 +136,7 @@ func TestInt_Notebooks(t *testing.T) {
 		queryWarehouse, queryWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(queryWarehouseCleanup)
 
-		// secret, secreteCleanup := testClientHelper().Secret.CreateRandomPasswordSecret(t)
-		// t.Cleanup(secreteCleanup)
-
-		// secrets := sdk.SecretsListRequest{SecretsList: []sdk.SecretReference{{
-		// 	VariableName: "sample_secret",
-		// 	Name:         secret,
-		// }}}
-
-		// TODO: Investigate the 'Secrets' field (not present in both SHOW and DESC).
+		// 'Secrets' field is missing from SHOW and DESC by design.
 		setRequest := sdk.NewNotebookSetRequest().
 			WithComment("comment").
 			WithQueryWarehouse(queryWarehouse.ID()).
@@ -237,7 +229,7 @@ func TestInt_Notebooks(t *testing.T) {
 		_, notebookCleanup := testClientHelper().Notebook.CreateWithRequest(t, createRequest)
 		t.Cleanup(notebookCleanup)
 
-		// 'QueryWarehouse' and 'Warehouse' are mutually exclusive (SQL execution internal error: Processing aborted due to error 300002:787288943; incident 2110983).
+		// 'QueryWarehouse' and 'Warehouse' must be unset separately by design.
 		unsetRequest := sdk.NewNotebookUnsetRequest().
 			WithComment(true).
 			WithComputePool(true).
@@ -309,11 +301,20 @@ func TestInt_Notebooks(t *testing.T) {
 		t.Cleanup(notebookCleanup)
 
 		id := notebook.ID()
-		err := client.Notebooks.Drop(ctx, sdk.NewDropNotebookRequest(id).WithIfExists(true))
+		err := client.Notebooks.Drop(ctx, sdk.NewDropNotebookRequest(id))
 		require.NoError(t, err)
 
-		_, err = client.Notebooks.ShowByID(ctx, id)
-		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+		notebook, err = client.Notebooks.ShowByID(ctx, id)
+		require.Nil(t, notebook)
+		require.Error(t, err)
+	})
+
+	t.Run("drop with if exists", func(t *testing.T) {
+		err := client.Notebooks.Drop(ctx, sdk.NewDropNotebookRequest(NonExistingSchemaObjectIdentifier))
+		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+
+		err = client.Notebooks.Drop(ctx, sdk.NewDropNotebookRequest(NonExistingSchemaObjectIdentifier).WithIfExists(true))
+		require.NoError(t, err)
 	})
 
 	t.Run("describe", func(t *testing.T) {
