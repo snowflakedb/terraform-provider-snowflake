@@ -346,7 +346,7 @@ func TestInt_RowAccessPoliciesDescribe(t *testing.T) {
 		require.NoError(t, err)
 		wantArgs := make([]sdk.TableColumnSignature, len(args))
 		for i, arg := range args {
-			wantType, err := datatypes.ParseDataType(arg.Type.ToLegacyDataTypeSql())
+			wantType, err := datatypes.ParseDataType(arg.DataType.ToLegacyDataTypeSql())
 			require.NoError(t, err)
 			wantArgs[i] = sdk.TableColumnSignature{
 				Name: arg.Name,
