@@ -148,7 +148,7 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		using := "@" + stage.ID().FullyQualifiedName()
 		// add version to application package
 		id := applicationPackage.ID()
-		vr := sdk.NewAddVersionRequest(using).WithVersionIdentifier(&version).WithLabel("add version V001")
+		vr := sdk.NewAddVersionRequest(using).WithVersionIdentifier(version).WithLabel("add version V001")
 		r1 := sdk.NewAlterApplicationPackageRequest(id).WithAddVersion(*vr)
 		err := client.ApplicationPackages.Alter(ctx, r1)
 		require.NoError(t, err)
@@ -190,7 +190,7 @@ func TestInt_ApplicationPackagesVersionAndReleaseDirective(t *testing.T) {
 		using := "@" + stage.ID().FullyQualifiedName()
 		// add version to application package
 		id := applicationPackage.ID()
-		vr := sdk.NewAddVersionRequest(using).WithVersionIdentifier(&version).WithLabel("add version V001")
+		vr := sdk.NewAddVersionRequest(using).WithVersionIdentifier(version).WithLabel("add version V001")
 		r1 := sdk.NewAlterApplicationPackageRequest(id).WithAddVersion(*vr)
 		err := client.ApplicationPackages.Alter(ctx, r1)
 		require.NoError(t, err)

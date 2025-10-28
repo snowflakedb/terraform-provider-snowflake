@@ -238,7 +238,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		setRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(
 				*sdk.NewApiIntegrationSetRequest().
-					WithAzureParams(*sdk.NewSetAzureApiParamsRequest().WithAzureAdApplicationId(sdk.String(otherAdApplicationId)).WithApiKey(sdk.String("key"))).
+					WithAzureParams(*sdk.NewSetAzureApiParamsRequest().WithAzureAdApplicationId(otherAdApplicationId).WithApiKey("key")).
 					WithEnabled(true).
 					WithApiAllowedPrefixes(prefixes(azureOtherPrefix)).
 					WithApiBlockedPrefixes(prefixes(azurePrefix)).
