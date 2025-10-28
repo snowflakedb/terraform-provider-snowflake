@@ -271,6 +271,7 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 		return nil, err
 	}
 
+	// TODO [this PR]: if providerCtx.EnabledExperiments then ShowByIDExperimental
 	w, err := client.Warehouses.ShowByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -426,12 +427,14 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
+		// TODO [this PR]: if providerCtx.EnabledExperiments then ShowByIDExperimentalSafely
 		w, err := client.Warehouses.ShowByIDSafely(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {

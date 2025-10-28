@@ -35,6 +35,9 @@ type Warehouses interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*WarehouseDetails, error)
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
+
+	ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
+	ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 }
 
 var _ Warehouses = (*warehouses)(nil)
@@ -548,6 +551,7 @@ type ShowWarehouseOptions struct {
 	show       bool  `ddl:"static" sql:"SHOW"`
 	warehouses bool  `ddl:"static" sql:"WAREHOUSES"`
 	Like       *Like `ddl:"keyword" sql:"LIKE"`
+	// TODO [this PR]: add limit and starts with; add integration tests
 }
 
 func (opts *ShowWarehouseOptions) validate() error {
@@ -748,8 +752,28 @@ func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (
 	})
 }
 
+func (c *warehouses) ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
+	warehouses, err := c.Show(ctx, &ShowWarehouseOptions{
+		Like: &Like{
+			Pattern: String(id.Name()),
+		},
+		// TODO [this PR]: add limit and starts with
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return collections.FindFirst(warehouses, func(warehouse Warehouse) bool {
+		return warehouse.ID().FullyQualifiedName() == id.FullyQualifiedName()
+	})
+}
+
 func (c *warehouses) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
 	return SafeShowById(c.client, c.ShowByID, ctx, id)
+}
+
+func (c *warehouses) ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
+	return SafeShowById(c.client, c.ShowByIDExperimental, ctx, id)
 }
 
 // describeWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-warehouse.
