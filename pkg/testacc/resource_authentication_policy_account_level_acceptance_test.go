@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestInt_AuthenticationPolicies_AccountLevel(t *testing.T) {
+func TestAcc_AuthenticationPolicies_AccountLevel(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	client := secondaryTestClient()
