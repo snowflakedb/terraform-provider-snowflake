@@ -154,8 +154,8 @@ provider "snowflake" {
 - `user` (String) Username. Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_USER` environment variable.
 - `validate_default_parameters` (String) True by default. If false, disables the validation checks for Database, Schema, Warehouse and Role at the time a connection is established. Can also be sourced from the `SNOWFLAKE_VALIDATE_DEFAULT_PARAMETERS` environment variable.
 - `warehouse` (String) Specifies the virtual warehouse to use by default for queries, loading, etc. in the client session. Can also be sourced from the `SNOWFLAKE_WAREHOUSE` environment variable.
-- `workload_identity_provider` (String) The workload identity provider to use for WIF authentication.
-- `workload_identity_entra_resource` (String) The resource to use for WIF authentication on Azure environment.
+- `workload_identity_entra_resource` (String) The resource to use for WIF authentication on Azure environment. Can also be sourced from the `SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE` environment variable.
+- `workload_identity_provider` (String) The workload identity provider to use for WIF authentication. Can also be sourced from the `SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER` environment variable.
 
 <a id="nestedblock--token_accessor"></a>
 ### Nested Schema for `token_accessor`
@@ -284,6 +284,16 @@ export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
 export SNOWFLAKE_OAUTH_REDIRECT_URI='...'
 export SNOWFLAKE_OAUTH_SCOPE='...'
 ```
+
+### Workload Identity Federation (WIF) Authentication
+
+If you choose to use Workload Identity Federation (WIF) Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER='...'
+export SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE='...'
+```
+
 ## Order Precedence
 
 Currently, the provider can be configured in three ways:
@@ -410,6 +420,7 @@ oauth_authorization_url = 'oauth_authorization_url'
 oauth_redirect_uri = 'oauth_redirect_uri'
 oauth_scope = 'oauth_scope'
 workload_identity_provider = 'azure'
+workload_identity_entra_resource = 'workload_identity_entra_resource'
 enable_single_use_refresh_tokens = true
 
 [example.params]
@@ -457,6 +468,7 @@ oauthauthorizationurl = 'oauth_authorization_url'
 oauthredirecturi = 'oauth_redirect_uri'
 oauthscope = 'oauth_scope'
 workloadidentityprovider = 'azure'
+workloadidentityentraresource = 'workload_identity_entra_resource'
 enablesingleuserefreshtokens = true
 
 [example.params]
@@ -503,7 +515,8 @@ provider "snowflake" {
 	oauth_authorization_url = var.oauth_authorization_url
 	oauth_redirect_uri = var.oauth_redirect_uri
 	oauth_scope = "session:role:PUBLIC"
-    workload_identity_provider = "azure"
+	workload_identity_provider = "azure"
+	workload_identity_entra_resource = "workload_identity_entra_resource"
 	enable_single_use_refresh_tokens = true
 
 	params = {

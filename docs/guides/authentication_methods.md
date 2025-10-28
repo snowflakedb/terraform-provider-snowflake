@@ -482,7 +482,7 @@ Please also see our [manual tests examples](https://github.com/snowflakedb/terra
 
 ### Workload Identity Federation (WIF) authenticator flow
 
-To setup WIF authentication, follow [this guide](https://docs.snowflake.com/user-guide/workload-identity-federation) 
+To setup WIF authentication, follow [this guide](https://docs.snowflake.com/user-guide/workload-identity-federation)
 in the official Snowflake documentation.
 
 The TF configuration should e.g. look like this:
@@ -497,14 +497,12 @@ provider "snowflake" {
 }
 ```
 
+With the optional parameter `workload_identity_entra_resource` the resource to use for WIF authentication
+on an Azure environment can be controlled.
+
 For the case of [Authenticate to Snowflake using OpenID Connect (OIDC) issuer from Elastic Kubernetes Service (EKS)](https://docs.snowflake.com/user-guide/workload-identity-federation#authenticate-to-snowflake-using-openid-connect-oidc-issuer-from-aws-kubernetes)
 the token from the token file is needed, which is stored at `token_file_path` (the exact path may vary depending on the setup).
 
-To provide the token to the provider, it must be exposed via environment variable `SNOWFLAKE_TOKEN` before running Terraform:
-
-```bash
-export SNOWFLAKE_TOKEN=$(cat <token_file_path>)
-```
 
 ```terraform
 provider "snowflake" {
@@ -513,8 +511,17 @@ provider "snowflake" {
   user                             = "<user_name>"
   authenticator                    = "WORKLOAD_IDENTITY"
   workload_identity_provider       = "OIDC"
+  token                            = file("<token_file_path>")
 }
 ```
+
+Alternatively, the token can be provided with the environment variable `SNOWFLAKE_TOKEN` (must be set before running Terraform):
+
+```bash
+export SNOWFLAKE_TOKEN=$(cat <token_file_path>)
+```
+
+Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
 
 ## Common issues
 

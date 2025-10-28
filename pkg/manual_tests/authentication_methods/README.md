@@ -101,7 +101,7 @@ Pre-requisites:
      user                       = "USER_NAME"
      authenticator              = "WORKLOAD_IDENTITY"
      token                      = file("<token_file_path>")
-     workload_identity_provider = "AWS"
+     workload_identity_provider = "OIDC"
    }
    ```
 3. Build a container with terraform installed. Mount/copy the terraform files incl. the above provider configuration into the image.
