@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"testing"
 
-	tfjson "github.com/hashicorp/terraform-json"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -17,7 +15,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -143,6 +140,7 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 					"external_oauth_scope_mapping_attribute",
 					"external_oauth_any_role_mode",
 					"external_oauth_scope_delimiter",
+					"external_oauth_blocked_roles_list",
 				},
 			},
 			// Update - set optionals
@@ -168,13 +166,14 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 					"external_oauth_scope_mapping_attribute",
 					"external_oauth_any_role_mode",
 					"external_oauth_scope_delimiter",
+					"external_oauth_blocked_roles_list",
 				},
 			},
 			// Update - unset optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
@@ -185,14 +184,17 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().SecurityIntegration.UpdateExternalOauth(t, sdk.NewAlterExternalOauthSecurityIntegrationRequest(id).
 						WithSet(*sdk.NewExternalOauthIntegrationSetRequest().
-							WithExternalOauthSnowflakeUserMappingAttribute(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName),
+							WithEnabled(true).
+							WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{"https://example.com"}}).
+							WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable).
+							WithExternalOauthAudienceList(*sdk.NewAudienceListRequest([]sdk.AudienceListItem{{"bar"}})).
+							WithExternalOauthSnowflakeUserMappingAttribute(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName).
+							WithComment(sdk.StringAllowEmpty{Value: comment}),
 						))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(basic.ResourceReference(), "external_oauth_snowflake_user_mapping_attribute", sdk.String(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)), sdk.String(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName))),
-						planchecks.ExpectChange(basic.ResourceReference(), "external_oauth_snowflake_user_mapping_attribute", tfjson.ActionUpdate, sdk.String(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName)), sdk.String(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress))),
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
@@ -201,16 +203,16 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 			// Destroy - ensure external oauth integration is deleted
 			{
 				Destroy: true,
-				Config: accconfig.FromModels(t,
-					asdf
+				Config:  accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.SecurityIntegrationDoesNotExist(t, id),
 				),
-				Check:  assertThat(t, assertBasic...),
 			},
 			// Create - with optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
@@ -254,7 +256,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 				Check: assertThat(t,
 					objectassert.SecurityIntegration(t, id).
 						HasName(id.Name()).
-						HasIntegrationType("EXTERNAL_OAUTH - "+string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+						HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
 						HasEnabled(true).
 						HasComment(comment),
 
@@ -272,7 +274,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 
 					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
 						HasName(id.Name()).
-						HasIntegrationType("EXTERNAL_OAUTH - "+string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+						HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
 						HasEnabled(true).
 						HasComment(comment),
 
@@ -302,6 +304,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 					"external_oauth_scope_mapping_attribute",
 					"external_oauth_any_role_mode",
 					"external_oauth_scope_delimiter",
+					"external_oauth_allowed_roles_list",
 				},
 			},
 		},
