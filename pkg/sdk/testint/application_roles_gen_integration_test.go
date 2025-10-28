@@ -87,7 +87,7 @@ func TestInt_ApplicationRoles(t *testing.T) {
 	t.Run("Show", func(t *testing.T) {
 		req := sdk.NewShowApplicationRoleRequest().
 			WithApplicationName(application.ID()).
-			WithLimit(&sdk.LimitFrom{
+			WithLimit(sdk.LimitFrom{
 				Rows: sdk.Int(2),
 			})
 		appRoles, err := client.ApplicationRoles.Show(ctx, req)
@@ -103,7 +103,7 @@ func TestInt_ApplicationRoles(t *testing.T) {
 
 		id := sdk.NewDatabaseObjectIdentifier(application.Name, testvars.ApplicationRole1)
 		// grant the application role to the role
-		kindOfRole := sdk.NewKindOfRoleRequest().WithRoleName(sdk.Pointer(role.ID()))
+		kindOfRole := sdk.NewKindOfRoleRequest().WithRoleName(role.ID())
 		gr := sdk.NewGrantApplicationRoleRequest(id).WithTo(*kindOfRole)
 		err := client.ApplicationRoles.Grant(ctx, gr)
 		require.NoError(t, err)
@@ -127,7 +127,7 @@ func TestInt_ApplicationRoles(t *testing.T) {
 
 		id := sdk.NewDatabaseObjectIdentifier(application.Name, testvars.ApplicationRole1)
 		// grant the application role to the application
-		kindOfRole := sdk.NewKindOfRoleRequest().WithApplicationName(sdk.Pointer(application2.ID()))
+		kindOfRole := sdk.NewKindOfRoleRequest().WithApplicationName(application2.ID())
 		gr := sdk.NewGrantApplicationRoleRequest(id).WithTo(*kindOfRole)
 		err := client.ApplicationRoles.Grant(ctx, gr)
 		require.NoError(t, err)
