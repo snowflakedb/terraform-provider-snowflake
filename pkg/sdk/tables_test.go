@@ -135,8 +135,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: stageFileFormat's both format name and format type are present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.StageFileFormat = &StageFileFormat{
-			FormatName: String("some_format"),
-			Type:       Pointer(FileFormatTypeCSV),
+			FormatName:     String("some_format"),
+			FileFormatType: Pointer(FileFormatTypeCSV),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("StageFileFormat", "FormatName", "FormatType"))
 	})
@@ -437,7 +437,7 @@ func TestTableCreate(t *testing.T) {
 			Rely:              Bool(true),
 		}
 		stageFileFormat := StageFileFormat{
-			Type: Pointer(FileFormatTypeCSV),
+			FileFormatType: Pointer(FileFormatTypeCSV),
 			Options: &FileFormatTypeOptions{
 				CSVCompression: Pointer(CSVCompressionAuto),
 			},
@@ -1337,7 +1337,7 @@ func TestTableAlter(t *testing.T) {
 			Set: &TableSet{
 				EnableSchemaEvolution: Bool(true),
 				StageFileFormat: &StageFileFormat{
-					Type: Pointer(FileFormatTypeCSV),
+					FileFormatType: Pointer(FileFormatTypeCSV),
 				},
 				StageCopyOptions: &StageCopyOptions{
 					OnError: &StageCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
