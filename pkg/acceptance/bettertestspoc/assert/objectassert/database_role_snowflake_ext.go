@@ -16,14 +16,14 @@ func DatabaseRoleIsMissing(t *testing.T, id sdk.DatabaseObjectIdentifier) *Datab
 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeDatabaseRole, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.DatabaseRole, sdk.DatabaseObjectIdentifier] {
 			return func(t *testing.T, id sdk.DatabaseObjectIdentifier) (*sdk.DatabaseRole, error) {
 				t.Helper()
-				accountRole, err := testClient.DatabaseRole.Show(t, id)
+				databaseRole, err := testClient.DatabaseRole.Show(t, id)
 				if err != nil {
 					if errors.Is(err, sdk.ErrObjectNotFound) {
-						return accountRole, nil
+						return databaseRole, nil
 					}
-					return accountRole, nil
+					return databaseRole, nil
 				}
-				return accountRole, fmt.Errorf("expected database role %s to be missing, but it exists", id)
+				return databaseRole, fmt.Errorf("expected database role %s to be missing, but it exists", id)
 			}
 		}),
 	}

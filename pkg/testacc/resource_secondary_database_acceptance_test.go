@@ -194,7 +194,22 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().Database.Alter(t, id, &sdk.AlterDatabaseOptions{
 						Set: &sdk.DatabaseSet{
-							Comment: sdk.String(random.Comment()),
+							DataRetentionTimeInDays:                 sdk.Int(2),
+							MaxDataExtensionTimeInDays:              sdk.Int(15),
+							ExternalVolume:                          sdk.Pointer(externalVolumeId),
+							Catalog:                                 sdk.Pointer(catalogId),
+							ReplaceInvalidCharacters:                sdk.Bool(true),
+							DefaultDDLCollation:                     sdk.String("en_US"),
+							StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
+							LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
+							TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
+							SuspendTaskAfterNumFailures:             sdk.Int(11),
+							TaskAutoRetryAttempts:                   sdk.Int(1),
+							UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeSmall),
+							UserTaskTimeoutMs:                       sdk.Int(3600001),
+							UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(31),
+							EnableConsoleOutput:                     sdk.Bool(true),
+							Comment:                                 sdk.String(random.Comment()),
 						},
 					})
 				},
@@ -206,12 +221,18 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Create - with optionals (from scratch via taint)
+			// Empty config - ensure schema is destroyed
 			{
-				Taint: []string{complete.ResourceReference()},
+				Config: " ",
+				Check: assertThat(t,
+					objectassert.DatabaseIsMissing(t, id),
+				),
+			},
+			// Create - with optionals
+			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
