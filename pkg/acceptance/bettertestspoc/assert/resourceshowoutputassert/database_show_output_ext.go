@@ -22,6 +22,11 @@ func (s *DatabaseShowOutputAssert) HasCreatedOnNotEmpty() *DatabaseShowOutputAss
 	return s
 }
 
+func (s *DatabaseShowOutputAssert) HasIsCurrentNotEmpty() *DatabaseShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValuePresent("is_current"))
+	return s
+}
+
 func (s *DatabaseShowOutputAssert) HasOwnerNotEmpty() *DatabaseShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValuePresent("owner"))
 	return s

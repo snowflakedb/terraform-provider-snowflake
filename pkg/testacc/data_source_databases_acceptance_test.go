@@ -105,7 +105,7 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 						HasKind("STANDARD").
 						HasTransient(false).
 						HasIsDefault(false).
-						HasIsCurrent(true).
+						HasIsCurrentNotEmpty().
 						HasOriginEmpty().
 						HasOwnerNotEmpty().
 						HasComment(comment).
@@ -137,7 +137,7 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 						HasKind("STANDARD").
 						HasTransient(false).
 						HasIsDefault(false).
-						HasIsCurrent(false).
+						HasIsCurrentNotEmpty().
 						HasOriginEmpty().
 						HasOwnerNotEmpty().
 						HasComment(comment).
