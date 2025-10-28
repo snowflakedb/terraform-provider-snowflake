@@ -504,7 +504,7 @@ func TestTableCreate(t *testing.T) {
 			{name: "FIRST_COLUMN", type_: DataTypeVARCHAR},
 		}
 		request := NewCreateTableRequest(id, columns).
-			WithStageCopyOptions(*NewStageCopyOptionsRequest().WithOnError(NewStageCopyOnErrorOptionsRequest().WithSkipFileX(5)))
+			WithStageCopyOptions(*NewStageCopyOptionsRequest().WithOnError(*NewStageCopyOnErrorOptionsRequest().WithSkipFileX(5)))
 		assertOptsValidAndSQLEquals(t, request.toOpts(), `CREATE TABLE %s (FIRST_COLUMN VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE_5)`, id.FullyQualifiedName())
 	})
 
@@ -513,7 +513,7 @@ func TestTableCreate(t *testing.T) {
 			{name: "FIRST_COLUMN", type_: DataTypeVARCHAR},
 		}
 		request := NewCreateTableRequest(id, columns).
-			WithStageCopyOptions(*NewStageCopyOptionsRequest().WithOnError(NewStageCopyOnErrorOptionsRequest().WithSkipFileXPercent(10)))
+			WithStageCopyOptions(*NewStageCopyOptionsRequest().WithOnError(*NewStageCopyOnErrorOptionsRequest().WithSkipFileXPercent(10)))
 		assertOptsValidAndSQLEquals(t, request.toOpts(), `CREATE TABLE %s (FIRST_COLUMN VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = 'SKIP_FILE_10%%')`, id.FullyQualifiedName())
 	})
 }

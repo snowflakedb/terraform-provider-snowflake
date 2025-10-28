@@ -93,7 +93,6 @@ func (s *StageFileFormatRequest) WithFormatName(formatName string) *StageFileFor
 	return s
 }
 
-// TODO usage
 func (s *StageFileFormatRequest) WithFileFormatType(fileFormatType FileFormatType) *StageFileFormatRequest {
 	s.FileFormatType = &fileFormatType
 	return s
@@ -155,7 +154,6 @@ func NewStageCopyOnErrorOptionsRequest() *StageCopyOnErrorOptionsRequest {
 	return &s
 }
 
-// TODO usage
 func (s *StageCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *StageCopyOnErrorOptionsRequest {
 	s.Continue_ = &continue_
 	return s

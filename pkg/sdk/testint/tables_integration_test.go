@@ -129,9 +129,9 @@ func TestInt_Table(t *testing.T) {
 				WithOn(sdk.NewForeignKeyOnAction().
 					WithOnDelete(sdk.Pointer(sdk.ForeignKeySetNullAction)).WithOnUpdate(sdk.Pointer(sdk.ForeignKeyRestrictAction))))
 		stageFileFormat := sdk.NewStageFileFormatRequest().
-			WithType(sdk.Pointer(sdk.FileFormatTypeCSV)).
-			WithOptions(sdk.NewFileFormatTypeOptionsRequest().WithCSVCompression(sdk.Pointer(sdk.CSVCompressionAuto)))
-		stageCopyOptions := sdk.NewStageCopyOptionsRequest().WithOnError(sdk.NewStageCopyOnErrorOptionsRequest().WithSkipFile())
+			WithFileFormatType(sdk.FileFormatTypeCSV).
+			WithOptions(*sdk.NewFileFormatTypeOptionsRequest().WithCSVCompression(sdk.Pointer(sdk.CSVCompressionAuto)))
+		stageCopyOptions := sdk.NewStageCopyOptionsRequest().WithOnError(*sdk.NewStageCopyOnErrorOptionsRequest().WithSkipFile())
 		request := sdk.NewCreateTableRequest(id, columns).
 			WithOutOfLineConstraint(*outOfLineConstraint).
 			WithStageFileFormat(*stageFileFormat).
