@@ -101,8 +101,9 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 					AtLeastOneOf:     []string{"mfa_policy.0.enforce_mfa_on_external_authentication", "mfa_policy.0.allowed_methods"},
 				},
 				"allowed_methods": {
-					Type:     schema.TypeSet,
-					Optional: true,
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Description: fmt.Sprintf("Specifies the allowed methods for the MFA policy. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllMfaPolicyOptions)),
 					Elem: &schema.Schema{
 						Type:             schema.TypeString,
 						ValidateDiagFunc: sdkValidation(sdk.ToMfaPolicyAllowedMethodsOption),
@@ -144,7 +145,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			},
 		},
 		Optional:    true,
-		Description: "Specifies the policies for programmatic access tokens.",
+		Description: "Specifies the policy for programmatic access tokens.",
 	},
 	"workload_identity_policy": {
 		Type:     schema.TypeList,
@@ -187,7 +188,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			},
 		},
 		Optional:    true,
-		Description: "Specifies the policies for workload identity federation.",
+		Description: "Specifies the policy for workload identity federation.",
 	},
 	"comment": {
 		Type:        schema.TypeString,

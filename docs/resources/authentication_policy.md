@@ -9,7 +9,7 @@ description: |-
 
 !> **Note** According to Snowflake [docs](https://docs.snowflake.com/en/sql-reference/sql/drop-authentication-policy#usage-notes), an authentication policy cannot be dropped successfully if it is currently assigned to another object. Currently, the provider does not unassign such objects automatically. Before dropping the resource, first unassign the policy from the relevant objects. See [guide](../guides/unassigning_policies) for more details.
 
--> **Note** External changes are not detected for the following fields: `mfa_policy`, `pat_policy`, `workload_identity_policy`.
+-> **Note** External changes are not detected for the following fields: `mfa_policy`, `pat_policy`, `workload_identity_policy`. Also, these values are not propagated as field values during the import. They are only available through the `describe_output` field.
 
 # snowflake_authentication_policy (Resource)
 
@@ -76,10 +76,10 @@ resource "snowflake_authentication_policy" "complete" {
 - `mfa_authentication_methods` (Set of String, Deprecated) A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are `ALL` | `SAML` | `PASSWORD`.
 - `mfa_enrollment` (String) Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): `REQUIRED` | `REQUIRED_PASSWORD_ONLY` | `OPTIONAL`. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).
 - `mfa_policy` (Block List, Max: 1) Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication. (see [below for nested schema](#nestedblock--mfa_policy))
-- `pat_policy` (Block List, Max: 1) Specifies the policies for programmatic access tokens. (see [below for nested schema](#nestedblock--pat_policy))
+- `pat_policy` (Block List, Max: 1) Specifies the policy for programmatic access tokens. (see [below for nested schema](#nestedblock--pat_policy))
 - `security_integrations` (Set of String) A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `all` as parameter.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `workload_identity_policy` (Block List, Max: 1) Specifies the policies for workload identity federation. (see [below for nested schema](#nestedblock--workload_identity_policy))
+- `workload_identity_policy` (Block List, Max: 1) Specifies the policy for workload identity federation. (see [below for nested schema](#nestedblock--workload_identity_policy))
 
 ### Read-Only
 
@@ -93,7 +93,7 @@ resource "snowflake_authentication_policy" "complete" {
 
 Optional:
 
-- `allowed_methods` (Set of String)
+- `allowed_methods` (Set of String) Specifies the allowed methods for the MFA policy. Valid values are (case-insensitive): `ALL` | `PASSKEY` | `TOTP` | `DUO`.
 - `enforce_mfa_on_external_authentication` (String) Determines whether multi-factor authentication (MFA) is enforced on external authentication. Valid values are (case-insensitive): `ALL` | `NONE`.
 
 
