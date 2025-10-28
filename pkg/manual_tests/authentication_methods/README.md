@@ -86,7 +86,7 @@ The `oauth_authorization_code_snowflake_idp` directory contains setup and test r
 ## WIF + EKS OIDC authenticator test
 
 To test the [WIF + EKS OIDC setup]
-(https://docs.snowflake.com/en/user-guide/workload-identity-federation#authenticate-to-snowflake-using-an-openid-connect-oidc-issuer-from-microsoft-azure-kubernetes),
+(https://docs.snowflake.com/en/user-guide/workload-identity-federation#authenticate-to-snowflake-using-openid-connect-oidc-issuer-from-aws-kubernetes),
 some additional manual steps are required to create the necessary resources in a k8s cluster and Snowflake.
 
 Pre-requisites:
