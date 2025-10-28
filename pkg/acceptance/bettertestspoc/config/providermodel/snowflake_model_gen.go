@@ -57,6 +57,8 @@ type SnowflakeModel struct {
 	User                               tfconfig.Variable `json:"user,omitempty"`
 	ValidateDefaultParameters          tfconfig.Variable `json:"validate_default_parameters,omitempty"`
 	Warehouse                          tfconfig.Variable `json:"warehouse,omitempty"`
+	WorkloadIdentityEntraResource      tfconfig.Variable `json:"workload_identity_entra_resource,omitempty"`
+	WorkloadIdentityProvider           tfconfig.Variable `json:"workload_identity_provider,omitempty"`
 
 	*config.ProviderModelMeta
 }
@@ -317,6 +319,16 @@ func (s *SnowflakeModel) WithWarehouse(warehouse string) *SnowflakeModel {
 	return s
 }
 
+func (s *SnowflakeModel) WithWorkloadIdentityEntraResource(workloadIdentityEntraResource string) *SnowflakeModel {
+	s.WorkloadIdentityEntraResource = tfconfig.StringVariable(workloadIdentityEntraResource)
+	return s
+}
+
+func (s *SnowflakeModel) WithWorkloadIdentityProvider(workloadIdentityProvider string) *SnowflakeModel {
+	s.WorkloadIdentityProvider = tfconfig.StringVariable(workloadIdentityProvider)
+	return s
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -563,5 +575,15 @@ func (s *SnowflakeModel) WithValidateDefaultParametersValue(value tfconfig.Varia
 
 func (s *SnowflakeModel) WithWarehouseValue(value tfconfig.Variable) *SnowflakeModel {
 	s.Warehouse = value
+	return s
+}
+
+func (s *SnowflakeModel) WithWorkloadIdentityEntraResourceValue(value tfconfig.Variable) *SnowflakeModel {
+	s.WorkloadIdentityEntraResource = value
+	return s
+}
+
+func (s *SnowflakeModel) WithWorkloadIdentityProviderValue(value tfconfig.Variable) *SnowflakeModel {
+	s.WorkloadIdentityProvider = value
 	return s
 }
