@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+// TODO [SNOW-1501905]: generalize this type of assertion
 type databaseNonExistenceCheck struct {
 	id sdk.AccountObjectIdentifier
 }
