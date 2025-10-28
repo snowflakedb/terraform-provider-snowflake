@@ -363,3 +363,11 @@ func ToEnforceMfaOnExternalAuthenticationOption(s string) (EnforceMfaOnExternalA
 	}
 	return EnforceMfaOnExternalAuthenticationOption(s), nil
 }
+
+func ToMfaPolicyAllowedMethodsOption(s string) (MfaPolicyAllowedMethodsOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllMfaPolicyOptions, MfaPolicyAllowedMethodsOption(s)) {
+		return "", fmt.Errorf("invalid MFA policy allowed methods option: %s", s)
+	}
+	return MfaPolicyAllowedMethodsOption(s), nil
+}

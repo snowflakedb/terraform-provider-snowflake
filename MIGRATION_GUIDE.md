@@ -34,6 +34,8 @@ We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
 - `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
 
+Also, we added support for the following features: `pat_policy`, `mfa_policy` and `workload_identity_policy`. Check the resource documentation for more details.
+
 #### Handling deprecated `mfa_authentication_methods` field
 As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods are handled in a different way. Now, the provider does not cause a permadiff caused by the `mfa_authentication_methods` field. If you used the `ignore_changes` attribute, you may now remove it. Configuring this field is still possible, but only with disabled 2025_06.
 

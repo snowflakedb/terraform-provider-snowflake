@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var authenticationPolicySchema = map[string]*schema.Schema{
@@ -85,6 +86,108 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("security_integrations"),
 		Optional:         true,
 		Description:      "A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `all` as parameter.",
+	},
+	"mfa_policy": {
+		Type:     schema.TypeList,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"enforce_mfa_on_external_authentication": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Description:      fmt.Sprintf("Determines whether multi-factor authentication (MFA) is enforced on external authentication. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllEnforceMfaOnExternalAuthenticationOptions)),
+					ValidateDiagFunc: sdkValidation(sdk.ToEnforceMfaOnExternalAuthenticationOption),
+					DiffSuppressFunc: NormalizeAndCompare(sdk.ToEnforceMfaOnExternalAuthenticationOption),
+					AtLeastOneOf:     []string{"mfa_policy.0.enforce_mfa_on_external_authentication", "mfa_policy.0.allowed_methods"},
+				},
+				"allowed_methods": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type:             schema.TypeString,
+						ValidateDiagFunc: sdkValidation(sdk.ToMfaPolicyAllowedMethodsOption),
+					},
+					AtLeastOneOf: []string{"mfa_policy.0.enforce_mfa_on_external_authentication", "mfa_policy.0.allowed_methods"},
+				},
+			},
+		},
+		Optional:    true,
+		Description: "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
+	},
+	"pat_policy": {
+		Type:     schema.TypeList,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"default_expiry_in_days": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies the default expiration time (in days) for a programmatic access token.",
+					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.network_policy_evaluation"},
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+				},
+				"max_expiry_in_days": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
+					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.network_policy_evaluation"},
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+				},
+				"network_policy_evaluation": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToNetworkPolicyEvaluationOption),
+					DiffSuppressFunc: NormalizeAndCompare(sdk.ToNetworkPolicyEvaluationOption),
+					Description:      "Specifies the network policy evaluation for the PAT.",
+					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.network_policy_evaluation"},
+				},
+			},
+		},
+		Optional:    true,
+		Description: "Specifies the policies for programmatic access tokens.",
+	},
+	"workload_identity_policy": {
+		Type:     schema.TypeList,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"allowed_providers": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type:             schema.TypeString,
+						ValidateDiagFunc: sdkValidation(sdk.ToAllowedProviderOption),
+					},
+					Description: "Specifies the allowed providers for the workload identity policy.",
+				},
+				"allowed_aws_accounts": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Description: "Specifies the list of AWS account IDs allowed by the authentication policy during workload identity authentication of type `AWS`.",
+				},
+				"allowed_azure_issuers": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Description: "Specifies the list of Azure Entra ID issuers allowed by the authentication policy during workload identity authentication of type `AZURE`.",
+				},
+				"allowed_oidc_issuers": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Description: "Specifies the list of OIDC issuers allowed by the authentication policy during workload identity authentication of type `OIDC`.",
+				},
+			},
+		},
+		Optional:    true,
+		Description: "Specifies the policies for workload identity federation.",
 	},
 	"comment": {
 		Type:        schema.TypeString,
@@ -255,6 +358,9 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		attributeMappedValueCreateBuilder(d, "security_integrations", req.WithSecurityIntegrations, ToSecurityIntegrationsRequest),
 		attributeMappedValueCreateBuilder(d, "mfa_enrollment", req.WithMfaEnrollment, sdk.ToMfaEnrollmentOption),
 		stringAttributeCreateBuilder(d, "comment", req.WithComment),
+		attributeMappedValueCreateBuilder(d, "mfa_policy", req.WithMfaPolicy, ToMfaPolicyRequest),
+		attributeMappedValueCreateBuilder(d, "pat_policy", req.WithPatPolicy, ToPatPolicyRequest),
+		attributeMappedValueCreateBuilder(d, "workload_identity_policy", req.WithWorkloadIdentityPolicy, ToWorkloadIdentityPolicyRequest),
 	); err != nil {
 		return diag.FromErr(err)
 	}
@@ -276,6 +382,115 @@ func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionReq
 	}
 	// TODO(next PR): handle ALL separately
 	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
+}
+
+func ToMfaPolicyRequest(value any) (sdk.AuthenticationPolicyMfaPolicyRequest, error) {
+	mfaPolicyRaw, ok := value.([]any)
+	if !ok || len(mfaPolicyRaw) != 1 {
+		return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract mfa policy, input is either nil or non expected type (%T): %v", value, value)
+	}
+	mfaConfig := mfaPolicyRaw[0].(map[string]any)
+	mfaPolicy := sdk.NewAuthenticationPolicyMfaPolicyRequest()
+	if v, ok := mfaConfig["enforce_mfa_on_external_authentication"]; ok {
+		enforceMfaOnExternalAuthentication, err := sdk.ToEnforceMfaOnExternalAuthenticationOption(v.(string))
+		if err != nil {
+			return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract enforce MFA on external authentication, input is either nil or non expected type (%T): %v", v, v)
+		}
+		mfaPolicy.WithEnforceMfaOnExternalAuthentication(enforceMfaOnExternalAuthentication)
+	}
+	if v, ok := mfaConfig["allowed_methods"]; ok {
+		allowedMethods := v.(*schema.Set).List()
+		values, err := collections.MapErr(allowedMethods, func(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
+			enum, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
+			if err != nil {
+				return sdk.AuthenticationPolicyMfaPolicyListItem{}, err
+			}
+			return sdk.AuthenticationPolicyMfaPolicyListItem{Method: enum}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyMfaPolicyRequest{}, err
+		}
+		mfaPolicy.WithAllowedMethods(values)
+	}
+	return *mfaPolicy, nil
+}
+
+func ToPatPolicyRequest(value any) (sdk.AuthenticationPolicyPatPolicyRequest, error) {
+	patPolicyRaw, ok := value.([]any)
+	if !ok || len(patPolicyRaw) != 1 {
+		return sdk.AuthenticationPolicyPatPolicyRequest{}, fmt.Errorf("unable to extract pat policy, input is either nil or non expected type (%T): %v", value, value)
+	}
+	patConfig := patPolicyRaw[0].(map[string]any)
+	patPolicy := sdk.NewAuthenticationPolicyPatPolicyRequest()
+	if v, ok := patConfig["default_expiry_in_days"]; ok {
+		patPolicy.WithDefaultExpiryInDays(v.(int))
+	}
+	if v, ok := patConfig["max_expiry_in_days"]; ok {
+		patPolicy.WithMaxExpiryInDays(v.(int))
+	}
+	if v, ok := patConfig["network_policy_evaluation"]; ok {
+		networkPolicyEvaluation, err := sdk.ToNetworkPolicyEvaluationOption(v.(string))
+		if err != nil {
+			return sdk.AuthenticationPolicyPatPolicyRequest{}, err
+		}
+		patPolicy.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
+	}
+
+	return *patPolicy, nil
+}
+
+func ToWorkloadIdentityPolicyRequest(value any) (sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, error) {
+	workloadIdentityPolicyRaw, ok := value.([]any)
+	if !ok || len(workloadIdentityPolicyRaw) != 1 {
+		return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, fmt.Errorf("unable to extract workload identity policy, input is either nil or non expected type (%T): %v", value, value)
+	}
+	workloadIdentityPolicyConfig := workloadIdentityPolicyRaw[0].(map[string]any)
+	workloadIdentityPolicy := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
+	if v, ok := workloadIdentityPolicyConfig["allowed_providers"]; ok {
+		allowedProviders := v.(*schema.Set).List()
+		values, err := collections.MapErr(allowedProviders, func(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
+			enum, err := sdk.ToAllowedProviderOption(v.(string))
+			if err != nil {
+				return sdk.AuthenticationPolicyAllowedProviderListItem{}, err
+			}
+			return sdk.AuthenticationPolicyAllowedProviderListItem{Provider: enum}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
+		}
+		workloadIdentityPolicy.WithAllowedProviders(values)
+	}
+	if v, ok := workloadIdentityPolicyConfig["allowed_aws_accounts"]; ok {
+		allowedAwsAccounts := v.([]any)
+		values, err := collections.MapErr(allowedAwsAccounts, func(v any) (sdk.StringListItemWrapper, error) {
+			return sdk.StringListItemWrapper{Value: v.(string)}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
+		}
+		workloadIdentityPolicy.WithAllowedAwsAccounts(values)
+	}
+	if v, ok := workloadIdentityPolicyConfig["allowed_azure_issuers"]; ok {
+		allowedAzureIssuers := v.([]any)
+		values, err := collections.MapErr(allowedAzureIssuers, func(v any) (sdk.StringListItemWrapper, error) {
+			return sdk.StringListItemWrapper{Value: v.(string)}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
+		}
+		workloadIdentityPolicy.WithAllowedAzureIssuers(values)
+	}
+	if v, ok := workloadIdentityPolicyConfig["allowed_oidc_issuers"]; ok {
+		allowedOidcIssuers := v.([]any)
+		values, err := collections.MapErr(allowedOidcIssuers, func(v any) (sdk.StringListItemWrapper, error) {
+			return sdk.StringListItemWrapper{Value: v.(string)}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
+		}
+		workloadIdentityPolicy.WithAllowedOidcIssuers(values)
+	}
+	return *workloadIdentityPolicy, nil
 }
 
 func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
@@ -461,6 +676,9 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	if err := errors.Join(
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		attributeMappedValueUpdate(d, "security_integrations", &set.SecurityIntegrations, &unset.SecurityIntegrations, ToSecurityIntegrationsRequest),
+		attributeMappedValueUpdate(d, "mfa_policy", &set.MfaPolicy, &unset.MfaPolicy, ToMfaPolicyRequest),
+		attributeMappedValueUpdate(d, "pat_policy", &set.PatPolicy, &unset.PatPolicy, ToPatPolicyRequest),
+		attributeMappedValueUpdate(d, "workload_identity_policy", &set.WorkloadIdentityPolicy, &unset.WorkloadIdentityPolicy, ToWorkloadIdentityPolicyRequest),
 	); err != nil {
 		return diag.FromErr(err)
 	}
