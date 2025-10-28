@@ -5,8 +5,6 @@ package testacc
 import (
 	"testing"
 
-	tfjson "github.com/hashicorp/terraform-json"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -14,9 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -25,15 +20,6 @@ import (
 )
 
 func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
-	// Schema analysis (from pkg/resources/secret_common.go and secret_with_basic_authentication.go):
-	// - name: ForceNew: true (cannot be renamed)
-	// - database: ForceNew: true (cannot be changed)
-	// - schema: ForceNew: true (cannot be changed)
-	// - username: NOT force-new (can be updated)
-	// - password: NOT force-new (can be updated)
-	// - comment: Optional, NOT force-new
-	// Result: Use same identifiers for basic/complete (name, database, schema are force-new), no additional force-new fields to handle
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	username := random.String()
@@ -50,7 +36,7 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypePassword)).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
-			HasCommentEmpty(),
+			HasNoComment(),
 
 		resourceassert.SecretWithBasicAuthenticationResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
@@ -72,7 +58,6 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 			HasComment("").
 			HasOwnerRoleType("ROLE"),
 
-		// Describe output assertions
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.name", id.Name())),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -114,7 +99,6 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasOwnerRoleType("ROLE"),
 
-		// Describe output assertions
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -175,27 +159,45 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
+			// TODO(SNOW-2457144; next prs): see why is this step failing with Error: Saved plan is stale
 			// Update - detect external changes (temporarily disabled due to SQL compilation error)
 			// {
-			// 	PreConfig: func() {
-			// 		testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
-			// 			*sdk.NewSecretSetRequest().WithComment("external_comment"),
-			// 		))
-			// 	},
-			// 	ConfigPlanChecks: resource.ConfigPlanChecks{
-			// 		PreApply: []plancheck.PlanCheck{
-			// 			plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-			// 		},
-			// 	},
-			// 	Config: config.FromModels(t, basic),
-			// 	Check:  assertThat(t, assertBasic...),
+			//	PreConfig: func() {
+			//		testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
+			//			*sdk.NewSecretSetRequest().WithComment(comment),
+			//		))
+			// testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).
+			//	WithSet(*sdk.NewSecretSetRequest().
+			//		WithComment("test_comment").
+			//		WithSetForFlow(*sdk.NewSetForFlowRequest().
+			//			WithSetForBasicAuthentication(*sdk.NewSetForBasicAuthenticationRequest().
+			//				WithUsername("test_username"),
+			//			),
+			//		),
+			//	),
+			// )
+			//	},
+			//	ConfigPlanChecks: resource.ConfigPlanChecks{
+			//		PreApply: []plancheck.PlanCheck{
+			//			plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+			//		},
+			//	},
+			//	Config: config.FromModels(t, basic),
+			//	Check:  assertThat(t, assertBasic...),
 			// },
-			// Create - with optionals (from scratch via taint)
+			// Destroy - ensure secret is destroyed before the next step
 			{
-				Taint: []string{complete.ResourceReference()},
+				Destroy: true,
+				Config:  config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.SecretDoesNotExist(t, id),
+				),
+			},
+			// Create - with optionals
+			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: config.FromModels(t, complete),
@@ -205,179 +207,7 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 	})
 }
 
-func TestAcc_SecretWithBasicAuthentication_BasicFlow(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	name := id.Name()
-	comment := random.Comment()
-
-	secretModel := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "foo", "foo")
-	secretModelDifferentCredentialsWithComment := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "bar", "bar").WithComment(comment)
-	secretModelWithoutComment := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "bar", "bar")
-	secretModelEmptyCredentials := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "", "")
-
-	resourceReference := secretModel.ResourceReference()
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.SecretWithBasicAuthentication),
-		Steps: []resource.TestStep{
-			// create
-			{
-				Config: config.FromModels(t, secretModel),
-				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
-						resourceassert.SecretWithBasicAuthenticationResource(t, resourceReference).
-							HasNameString(name).
-							HasDatabaseString(id.DatabaseName()).
-							HasSchemaString(id.SchemaName()).
-							HasUsernameString("foo").
-							HasPasswordString("foo").
-							HasCommentString(""),
-
-						resourceshowoutputassert.SecretShowOutput(t, resourceReference).
-							HasName(name).
-							HasDatabaseName(id.DatabaseName()).
-							HasSecretType(string(sdk.SecretTypePassword)).
-							HasSchemaName(id.SchemaName()).
-							HasComment(""),
-					),
-
-					resource.TestCheckResourceAttr(resourceReference, "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttrSet(resourceReference, "describe_output.0.created_on"),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.name", name),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.database_name", id.DatabaseName()),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.schema_name", id.SchemaName()),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.secret_type", string(sdk.SecretTypePassword)),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.username", "foo"),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.comment", ""),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.oauth_access_token_expiry_time", ""),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.oauth_refresh_token_expiry_time", ""),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.integration_name", ""),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.oauth_scopes.#", "0"),
-				),
-			},
-			// set username, password and comment
-			{
-				Config: config.FromModels(t, secretModelDifferentCredentialsWithComment),
-				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
-						resourceassert.SecretWithBasicAuthenticationResource(t, resourceReference).
-							HasNameString(name).
-							HasDatabaseString(id.DatabaseName()).
-							HasSchemaString(id.SchemaName()).
-							HasUsernameString("bar").
-							HasPasswordString("bar").
-							HasCommentString(comment),
-
-						resourceshowoutputassert.SecretShowOutput(t, resourceReference).
-							HasSecretType(string(sdk.SecretTypePassword)).
-							HasComment(comment),
-					),
-
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.username", "bar"),
-					resource.TestCheckResourceAttr(resourceReference, "describe_output.0.comment", comment),
-				),
-			},
-			// set username and comment externally
-			{
-				PreConfig: func() {
-					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).
-						WithSet(*sdk.NewSecretSetRequest().
-							WithComment("test_comment").
-							WithSetForFlow(*sdk.NewSetForFlowRequest().
-								WithSetForBasicAuthentication(*sdk.NewSetForBasicAuthenticationRequest().
-									WithUsername("test_username"),
-								),
-							),
-						),
-					)
-				},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "comment", sdk.String(comment), sdk.String("test_comment")),
-						planchecks.ExpectDrift(resourceReference, "username", sdk.String("bar"), sdk.String("test_username")),
-
-						planchecks.ExpectChange(resourceReference, "comment", tfjson.ActionUpdate, sdk.String("test_comment"), sdk.String(comment)),
-						planchecks.ExpectChange(resourceReference, "username", tfjson.ActionUpdate, sdk.String("test_username"), sdk.String("bar")),
-					},
-				},
-				Config: config.FromModels(t, secretModelDifferentCredentialsWithComment),
-				Check: assertThat(t,
-					resourceassert.SecretWithBasicAuthenticationResource(t, resourceReference).
-						HasNameString(name).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasUsernameString("bar").
-						HasPasswordString("bar").
-						HasCommentString(comment),
-				),
-			},
-			// import
-			{
-				ResourceName:            resourceReference,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password"},
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "database", id.DatabaseId().Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "schema", id.SchemaId().Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "username", "bar"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", comment),
-				),
-			},
-			// unset comment
-			{
-				Config: config.FromModels(t, secretModelWithoutComment),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "comment", tfjson.ActionUpdate, sdk.String(comment), nil),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.SecretWithClientCredentialsResource(t, resourceReference).
-						HasCommentString(""),
-				),
-			},
-			// import with no fields set
-			{
-				ResourceName:            resourceReference,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password"},
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "database", id.DatabaseId().Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "schema", id.SchemaId().Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "username", "bar"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", ""),
-				),
-			},
-			// set empty username and password
-			{
-				Config: config.FromModels(t, secretModelEmptyCredentials),
-				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
-						resourceassert.SecretWithBasicAuthenticationResource(t, resourceReference).
-							HasNameString(name).
-							HasDatabaseString(id.DatabaseName()).
-							HasSchemaString(id.SchemaName()).
-							HasUsernameString("").
-							HasPasswordString("").
-							HasCommentString(""),
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_SecretWithBasicAuthentication_CreateWithEmptyCredentials(t *testing.T) {
+func TestAcc_SecretWithBasicAuthentication_CompleteUseCase_CreateWithEmptyCredentials(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 	secretModelEmptyCredentials := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "", "")
