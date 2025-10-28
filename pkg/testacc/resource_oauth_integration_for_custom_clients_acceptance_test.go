@@ -1,4 +1,4 @@
-//go:build account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -7,14 +7,15 @@ import (
 	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -62,14 +63,14 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasOauthClientTypeString("CONFIDENTIAL").
 			HasOauthRedirectUriString(validUrl).
-			HasEnabledString("default").
-			HasOauthAllowNonTlsRedirectUriString("default").
-			HasOauthEnforcePkceString("default").
-			HasOauthIssueRefreshTokensString("default").
-			HasOauthAllowNonTlsRedirectUriString("default").
+			HasEnabledString(resources.BooleanDefault).
+			HasOauthAllowNonTlsRedirectUriString(resources.BooleanDefault).
+			HasOauthEnforcePkceString(resources.BooleanDefault).
+			HasOauthIssueRefreshTokensString(resources.BooleanDefault).
+			HasOauthAllowNonTlsRedirectUriString(resources.BooleanDefault).
 			HasPreAuthorizedRolesListLen(0).
 			HasRelatedParametersNotEmpty().
-			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList("true").
+			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList(resources.BooleanTrue).
 			HasBlockedRolesListEmpty(),
 
 		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
@@ -82,13 +83,13 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
 		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "false")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "false")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanFalse)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.network_policy.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_fp.0.value", "")),
@@ -114,10 +115,10 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasOauthClientTypeString("CONFIDENTIAL").
 			HasOauthRedirectUriString(validUrl).
-			HasEnabledString("true").
-			HasOauthAllowNonTlsRedirectUriString("true").
-			HasOauthEnforcePkceString("true").
-			HasOauthIssueRefreshTokensString("true").
+			HasEnabledString(resources.BooleanTrue).
+			HasOauthAllowNonTlsRedirectUriString(resources.BooleanTrue).
+			HasOauthEnforcePkceString(resources.BooleanTrue).
+			HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 			HasOauthRefreshTokenValidityString("86400").
 			HasOauthUseSecondaryRolesString("IMPLICIT").
 			HasPreAuthorizedRolesListLen(1).
@@ -127,7 +128,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasOauthClientRsaPublicKey2String(key).
 			HasCommentString(comment).
 			HasRelatedParametersNotEmpty().
-			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList("true").
+			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList(resources.BooleanTrue).
 			HasBlockedRolesListEmpty(),
 
 		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
@@ -140,13 +141,13 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
 		assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "true")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanTrue)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.network_policy.0.value", networkPolicy.ID().Name())),
 		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_fp.0.value")),
@@ -315,10 +316,10 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasOauthClientTypeString("PUBLIC").
 						HasOauthRedirectUriString(validUrl).
-						HasEnabledString("true").
-						HasOauthAllowNonTlsRedirectUriString("true").
-						HasOauthEnforcePkceString("true").
-						HasOauthIssueRefreshTokensString("true").
+						HasEnabledString(resources.BooleanTrue).
+						HasOauthAllowNonTlsRedirectUriString(resources.BooleanTrue).
+						HasOauthEnforcePkceString(resources.BooleanTrue).
+						HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 						HasOauthRefreshTokenValidityString("86400").
 						HasOauthUseSecondaryRolesString("IMPLICIT").
 						HasPreAuthorizedRolesListLen(1).
@@ -328,7 +329,7 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 						HasOauthClientRsaPublicKey2String(key).
 						HasCommentString(comment).
 						HasRelatedParametersNotEmpty().
-						HasRelatedParametersOauthAddPrivilegedRolesToBlockedList("true").
+						HasRelatedParametersOauthAddPrivilegedRolesToBlockedList(resources.BooleanTrue).
 						HasBlockedRolesListEmpty(),
 
 					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
@@ -341,13 +342,13 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "PUBLIC")),
 					assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
-					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
-					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "true")),
-					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanTrue)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
-					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.network_policy.0.value", networkPolicy.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.oauth_client_rsa_public_key_fp.0.value")),

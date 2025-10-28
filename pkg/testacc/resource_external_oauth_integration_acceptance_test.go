@@ -7,11 +7,13 @@ import (
 	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -49,14 +51,14 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.SecurityIntegration(t, id).
 			HasName(id.Name()).
-			HasIntegrationType("EXTERNAL_OAUTH - " + string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
 			HasEnabled(true).
 			HasComment(""),
 
 		resourceassert.ExternalOauthSecurityIntegrationResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasEnabledString("true").
+			HasEnabledString(r.BooleanTrue).
 			HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
 			HasExternalOauthIssuerString(issuer).
 			HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
@@ -64,12 +66,12 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 
 		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
 			HasName(id.Name()).
-			HasIntegrationType("EXTERNAL_OAUTH - " + string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
 			HasEnabled(true).
 			HasComment(""),
 
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", r.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),
@@ -82,14 +84,14 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.SecurityIntegration(t, id).
 			HasName(id.Name()).
-			HasIntegrationType("EXTERNAL_OAUTH - " + string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
 			HasEnabled(true).
 			HasComment(comment),
 
 		resourceassert.ExternalOauthSecurityIntegrationResource(t, complete.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasEnabledString("true").
+			HasEnabledString(r.BooleanTrue).
 			HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
 			HasExternalOauthIssuerString(issuer).
 			HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
@@ -99,12 +101,12 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 
 		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
 			HasName(id.Name()).
-			HasIntegrationType("EXTERNAL_OAUTH - " + string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+			HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
 			HasEnabled(true).
 			HasComment(comment),
 
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", r.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),
@@ -250,7 +252,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
 		Steps: []resource.TestStep{
-			// Create - with all optionals (including force-new fields)
+			// Create - with all optionals (including optional force-new fields)
 			{
 				Config: accconfig.FromModels(t, complete),
 				Check: assertThat(t,
@@ -263,7 +265,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 					resourceassert.ExternalOauthSecurityIntegrationResource(t, complete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasEnabledString("true").
+						HasEnabledString(r.BooleanTrue).
 						HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
 						HasExternalOauthIssuerString(issuer).
 						HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
@@ -279,7 +281,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 						HasComment(comment),
 
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", r.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),

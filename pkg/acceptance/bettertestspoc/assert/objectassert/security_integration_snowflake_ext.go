@@ -30,7 +30,7 @@ func (w *SecurityIntegrationNonExistenceCheck) ToTerraformTestCheckFunc(t *testi
 			}
 			return err
 		}
-		return fmt.Errorf("expected database %s to be missing, but it exists", w.id.FullyQualifiedName())
+		return fmt.Errorf("expected security integration %s to be missing, but it exists", w.id.FullyQualifiedName())
 	}
 }
 
