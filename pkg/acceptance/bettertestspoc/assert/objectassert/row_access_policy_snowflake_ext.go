@@ -13,39 +13,28 @@ import (
 )
 
 // TODO [SNOW-1501905]: generalize this type of assertion
-type streamlitNonExistenceCheck struct {
+type rowAccessPolicyNonExistenceCheck struct {
 	id sdk.SchemaObjectIdentifier
 }
 
-func (w *streamlitNonExistenceCheck) ToTerraformTestCheckFunc(t *testing.T, testClient *helpers.TestClient) resource.TestCheckFunc {
+func (w *rowAccessPolicyNonExistenceCheck) ToTerraformTestCheckFunc(t *testing.T, testClient *helpers.TestClient) resource.TestCheckFunc {
 	t.Helper()
 	return func(_ *terraform.State) error {
 		if testClient == nil {
 			return errors.New("testClient must not be nil")
 		}
-		_, err := testClient.Streamlit.Show(t, w.id)
+		_, err := testClient.RowAccessPolicy.Show(t, w.id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				return nil
 			}
 			return err
 		}
-		return fmt.Errorf("expected streamlit %s to be missing, but it exists", w.id.FullyQualifiedName())
+		return fmt.Errorf("expected row access policy %s to be missing, but it exists", w.id.FullyQualifiedName())
 	}
 }
 
-func StreamlitDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.TestCheckFuncProvider {
+func RowAccessPolicyDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.TestCheckFuncProvider {
 	t.Helper()
-	return &streamlitNonExistenceCheck{id: id}
-}
-
-func (s *StreamlitAssert) HasUrlIdNotEmpty() *StreamlitAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
-		t.Helper()
-		if o.UrlId == "" {
-			return fmt.Errorf("expected url id to be not empty; got: %v", o.UrlId)
-		}
-		return nil
-	})
-	return s
+	return &rowAccessPolicyNonExistenceCheck{id: id}
 }

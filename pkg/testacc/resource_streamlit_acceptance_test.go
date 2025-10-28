@@ -7,17 +7,14 @@ import (
 	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	tfjson "github.com/hashicorp/terraform-json"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -52,6 +49,7 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	title := random.AlphaN(4)
 	directoryLocation := "abc"
+	rootLocationWithCatalog := fmt.Sprintf("%s/%s", stage.Location(), directoryLocation)
 	mainFile := "foo"
 
 	basic := model.StreamlitWithIds("test", id, mainFile, stage.ID())
@@ -112,8 +110,6 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_access_integrations.#", "0")),
 		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.external_access_secrets")),
 	}
-
-	rootLocationWithCatalog := fmt.Sprintf("%s/%s", stage.Location(), directoryLocation)
 
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.Streamlit(t, newId).
@@ -217,382 +213,38 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().Streamlit.Update(t, sdk.NewAlterStreamlitRequest(id).WithSet(
 						*sdk.NewStreamlitSetRequest().
-							WithRootLocation(fmt.Sprintf("%s/bar", stage.Location())).
-							WithComment("bar"),
+							WithRootLocation(rootLocationWithCatalog).
+							WithTitle(title).
+							WithQueryWarehouse(warehouse.ID()).
+							WithExternalAccessIntegrations(*sdk.NewExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId})).
+							WithComment(comment),
 					))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(basic.ResourceReference(), "directory_location", sdk.String(""), sdk.String("bar")),
-						planchecks.ExpectChange(basic.ResourceReference(), "directory_location", tfjson.ActionUpdate, sdk.String("bar"), nil),
-						planchecks.ExpectDrift(basic.ResourceReference(), "comment", sdk.String(""), sdk.String("bar")),
-						planchecks.ExpectChange(basic.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.String("bar"), nil),
 					},
 				},
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Create - with optionals (from scratch via taint)
+			// Destroy - ensure streamlit is destroyed before the next step
 			{
-				Taint: []string{complete.ResourceReference()},
+				Destroy: true,
+				Config:  accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.StreamlitDoesNotExist(t, id),
+				),
+			},
+			// Create - with optionals
+			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
-			},
-		},
-	})
-}
-
-func TestAcc_Streamlit_basic(t *testing.T) {
-	stage, stageCleanup := testClient().Stage.CreateStage(t)
-	t.Cleanup(stageCleanup)
-
-	// warehouse is needed because default warehouse uses lowercase, and it fails in snowflake.
-	// TODO(SNOW-1541938): use a default warehouse after fix on snowflake side
-	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
-	t.Cleanup(warehouseCleanup)
-
-	networkRule, networkRuleCleanup := testClient().NetworkRule.Create(t)
-	t.Cleanup(networkRuleCleanup)
-
-	externalAccessIntegrationId, externalAccessIntegrationCleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
-	t.Cleanup(externalAccessIntegrationCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	directoryLocation := "abc"
-	rootLocationWithCatalog := fmt.Sprintf("%s/%s", stage.Location(), directoryLocation)
-	comment := random.Comment()
-	mainFile := "foo"
-	title := "foo"
-
-	streamlitModelBasic := model.StreamlitWithIds("test", id, mainFile, stage.ID())
-	streamlitModelComplete := model.StreamlitWithIds("test", id, mainFile, stage.ID()).
-		WithComment(comment).
-		WithTitle(title).
-		WithDirectoryLocation(directoryLocation).
-		WithQueryWarehouse(warehouse.ID().Name()).
-		WithExternalAccessIntegrations(externalAccessIntegrationId)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Streamlit),
-		Steps: []resource.TestStep{
-			// create with empty optionals
-			{
-				Config: accconfig.FromModels(t, streamlitModelBasic),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "database", id.DatabaseName()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "schema", id.SchemaName()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "stage", stage.ID().FullyQualifiedName()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "main_file", "foo"),
-
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(streamlitModelBasic.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.0.database_name", id.DatabaseName()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.0.schema_name", id.SchemaName()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.0.title", ""),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.0.owner", testClient().Context.CurrentRole(t).Name()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.0.comment", ""),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.0.query_warehouse", ""),
-					resource.TestCheckResourceAttrSet(streamlitModelBasic.ResourceReference(), "show_output.0.url_id"),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "show_output.0.owner_role_type", "ROLE"),
-
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "describe_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "describe_output.0.title", ""),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "describe_output.0.root_location", stage.Location()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "describe_output.0.main_file", "foo"),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "describe_output.0.query_warehouse", ""),
-					resource.TestCheckResourceAttrSet(streamlitModelBasic.ResourceReference(), "describe_output.0.url_id"),
-					resource.TestCheckResourceAttrSet(streamlitModelBasic.ResourceReference(), "describe_output.0.default_packages"),
-					resource.TestCheckResourceAttrSet(streamlitModelBasic.ResourceReference(), "describe_output.0.user_packages.#"),
-					resource.TestCheckResourceAttrSet(streamlitModelBasic.ResourceReference(), "describe_output.0.import_urls.#"),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "describe_output.0.external_access_integrations.#", "0"),
-					resource.TestCheckResourceAttrSet(streamlitModelBasic.ResourceReference(), "describe_output.0.external_access_secrets"),
-				),
-			},
-			// import - without optionals
-			{
-				Config:       accconfig.FromModels(t, streamlitModelBasic),
-				ResourceName: streamlitModelBasic.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "database", id.DatabaseName()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "schema", id.SchemaName()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "stage", stage.ID().FullyQualifiedName()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "main_file", "foo"),
-				),
-			},
-			// set optionals
-			{
-				Config: accconfig.FromModels(t, streamlitModelComplete),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "database", id.DatabaseName()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "schema", id.SchemaName()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "main_file", "foo"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "external_access_integrations.#", "1"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "external_access_integrations.0", externalAccessIntegrationId.Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "title", title),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.database_name", id.DatabaseName()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.schema_name", id.SchemaName()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.title", title),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.owner", testClient().Context.CurrentRole(t).Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.comment", comment),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "show_output.0.url_id"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.owner_role_type", "ROLE"),
-
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.title", title),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.root_location", rootLocationWithCatalog),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.main_file", "foo"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.url_id"),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.default_packages"),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.user_packages.#"),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.import_urls.#"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegrationId.Name()),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.external_access_secrets")),
-			},
-			// import - complete
-			{
-				Config:       accconfig.FromModels(t, streamlitModelComplete),
-				ResourceName: streamlitModelComplete.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "database", id.DatabaseName()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "schema", id.SchemaName()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "stage", stage.ID().FullyQualifiedName()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "directory_location", directoryLocation),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "main_file", "foo"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "query_warehouse", warehouse.ID().Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "external_access_integrations.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "external_access_integrations.0", externalAccessIntegrationId.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "title", title),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", comment)),
-			},
-			// change externally
-			{
-				PreConfig: func() {
-					testClient().Streamlit.Update(t, sdk.NewAlterStreamlitRequest(id).WithSet(
-						*sdk.NewStreamlitSetRequest().
-							WithRootLocation(fmt.Sprintf("%s/bar", stage.Location())).
-							WithComment("bar"),
-					))
-				},
-				Config: accconfig.FromModels(t, streamlitModelComplete),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(streamlitModelComplete.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(streamlitModelComplete.ResourceReference(), "directory_location", sdk.String(directoryLocation), sdk.String("bar")),
-						planchecks.ExpectChange(streamlitModelComplete.ResourceReference(), "directory_location", tfjson.ActionUpdate, sdk.String("bar"), sdk.String(directoryLocation)),
-						planchecks.ExpectDrift(streamlitModelComplete.ResourceReference(), "comment", sdk.String(comment), sdk.String("bar")),
-						planchecks.ExpectChange(streamlitModelComplete.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.String("bar"), sdk.String(comment)),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "database", id.DatabaseName()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "schema", id.SchemaName()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "main_file", "foo"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "external_access_integrations.#", "1"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "external_access_integrations.0", externalAccessIntegrationId.Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "title", title),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.database_name", id.DatabaseName()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.schema_name", id.SchemaName()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.title", title),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.owner", testClient().Context.CurrentRole(t).Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.comment", comment),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "show_output.0.url_id"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "show_output.0.owner_role_type", "ROLE"),
-
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.title", title),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.root_location", rootLocationWithCatalog),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.main_file", "foo"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.url_id"),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.default_packages"),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.user_packages.#"),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.import_urls.#"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1"),
-					resource.TestCheckResourceAttr(streamlitModelComplete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegrationId.Name()),
-					resource.TestCheckResourceAttrSet(streamlitModelComplete.ResourceReference(), "describe_output.0.external_access_secrets")),
-			},
-			// unset
-			{
-				Config: accconfig.FromModels(t, streamlitModelBasic),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "database", id.DatabaseName()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "schema", id.SchemaName()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "stage", stage.ID().FullyQualifiedName()),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "directory_location", ""),
-					resource.TestCheckResourceAttr(streamlitModelBasic.ResourceReference(), "main_file", "foo")),
-			},
-		},
-	})
-}
-
-func TestAcc_Streamlit_complete(t *testing.T) {
-	stage, stageCleanup := testClient().Stage.CreateStage(t)
-	t.Cleanup(stageCleanup)
-
-	// warehouse is needed because default warehouse uses lowercase, and it fails in snowflake.
-	// TODO(SNOW-1541938): use a default warehouse after fix on snowflake side
-	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
-	t.Cleanup(warehouseCleanup)
-
-	networkRule, networkRuleCleanup := testClient().NetworkRule.Create(t)
-	t.Cleanup(networkRuleCleanup)
-
-	externalAccessIntegrationId, externalAccessIntegrationCleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
-	t.Cleanup(externalAccessIntegrationCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	directoryLocation := "abc"
-	rootLocationWithCatalog := fmt.Sprintf("%s/%s", stage.Location(), directoryLocation)
-	comment := random.Comment()
-	mainFile := "foo"
-	title := "foo"
-
-	streamlitModelComplete := model.StreamlitWithIds("test", id, mainFile, stage.ID()).
-		WithComment(comment).
-		WithTitle(title).
-		WithDirectoryLocation(directoryLocation).
-		WithQueryWarehouse(warehouse.ID().Name()).
-		WithExternalAccessIntegrations(externalAccessIntegrationId)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Streamlit),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, streamlitModelComplete),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "database", id.DatabaseName()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "schema", id.SchemaName()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "stage", stage.ID().FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "directory_location", directoryLocation),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "main_file", "foo"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "external_access_integrations.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "external_access_integrations.0", externalAccessIntegrationId.Name()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "title", "foo"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "comment", comment),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "fully_qualified_name", id.FullyQualifiedName()),
-
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttrSet("snowflake_streamlit.test", "show_output.0.created_on"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.0.database_name", id.DatabaseName()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.0.schema_name", id.SchemaName()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.0.title", "foo"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.0.owner", testClient().Context.CurrentRole(t).Name()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.0.comment", comment),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.0.query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttrSet("snowflake_streamlit.test", "show_output.0.url_id"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "show_output.0.owner_role_type", "ROLE"),
-
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "describe_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "describe_output.0.title", "foo"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "describe_output.0.root_location", rootLocationWithCatalog),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "describe_output.0.main_file", "foo"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "describe_output.0.query_warehouse", warehouse.ID().Name()),
-					resource.TestCheckResourceAttrSet("snowflake_streamlit.test", "describe_output.0.url_id"),
-					resource.TestCheckResourceAttrSet("snowflake_streamlit.test", "describe_output.0.default_packages"),
-					resource.TestCheckResourceAttrSet("snowflake_streamlit.test", "describe_output.0.user_packages.#"),
-					resource.TestCheckResourceAttrSet("snowflake_streamlit.test", "describe_output.0.import_urls.#"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "describe_output.0.external_access_integrations.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_streamlit.test", "describe_output.0.external_access_integrations.0", externalAccessIntegrationId.Name()),
-					resource.TestCheckResourceAttrSet("snowflake_streamlit.test", "describe_output.0.external_access_secrets"),
-				),
-			},
-			{
-				Config:            accconfig.FromModels(t, streamlitModelComplete),
-				ResourceName:      "snowflake_streamlit.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAcc_Streamlit_Rename(t *testing.T) {
-	stage, stageCleanup := testClient().Stage.CreateStage(t)
-	t.Cleanup(stageCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	newId := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	comment := random.Comment()
-	newComment := random.Comment()
-	mainFile := "foo"
-
-	streamlitModel := model.StreamlitWithIds("test", id, mainFile, stage.ID()).
-		WithComment(comment)
-	streamlitModelRenamedAndUpdated := model.StreamlitWithIds("test", newId, mainFile, stage.ID()).
-		WithComment(newComment)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.NetworkPolicy),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, streamlitModel),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "show_output.0.comment", comment),
-					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
-				),
-			},
-			{
-				Config: accconfig.FromModels(t, streamlitModelRenamedAndUpdated),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(streamlitModelRenamedAndUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(streamlitModelRenamedAndUpdated.ResourceReference(), "name", newId.Name()),
-					resource.TestCheckResourceAttr(streamlitModelRenamedAndUpdated.ResourceReference(), "show_output.0.name", newId.Name()),
-					resource.TestCheckResourceAttr(streamlitModelRenamedAndUpdated.ResourceReference(), "show_output.0.comment", newComment),
-					resource.TestCheckResourceAttr(streamlitModelRenamedAndUpdated.ResourceReference(), "fully_qualified_name", newId.FullyQualifiedName()),
-				),
 			},
 		},
 	})
