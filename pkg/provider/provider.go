@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -392,6 +393,15 @@ func GetProviderSchema() map[string]*schema.Schema {
 			},
 			Description: fmt.Sprintf("A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(previewfeatures.AllPreviewFeatures)),
 		},
+		"experimental_features_enabled": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AllExperimentalFeatures, true),
+			},
+			Description: fmt.Sprintf("A list of experimental features. They should be as unstable, similarly to preview features. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(experimentalfeatures.AllExperimentalFeatures)),
+		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
 			Description: envNameFieldDescription("False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations).", snowflakeenvs.SkipTomlFilePermissionVerification),
@@ -653,6 +663,10 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 
 	if v, ok := s.GetOk("preview_features_enabled"); ok {
 		providerCtx.EnabledFeatures = expandStringList(v.(*schema.Set).List())
+	}
+
+	if v, ok := s.GetOk("experimental_features_enabled"); ok {
+		providerCtx.EnabledExperiments = expandStringList(v.(*schema.Set).List())
 	}
 
 	return providerCtx, nil

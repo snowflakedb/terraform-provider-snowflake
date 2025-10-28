@@ -20,6 +20,7 @@ type pluginFrameworkPocProviderModelV0 struct {
 	DisableTelemetry                   types.Bool   `tfsdk:"disable_telemetry"`
 	DriverTracing                      types.String `tfsdk:"driver_tracing"`
 	EnableSingleUseRefreshTokens       types.Bool   `tfsdk:"enable_single_use_refresh_tokens"`
+	ExperimentalFeaturesEnabled        types.Set    `tfsdk:"experimental_features_enabled"`
 	ExternalBrowserTimeout             types.Int64  `tfsdk:"external_browser_timeout"`
 	Host                               types.String `tfsdk:"host"`
 	IncludeRetryReason                 types.String `tfsdk:"include_retry_reason"`
@@ -115,6 +116,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	},
 	"enable_single_use_refresh_tokens": schema.BoolAttribute{
 		Description: existingSchema["enable_single_use_refresh_tokens"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"experimental_features_enabled": schema.SetAttribute{
+		Description: existingSchema["experimental_features_enabled"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
