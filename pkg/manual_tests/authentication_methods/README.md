@@ -81,3 +81,38 @@ The `oauth_authorization_code_snowflake_idp` directory contains setup and test r
 2. Run terraform commands like `terraform apply -var-file="main.tfvars"` to include these variables.
 3. Run the test steps.
 4. Remember to destroy created resources.
+
+
+## WIF + EKS OIDC authenticator test
+
+To test the [WIF + EKS OIDC setup]
+(https://docs.snowflake.com/en/user-guide/workload-identity-federation#authenticate-to-snowflake-using-an-openid-connect-oidc-issuer-from-microsoft-azure-kubernetes),
+some additional manual steps are required to create the necessary resources in a k8s cluster and Snowflake.
+
+Pre-requisites:
+- An existing AWS EKS cluster with OIDC provider enabled.
+
+1. Create a Kubernetes service account.
+2. Create a `main.tf` file with the following provider configuration:
+   ```hcl
+   provider "snowflake" {
+     organization_name          = "ORGANIZATION_NAME"
+     account_name               = "ACCOUNT_NAME"
+     user                       = "USER_NAME"
+     authenticator              = "WORKLOAD_IDENTITY"
+     token                      = file("<token_file_path>")
+     workload_identity_provider = "AWS"
+   }
+   ```
+3. Build a container with terraform installed. Mount/copy the terraform files incl. the above provider configuration into the image.
+4. Create a user in Snowflake with
+   ```sql
+   CREATE OR REPLACE USER USER_NAME
+     WORKLOAD_IDENTITY = (
+       TYPE = OIDC
+       ISSUER = 'https://oidc.eks.<region>.amazonaws.com/id/<oidc-provider-id>'
+       SUBJECT = 'system:serviceaccount:<namespace>:<service-account-name>'
+     )
+     TYPE = SERVICE;
+   ```
+5. Start a pod/job/deployment in the EKS cluster. The pod/job/deployment must link the above created service account.

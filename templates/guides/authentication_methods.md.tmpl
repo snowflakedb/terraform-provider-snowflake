@@ -497,9 +497,11 @@ provider "snowflake" {
 }
 ```
 
+With the optional parameter `workload_identity_entra_resource` the resource to use for WIF authentication
+on an Azure environment can be controlled.
+
 For the case of [Authenticate to Snowflake using OpenID Connect (OIDC) issuer from Elastic Kubernetes Service (EKS)](https://docs.snowflake.com/user-guide/workload-identity-federation#authenticate-to-snowflake-using-openid-connect-oidc-issuer-from-aws-kubernetes)
 the token from the token file is needed, which is stored at `token_file_path` (the exact path may vary depending on the setup).
-
 
 
 ```terraform
