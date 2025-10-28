@@ -71,9 +71,10 @@ type StageCopyOptions struct {
 }
 
 type StageCopyOnErrorOptions struct {
-	Continue_      *bool `ddl:"keyword" sql:"CONTINUE"`
-	SkipFile       *bool `ddl:"keyword" sql:"SKIP_FILE"`
-	AbortStatement *bool `ddl:"keyword" sql:"ABORT_STATEMENT"`
+	Continue_ *bool `ddl:"keyword" sql:"CONTINUE"`
+	// adjusted manually
+	SkipFile       *string `ddl:"keyword" sql:"SKIP_FILE"`
+	AbortStatement *bool   `ddl:"keyword" sql:"ABORT_STATEMENT"`
 }
 
 // CreateOnS3StageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.

@@ -815,7 +815,7 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(cleanupTableProvider(id))
 
 		stageFileFormats := sdk.StageFileFormatRequest{
-			Type: sdk.Pointer(sdk.FileFormatTypeCSV),
+			FileFormatType: sdk.Pointer(sdk.FileFormatTypeCSV),
 		}
 		stageCopyOptions := sdk.StageCopyOptionsRequest{
 			OnError: sdk.NewStageCopyOnErrorOptionsRequest().WithSkipFile(),
