@@ -30,6 +30,13 @@ func (v *QueryStruct) OptionalAssignment(sqlPrefix string, kind string, transfor
 	return v.Assignment(sqlPrefix, kind, transformer)
 }
 
+func (v *QueryStruct) OptionalAssignmentWithFieldName(sqlPrefix string, kind string, transformer *ParameterTransformer, fieldName string) *QueryStruct {
+	if len(kind) > 0 && kind[0] != '*' {
+		kind = KindOfPointer(kind)
+	}
+	return v.AssignmentWithFieldName(sqlPrefix, kind, transformer, fieldName)
+}
+
 func (v *QueryStruct) ListAssignment(sqlPrefix string, listItemKind string, transformer *ParameterTransformer) *QueryStruct {
 	return v.Assignment(sqlPrefix, KindOfSlice(listItemKind), transformer)
 }
