@@ -461,6 +461,18 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.EnableSingleUseRefreshTokens, nil),
 		},
+		"workload_identity_provider": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("The workload identity provider to use for WIF authentication.", snowflakeenvs.WorkloadIdentityProvider),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.WorkloadIdentityProvider, nil),
+		},
+		"workload_identity_entra_resource": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("The resource to use for WIF authentication on Azure environment.", snowflakeenvs.WorkloadIdentityEntraResource),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.WorkloadIdentityEntraResource, nil),
+		},
 	}
 }
 
@@ -823,6 +835,8 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "oauth_redirect_uri", &config.OauthRedirectURI),
 		handleStringField(s, "oauth_scope", &config.OauthScope),
 		handleBoolField(s, "enable_single_use_refresh_tokens", &config.EnableSingleUseRefreshTokens),
+		handleStringField(s, "workload_identity_provider", &config.WorkloadIdentityProvider),
+		handleStringField(s, "workload_identity_entra_resource", &config.WorkloadIdentityEntraResource),
 	)
 	if err != nil {
 		return nil, err
