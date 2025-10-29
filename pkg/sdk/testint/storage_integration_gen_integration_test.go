@@ -161,7 +161,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		req := sdk.NewCreateStorageIntegrationRequest(id, true, s3AllowedLocations).
 			WithIfNotExists(true).
-			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(protocol, awsRoleARN).WithStorageAwsExternalId("some-external-id").WithUsePrivateLinkEndpoint(true)).
+			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(protocol, awsRoleARN).WithStorageAwsExternalId("some-external-id").WithUsePrivatelinkEndpoint(true)).
 			WithStorageBlockedLocations(s3BlockedLocations).
 			WithComment("some comment")
 
@@ -271,7 +271,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 					WithS3Params(
 						*sdk.NewSetS3StorageParamsRequest(awsRoleARN).
 							WithStorageAwsExternalId("new-external-id").
-							WithUsePrivateLinkEndpoint(true),
+							WithUsePrivatelinkEndpoint(true),
 					).
 					WithEnabled(true).
 					WithStorageAllowedLocations(changedS3AllowedLocations).
@@ -341,7 +341,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		req := sdk.NewAlterStorageIntegrationRequest(id).
 			WithUnset(
 				*sdk.NewStorageIntegrationUnsetRequest().
-					WithUsePrivateLinkEndpoint(true),
+					WithUsePrivatelinkEndpoint(true),
 			)
 		err := client.StorageIntegrations.Alter(ctx, req)
 		require.ErrorContains(t, err, "Cannot unset property 'USE_PRIVATELINK_ENDPOINT' on integration")

@@ -112,22 +112,22 @@ var task = g.PlainStruct("Task").
 	Text("DatabaseName").
 	Text("SchemaName").
 	Text("Owner").
-	OptionalText("Comment").
-	OptionalText("Warehouse").
-	OptionalText("Schedule").
+	Text("Comment").
+	Field("Warehouse", g.KindOfTPointer[AccountObjectIdentifier]()).
+	Text("Schedule").
 	Field("Predecessors", g.KindOfTSlice[SchemaObjectIdentifier]()).
 	Field("State", g.KindOfT[TaskState]()).
 	Text("Definition").
-	OptionalText("Condition").
+	Text("Condition").
 	Bool("AllowOverlappingExecution").
-	Field("ErrorIntegration", g.KindOfTSlice[AccountObjectIdentifier]()).
-	OptionalText("LastCommittedOn").
-	OptionalText("LastSuspendedOn").
+	Field("ErrorIntegration", g.KindOfTPointer[AccountObjectIdentifier]()).
+	Text("LastCommittedOn").
+	Text("LastSuspendedOn").
 	Text("OwnerRoleType").
-	OptionalText("Config").
-	OptionalText("Budget").
-	Text("TaskRelations").
-	OptionalText("LastSuspendedReason")
+	Text("Config").
+	Text("Budget").
+	Field("TaskRelations", "TaskRelations").
+	Text("LastSuspendedReason")
 
 var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
 	OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
@@ -188,7 +188,7 @@ var TasksDef = g.NewInterface(
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalIdentifier("Finalize", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("FINALIZE")).
 			OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
-			List("AFTER", g.KindOfT[SchemaObjectIdentifier](), g.ListOptions()).
+			ListAssignment("AFTER", g.KindOfT[SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
@@ -239,7 +239,7 @@ var TasksDef = g.NewInterface(
 					WithValidation(g.AtLeastOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval").
 					WithValidation(g.ConflictingFields, "Warehouse", "UserTaskManagedInitialWarehouseSize").
 					WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration"),
-				g.ListOptions().SQL("SET"),
+				g.ListOptions().SQL("SET").NoParentheses(),
 			).
 			OptionalQueryStructField(
 				"Unset",
