@@ -59,12 +59,13 @@ var procedureSQLReturns = g.NewQueryStruct("ProcedureSQLReturns").
 	WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 
 var (
-	procedureImport  = g.NewQueryStruct("ProcedureImport").Text("Import", g.KeywordOptions().SingleQuotes().Required())
-	procedurePackage = g.NewQueryStruct("ProcedurePackage").Text("Package", g.KeywordOptions().SingleQuotes().Required())
+	procedureImport  = g.NewQueryStruct("ProcedureImport").Text("ProcedureImport", g.KeywordOptions().SingleQuotes().Required())
+	procedurePackage = g.NewQueryStruct("ProcedurePackage").Text("ProcedurePackage", g.KeywordOptions().SingleQuotes().Required())
 )
 
 // https://docs.snowflake.com/en/sql-reference/constructs/with and https://docs.snowflake.com/en/user-guide/queries-cte
 var procedureWithClause = g.NewQueryStruct("ProcedureWithClause").
+	SQLWithCustomFieldName("prefix", ",").
 	Identifier("CteName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 	PredefinedQueryStructField("CteColumns", "[]string", g.KeywordOptions().Parentheses()).
 	PredefinedQueryStructField("Statement", "string", g.ParameterOptions().NoEquals().NoQuotes().SQL("AS").Required())
@@ -112,7 +113,7 @@ var ProceduresDef = g.NewInterface(
 		ListAssignment("SECRETS", "SecretReference", g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("TARGET_PATH", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.KeywordOptions()).
+		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.ParameterOptions().NoQuotes().NoEquals().SQL("EXECUTE AS")).
 		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SQL("AS")).
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
 		WithValidation(g.ValidateValueSet, "Packages").
@@ -141,7 +142,7 @@ var ProceduresDef = g.NewInterface(
 		PredefinedQueryStructField("NullInputBehavior", "*NullInputBehavior", g.KeywordOptions()).
 		PredefinedQueryStructField("ReturnResultsBehavior", "*ReturnResultsBehavior", g.KeywordOptions()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.KeywordOptions()).
+		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.ParameterOptions().NoQuotes().NoEquals().SQL("EXECUTE AS")).
 		PredefinedQueryStructField("ProcedureDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ValidIdentifier, "name").
@@ -184,7 +185,7 @@ var ProceduresDef = g.NewInterface(
 		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
 		ListAssignment("SECRETS", "SecretReference", g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.KeywordOptions()).
+		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.ParameterOptions().NoQuotes().NoEquals().SQL("EXECUTE AS")).
 		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SQL("AS")).
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
 		WithValidation(g.ValidateValueSet, "Packages").
@@ -229,7 +230,7 @@ var ProceduresDef = g.NewInterface(
 		ListAssignment("SECRETS", "SecretReference", g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("TARGET_PATH", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.KeywordOptions()).
+		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.ParameterOptions().NoQuotes().NoEquals().SQL("EXECUTE AS")).
 		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SQL("AS")).
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
 		WithValidation(g.ValidateValueSet, "Packages").
@@ -259,7 +260,7 @@ var ProceduresDef = g.NewInterface(
 		PredefinedQueryStructField("NullInputBehavior", "*NullInputBehavior", g.KeywordOptions()).
 		PredefinedQueryStructField("ReturnResultsBehavior", "*ReturnResultsBehavior", g.KeywordOptions()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.KeywordOptions()).
+		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.ParameterOptions().NoQuotes().NoEquals().SQL("EXECUTE AS")).
 		PredefinedQueryStructField("ProcedureDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ValidIdentifier, "name"),
@@ -300,7 +301,7 @@ var ProceduresDef = g.NewInterface(
 		).
 		OptionalSetTags().
 		OptionalUnsetTags().
-		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.KeywordOptions()).
+		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.ParameterOptions().NoQuotes().NoEquals().SQL("EXECUTE AS")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "ExecuteAs"),
@@ -340,6 +341,8 @@ var ProceduresDef = g.NewInterface(
 		Field("IsAnsi", "bool").
 		Field("MinNumArguments", "int").
 		Field("MaxNumArguments", "int").
+		Field("ArgumentsOld", "[]DataType").
+		Field("ReturnTypeOld", "DataType").
 		Field("ArgumentsRaw", "string").
 		Field("Description", "string").
 		Field("CatalogName", "string").
@@ -375,7 +378,7 @@ var ProceduresDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/call",
 	g.NewQueryStruct("Call").
 		SQL("CALL").
-		Identifier("name", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		PredefinedQueryStructField("CallArguments", "[]string", g.KeywordOptions().MustParentheses()).
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidIdentifier, "name"),
@@ -398,7 +401,6 @@ var ProceduresDef = g.NewInterface(
 		).
 		SQL("LANGUAGE JAVA").
 		PredefinedQueryStructField("NullInputBehavior", "*NullInputBehavior", g.KeywordOptions()).
-		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SingleQuotes().SQL("AS")).
 		TextAssignment("RUNTIME_VERSION", g.ParameterOptions().SingleQuotes().Required()).
 		ListQueryStructField(
 			"Packages",
@@ -411,6 +413,7 @@ var ProceduresDef = g.NewInterface(
 			g.ParameterOptions().Parentheses().SQL("IMPORTS"),
 		).
 		TextAssignment("HANDLER", g.ParameterOptions().SingleQuotes().Required()).
+		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SingleQuotes().SQL("AS")).
 		OptionalQueryStructField(
 			"WithClause",
 			procedureWithClause,
@@ -444,7 +447,6 @@ var ProceduresDef = g.NewInterface(
 		).
 		SQL("LANGUAGE SCALA").
 		PredefinedQueryStructField("NullInputBehavior", "*NullInputBehavior", g.KeywordOptions()).
-		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SingleQuotes().SQL("AS")).
 		TextAssignment("RUNTIME_VERSION", g.ParameterOptions().SingleQuotes().Required()).
 		ListQueryStructField(
 			"Packages",
@@ -457,6 +459,7 @@ var ProceduresDef = g.NewInterface(
 			g.ParameterOptions().Parentheses().SQL("IMPORTS"),
 		).
 		TextAssignment("HANDLER", g.ParameterOptions().SingleQuotes().Required()).
+		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SingleQuotes().SQL("AS")).
 		ListQueryStructField(
 			"WithClauses",
 			procedureWithClause,
@@ -522,7 +525,6 @@ var ProceduresDef = g.NewInterface(
 		).
 		SQL("LANGUAGE PYTHON").
 		PredefinedQueryStructField("NullInputBehavior", "*NullInputBehavior", g.KeywordOptions()).
-		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SingleQuotes().SQL("AS")).
 		TextAssignment("RUNTIME_VERSION", g.ParameterOptions().SingleQuotes().Required()).
 		ListQueryStructField(
 			"Packages",
@@ -535,6 +537,7 @@ var ProceduresDef = g.NewInterface(
 			g.ParameterOptions().Parentheses().SQL("IMPORTS"),
 		).
 		TextAssignment("HANDLER", g.ParameterOptions().SingleQuotes().Required()).
+		PredefinedQueryStructField("ProcedureDefinition", "*string", g.ParameterOptions().NoEquals().SingleQuotes().SQL("AS")).
 		ListQueryStructField(
 			"WithClauses",
 			procedureWithClause,
