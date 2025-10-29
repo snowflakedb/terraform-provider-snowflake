@@ -163,7 +163,7 @@ var TasksDef = g.NewInterface(
 			OptionalTags().
 			OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", g.ParameterOptions()).
 			OptionalTextAssignment("TARGET_COMPLETION_INTERVAL", g.ParameterOptions().SingleQuotes()).
-			List("AFTER", g.KindOfT[SchemaObjectIdentifier](), g.ListOptions()).
+			ListAssignment("AFTER", g.KindOfT[SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
@@ -260,7 +260,7 @@ var TasksDef = g.NewInterface(
 					OptionalSQL("TARGET_COMPLETION_INTERVAL").
 					OptionalSessionParametersUnset().
 					WithValidation(g.AtLeastOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval"),
-				g.ListOptions().SQL("UNSET"),
+				g.ListOptions().SQL("UNSET").NoParentheses(),
 			).
 			OptionalSetTags().
 			OptionalUnsetTags().
