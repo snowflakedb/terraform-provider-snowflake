@@ -247,11 +247,12 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Empty config - ensure database is destroyed
+			// Destroy - ensure database is destroyed before the next step
 			{
-				Config: " ",
+				Destroy: true,
+				Config:  accconfig.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.DatabaseIsMissing(t, id),
+					objectassert.DatabaseDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals

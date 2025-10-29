@@ -13,7 +13,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -45,7 +47,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			ValidateDiagFunc: sdkValidation(sdk.ToAuthenticationMethodsOption),
 		},
 		Optional:    true,
-		Description: fmt.Sprintf("A list of authentication methods that are allowed during login. This parameter accepts one or more of the following values: %s", possibleValuesListed(sdk.AllAuthenticationMethods)),
+		Description: fmt.Sprintf("A list of authentication methods that are allowed during login. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllAuthenticationMethods)),
 	},
 	"mfa_authentication_methods": {
 		Type: schema.TypeSet,
@@ -60,9 +62,9 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 	"mfa_enrollment": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "Determines whether a user must enroll in multi-factor authentication. Allowed values are REQUIRED and OPTIONAL. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the CLIENT_TYPES parameter must include SNOWFLAKE_UI, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).",
+		Description:      fmt.Sprintf("Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): %s. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).", possibleValuesListed(sdk.AllMfaEnrollmentOptions)),
 		ValidateDiagFunc: sdkValidation(sdk.ToMfaEnrollmentOption),
-		Default:          "OPTIONAL",
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToMfaEnrollmentOption),
 	},
 	"client_types": {
 		Type: schema.TypeSet,
@@ -70,8 +72,9 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: sdkValidation(sdk.ToClientTypesOption),
 		},
+		// TODO(next PR): add diff suppression for enum sets.
 		Optional:    true,
-		Description: fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid CLIENT_TYPES, then the login attempt fails. Allowed values are %s. The CLIENT_TYPES property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypes)),
+		Description: fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): %s. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypes)),
 	},
 	"security_integrations": {
 		Type: schema.TypeSet,
@@ -79,8 +82,9 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		},
-		Optional:    true,
-		Description: "A list of security integrations the authentication policy is associated with. This parameter has no effect when SAML or OAUTH are not in the AUTHENTICATION_METHODS list. All values in the SECURITY_INTEGRATIONS list must be compatible with the values in the AUTHENTICATION_METHODS list. For example, if SECURITY_INTEGRATIONS contains a SAML security integration, and AUTHENTICATION_METHODS contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use ALL as parameter.",
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("security_integrations"),
+		Optional:         true,
+		Description:      "A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `all` as parameter.",
 	},
 	"comment": {
 		Type:        schema.TypeString,
@@ -116,17 +120,34 @@ func AuthenticationPolicy() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingCreateWrapper(resources.AuthenticationPolicy, CreateContextAuthenticationPolicy)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingReadWrapper(resources.AuthenticationPolicy, ReadContextAuthenticationPolicy)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingReadWrapper(resources.AuthenticationPolicy, ReadContextAuthenticationPolicy(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingUpdateWrapper(resources.AuthenticationPolicy, UpdateContextAuthenticationPolicy)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingDeleteWrapper(resources.AuthenticationPolicy, deleteFunc)),
 		Description:   "Resource used to manage authentication policy objects. For more information, check [authentication policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy).",
+
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.AuthenticationPolicy, customdiff.All(
+			// For now, the set/list fields have to be excluded.
+			// TODO [SNOW-1648997]: address the above comment
+			ComputedIfAnyAttributeChanged(authenticationPolicySchema, ShowOutputAttributeName, "name", "comment"),
+			ComputedIfAnyAttributeChanged(authenticationPolicySchema, DescribeOutputAttributeName, "name", "mfa_enrollment", "comment"),
+			ComputedIfAnyAttributeChanged(authenticationPolicySchema, FullyQualifiedNameAttributeName, "name"),
+		)),
 
 		Schema: authenticationPolicySchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.AuthenticationPolicy, ImportAuthenticationPolicy),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_9_0_AuthenticationPolicyStateUpgrader,
+			},
+		},
 	}
 }
 
@@ -138,21 +159,7 @@ func ImportAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, met
 		return nil, err
 	}
 
-	authenticationPolicy, err := client.AuthenticationPolicies.ShowByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = d.Set("name", authenticationPolicy.Name); err != nil {
-		return nil, err
-	}
-	if err = d.Set("database", authenticationPolicy.DatabaseName); err != nil {
-		return nil, err
-	}
-	if err = d.Set("schema", authenticationPolicy.SchemaName); err != nil {
-		return nil, err
-	}
-	if err = d.Set("comment", authenticationPolicy.Comment); err != nil {
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
 		return nil, err
 	}
 
@@ -161,27 +168,41 @@ func ImportAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return nil, err
 	}
-	authenticationMethods := getListParameterFromDescribe(authenticationPolicyDescriptions, "AUTHENTICATION_METHODS")
-	if err = d.Set("authentication_methods", authenticationMethods); err != nil {
+	authenticationPolicyDetails := sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptions)
+	authenticationMethods, err := authenticationPolicyDetails.GetAuthenticationMethods()
+	if err != nil {
 		return nil, err
 	}
-	mfaAuthenticationMethods := getListParameterFromDescribe(authenticationPolicyDescriptions, "MFA_AUTHENTICATION_METHODS")
-	if err = d.Set("mfa_authentication_methods", mfaAuthenticationMethods); err != nil {
+	clientTypes, err := authenticationPolicyDetails.GetClientTypes()
+	if err != nil {
 		return nil, err
 	}
-	clientTypes := getListParameterFromDescribe(authenticationPolicyDescriptions, "CLIENT_TYPES")
-	if err = d.Set("client_types", clientTypes); err != nil {
+	securityIntegrations, err := authenticationPolicyDetails.GetSecurityIntegrations()
+	if err != nil {
 		return nil, err
 	}
-	securityIntegrations := getListParameterFromDescribe(authenticationPolicyDescriptions, "SECURITY_INTEGRATIONS")
-	if err = d.Set("security_integrations", securityIntegrations); err != nil {
+	securityIntegrationStrings, err := collections.MapErr(securityIntegrations, func(r sdk.AccountObjectIdentifier) (string, error) { return r.Name(), nil })
+	if err != nil {
+		return nil, err
+	}
+	mfaEnrollment, err := authenticationPolicyDetails.GetMfaEnrollment()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := errors.Join(
+		d.Set("authentication_methods", authenticationMethods),
+		d.Set("mfa_enrollment", mfaEnrollment),
+		d.Set("client_types", clientTypes),
+		d.Set("security_integrations", securityIntegrationStrings),
+	); err != nil {
 		return nil, err
 	}
 
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	name := d.Get("name").(string)
 	databaseName := d.Get("database").(string)
 	schemaName := d.Get("schema").(string)
@@ -203,6 +224,7 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		req.WithAuthenticationMethods(authenticationMethods)
 	}
 
+	// TODO(SNOW-2454947): Remove this once the 2025_06 is generally enabled.
 	if v, ok := d.GetOk("mfa_authentication_methods"); ok {
 		mfaAuthenticationMethodsRawList := expandStringList(v.(*schema.Set).List())
 		mfaAuthenticationMethods := make([]sdk.MfaAuthenticationMethods, len(mfaAuthenticationMethodsRawList))
@@ -214,14 +236,6 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 			mfaAuthenticationMethods[i] = sdk.MfaAuthenticationMethods{Method: option}
 		}
 		req.WithMfaAuthenticationMethods(mfaAuthenticationMethods)
-	}
-
-	if v, ok := d.GetOk("mfa_enrollment"); ok {
-		option, err := sdk.ToMfaEnrollmentOption(v.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req = req.WithMfaEnrollment(option)
 	}
 
 	if v, ok := d.GetOk("client_types"); ok {
@@ -237,17 +251,12 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		req.WithClientTypes(clientTypes)
 	}
 
-	if v, ok := d.GetOk("security_integrations"); ok {
-		securityIntegrationsRawList := expandStringList(v.(*schema.Set).List())
-		securityIntegrations := make([]sdk.SecurityIntegrationsOption, len(securityIntegrationsRawList))
-		for i, v := range securityIntegrationsRawList {
-			securityIntegrations[i] = sdk.SecurityIntegrationsOption{Name: sdk.NewAccountObjectIdentifier(v)}
-		}
-		req.WithSecurityIntegrations(securityIntegrations)
-	}
-
-	if v, ok := d.GetOk("comment"); ok {
-		req = req.WithComment(v.(string))
+	if err := errors.Join(
+		attributeMappedValueCreateBuilder(d, "security_integrations", req.WithSecurityIntegrations, ToSecurityIntegrationsRequest),
+		attributeMappedValueCreateBuilder(d, "mfa_enrollment", req.WithMfaEnrollment, sdk.ToMfaEnrollmentOption),
+		stringAttributeCreateBuilder(d, "comment", req.WithComment),
+	); err != nil {
+		return diag.FromErr(err)
 	}
 
 	client := meta.(*provider.Context).Client
@@ -256,103 +265,111 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	}
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
-	return ReadContextAuthenticationPolicy(ctx, d, meta)
+	return ReadContextAuthenticationPolicy(false)(ctx, d, meta)
 }
 
-func ReadContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionRequest, error) {
+	raw := expandStringList(value.(*schema.Set).List())
+	securityIntegrations := make([]sdk.AccountObjectIdentifier, len(raw))
+	for i, v := range raw {
+		securityIntegrations[i] = sdk.NewAccountObjectIdentifier(v)
 	}
+	// TODO(next PR): handle ALL separately
+	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
+}
 
-	authenticationPolicy, err := client.AuthenticationPolicies.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to retrieve authentication policy. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
-				},
-			}
-		}
-		return diag.FromErr(err)
-	}
-
-	authenticationPolicyDescriptions, err := client.AuthenticationPolicies.Describe(ctx, id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	authenticationMethods := getListArgumentWithDefaults(d, "authentication_methods", getListParameterFromDescribe(authenticationPolicyDescriptions, "AUTHENTICATION_METHODS"), []string{"ALL"})
-	if err = d.Set("authentication_methods", authenticationMethods); err != nil {
-		return diag.FromErr(err)
-	}
-
-	mfaAuthenticationMethods := getListArgumentWithDefaults(d, "mfa_authentication_methods", getListParameterFromDescribe(authenticationPolicyDescriptions, "MFA_AUTHENTICATION_METHODS"), []string{"PASSWORD", "SAML"})
-	if err = d.Set("mfa_authentication_methods", mfaAuthenticationMethods); err != nil {
-		return diag.FromErr(err)
-	}
-
-	mfaEnrollment, err := collections.FindFirst(authenticationPolicyDescriptions, func(prop sdk.AuthenticationPolicyDescription) bool { return prop.Property == "MFA_ENROLLMENT" })
-	if err == nil {
-		if err = d.Set("mfa_enrollment", mfaEnrollment.Value); err != nil {
+func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		diags := diag.Diagnostics{}
+		client := meta.(*provider.Context).Client
+		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+		if err != nil {
 			return diag.FromErr(err)
 		}
-	}
 
-	clientTypes := getListArgumentWithDefaults(d, "client_types", getListParameterFromDescribe(authenticationPolicyDescriptions, "CLIENT_TYPES"), []string{"ALL"})
-	if err = d.Set("client_types", clientTypes); err != nil {
-		return diag.FromErr(err)
-	}
+		authenticationPolicy, err := client.AuthenticationPolicies.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to retrieve authentication policy. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
+		}
 
-	securityIntegrations := getListArgumentWithDefaults(d, "security_integrations", getListParameterFromDescribe(authenticationPolicyDescriptions, "SECURITY_INTEGRATIONS"), []string{"ALL"})
-	if err = d.Set("security_integrations", securityIntegrations); err != nil {
-		return diag.FromErr(err)
-	}
+		authenticationPolicyDescriptionsRaw, err := client.AuthenticationPolicies.Describe(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		authenticationPolicyDescriptions := sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptionsRaw)
+		if withExternalChangesMarking {
+			authenticationMethods, err := authenticationPolicyDescriptions.GetAuthenticationMethods()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			mfaEnrollment, err := authenticationPolicyDescriptions.GetMfaEnrollment()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			clientTypes, err := authenticationPolicyDescriptions.GetClientTypes()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			securityIntegrations, err := authenticationPolicyDescriptions.GetSecurityIntegrations()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			mfaAuthenticationMethods, err := authenticationPolicyDescriptions.GetMfaAuthenticationMethods()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			var securityIntegrationsStrings []string
+			if securityIntegrations != nil {
+				securityIntegrationsStrings = make([]string, len(securityIntegrations))
+				for i, v := range securityIntegrations {
+					securityIntegrationsStrings[i] = v.Name()
+				}
+			}
+			if err = handleExternalChangesToObjectInFlatDescribe(d,
+				outputMapping{"authentication_methods", "authentication_methods", authenticationPolicyDescriptions.Raw("AUTHENTICATION_METHODS"), authenticationMethods, nil},
+				outputMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
+				outputMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
+				outputMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
+				outputMapping{"mfa_authentication_methods", "mfa_authentication_methods", authenticationPolicyDescriptions.Raw("MFA_AUTHENTICATION_METHODS"), mfaAuthenticationMethods, nil},
+			); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 
-	if err = d.Set("comment", authenticationPolicy.Comment); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
-		return diag.FromErr(err)
-	}
+		if err = setStateToValuesFromConfig(d, authenticationPolicySchema, []string{
+			"authentication_methods",
+			"mfa_enrollment",
+			"client_types",
+			"security_integrations",
+			"mfa_authentication_methods",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 
-	if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyToSchema(authenticationPolicy)}); err != nil {
-		return diag.FromErr(err)
-	}
+		if err := errors.Join(
+			d.Set("comment", authenticationPolicy.Comment),
+			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyToSchema(authenticationPolicy)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyDescriptionToSchema(authenticationPolicyDescriptions)}),
+		); err != nil {
+			return diag.FromErr(err)
+		}
 
-	if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyDescriptionToSchema(authenticationPolicyDescriptions)}); err != nil {
-		return diag.FromErr(err)
+		return diags
 	}
-
-	return diags
 }
 
-func getListParameterFromDescribe(authenticationPolicyDescriptions []sdk.AuthenticationPolicyDescription, parameterName string) []string {
-	parameterList := make([]string, 0)
-	if parameterProperty, err := collections.FindFirst(authenticationPolicyDescriptions, func(prop sdk.AuthenticationPolicyDescription) bool {
-		return prop.Property == parameterName
-	}); err == nil {
-		parameterList = append(parameterList, sdk.ParseCommaSeparatedStringArray(parameterProperty.Value, false)...)
-	}
-	return parameterList
-}
-
-// getListArgumentWithDefaults returns the list of values for a given argument, with the defaults applied, if necessary. Otherwise, tf plan will always show a diff with a list parameter with defaults when no value is set.
-func getListArgumentWithDefaults(d *schema.ResourceData, argumentName string, argumentIs []string, argumentDefaults []string) []string {
-	// in case nothing is set in the tf resource and the is equals the default, we set the is to empty
-	argumentShould := d.Get(argumentName).(*schema.Set).List()
-	if stringSlicesEqual(argumentIs, argumentDefaults) && len(argumentShould) == 0 {
-		argumentIs = []string{}
-	}
-	return argumentIs
-}
-
-func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
@@ -363,10 +380,7 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 
 	// change to name
 	if d.HasChange("name") {
-		newId, err := sdk.ParseSchemaObjectIdentifier(d.Get("name").(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
 		err = client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithRenameTo(newId))
 		if err != nil {
@@ -396,6 +410,7 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	// TODO(SNOW-2454947): Remove this once the 2025_06 is generally enabled.
 	// change to mfa authentication methods
 	if d.HasChange("mfa_authentication_methods") {
 		if v, ok := d.GetOk("mfa_authentication_methods"); ok {
@@ -443,28 +458,11 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	// change to security integrations
-	if d.HasChange("security_integrations") {
-		if v, ok := d.GetOk("security_integrations"); ok {
-			securityIntegrations := expandStringList(v.(*schema.Set).List())
-			securityIntegrationsValues := make([]sdk.SecurityIntegrationsOption, len(securityIntegrations))
-			for i, v := range securityIntegrations {
-				securityIntegrationsValues[i] = sdk.SecurityIntegrationsOption{Name: sdk.NewAccountObjectIdentifier(v)}
-			}
-
-			set.WithSecurityIntegrations(securityIntegrationsValues)
-		} else {
-			unset.WithSecurityIntegrations(true)
-		}
-	}
-
-	// change to comment
-	if d.HasChange("comment") {
-		if v, ok := d.GetOk("comment"); ok {
-			set.Comment = sdk.String(v.(string))
-		} else {
-			unset.WithComment(true)
-		}
+	if err := errors.Join(
+		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+		attributeMappedValueUpdate(d, "security_integrations", &set.SecurityIntegrations, &unset.SecurityIntegrations, ToSecurityIntegrationsRequest),
+	); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if !reflect.DeepEqual(*set, *sdk.NewAuthenticationPolicySetRequest()) {
@@ -481,29 +479,5 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return ReadContextAuthenticationPolicy(ctx, d, meta)
-}
-
-func stringSlicesEqual(s1 []string, s2 []string) bool {
-	if len(s1) != len(s2) {
-		return false
-	}
-
-	// convert slices to maps for easy comparison
-	set1 := make(map[string]bool)
-	for _, v := range s1 {
-		set1[v] = true
-	}
-
-	set2 := make(map[string]bool)
-	for _, v := range s2 {
-		set2[v] = true
-	}
-
-	for k := range set1 {
-		if _, ok := set2[k]; !ok {
-			return false
-		}
-	}
-	return true
+	return ReadContextAuthenticationPolicy(false)(ctx, d, meta)
 }

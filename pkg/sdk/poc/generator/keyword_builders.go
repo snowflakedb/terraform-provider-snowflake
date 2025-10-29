@@ -1,12 +1,21 @@
 package generator
 
 func (v *QueryStruct) OptionalSQL(sql string) *QueryStruct {
-	v.fields = append(v.fields, NewField(sqlToFieldName(sql, true), "*bool", Tags().Keyword().SQL(sql), nil))
+	return v.OptionalSQLWithCustomFieldName(sqlToFieldName(sql, true), sql)
+}
+
+func (v *QueryStruct) OptionalSQLWithCustomFieldName(name, sql string) *QueryStruct {
+	v.fields = append(v.fields, NewField(name, "*bool", Tags().Keyword().SQL(sql), nil))
 	return v
 }
 
 func (v *QueryStruct) NamedList(sql string, itemKind string, transformer *KeywordTransformer) *QueryStruct {
 	v.fields = append(v.fields, NewField(sqlToFieldName(sql, true), KindOfSlice(itemKind), Tags().Keyword().SQL(sql), transformer))
+	return v
+}
+
+func (v *QueryStruct) UnnamedList(fieldName string, itemKind string, transformer *KeywordTransformer) *QueryStruct {
+	v.fields = append(v.fields, NewField(fieldName, KindOfSlice(itemKind), Tags().Keyword(), transformer))
 	return v
 }
 
