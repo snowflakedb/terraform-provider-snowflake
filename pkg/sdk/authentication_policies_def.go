@@ -79,15 +79,15 @@ var AllClientTypes = []ClientTypesOption{
 type MfaPolicyAllowedMethodsOption string
 
 const (
-	MfaPolicyAllowedMethodAll         MfaPolicyAllowedMethodsOption = "ALL"
-	MfaPolicyPassAllowedMethodPassKey MfaPolicyAllowedMethodsOption = "PASSKEY"
-	MfaPolicyAllowedMethodTotp        MfaPolicyAllowedMethodsOption = "TOTP"
-	MfaPolicyAllowedMethodDuo         MfaPolicyAllowedMethodsOption = "DUO"
+	MfaPolicyAllowedMethodAll     MfaPolicyAllowedMethodsOption = "ALL"
+	MfaPolicyAllowedMethodPassKey MfaPolicyAllowedMethodsOption = "PASSKEY"
+	MfaPolicyAllowedMethodTotp    MfaPolicyAllowedMethodsOption = "TOTP"
+	MfaPolicyAllowedMethodDuo     MfaPolicyAllowedMethodsOption = "DUO"
 )
 
 var AllMfaPolicyOptions = []MfaPolicyAllowedMethodsOption{
 	MfaPolicyAllowedMethodAll,
-	MfaPolicyPassAllowedMethodPassKey,
+	MfaPolicyAllowedMethodPassKey,
 	MfaPolicyAllowedMethodTotp,
 	MfaPolicyAllowedMethodDuo,
 }

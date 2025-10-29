@@ -97,7 +97,7 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
 			EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationAll),
 			AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-				{Method: MfaPolicyPassAllowedMethodPassKey},
+				{Method: MfaPolicyAllowedMethodPassKey},
 			},
 		}
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
@@ -239,7 +239,7 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 			MfaPolicy: &AuthenticationPolicyMfaPolicy{
 				EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationAll),
 				AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-					{Method: MfaPolicyPassAllowedMethodPassKey},
+					{Method: MfaPolicyAllowedMethodPassKey},
 				},
 			},
 			PatPolicy: &AuthenticationPolicyPatPolicy{
@@ -660,7 +660,7 @@ func Test_ToMfaPolicyAllowedMethodsOption(t *testing.T) {
 
 		// supported values.
 		{input: "ALL", want: MfaPolicyAllowedMethodAll},
-		{input: "PASSKEY", want: MfaPolicyPassAllowedMethodPassKey},
+		{input: "PASSKEY", want: MfaPolicyAllowedMethodPassKey},
 		{input: "TOTP", want: MfaPolicyAllowedMethodTotp},
 		{input: "DUO", want: MfaPolicyAllowedMethodDuo},
 	}
